@@ -23,9 +23,11 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import edu.uiowa.physics.pw.das.client.*;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
+import java.text.*;
 
 /**
  *
@@ -36,11 +38,35 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     private DasProgressMonitor monitor;
     private boolean started = false;
     private int bytesRead = 0;
+    long birthTimeMilli;
+    long deathTimeMilli;
     
     /** Creates a new instance of DasProgressMonitorInputStream */
-    public DasProgressMonitorInputStream(InputStream in, DasProgressMonitor monitor) {
+    public DasProgressMonitorInputStream( InputStream in, DasProgressMonitor monitor ) {
         super(in);
         this.monitor = monitor;
+        this.birthTimeMilli= System.currentTimeMillis();
+        this.deathTimeMilli= -1;
+    }
+    
+    public void reportTransmitSpeed() {
+        DecimalFormat transferRateFormat= new DecimalFormat();
+        transferRateFormat.setMaximumFractionDigits(2);        
+        monitor.setAdditionalInfo("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
+    }
+    
+    
+    public double calcTransmitSpeed() {
+        // return speed in bytes/second.
+        long totalBytesRead= bytesRead;
+        long timeElapsed;
+        if ( deathTimeMilli>-1 ) {
+            timeElapsed= deathTimeMilli-birthTimeMilli;
+        } else {
+            timeElapsed= System.currentTimeMillis()-birthTimeMilli;
+        }        
+        if ( timeElapsed==0 ) return Double.POSITIVE_INFINITY;
+        return 1000 * totalBytesRead / timeElapsed;
     }
     
     public int read() throws IOException {
@@ -56,8 +82,8 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             }
             else {
                 bytesRead++;
-                checkCancelled();
-                monitor.setTaskProgress(bytesRead);
+                checkCancelled();                
+                reportTransmitSpeed();
             }
         }
         return result;
@@ -77,7 +103,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             else {
                 bytesRead += result;
                 checkCancelled();
-                monitor.setTaskProgress(bytesRead);
+                reportTransmitSpeed();
             }
         }
         return result;
@@ -96,8 +122,8 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             }
             else {
                 bytesRead += result;
-                checkCancelled();
-                monitor.setTaskProgress(bytesRead);
+                checkCancelled();                
+                reportTransmitSpeed();
             }
         }
         return result;
@@ -112,6 +138,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     
     public void close() throws IOException {
         super.close();
+        deathTimeMilli= System.currentTimeMillis();
         if (monitor != null) {
             monitor.finished();
         }
