@@ -73,12 +73,25 @@ public class SymbolLineRenderer extends Renderer {
         
         Dimension d;
         
+        double xmin, xmax, ymin, ymax;
+        
         edu.uiowa.physics.pw.das.datum.Units xUnits= xAxis.getUnits();
         edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();
-        double xmax= xAxis.getDataMaximum().doubleValue(xUnits);
-        double xmin= xAxis.getDataMinimum().doubleValue(xUnits);
-        double ymax= yAxis.getDataMaximum().doubleValue(yUnits);
-        double ymin= yAxis.getDataMinimum().doubleValue(yUnits);
+        
+        Rectangle r= g.getClipBounds();
+        
+        if ( r==null ) {
+            xmax= xAxis.getDataMaximum().doubleValue(xUnits);
+            xmin= xAxis.getDataMinimum().doubleValue(xUnits);
+            ymax= yAxis.getDataMaximum().doubleValue(yUnits);
+            ymin= yAxis.getDataMinimum().doubleValue(yUnits);
+        } else {
+            xmin= xAxis.invTransform((int)r.getX()).doubleValue(xUnits);
+            xmax= xAxis.invTransform((int)(r.getX()+r.getWidth())).doubleValue(xUnits);
+            ymin= yAxis.invTransform((int)r.getY()).doubleValue(yUnits);
+            ymax= yAxis.invTransform((int)(r.getY()+r.getHeight())).doubleValue(yUnits);
+        }
+        
         int ixmax, ixmin;
         
         ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
@@ -86,17 +99,17 @@ public class SymbolLineRenderer extends Renderer {
         ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
         if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
         
-        graphics.setColor(color.toColor());                
+        graphics.setColor(color.toColor());
         
         double fill= yUnits.getFill().doubleValue(yUnits);
         double xSampleWidth= 1e31;
-                
+        
         if ( psymConnector != PsymConnector.NONE ) {
             int x0 = xAxis.transform(dataSet.getXTagDouble(ixmin,xUnits),xUnits);
             int y0 = yAxis.transform(dataSet.getDouble(ixmin,yUnits),yUnits);
             for (int i = ixmin+1; i <= ixmax; i++) {
                 int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
-                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);                
+                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
                 if ( dataSet.getDouble(i,yUnits)!=fill ) {
                     if ( dataSet.getDouble(i-1,yUnits) != fill ) {
                         psymConnector.drawLine(graphics,x0,y0,x,y,lineWidth);
@@ -116,11 +129,18 @@ public class SymbolLineRenderer extends Renderer {
         }
         
         long milli= System.currentTimeMillis();
-        //System.out.println( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis ) );
+        edu.uiowa.physics.pw.das.DasProperties.getLogger().finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
         lastUpdateMillis= milli;
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis) {
+    }
+    
+    private void refreshImage() {
+        if ( getParent()!=null ) {
+            getParent().markDirty();
+            getParent().repaint();
+        }
     }
     
     /** Getter for property psym.
@@ -129,6 +149,7 @@ public class SymbolLineRenderer extends Renderer {
     public Psym getPsym() {
         return this.psym;
     }
+        
     
     /** Setter for property psym.
      * @param psym New value of property psym.
@@ -137,7 +158,7 @@ public class SymbolLineRenderer extends Renderer {
         if (psym == null) throw new NullPointerException("psym cannot be null");
         Object oldValue = this.psym;
         this.psym = psym;
-        if ( getParent()!=null ) getParent().repaint();
+        refreshImage();
     }
     
     /** Getter for property symsize.
@@ -153,6 +174,7 @@ public class SymbolLineRenderer extends Renderer {
     public void setSymSize(double symSize) {
         this.symSize= symSize;
         setPsym(this.psym);
+        refreshImage();
     }
     
     /** Getter for property color.
@@ -167,7 +189,7 @@ public class SymbolLineRenderer extends Renderer {
      */
     public void setColor(SymColor color) {
         this.color= color;
-        if ( getParent()!=null ) getParent().repaint();
+        refreshImage();
     }
     
     public float getLineWidth() {
@@ -176,7 +198,7 @@ public class SymbolLineRenderer extends Renderer {
     
     public void setLineWidth(float f) {
         lineWidth = f;
-        getParent().repaint();
+        refreshImage();
     }
     
     protected void installRenderer() {
@@ -228,6 +250,7 @@ public class SymbolLineRenderer extends Renderer {
      */
     public void setPsymConnector(PsymConnector psymConnector) {
         this.psymConnector = psymConnector;
+        refreshImage();
     }
     
     public static void main( String[] args ) {
