@@ -105,6 +105,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
         int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
         
+
         int [] ibiny= new int[tds.getYLength(0)];
         for (int j=0; j < ibiny.length; j++) {
             if (ddY != null) {
@@ -114,7 +115,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 ibiny[j] = j;
             }
         }
-        
+
         for (int i=0; i < tds.getXLength(); i++) {
             int ibinx;
             if (ddX != null) {
@@ -141,7 +142,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
         }
-        
+            
         for (int i = 0; i < rebinData.length; i++) {
             for (int j = 0; j < rebinData[i].length; j++) {
                 if (rebinWeights[i][j] > 0.0) {
