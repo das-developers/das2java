@@ -115,14 +115,10 @@ public class TableDataSetBuilder {
                 zUnits = Units.dimensionless;
                 addPlane(planeID, zUnits);
             }
-            try {
-                double[] z = scans[i].toDoubleArray(zUnits);
-                scan.put(planeID, z);
-                scan.setYTags(y);
-                zValues.add(insertionIndex, scan);
-            } catch ( Exception e ) {
-                e.printStackTrace();
-            }
+            double[] z = scans[i].toDoubleArray(zUnits);
+            scan.put(planeID, z);
+            scan.setYTags(y);
+            zValues.add(insertionIndex, scan);
         }
     }
     
