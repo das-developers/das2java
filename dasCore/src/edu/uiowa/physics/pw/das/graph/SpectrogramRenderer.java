@@ -77,7 +77,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.label= label;
         }
         public static RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
-        public static RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");        
+        public static RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");
         public Icon getListIcon() {
             return null;
         }
@@ -191,6 +191,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             xTags = yTags = new double[0];
             double[][] zValues = {yTags};
             rebinData = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, Collections.EMPTY_MAP);
+            plotImage= null;
+            rebinData= null;
+            getParent().repaint();
+            return;
         } else {
             RebinDescriptor xRebinDescriptor;
             xRebinDescriptor = new RebinDescriptor(
@@ -207,19 +211,23 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             
             rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
             
-        }
-                
-        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
-        int itable=0;
-        int ny= rebinData.getYLength(itable);
-        int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
-        
-        for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
-            for (int j=0; j<rebinData.getYLength(0); j++) {
-                int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
-                pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
+            //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+            int itable=0;
+            int ny= rebinData.getYLength(itable);
+            int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
+            
+            for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
+                for (int j=0; j<rebinData.getYLength(0); j++) {
+                    int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
+                    pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
+                }
             }
+            
+            MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
+            plotImage = getParent().createImage(mis);
+            
         }
+        
         
         if (monitor != null) {
             if (monitor.isCancelled()) {
@@ -229,9 +237,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 monitor.finished();
             }
         }
-
-        MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
-        plotImage = getParent().createImage(mis);
+        
         getParent().repaint();
     }
     
@@ -266,7 +272,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     
                     VerticalSpectrogramAverager vAverager = VerticalSpectrogramAverager.createAverager(parent, this);
                     HorizontalDragRangeSelectorMouseModule vrl = new HorizontalDragRangeSelectorMouseModule(parent,this,parent.getXAxis());
-                    vrl.setLabel("Vertical Averager");
+                    //vrl.setLabel("Vertical Averager");
                     vrl.addDataRangeSelectionListener(vAverager);
                     mouseAdapter.addMouseModule(vrl);
                     
