@@ -41,8 +41,8 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
     
     // avoid get/set methods unless you know what you're doing.
     private DataSet ds;
-       
-    DasPlot parent;        
+    
+    DasPlot parent;
     
     private DasProgressPanel progressPanel;
     private DataRequestThread drt;
@@ -99,6 +99,11 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         return dsd.getDataSetId();
     }
     
+    
+    /** Render is called whenever the image needs to be refreshed or the content
+     * has changed.  This operation should occur with an animation-interactive
+     * time scale, and an image should be cached when this is not possible.
+     */
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
     
     public void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
@@ -139,7 +144,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         
         Datum resolution;
         Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-
+        
         double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
         resolution =  dataRange1.divide(deviceRange);
         
@@ -191,9 +196,16 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         
     }
     
+    /** updatePlotImage is called once the expensive operation of loading
+     * the data is completed.  This operation should occur on an interactive
+     * time scale.  This is an opportunity to create a cache
+     * image of the data with the current axis state, when the render
+     * operation cannot operation on an animation interactive time scale.
+     *
+     */
     public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis);
     
-    public void update(DasAxis xAxis, DasAxis yAxis) {        
+    public void update(DasAxis xAxis, DasAxis yAxis) {
         loadDataSet(xAxis,yAxis);
     }
     
