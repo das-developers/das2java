@@ -660,7 +660,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         pout.println("# xSampleWidth: "+uc.convert(xSampleWidth));
         pout.println("# X is first value, offset in seconds from Start Time.");
         pout.println("#");
-        pout.println("# File created on: "+TimeDatum.now().toString()+" UT");
+        pout.println("# File created on: "+TimeUtil.now().toString()+" UT");
         String tab= "\011";
         pout.print("yValues:"+tab);
         for (int i=0; i<y_coordinate.length; i++)

@@ -23,18 +23,18 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.datum.DasFormatter;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.DasProperties;
+import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.util.DasMath;
-
-import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
+
+import java.awt.geom.Rectangle2D.Double;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 /**
  *
@@ -52,16 +52,16 @@ public class TimeRangeLabel extends DasCanvasComponent {
         setColumn(column);
         this.dataRange= dataRange;
         
-        edu.uiowa.physics.pw.das.event.MouseModule mm= new mouseModule();
+        MouseModule mm= new mouseModule();
         mouseAdapter.addMouseModule(mm);
         mouseAdapter.setPrimaryModule(mm); // THIS SHOULD BE AUTOMATIC!!!
         df= new Formatter();
     }
     
-    private class mouseModule extends edu.uiowa.physics.pw.das.event.MouseModule {
+    private class mouseModule extends MouseModule {
     }
     
-    private static class Formatter extends edu.uiowa.physics.pw.das.datum.DasFormatter {
+    private static class Formatter extends DasFormatter {
         private boolean showSeconds=false;
         private boolean showMilli=false;
         
@@ -75,13 +75,13 @@ public class TimeRangeLabel extends DasCanvasComponent {
             double seconds;
             int jd;  // julianDay
             
-            edu.uiowa.physics.pw.das.datum.TimeDatum td= (edu.uiowa.physics.pw.das.datum.TimeDatum)tdo;
+            TimeDatum td= (TimeDatum)tdo;
             
-            if (td.getUnits()==edu.uiowa.physics.pw.das.datum.Units.mj1958) {
+            if (td.getUnits()==Units.mj1958) {
                 double mj1958= td.doubleValue(Units.mj1958);
                 seconds= mj1958 % 1 * 86400.;
                 jd= (int)Math.floor(mj1958) + 2436205;
-            } else if (td.getUnits()==edu.uiowa.physics.pw.das.datum.Units.us2000) {
+            } else if (td.getUnits()==Units.us2000) {
                 double us2000= td.doubleValue(Units.us2000);
                 seconds= DasMath.modp( us2000, 86400000000. ) / 1000000;
                 jd= (int)Math.floor( us2000 / 86400000000. ) + 2451545;
@@ -153,10 +153,10 @@ public class TimeRangeLabel extends DasCanvasComponent {
     
     public void paintComponent(Graphics graphics) {
         Graphics2D g= (Graphics2D) graphics;
-        g.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
+        g.setRenderingHints(DasProperties.getRenderingHints());
         
-        edu.uiowa.physics.pw.das.datum.Datum min= edu.uiowa.physics.pw.das.datum.Datum.create(dataRange.getMinimum(),dataRange.getUnits());
-        edu.uiowa.physics.pw.das.datum.Datum max= edu.uiowa.physics.pw.das.datum.Datum.create(dataRange.getMaximum(),dataRange.getUnits());
+        Datum min= Datum.create(dataRange.getMinimum(),dataRange.getUnits());
+        Datum max= Datum.create(dataRange.getMaximum(),dataRange.getUnits());
         
         FontMetrics fm= g.getFontMetrics();
         
@@ -175,7 +175,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
     }
     
     public void resize() {
-        Rectangle2D.Double bounds= DasDevicePosition.toRectangle(getRow(),getColumn());
+        Double bounds= DasDevicePosition.toRectangle(getRow(),getColumn());
         this.setBounds(new Rectangle((int)bounds.x-30,(int)bounds.y-30,(int)bounds.width+60,(int)bounds.height+30));
     }
     
@@ -212,7 +212,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
         DasColumn column= new DasColumn(canvas,0.1,0.9);
         
         canvas.addCanvasComponent(DasPlot.createDummyPlot(row,column));
-        DataRange dataRange= new DataRange(null,edu.uiowa.physics.pw.das.datum.TimeDatum.create("1998-01-01"),edu.uiowa.physics.pw.das.datum.TimeDatum.create("1999-01-01"),false);
+        DataRange dataRange= new DataRange(null,TimeUtil.create("1998-01-01"),TimeUtil.create("1999-01-01"),false);
         canvas.addCanvasComponent(new TimeRangeLabel(dataRange,row,column));
         
         panel.setLayout(new BorderLayout());

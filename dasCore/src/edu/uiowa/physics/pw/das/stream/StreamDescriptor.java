@@ -24,8 +24,7 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import org.apache.xml.serialize.*;
 import org.w3c.dom.Document;
@@ -62,11 +61,11 @@ public class StreamDescriptor {
     }
     
     public Datum getStartTime() {
-        return TimeDatum.create(getAttribute("startTime"));
+        return TimeUtil.create(getAttribute("startTime"));
     }
     
     public Datum getEndTime() {
-        return TimeDatum.create(getAttribute("endTime"));
+        return TimeUtil.create(getAttribute("endTime"));
     }
     
     public boolean isCompressed() {

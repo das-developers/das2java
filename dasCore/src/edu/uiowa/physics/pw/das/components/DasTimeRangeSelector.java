@@ -28,14 +28,20 @@ package edu.uiowa.physics.pw.das.components;
  * @author  jbf
  */
 import edu.uiowa.physics.pw.das.datum.TimeDatum;
+import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
+import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
 import edu.uiowa.physics.pw.das.util.DasDate;
-
-import javax.swing.*;
+import edu.uiowa.physics.pw.das.util.DasDie;
 import java.awt.*;
-import java.awt.event.ActionListener;
 
-public class DasTimeRangeSelector extends javax.swing.JPanel implements ActionListener, edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener {
+import javax.swing.event.EventListenerList;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+
+public class DasTimeRangeSelector extends JPanel implements ActionListener, TimeRangeSelectionListener {
     
     private DasDate startTime = null;
     private DasDate endTime = null;
@@ -44,7 +50,7 @@ public class DasTimeRangeSelector extends javax.swing.JPanel implements ActionLi
     JTextField idStop= null;
     
     /** Utility field used by event firing mechanism. */
-    private javax.swing.event.EventListenerList listenerList =  null;
+    private EventListenerList listenerList =  null;
     
     /** Creates a new instance of DasTimeRangeSelector */
     public DasTimeRangeSelector() {
@@ -140,35 +146,35 @@ public class DasTimeRangeSelector extends javax.swing.JPanel implements ActionLi
         return s1.compareTo(startTime) <= 0 && endTime.compareTo(s2) <= 0;
     }
     
-    public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+    public void actionPerformed(ActionEvent actionEvent) {
         String command= actionEvent.getActionCommand();
         if (command.equals("previous")) {
             double twidth= getEndTime().subtract(getStartTime());
             setStartTime(getStartTime().subtract(twidth));
             setEndTime(getEndTime().subtract(twidth));
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,edu.uiowa.physics.pw.das.datum.TimeDatum.create(startTime),edu.uiowa.physics.pw.das.datum.TimeDatum.create(endTime)));
+            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
         } else if (command.equals("next")) {
             double twidth= getEndTime().subtract(getStartTime());
             setStartTime(getStartTime().add(twidth));
             setEndTime(getEndTime().add(twidth));
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,edu.uiowa.physics.pw.das.datum.TimeDatum.create(startTime),edu.uiowa.physics.pw.das.datum.TimeDatum.create(endTime)));
+            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
         } else if (command.equals("startTime")) {
             setStartTime(getStartTime());
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,edu.uiowa.physics.pw.das.datum.TimeDatum.create(startTime),edu.uiowa.physics.pw.das.datum.TimeDatum.create(endTime)));
+            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
         } else if (command.equals("endTime")) {
             setEndTime(getEndTime());
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,edu.uiowa.physics.pw.das.datum.TimeDatum.create(startTime),edu.uiowa.physics.pw.das.datum.TimeDatum.create(endTime)));
+            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
         }
     }
     
     TimeRangeSelectionEvent lastEventProcessed=null;
     public void TimeRangeSelected(TimeRangeSelectionEvent e) {
         if (false) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("received event");
+            DasDie.println("received event");
             Graphics2D g= (Graphics2D)getGraphics();
             g.setColor(new Color(0,255,255,200));
             Rectangle dirty= new Rectangle(0,0,getWidth(),getHeight());
@@ -187,18 +193,18 @@ public class DasTimeRangeSelector extends javax.swing.JPanel implements ActionLi
     /** Registers TimeRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addTimeRangeSelectionListener(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener listener) {
+    public synchronized void addTimeRangeSelectionListener(TimeRangeSelectionListener listener) {
         if (listenerList == null ) {
-            listenerList = new javax.swing.event.EventListenerList();
+            listenerList = new EventListenerList();
         }
-        listenerList.add(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class, listener);
+        listenerList.add(TimeRangeSelectionListener.class, listener);
     }
     
     /** Removes TimeRangeSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeTimeRangeSelectionListener(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener listener) {
-        listenerList.remove(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class, listener);
+    public synchronized void removeTimeRangeSelectionListener(TimeRangeSelectionListener listener) {
+        listenerList.remove(TimeRangeSelectionListener.class, listener);
     }
     
     /** Notifies all registered listeners about the event.
@@ -207,7 +213,7 @@ public class DasTimeRangeSelector extends javax.swing.JPanel implements ActionLi
      */
     private void fireTimeRangeSelectionListenerTimeRangeSelected(TimeRangeSelectionEvent event) {
         if (false) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("firing event");
+            DasDie.println("firing event");
             Graphics2D g= (Graphics2D)getGraphics();
             g.setColor(new Color(255,255,0,200));
             Rectangle dirty= new Rectangle(0,0,getWidth(),getHeight());
@@ -218,8 +224,8 @@ public class DasTimeRangeSelector extends javax.swing.JPanel implements ActionLi
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
-            if (listeners[i]==edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).TimeRangeSelected(event);
+            if (listeners[i]==TimeRangeSelectionListener.class) {
+                ((TimeRangeSelectionListener)listeners[i+1]).TimeRangeSelected(event);
             }
         }
     }

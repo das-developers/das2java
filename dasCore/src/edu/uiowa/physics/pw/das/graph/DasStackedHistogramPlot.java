@@ -34,6 +34,7 @@ import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.*;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
@@ -294,7 +295,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             
             int littleRowHeight= (int)littleRow.getHeight();
             double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
-            double dd= TimeDatum.create("2003-7-12").doubleValue((getXAxis().getUnits()));
+            double dd= TimeUtil.create("2003-7-12").doubleValue((getXAxis().getUnits()));
             int ibinMax= 0;
             for (int ibin=0; ibin<data.length; ibin++) {
                 double x0= (int)getXAxis().transform(binStarts[ibin],xbins.getUnits());

@@ -39,7 +39,7 @@ public class DasFormatter implements Cloneable {
         nf= new DecimalFormat();
     }
     
-    private DasFormatter(DecimalFormat nf) {
+    public DasFormatter(DecimalFormat nf) {
         this.nf= nf;
     }
     

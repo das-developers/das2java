@@ -26,9 +26,7 @@ package edu.uiowa.physics.pw.das.stream;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.client.NoSuchDataSetException;
 import edu.uiowa.physics.pw.das.client.StandardDataStreamSource;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -360,7 +358,7 @@ public class MultiPlanarDataSet {
         try {
             XTaggedYScanDataSetDescriptor dsd= (XTaggedYScanDataSetDescriptor)DataSetDescriptor.create("http://www-pw.physics.uiowa.edu/das/dasServerTest1?das2/demo/sa-4s-sd_jbf");
             StandardDataStreamSource sds= dsd.getStandardDataStreamSource();
-            InputStream in= sds.getReducedInputStream(dsd,null,TimeDatum.create("1979-3-1"), TimeDatum.create("1979-3-2"), Datum.create(120.,Units.seconds));
+            InputStream in= sds.getReducedInputStream(dsd,null,TimeUtil.create("1979-3-1"), TimeUtil.create("1979-3-2"), Datum.create(120.,Units.seconds));
             MultiPlanarDataSet mpds= new MultiPlanarDataSet();
             mpds.read(in);                       
             XTaggedYScanDataSet ds= (XTaggedYScanDataSet)mpds.getPrimaryDataSet();
