@@ -176,9 +176,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         if ( dsd instanceof ConstantDataSetDescriptor ) {
             try {
-                ds = null;
                 ds= dsd.getDataSet( null, null, null, null );
                 updatePlotImage(xAxis,yAxis, progressPanel);
+                return;
             } catch ( DasException exception ) {
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                     lastException= exception;
@@ -186,105 +186,106 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 }
                 DasExceptionHandler.handle(exception);
             }
-        }
-        
-        lastException= null;
-        
-        final DasPlot parent= getParent();
-        final Cursor cursor0= null;
-        if (parent != null) {
-            parent.getCursor();
-            parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        }
-        
-        if (parent != null) {
-            ((DasCanvas)parent.getParent()).lockDisplay(this);
-        }
-        
-        Datum resolution;
-        Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-        
-        double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-        resolution =  dataRange1.divide(deviceRange);
-        
-        if ( deviceRange==0.0 ) {
-            // this conidition occurs sometimes at startup, it's not known why
-            return;
-        }
-        
-        if (progressPanel == null) {
-            progressPanel = new DasProgressPanel("Loading data set");
-            ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
+
         } else {
-            progressPanel.setLabel("Loading data set" );
-        }
-        progressPanel.cancel();
-        progressPanel.setSize(progressPanel.getPreferredSize());
-        
-        int x= xAxis.getColumn().getDMiddle();
-        int y= xAxis.getRow().getDMiddle();
-        
-        progressPanel.setLocation( x - progressPanel.getWidth()/2,
-        y - progressPanel.getHeight()/2 );
-        
-        DataRequestor requestor = new DataRequestor() {
-            public void exception(Exception exception) {
-                try {
-                    if (!(exception instanceof InterruptedIOException) && !(exception instanceof CancelledOperationException)) {
-                        if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
-                            lastException= exception;
-                        }
-                        if ( ! ( exception instanceof NoDataInIntervalException ) ) {                            
-                            DasExceptionHandler.handle(exception);
-                        }
-                        
-                    }
-                }
-                finally {
-                    finished(null);
-                }
+            
+            lastException= null;
+            
+            final DasPlot parent= getParent();
+            final Cursor cursor0= null;
+            if (parent != null) {
+                parent.getCursor();
+                parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
             }
-            public void finished(DataSet dsFinished) {
-                try {
-                    if ( parent != null) {
-                        parent.setCursor(cursor0);
-                    }
-                    ds= dsFinished;
-                    progressPanel.setLabel("Rebinning data set");
-                    updatePlotImage(xAxis,yAxis, progressPanel);
-                    if ( parent!= null) {
-                        ((DasCanvas)parent.getParent()).freeDisplay(this);
-                    }
-                }
-                catch (DasException de) {
-                    ds = null;
-                    lastException = de;
-                }
-                catch (RuntimeException e) {
-                    ds = null;
-                    throw e;
-                }
-                finally {
-                    progressPanel.setVisible(false);
-                }
+            
+            if (parent != null) {
+                ((DasCanvas)parent.getParent()).lockDisplay(this);
             }
-        };
-        if (drt == null) {
-            drt = new DataRequestThread();
+            
+            Datum resolution;
+            Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
+            
+            double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
+            resolution =  dataRange1.divide(deviceRange);
+            
+            if ( deviceRange==0.0 ) {
+                // this conidition occurs sometimes at startup, it's not known why
+                return;
+            }
+            
+            if (progressPanel == null) {
+                progressPanel = new DasProgressPanel("Loading data set");
+                ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
+            } else {
+                progressPanel.setLabel("Loading data set" );
+            }
+            progressPanel.cancel();
+            progressPanel.setSize(progressPanel.getPreferredSize());
+            
+            int x= xAxis.getColumn().getDMiddle();
+            int y= xAxis.getRow().getDMiddle();
+            
+            progressPanel.setLocation( x - progressPanel.getWidth()/2,
+            y - progressPanel.getHeight()/2 );
+            
+            DataRequestor requestor = new DataRequestor() {
+                public void exception(Exception exception) {
+                    try {
+                        if (!(exception instanceof InterruptedIOException) && !(exception instanceof CancelledOperationException)) {
+                            if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
+                                lastException= exception;
+                            }
+                            if ( ! ( exception instanceof NoDataInIntervalException ) ) {
+                                DasExceptionHandler.handle(exception);
+                            }
+                            
+                        }
+                    }
+                    finally {
+                        finished(null);
+                    }
+                }
+                public void finished(DataSet dsFinished) {
+                    try {
+                        if ( parent != null) {
+                            parent.setCursor(cursor0);
+                        }
+                        ds= dsFinished;
+                        progressPanel.setLabel("Rebinning data set");
+                        updatePlotImage(xAxis,yAxis, progressPanel);
+                        if ( parent!= null) {
+                            ((DasCanvas)parent.getParent()).freeDisplay(this);
+                        }
+                    }
+                    catch (DasException de) {
+                        ds = null;
+                        lastException = de;
+                    }
+                    catch (RuntimeException e) {
+                        ds = null;
+                        throw e;
+                    }
+                    finally {
+                        progressPanel.setVisible(false);
+                    }
+                }
+            };
+            if (drt == null) {
+                drt = new DataRequestThread();
+            }
+            try {
+                progressPanel.setLabel("Loading Data Set" );
+                drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
+                //This just gives the user something pretty to look at while data is loading.
+                updatePlotImage(xAxis, yAxis, null);
+            }
+            catch (DasException de) {
+                //Do nothing, whatever is displayed will be replaced.
+            }
+            catch (InterruptedException ie) {
+                DasExceptionHandler.handle(ie);
+            }
         }
-        try {
-            progressPanel.setLabel("Loading Data Set" );
-            drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
-            //This just gives the user something pretty to look at while data is loading.
-            updatePlotImage(xAxis, yAxis, null);
-        }
-        catch (DasException de) {
-            //Do nothing, whatever is displayed will be replaced.
-        }
-        catch (InterruptedException ie) {
-            DasExceptionHandler.handle(ie);
-        }
-        
     }
     
     /** updatePlotImage is called once the expensive operation of loading

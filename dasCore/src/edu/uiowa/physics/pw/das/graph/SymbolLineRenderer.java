@@ -66,7 +66,7 @@ public class SymbolLineRenderer extends Renderer {
         long timer0= System.currentTimeMillis();                
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
-        if (dataSet == null || dataSet.getXLength() == 0) {
+        if (dataSet == null || dataSet.getXLength() == 0) {            
             return;
         }
         
