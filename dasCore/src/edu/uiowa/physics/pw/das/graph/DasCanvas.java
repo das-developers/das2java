@@ -56,6 +56,7 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import javax.xml.parsers.*;
@@ -242,9 +243,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     private boolean editable;
     
+    private int printing = 0;
+    
     List devicePositionList = new ArrayList();
     
     edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
+    
+    
+    /** The set of Threads that are currently printing this canvas.
+     * This set is used to determine of certain operations that are only
+     * appropriate in printing situations should occur.
+     */
+    private Set printingThreads;
     
     /** Creates a new instance of DasCanvas
      * TODO
@@ -373,6 +383,30 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     protected void paintComponent(Graphics g) {
         g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(getForeground());
+
+        if (isPrintingThread()) {
+            int width, height;
+            Date now;
+            SimpleDateFormat dateFormat;
+            Font font, oldFont;
+            FontMetrics metrics;
+            String s;
+            
+            now = new Date();
+            dateFormat = new SimpleDateFormat("'UIOWA 'yyyyMMdd");
+            s = dateFormat.format(now);
+
+            oldFont = g.getFont();
+            font = oldFont.deriveFont((float)oldFont.getSize() / 2);
+            metrics = g.getFontMetrics(font);
+            width = metrics.stringWidth(s);
+            height = metrics.getHeight();
+
+            g.setFont(font);
+            g.drawString(s, getWidth() - width - 2 * height, getHeight() - 2 * height);
+            g.setFont(oldFont);
+        }
     }
     
     /** TODO
@@ -469,6 +503,31 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         public void removeLayoutComponent(Component comp){}
     }
     
+    /** Returns true if the current thread is registered as thread is
+     * printing this component.
+     */
+    protected final boolean isPrintingThread() {
+        synchronized (this) {
+            return printingThreads == null ? false : printingThreads.contains(Thread.currentThread());
+        }
+    }
+    
+    public void print(Graphics g) {
+        synchronized(this) {
+            if (printingThreads == null) {
+                printingThreads = new HashSet();
+            }
+            printingThreads.add(Thread.currentThread());
+        }
+        try {
+            super.print(g);
+        }
+        finally {
+            synchronized(this) {
+                printingThreads.remove(Thread.currentThread());
+            }
+        }
+    }
     
     /** Returns an instance of <code>java.awt.print.Printable</code> that can
      * be used to render this canvas to a printer.  The current implementation
