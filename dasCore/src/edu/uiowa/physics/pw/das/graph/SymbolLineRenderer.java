@@ -26,6 +26,7 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -130,7 +131,7 @@ public class SymbolLineRenderer extends Renderer {
         lastUpdateMillis= milli;
     }
     
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis) {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
     }
     
     private void refreshImage() {

@@ -23,10 +23,11 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 
@@ -156,6 +157,8 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             progressPanel = new DasProgressPanel();
             ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
         }
+        progressPanel.setLabel("Loading data set");
+        progressPanel.cancel();
         progressPanel.setSize(progressPanel.getPreferredSize());
         
         int x= xAxis.getColumn().getDMiddle();
@@ -165,28 +168,33 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         y - progressPanel.getHeight()/2 );
         DataRequestor requestor = new DataRequestor() {
             public void exception(Exception exception) {
-                if (!(exception instanceof InterruptedIOException)) {
-                    if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
-                        lastException= exception;
-                        exception.printStackTrace();
-                        finished(null);
-                    } else {
+                try {
+                    if (!(exception instanceof InterruptedIOException) && !(exception instanceof CancelledOperationException)) {
+                        if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
+                            lastException= exception;
+                        }
                         DasExceptionHandler.handle(exception);
-                        finished(null);
                     }
+                }
+                finally {
+                    finished(null);
                 }
             }
             public void finished(DataSet dsFinished) {
-                progressPanel.setVisible(false);
-                if ( parent != null) {
-                    parent.setCursor(cursor0);
+                try {
+                    if ( parent != null) {
+                        parent.setCursor(cursor0);
+                    }
+                    ds= dsFinished;
+                    progressPanel.setLabel("Rebinning data set");
+                    updatePlotImage(xAxis,yAxis, progressPanel);
+                    if ( parent!= null) {
+                        ((DasCanvas)parent.getParent()).freeDisplay(this);
+                    }
                 }
-                ds= dsFinished;
-                updatePlotImage(xAxis,yAxis);
-                if ( parent!= null) {
-                    ((DasCanvas)parent.getParent()).freeDisplay(this);
+                finally {
+                        progressPanel.setVisible(false);
                 }
-                edu.uiowa.physics.pw.das.util.DasDie.println("I GOT HERE WITH: " + ds);
             }
         };
         if (drt == null) {
@@ -208,7 +216,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
      * operation cannot operation on an animation interactive time scale.
      *
      */
-    public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis);
+    public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor);
     
     public void update(DasAxis xAxis, DasAxis yAxis) {
         loadDataSet(xAxis,yAxis);

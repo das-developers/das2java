@@ -35,6 +35,7 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.components.*;
+import edu.uiowa.physics.pw.das.util.*;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,6 +49,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private DasColorBar colorBar;
     Image plotImage;
+    DataSet rebinDataSet;
     
     protected class RebinListener implements java.beans.PropertyChangeListener {
         public void propertyChange(java.beans.PropertyChangeEvent e) {
@@ -148,9 +150,21 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
     
-    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis ) {
+    int count = 0;
+    
+    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) {
         
         TableDataSet rebinData;
+        
+        if (monitor != null) {
+            if (monitor.isCancelled()) {
+                return;
+            }
+            else {
+                monitor.setTaskSize(-1);
+                monitor.started();
+            }
+        }
         
         int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
         int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
@@ -187,7 +201,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             
             rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
             
-            
         }
                 
         //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
@@ -202,24 +215,24 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             }
         }
         
+        if (monitor != null) {
+            if (monitor.isCancelled()) {
+                return;
+            }
+            else {
+                monitor.finished();
+            }
+        }
+
         MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
         plotImage = getParent().createImage(mis);
         getParent().repaint();
+        rebinDataSet = rebinData;
     }
     
-    public void setDataSetID(String id) throws edu.uiowa.physics.pw.das.DasException {
-        if (id == null) throw new NullPointerException("Null dataPath not allowed");
-        if (id.equals("")) {
-            setDataSetDescriptor(null);
-            return;
-        }
-        DataSetDescriptor dsd = DataSetDescriptor.create(id);
-        /* TODO: We need some other sort of test here.
-        if (!(dsd instanceof XTaggedYScanDataSetDescriptor)) {
-            throw new DataSetDescriptorNotAvailableException(id + " does not refer to an x-tagged-y-scan data set");
-        }
-         */
-        setDataSetDescriptor(dsd);
+    public void setDataSetDescriptor(DataSetDescriptor dsd) {
+        super.setDataSetDescriptor(dsd);
+        rebinDataSet = null;
     }
     
     protected void installRenderer() {
@@ -335,6 +348,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         element.appendChild(zAxisChild);
         
         return element;
+    }
+    
+    public DataSet getDataSet() {
+        if (rebinDataSet == null) {
+            return super.getDataSet();
+        }
+        else {
+            return rebinDataSet;
+        }
     }
     
     /** Getter for property rebinner.

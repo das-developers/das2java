@@ -335,4 +335,7 @@ public class TickCurveRenderer extends Renderer {
         }        
     }
     
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
+    }
+    
 }
