@@ -139,7 +139,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         Object oldValue = this.xAxis;
         Container parent = getParent();
         if (this.xAxis != null) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("setXAxis upsets the dmia");
+            DasProperties.getLogger().fine("setXAxis upsets the dmia");
             if (parent != null) parent.remove(this.xAxis);
             xAxis.removePropertyChangeListener("minimum", rebinListener);
             xAxis.removePropertyChangeListener("maximum", rebinListener);
@@ -162,7 +162,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         Object oldValue = this.yAxis;
         Container parent = getParent();
         if (this.yAxis != null) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("setYAxis upsets the dmia");
+            DasProperties.getLogger().fine("setYAxis upsets the dmia");
             if (parent != null) parent.remove(this.yAxis);
             yAxis.removePropertyChangeListener("minimum", rebinListener);
             yAxis.removePropertyChangeListener("maximum", rebinListener);
