@@ -112,6 +112,7 @@ public abstract class Units {
         unitsMap.put("days", Units.days);
         unitsMap.put("microseconds", Units.microseconds);
         unitsMap.put("", Units.dimensionless);
+        unitsMap.put("dB", Units.dB);
     }
     
     private String id;
