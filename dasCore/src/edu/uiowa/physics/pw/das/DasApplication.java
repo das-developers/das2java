@@ -23,6 +23,8 @@
 
 package edu.uiowa.physics.pw.das;
 
+import java.util.logging.*;
+
 /**
  *
  * @author  Edward West
@@ -40,7 +42,7 @@ public class DasApplication {
     
     /** Creates a new instance of DasApplication */
     private DasApplication() {
-        nameContext = new NameContext();
+        nameContext = new NameContext();        
     }
     
     public NameContext getNameContext() {
@@ -50,5 +52,64 @@ public class DasApplication {
     public static DasApplication getDefaultApplication() {
         return DEFAULT;
     }
+        
+    private boolean headless= false;
     
+    private static boolean isApplet() {
+        return false;
+    }
+        
+    private static boolean isX11() {
+        String osName= System.getProperty( "os.name" );
+        return "SunOS".equals( osName ) 
+         || "Linux".equals( osName );
+    }
+    
+    private static boolean headAvailable() {
+        return ( System.getProperty( "awt.toolkit" ) != null );
+        /*
+               //boolean headAvailable= !java.awt.GraphicsEnvironment.isHeadless();       
+        boolean result= false;
+        if ( isApplet() ) result= true;
+        getDefaultApplication().getLogger().info( System.getProperty( "os.name" ) );
+        String osName= System.getProperty( "os.name" );
+        if ( "Windows".equals( osName ) ) {
+            result= true;
+        } else if ( "Windows XP".equals( osName ) ) {
+            result= true;
+        } else if ( isX11() ) {
+            String DISPLAY= System.getProperty( "DISPLAY" );
+            getDefaultApplication().getLogger().info( System.getProperty( "DISPLAY" ) );
+            if ( "".equals(DISPLAY) ) {
+                result= false;
+            } else {
+                result= true;
+            }                
+        }
+        return result;
+         */
+    }
+    
+    public boolean isHeadless() {        
+        if ( !headAvailable() && !"true".equals(System.getProperty("headless")) ) {
+            getLogger().info("setting headless to true");
+            setHeadless( true );
+        }
+        return "true".equals(System.getProperty("headless"));
+    }
+    
+    public void setHeadless( boolean headless ) {
+        if ( headless ) {
+            System.setProperty("headless","true");
+        } else {
+            if ( ! headAvailable() ) {
+                throw new IllegalArgumentException( "attempt to unset headless when environment is headless." );
+            }                 
+            System.setProperty("headless","false");
+        }
+    }
+    
+    public Logger getLogger() {
+        return DasProperties.getLogger();
+    }
 }
