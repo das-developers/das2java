@@ -73,7 +73,17 @@ public class VectorUtil {
         }
         pout.println(" />");
         
-        pout.println("<y type=\"asciiTab10\" yUnits=\""+vds.getYUnits()+"\" />");
+        List planeIDs;
+        if ( vds.getProperty("plane-list")!=null ) {
+            planeIDs= (List)vds.getProperty("plane-list");
+        } else {
+            planeIDs= new ArrayList();
+            planeIDs.add("");
+        }
+        
+        for ( int i=0; i<planeIDs.size(); i++ ) {
+            pout.println("<y type=\"asciiTab10\" name=\""+planeIDs.get(i)+"\" yUnits=\""+vds.getYUnits()+"\" />");
+        }
         pout.print("</packet>");
                                 
         NumberFormat xnf= new DecimalFormat("00000.000");
@@ -88,7 +98,16 @@ public class VectorUtil {
                 x= vds.getXTagDouble(i,vds.getXUnits());
             }
             pout.print(xnf.format(x)+" ");
-            pout.print(FixedWidthFormatter.format(ynf.format(vds.getDouble(i,vds.getYUnits())),9)+"\n");    
+            for ( int iplane=0; iplane<planeIDs.size(); iplane++ ) {
+                VectorDataSet vds1= (VectorDataSet)vds.getPlanarView((String)planeIDs.get(iplane));
+                pout.print(FixedWidthFormatter.format(ynf.format(vds1.getDouble(i,vds.getYUnits())),9));    
+                if ( iplane==planeIDs.size()-1) {
+                    pout.print("\n");                    
+                } else {
+                    pout.print(" ");
+                }
+            }
+            
         }
         
         pout.close();
