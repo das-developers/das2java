@@ -95,7 +95,7 @@ public class TableDataSetBuilder {
         insertYScan(x, y, z, "");
     }
     
-    public void insertYScan(double x, double[] y, double[] z, String planeID) {
+    public void insertYScan(double x, double[] y, double[] z, String planeID) {        
         int insertionIndex = xTags.indexOf(x);
         if (planeID == null) {
             planeID = "";
@@ -112,9 +112,6 @@ public class TableDataSetBuilder {
         }
         xTags.add(x);
         MultiYScan scan = new MultiYScan();
-        if (z.length < y.length) {
-            System.out.println("z length (" + z.length + ") is less that y length(" + y.length + ")");
-        }
         scan.put(planeID, (double[])z.clone());
         scan.setYTags(y);
         zValues.add(insertionIndex, scan);
@@ -132,12 +129,6 @@ public class TableDataSetBuilder {
                 yCoordinates[j] = tds.getYTagDouble(table, j, yUnits);
             }
             double[] scan = new double[tds.getYLength(table)];
-            for (int i = tds.tableStart(table); i < tds.tableEnd(table); i++) {
-                for (int j = 0; j < scan.length; j++) {
-                    scan[j] = tds.getDouble(i, j, zUnits);
-                }
-                insertYScan(tds.getXTagDouble(i, xUnits), yCoordinates, scan);
-            }
         }
         for (Iterator i = planeIDs.iterator(); i.hasNext();) {
             String planeID = (String)i.next();
