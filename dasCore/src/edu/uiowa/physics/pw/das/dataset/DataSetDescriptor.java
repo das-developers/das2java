@@ -76,7 +76,7 @@ public abstract class DataSetDescriptor {
         defaultCaching &&
         cacheTag.start.le(start) &&
         cacheTag.end.ge(end) &&
-        cacheTag.resolution.lt(resolution) ) {
+        cacheTag.resolution.le(resolution) ) {
             return cacheDataSet;
         } else {
             cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
