@@ -23,8 +23,12 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
+import edu.uiowa.physics.pw.das.DasApplication;
+import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.*;
 import java.io.*;
+import java.util.Collections;
+import java.util.logging.*;
 
 /**
  *
@@ -32,16 +36,25 @@ import java.io.*;
  */
 public class AverageTableRebinner implements DataSetRebinner {
     
+    private static Logger logger = DasApplication.getDefaultApplication().getLogger();
+    
     /** Creates a new instance of TableAverageRebinner */
     public AverageTableRebinner() {
     }    
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddXin, RebinDescriptor ddYin) throws IllegalArgumentException {
+    public DataSet rebin(DataSet ds, RebinDescriptor ddXin, RebinDescriptor ddYin) throws IllegalArgumentException, DasException {
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException();
         }
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
+        if (ddXin != null && tds.getXLength() > 0) {
+            double start = tds.getXTagDouble(0, ddXin.getUnits());
+            double end = tds.getXTagDouble(tds.getXLength() - 1, ddXin.getUnits());
+            if (start > ddXin.end || end < ddXin.start) {
+                throw new NoDataInIntervalException("");
+            }
+        }
         
         long timer= System.currentTimeMillis();
         
@@ -56,6 +69,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
         int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
+        
+        logger.finest("Allocating rebinData and rebinWeights: " + nx + " x " + ny);
         
         double[][] rebinData= new double[nx][ny];
         double[][] rebinWeights= new double[nx][ny];

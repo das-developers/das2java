@@ -23,12 +23,14 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
+import edu.uiowa.physics.pw.das.DasException;
+
 /**
  *
  * @author  Edward West
  */
 public interface DataSetRebinner {
     
-    DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException;
+    DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException;
     
 }
