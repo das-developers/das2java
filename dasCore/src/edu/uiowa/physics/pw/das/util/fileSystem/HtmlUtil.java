@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import java.io.*;
 import java.net.*;
+import java.text.*;
 import java.util.*;
 
 /**
@@ -18,13 +19,13 @@ public class HtmlUtil {
     
     public static boolean isDirectory( URL url ) {
         String file= url.getFile();
-	return file.charAt(file.length()-1) != '/';
+        return file.charAt(file.length()-1) != '/';
     }
-        
+    
     public static URL[] getDirectoryListing( URL url ) throws IOException {
-
+        
         String file= url.getFile();
-	if ( file.charAt(file.length()-1)!='/' ) {
+        if ( file.charAt(file.length()-1)!='/' ) {
             url= new URL( url.toString()+'/' );
         }
         
@@ -40,7 +41,7 @@ public class HtmlUtil {
         // first, read in the entire URL
         byte b[] = new byte[1000];
         int numRead = urlStream.read(b);
-        String content = new String(b, 0, numRead);
+        String content = new String(b, 0, numRead); // TODO: use StringBuffer
         while (numRead != -1) {
             numRead = urlStream.read(b);
             if (numRead != -1) {
@@ -49,7 +50,7 @@ public class HtmlUtil {
             }
         }
         urlStream.close();
-                
+        
         String lowerCaseContent = content.toLowerCase();
         
         int index = 0;
@@ -70,21 +71,40 @@ public class HtmlUtil {
                 urlLink = new URL(url, strLink);
                 strLink = urlLink.toString();
             } catch (MalformedURLException e) {
-                System.err.println("bad URL: "+urlLink);
+                System.err.println("bad URL: "+url+" "+strLink);
                 continue;
             }
             
             if ( urlLink.toString().startsWith(url.toString()) && null==urlLink.getQuery() ) {
-                 urlList.add( urlLink );
-            }           
+                urlList.add( urlLink );
+            }
             
+            /*String lowerCaseRemaining= remaining.toLowerCase();
+            int index2= lowerCaseRemaining.indexOf("</a>");
+            
+            remaining= remaining.substring(index2+4);
+            
+            st= new StringTokenizer( remaining );
+            System.out.print(""+urlLink);
+            try {
+                String dateStr= st.nextToken("\\s");                
+                Date d= DateFormat.getInstance().parse( dateStr.trim().substring(0,17) );                
+            } catch ( NoSuchElementException e ) {
+                e.printStackTrace();
+            } catch ( ParseException e ) {
+                e.printStackTrace();
+            }*/
         }
-                
+        
         return (URL[]) urlList.toArray( new URL[urlList.size()] );
     }
+    
+    public static void htmlUtilTest() throws Exception {
+        //URL[] urls= HtmlUtil.getDirectoryListing( new URL( "http://www-pw.physics.uiowa.edu/voyager/local1/DATA/" ) );
         
-    public static void htmlUtilTest() throws Exception {        
-        URL[] urls= HtmlUtil.getDirectoryListing( new URL( "http://www-pw.physics.uiowa.edu/voyager/local1/DATA/" ) );        
+        /* This one fails because of Larry's cross links */
+        URL[] urls= HtmlUtil.getDirectoryListing( new URL( "http://www-pw.physics.uiowa.edu/voyager/local2/DATA/FULL/" ) );
+        
         //URL[] urls= HtmlUtil.getDirectoryListing( new URL( "http://www.sarahandjeremy.net/~jbf" ) );
         for ( int i=0; i<urls.length; i++ ) {
             System.out.println(""+urls[i]);
