@@ -73,7 +73,13 @@ public abstract class DataSetDescriptor {
         DataSetUpdateEvent dsue;
         try {
             DataSet ds = getDataSet(start, end, resolution, monitor);
-            dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
+            if (ds == null) {
+                dsue = new DataSetUpdateEvent(DataSetDescriptor.this,
+                        new NoDataInIntervalException(start + " to " + end));
+            }
+            else {
+                dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
+            }
         }
         catch (DasException de) {
             dsue = new DataSetUpdateEvent(DataSetDescriptor.this, de);
@@ -114,9 +120,6 @@ public abstract class DataSetDescriptor {
                 return cacheDataSet;
             } catch ( DasException e ) {
                 throw e;
-            } catch ( Exception e ) {
-                DasExceptionHandler.handle(e);
-                return null;
             }
         }
     }
