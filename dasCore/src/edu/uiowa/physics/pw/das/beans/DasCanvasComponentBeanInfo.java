@@ -32,7 +32,8 @@ public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
     private static Property[] properties = {
         new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
         new Property("row", AccessLevel.ALL, "getRow", "setRow", null),
-        new Property("column", AccessLevel.ALL, "getColumn", "setColumn", null)
+        new Property("column", AccessLevel.ALL, "getColumn", "setColumn", null),
+        new Property("mouseAdapter", AccessLevel.ALL, "getDasMouseInputAdapter", "setDasMouseInputAdapter", null)
     };
     
     private static MethodDescriptor[] methods;
