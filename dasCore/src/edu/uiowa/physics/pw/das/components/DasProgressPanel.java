@@ -181,7 +181,8 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
         if (isCancelled) {
-            throw new IllegalStateException("Operation cancelled");
+            DasApplication.getDefaultApplication().getLogger().info("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
+            throw new IllegalStateException("Operation cancelled: developers: check isCancelled before calling setTaskProgress");
         }
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
         if ( elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
