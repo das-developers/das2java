@@ -34,7 +34,7 @@ public class DasMath {
     public DasMath() {
     }
     
-    public static final double log10=Math.log(10);
+    private static final double log10=Math.log(10);
     
     public static double log10(double x) {
         return Math.log(x)/log10;
@@ -191,6 +191,47 @@ public class DasMath {
         }
         
         return result;
+    }
+    
+    public static double mean( double[] A ) {        
+        double avgGuess= A[0];
+        double sum=0.;
+        
+        for ( int i=0; i<A.length; i++ ) {
+            sum+= A[i] - avgGuess;
+        }
+        
+        return sum / A.length + avgGuess;        
+    }
+    
+    public static double mode( double[] A ) {
+        double[] sorted= sort( A );
+        return A[A.length/2];
+    }
+    
+    public static double max( double[] A ) {
+        double max= A[0];
+        for ( int i=0; i<A.length; i++ ) {
+            max= ( max > A[i] ? max : A[i] );
+        }
+        return max;
+    }
+    
+    public static double min( double[] A ) {
+        double min= A[0];
+        for ( int i=0; i<A.length; i++ ) {
+            min= ( min < A[i] ? min : A[i] );
+        }
+        return min;
+    }
+
+    public static double[] sort( double[] A ) {
+        double[] copy= new double[A.length];
+        for ( int i=0; i<A.length; i++ ) {
+            copy[i]= A[i];
+        }
+        java.util.Arrays.sort( copy );
+        return copy;
     }
         
 }
