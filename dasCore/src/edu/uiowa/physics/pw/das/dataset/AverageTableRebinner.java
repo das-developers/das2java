@@ -38,9 +38,14 @@ public class AverageTableRebinner implements DataSetRebinner {
     
     private static Logger logger = DasApplication.getDefaultApplication().getLogger();
     
+    /**
+     * Holds value of property interpolate.
+     */
+    private boolean interpolate= true;
+    
     /** Creates a new instance of TableAverageRebinner */
     public AverageTableRebinner() {
-    }    
+    }
     
     public DataSet rebin(DataSet ds, RebinDescriptor ddXin, RebinDescriptor ddYin) throws IllegalArgumentException, DasException {
         if (!(ds instanceof TableDataSet)) {
@@ -60,13 +65,13 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         long timer= System.currentTimeMillis();
         
-        Units xunits= ddXin.getUnits();        
-
-                      
-        int ix0= DataSetUtil.getPreviousColumn( tds, xunits.createDatum( ddXin.binStart(0,xunits) ) );
-        int ix1= DataSetUtil.getNextColumn( tds, xunits.createDatum( ddXin.binStop( ddXin.numberOfBins()-1, xunits ) ) );        
+        Units xunits= ddXin.getUnits();
         
-        RebinDescriptor ddX= RebinDescriptor.createSubsumingRebinDescriptor( ddXin, tds.getXTagDatum(ix0), tds.getXTagDatum(ix1) );                
+        
+        int ix0= DataSetUtil.getPreviousColumn( tds, xunits.createDatum( ddXin.binStart(0,xunits) ) );
+        int ix1= DataSetUtil.getNextColumn( tds, xunits.createDatum( ddXin.binStop( ddXin.numberOfBins()-1, xunits ) ) );
+        
+        RebinDescriptor ddX= RebinDescriptor.createSubsumingRebinDescriptor( ddXin, tds.getXTagDatum(ix0), tds.getXTagDatum(ix1) );
         Datum yMin= TableUtil.getSmallestYTag(tds);
         Datum yMax= TableUtil.getLargestYTag(tds);
         RebinDescriptor ddY= RebinDescriptor.createSubsumingRebinDescriptor( ddYin, yMin, yMax );
@@ -107,23 +112,28 @@ public class AverageTableRebinner implements DataSetRebinner {
             xTagWidth= DataSetUtil.guessXTagWidth(tds);
         }
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-        if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
-        if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
-
+        
+        if ( this.interpolate ) {
+            if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
+            if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
+        } else {
+            enlargePixels( rebinData, rebinWeights );
+        }
+        
         double[][][] zValues = {rebinData,rebinWeights};
-
+        
         int[] tableOffsets = {0};
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", "weights"};
-
+        
         /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
-         * new dataset. 
+         * new dataset.
          */
         Units resultXUnits= ddX==null ? tds.getXUnits() : ddX.getUnits();
-        Units resultYUnits= ddY==null ? tds.getYUnits() : ddY.getUnits();        
+        Units resultYUnits= ddY==null ? tds.getYUnits() : ddY.getUnits();
         TableDataSet result= new DefaultTableDataSet(xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
         
-        int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits); 
+        int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits);
         int xlength= ddXin.numberOfBins();
         int yoffset;
         int ylength;
@@ -172,16 +182,16 @@ public class AverageTableRebinner implements DataSetRebinner {
                 else {
                     ibinx = i;
                 }
-                if (ibinx>=0 && ibinx<nx) {                    
+                if (ibinx>=0 && ibinx<nx) {
                     for (int j = 0; j < tds.getYLength(table); j++) {
-                            if (ibiny[j] >= 0 && ibiny[j] < ny) {
+                        if (ibiny[j] >= 0 && ibiny[j] < ny) {
                             if (weights != null) {
                                 double w = weights.getDouble(i, j, Units.dimensionless);
                                 rebinData[ibinx][ibiny[j]] += tds.getDouble(i, j, tds.getZUnits()) * w;
                                 rebinWeights[ibinx][ibiny[j]] += w;
                             }
                             else {
-                                Units zUnits= tds.getZUnits(); 
+                                Units zUnits= tds.getZUnits();
                                 double z= tds.getDouble(i,j,zUnits);
                                 double w= zUnits.isFill(z) ? 0. : 1. ;
                                 rebinData[ibinx][ibiny[j]] += z * w;
@@ -244,7 +254,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             for (int i = 0; i < nx; i++) {
                 
                 if ((i1[i] != -1) && (xTags[i2[i]] - xTags[i1[i]]) < xSampleWidth * 1.5 ) {
-                    a2 = (float)((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));                    
+                    a2 = (float)((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));
                     a1 = 1.f - a2;
                     data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                     weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
@@ -309,6 +319,56 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
         }
+    }
+    
+    private void enlargePixels( double[][] rebinData, double[][] rebinWeights ) {
+        for ( int ii=0; ii<rebinData.length-1; ii++ ) {
+            for ( int jj=0; jj<rebinData[0].length; jj++ ) {
+                if ( rebinWeights[ii][jj]==0 ) {
+                    rebinData[ii][jj]=rebinData[ii+1][jj];
+                    rebinWeights[ii][jj]=rebinWeights[ii+1][jj];
+                }
+            }
+        }
+        for ( int ii=rebinData.length-1; ii>0; ii-- ) {
+            for ( int jj=0; jj<rebinData[0].length; jj++ ) {
+                if ( rebinWeights[ii][jj]==0 ) {
+                    rebinData[ii][jj]=rebinData[ii-1][jj];
+                    rebinWeights[ii][jj]=rebinWeights[ii-1][jj];
+                }
+            }
+        }
+        for ( int jj=0; jj<rebinData[0].length-1; jj++ ) {
+            for ( int ii=0; ii<rebinData.length; ii++ ) {
+                if ( rebinWeights[ii][jj]==0 ) {
+                    rebinData[ii][jj]=rebinData[ii][jj+1];
+                    rebinWeights[ii][jj]=rebinWeights[ii][jj+1];
+                }
+            }
+        }
+        for ( int jj=rebinData[0].length-1; jj>0; jj-- ) {
+            for ( int ii=0; ii<rebinData.length; ii++ ) {
+                if ( rebinWeights[ii][jj]==0 ) {
+                    rebinData[ii][jj]=rebinData[ii][jj-1];
+                    rebinWeights[ii][jj]=rebinWeights[ii][jj-1];
+                }
+            }
+        }
+    }
+    /**
+     * Getter for property interpolate.
+     * @return Value of property interpolate.
+     */
+    public boolean isInterpolate() {
+        return this.interpolate;
+    }
+    
+    /**
+     * Setter for property interpolate.
+     * @param interpolate New value of property interpolate.
+     */
+    public void setInterpolate(boolean interpolate) {
+        this.interpolate = interpolate;
     }
     
 }
