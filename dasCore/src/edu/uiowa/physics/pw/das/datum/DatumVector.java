@@ -148,6 +148,18 @@ public final class DatumVector {
         return new DatumVector( dd, 0, dd.length, newUnits );
     }
     
+    public DatumVector multiply( double d ) {
+        double[] dd= new double[getLength()];        
+        if ( units instanceof LocationUnits ) {
+            throw new IllegalArgumentException("can't multiply a LocationUnits");            
+        } else {            
+            for ( int i=0; i<dd.length; i++ ) {
+                dd[i]= get(i).multiply(d).doubleValue(units);
+            }
+        }
+        return new DatumVector( dd, 0, dd.length, units );
+    }
+    
     public String toString() {
         StringBuffer result= new StringBuffer();
         result.append("[");
