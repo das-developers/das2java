@@ -306,11 +306,11 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                     int x1;
                     x1=x0+1; // 1 pixel wide
                     double zz= data.getDouble( ibin, j, data.getZUnits() );
-                    if ( !data.getZUnits().isFill(zz) ) {
+                    if ( !( data.getZUnits().isFill(zz) || Double.isNaN(zz) ) ) {
                         int yAvg= (int)zAxisComponent.transform( zz, data.getZUnits() );
                         yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
                         int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
-                        yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
+                        //yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
                             double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
                             if (peakValue <= zAxisMax) {
@@ -325,7 +325,14 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                                 }
                             }
                         }
-                        g.fillRect(x0,yAvg,(x1-x0),yHeight);
+                        // TODO: where are the NaN's coming from ?
+                       // if ( !Double.isNaN(zz) ) {
+                            g.fillRect(x0,yAvg,(x1-x0),yHeight);
+                       // } else {
+                         //   System.out.println("yHeight="+yHeight+" zz="+zz);
+                           // System.out.println("peak="+peaks.getDouble(ibin, j, peaks.getZUnits()));
+                       // }
+                        
                     }
                 }
             }
