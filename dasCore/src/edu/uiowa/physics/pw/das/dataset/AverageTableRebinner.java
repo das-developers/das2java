@@ -29,10 +29,10 @@ import edu.uiowa.physics.pw.das.datum.*;
  *
  * @author  Edward West
  */
-public class TableAverageRebinner implements DataSetRebinner {
+public class AverageTableRebinner implements DataSetRebinner {
     
     /** Creates a new instance of TableAverageRebinner */
-    public TableAverageRebinner() {
+    public AverageTableRebinner() {
     }
     
     public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {

@@ -29,10 +29,10 @@ import edu.uiowa.physics.pw.das.datum.*;
  *
  * @author  Edward West
  */
-public class TableAveragePeakRebinner implements DataSetRebinner {
+public class AveragePeakTableRebinner implements DataSetRebinner {
     
     /** Creates a new instance of TableAveragePeakRebinner */
-    public TableAveragePeakRebinner() {
+    public AveragePeakTableRebinner() {
     }
     
     public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
@@ -51,12 +51,12 @@ public class TableAveragePeakRebinner implements DataSetRebinner {
         double[] averageWeights= new double[nx*ny];
         double[] peakData = new double[nx*ny];
 
-        TableAverageRebinner.average(tds, weights, averageData, averageWeights, ddX, ddY);
+        AverageTableRebinner.average(tds, weights, averageData, averageWeights, ddX, ddY);
         
-        TableAverageRebinner.fillInterpolateX(averageData, averageWeights, ddX.binCenters(), Double.POSITIVE_INFINITY);
-        TableAverageRebinner.fillInterpolateY(averageData, averageWeights, ddY.binCenters(), Double.POSITIVE_INFINITY, ddY.isLog());
+        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, ddX.binCenters(), Double.POSITIVE_INFINITY);
+        AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY.binCenters(), Double.POSITIVE_INFINITY, ddY.isLog());
         
-        TablePeakRebinner.peaks(tds, peakData, ddX, ddY);
+        PeakTableRebinner.peaks(tds, peakData, ddX, ddY);
 
         double[] xTags = ddX.binCenters();
         double[][] yTags = {ddY.binCenters()};

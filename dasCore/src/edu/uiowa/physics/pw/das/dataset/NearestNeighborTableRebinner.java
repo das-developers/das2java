@@ -29,10 +29,10 @@ import edu.uiowa.physics.pw.das.datum.*;
  *
  * @author  Jeremy Faden
  */
-public class TableNearestNeighborRebinner implements DataSetRebinner {
+public class NearestNeighborTableRebinner implements DataSetRebinner {
     
     /** Creates a new instance of TableAverageRebinner */
-    public TableNearestNeighborRebinner() {
+    public NearestNeighborTableRebinner() {
     }
         
     public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
