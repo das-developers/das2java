@@ -19,7 +19,7 @@ public class TickVDescriptor {
     
     /** This constructor is to support the use when tickVDescriptor was
      * internal to DasAxis.
-     */    
+     */
     protected TickVDescriptor() {
     }
     
@@ -55,7 +55,7 @@ public class TickVDescriptor {
         return s;
     }
     
-    public static TickVDescriptor bestTickVLinear( Datum min, Datum max, int nTicksMax ) {        
+    public static TickVDescriptor bestTickVLinear( Datum min, Datum max, int nTicksMax ) {
         
         TickVDescriptor res= new TickVDescriptor();
         
@@ -127,59 +127,79 @@ public class TickVDescriptor {
         
         int stepSize= 1;
         
-        int nTicks= ( maxTick - minTick ) / stepSize + 1;        
+        int nTicks= ( maxTick - minTick ) / stepSize + 1;
         
-        /** TODO: The case where there are less than five ticks and
-         * the ticks are too close together is not handled properly
-         * Also, the minor ticks should go away befor the number of cycles
-         * is reduced.
-         */
+        double[] major;
+        double[] mantissas;
+        DatumFormatter formatter;
+        DatumFormatterFactory factory = ticks.units.getDatumFormatterFactory();
         
-        result= new double[nTicks];
-        for (int i=0; i<nTicks; i++) {
-            result[i]= DasMath.exp10(i*stepSize+minTick);
-        }
-        
-        ticks.tickV= result;
-        
-        
-        
-        if ( DasMath.log10( max / min ) >= 5 || DasMath.log10( max ) >= 5 || DasMath.log10( min ) <= -5 ) {
-            DatumFormatterFactory factory = ticks.units.getDatumFormatterFactory();
-            if (factory instanceof DefaultDatumFormatterFactory) {
-                try {
-                    ticks.datumFormatter = factory.newFormatter("0E0");
+        try {
+            if ( nTicks<2 ) {
+                if ( min >= DasMath.exp10(maxTick) ||  DasMath.exp10(maxTick) >= max ) {
+                    major= new double[] { min, (min+max)/2, max };
+                } else {
+                    major= new double[] { min, DasMath.exp10(maxTick), max };
                 }
-                catch (java.text.ParseException pe) {
-                    //If this happened then something is seriously wrong,
-                    //so respond accordingly.
-                    throw new RuntimeException(pe);
+                formatter= DatumUtil.bestFormatter( DatumVector.newDatumVector( major, ticks.units ) );
+                mantissas= new double[] { 2,3,4,5,6,7,8,9 };
+            } else  if ( nTicks<3 ) {                
+                double[] mant;
+                if ( nTicksMax>5 ) {
+                    mant= new double[] { 2,3,4,6,8 };
+                    mantissas= new double[] { 5,7,9 };
+                } else if ( nTicksMax>3 ) {
+                    mant= new double[] { 2, 5 };
+                    mantissas= new double[] { 3,4,6,7,8,9 };
+                } else {
+                    mant= new double[] { 3 };
+                    mantissas= new double[] { 2,4,5,6,7,8,9 };
                 }
+                minTick= minTick-1;
+                nTicks++;
+                major= new double[nTicks*(1+mant.length)];
+                int idx= 0;
+                for (int i=0; i<nTicks; i++) {
+                    major[idx++]= DasMath.exp10(i*stepSize+minTick);
+                    for ( int j=0; j<mant.length; j++ ) {
+                        major[idx++]= mant[j]*DasMath.exp10(i*stepSize+minTick);
+                    }
+                }                
+                formatter= factory.newFormatter("0E0");
+            } else if ( nTicks>nTicksMax ) {
+                stepSize= (int)Math.ceil( nTicks / (double)nTicksMax );
+                minTick= (int)( Math.floor( minTick / (double) stepSize ) * stepSize );
+                maxTick= (int)( Math.ceil(maxTick / (double)stepSize ) * stepSize );
+                nTicks= ( maxTick-minTick ) / stepSize + 1 ;
+                major= new double[ nTicks ] ;
+                for ( int i=0; i<nTicks; i++ ) {
+                    major[i]= DasMath.exp10( i*stepSize + minTick );
+                }
+                mantissas= new double[0];
+                formatter= factory.newFormatter("0E0");
+            } else {
+                major= new double[nTicks];
+                for (int i=0; i<nTicks; i++) {
+                    major[i]= DasMath.exp10(i*stepSize+minTick);
+                }
+                mantissas= new double[] { 2,3,4,5,6,7,8,9 };
+                formatter= factory.newFormatter("0E0");
             }
-            else {
-                ticks.datumFormatter = factory.defaultFormatter();
-            }
-        } else {
-            DatumFormatterFactory factory = ticks.units.getDatumFormatterFactory();
-            try {
-                ticks.datumFormatter = factory.newFormatter("0E0");
-            } catch ( java.text.ParseException e ) {
-                throw new RuntimeException(e);
-            }
+            
+        } catch ( java.text.ParseException e ) {
+            throw new RuntimeException(e);
         }
+        ticks.tickV= major;
+        ticks.datumFormatter= formatter;
         
-        int firstMinorTick= (int)Math.floor(DasMath.log10(min));
-        int lastMinorTick= (int)Math.floor(DasMath.log10(max));
+        int firstMinorTickCycle= (int)Math.floor(DasMath.log10(min));
+        int lastMinorTickCycle= (int)Math.floor(DasMath.log10(max));
         
         int idx=0;
-        double [] minorTickV= new double[(lastMinorTick-firstMinorTick+1)*9];
-        for ( int i=firstMinorTick; i<=lastMinorTick; i++ ) {
-            for ( int j=0; j<9; j++ ) {
-                try {
-                    minorTickV[idx++]= DasMath.exp10(i) + DasMath.exp10(i) * j;
-                } catch ( ArrayIndexOutOfBoundsException e ) {
-                    e.printStackTrace(); // does this code need to be here?
-                }
+        double [] minorTickV= new double[(lastMinorTickCycle-firstMinorTickCycle+1)*mantissas.length];
+        for ( int i=firstMinorTickCycle; i<=lastMinorTickCycle; i++ ) {
+            for ( int j=0; j<mantissas.length; j++ ) {
+                minorTickV[idx++]= DasMath.exp10(i) * mantissas[j];
             }
         }
         ticks.minorTickV= minorTickV;
@@ -190,7 +210,7 @@ public class TickVDescriptor {
             for ( int i=0; i<ticks.minorTickV.length; i++ ) majorTicks[i+ticks.tickV.length]= ticks.minorTickV[i];
         }
         
-        return ticks;                
+        return ticks;
         
     }
     
@@ -198,7 +218,7 @@ public class TickVDescriptor {
         
         Datum minute = Datum.create(60.0, Units.seconds);
         if (maxD.subtract(minD).lt(minute)) {
-            return bestTickVLinear( minD, maxD, nTicksMax );            
+            return bestTickVLinear( minD, maxD, nTicksMax );
         }
         
         TickVDescriptor res= new TickVDescriptor();
@@ -207,7 +227,7 @@ public class TickVDescriptor {
         double data_maximum = maxD.doubleValue(Units.t2000);
         
         double [] tickV;
-                        
+        
         double[] mags12= {
             0.001, 0.002, 0.005,
             0.01, 0.02, 0.05,

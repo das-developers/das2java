@@ -791,42 +791,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         double min= getDataMinimum().doubleValue(getUnits());
         double max= getDataMaximum().doubleValue(getUnits());
-        
+                
         double dMinTick= DasMath.roundNFractionalDigits(DasMath.log10(min),4);
         int minTick= (int)Math.ceil(dMinTick);
         double dMaxTick= DasMath.roundNFractionalDigits(DasMath.log10(max),4);
         int maxTick= (int)Math.floor(dMaxTick);
         
-        if ( maxTick - minTick <= 1 ) {
-            updateTickVLinear();
-            return;
-        }
+        GrannyTextRenderer idlt= new GrannyTextRenderer();
+        idlt.setString(this, "10!U-10");
         
-        int stepSize= 1;
+        int nTicksMax;
+        if ( isHorizontal() ) {
+            nTicksMax= (int)Math.floor( getColumn().getWidth() / idlt.getWidth() );
+        } else {
+            nTicksMax= (int)Math.floor( getRow().getHeight() / idlt.getHeight() );
+        }        
         
-        int nTicks= ( maxTick - minTick ) / stepSize + 1;
-        
-        int pixelsPerTick;
-        if (isHorizontal()) {
-            pixelsPerTick = getColumn().getWidth() / nTicks;
-        }
-        else {
-            pixelsPerTick = getRow().getHeight() / nTicks;
-        }
-        
-        /** TODO: The case where there are less than five ticks and
-         * the ticks are too close together is not handled properly
-         * Also, the minor ticks should go away befor the number of cycles
-         * is reduced.
-         */
-        if (nTicks>5 && pixelsPerTick < 30 && pixelsPerTick>0 ) {
-            stepSize= (int) Math.floor( ( maxTick - minTick ) / 5. );
-            minTick= (int) Math.ceil( minTick / (float)stepSize ) * stepSize;
-            maxTick= (int) Math.floor( maxTick / (float)stepSize ) * stepSize;
-            nTicks= ( maxTick - minTick ) / stepSize + 1;
-        }
-        
-        tickV= TickVDescriptor.bestTickVLog( getDataMinimum(), getDataMaximum(), nTicks );
+        tickV= TickVDescriptor.bestTickVLog( getDataMinimum(), getDataMaximum(), nTicksMax );
         datumFormatter= tickV.getFormatter();
         
         return;
