@@ -56,6 +56,14 @@ public class EnumerationUnits extends Units {
         return create(object).createDatum( object );
     }
     
+    public DatumVector createDatumVector( Object[] objects ) {
+        double[] doubles= new double[objects.length];
+        for ( int i=0; i<objects.length; i++ ) {
+            doubles[i]= createDatum(objects[i]).doubleValue(this);
+        }
+        return DatumVector.newDatumVector(doubles,this);
+    }
+    
     public Datum createDatum( Object object ) {
         if ( objects.containsKey(object) ) {
             return (Datum)objects.get(object);
@@ -70,13 +78,13 @@ public class EnumerationUnits extends Units {
         }
     }
     
-    public Datum[] createDatum( Object[] object ) {
+    /* public Datum[] createDatum( Object[] object ) {
         Datum[] result= new Datum[object.length];
         for ( int i=0; i<object.length; i++ ) {
             result[i]= createDatum(object[i]);
         }
         return result;
-    }
+    } */
     
     public Datum createDatum( int value ) {
         Integer key= new Integer(value);
