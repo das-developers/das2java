@@ -56,16 +56,16 @@ public class Crypt {
             edu.uiowa.physics.pw.das.util.DasDie.println("java crypt <clear_password>");
             edu.uiowa.physics.pw.das.util.DasDie.println("  using "+arg );
         }
-        edu.uiowa.physics.pw.das.util.DasDie.println(
+        System.out.println(
         "[" + arg + "] => [" +
         Crypt.crypt(arg) + "]"
         );
         
-        byte[] bytes= MessageDigest.getInstance("MD5").digest(arg.getBytes());
-        String[] hex= new String[] { "0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f" };
-        for ( int i=0; i<bytes.length; i++ ) {
-            System.out.println("" + hex[( bytes[i]&0xF0 )>>4] + hex[( (bytes[i]&0x0F) )] + " ");
-        }
+        //byte[] bytes= MessageDigest.getInstance("MD5").digest(arg.getBytes());
+        //String[] hex= new String[] { "0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f" };
+        //for ( int i=0; i<bytes.length; i++ ) {
+        //    System.out.println("" + hex[( bytes[i]&0xF0 )>>4] + hex[( (bytes[i]&0x0F) )] + " ");
+        //}
         
     }
 }
