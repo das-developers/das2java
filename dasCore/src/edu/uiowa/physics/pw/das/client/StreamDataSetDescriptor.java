@@ -198,7 +198,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     }
     
     protected DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
-        if ( ! resolution.isFinite() ) throw new IllegalArgumentException( "resolution is not finite" );
+        if ( resolution != null && !resolution.isFinite() ) throw new IllegalArgumentException( "resolution is not finite" );
         InputStream in;
         DataSet result;
         if ( isServerSideReduction() ) {
@@ -207,11 +207,11 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             in= standardDataStreamSource.getInputStream( this, start, end );
         }
         
-        result = getDataSetFromStream( in, start, end, resolution, monitor );
+        result = getDataSetFromStream( in, start, end, monitor );
         return result;
     }
     
-    protected DataSet getDataSetFromStream(InputStream in, Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
+    protected DataSet getDataSetFromStream(InputStream in, Datum start, Datum end, DasProgressMonitor monitor ) throws DasException {
         PushbackInputStream pin = new PushbackInputStream(in, 4096);
         try {
             byte[] four = new byte[4];

@@ -90,14 +90,21 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             formData.append("server=compactdataset");
             StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
             formData.append("&nitems=").append(y.getNItems() + 1);
-            formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
+            if (timeResolution != null) {   
+                formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
+            }
         } else if ( "x_multi_y".equals(form) && dsd.getProperty("ny") != null) {
             formData.append("server=dataset");
         } else if ( "x_multi_y".equals(form) ) {
             formData.append("server=dataset");
-            formData.append("&interval=").append(timeResolution.doubleValue(Units.seconds));
+            if (timeResolution != null) {
+                formData.append("&interval=").append(timeResolution.doubleValue(Units.seconds));
+            }
         } else {
-            formData.append("server=compactdataset&resolution=").append(timeResolution.doubleValue(Units.seconds));
+            formData.append("server=compactdataset");
+            if (timeResolution != null) {
+                formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
+            }
         }
         
         if (extraParameters != null) {
