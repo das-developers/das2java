@@ -41,6 +41,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private long currentTaskPosition;
     private long maximumTaskPosition;
     private DecimalFormat transferRateFormat;
+    private String transferRateString;
     private JLabel messageLabel;
     private JLabel kbLabel;
     private JProgressBar progressBar;
@@ -49,9 +50,6 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private String label;
     
     /** Creates new form DasProgressPanel */
-    public DasProgressPanel() {
-        this("Loading Data Set");
-    }
     
     public DasProgressPanel(String label) {
         this.label = label;
@@ -60,11 +58,12 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         transferRateFormat= new DecimalFormat();
         transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
+        transferRateString= "";
     }
     
-    public static DasProgressPanel createFramed() {
+    public static DasProgressPanel createFramed( String label ) {
         DasProgressPanel result;
-        result= new DasProgressPanel();
+        result= new DasProgressPanel( label );
         result.jframe= new JFrame("Das Progress Monitor");
         result.jframe.getContentPane().add( result );
         result.jframe.pack();
@@ -159,28 +158,29 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
         
         currentTaskPosition = position;
-        long kb = currentTaskPosition / 1024;
+        long kb = currentTaskPosition ;
         
         
         if ( maximumTaskPosition > 0 ) {
-            progressBar.setValue( (int) (kb * 100 / (maximumTaskPosition/1024) ) );
+            progressBar.setValue( (int) (kb * 100 / (maximumTaskPosition) ) );
         } else {
             progressBar.setValue( (int) kb % 100 );
         }
         
         String bytesReadLabel;
         if ( maximumTaskPosition > 0 ) {
-            bytesReadLabel = "" + kb + "/" + maximumTaskPosition/1024 + "kb";
+            bytesReadLabel = "" + kb + "/" + maximumTaskPosition + "";
         } else {
-            bytesReadLabel= "" + kb + "kb";
+            bytesReadLabel= "" + kb + "";
         }
         
-        if ( elapsedTimeMs > 1000 ) {
-            double transferRate = ((double)position * 1000) / (1024 * elapsedTimeMs);
-            kbLabel.setText(bytesReadLabel+" ("+transferRateFormat.format(transferRate)+"kb/s)");
+        /*if ( elapsedTimeMs > 1000 ) {
+            double transferRate = ((double)position * 1000) / ( elapsedTimeMs );
+            kbLabel.setText(bytesReadLabel+" ("+transferRateFormat.format(transferRate)+"/s)");
         } else {
             kbLabel.setText(bytesReadLabel);
-        }
+        }*/
+        kbLabel.setText( bytesReadLabel+" "+transferRateString );
         
         if (Toolkit.getDefaultToolkit().getSystemEventQueue().isDispatchThread()) {
             paintImmediately(0, 0, getWidth(), getHeight());
@@ -190,6 +190,10 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
     }
     
+    public void setAdditionalInfo( String s ) {
+        transferRateString= s;
+    }
+        
     public long getTaskProgress() {
         return currentTaskPosition;
     }
