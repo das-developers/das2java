@@ -127,11 +127,23 @@ public class DasColorBar extends DasAxis {
      *
      * @param element The DOM tree node that represents the element
      */
-    static DasColorBar processColorbarElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    static DasColorBar processColorbarElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         String name = element.getAttribute("name");
         boolean log = element.getAttribute("log").equals("true");
-        double dataMinimum = Double.parseDouble(element.getAttribute("dataMinimum"));
-        double dataMaximum = Double.parseDouble(element.getAttribute("dataMaximum"));
+        Datum dataMinimum;
+        Datum dataMaximum;
+        if ("TIME".equals(element.getAttribute("units"))) {
+            String min = element.getAttribute("dataMinimum");
+            String max = element.getAttribute("dataMaximum");
+            dataMinimum = (min == null || min.equals("") ? TimeUtil.create("1979-02-26") : TimeUtil.create(min));
+            dataMaximum = (max == null || max.equals("") ? TimeUtil.create("1979-02-27") : TimeUtil.create(max));
+        }
+        else {
+            String min = element.getAttribute("dataMinimum");
+            String max = element.getAttribute("dataMaximum");
+            dataMinimum = (min == null || min.equals("") ? Datum.create(1.0) : Datum.create(Double.parseDouble(min)));
+            dataMaximum = (max == null || max.equals("") ? Datum.create(10.0) : Datum.create(Double.parseDouble(max)));
+        }
         int orientation = parseOrientationString(element.getAttribute("orientation"));
         String rowString = element.getAttribute("row");
         if (!rowString.equals("") || row == null) {
@@ -142,7 +154,7 @@ public class DasColorBar extends DasAxis {
             column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
         }
         
-        DasColorBar cb = new DasColorBar(Datum.create(dataMinimum), Datum.create(dataMaximum), row, column, orientation, log);
+        DasColorBar cb = new DasColorBar(dataMinimum, dataMaximum, row, column, orientation, log);
         
         cb.setLabel(element.getAttribute("label"));
         cb.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));

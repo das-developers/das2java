@@ -574,7 +574,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
     
-    private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int index = 0; index < children.getLength(); index++) {
             Node node = children.item(index);

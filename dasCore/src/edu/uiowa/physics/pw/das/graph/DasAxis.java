@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
+import java.text.*;
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
@@ -2086,11 +2086,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      *
      * @param element The DOM tree node that represents the element
      */
-    static DasAxis processAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException {
+    static DasAxis processAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException, ParseException {
         String name = element.getAttribute("name");
         boolean log = element.getAttribute("log").equals("true");
-        double dataMinimum = Double.parseDouble(element.getAttribute("dataMinimum"));
-        double dataMaximum = Double.parseDouble(element.getAttribute("dataMaximum"));
+        Datum dataMinimum;
+        Datum dataMaximum;
+        if ("TIME".equals(element.getAttribute("units"))) {
+            String min = element.getAttribute("dataMinimum");
+            String max = element.getAttribute("dataMaximum");
+            dataMinimum = (min == null || min.equals("") ? TimeUtil.create("1979-02-26") : TimeUtil.create(min));
+            dataMaximum = (max == null || max.equals("") ? TimeUtil.create("1979-02-27") : TimeUtil.create(max));
+        }
+        else {
+            String min = element.getAttribute("dataMinimum");
+            String max = element.getAttribute("dataMaximum");
+            dataMinimum = (min == null || min.equals("") ? Datum.create(1.0) : Datum.create(Double.parseDouble(min)));
+            dataMaximum = (max == null || max.equals("") ? Datum.create(10.0) : Datum.create(Double.parseDouble(max)));
+        }
         int orientation = parseOrientationString(element.getAttribute("orientation"));
         String rowString = element.getAttribute("row");
         if (!rowString.equals("") || row == null) {
@@ -2100,18 +2112,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (!columnString.equals("") || row == null) {
             column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
         }
-        DasAxis axis = new DasAxis(Datum.create(dataMinimum), Datum.create(dataMaximum),
-        row, column, orientation, log);
-        
+        DasAxis axis = new DasAxis(dataMinimum, dataMaximum, row, column, orientation, log);
+
         axis.setLabel(element.getAttribute("label"));
         axis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
-        
+
         axis.setDasName(name);
         DasApplication app = form.getDasApplication();
         NameContext nc = app.getNameContext();
         nc.put(name, axis);
-        
+
         return axis;
     }
     
