@@ -550,6 +550,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    
+    /** 
+     * @return returns the length in pixels of the axis.
+     */
+    public int getDLength() {
+        if (isHorizontal())
+            return getColumn().getWidth();
+        else 
+            return getRow().getHeight();
+    }
+    
     /** TODO
      * @return
      */
@@ -812,6 +823,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    private double pixelSizeData() {
+        Units units= getUnits();
+        return ( getDataMaximum().doubleValue(units) - getDataMinimum().doubleValue(units) ) / getDLength();
+    }
+    
     /** TODO */
     protected void paintComponent(Graphics graphics) {
         Rectangle clip = graphics.getClipBounds();
@@ -873,10 +889,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int tickLengthMinor = tickLengthMajor / 2;
         int tickLength;
         int tickv_length= (tickv==null) ? 0 : tickv.length;
-        
+                
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
-            if ( tick1>=(dataMin*0.999) && tick1<=(dataMax*1.001) ) {
+            if ( tick1>=(dataMin-pixelSizeData()/2) && tick1<=(dataMax+pixelSizeData()/2) ) {
                 String tickLabel= tickFormatter(tick1);
                 int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
                 tickLength= tickLengthMajor;
