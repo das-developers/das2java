@@ -100,7 +100,7 @@ public class ArgumentList {
         addOptionalSwitchArgument( name, abbrev, key, FALSE, description );
     }
     
-    private void printUsage() {
+    public void printUsage() {
         String s;
         s= "Usage: "+this.programName+" ";
         for ( int i=0; i<this.nposition; i++ ) {
