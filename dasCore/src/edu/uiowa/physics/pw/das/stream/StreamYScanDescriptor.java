@@ -196,6 +196,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         element.setAttribute("yUnits", yUnits.toString());
         element.setAttribute("zUnits", zUnits.toString());
         element.setAttribute("type", transferType.toString());
+        if ( !name.equals("") ) element.setAttribute( "name", name );
         return element;
     }
     

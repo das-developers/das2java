@@ -122,6 +122,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         Element element = document.createElement("y");
         element.setAttribute("units", units.toString());
         element.setAttribute("type", transferType.toString());
+        if ( !name.equals("") ) element.setAttribute( "name", name );
         return element;
     }
     
