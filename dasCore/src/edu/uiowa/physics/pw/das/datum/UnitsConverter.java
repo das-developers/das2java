@@ -41,7 +41,17 @@ public class UnitsConverter {
     
     private String id;
     
-    public static UnitsConverter identity= new UnitsConverter( 1.0, 0.0 );
+    public static UnitsConverter identity= new UnitsConverter( 0.0, 0.0) {
+        public double convert( double value ) {
+            return value;
+        }       
+        public Number convert( Number value ) {
+            return value;
+        }
+        public UnitsConverter getInversion() {
+            return this;       
+        }        
+    };
     
     /** Creates a new instance of MeaureUnitConverter */
     public UnitsConverter(double scale, double offset) {
@@ -98,5 +108,7 @@ public class UnitsConverter {
         edu.uiowa.physics.pw.das.util.DasDie.println(""+x.convert(invx.convert(9.7)));
         edu.uiowa.physics.pw.das.util.DasDie.println(""+invx.convert(9.7));
         edu.uiowa.physics.pw.das.util.DasDie.println(""+invx.convert(x.convert(9.7)));
+        edu.uiowa.physics.pw.das.util.DasDie.println(""+UnitsConverter.identity.convert(1.9));
+        edu.uiowa.physics.pw.das.util.DasDie.println(""+UnitsConverter.identity.getInversion().convert(1.9));
     }
 }
