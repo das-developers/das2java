@@ -43,6 +43,7 @@ public class DasProperties extends Properties {
     // persistent between sessions.
     
     private RenderingHints hints;
+    private boolean antiAlias;
     private Logger logger;
     private static ArrayList propertyOrder;
     private static Editor editor;
@@ -64,6 +65,7 @@ public class DasProperties extends Properties {
         propertyOrder.add(0,"username");
         propertyOrder.add(1,"password");
         propertyOrder.add(2,"debugLevel");
+        propertyOrder.add(3,"antiAlias");
         for (Iterator i= this.keySet().iterator(); i.hasNext(); ) {
             String s= (String)i.next();
             if (!propertyOrder.contains(s)) {
@@ -76,10 +78,11 @@ public class DasProperties extends Properties {
         setProperty("username","");
         setProperty("password","");
         setProperty("debugLevel","endUser");
+        setProperty("antiAlias","off");
         setProperty("defaultServer","http://www-pw.physics.uiowa.edu/das/dasServer");
     }
     
-    public static RenderingHints getRenderingHints() {
+    public static RenderingHints getRenderingHints() {        
         return instance.hints;
     }
     
@@ -137,10 +140,6 @@ public class DasProperties extends Properties {
                  public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                      String propertyName= (String)propertyOrder.get(row);
                      if (propertyName.equals("password") && column==1 ) {
-                         //String stars= "**************************************************";
-                         //int nstars= instance.getProperty("password").length();
-                         //nstars= nstars > stars.length() ? stars.length() : nstars;
-                         //stars= stars.substring(0,nstars);
                          return super.getTableCellRendererComponent( table, "* * * *", isSelected, hasFocus, row, column );
                      } else {
                          return super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, column );
@@ -154,6 +153,9 @@ public class DasProperties extends Properties {
                  } else if (propertyName.equals("debugLevel")) {
                      String[] data= {"endUser","dasDeveloper"};
                      return new DefaultCellEditor(new JComboBox(data));
+                 } else if (propertyName.equals("antiAlias")) {
+                     String[] data= {"on","off"};
+                     return new DefaultCellEditor(new JComboBox(data));                     
                  } else {
                      return super.getCellEditor(row,col);
                  }
