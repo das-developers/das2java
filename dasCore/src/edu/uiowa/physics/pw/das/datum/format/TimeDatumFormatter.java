@@ -186,7 +186,7 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
         int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
-        int maxScale = (int)Math.pow(10, max(scaleSeconds));
+        int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
         int seconds = (int)Math.round(ts.seconds * maxScale) / maxScale;
