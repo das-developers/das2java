@@ -55,7 +55,6 @@ public class DasServer {
     private String host;
     private String path;
     private int port;
-    private StandardDataStreamSource standardDataStreamSource;
     private Key key;
     
     private static HashMap instanceHashMap= new HashMap();
@@ -82,7 +81,6 @@ public class DasServer {
         }
         this.host= host;
         this.path= path;
-        this.standardDataStreamSource = new WebStandardDataStreamSource(this);
         this.key= null;
     }
     
@@ -217,13 +215,13 @@ public class DasServer {
         return model;
     }
     
-    public StandardDataStreamSource getStandardDataStreamSource() {
-        return standardDataStreamSource;
+    public StandardDataStreamSource getStandardDataStreamSource(URL url) {
+        return new WebStandardDataStreamSource(this, url);
     }
     
     public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
         try {
-            String dsdf = dataSetID.getQuery();
+            String dsdf = dataSetID.getQuery().split("&")[0];
             URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,"getting "+url.toString());
             URLConnection connection = url.openConnection();
@@ -281,14 +279,14 @@ public class DasServer {
             Key result= null;
             
             String formData= "server=authenticator";
-            formData+= "&user="+URLEncoder.encode(user, "UTF-8");
+            formData+= "&user="+URLBuddy.encodeUTF8(user);
             String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(pass);
             
             if (pass.equals("sendPropertyPassword")) {
                 cryptPass= DasProperties.getInstance().getProperty("password");
             }
             
-            formData+= "&passwd="+URLEncoder.encode(cryptPass, "UTF-8");
+            formData+= "&passwd="+URLBuddy.encodeUTF8(cryptPass);
             
             URL server= new URL("http",host,port,path+"?"+formData);
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
@@ -319,11 +317,11 @@ public class DasServer {
     public void changePassword( String user, String oldPass, String newPass ) throws DasServerException {
         try {
             String formData= "server=changePassword";
-            formData+= "&user="+URLEncoder.encode(user, "UTF-8");
+            formData+= "&user="+URLBuddy.encodeUTF8(user);
             String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(oldPass);
-            formData+= "&passwd="+URLEncoder.encode(cryptPass, "UTF-8");
+            formData+= "&passwd="+URLBuddy.encodeUTF8(cryptPass);
             String cryptNewPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(newPass);
-            formData+= "&newPasswd="+URLEncoder.encode(cryptNewPass, "UTF-8");
+            formData+= "&newPasswd="+URLBuddy.encodeUTF8(cryptNewPass);
             
             URL server= new URL("http",host,port,path+"?"+formData);
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());

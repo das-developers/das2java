@@ -40,9 +40,7 @@ import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.*;
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.Properties;
 
 /*
@@ -54,9 +52,14 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     private DasServer server;
     private MeteredInputStream min;
     private boolean legacyStream = true;
+    private String extraParameters;
     
-    public WebStandardDataStreamSource(DasServer server) {
+    public WebStandardDataStreamSource(DasServer server, URL url) {
         this.server = server;
+        String[] query = url.getQuery() == null ? new String[0] : url.getQuery().split("&");
+        if (query.length >= 2) {
+            extraParameters = query[1];
+        }
     }
     
     public boolean isLegacyStream() {
@@ -65,10 +68,10 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     
     
     public InputStream getInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException {
-        String serverType;
-        serverType="dataset";
+        String serverType="dataset";
         
-        String formData= "server="+serverType;
+        StringBuffer formData = new StringBuffer();
+        formData.append("server=").append(serverType);
         
         InputStream in= openURLConnection( dsd, start, end, formData );
         MeteredInputStream min= new MeteredInputStream(in);
@@ -80,21 +83,25 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     
     public InputStream getReducedInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
         
-        String formData;
+        StringBuffer formData = new StringBuffer();
         String form = (String)dsd.getProperty("form");
         
         if ( "x_tagged_y_scan".equals(form) ) {
-            formData= "server=compactdataset";
+            formData.append("server=compactdataset");
             StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
-            formData+= "&nitems=" + (y.getNItems() + 1);
-            formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
+            formData.append("&nitems=").append(y.getNItems() + 1);
+            formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
         } else if ( "x_multi_y".equals(form) && dsd.getProperty("ny") != null) {
-            formData= "server=dataset";
+            formData.append("server=dataset");
         } else if ( "x_multi_y".equals(form) ) {
-            formData= "server=dataset";
-            formData+= "&interval="+timeResolution.doubleValue(Units.seconds);
+            formData.append("server=dataset");
+            formData.append("&interval=").append(timeResolution.doubleValue(Units.seconds));
         } else {
-            formData = "server=compactdataset&resolution="+timeResolution.doubleValue(Units.seconds);
+            formData.append("server=compactdataset&resolution=").append(timeResolution.doubleValue(Units.seconds));
+        }
+        
+        if (extraParameters != null) {
+            formData.append("&params=").append(extraParameters);  //Should already be url encoded.
         }
         
         boolean compress=false;
@@ -110,7 +117,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         
         //compress= true;
         if (compress) {
-            formData+= "&compress=true";
+            formData.append("&compress=true");
         }
         
         InputStream in= openURLConnection( dsd, start, end, formData );
@@ -120,19 +127,19 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         
     }
     
-    private String createFormDataString(String dataSetID, Datum start, Datum end, String additionalFormData) throws UnsupportedEncodingException {
+    private String createFormDataString(String dataSetID, Datum start, Datum end, StringBuffer additionalFormData) throws UnsupportedEncodingException {
         DatumFormatter formatter = start.getUnits().getDatumFormatterFactory().defaultFormatter();
         String startStr = formatter.format(start);
         String endStr= formatter.format(end);
         StringBuffer formData= new StringBuffer("dataset=");
-        formData.append(URLEncoder.encode(dataSetID,"UTF-8"));
-        formData.append("&start_time=").append(URLEncoder.encode(startStr,"UTF-8"));
-        formData.append("&end_time=").append(URLEncoder.encode(endStr,"UTF-8"));
+        formData.append(URLBuddy.encodeUTF8(dataSetID));
+        formData.append("&start_time=").append(URLBuddy.encodeUTF8(startStr));
+        formData.append("&end_time=").append(URLBuddy.encodeUTF8(endStr));
         formData.append("&").append(additionalFormData);
         return formData.toString();
     }
     
-    protected synchronized InputStream openURLConnection( StreamDataSetDescriptor dsd, Datum start, Datum end, String additionalFormData ) throws DasException {
+    protected synchronized InputStream openURLConnection( StreamDataSetDescriptor dsd, Datum start, Datum end, StringBuffer additionalFormData ) throws DasException {
         
         String dataSetID = dsd.getDataSetID().split("\\?", 2)[1];
         

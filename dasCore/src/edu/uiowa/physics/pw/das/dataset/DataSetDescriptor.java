@@ -150,32 +150,14 @@ public abstract class DataSetDescriptor {
     private static DataSetDescriptor createFromServerAddress(final URL url) throws DasException {
         DasServer server = DasServer.create(url);
         StreamDescriptor sd = server.getStreamDescriptor(url);
-        return new StreamDataSetDescriptor(sd, server.getStandardDataStreamSource());
+        return new StreamDataSetDescriptor(sd, server.getStandardDataStreamSource(url));
     }
     
     private static DataSetDescriptor createFromClassName( final String dataSetID, final Matcher matcher) throws DasException {
         try {
             String className = matcher.group(1);
             String argString = matcher.group(2);
-            String[] argList;
-            if (argString != null && argString.length() > 0) {
-                argList = argString.split("&");
-            }
-            else {
-                argList = new String[0];
-            }
-            URLDecoder decoder = new URLDecoder();
-            Map argMap = new HashMap();
-            for (int index = 0; index < argList.length; index++) {
-                Matcher argMatcher = NAME_VALUE.matcher(argList[index]);
-                if (argMatcher.matches()) {
-                    argMap.put(decoder.decode(argMatcher.group(1), "UTF-8"),
-                    decoder.decode(argMatcher.group(2), "UTF-8"));
-                }
-                else {
-                    throw new NoSuchDataSetException("Invalid argument: " + argList[index]);
-                }
-            }
+            Map argMap = argString == null ? Collections.EMPTY_MAP : URLBuddy.parseQueryString(argString);
             Class dsdClass = Class.forName(className);
             Method method = dsdClass.getMethod("newDataSetDescriptor", new Class[]{java.util.Map.class});
             if (!Modifier.isStatic(method.getModifiers())) {
@@ -206,9 +188,6 @@ public abstract class DataSetDescriptor {
             new DataSetDescriptorNotAvailableException(iae.getMessage());
             dsdnae.initCause(iae);
             throw dsdnae;
-        }
-        catch (java.io.UnsupportedEncodingException uee) {
-            throw new RuntimeException(uee);
         }
     }
 
