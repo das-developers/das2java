@@ -41,6 +41,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     long birthTimeMilli;
     long deathTimeMilli;
     DecimalFormat transferRateFormat;
+    boolean enableProgressPosition; 
     
     /** Creates a new instance of DasProgressMonitorInputStream */
     public DasProgressMonitorInputStream( InputStream in, DasProgressMonitor monitor ) {
@@ -48,21 +49,22 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();
         this.deathTimeMilli= -1;
+        enableProgressPosition= true;
         if ( monitor!=null ) {
             transferRateFormat= new DecimalFormat();
             transferRateFormat.setMaximumFractionDigits(2);
             transferRateFormat.setMinimumFractionDigits(2);
-            monitor.setTaskSize(1000);
+            if ( enableProgressPosition ) monitor.setTaskSize(1000);
         }
     }
     
-    public void reportTransmitSpeed() {
+    private void reportTransmitSpeed() {
         monitor.setAdditionalInfo("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
-        monitor.setTaskProgress(bytesRead/1000);
+        if ( enableProgressPosition ) monitor.setTaskProgress(bytesRead/1000);
     }
     
     
-    public double calcTransmitSpeed() {
+    private double calcTransmitSpeed() {
         // return speed in bytes/second.
         long totalBytesRead= bytesRead;
         long timeElapsed;
@@ -151,6 +153,14 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         }
     }
     
-    
+    /**
+     * disable/enable setting of progress position, true by default.  Transfer 
+     * rate will still be reported. This is introduced in case another agent 
+     * (the das2Stream reader, in particular) can set the progress position 
+     * more accurately.
+     */
+    public void setEnableProgressPosition( boolean value ) {
+        this.enableProgressPosition= value;
+    }
     
 }
