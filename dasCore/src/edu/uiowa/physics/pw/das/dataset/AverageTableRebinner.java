@@ -121,7 +121,7 @@ public class AverageTableRebinner implements DataSetRebinner {
          */
         TableDataSet result= new DefaultTableDataSet(xTags, ddX.getUnits(), yTags, ddY.getUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
         
-        int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits);
+        int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits); 
         int xlength= ddXin.numberOfBins();
         int yoffset= ddY.whichBin( ddYin.binCenter(0),yunits);
         int ylength= ddYin.numberOfBins();
@@ -172,7 +172,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                                 rebinWeights[ibinx][ibiny[j]] += w;
                             }
                             else {
-                                Units zUnits= tds.getZUnits();
+                                Units zUnits= tds.getZUnits(); 
                                 double z= tds.getDouble(i,j,zUnits);
                                 double w= zUnits.isFill(z) ? 0. : 1. ;
                                 rebinData[ibinx][ibiny[j]] += z * w;
