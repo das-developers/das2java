@@ -163,89 +163,91 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
         
-        TableDataSet rebinData;
-        
-        if (monitor != null) {
-            if (monitor.isCancelled()) {
-                return;
-            }
-            else {
-                monitor.setTaskSize(-1);
-                monitor.started();
-            }
-        }
-        
-        int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
-        int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
-        
-        if (getParent()==null  || w<=1 || h<=1 ) {
-            DasDie.println("canvas not useable!!!");
-            return;
-        }
-        
-        int[] pix= new int[ w * h ];
-        Arrays.fill(pix, 0x00000000);
-        
-        if ( getDataSet() == null) {
-            Units xUnits = getParent().getXAxis().getUnits();
-            Units yUnits = getParent().getYAxis().getUnits();
-            Units zUnits = getColorBar().getUnits();
-            double[] xTags, yTags;
-            xTags = yTags = new double[0];
-            double[][] zValues = {yTags};
-            rebinData = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, Collections.EMPTY_MAP);
-            plotImage= null;
-            rebinData= null;
-            getParent().repaint();
-            return;
-        } else {
-            RebinDescriptor xRebinDescriptor;
-            xRebinDescriptor = new RebinDescriptor(
-            xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-            w,
-            xAxis.isLog());
+        try {
+            TableDataSet rebinData;
             
-            RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-            yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-            h,
-            yAxis.isLog());
-            
-            DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
-            
-            rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
-            
-            //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
-            int itable=0;
-            int ny= rebinData.getYLength(itable);
-            int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
-            
-            for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
-                for (int j=0; j<rebinData.getYLength(0); j++) {
-                    int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
-                    pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
+            if (monitor != null) {
+                if (monitor.isCancelled()) {
+                    return;
+                }
+                else {
+                    monitor.setTaskSize(-1);
+                    monitor.started();
                 }
             }
             
-            MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
-            plotImage = getParent().createImage(mis);
+            int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
+            int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
             
-            if ( isSliceRebinnedData() ) {
-                DasApplication.getDefaultApplication().getLogger().fine("slicing rebin data");
-                super.ds= rebinData;
-            }
-        }
-        
-        
-        if (monitor != null) {
-            if (monitor.isCancelled()) {
+            if (getParent()==null  || w<=1 || h<=1 ) {
+                DasDie.println("canvas not useable!!!");
                 return;
             }
-            else {
-                monitor.finished();
+            
+            int[] pix= new int[ w * h ];
+            Arrays.fill(pix, 0x00000000);
+            
+            if ( getDataSet() == null) {
+                Units xUnits = getParent().getXAxis().getUnits();
+                Units yUnits = getParent().getYAxis().getUnits();
+                Units zUnits = getColorBar().getUnits();
+                double[] xTags, yTags;
+                xTags = yTags = new double[0];
+                double[][] zValues = {yTags};
+                rebinData = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, Collections.EMPTY_MAP);
+                plotImage= null;
+                rebinData= null;
+                getParent().repaint();
+                return;
+            } else {
+                RebinDescriptor xRebinDescriptor;
+                xRebinDescriptor = new RebinDescriptor(
+                xAxis.getDataMinimum(), xAxis.getDataMaximum(),
+                w,
+                xAxis.isLog());
+                
+                RebinDescriptor yRebinDescriptor = new RebinDescriptor(
+                yAxis.getDataMinimum(), yAxis.getDataMaximum(),
+                h,
+                yAxis.isLog());
+                
+                DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
+                
+                rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
+                
+                //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+                int itable=0;
+                int ny= rebinData.getYLength(itable);
+                int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
+                
+                for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
+                    for (int j=0; j<rebinData.getYLength(0); j++) {
+                        int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
+                        pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
+                    }
+                }
+                
+                MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
+                plotImage = getParent().createImage(mis);
+                
+                if ( isSliceRebinnedData() ) {
+                    DasApplication.getDefaultApplication().getLogger().fine("slicing rebin data");
+                    super.ds= rebinData;
+                }
             }
+            
+        } finally {
+            if (monitor != null) {
+                if (monitor.isCancelled()) {
+                    return;
+                }
+                else {
+                    monitor.finished();
+                }
+            }
+            
+            getParent().repaint();
         }
-        
-        getParent().repaint();
     }
     
     protected void installRenderer() {
