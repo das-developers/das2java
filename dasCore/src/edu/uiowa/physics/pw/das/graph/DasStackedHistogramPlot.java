@@ -249,7 +249,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         }
         
         //xtysData.getPeaks();  // create peaks if it doesn't have them already
-        DataSetRebinner rebinner = new AveragePeakTableRebinner();
+        DataSetRebinner rebinner = new Rebinner();
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
         TableDataSet weights= (TableDataSet)data.getPlanarView("weights");
@@ -261,14 +261,14 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         for (int j = 0; j < data.getYLength(0); j++) {
             DasLabelAxis yAxis= (DasLabelAxis)getYAxis();
             
-            int yBase= getYAxis().transform(data.getYTagDatum(0, j));
+            int yBase= yAxis.getItemMax(data.getYTagDatum(0, j));
             
             Line2D.Float lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
             g.setColor(Color.lightGray);
             g.draw(lBase);
             g.setColor(Color.darkGray);
             
-            int yBase1= yBase - yAxis.getInterItemSpace();
+            int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
             double canvasHeight= parent.getHeight();
             DasRow littleRow= new DasRow(getCanvas(),yBase1/canvasHeight,yBase/canvasHeight);
             
@@ -417,6 +417,31 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         protected void installComponent() {
             super.installComponent();
             getCanvas().addCanvasComponent(zAxis);
+        }
+        
+    }
+    
+    public class Rebinner implements DataSetRebinner {
+        DataSetRebinner highResRebinner;
+        DataSetRebinner lowResRebinner;
+        Rebinner() { 
+            //highResRebinner= new NearestNeighborTableRebinner();
+            highResRebinner= new AveragePeakTableRebinner();
+            lowResRebinner= new AveragePeakTableRebinner();            
+        }
+            
+        public DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException {
+            Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
+            if ( xwidth==null ) xwidth= TableUtil.guessXTagWidth((TableDataSet)ds);
+            Units rdUnits= x.getUnits();
+            if ( rdUnits instanceof LocationUnits ) {
+                rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
+            }
+            if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                return highResRebinner.rebin( ds, x, y );
+            } else {
+                return lowResRebinner.rebin( ds, x, y );
+            }
         }
         
     }
