@@ -60,8 +60,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         long timer= System.currentTimeMillis();
         
-        Units xunits= ddXin.getUnits();
-        Units yunits= ddYin.getUnits();
+        Units xunits= ddXin.getUnits();        
+
                       
         int ix0= DataSetUtil.getPreviousColumn( tds, xunits.createDatum( ddXin.binStart(0,xunits) ) );
         int ix1= DataSetUtil.getNextColumn( tds, xunits.createDatum( ddXin.binStop( ddXin.numberOfBins()-1, xunits ) ) );        
@@ -119,13 +119,22 @@ public class AverageTableRebinner implements DataSetRebinner {
         /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
          * new dataset. 
          */
-        TableDataSet result= new DefaultTableDataSet(xTags, ddX.getUnits(), yTags, ddY.getUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        Units resultXUnits= ddX==null ? tds.getXUnits() : ddX.getUnits();
+        Units resultYUnits= ddY==null ? tds.getYUnits() : ddY.getUnits();        
+        TableDataSet result= new DefaultTableDataSet(xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
         
         int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits); 
         int xlength= ddXin.numberOfBins();
-        int yoffset= ddY.whichBin( ddYin.binCenter(0),yunits);
-        int ylength= ddYin.numberOfBins();
-        
+        int yoffset;
+        int ylength;
+        if ( ddY!=null ) {
+            Units yunits= ddYin.getUnits();
+            yoffset= ddY.whichBin( ddYin.binCenter(0),yunits);
+            ylength= ddYin.numberOfBins();
+        } else {
+            yoffset= 0;
+            ylength= yTags.length;
+        }
         return new ClippedTableDataSet( result, xoffset, xlength, yoffset, ylength );
     }
     
