@@ -77,5 +77,6 @@ public class VectorUtil {
             pout.println();            
         }
         
+        pout.close();
     }
 }
