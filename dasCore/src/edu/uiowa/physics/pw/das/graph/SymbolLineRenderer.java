@@ -28,6 +28,8 @@ import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.client.XMultiYDataSet;
 import edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor;
+import edu.uiowa.physics.pw.das.dataset.test.SineWaveDataSetDescriptor;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -40,12 +42,15 @@ import java.awt.geom.Line2D;
  */
 public class SymbolLineRenderer extends Renderer {
     
-    private Psym psym = Psym.LINES;
-    private double symSize = 1.0;
-    private float lineWidth = 1.0f;
+    private Psym psym = Psym.NONE;
+    private double symSize = 2.0; // radius in pixels
+    private float lineWidth = 1.5f; // width in pixels
     
     /** Holds value of property color. */
     private SymColor color= SymColor.black;
+    
+    /** Holds value of property psymConnector. */
+    private PsymConnector psymConnector= PsymConnector.SOLID;
     
     public SymbolLineRenderer(edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor dsd) {
         this((edu.uiowa.physics.pw.das.dataset.DataSetDescriptor)dsd);
@@ -87,7 +92,7 @@ public class SymbolLineRenderer extends Renderer {
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        edu.uiowa.physics.pw.das.client.XMultiYDataSet Data= ( edu.uiowa.physics.pw.das.client.XMultiYDataSet ) getDataSet();
+        XMultiYDataSet Data= ( XMultiYDataSet ) getDataSet();
         if (Data == null) return;
         
         double xSampleWidth = Data.xSampleWidth;
@@ -122,18 +127,16 @@ public class SymbolLineRenderer extends Renderer {
         
         for (int iy = 0; iy < Data.data[0].y.length; iy++) {
             
-            if ( psym.drawsLines() ) {
-                graphics.setStroke(new BasicStroke(lineWidth));
+            if ( psymConnector != PsymConnector.NONE ) {                
                 int x0 = xAxis.transform(Data.data[ixmin].x,Data.getXUnits());
-                int y0 = yAxis.transform(Data.data[ixmin].y[iy],Data.getYUnits());
-                Line2D.Double line= new Line2D.Double();
+                int y0 = yAxis.transform(Data.data[ixmin].y[iy],Data.getYUnits());                
                 for (int i = ixmin+1; i <= ixmax; i++) {
                     int x = xAxis.transform(Data.data[i].x,Data.getXUnits());
                     int y = yAxis.transform(Data.data[i].y[iy],Data.getYUnits());
                     if ( Data.data[i].y[iy] != Data.y_fill ) {
                         if ( Data.data[i].y[iy] != Data.y_fill && Data.data[i-1].y[iy] != Data.y_fill
                         && Math.abs(Data.data[i].x - Data.data[i-1].x) < xSampleWidth) {
-                            psym.drawLine(graphics,x0,y0,x,y);
+                            psymConnector.drawLine(graphics,x0,y0,x,y,lineWidth);
                         }
                         x0= x;
                         y0= y;
@@ -145,7 +148,7 @@ public class SymbolLineRenderer extends Renderer {
                 if ( Data.data[i].y[iy] != Data.y_fill ) {
                     int x = xAxis.transform(Data.data[i].x,Data.getXUnits());
                     int y = yAxis.transform(Data.data[i].y[iy],Data.getYUnits());
-                    psym.draw(graphics, x, y);
+                    psym.draw( graphics, x, y, (float)symSize );
                 }
             }
         }
@@ -199,7 +202,7 @@ public class SymbolLineRenderer extends Renderer {
     public void setColor(SymColor color) {
         this.color= color;
         if ( getParent()!=null ) getParent().repaint();
-    }
+    }     
     
     public float getLineWidth() {
         return lineWidth;
@@ -243,5 +246,35 @@ public class SymbolLineRenderer extends Renderer {
         
         return element;
     }
+    
+    /** Getter for property psymConnector.
+     * @return Value of property psymConnector.
+     *
+     */
+    public PsymConnector getPsymConnector() {
+        return this.psymConnector;
+    }    
+
+    /** Setter for property psymConnector.
+     * @param psymConnector New value of property psymConnector.
+     *
+     */
+    public void setPsymConnector(PsymConnector psymConnector) {
+        this.psymConnector = psymConnector;
+    }
+    
+    public static void main( String[] args ) {
+        DasCanvas canvas= new DasCanvas(400,400);
+        DasPlot plot= DasPlot.createDummyPlot(DasRow.create(canvas), DasColumn.create(canvas));
+        canvas.add(plot);
+        XMultiYDataSetDescriptor dsd= new SineWaveDataSetDescriptor( Datum.create(4.), Datum.create(2.) );  
+        plot.addRenderer(new SymbolLineRenderer(dsd));
+        javax.swing.JFrame jframe= new javax.swing.JFrame("SymbolLineRenderer");
+        jframe.getContentPane().add(canvas);
+        jframe.pack();
+        jframe.setVisible(true);
+        jframe.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);                
+    }
+    
     
 }

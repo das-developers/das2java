@@ -22,6 +22,9 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.DasProperties;
+import edu.uiowa.physics.pw.das.components.*;
+
 /** Type-safe enumeration class for the psym property of
  * a <code>DasSymbolPlot</code>.
  */
@@ -29,28 +32,27 @@ package edu.uiowa.physics.pw.das.graph;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.image.*;
 
-public class Psym implements edu.uiowa.physics.pw.das.components.PropertyEditor.Enumeration {
+public class Psym implements PropertyEditor.Enumeration {
     
     private static final String[] NAMES = {
-        "lines",     //0
+        "none",     //0
         "dots",      //1
         "circles",   //2
         "triangles", //3
-        "cross",      //4
-        "psym10",
+        "cross"      //4        
     };
     
     private static final boolean[] DRAWS_LINES = {
-        true,  //0 LINES
+        false,
         false, //1 DOTS
         false, //2 CIRCLES
         false, //3 TRIANGLES
-        false, //4 CROSS
-        true,
+        false, //
     };
     
-    public static final Psym LINES = new Psym(0);
+    public static final Psym NONE = new Psym(0);
     
     public static final Psym DOTS = new Psym(1);
     
@@ -60,14 +62,23 @@ public class Psym implements edu.uiowa.physics.pw.das.components.PropertyEditor.
     
     public static final Psym CROSS = new Psym(4);
     
-    public static final Psym PSYM10= new Psym(5);
-    
     private int nameIndex;
     Line2D.Double line;
+    
+    ImageIcon imageIcon;
     
     private Psym(int nameIndex) {
         this.nameIndex = nameIndex;
         this.line= new Line2D.Double();
+        Image i= new BufferedImage(10,10,BufferedImage.TYPE_INT_RGB);
+        Graphics2D g= ( Graphics2D) i.getGraphics();        
+        g.setRenderingHints(DasProperties.getRenderingHints());
+        g.setColor( Color.lightGray );
+        g.fillRect(0,0, 10,10);
+        g.setColor( Color.black );
+        draw(g,5,5,2.f);  
+        
+        this.imageIcon= new ImageIcon(i);
     }
     
     public String toString() {
@@ -75,7 +86,7 @@ public class Psym implements edu.uiowa.physics.pw.das.components.PropertyEditor.
     }
     
     public Icon getListIcon() {
-        return null;
+        return imageIcon;
     }
     
     public boolean drawsLines() {
@@ -86,22 +97,26 @@ public class Psym implements edu.uiowa.physics.pw.das.components.PropertyEditor.
      * if <code>drawsLines()</code> returns false, then the
      * ix and iy parameters are ignored.
      */
-    public void draw(Graphics g, int x, int y) {
+    public void draw(Graphics g, int x, int y, float size) {      
         switch (nameIndex) {
             case 0: //LINES
                 break;
             case 1: //DOTS
-                g.drawLine(x, y, x, y);
+                if ( size<=1.f ) {
+                    g.drawLine(x,y,x,y);
+                } else {
+                    g.fillOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
+                }
                 break;
             case 2: //CIRCLES
-                g.drawOval(x-4, y-4, 8, 8);
+                g.drawOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
                 break;
             case 3: //TRIANGLES
-                drawTriangle(g, x, y);
+                drawTriangle(g, x, y, (int)size);
                 break;
             case 4: //CROSS
-                g.drawLine(x-1, y, x+1, y);
-                g.drawLine(x, y-1, x, y+1);
+                g.drawLine((int)(x-size), y, (int)(x+size), y);
+                g.drawLine(x, (int)(y-size), x, (int)(y+size));
                 break;
             case 5:
                 break;
@@ -121,15 +136,15 @@ public class Psym implements edu.uiowa.physics.pw.das.components.PropertyEditor.
         }
     }
     
-    public void drawTriangle(Graphics g, int x, int y) {
-        g.drawLine(x, y-2, x+2, y+2);
-        g.drawLine(x+2, y+2, x-2, y+2);
-        g.drawLine(x-2, y+2, x, y-2);
+    public void drawTriangle(Graphics g, int x, int y, int size ) {
+        g.drawLine(x, y-size, x+size, y+size);
+        g.drawLine(x+size, y+size, x-size, y+size);
+        g.drawLine(x-size, y+size, x, y-size);
     }
     
     public static Psym parsePsym(String str) {
         if (str.equals("lines")) {
-            return LINES;
+            return NONE;
         }
         else if (str.equals("dots")) {
             return DOTS;

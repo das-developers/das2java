@@ -444,8 +444,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public static DasPlot createDummyPlot( DasRow row, DasColumn column) {
-        DasAxis xAxis= new DasAxis( Datum.create(0), Datum.create(10), row, column, DasAxis.HORIZONTAL );
-        DasAxis yAxis= new DasAxis( Datum.create(0), Datum.create(10), row, column, DasAxis.VERTICAL );
+        DasAxis xAxis= new DasAxis( Datum.create(-10), Datum.create(10), row, column, DasAxis.HORIZONTAL );
+        DasAxis yAxis= new DasAxis( Datum.create(-10), Datum.create(10), row, column, DasAxis.VERTICAL );
         DasPlot result= new DasPlot(xAxis,yAxis,row,column);
         return result;
     }
