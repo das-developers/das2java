@@ -48,6 +48,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
     private String label;
+    private static final int hideInitiallyMilliSeconds= 400;
     
     /** Creates new form DasProgressPanel */
     
@@ -153,7 +154,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
             throw new IllegalStateException("Operation cancelled");
         }
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
-        if ( elapsedTimeMs > 400 ) {
+        if ( elapsedTimeMs > hideInitiallyMilliSeconds ) {
             setVisible(true);
         }
         
@@ -212,7 +213,15 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         taskStartedTime= System.currentTimeMillis();
         currentTaskPosition = 0;
         isCancelled = false;
-        setVisible(true);
+        setVisible(false);
+        new Thread( new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(hideInitiallyMilliSeconds);
+                } catch ( InterruptedException e ) { };
+                setTaskProgress(getTaskProgress());
+            }
+        } );
     }
     
     public void cancel() {
