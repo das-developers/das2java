@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.system;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.util.*;
 import java.util.*;
 
@@ -72,6 +73,8 @@ public final class RequestProcessor {
      * @param run the task to be executed.
      */    
     public static void invokeLater(Runnable run) {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("invokeLater "+run);
+        
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -88,6 +91,7 @@ public final class RequestProcessor {
      * @param lock associates run with other tasks.
      */
     public static void invokeLater(Runnable run, Object lock) {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("invokeLater "+run+" "+lock);        
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -113,6 +117,7 @@ public final class RequestProcessor {
      * @param lock associates run with other tasks.
      */
     public static void invokeAfter(Runnable run, Object lock) {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("invokeAfter "+run+" "+lock);
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -165,11 +170,13 @@ public final class RequestProcessor {
             }
             try {
                 while (true) {
-                    try {
+                    try {                        
                         Runnable run = queue.remove();
+                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("running "+run);
                         if (run != null) {
                             run.run();
-                        }
+                            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("completed "+run);
+                        }                             
                         synchronized (THREAD_COUNT_LOCK) {
                             if (threadCount > maxThreadCount) {
                                 break;
@@ -177,6 +184,7 @@ public final class RequestProcessor {
                         }
                     }
                     catch (Throwable t) {
+                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("uncaught exception "+t);
                         DasExceptionHandler.handleUncaught(t);
                         //Clear interrupted status (if set)
                         Thread.interrupted();
