@@ -63,10 +63,12 @@ public class SymbolLineRenderer extends Renderer {
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        long timer0= System.currentTimeMillis();
+        long timer0= System.currentTimeMillis();                
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
-        if (dataSet == null || dataSet.getXLength() == 0) return;
+        if (dataSet == null || dataSet.getXLength() == 0) {
+            return;
+        }
         
         Graphics2D graphics= (Graphics2D) g;
         
