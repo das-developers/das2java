@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasNameException;
 import edu.uiowa.physics.pw.das.DasPropertyException;
@@ -104,7 +105,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected JPanel secondaryInputPanel;
     private ScanButton scanPrevious;
     private ScanButton scanNext;
-    private boolean animated=false;
+    private boolean animated= ("on".equals(DasProperties.getInstance().get("visualCues")));
     
     /* Rectangles representing different areas of the axis */
     private Rectangle blLineRect;
