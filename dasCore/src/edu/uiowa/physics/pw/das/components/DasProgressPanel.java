@@ -46,15 +46,20 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JProgressBar progressBar;
     private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
+    private String label;
     
     /** Creates new form DasProgressPanel */
     public DasProgressPanel() {
+        this("Loading Data Set");
+    }
+    
+    public DasProgressPanel(String label) {
+        this.label = label;
         setOpaque(false);
         initComponents();
         transferRateFormat= new DecimalFormat();
         transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
-        jframe= null;
     }
     
     public static DasProgressPanel createFramed() {
@@ -68,7 +73,15 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         return result;
     }
     
+    public void setLabel(String label) {
+        messageLabel.setText(label);
+        this.label = label;
+        repaint();
+    }
     
+    public String getLabel() {
+        return label;
+    }
     
     private void initComponents() {
         JPanel mainPanel, buttonPanel;
@@ -78,10 +91,11 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         messageLabel.setOpaque(false);
         messageLabel.setFont(new Font("Dialog", 1, 18));
         messageLabel.setHorizontalAlignment(JLabel.CENTER);
-        messageLabel.setText("Loading Data Set");
+        messageLabel.setText(label);
         messageLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
         progressBar = new JProgressBar();
+        System.out.println(progressBar.getMaximum());
         progressBar.setOpaque(false);
         progressBar.setMaximumSize(progressBar.getPreferredSize());
         progressBar.setMinimumSize(progressBar.getPreferredSize());
@@ -182,6 +196,12 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     }
     
     public void setTaskSize(int taskSize) {
+        if (taskSize == -1) {
+            progressBar.setIndeterminate(true);
+        }
+        else {
+            progressBar.setIndeterminate(false);
+        }
         maximumTaskPosition = taskSize;
     }
     
@@ -189,10 +209,12 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         taskStartedTime= System.currentTimeMillis();
         currentTaskPosition = 0;
         isCancelled = false;
+        setVisible(true);
     }
     
     public void cancel() {
         isCancelled = true;
+        setVisible(false);
     }
     
     public boolean isCancelled() {
