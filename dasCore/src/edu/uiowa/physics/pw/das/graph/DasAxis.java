@@ -1508,7 +1508,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int size = Integer.MIN_VALUE;
         for (int i = 0; i < tickv.length; i++) {
             String label = tickFormatter(tickv[i]);
-            int labelSize = fm.stringWidth(label);
+            GrannyTextRenderer idlt = new GrannyTextRenderer();
+            idlt.setString(this, label);
+            int labelSize = (int)Math.round(idlt.getWidth());
             if (labelSize > size) size = labelSize;
         }
         return size;
