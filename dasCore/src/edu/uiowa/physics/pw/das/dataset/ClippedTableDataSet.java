@@ -95,6 +95,9 @@ public class ClippedTableDataSet implements TableDataSet {
     
     private ClippedTableDataSet( TableDataSet source, int xoffset, int xlength, 
     int [] yoffsets, int [] ylengths, int tableOffset, int tableCount ) {
+        if ( source==null ) {
+            throw new IllegalArgumentException("source is null");
+        }
         this.source= source;
         this.xoffset= xoffset;
         this.xlength= xlength;
