@@ -140,6 +140,7 @@ public abstract class Units {
         Set result= new HashSet();                
         LinkedList queue = new LinkedList();
         queue.add(this);
+        result.add(this);
         while (!queue.isEmpty()) {
             Units current = (Units)queue.removeFirst();
             for (Iterator i = current.conversionMap.entrySet().iterator(); i.hasNext();) {
