@@ -255,7 +255,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         int xDMin= getColumn().getDMinimum();
         
         TableDataSet xtysData= (TableDataSet)Data;
-                
+        
         if ( Data==null ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("null data set");
             return;
@@ -277,69 +277,65 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             Line2D.Float lBase;
             
             if ( j==(data.getYLength(0)-1) ) {   /* Draw top grey line */
-                yBase= yAxis.getItemMin(data.getYTagDatum(0, j));
-                lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
+                yBase= yAxis.getItemMin(data.getYTagDatum(0, j));                
                 g.setColor(Color.lightGray);
-                g.draw(lBase);
+                g.drawLine(xDMin, yBase, xDMax, yBase );
                 g.setColor(Color.darkGray);
             }
             
-            yBase= yAxis.getItemMax(data.getYTagDatum(0, j));
-            lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
-            g.setColor(Color.lightGray);
-            g.draw(lBase);
+            yBase= yAxis.getItemMax(data.getYTagDatum(0, j));            
+            g.setColor(Color.lightGray);            
+            g.drawLine(xDMin, yBase, xDMax, yBase );
             g.setColor(Color.darkGray);
-            
             
             int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
             double canvasHeight= parent.getHeight();
-            DasRow littleRow= new DasRow(getCanvas(),yBase1/canvasHeight,yBase/canvasHeight);
             
-            zAxisComponent.setLittleRow(littleRow);
+            zAxisComponent.setLittleRow(yBase,yBase1);
             
             double [] binStarts= xbins.binStarts();
             double [] binStops= xbins.binStops();
             
             int y0= yBase;
             
-            int littleRowHeight= littleRow.getHeight();
+            int littleRowHeight= yBase - yBase1;
             double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
             
-            for (int ibin=0; ibin < data.getXLength(); ibin++) {
-                int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
-                int x1;
-                x1=x0+1; // 1 pixel wide
-                double zz= data.getDouble( ibin, j, data.getZUnits() );
-                if ( !data.getZUnits().isFill(zz) ) {
-                    int yAvg= zAxisComponent.transform( zz, data.getZUnits() );
-                    yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
-                    int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
-                    yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
-                    if ( peaks!=null ) {
-                        double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
-                        if (peakValue <= zAxisMax) {
-                            int yMax= zAxisComponent.transform(peakValue, peaks.getZUnits());
-                            yMax= (y0-yMax)>(0) ? yMax : (y0);
-                            if (peaksIndicator==PeaksIndicator.MaxLines) {
-                                l.setLine(x0,yMax,x0,yMax);
-                                g.drawLine(x0,yMax,x0,yMax);
-                            } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                                rmax.setRect(x0,yMax,(x1-x0),y0-yMax);
-                                g.setColor(Color.lightGray);
-                                g.fill(rmax);
-                                g.setColor(Color.darkGray);
+            if ( yBase1 >= getRow().getDMinimum() && yBase <= getRow().getDMaximum() ) {
+                for (int ibin=0; ibin < data.getXLength(); ibin++) {
+                    int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
+                    int x1;
+                    x1=x0+1; // 1 pixel wide
+                    double zz= data.getDouble( ibin, j, data.getZUnits() );
+                    if ( !data.getZUnits().isFill(zz) ) {
+                        int yAvg= zAxisComponent.transform( zz, data.getZUnits() );
+                        yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
+                        int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
+                        yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
+                        if ( peaks!=null ) {
+                            double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
+                            if (peakValue <= zAxisMax) {
+                                int yMax= zAxisComponent.transform(peakValue, peaks.getZUnits());
+                                yMax= (y0-yMax)>(0) ? yMax : (y0);
+                                if (peaksIndicator==PeaksIndicator.MaxLines) {
+                                    l.setLine(x0,yMax,x0,yMax);
+                                    g.drawLine(x0,yMax,x0,yMax);
+                                } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
+                                    rmax.setRect(x0,yMax,(x1-x0),y0-yMax);
+                                    g.setColor(Color.lightGray);
+                                    g.fill(rmax);
+                                    g.setColor(Color.darkGray);
+                                }
                             }
                         }
+                        r.setRect(x0,yAvg,(x1-x0),yHeight);
+                        g.fill(r);
                     }
-                    r.setRect(x0,yAvg,(x1-x0),yHeight);
-                    g.fill(r);
                 }
             }
-            
         }
-
+        
         if ( isSliceRebinnedData() ) {
-            DasApplication.getDefaultApplication().getLogger().fine("slicing rebin data");
             super.Data= data;
         }
         
@@ -365,8 +361,12 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     public class ZAxisComponent extends DasCanvasComponent implements java.beans.PropertyChangeListener {
         private DasAxis zAxis;
         private DasPlot parent;
-        private DasRow rowLittle;
-        private DasRow rowLittleDoc;
+        private int littleRowMin;
+        private int littleRowMax;
+        private int docLittleRowMin= -1;
+        private int docLittleRowMax;
+        //private DasRow rowLittle;
+        //private DasRow rowLittleDoc;
         private DasRow row0;
         
         public ZAxisComponent(DasPlot parent, DasAxis zAxis) {
@@ -398,17 +398,19 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             return this.zAxis;
         }
         
-        public void setLittleRow(DasRow row) {
-            rowLittle= row;
+        public void setLittleRow(int min, int max) {
+            littleRowMin= min;
+            littleRowMax= max;
             int zAxisMid= zAxis.getRow().getDMiddle();
-            if (row.contains(zAxisMid))  {
-                rowLittleDoc= row;
+            if ( min <= zAxisMid && zAxisMid < max )  {
+                docLittleRowMin= min;
+                docLittleRowMax= max;
             }
             repaint();
         }
         
         public int transform( double x, Units units ) {
-            int result= zAxis.transform(x,units,rowLittle.getDMaximum(),rowLittle.getDMinimum());
+            int result= zAxis.transform(x,units,littleRowMin,littleRowMax);
             return result;
         }
         
@@ -418,7 +420,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
         protected void paintComponent(Graphics g1) {
             
-            if ( rowLittleDoc==null ) {
+            if ( docLittleRowMin==-1 ) {
                 return;
             }
             
@@ -429,9 +431,9 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             
             int x1= parent.getColumn().getDMaximum()+hlen;
             int x2= zAxis.getColumn().getDMaximum()-hlen;
-            int ylow1= rowLittleDoc.getDMaximum();
+            int ylow1= docLittleRowMax;
             int ylow2= zAxis.getRow().getDMaximum();
-            int yhigh1= rowLittleDoc.getDMinimum();
+            int yhigh1= docLittleRowMin;
             int yhigh2= zAxis.getRow().getDMinimum();
             
             g.setColor(Color.lightGray);
@@ -471,12 +473,9 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
             
-            DasApplication.getDefaultApplication().getLogger().info("targetBinWidth="+x.getUnits().getOffsetUnits().createDatum(x.binWidth()).convertTo(Units.seconds)+" dsBinWidth="+xwidth.convertTo(Units.seconds));
             if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                DasApplication.getDefaultApplication().getLogger().info("rebinning with "+highResRebinner);
                 return highResRebinner.rebin( ds, x, y );
             } else {
-                DasApplication.getDefaultApplication().getLogger().info("rebinning with "+lowResRebinner);
                 return lowResRebinner.rebin( ds, x, y );
             }
         }
