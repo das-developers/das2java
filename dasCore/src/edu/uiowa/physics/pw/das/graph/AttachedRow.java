@@ -24,20 +24,25 @@
 package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
-/**
- *
- * @author  jbf
- */
+/** TODO */
 public class AttachedRow extends DasRow {
     
     private DasRow row;
     
-    /** Creates a new instance of AttachedRow */
+    /** Creates a new instance of AttachedRow
+     * TODO
+     * @param row the new row.
+     * @param minimum the new minimum value for the row in the device space.
+     * @param maximum the new maximum value for the row in the device space.
+     */
     public AttachedRow(DasRow row, double minimum, double maximum) {
         super(row.getParent(),minimum,maximum);
         this.row= row;
     }
     
+    /** Gets the maximum for the row in the device space.
+     * @return the maximum value for the row in the device space.
+     */    
     public double getDMaximum() {
         if (row==null) {
             return 0.;
@@ -47,6 +52,9 @@ public class AttachedRow extends DasRow {
         }
     }
     
+    /** Gets the minimum for the row in the device space.
+     * @return the minimum value for the row in the device space.
+     */    
     public double getDMinimum() {
         if (row==null) { // during construction, this is called.
             return 0.;
@@ -56,25 +64,40 @@ public class AttachedRow extends DasRow {
         }
     }
     
+    /** Gets the height of the row in the device space.
+     * @return the height of the row in the device space.
+     */    
     public double getHeight() {
         return row.getHeight()*(getMaximum()-getMinimum());
     }
     
+    /** Adds a listener to the row to receive DasUpdateEvents.
+     * @param l he new listener.
+     */    
     public void addpwUpdateListener(DasUpdateListener l) {
         super.addpwUpdateListener(l);
         row.addpwUpdateListener(l);
     }
     
+    /** Removes a listener from the row to stop receving DasUpdateEvents.
+     * @param l the listener to be removed.
+     */    
     public void removepwUpdateListener(DasUpdateListener l) {
         super.removepwUpdateListener(l);
         row.removepwUpdateListener(l);
     }
     
+    /** Sets the minimum value for the row in the device space.
+     * @param value the new minimum value of the row in the device space.
+     */    
     public void setDMinimum(double value) {
         double delta= row.getHeight();
         setMinimum((value-row.getDMinimum())/delta);
     }
     
+    /** Sets the maximum value of the row in the device space.
+     * @param value the new maximum value of the row in the device space.
+     */    
     public void setDMaximum(double value) {
         double delta= row.getHeight();
         setMaximum((value-row.getDMinimum())/delta);
