@@ -76,6 +76,19 @@ public class RipplesDataSet implements TableDataSet {
         }
     }
     
+    public double[] getDoubleScan(int i, Units units) {
+        int yLength = getYLength(tableOfIndex(i));
+        double[] array = new double[yLength];
+        for (int j = 0; j < yLength; j++) {
+            array[j] = getDouble(i, j, units);
+        }
+        return array;
+    }
+    
+    public DatumVector getScan(int i) {
+        return DatumVector.newDatumVector(getDoubleScan(i, zUnits), zUnits);
+    }
+    
     public int getInt(int i, int j, Units units) {
         return (int)getDouble(i, j, units);
     }
@@ -158,6 +171,14 @@ public class RipplesDataSet implements TableDataSet {
     
     public int tableStart(int table) {
         return 0;
+    }
+    
+    public DatumVector getYTags(int table) {
+        double[] tags = new double[getYLength(table)];
+        for (int j = 0; j < tags.length; j++) {
+            tags[j] = getYTagDouble(table, j, yUnits);
+        }
+        return DatumVector.newDatumVector(tags, yUnits);
     }
     
 }
