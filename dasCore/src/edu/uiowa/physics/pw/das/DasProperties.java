@@ -35,13 +35,15 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.logging.*;
 
 public class DasProperties extends Properties {
     
     // Contains the global user-configurable parameters that are
     // persistent between sessions.
     
-    private static RenderingHints hints;
+    private RenderingHints hints;
+    private Logger logger;
     private static ArrayList propertyOrder;
     private static Editor editor;
     private static JFrame jframe;
@@ -51,10 +53,10 @@ public class DasProperties extends Properties {
         hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
         RenderingHints.VALUE_ANTIALIAS_ON);
         hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        
         setDefaults();
         propertyOrder= new ArrayList();
         readPersistentProperties();
+        logger= Logger.getLogger("das2");
         setPropertyOrder();
     }
     
@@ -79,6 +81,10 @@ public class DasProperties extends Properties {
     
     public static RenderingHints getRenderingHints() {
         return instance.hints;
+    }
+    
+    public static Logger getLogger() {
+        return instance.logger;
     }
     
     public static boolean isHeadless() {
@@ -120,6 +126,10 @@ public class DasProperties extends Properties {
                     value= edu.uiowa.physics.pw.das.util.Crypt.crypt(value.toString());
                 }
             } else if ( propertyName.equals("debugLevel") ) {
+                String debugLevel= value.toString();                
+                if (debugLevel.equals("endUser")) instance.logger.setLevel(Level.WARNING);
+                else if (debugLevel.equals("dasDeveloper")) instance.logger.setLevel(Level.ALL);
+                else instance.logger.setLevel(Level.parse(debugLevel));
                 edu.uiowa.physics.pw.das.util.DasDie.setDebugVerbosityLevel(value.toString());
             }
             instance.setProperty(propertyName,value.toString());
