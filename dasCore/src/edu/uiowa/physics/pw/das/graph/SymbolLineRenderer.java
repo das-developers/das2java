@@ -132,7 +132,7 @@ public class SymbolLineRenderer extends Renderer {
         }
         
         long milli= System.currentTimeMillis();
-        edu.uiowa.physics.pw.das.DasProperties.getLogger().finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
         lastUpdateMillis= milli;
         
         graphics.setRenderingHints(hints0);
