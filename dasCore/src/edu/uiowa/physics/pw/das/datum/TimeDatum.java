@@ -38,7 +38,7 @@ import java.util.TimeZone;
 public class TimeDatum extends Datum {
     
     /** Creates a new instance of TimeDatum */
-    private TimeDatum(double value, Units units) {
+    protected TimeDatum(double value, Units units) {
         super(value,units);
     }
     
