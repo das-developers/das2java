@@ -198,7 +198,6 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
                 updateImmediately();
             }
             resize();
-            repaint();
         }
     }
     

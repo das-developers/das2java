@@ -199,13 +199,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         if (parent == null || !parent.isDisplayable() || dsd == null) return;
         
-        try {
-            updatePlotImage(xAxis, yAxis, null);
-        }
-        catch (DasException de) {
-            DasExceptionHandler.handle(de);
-        }
-
         if ( dsd instanceof ConstantDataSetDescriptor ) {
             try {
                 ds= dsd.getDataSet( null, null, null, null );
@@ -250,6 +243,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 dsd.requestDataSet(xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel);
             }
         };
+
+        //Give the user something pretty to look at.
+        //This will scale the current data, or move it off screen
+        //as a sort of preview.
+        try {
+            updatePlotImage(xAxis, yAxis, null);
+        }
+        catch (DasException de) {
+            //We don't care if this throws an exception.
+        }
 
         RequestProcessor.invokeLater(request, getParent().getCanvas());
     }

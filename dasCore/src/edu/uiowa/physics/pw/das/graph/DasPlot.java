@@ -787,10 +787,17 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @see       #processDasUpdateEvent
      */
     protected void processEvent(AWTEvent e) {
-        super.processEvent(e);
         if (e instanceof DasRendererUpdateEvent) {
             DasRendererUpdateEvent drue = (DasRendererUpdateEvent)e;
             drue.getRenderer().updateImmediately();
+            repaint();
         }
+        else {
+            super.processEvent(e);
+        }
+    }
+    
+    public void repaint() {
+        super.repaint();
     }
 }
