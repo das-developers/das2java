@@ -14,4 +14,7 @@ jbf> Suggested Properties for DataSets:
   defaultRenderer    Renderer Object
   rebinner           Rebinner Object
   dataPlanes         String[]
+  cacheTag           Description of the start, end and resolution satisfied by this
+                     data set.
+
 
