@@ -73,7 +73,8 @@ public class VectorUtil {
         }
         pout.println(" />");
         
-        pout.print("<y type=\"asciiTab10\" yUnits=\""+vds.getYUnits()+"\" />");
+        pout.println("<y type=\"asciiTab10\" yUnits=\""+vds.getYUnits()+"\" />");
+        pout.print("</packet>");
                                 
         NumberFormat xnf= new DecimalFormat("00000.000");
         NumberFormat ynf= new DecimalFormat("0.00E00");                
