@@ -59,14 +59,32 @@ public final class DatumUtil {
         
         double limit= DasMath.exp10( (int)DasMath.log10( DasMath.max( array ) ) - 7 );
         double gcd= DasMath.gcd( array, limit );
+        
+        int smallestExp=99;
+        int ismallestExp=-1;
+        for ( int j=0; j<datums.getLength(); j++ ) {
+            double d= datums.get(j).doubleValue(units);
+            if ( Math.abs(d)>(gcd*0.1) ) { // don't look at fuzzy zero
+                int ee= (int)Math.floor(0.05+DasMath.log10(Math.abs(d)));
+                if ( ee<smallestExp ) {
+                    smallestExp=ee;
+                    ismallestExp= j;
+                }
+            }
+        }
+                
         Datum resolution= units.createDatum(gcd);
-        return bestFormatter( datums.get(0), datums.get(0).add( resolution ), 1 );
+        Datum base= datums.get(ismallestExp);
+        if ( base.lt(units.createDatum(0.) ) ) {
+            base= base.multiply(-1);
+        }
+        return bestFormatter( base, base.add( resolution ), 1 );
     }
     
     public static int fractionalDigits( Datum resolution ) {
         double d= Math.abs( resolution.doubleValue() );
         double frac= d-(int)d;
-        if ( frac==0. ) { 
+        if ( frac==0. ) {
             int e=1;
             int emax= (int)DasMath.log10(d);
             while ( e<emax && ( d/DasMath.exp10(e) % 1 == 0. ) ) e++;
@@ -76,7 +94,7 @@ public final class DatumUtil {
             int emin= -18;
             boolean notDone= true;
             while ( e>emin && notDone  ) {
-		double remain= frac/DasMath.exp10(e) % 1;
+                double remain= frac/DasMath.exp10(e) % 1;
                 if ( remain>0.5 ) remain= 1.0 - remain;
                 notDone= remain > (1/10000.);
                 e--;
@@ -107,7 +125,7 @@ public final class DatumUtil {
                 return factory.defaultFormatter();
             }
             
-            int fracDigits= fractionalDigits( maximum.subtract(minimum).divide(nsteps) );   
+            int fracDigits= fractionalDigits( maximum.subtract(minimum).divide(nsteps) );
             
             int smallestExp=99;
             
@@ -122,7 +140,9 @@ public final class DatumUtil {
                     if ( ee<smallestExp ) smallestExp=ee;
                 }
             }
-            if ( smallestExp < -3 || smallestExp > 3 ) {                
+            
+            System.out.println("smallest Exp: "+ smallestExp);
+            if ( smallestExp < -3 || smallestExp > 3 ) {
                 return new ExponentialDatumFormatter( smallestExp - (-1*fracDigits), smallestExp );
             } else {
                 int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
