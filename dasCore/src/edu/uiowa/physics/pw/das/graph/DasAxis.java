@@ -202,6 +202,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
     }
     
+    public DasAxis( DatumRange range, int orientation ) {
+        this( range.min(), range.max(), orientation );
+    }
+    
     private DasAxis(int orientation) {
         super();
         setOpaque(false);
