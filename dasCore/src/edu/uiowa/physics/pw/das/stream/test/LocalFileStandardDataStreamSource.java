@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.stream.test;
 
+import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.stream.*;
@@ -30,6 +31,7 @@ import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.datum.Datum;
 
 import java.io.*;
+import java.util.Map;
 
 /**
  *
@@ -44,7 +46,7 @@ public class LocalFileStandardDataStreamSource implements StandardDataStreamSour
         this.file = file;
     }
     
-    public InputStream getInputStream(StreamDataSetDescriptor dsd, edu.uiowa.physics.pw.das.datum.Datum start, edu.uiowa.physics.pw.das.datum.Datum end) throws edu.uiowa.physics.pw.das.DasException {
+    public InputStream getInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException {
         try {
             return new FileInputStream(file);
         }
@@ -53,14 +55,14 @@ public class LocalFileStandardDataStreamSource implements StandardDataStreamSour
         }
     }
     
-    public InputStream getReducedInputStream(StreamDataSetDescriptor dsd, edu.uiowa.physics.pw.das.datum.Datum start, edu.uiowa.physics.pw.das.datum.Datum end, edu.uiowa.physics.pw.das.datum.Datum timeResolution) throws edu.uiowa.physics.pw.das.DasException {
+    public InputStream getReducedInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
         return getInputStream(dsd, start, end);
     }
     
     public void reset() {
     }
     
-    public static DataSetDescriptor newDataSetDescriptor(java.util.Map map) throws DataSetDescriptorNotAvailableException {
+    public static DataSetDescriptor newDataSetDescriptor(Map map) throws DataSetDescriptorNotAvailableException {
         String filename = (String)map.get("file");
         File file = new File(filename);
         StreamDescriptor sd = new StreamDescriptor();
