@@ -42,7 +42,7 @@ public class DasApplication {
         LoggerId( String name ) {
             this.name= name;
             this.logger= Logger.getLogger(name);
-            this.logger.setLevel(Level.ALL);
+            this.logger.setLevel(Level.WARNING);
             this.logger.log( this.logger.getLevel(), name +" logging at "+this.logger.getLevel() );
         }
         public String toString() {
