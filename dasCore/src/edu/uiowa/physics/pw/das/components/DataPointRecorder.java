@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.*;
@@ -36,6 +37,9 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
         }
         double get(int i) {
             return data[i];
+        }
+        public String toString() {
+            return ""+data[0]+" "+data[1];
         }
     }
     
@@ -84,6 +88,7 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
             }            
             r.write(s.toString());
             r.newLine();
+            DasProperties.getInstance().put("components.DataPointRecorder.lastFileSave",  file.toString());
         }
         r.close();
         
@@ -105,22 +110,28 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
                 DataPointSelected(e);
             }            
         }
+        DasProperties.getInstance().put("components.DataPointRecorder.lastFileLoad",  file.toString());
         
     }
     
     private class MyMouseAdapter extends MouseAdapter {
         JPopupMenu popup;
-        int selectedRow;
-        JTable parent;
+        final JTable parent;
         
-        MyMouseAdapter(JTable parent) {
+        MyMouseAdapter(final JTable parent) {
             this.parent= parent;
             popup= new JPopupMenu("Options"); 
             popup.addSeparator();
             JMenuItem menuItem= new JMenuItem("Delete Row");
             menuItem.addActionListener( new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    deleteRow(selectedRow);
+                    int[] selectedRows= parent.getSelectedRows();
+                    for ( int i=0; i<selectedRows.length; i++ ) {                        
+                        deleteRow(selectedRows[i]);
+                        for ( int j=i+1; j<selectedRows.length; j++ ) {
+                            selectedRows[j]--; // indeces change because of deletion
+                        }
+                    }
                 }
             });
             popup.add(menuItem);
@@ -128,8 +139,7 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
         
         MouseAdapter mm;
         public void mousePressed(MouseEvent e) {          
-            if ( e.getButton()==MouseEvent.BUTTON3 ) {
-                selectedRow= parent.rowAtPoint(e.getPoint());            
+            if ( e.getButton()==MouseEvent.BUTTON3 ) {                
                 popup.show( e.getComponent(), e.getX(), e.getY());
             }
         }
@@ -158,6 +168,14 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
         saveButton.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser jj= new JFileChooser();
+                String lastFileString= (String)DasProperties.getInstance().get("components.DataPointRecorder.lastFileSave");
+                if ( lastFileString==null ) lastFileString="";
+                File lastFile= null;
+                if ( lastFileString!="" ) {
+                        lastFile= new File( lastFileString );
+                        jj.setSelectedFile(lastFile);
+                }                                        
+                
                 int status= jj.showSaveDialog(controlPanel);
                 if ( status==JFileChooser.APPROVE_OPTION ) {
                     try { 
@@ -172,6 +190,13 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
         loadButton.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser jj= new JFileChooser();
+                String lastFileString= (String)DasProperties.getInstance().get("components.DataPointRecorder.lastFileLoad");
+                if ( lastFileString==null ) lastFileString="";
+                File lastFile= null;
+                if ( lastFileString!="" ) {
+                        lastFile= new File( lastFileString );
+                        jj.setSelectedFile(lastFile);
+                }                                        
                 int status= jj.showOpenDialog(controlPanel);
                 if ( status==JFileChooser.APPROVE_OPTION ) {
                     try {
