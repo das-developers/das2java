@@ -199,14 +199,14 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     }
     
     public String toString() {
-        return getDataSetID();
+        return "dsd "+getDataSetID();
     }
     
     protected DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         if ( resolution != null && !resolution.isFinite() ) throw new IllegalArgumentException( "resolution is not finite" );
         InputStream in;
         DataSet result;
-        if ( isServerSideReduction() ) {
+        if ( serverSideReduction ) {
             DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getting stream from standard data stream source");
             in= standardDataStreamSource.getReducedInputStream( this, start, end, resolution);
         } else {
