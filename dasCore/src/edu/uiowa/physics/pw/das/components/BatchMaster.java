@@ -56,10 +56,11 @@ public class BatchMaster {
         return new TaskOutputDescriptor() {
             public void completeTask( DatumRange range ) {
                 Image image= BatchMaster.this.canvas.getImage( canvas.getWidth(), canvas.getHeight() );
+                String rangeString= range.toString().replaceAll(":","-").replaceAll(" ","_");
                 String s= pngFilenameTemplate
                         .replaceAll( "BEGIN", range.min().toString().replaceAll(":","-") )
                         .replaceAll( "END", range.max().toString().replaceAll(":","-") )
-                        .replaceAll( "RANGE", range.toString().replaceAll(":","-") );
+                        .replaceAll( "RANGE", rangeString );
                 try {
                     OutputStream out= new FileOutputStream( s );
                     try {
