@@ -186,6 +186,9 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         Pattern labelPattern = Pattern.compile("\\s*label\\((\\d+)\\)\\s*");
         Matcher matcher;
         StreamDescriptor result = new StreamDescriptor();
+        
+        result.properties.put("legacy", "true");
+        
         for (String line = in.readLine(); line != null; line = in.readLine()) {
             //Get rid of any comments
             index = line.trim().indexOf(';');
