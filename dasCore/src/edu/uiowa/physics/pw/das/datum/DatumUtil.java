@@ -98,7 +98,7 @@ public final class DatumUtil {
             return -1*(e);
         } else {
             int e= (int)Math.floor( DasMath.log10(frac)+0.0001 );
-            int emin= -18;
+            int emin= (int)DasMath.log10(d) - 18;            
             boolean notDone= true;
             while ( e>emin && notDone  ) {
                 double remain= frac/DasMath.exp10(e) % 1;
