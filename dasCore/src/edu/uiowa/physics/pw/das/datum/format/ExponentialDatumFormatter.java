@@ -64,7 +64,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         if ( x == 0. ) return "0.";
         double exp= DasMath.exp10(exponent);
         double mant= x/exp;
-        double tenToN= DasMath.exp10(digits-1);
+        double tenToN= DasMath.exp10(digits);
         mant= Math.round( mant * tenToN ) / tenToN;
         return mantFormat.format(mant)+"E"+exponent;
     }
@@ -83,7 +83,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
     }
     
     public String toString() {
-        return mantFormatString + "Eee";
+        return mantFormatString + "E"+exponent;
     }
     
 }
