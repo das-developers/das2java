@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -246,8 +247,8 @@ public class StreamTool {
         ReadStreamStructure struct = new ReadStreamStructure(stream, handler);
         try {
             StreamDescriptor sd = getStreamDescriptor(struct);
-            if ("gzip".equals(sd.getCompression())) {
-                stream = getGZIPChannel(stream);
+            if ("deflate".equals(sd.getCompression())) {
+                stream = getInflaterChannel(stream);
             }
             handler.streamDescriptor(sd);
             while (stream.read(struct.bigBuffer) != -1) {
@@ -505,7 +506,7 @@ public class StreamTool {
         }
     }
     
-    private static ReadableByteChannel getGZIPChannel(ReadableByteChannel channel) throws IOException {
-        return Channels.newChannel(new GZIPInputStream(Channels.newInputStream(channel)));
+    private static ReadableByteChannel getInflaterChannel(ReadableByteChannel channel) throws IOException {
+        return Channels.newChannel(new InflaterInputStream(Channels.newInputStream(channel)));
     }
 }
