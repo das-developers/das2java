@@ -45,6 +45,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     // avoid get/set methods unless you know what you're doing.
     protected DataSet ds;
     
+    private boolean fullResolution = true;
+    
     DasPlot parent;
     
     private DasProgressPanel progressPanel;
@@ -79,6 +81,15 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     protected Renderer(DasPlot parent, DataSet ds) {
         this((ds == null ? (DataSetDescriptor)null : new ConstantDataSetDescriptor(ds)));
         this.parent = parent;
+    }
+    
+    public boolean isFullResolution() {
+        return fullResolution;
+    }
+    
+    public void setFullResolution(boolean b) {
+        if (fullResolution == b) return;
+        fullResolution = b;
     }
     
     public DasPlot getParent() { return this.parent; }
@@ -289,6 +300,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             }
             try {
                 progressPanel.setLabel("Loading Data Set" );
+                if (!fullResolution) {
+                    resolution = null;
+                }
                 drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
                 //This just gives the user something pretty to look at while data is loading.
                 updatePlotImage(xAxis, yAxis, null);

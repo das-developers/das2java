@@ -29,6 +29,7 @@ public class RendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
         new Property("dataSetID", AccessLevel.DASML, "getDataSetID", "setDataSetID", null),
+        new Property("fullResolution", AccessLevel.DASML, "isFullResolution", "setFullResolution", null),
     };
     
     public RendererBeanInfo() {
