@@ -275,7 +275,15 @@ public class IDLParser {
         double[] d= idlp.parseIDLArray(s);        
         System.out.println("Note the parser gets this wrong:");
         
-        System.out.println(d[0]);
+        s= "10^(findgen(320)/319.0*4.47966+1.42765)";
+        d= idlp.parseIDLArray(s);
+        
+        System.out.println("first d= "+d[0]+" last d="+d[d.length-1]);
+        
+        s= "10^((findgen(320)/319.0)*4.47966+1.42765)";
+        d= idlp.parseIDLArray(s);
+        
+        System.out.println("first d= "+d[0]+" last d="+d[d.length-1]);
         
     }
     
