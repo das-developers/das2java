@@ -132,6 +132,30 @@ public class TableDataSetBuilder {
                 insertYScan(tds.getXTagDouble(i, xUnits), yCoordinates, scan);
             }
         }
+        for (Iterator i = planeIDs.iterator(); i.hasNext();) {
+            String planeID = (String)i.next();
+            TableDataSet ptds = (TableDataSet)tds.getPlanarView(planeID);
+            if (ptds != null) {
+                append(ptds, planeID);
+            }
+        }
+    }
+    
+    private void append(TableDataSet tds, String planeID) {
+        Units zUnits = (Units)zUnitsMap.get(planeID);
+        for (int table = 0; table < tds.tableCount(); table++) {
+            double[] yCoordinates = new double[tds.getYLength(table)];
+            for (int j = 0; j < yCoordinates.length; j++) {
+                yCoordinates[j] = tds.getYTagDouble(table, j, yUnits);
+            }
+            double[] scan = new double[tds.getYLength(table)];
+            for (int i = tds.tableStart(table); i < tds.tableEnd(table); i++) {
+                for (int j = 0; j < scan.length; j++) {
+                    scan[j] = tds.getDouble(i, j, zUnits);
+                }
+                insertYScan(tds.getXTagDouble(i, xUnits), yCoordinates, scan, planeID);
+            }
+        }
     }
     
     public void setXUnits(Units units) {
