@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import java.util.logging.*;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
@@ -35,6 +36,9 @@ public class Splash extends JWindow {
     
     public static Splash instance=null;
     
+    private Handler handler;
+    private JLabel messageLabel;
+    
     public static String getVersion() {
         //DName: das_20030505_01_beta D
         String cvsTagName= "$Name$";
@@ -45,6 +49,26 @@ public class Splash extends JWindow {
             version= cvsTagName.substring(6,cvsTagName.length()-2);
         }
         return version;
+    }
+    
+    public Handler getLogHandler() {
+        if ( handler==null ) {
+            handler= createhandler();
+        }
+        return handler;
+    }
+    
+    private Handler createhandler() {
+        Handler result= new Handler() {
+            Handler handler;            
+            public void publish( LogRecord logRecord ) {                
+                System.out.println( logRecord.getMessage() );
+                messageLabel.setText(logRecord.getMessage() );
+            }
+            public void flush() {}
+            public void close() {}
+        };
+        return result;
     }
     
     private static ImageIcon getSplashImage() {
@@ -74,7 +98,16 @@ public class Splash extends JWindow {
         super();
         JPanel panel= new JPanel(new BorderLayout());
         panel.add(new JLabel(getSplashImage()),BorderLayout.CENTER);
-        panel.add(new JLabel("version "+getVersion()+"   ",JLabel.RIGHT),BorderLayout.SOUTH);
+        
+        Box bottomPanel= Box.createHorizontalBox();
+        
+        messageLabel= new JLabel("");
+        messageLabel.setMinimumSize( new Dimension( 200, 10 ) );
+        bottomPanel.add( messageLabel );
+        bottomPanel.add( Box.createHorizontalGlue() );
+        bottomPanel.add( new JLabel("version "+getVersion()+"   ",JLabel.RIGHT) );
+        
+        panel.add( bottomPanel, BorderLayout.SOUTH );
         this.setContentPane(panel);
         this.pack();
         //this.setLocation(300,300);
@@ -84,8 +117,13 @@ public class Splash extends JWindow {
     public static void main( String[] args ) {
         System.out.println("This is das2 version "+getVersion());
         Splash.showSplash();
+        Logger.getLogger("").addHandler( Splash.getInstance().getLogHandler() );
         try {
-            Thread.sleep(3000);
+            for ( int i=0; i<6; i++ ) {
+                Thread.sleep(500);
+                Logger.getLogger("").info("i="+i);
+                //Splash.getInstance().messageLabel.setText( "ii-="+i );
+            }
         } catch ( java.lang.InterruptedException e ) {}        
         Splash.hideSplash();        
     }
