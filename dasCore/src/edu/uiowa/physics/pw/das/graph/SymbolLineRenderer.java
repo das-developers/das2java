@@ -45,10 +45,9 @@ public class SymbolLineRenderer extends Renderer {
     private Psym psym = Psym.NONE;
     private double symSize = 1.0; // radius in pixels
     private float lineWidth = 1.5f; // width in pixels
-    private boolean dashed = false;
-    private float dashLength = 2f;
     private boolean histogram = false;
-    private Stroke stroke;
+    //private Stroke stroke;
+    private PsymConnector psymConnector = PsymConnector.SOLID;
     
     /** Holds value of property color. */
     private SymColor color= SymColor.black;
@@ -71,14 +70,6 @@ public class SymbolLineRenderer extends Renderer {
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         long timer0= System.currentTimeMillis();
-        if (stroke == null && lineWidth > 0f) {
-            if (dashed) {
-                stroke = new BasicStroke(lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, lineWidth, new float[]{lineWidth*dashLength, lineWidth*dashLength}, 0f);
-            }
-            else {
-                stroke = new BasicStroke(lineWidth);
-            }
-        }
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         if (dataSet == null || dataSet.getXLength() == 0) {            
@@ -141,10 +132,8 @@ public class SymbolLineRenderer extends Renderer {
             }
         }
         
-        if (stroke != null && path != null) {
-            graphics.setStroke(stroke);
-            graphics.draw(path);
-            graphics.setStroke(new BasicStroke(1.0f));
+        if (path != null) {
+            psymConnector.draw(graphics, path, lineWidth);
         }
 
         for (int index = ixmin; index <= ixmax; index++) {
@@ -249,6 +238,15 @@ public class SymbolLineRenderer extends Renderer {
         }
     }
     
+    
+    public PsymConnector getPsymConnector() {
+        return psymConnector;
+    }
+    
+    public void setPsymConnector(PsymConnector p) {
+        psymConnector = p;
+        refreshImage();
+    }
 
     /** Getter for property psym.
      * @return Value of property psym.
@@ -358,52 +356,6 @@ public class SymbolLineRenderer extends Renderer {
     public void setAntiAliased(boolean antiAliased) {
         this.antiAliased = antiAliased;
         refreshImage();
-    }
-    
-    /** Indicates that lines drawn by this renderer will be dashed
-     * @see #getDashLength();
-     * @return the value of the dashed property.
-     */
-    public boolean isDashed() {
-        return dashed;
-    }
-    
-    /** Sets the value of the dashed property.
-     * @see #isDashed()
-     * @param b the new value of the dashed property
-     */
-    public void setDashed(boolean b) {
-        if (dashed != b) {
-            dashed = b;
-            stroke = null;
-            if (getParent() != null) {
-                getParent().repaint();
-            }
-        }
-    }
-    
-    /** dashLength is the length of each dash and the spaces
-     * in between them.  The actual length of each dash
-     * will be dashLength * lineWidth.  This property is
-     * ignored if dashed is false.
-     * @return the value of the dashLength property.
-     */
-    public float getDashLength() {
-        return dashLength;
-    }
-    
-    /** sets the values of the dashLength property
-     * @see #getDashLength()
-     * @param f the new value of the dashLength property
-     */
-    public void setDashLength(float f) {
-        if (dashLength != f) {
-            dashLength = f;
-            stroke = null;
-            if (getParent() != null) {
-                getParent().repaint();
-            }
-        }
     }
     
     public boolean isHistogram() {

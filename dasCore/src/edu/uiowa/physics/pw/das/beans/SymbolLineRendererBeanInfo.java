@@ -29,8 +29,7 @@ public class SymbolLineRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
         new Property("psym", AccessLevel.DASML, "getPsym", "setPsym", null),
-        new Property("dashed", AccessLevel.DASML, "isDashed", "setDashed", null),
-        new Property("dashLength", AccessLevel.DASML, "getDashLength", "setDashLength", null),
+        new Property("psymConnector", AccessLevel.DASML, "getPsymConnector", "setPsymConnector", null),
         new Property("histogram", AccessLevel.DASML, "isHistogram", "setHistogram", null),
         new Property("color", AccessLevel.DASML, "getColor", "setColor", null),
         new Property("lineWidth", AccessLevel.DASML, "getLineWidth", "setLineWidth", null),
