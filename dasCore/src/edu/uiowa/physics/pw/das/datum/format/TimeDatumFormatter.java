@@ -75,7 +75,7 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     private MessageFormat format;
     
-    private double[] scaleSeconds;
+    private int[] scaleSeconds;
     
     /** Creates a new instance of TimeDatumFormatter */
     public TimeDatumFormatter(String formatString) throws ParseException {
@@ -143,7 +143,7 @@ public class TimeDatumFormatter extends DatumFormatter {
                     }break;
                     case 'S': {
                         int digitCount = format.length();
-                        int fieldIndex = addScaleFactor(Math.pow(10.0, (double)digitCount));
+                        int fieldIndex = addScaleFactor(digitCount);
                         appendSubFormat(formatString, fieldIndex, digitCount);
                     }
                     break;
@@ -171,12 +171,12 @@ public class TimeDatumFormatter extends DatumFormatter {
         buffer.append("}");
     }
 
-    private int addScaleFactor(double scale) {
+    private int addScaleFactor(int scale) {
         if (scaleSeconds == null) {
-            scaleSeconds = new double[1];
+            scaleSeconds = new int[1];
         }
         else {
-            double[] temp = new double[scaleSeconds.length + 1];
+            int[] temp = new int[scaleSeconds.length + 1];
             System.arraycopy(scaleSeconds, 0, temp, 0, scaleSeconds.length);
             scaleSeconds = temp;
         }
@@ -186,9 +186,10 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
         int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
+        int maxScale = (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
-        int seconds = (int)Math.floor(ts.seconds);
+        int seconds = (int)Math.round(ts.seconds * maxScale) / maxScale;
         double fracSeconds = ts.seconds - seconds;
         array[YEAR_FIELD_INDEX] = new Integer(ts.year);
         array[MONTH_FIELD_INDEX] = new Integer(ts.month);
@@ -198,10 +199,18 @@ public class TimeDatumFormatter extends DatumFormatter {
         array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
         array[SECONDS_FIELD_INDEX] = new Integer(seconds);
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
-            int value = (int)Math.round(fracSeconds * scaleSeconds[i - TIMESTAMP_FIELD_COUNT]);
+            int value = (int)Math.round(fracSeconds * Math.pow(10, scaleSeconds[i - TIMESTAMP_FIELD_COUNT]));
             array[i] = new Integer(value);
         }
         return array;
+    }
+    
+    private static int max(int[] list) {
+        int max = Integer.MIN_VALUE;
+        for (int i = 0; i < list.length; i++) {
+            max = Math.max(max, list[i]);
+        }
+        return max;
     }
 
 }
