@@ -360,10 +360,10 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             DatumVector vector = sd.getXDescriptor().read(data);
             Datum xTag = start.add(vector.get(0));
             DatumVector[] z = new DatumVector[planeCount];
-            for (int planeIndex = 0; planeIndex < z.length; planeIndex++) {
+            for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
                 z[planeIndex]= yScans[planeIndex].read(data);
-                builder.insertYScan(xTag, y, z, planeIDs);
             }
+            builder.insertYScan(xTag, y, z, planeIDs);
         }
         builder.addProperties(properties);
         TableDataSet result = builder.toTableDataSet();
