@@ -164,6 +164,11 @@ public final class DatumUtil {
      */    
     public static Datum asOrderOneUnits(Datum d) {
         Units dunits = d.getUnits();
+        
+        // Don't use location units.
+        if (dunits instanceof LocationUnits)
+            return d;
+        
         Units[] conversions = dunits.getConvertableUnits();
         
         double bestScore = 0;
