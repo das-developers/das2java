@@ -24,6 +24,8 @@ public class ArgumentList {
     
     HashMap isBoolean;
     
+    ArrayList requireOneOfList;
+    
     private String UNSPECIFIED = new String("__unspecified__");
     
     private String REFERENCEWITHOUTVALUE = new String( "__referencewithoutvalue__" );
@@ -43,6 +45,7 @@ public class ArgumentList {
         reverseNames= new HashMap();
         abbrevs= new HashMap();
         formUsed= new HashMap();
+        requireOneOfList= new ArrayList();
     }
     
     public String getValue(String key) {
@@ -68,6 +71,10 @@ public class ArgumentList {
         positionKeys[position]= key;
         descriptions.put(key, description);
         values.put( key, UNSPECIFIED );
+    }
+    
+    public void requireOneOf( String[] keyNames ) {
+        requireOneOfList.add(keyNames);
     }
     
     public void addOptionalPositionArgument(int position, String key, String defaultValue, String description) {
@@ -158,27 +165,46 @@ public class ArgumentList {
     private void checkArgs() {
         boolean error= false;
         java.util.List errorList= new java.util.ArrayList(); // add strings to here
-        for ( int i=0; i<nposition; i++ ) {
+        for ( int i=0; !error & i<nposition; i++ ) {
             if ( values.get( positionKeys[i] ) == this.UNSPECIFIED ) {
                 errorList.add( "Expected more positional arguments, only got "+i );
                 error= true;
             }
         }
-        Iterator i= values.keySet().iterator();
-        while ( i.hasNext() ) {
-            Object key= i.next();
-            if ( key.equals("help") ) {
-                printUsage();
-                System.exit(-1);
+        if ( !error ) {
+            Iterator i= values.keySet().iterator();
+            while ( i.hasNext() ) {
+                Object key= i.next();
+                if ( key.equals("help") ) {
+                    printUsage();
+                    System.exit(-1);
+                }
+                if ( values.get( key )==this.UNSPECIFIED ) {
+                    errorList.add( "Argument needed: --" + reverseNames.get( key ) );
+                }
+                if ( values.get( key )== this.REFERENCEWITHOUTVALUE ) {
+                    errorList.add( "Switch requires argument: "+formUsed.get(key));
+                }
+                if ( values.get( key ) == this.UNDEFINED_SWITCH ) {
+                    errorList.add( "Not a valid switch: "+formUsed.get(key) );
+                }
             }
-            if ( values.get( key )==this.UNSPECIFIED ) {
-                errorList.add( "Argument needed: --" + reverseNames.get( key ) );
-            }
-            if ( values.get( key )== this.REFERENCEWITHOUTVALUE ) {
-                errorList.add( "Switch requires argument: "+formUsed.get(key));
-            }
-            if ( values.get( key ) == this.UNDEFINED_SWITCH ) {
-                errorList.add( "Not a valid switch: "+formUsed.get(key) );
+        }
+        
+        if ( !error ) {
+            for ( int i=0; i<requireOneOfList.size(); i++ ) {
+                String[] keys= (String[])requireOneOfList.get(i);
+                boolean haveValue=false;
+                for ( i=0;i<keys.length;i++ ) {
+                    if ( !values.get(keys[i]).equals(UNSPECIFIED) &
+                        !values.get(keys[i]).equals(UNDEFINED_SWITCH) &
+                        !values.get(keys[i]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
+                }                
+                if ( !haveValue ) {
+                    StringBuffer list= new StringBuffer( (String)reverseNames.get( keys[0] ) );
+                    for ( i=1;i<keys.length;i++ ) list.append(", "+(String)reverseNames.get( keys[0] ) );      
+                    errorList.add("One of the following needs to be specified: "+list.toString());
+                }
             }
         }
         
