@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,6 +65,22 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         maximumTaskPosition = -1;
         transferRateString= "";
         lastTaskTime= Integer.MAX_VALUE;
+    }
+    
+    public static DasProgressPanel createComponentPanel( DasCanvasComponent component, String initialMessage ) {
+        DasProgressPanel progressPanel= new DasProgressPanel( initialMessage );
+        
+        progressPanel.setSize(progressPanel.getPreferredSize());
+                
+        int x= component.getColumn().getDMiddle();
+        int y= component.getRow().getDMiddle();
+        
+        progressPanel.setLocation( x - progressPanel.getWidth()/2, y - progressPanel.getHeight()/2 );
+        
+        ((Container)(component.getCanvas().getGlassPane())).add(progressPanel);
+        
+        return progressPanel;
+        
     }
     
     /** Returning true here keeps the progress bar from forcing the whole canvas

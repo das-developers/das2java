@@ -245,16 +245,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         double deviceRange = Math.floor(getColumn().getDMaximum() + 0.5) - Math.floor(getColumn().getDMinimum() + 0.5);
         double resolution =  dataRange/deviceRange;
         if (progressPanel == null) {
-            progressPanel = new DasProgressPanel("loading data set");
-            ((Container)((DasCanvas)getParent()).getGlassPane()).add(progressPanel);
+            progressPanel = DasProgressPanel.createComponentPanel(this,"loading data set");            
         }
-        progressPanel.setSize(progressPanel.getPreferredSize());
-        
-        int x= xAxis.getColumn().getDMiddle();
-        int y= xAxis.getRow().getDMiddle();
-        
-        progressPanel.setLocation( x - progressPanel.getWidth()/2,
-        y - progressPanel.getHeight()/2 );
         
         DataRequestor requestor = new DataRequestor() {
             public void exception(Exception exception) {
@@ -300,10 +292,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         int xSize= getColumn().getDMaximum() - x;
         int ySize= getRow().getDMaximum() - y;
         
-        Rectangle clip= (Rectangle)graphics1.getClip();
-        if ( clip.y > ySize ) {            
+        Rectangle clip= (Rectangle)graphics1.getClip();        
+        if ( ( clip.y + getY() ) >= ( y + ySize ) ) {            
             return;
         }
+        
         Graphics2D graphics= (Graphics2D)graphics1;
         
         graphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
@@ -419,7 +412,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected class RebinListener implements java.beans.PropertyChangeListener {
         public void propertyChange(java.beans.PropertyChangeEvent e) {
-            DasApplication.getDefaultApplication().getLogger().info("rebin listener got property change");
+//            DasApplication.getDefaultApplication().getLogger().info("rebin listener got property change: "+e.getNewValue());
             markDirty();
             DasPlot.this.update();
         }
