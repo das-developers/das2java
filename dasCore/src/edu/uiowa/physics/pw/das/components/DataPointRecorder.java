@@ -7,6 +7,8 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.*;
@@ -23,14 +25,14 @@ import javax.swing.table.*;
  *
  * @author  jbf
  */
-public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.das.event.DataPointSelectionListener {
+public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
     protected JTable textArea;
     protected JScrollPane scrollPane;
     protected DataPointReporter reporter;
     protected ArrayList dataPoints;
     protected Units[] unitsArray;
     protected DatumFormatter[] formatterArray;
-    protected AbstractTableModel myTableModel;
+    protected AbstractTableModel myTableModel;    
     
     protected class DataPoint {
         double[] data;
@@ -105,6 +107,37 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
         update();
     }
     
+    class MyDataSetDescriptor extends XMultiYDataSetDescriptor {
+        MyDataSetDescriptor() {
+            super(null);
+        }
+        public void fireUpdate() {
+                fireDataSetUpdateEvent( new DataSetUpdateEvent(this) );
+        }
+        public DataSet getDataSet( Datum s1, Datum s2, Datum s3, DasProgressMonitor monitor ) throws DasException {
+            if ( dataPoints.size()==0 ) {
+                return null;
+            } else {
+                XMultiYDataSet result= new XMultiYDataSet( unitsArray[0], unitsArray[1] );
+                XMultiY[] data= new XMultiY[dataPoints.size()];
+                for ( int irow= 0; irow<dataPoints.size(); irow++ ) {
+                    DataPoint dp= (DataPoint)dataPoints.get(irow);
+                    data[irow]= new XMultiY(dp.get(0), new double[] { dp.get(1) });
+                }
+                result.data= data;
+                return result;
+            }
+        }
+        
+    }
+    private MyDataSetDescriptor dataSetDescriptor;
+        
+    public XMultiYDataSetDescriptor getDataSetDescriptor() {
+        if ( dataSetDescriptor==null ) {
+            dataSetDescriptor= new MyDataSetDescriptor();
+        } 
+        return dataSetDescriptor;
+    }
     
     public void saveToFile( File file ) throws IOException {
         FileOutputStream out= new FileOutputStream( file );
@@ -145,7 +178,7 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
                         comment= m.group(1);
                     }
                 }
-                    
+                
                 DataPointSelectionEvent e;
                 if ( comment.equals("") ) {
                     e= new DataPointSelectionEvent(this, x, y );
@@ -256,6 +289,17 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
         controlPanel.add(saveButton);
         controlPanel.add(loadButton);
         
+        JButton updateButton= new JButton("Update");        
+        updateButton.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // what if no one is listening? 
+                if ( dataSetDescriptor!=null ) {
+                   dataSetDescriptor.fireUpdate();
+                }
+            }
+        } );
+        
+        controlPanel.add(updateButton);
         
         this.add(controlPanel,BorderLayout.SOUTH);
     }
@@ -305,7 +349,7 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
         }
         String comment="";
         if ( e instanceof CommentDataPointSelectionEvent ) {
-            comment= ((CommentDataPointSelectionEvent)e).getComment();            
+            comment= ((CommentDataPointSelectionEvent)e).getComment();
         }
         dataPoints.add(new DataPoint(e.getX().doubleValue(unitsArray[0]),e.getY().doubleValue(unitsArray[1]),comment));
         update();
