@@ -798,6 +798,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             minor= tickSize/4;
         }
         
+        datumFormatter = DatumUtil.bestFormatter(getDataMaximum(), getDataMaximum(), nTicks);
+
         double axisLengthData= maximum-minimum;
         double firstMinor= minor * Math.ceil( ( minimum - axisLengthData*0.3 ) / minor );
         double lastMinor= minor * Math.floor( ( maximum + axisLengthData*0.3 ) / minor );
