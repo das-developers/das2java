@@ -45,13 +45,37 @@ public class TimeDatumFormatter extends DatumFormatter {
     private static final int SECONDS_FIELD_INDEX = 6;
     private static final int TIMESTAMP_FIELD_COUNT = 7;
 
+    /**
+     * yyyy-MM-dd'T'HH:mm:ss.SSS'Z
+     */    
     public static final TimeDatumFormatter DEFAULT;
+    /**
+     * yyyy-MM-dd
+     */    
     public static final TimeDatumFormatter DAYS;
+    /**
+     * yyyy
+     */    
     public static final TimeDatumFormatter YEARS;
+    /**
+     * yyyy-MM
+     */    
     public static final TimeDatumFormatter MONTHS;
+    /**
+     * yyyy-MM-dd HH:'00'
+     */    
     public static final TimeDatumFormatter HOURS;
+    /**
+     * HH:mm
+     */    
     public static final TimeDatumFormatter MINUTES;
+    /**
+     * HH:mm:ss
+     */    
     public static final TimeDatumFormatter SECONDS;
+    /**
+     * HH:mm:ss.SSS
+     */    
     public static final TimeDatumFormatter MILLISECONDS;      
     
     //Initialize final constants
