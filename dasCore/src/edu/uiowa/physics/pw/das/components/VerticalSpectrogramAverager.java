@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
@@ -148,10 +149,14 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
         AverageTableRebinner rebinner = new AverageTableRebinner();
-        TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
-        VectorDataSet ds1 = rebinned.getXSlice(0);
-        
-        renderer.setDataSet(ds1);
+        try {
+            TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
+            VectorDataSet ds1 = rebinned.getXSlice(0);
+            renderer.setDataSet(ds1);
+        }
+        catch (DasException de) {
+            //Do nothing.
+        }
         
         if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
             showPopup();
