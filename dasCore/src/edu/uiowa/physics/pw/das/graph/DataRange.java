@@ -27,13 +27,14 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
+import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.event.EventListenerList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Stack;
 
-public class DataRange implements Cloneable {
+class DataRange implements Cloneable {
     
     private DasAxis parent;
     
@@ -60,8 +61,13 @@ public class DataRange implements Cloneable {
         if (min.getUnits()!=max.getUnits())  throw new IllegalArgumentException("units don't match on range");
         this.parent= parent;
         units= min.getUnits();
-        minimum = min.doubleValue(units);
-        maximum = max.doubleValue(units);
+        if ( log ) {
+            minimum = DasMath.log10(min.doubleValue(units));
+            maximum = DasMath.log10(max.doubleValue(units));
+        } else {
+            minimum = min.doubleValue(units);
+            maximum = max.doubleValue(units);
+        }
         this.log = log;
         history = new Stack();
         forwardHistory = new Stack();
@@ -84,8 +90,15 @@ public class DataRange implements Cloneable {
         if (log) {
             if (minimum<=0. || maximum <=0.) {
                 return;
+            } else {
+                this.minimum= DasMath.log10(minimum);
+                this.maximum= DasMath.log10(maximum);
             }
+        } else {
+            this.minimum= DasMath.exp10(minimum);
+            this.maximum= DasMath.exp10(maximum);
         }
+        clearHistory();
         this.log=log;
         firePropertyChange("log", oldLog, log);
         fireUpdate();
@@ -105,44 +118,21 @@ public class DataRange implements Cloneable {
         if (units.equals(newUnits)) {
             return;
         }
-        try {
-            minimum = units.convertDoubleTo(newUnits, minimum);
-            maximum = units.convertDoubleTo(newUnits, maximum);
-            units = newUnits;
-        }
-        catch (Exception e) {
-            units = newUnits;
-            minimum = 1.0;
-            maximum = 10.0;
-        }
-        forwardHistory.clear();
-        history.clear();
+        
+        minimum = units.convertDoubleTo(newUnits, minimum);
+        maximum = units.convertDoubleTo(newUnits, maximum);
+        units = newUnits;
+        
+        clearHistory();
+        
     }
     
     public void setMinimum(double min) {
-        if (min>maximum) {
-            if (isLog()) {
-                setRange(min, min*10);
-            } else {
-                setRange(min, min+1.);
-            }
-        }
-        else {
-            setRange(min, maximum);
-        }
+        setRange(min, maximum);
     }
     
     public void setMaximum(double max) {
-        if (max<minimum) {
-            if (isLog()) {
-                setRange(max/10.,max);
-            } else {
-                setRange(max-1.,max);
-            }
-        }
-        else {
-            setRange(minimum, max);
-        }
+        setRange(minimum, max);
     }
     
     private void reportHistory() {
@@ -155,20 +145,13 @@ public class DataRange implements Cloneable {
         edu.uiowa.physics.pw.das.util.DasDie.println("-------------");
     }
     
+    private void clearHistory() {
+        history.removeAllElements();
+        forwardHistory.removeAllElements();
+    }
+    
     public void setRange( double min, double max ) {
         boolean pushStack= true;
-        if ( min>max ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("min>max in DasAxis.DataRange.setRange");
-            if (isLog()) {
-                max= min*10.;
-            } else {
-                max= min+1.;
-            }
-        }
-        if ( isLog() ) {
-            if (min<0.) min=minimum;
-            if (max<0.) max=maximum;
-        }
         
         if ( pushStack ) {
             Datum h[] = new Datum[2];
@@ -286,18 +269,6 @@ public class DataRange implements Cloneable {
         return new DataRange( this.parent, min, max, this.isLog() ) {
             protected void fireUpdate() {};
             public void setRange( double min, double max ) {
-                if ( min>max ) {
-                    edu.uiowa.physics.pw.das.util.DasDie.println("min>max in DasAxis.DataRange.setRange");
-                    if (isLog()) {
-                        max= min*10.;
-                    } else {
-                        max= min+1.;
-                    }
-                }
-                if ( isLog() ) {
-                    if (min<0.) min=minimum;
-                    if (max<0.) max=maximum;
-                }
                 minimum= min;
                 maximum= max;
             }
@@ -306,12 +277,6 @@ public class DataRange implements Cloneable {
         };
     }
     
-/*    public Object clone() throws CloneNotSupportedException {
-        DataRange result= (DataRange) super.clone();
-        result.history= (Stack)history.clone();
-        result.forwardHistory= (Stack)forwardHistory.clone();
-        return result;
-    }*/
     
 }
 
