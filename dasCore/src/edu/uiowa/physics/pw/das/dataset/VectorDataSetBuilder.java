@@ -75,10 +75,16 @@ public class VectorDataSetBuilder {
         }
     }
     
+    /**
+     * @deprecated use {@link insertY(Datum, Datum)}
+     */
     public void insertY(double x, double y) {
         insertY(x, y, "");
     }
     
+    /**
+     * @deprecated use {@link insertY(Datum, Datum, String)}
+     */
     public void insertY(double x, double y, String planeID) {
         if ( !planeIDs.contains(planeID) ) {
             throw new IllegalArgumentException( "invalid planeID: "+planeID+", have "+planeIDs );
@@ -98,6 +104,19 @@ public class VectorDataSetBuilder {
             MultiY scan = (MultiY)yValues.get(insertionIndex);
             scan.put(planeID, y);
         }
+    }
+    
+    public void insertY(Datum x, Datum y) {
+        insertY(x, y, "");
+    }
+    
+    public void insertY(Datum x, Datum y, String planeID) {
+        if (!planeIDs.contains(planeID)) {
+            throw new IllegalArgumentException("invalid planeID: "+planeID+", have "+planeIDs);
+        }
+        double xd = x.doubleValue(xUnits);
+        double yd = y.doubleValue((Units)yUnitsMap.get(planeID));
+        insertY(xd, yd, planeID);
     }
     
     public void append(VectorDataSet vds) {
