@@ -144,7 +144,17 @@ public class DataRange implements Cloneable {
             setRange(minimum, max);
         }
     }
-        
+    
+    private void reportHistory() {
+        edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
+        for ( int i=0; i<history.size(); i++ ) {
+            edu.uiowa.physics.pw.das.util.DasDie.print("   "+((Object[])history.get(i))[0]+" - ");
+            edu.uiowa.physics.pw.das.util.DasDie.println("   "+((Object[])history.get(i))[1]);
+        }
+        edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
+        edu.uiowa.physics.pw.das.util.DasDie.println("-------------");
+    }
+    
     public void setRange( double min, double max ) {
         boolean pushStack= true;
         if ( min>max ) {
@@ -166,6 +176,7 @@ public class DataRange implements Cloneable {
                 h[0] = Datum.create(minimum,units);
                 h[1] = Datum.create(maximum,units);
                 history.push(h);
+                reportHistory();
             }
             forwardHistory.removeAllElements();
         }
@@ -183,8 +194,7 @@ public class DataRange implements Cloneable {
     public void setRangePrev() {
         double oldMin = minimum;
         double oldMax = maximum;
-        edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
+        reportHistory();
         if (!history.isEmpty()) {
             forwardHistory.push( new Datum [] {Datum.create(minimum,units), Datum.create(maximum,units)} );
             Datum [] h= (Datum[]) history.pop();
@@ -200,16 +210,13 @@ public class DataRange implements Cloneable {
         }
         if (minimum != oldMin) firePropertyChange("minimum", oldMin, minimum);
         if (maximum != oldMax) firePropertyChange("maximum", oldMax, maximum);
-        edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("-------------");
+        reportHistory();
     }
     
     public void setRangeForward() {
         double oldMin = minimum;
         double oldMax = maximum;
-        edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
+        reportHistory();
         if (!forwardHistory.isEmpty()) {
             history.push( new Datum [] {Datum.create(minimum,units), Datum.create(maximum,units)} );
             Datum [] h= (Datum[]) forwardHistory.pop();
@@ -223,13 +230,10 @@ public class DataRange implements Cloneable {
             
             fireUpdate();
         }
-        edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
+        reportHistory();
         if (minimum != oldMin) firePropertyChange("minimum", oldMin, minimum);
         if (maximum != oldMax) firePropertyChange("maximum", oldMax, maximum);
-        edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("-------------");
+        reportHistory();
     }
     
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
@@ -293,9 +297,9 @@ public class DataRange implements Cloneable {
                 if ( isLog() ) {
                     if (min<0.) min=minimum;
                     if (max<0.) max=maximum;
-                }  
+                }
                 minimum= min;
-                maximum= max;                
+                maximum= max;
             }
             public double getMinimum() { return minimum; }
             public double getMaximum() { return maximum; }
