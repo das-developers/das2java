@@ -31,16 +31,41 @@ import java.text.ParsePosition;
  * @author  jbf
  */
 public class DasFormatter implements Cloneable {
-        
+    
     DecimalFormat nf;
     
     /** Creates a new instance of DasFormatter */
-    public DasFormatter() {
+    protected DasFormatter() {
         nf= new DecimalFormat();
     }
     
-    public DasFormatter(DecimalFormat nf) {
+    private DasFormatter(DecimalFormat nf) {
         this.nf= nf;
+    }
+    
+    public static DasFormatter create( Units units ) {
+        if ( units instanceof TimeLocationUnits ) {
+            return new DasTimeFormatter(TimeContext.HOURS);
+        } else {
+            return new DasFormatter();
+        }
+    }
+    
+    public static DasFormatter create( Datum datum1, Datum datum2, int nsteps ) {
+        if ( datum1.getUnits() != datum2.getUnits() ) {
+            throw new IllegalArgumentException( "Units don't match!" );
+        }
+        if ( datum1.getUnits() instanceof TimeLocationUnits ) {
+            return new DasTimeFormatter( TimeContext.getContext((TimeDatum)datum1,(TimeDatum)datum2) );
+        } else {
+            double discernable= Math.abs( datum1.subtract(datum2).getValue() / nsteps );
+            int nFraction= -1 * (int)Math.floor( edu.uiowa.physics.pw.das.util.DasMath.log10( discernable ) );
+            nFraction= nFraction<0 ? 0 : nFraction;
+            DasFormatter formatter= DasFormatter.create(datum1.getUnits());
+            formatter.setMaximumFractionDigits(nFraction);
+            formatter.setMinimumFractionDigits(nFraction);
+            return formatter;
+        }
     }
     
     public void setMaximumFractionDigits(int digits) {
@@ -78,7 +103,7 @@ public class DasFormatter implements Cloneable {
     }
     
     public String format( double d, Units units ) {
-        return nf.format(d)+units;      
+        return nf.format(d)+units;
     }
     
     public String grannyFormat( double d, Units units ) {
@@ -93,16 +118,16 @@ public class DasFormatter implements Cloneable {
             }
             String exp= format.substring(iE+1);
             format= mant+"!A"+exp;
-        } 
+        }
         return format;
     }
     
-//    public String format( double d ) {
-//        return nf.format(d);
-//    }
+    //    public String format( double d ) {
+    //        return nf.format(d);
+    //    }
     
     public Datum parse(String s, Datum d) {
         return d.create(nf.parse(s,new ParsePosition(0)).doubleValue(),d.getUnits());
     }
-        
+    
 }
