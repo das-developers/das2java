@@ -34,7 +34,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.InterruptedIOException;
 
-public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editable {
+public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editable, DataSetUpdateListener {
     
     // dsd reloads ds when plot params change.
     private DataSetDescriptor dsd;
@@ -51,6 +51,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
     
     protected Renderer(DataSetDescriptor dsd) {
         this.dsd = dsd;
+        if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
     }
     
     protected Renderer(DataSet ds) {
@@ -194,6 +195,12 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
     
     public void update(DasAxis xAxis, DasAxis yAxis) {        
         loadDataSet(xAxis,yAxis);
+    }
+    
+    public void dataSetUpdated( DataSetUpdateEvent e ) {
+        DasAxis xAxis= parent.getXAxis();
+        DasAxis yAxis= parent.getYAxis();
+        loadDataSet(xAxis, yAxis);
     }
     
     void setDataSetDescriptor(DataSetDescriptor dsd) {
