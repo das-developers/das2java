@@ -49,7 +49,7 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
         super(xAxis, yAxis);
         renderer = parentRenderer;
         SymbolLineRenderer symLineRenderer= new SymbolLineRenderer((DataSetDescriptor)null);
-        symLineRenderer.setPsymConnector(PsymConnector.PSYM10);
+        symLineRenderer.setHistogram(true);
         symLineRenderer.setLineWidth(1.0f);
         symLineRenderer.setPsym(Psym.CROSS);
         addRenderer(symLineRenderer);
