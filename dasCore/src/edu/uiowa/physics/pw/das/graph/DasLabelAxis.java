@@ -173,8 +173,8 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return iclose;
     }
     
-    public Datum invTransform(int idata) {
-        int iclose= findClosestIndex( labelPositions, idata );
+    public Datum invTransform(double d) {
+        int iclose= findClosestIndex( labelPositions, (int)d );
         return labels[iclose];
     }
     
