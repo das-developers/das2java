@@ -165,4 +165,13 @@ extends DasPlot implements DataPointSelectionListener {
         eventBirthMilli= e.birthMilli;
     }
     
+    protected void uninstallComponent() {
+        super.uninstallComponent();
+    }
+    
+    protected void installComponent() {
+        super.installComponent();
+        getCanvas().getGlassPane().setVisible(false);
+    }
+    
 }

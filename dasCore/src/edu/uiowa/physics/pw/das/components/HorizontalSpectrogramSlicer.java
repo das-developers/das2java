@@ -142,4 +142,13 @@ extends DasPlot implements DataPointSelectionListener {
         return createPopupSlicer( (DasPlot)plot, (TableDataSetConsumer)plot, width, height);
     }
     
+    protected void uninstallComponent() {
+        super.uninstallComponent();
+    }
+    
+    protected void installComponent() {
+        super.installComponent();
+        getCanvas().getGlassPane().setVisible(false);
+    }
+    
 }
