@@ -813,7 +813,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 try {
                     minorTickV[idx++]= DasMath.exp10(i) + DasMath.exp10(i) * j;
                 } catch ( ArrayIndexOutOfBoundsException e ) {
-                    System.out.println(""+i);
+                    e.printStackTrace(); // does this code need to be here?
                 }
             }
         }
@@ -2577,7 +2577,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             setBorder(new CompoundBorder(
             new LineBorder(Color.BLACK),
             new EmptyBorder(2,2,2,2)));
-            addMouseListener(new MouseAdapter() {
+            this.addMouseListener(new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1) {
                         setForeground(Color.LIGHT_GRAY);
