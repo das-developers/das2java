@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,7 +49,8 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
     private String label;
-    private static final int hideInitiallyMilliSeconds= 600;
+    private static final int hideInitiallyMilliSeconds= 1500;
+    private long lastTaskTime;
     private boolean running = false;
     
     /** Creates new form DasProgressPanel */
@@ -61,6 +63,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
         transferRateString= "";
+        lastTaskTime= Integer.MAX_VALUE;
     }
     
     public static DasProgressPanel createFramed( String label ) {
@@ -135,14 +138,15 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setOpaque(false);
         buttonPanel.add(cancelButton);
-                
+        
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
-        add(buttonPanel, BorderLayout.SOUTH);        
+        add(buttonPanel, BorderLayout.SOUTH);
     }
     
     public void finished() {
         running = false;
+        lastTaskTime= System.currentTimeMillis()-taskStartedTime;
         if ( jframe==null ) {
             setVisible(false);
         } else {
@@ -196,7 +200,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     public void setAdditionalInfo( String s ) {
         transferRateString= s;
     }
-        
+    
     public long getTaskProgress() {
         return currentTaskPosition;
     }
@@ -216,18 +220,24 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         taskStartedTime= System.currentTimeMillis();
         currentTaskPosition = 0;
         isCancelled = false;
-        setVisible(false);
         running = true;
-        new Thread( new Runnable() {
-            public void run() {
-                try {
-                    Thread.sleep(hideInitiallyMilliSeconds);
-                } catch ( InterruptedException e ) { };
-                if (running) {
-                    setTaskProgress(getTaskProgress());
+        DasApplication.getDefaultApplication().getLogger().info("lastTaskTime="+lastTaskTime);
+        if ( lastTaskTime>hideInitiallyMilliSeconds*2.0 ) {
+            setVisible(true);
+        } else {
+            setVisible(false);
+            new Thread( new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(hideInitiallyMilliSeconds);
+                    } catch ( InterruptedException e ) { };
+                    if (running) {
+                        DasApplication.getDefaultApplication().getLogger().info("hide time="+(System.currentTimeMillis()-taskStartedTime) );
+                        setTaskProgress(getTaskProgress());
+                    }
                 }
-            }
-        } ).start();
+            } ).start();
+        }
     }
     
     public void cancel() {
