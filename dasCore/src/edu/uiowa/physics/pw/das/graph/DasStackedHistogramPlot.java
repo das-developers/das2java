@@ -166,7 +166,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
         
         yAxis.setFloppyItemSpacing(true);
         yAxis.setOutsidePadding(1);
-        
+                
         this.zAxisComponent = new ZAxisComponent(this,zAxis);
         this.setZAxis(zAxis);
         this.peaksIndicator= PeaksIndicator.MaxLines;
@@ -479,9 +479,9 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                 Datum start= DasStackedHistogramPlot.this.getXAxis().getDataMinimum();
                 Datum stop= DasStackedHistogramPlot.this.getXAxis().getDataMaximum();
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                    result= highResRebinner.rebin( ds, x, y );                  
+                    result= highResRebinner.rebin( ds, x, y );
                 } else {
-                    result= lowResRebinner.rebin( ds, x, y );                    
+                    result= lowResRebinner.rebin( ds, x, y );
                 }
                 return result;
             } catch ( Exception e ) {
