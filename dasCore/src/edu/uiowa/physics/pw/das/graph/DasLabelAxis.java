@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package edu.uiowa.physics.pw.das.graph;
- 
+
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
@@ -90,17 +90,17 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         int interItemSpacing;
         
         if ( this.getOrientation()==DasAxis.HORIZONTAL ) {
-            size= getColumn().getWidth()-10;            
+            size= getColumn().getWidth()-10;
             interItemSpacing= size / nlabel;
             min= getColumn().getDMinimum()+5+interItemSpacing/2;
         } else {
-            size= getRow().getHeight()-10;            
+            size= getRow().getHeight()-10;
             interItemSpacing= -1 * size / nlabel ;
             min= getRow().getDMaximum()-5+interItemSpacing/2;
         }
         
         for ( int i=0; i<labelPositions.length; i++ ) {
-            labelPositions[i]= min + interItemSpacing * ( (i-indexMinimum)+0 );                        
+            labelPositions[i]= min + interItemSpacing * ( (i-indexMinimum)+0 );
         }
         
     }
@@ -181,6 +181,20 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return Math.abs(transform(labels[1])-transform(labels[0]));
     }
     
+    public int getItemMin( Datum d ) {        
+        Units units= d.getUnits();
+        double value= d.doubleValue(units);
+        
+        int iclose= findClosestIndex( labelValues, units.convertDoubleTo(this.getUnits(),value ) );     
+        int tickPosition= labelPositions[iclose];
+        int w= getInterItemSpace();
+        return tickPosition - w/2;
+    }
+    
+    public int getItemMax(Datum d) {
+        int w= getInterItemSpace();
+        return getItemMin( d ) + w;
+    }
     
     public DasAxis createAttachedAxis(DasRow row, DasColumn column) {
         DasLabelAxis result= new DasLabelAxis(labels, getDataRange(), row, column, this.getOrientation());
@@ -351,7 +365,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
                     g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition );
                     g.drawLine( leftPosition, tickPosition+w, leftPosition - tickLength, tickPosition+w );
                     if (leftTickLabels) {
-                        drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition+w/2);  
+                        drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition+w/2);
                     }
                 }
                 if (rightTicks) {
@@ -363,7 +377,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
                 }
             }
         }
-                
+        
         if (!axisLabel.equals("")) {
             Graphics2D g2 = (Graphics2D)g.create();
             int titlePositionOffset = getTitlePositionOffset();
