@@ -182,8 +182,8 @@ public abstract class Units {
     public int getFillInt() { return FILL_INT; }
     public long getFillLong() { return FILL_LONG; }
     
-    public boolean isFill( double value ) {  return (( value-FILL_DOUBLE )/value ) < 0.00001; }
-    public boolean isFill( float value ) { return (( value-FILL_FLOAT )/value ) < 0.00001; }
+    public boolean isFill( double value ) {  return Math.abs(( value-FILL_DOUBLE )/value ) < 0.00001; }
+    public boolean isFill( float value ) { return Math.abs(( value-FILL_FLOAT )/value ) < 0.00001; }
     public boolean isFill( long value ) { return value==FILL_LONG; }
     public boolean isFill( int value ) { return value==FILL_INT; }
     public boolean isFill( Number value ) {
