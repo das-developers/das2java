@@ -118,14 +118,14 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         }
         in = new DasProgressMonitorInputStream(in, monitor);
         XTaggedYScanDataSet ds
-            = (XTaggedYScanDataSet) getDataSet(in,start,end, resolution);
+            = (XTaggedYScanDataSet) getDataSet(in,start,end, resolution ); 
         ds.x_sample_width= res.doubleValue(Units.seconds);        
         ds.setXSampleWidth( res );
         
         return ds;
     }
     
-    protected DataSet getDataSet(InputStream in0, Datum start, Datum end, Datum resolution) throws DasException {
+    protected DataSet getDataSet(InputStream in0, Datum start, Datum end, Datum resolution ) throws DasException {
         
         int elementCount, elementSize;
         
@@ -162,17 +162,9 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         
         if ( isMultiPlanarDataSetStream ) {
             MultiPlanarDataSet mpds= new MultiPlanarDataSet();
-            try {
-                try {
-                    mpds.read(in, null );
-                } catch ( ClassCastException ex ) {
-                    System.out.println(ex);
-                }
-                ds= (XTaggedYScanDataSet)mpds.getPrimaryDataSet();
-                ds.setDataSetDescriptor(this);
-            } catch ( DasException ex ) {
-                ex.printStackTrace();
-            }
+            mpds.read(in);
+            ds= (XTaggedYScanDataSet)mpds.getPrimaryDataSet();
+            ds.setDataSetDescriptor(this);
             
         } else {
             
