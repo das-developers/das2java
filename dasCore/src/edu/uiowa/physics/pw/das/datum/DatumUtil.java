@@ -90,7 +90,7 @@ public final class DatumUtil {
             while ( e<emax && ( d/DasMath.exp10(e) % 1 == 0. ) ) e++;
             return -1*(e-1);
         } else {
-            int e= (int)Math.floor( DasMath.log10(frac) );
+            int e= (int)Math.floor( DasMath.log10(frac)+0.0001 );
             int emin= -18;
             boolean notDone= true;
             while ( e>emin && notDone  ) {
