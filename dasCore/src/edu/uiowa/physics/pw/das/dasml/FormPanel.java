@@ -74,7 +74,7 @@ public class FormPanel extends FormContainer implements PropertyEditor.Editable,
      * Element instance.
      */
     FormPanel(Element element, FormBase form)
-        throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException,
+        throws edu.uiowa.physics.pw.das.DasException,
         ParsedExpressionException, org.xml.sax.SAXException {
         
         super();

@@ -91,7 +91,7 @@ public class FormWindow extends FormContainer implements PropertyEditor.Editable
     
     /** Creates a new instance of FormWindow */
     FormWindow(Element element, FormBase form)
-        throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException,
+        throws DasException,
         ParsedExpressionException, org.xml.sax.SAXException {
             
         this.form = form;

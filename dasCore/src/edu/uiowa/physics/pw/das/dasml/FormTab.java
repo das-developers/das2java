@@ -75,7 +75,7 @@ public class FormTab extends FormContainer {
     }
     
     FormTab(Element element, FormBase form)
-        throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException,
+        throws DasException,
         ParsedExpressionException, org.xml.sax.SAXException {
 
         String alignment = element.getAttribute("alignment");
@@ -150,7 +150,7 @@ public class FormTab extends FormContainer {
                         canvas.setAlignmentX(horizontalComponentAlignment);
                         add(canvas);
                     }
-                    catch (edu.uiowa.physics.pw.das.DasNameException dne) {
+                    catch (edu.uiowa.physics.pw.das.DasException dne) {
                     }
                 }
                 else {

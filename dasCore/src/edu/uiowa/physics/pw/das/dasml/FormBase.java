@@ -183,10 +183,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
                 }
             }
         }
-        catch (edu.uiowa.physics.pw.das.DasPropertyException dpe) {
-            throw new SAXException(dpe);
-        }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
+        catch (DasException dne) {
             throw new SAXException(dne);
         }
         catch (ParsedExpressionException pee) {
