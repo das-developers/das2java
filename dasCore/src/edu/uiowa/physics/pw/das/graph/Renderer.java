@@ -113,7 +113,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                     } else {
                         throw new DasException("don't know how to serialize data set" );
                     }
-                } 
+                }
                 setDumpDataSet( false );
             }
         } catch ( Exception e ) {
@@ -180,6 +180,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             } catch ( DasException exception ) {
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                     lastException= exception;
+                    ds= null;
                 }
                 DasExceptionHandler.handle(exception);
             } finally {
@@ -208,6 +209,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
         resolution =  dataRange1.divide(deviceRange);
         
+        if ( deviceRange==0.0 ) {
+            // this conidition occurs sometimes at startup, it's not known why
+            return;
+        }
+        
         if (progressPanel == null) {
             progressPanel = new DasProgressPanel();
             ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
@@ -229,7 +235,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                         if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                             lastException= exception;
                         }
-                        DasExceptionHandler.handle(exception);
+                        if ( ! ( exception instanceof NoDataInIntervalException ) ) {                            
+                            DasExceptionHandler.handle(exception);
+                        }
+                        
                     }
                 }
                 finally {
