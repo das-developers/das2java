@@ -139,6 +139,16 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
     public Units getZUnits() {
         return zUnits;
     }
+    
+    public void setZUnits(Units units) {
+        zUnits = units;
+    }
+    
+    public void setYCoordinates(DatumVector yCoords) {
+        yUnits = yCoords.getUnits();
+        yTags = yCoords.toDoubleArray(yUnits);
+        nitems = yTags.length;
+    }
 
     public void setDataTransferType(DataTransferType transferType) {
         this.transferType = transferType;

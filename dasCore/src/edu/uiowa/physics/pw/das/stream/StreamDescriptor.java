@@ -382,6 +382,16 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         if (compression != null && !compression.equals("")) {
             element.setAttribute("compression", compression);
         }
+        if (!properties.isEmpty()) {
+            Element propertiesElement = document.createElement("properties");
+            for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                String key = (String)entry.getKey();
+                Object value = entry.getValue();
+                propertiesElement.setAttribute(key, value.toString());
+            }
+            element.appendChild(propertiesElement);
+        }
         return element;
     }
     

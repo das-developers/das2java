@@ -71,6 +71,9 @@ public class StreamProducer implements StreamHandler {
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         try {
             String header = (String)descriptors.get(pd);
+            if (pd.getSizeBytes() > bigBuffer.capacity()) {
+                resizeBuffer(pd.getSizeBytes() + pd.getSizeBytes() >> 1);
+            }
             if ((pd.getSizeBytes() + 4) > bigBuffer.remaining()) {
                 flush();
             }
@@ -115,6 +118,13 @@ public class StreamProducer implements StreamHandler {
             writer.flush();
             byte[] header = out.toByteArray();
             int length = header.length;
+            if (bigBuffer.remaining() < (length + 10)) {
+                flush();
+            }
+            if (bigBuffer.capacity() < (length + 10)) {
+                resizeBuffer(length + (length / 2) + 15);
+                System.err.println("length: " + length);
+            }
             six[0] = '[';
             six[1] = (byte)id.charAt(0);
             six[2] = (byte)id.charAt(1);
@@ -135,6 +145,12 @@ public class StreamProducer implements StreamHandler {
         catch (IOException ioe) {
             throw new StreamException(ioe);
         }
+    }
+    
+    public void resizeBuffer(int size) throws StreamException {
+        flush();
+        System.err.println("resizeBuffer(" + size + ")");
+        bigBuffer = ByteBuffer.allocate(size);
     }
     
     public void streamClosed(StreamDescriptor sd) throws StreamException {
