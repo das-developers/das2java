@@ -18,6 +18,7 @@ public class DataSetUpdateEvent extends DasEvent {
     private Exception exception;
     
     public DataSetUpdateEvent(DataSetDescriptor source) {
+        // null indicates that the state has changed and the consumer needs to read.
         super(source);
     }
     

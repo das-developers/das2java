@@ -7,6 +7,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import java.util.*;
 
 /**
  *
@@ -137,10 +138,18 @@ public class ClippedTableDataSet implements TableDataSet {
     
     public DataSet getPlanarView(String planeID) {
         return new ClippedTableDataSet((TableDataSet)source.getPlanarView(planeID),xoffset,xlength,yoffsets,ylengths,tableOffset,tableCount);
+    }    
+    
+    public String[] getPlaneIds() {
+        return source.getPlaneIds();
+    }    
+    
+    public Map getProperties() {
+        return source.getProperties();
     }
     
-    public Object getProperty(String name) {
-        return source.getProperty(name);
+    public Object getProperty( String name ) {
+        return source.getProperty( name );
     }
     
     public int getXLength() {
@@ -233,5 +242,6 @@ public class ClippedTableDataSet implements TableDataSet {
         }
         return DatumVector.newDatumVector(tags, yUnits);
     }
+    
     
 }

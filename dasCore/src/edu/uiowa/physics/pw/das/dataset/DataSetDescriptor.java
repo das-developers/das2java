@@ -146,7 +146,7 @@ public abstract class DataSetDescriptor {
             if (listeners[i]==DataSetUpdateListener.class) {
                 ((DataSetUpdateListener)listeners[i+1]).dataSetUpdated(event);
             }
-        }
+        }        
     }
     
     public String getDataSetID() {

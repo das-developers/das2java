@@ -26,6 +26,10 @@ public abstract class ViewDataSet implements DataSet {
         return source.getProperty(name);
     }
     
+    public java.util.Map getProperties() {
+        return source.getProperties();
+    }
+    
     public int getXLength() {
         return source.getXLength();
     }

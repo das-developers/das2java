@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.dataset.test;
 
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import java.util.*;
 
 /**
  *
@@ -62,15 +63,19 @@ public abstract class FunctionTableDataSet implements TableDataSet {
     }
     
     public DataSet getPlanarView(String planeID) {
-        if ( "weights".equals(planeID) ) {
-            return null;
-        } else {
-            return null;
-        }
+        return null;
+    }
+
+    public String[] getPlaneIds() {
+        return new String[0];
     }
     
     public Object getProperty(String name) {
         return null;
+    }
+    
+    public Map getProperties() {
+        return new HashMap();
     }
     
     public int getXLength() {
@@ -131,7 +136,7 @@ public abstract class FunctionTableDataSet implements TableDataSet {
     }
     
     public int tableEnd(int table) {
-        return ytags;
+        return xtags;
     }
     
     public int tableOfIndex(int i) {
@@ -150,4 +155,7 @@ public abstract class FunctionTableDataSet implements TableDataSet {
         return DatumVector.newDatumVector(tags, yUnits);
     }
     
+    public String toString() {
+        return TableUtil.toString(this);
+    }
 }

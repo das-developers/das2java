@@ -53,6 +53,10 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
         return new YSliceDataSet(this, j, table);
     }
     
+    public String toString() {
+        return TableUtil.toString(this);
+    }
+    
     protected static class XSliceDataSet extends AbstractDataSet.ViewDataSet implements VectorDataSet{
         
         private int iIndex;
@@ -66,6 +70,10 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
         
         public DataSet getPlanarView(String planeID) {
             return null;
+        }
+        
+        public String[] getPlaneIds() {
+            return new String[0];
         }
         
         public Datum getDatum(int i) {
@@ -135,6 +143,10 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
             }
         }
         
+        public String[] getPlaneIds() {
+            return new String[0];
+        }
+        
         public Datum getDatum(int i) {
             int offset = ds.tableStart(table);
             return ds.getDatum(i + offset, jIndex);
@@ -175,6 +187,10 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
         
         public Object getProperty(String name) {
             return null;
+        }
+        
+        public Map getProperties() {
+            return new HashMap();
         }
         
     }

@@ -13,7 +13,7 @@ import java.util.*;
  * @author  Owner
  */
 public class VectorUtil {
-
+    
     
     public static double[] getXTagArrayDouble( DataSet vds, Units units ) {
         
@@ -54,7 +54,7 @@ public class VectorUtil {
                 data[idata++]= zz;
             }
         }
-        if ( idata==0 ) return Datum.create( units.getFillDouble(), units );        
+        if ( idata==0 ) return Datum.create( units.getFillDouble(), units );
         Arrays.sort(data,0, idata);
         
         int n= idata/2;
@@ -142,7 +142,7 @@ public class VectorUtil {
     public static void dumpToAsciiStream(VectorDataSet vds, WritableByteChannel out) {
         dumpToDas2Stream(vds, out, true);
     }
-
+    
     public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
         dumpToAsciiStream(vds, out);
     }
@@ -165,7 +165,7 @@ public class VectorUtil {
             
             DataTransferType xTransferType;
             DataTransferType yTransferType;
-
+            
             if ( asciiTransferTypes ) {
                 xTransferType= DataTransferType.getByName("ascii24");
                 yTransferType= DataTransferType.getByName("ascii10");
@@ -176,7 +176,7 @@ public class VectorUtil {
             
             producer.streamDescriptor(sd);
             DatumVector[] yValues = new DatumVector[1];
-            StreamXDescriptor xDescriptor = new StreamXDescriptor();                
+            StreamXDescriptor xDescriptor = new StreamXDescriptor();
             xDescriptor.setDataTransferType(xTransferType);
             xDescriptor.setUnits(vds.getXUnits());
             StreamMultiYDescriptor yDescriptor = new StreamMultiYDescriptor();
@@ -203,4 +203,7 @@ public class VectorUtil {
         return DatumVector.newDatumVector(array, d.getUnits());
     }
     
+    public static String toString( VectorDataSet ds ) {        
+        return "[VectorDataSet "+ds.getXLength()+" xTags ]";
+    }
 }

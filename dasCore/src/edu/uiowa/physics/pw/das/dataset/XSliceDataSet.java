@@ -18,6 +18,10 @@ public class XSliceDataSet extends ViewDataSet implements VectorDataSet {
         return null;
     }
     
+    public String[] getPlaneIds() {
+        return new String[0];
+    }
+    
     public Datum getDatum(int i) {
         return tdsSource.getDatum(iIndex, i);
     }

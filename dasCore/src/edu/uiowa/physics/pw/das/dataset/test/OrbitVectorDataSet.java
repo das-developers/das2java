@@ -80,8 +80,16 @@ public class OrbitVectorDataSet implements VectorDataSet {
         }
     }
     
+    public String[] getPlaneIds() {
+        return new String[] { "x", "y" };
+    }
+    
     public Object getProperty(String name) {
         return null;
+    }
+    
+    public java.util.Map getProperties() {
+        return new java.util.HashMap();
     }
     
     public int getXLength() {

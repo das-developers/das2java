@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import java.util.*;
 
 /** General interface for objects encapsulating a data set
  *
@@ -36,6 +37,12 @@ public interface DataSet {
      * @return the property value for <code>name</code> or null
      */
     Object getProperty(String name);
+    
+    /** Returns the property value associated with the string <code>name</code>
+     * @param name the name of the property requested
+     * @return the property value for <code>name</code> or null
+     */
+    Map getProperties();
     
     /** Returns the Units object representing the unit type of the x tags
      * for this data set.
@@ -89,4 +96,9 @@ public interface DataSet {
      * @return the specified view, as a <code>DataSet</code>
      */
     DataSet getPlanarView(String planeID);
+    
+    /** Returns a list of auxillary planes (e.g. weights, peaks) for 
+     */
+    public String[] getPlaneIds();
+    
 }

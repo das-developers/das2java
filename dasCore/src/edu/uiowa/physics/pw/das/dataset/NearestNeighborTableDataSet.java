@@ -1,6 +1,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import java.util.*;
 
 public class NearestNeighborTableDataSet implements TableDataSet {
     
@@ -119,8 +120,16 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+    public String[] getPlaneIds() {
+        return source.getPlaneIds();
+    }
+    
     public Object getProperty(String name) {
         return source.getProperty(name);
+    }
+    
+    public Map getProperties() {
+        return source.getProperties();
     }
     
     public int getXLength() {

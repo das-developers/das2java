@@ -31,7 +31,6 @@ import edu.uiowa.physics.pw.das.datum.*;
  */
 public class PeakTableRebinner implements DataSetRebinner {
     
-    /** Creates a new instance of TableAverageRebinner */
     public PeakTableRebinner() {
     }
     

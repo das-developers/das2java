@@ -31,9 +31,16 @@ import edu.uiowa.physics.pw.das.datum.*;
  */
 public class AveragePeakTableRebinner implements DataSetRebinner {
     
+    /**
+     * Holds value of property debug.
+     */
+    
+    /* adds additional planes for debugging */
+    private boolean debug= false;
+    
     /** Creates a new instance of TableAveragePeakRebinner */
     public AveragePeakTableRebinner() {
-    }
+    }        
     
     public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
         if (!(ds instanceof TableDataSet)) {
@@ -41,7 +48,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         }
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
-        TableDataSet peaks = (TableDataSet)ds.getPlanarView("peaks");
+        TableDataSet peaks = (TableDataSet)ds.getPlanarView("peaks");                            
         
         long timer= System.currentTimeMillis();
         
@@ -96,6 +103,22 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         Units[] zUnits =        {tds.getZUnits(),  tds.getZUnits(),  Units.dimensionless};
         
         return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+    }
+    
+    /**
+     * Getter for property debug.
+     * @return Value of property debug.
+     */
+    public boolean isDebug() {
+        return this.debug;
+    }
+    
+    /**
+     * Setter for property debug.
+     * @param debug New value of property debug.
+     */
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
     
 }

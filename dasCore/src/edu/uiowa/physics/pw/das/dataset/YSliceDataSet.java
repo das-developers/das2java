@@ -21,6 +21,10 @@ public class YSliceDataSet extends ViewDataSet implements VectorDataSet {
         return null;
     }
     
+    public String[] getPlaneIds() {
+        return new String[0];
+    }
+    
     public Datum getDatum(int i) {
         return tdsSource.getDatum(i + offset, jIndex);
     }

@@ -67,17 +67,57 @@ public class DataSetUtil {
         jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         return result;
     }
-        
-    public static double[] getXTagArrayDouble( DataSet table, Units units ) {
-        
-        int ixmax= table.getXLength();
-        double[] xx= new double[ixmax];
-        for ( int i=0; i<ixmax; i++ ) {
-            xx[i]= table.getXTagDouble(i,units);
-        }
-        return xx;
+    
+    public static DatumRange xRange( DataSet ds ) {
+        int n=ds.getXLength();
+        return new DatumRange( ds.getXTagDatum(0), ds.getXTagDatum(n-1) );
     }
-
+    
+    public static DatumRange yRange( DataSet ds ) {
+        if ( ds instanceof VectorDataSet ) {
+            VectorDataSet vds= ( VectorDataSet ) ds;
+            DatumRange result= null;            
+            for ( int i=1; i<ds.getXLength(); i++ ) {
+                if ( !vds.getDatum(i).isFill() ) {
+                    if ( result==null ) {
+                        result= new DatumRange(vds.getDatum(i),vds.getDatum(i));
+                    } else {
+                        result= result.include(vds.getDatum(i));
+                    }
+                }
+            }
+            if ( result==null ) { result= new DatumRange(vds.getDatum(0),vds.getDatum(0)); } // fill,fill
+            return result;
+        } else if ( ds instanceof TableDataSet ) {
+            TableDataSet tds= ( TableDataSet ) ds;
+            int n=tds.getYLength(0);
+            return new DatumRange( tds.getYTagDatum(0,0), tds.getYTagDatum(0,n-1) );
+        } else throw new IllegalArgumentException("unsupported: "+ds);
+    }
+    
+    
+    public static DasPlot visualize( DataSet ds, boolean ylog ) {        
+        DatumRange xRange= xRange( ds );
+        DatumRange yRange= yRange( ds );
+        JFrame jframe= new JFrame("DataSetUtil.visualize");
+        DasCanvas canvas= new DasCanvas(400,400);
+        jframe.getContentPane().add( canvas );
+        DasPlot result= guessPlot( ds );
+        canvas.add( result, DasRow.create(canvas), DasColumn.create( canvas ) );
+        Units xunits= result.getXAxis().getUnits();
+        result.getXAxis().setDataRange(xRange.zoomOut(1.1));
+        Units yunits= result.getYAxis().getUnits();
+        if ( ylog ) {
+            result.getYAxis().setDataRange(yRange);
+            result.getYAxis().setLog(true);
+        } else {
+            result.getYAxis().setDataRange(yRange.zoomOut(1.1));
+        }
+        jframe.pack();
+        jframe.setVisible(true);
+        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        return result;
+    }
     
     public static Datum guessXTagWidth( DataSet table ) {
         if ( table.getXLength()>2 ) {
@@ -86,7 +126,7 @@ public class DataSetUtil {
             return table.getXUnits().getOffsetUnits().createDatum(0);
         }
     }
-
+    
     
     protected static int closest( double[] xx, double x ) {
         if ( xx.length==0 ) {
@@ -128,5 +168,19 @@ public class DataSetUtil {
         }
     }
     
+    public static double[] getXTagArrayDouble( DataSet vds, Units units ) {        
+        int ixmax= vds.getXLength();
+        double[] xx= new double[ixmax];
+        for ( int i=0; i<ixmax; i++ ) {
+            xx[i]= vds.getXTagDouble(i,units);
+        }
+        return xx;
+    }
+    
+    
+    public static DatumVector getXTags( DataSet ds ) {
+        double[] data= VectorUtil.getXTagArrayDouble(ds,ds.getXUnits());        
+        return DatumVector.newDatumVector(data,ds.getXUnits());
+    }
     
 }

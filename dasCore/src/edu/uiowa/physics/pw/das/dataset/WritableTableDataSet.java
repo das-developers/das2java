@@ -101,10 +101,14 @@ public class WritableTableDataSet implements TableDataSet {
         return null;
     }
     
+    public String[] getPlaneIds() {
+        return new String[0];
+    }
+    
     public Object getProperty(String name) {
         return properties.get(name);
     }
-    
+        
     public void setProperty( String name, Object value ) {
         properties.put( name, value );
     }
@@ -191,6 +195,10 @@ public class WritableTableDataSet implements TableDataSet {
     
     public int tableStart(int table) {
         return 0;
+    }
+    
+    public Map getProperties() {
+        return new HashMap(properties);
     }
     
 }

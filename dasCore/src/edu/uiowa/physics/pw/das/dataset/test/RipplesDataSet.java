@@ -30,15 +30,10 @@ import edu.uiowa.physics.pw.das.datum.*;
  *
  * @author  jbf
  */
-public class RipplesDataSet implements TableDataSet {
+public class RipplesDataSet extends FunctionTableDataSet implements TableDataSet {
     
     double x1,y1,p1;
-    double x2,y2,p2;
-    int ytags;
-    int xtags;
-    Units zUnits= Units.dimensionless;
-    Units xUnits= Units.dimensionless;
-    Units yUnits= Units.dimensionless;
+    double x2,y2,p2;    
     
     public RipplesDataSet( ) {
         this( 2, 3, 1, 13, 15, 2, 30, 30 );
@@ -52,14 +47,10 @@ public class RipplesDataSet implements TableDataSet {
         this.x2= x2;
         this.y2= y2;
         this.p2= p2;
-        this.xtags= xlength;
-        this.ytags= ylength;
+        super.xtags= xlength;
+        super.ytags= ylength;
         /** Creates a new instance of RipplesDataSet */
-    }
-    
-    public Datum getDatum(int i, int j) {
-        return zUnits.createDatum(getDouble(i,j,zUnits));
-    }
+    }    
     
     public double getDouble(int i, int j, Units units) {
         double x= getXTagDouble(i,xUnits);
@@ -75,110 +66,5 @@ public class RipplesDataSet implements TableDataSet {
             return zUnits.convertDoubleTo(units,z);
         }
     }
-    
-    public double[] getDoubleScan(int i, Units units) {
-        int yLength = getYLength(tableOfIndex(i));
-        double[] array = new double[yLength];
-        for (int j = 0; j < yLength; j++) {
-            array[j] = getDouble(i, j, units);
-        }
-        return array;
-    }
-    
-    public DatumVector getScan(int i) {
-        return DatumVector.newDatumVector(getDoubleScan(i, zUnits), zUnits);
-    }
-    
-    public int getInt(int i, int j, Units units) {
-        return (int)getDouble(i, j, units);
-    }
-    
-    public DataSet getPlanarView(String planeID) {
-        if ( "weights".equals(planeID) ) {
-            return null;
-        } else {
-            return null;
-        }
-    }
-    
-    public Object getProperty(String name) {
-        return null;
-    }
-    
-    public int getXLength() {
-        return xtags;
-    }
-    
-    public VectorDataSet getXSlice(int i) {
-        return new XSliceDataSet(this, i );
-    }
-    
-    public Datum getXTagDatum(int i) {
-        return xUnits.createDatum(getXTagDouble(i,xUnits));
-    }
-    
-    public double getXTagDouble(int i, Units units) {
-        return xUnits.convertDoubleTo(units, ((double)i*20)/xtags);
-    }
-    
-    public int getXTagInt(int i, Units units) {
-        return (int)getXTagDouble(i,units);
-    }
-    
-    public Units getXUnits() {
-        return xUnits;
-    }
-    
-    public int getYLength(int table) {
-        return ytags;
-    }
-    
-    public VectorDataSet getYSlice(int j, int table) {
-        return new YSliceDataSet(this, j, table);
-    }
-    
-    public Datum getYTagDatum(int table, int j) {
-        return yUnits.createDatum(getYTagDouble(table, j, yUnits));
-    }
-    
-    public double getYTagDouble(int table, int j, Units units) {
-        return yUnits.convertDoubleTo(units, ((double)j*20)/ytags);
-    }
-    
-    public int getYTagInt(int table, int j, Units units) {
-        return (int)getYTagDouble(table, j, units);
-    }
-    
-    public Units getYUnits() {
-        return yUnits;
-    }
-    
-    public Units getZUnits() {
-        return zUnits;
-    }
-    
-    public int tableCount() {
-        return 1;
-    }
-    
-    public int tableEnd(int table) {
-        return ytags;
-    }
-    
-    public int tableOfIndex(int i) {
-        return 0;
-    }
-    
-    public int tableStart(int table) {
-        return 0;
-    }
-    
-    public DatumVector getYTags(int table) {
-        double[] tags = new double[getYLength(table)];
-        for (int j = 0; j < tags.length; j++) {
-            tags[j] = getYTagDouble(table, j, yUnits);
-        }
-        return DatumVector.newDatumVector(tags, yUnits);
-    }
-    
+        
 }

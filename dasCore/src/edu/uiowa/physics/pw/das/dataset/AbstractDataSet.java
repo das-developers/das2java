@@ -73,6 +73,10 @@ public abstract class AbstractDataSet implements DataSet {
         return properties.get(name);
     }
     
+    public Map getProperties() {
+        return new HashMap( properties );
+    }
+    
     public int getXLength() {
         return xTags.length;
     }
@@ -123,6 +127,10 @@ public abstract class AbstractDataSet implements DataSet {
          */
         public Object getProperty(String name) {
             return properties.get(name);
+        }
+        
+        public Map getProperties() {
+            return new HashMap(properties);
         }
 
         public int getXLength() {

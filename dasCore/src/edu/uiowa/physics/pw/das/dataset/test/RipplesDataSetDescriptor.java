@@ -64,8 +64,8 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
     }
     
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
-        int nx=300;
-        int ny=300;
+        int nx=100;
+        int ny=100;
         
         double[] x= new double[nx];
         double[] y= new double[ny];

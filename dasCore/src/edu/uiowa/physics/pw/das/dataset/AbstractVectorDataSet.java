@@ -52,4 +52,8 @@ public abstract class AbstractVectorDataSet extends AbstractDataSet implements D
         super(xTags, xUnits, yUnits, properties);
     }
     
+    public String toString() {
+        return VectorUtil.toString(this);
+    }
+        
 }

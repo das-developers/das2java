@@ -6,7 +6,9 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.Units;
+import java.util.Map;
 
 /**
  *
@@ -78,7 +80,7 @@ public class SyncUtil {
             }
         }
                 
-        public edu.uiowa.physics.pw.das.datum.Datum getDatum(int i) {
+        public Datum getDatum(int i) {
             if ( imap[i]!=-1 ) {
                 return source.getDatum( imap[i] );
             } else {
@@ -87,7 +89,7 @@ public class SyncUtil {
         }
         
         
-        public double getDouble(int i, edu.uiowa.physics.pw.das.datum.Units units) {
+        public double getDouble(int i, Units units) {
             if ( imap[i]!=-1 ) {
                 return source.getDouble( imap[i], units );
             } else {
@@ -95,7 +97,7 @@ public class SyncUtil {
             }
         }
         
-        public int getInt(int i, edu.uiowa.physics.pw.das.datum.Units units) {
+        public int getInt(int i, Units units) {
             if ( imap[i]!=-1 ) {
                 return source.getInt( imap[i], units );
             } else {
@@ -107,31 +109,40 @@ public class SyncUtil {
             return new NearestNeighborVectorDataSet( (VectorDataSet)source.getPlanarView(planeID), imap, xtags );
         }
         
+        public String[] getPlaneIds() {
+            return source.getPlaneIds();
+        }
+        
+            
         public Object getProperty(String name) {
             return source.getProperty(name);
         }
         
+        public Map getProperties() {
+            return source.getProperties();
+        }
+                
         public int getXLength() {
             return imap.length;
         }
         
-        public edu.uiowa.physics.pw.das.datum.Datum getXTagDatum(int i) {
+        public Datum getXTagDatum(int i) {
             return getXUnits().createDatum(xtags[i]);
         }
         
-        public double getXTagDouble(int i, edu.uiowa.physics.pw.das.datum.Units units) {
+        public double getXTagDouble(int i, Units units) {
             return getXUnits().convertDoubleTo(units, imap[i] );
         }
         
-        public int getXTagInt(int i, edu.uiowa.physics.pw.das.datum.Units units) {
+        public int getXTagInt(int i, Units units) {
             throw new IllegalArgumentException("not implemented");
         }
         
-        public edu.uiowa.physics.pw.das.datum.Units getXUnits() {
+        public Units getXUnits() {
             return source.getXUnits();
         }
         
-        public edu.uiowa.physics.pw.das.datum.Units getYUnits() {
+        public Units getYUnits() {
             return source.getYUnits();
         }
         

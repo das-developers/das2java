@@ -170,6 +170,12 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
         }
     }
     
+    public String[] getPlaneIds() {
+        String[] result= new String[planeIDs.length];
+        System.arraycopy( planeIDs, 0, result, 0, planeIDs.length );
+        return result;
+    }
+    
     private class PlanarViewDataSet extends AbstractDataSet.ViewDataSet implements VectorDataSet {
         
         private final int index;
@@ -198,9 +204,24 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
         public DataSet getPlanarView(String planeID) {
             return null;
         }
+    
+        public String[] getPlaneIds() {
+            return new String[0];
+        }
         
         public Object getProperty(String name) {
             return DefaultVectorDataSet.this.getProperty(planeIDs[index] + "." + name);
+        }
+        
+        // TODO: this appears to have different logic than in ViewDataSet.  This needs to be resolved.
+        
+       // public Map getProperties() {
+       //     throw new IllegalStateException("unimplemented");            
+       //     //return DefaultVectorDataSet.this.getProperty(planeIDs[index] + "." + name);
+       // }
+
+        public String toString() {
+            return VectorUtil.toString(this);
         }
         
     }
