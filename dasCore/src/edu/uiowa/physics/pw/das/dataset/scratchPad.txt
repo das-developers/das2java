@@ -1,0 +1,2 @@
+jbf> TableDataSetConsumer should be renamed ZAxisDataSetComsumer or something like that
+ DataSet.hasZAxis()?
