@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<!-- DEPENDENCIES -->
+	<!--===================================================================-->
+	
+	<!-- commandblock-type (complexType) -->
+	<xs:include schemaLocation="commandblock.xsd" />
+
+	<!-- ATTRIBUTE TYPE DECLARATIONS -->
+	<!--===================================================================-->
+    <xs:include schemaLocation="dasMLtypes.xsd" />
+    
+    <!-- CANVAS ELEMENTS -->
+    <xs:include schemaLocation="canvas.xsd" />
+	
+	<!-- TOP-LEVEL ELEMENT -->
+	<!--==============================================================-->
+	<xs:element name="das2" type="das2-type" />
+        
+        <!-- ELELMENT TYPE DECLARATIONS -->
+        <!--===============================================================-->
+            <xs:element name="form" type="form-type" />
+            <xs:element name="window" type="window-type" />
+            <xs:element name="panel" type="panel-type"/>
+            <xs:element name="radiobutton" type="radiobutton-type"/>
+            <xs:element name="textfield" type="textfield-type" />
+            <xs:element name="text" type="xs:string" />
+            <xs:element name="button" type="button-type" />
+            <xs:element name="checkbox" type="checkbox-type" />
+            <xs:element name="buttongroup" type="buttongroup-type" />
+            <xs:element name="list" type="list-type" />
+            <xs:element name="choice" type="choice-type" />
+
+	<!-- ELEMENT TYPE DECLARATIONS -->
+	<!--===================================================================-->
+	<xs:complexType name="das2-type">
+                <xs:sequence>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                            <xs:element name="form" type="form-type" />
+                            <xs:element name="window" type="window-type" />
+                    </xs:choice>
+                    <xs:element name="init" type="commandblock-type" minOccurs="0" maxOccurs="1" />
+                </xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="form-type">
+		<xs:group ref="container-content" minOccurs="0" maxOccurs="unbounded" />
+		<xs:attribute name="name" type="xs:ID" use="required" />
+                <xs:attribute name="label" type="xs:string" default=""/>
+		<xs:attribute name="alignment" type="alignment-type" default="left" />
+		<xs:attribute name="direction" type="direction-type" fixed="vertical" use="prohibited" />
+		<xs:attribute name="border" type="java-boolean" fixed="false" use="prohibited" />
+		<xs:attribute name="border-title" type="xs:string" fixed="" use="prohibited" />
+	</xs:complexType>
+	
+	<xs:complexType name="window-type">
+		<!--xs:group ref="container-content" minOccurs="0" maxOccurs="unbounded" /-->
+                <xs:choice>
+                    <xs:element name="panel" type="panel-type"/>
+                    <xs:element name="canvas" type="canvas-type"/>
+                </xs:choice>
+		<xs:attribute name="name" type="xs:ID" use="required" />
+		<xs:attribute name="alignment" type="alignment-type" default="left" />
+                <xs:attribute name="location" type="int-int-type" default="(0,0)" />
+		<xs:attribute name="title" type="xs:string" default="" />
+		<xs:attribute name="width" type="xs:integer" default="640"/>
+		<xs:attribute name="height" type="xs:integer" default="480"/>
+		<xs:attribute name="visible" type="java-boolean" default="false" />
+	</xs:complexType>
+
+	<xs:complexType name="panel-type">
+		<xs:group ref="container-content" minOccurs="0" maxOccurs="unbounded" />
+		<xs:attribute name="border" type="java-boolean" default="false" />
+		<xs:attribute name="border-title" type="xs:string" default="" />
+		<xs:attribute name="alignment" type="alignment-type" default="left" />
+		<xs:attribute name="direction" type="direction-type" default="horizontal" />
+	</xs:complexType>
+	
+	<xs:complexType name="textfield-type">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="name" type="xs:ID" use="required" />
+				<xs:attribute name="length" type="xs:integer" default="10" use="optional" />
+                                <xs:attribute name="enabled" type="java-boolean" default="true" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	
+	<xs:complexType name="button-type">
+		<xs:sequence minOccurs="0" maxOccurs="1">
+			<xs:element name="action" type="commandblock-type" />
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:ID" />
+		<xs:attribute name="label" type="xs:string" use="required" />
+                <xs:attribute name="enabled" type="java-boolean" default="true" />
+	</xs:complexType>
+
+	<xs:complexType name="checkbox-type">
+                <xs:sequence minOccurs="0" maxOccurs="1">
+                    <xs:element name="action" type="commandblock-type" />
+                </xs:sequence>
+		<xs:attribute name="name" type="xs:ID" use="required"/>
+		<xs:attribute name="label" type="xs:string" use="required"/>
+		<xs:attribute name="selected" type="java-boolean" default="false"/>
+                <xs:attribute name="enabled" type="java-boolean" default="true" />
+	</xs:complexType>
+
+	<xs:complexType name="radiobutton-type">
+		<xs:attribute name="name" type="xs:ID" use="required"/>
+		<xs:attribute name="label" type="xs:string" use="required"/>
+		<xs:attribute name="selected" type="java-boolean" default="false"/>
+                <xs:attribute name="enabled" type="java-boolean" default="true" />
+	</xs:complexType>
+
+	<xs:complexType name="buttongroup-type">
+            <xs:sequence>
+                <xs:element name="radiobutton" type="radiobutton-type"/>
+            </xs:sequence>
+            <xs:attribute name="border" type="java-boolean" default="false" />
+            <xs:attribute name="border-title" type="xs:string" default="" />
+            <xs:attribute name="alignment" type="alignment-type" default="left" />
+            <xs:attribute name="direction" type="direction-type" default="horizontal" />
+	</xs:complexType>
+
+	<xs:complexType name="choice-type">
+		<xs:sequence>
+			<xs:element name="option" type="option-type"
+                            minOccurs="1" maxOccurs="unbounded" />
+			<xs:element name="action" type="commandblock-type"
+                            minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:ID" use="required" />
+                <xs:attribute name="enabled" type="java-boolean" default="true" />
+                <xs:attribute name="selectedIndex" type="xs:integer" />
+	</xs:complexType>
+
+	<xs:complexType name="list-type">
+		<xs:sequence>
+			<xs:element name="option" type="option-type"
+                            minOccurs="1" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:ID" use="required" />
+                <xs:attribute name="enabled" type="java-boolean" default="true" />
+		<xs:attribute name="selectionMode" type="selectionMode-type" />
+	</xs:complexType>
+
+	<xs:complexType name="option-type">
+		<xs:attribute name="label" type="xs:string" use="optional" />
+		<xs:attribute name="value" type="xs:string" use="required" />
+		<xs:attribute name="selected" type="java-boolean" default="false"/>
+	</xs:complexType>
+
+	<xs:complexType name="glue-type">
+		<xs:attribute name="direction" type="direction-type" default="horizontal"/>
+	</xs:complexType>
+
+	
+	<xs:group name="container-content">	
+		<xs:choice>
+			<xs:element name="panel" type="panel-type" />
+			<xs:element name="textfield" type="textfield-type" />
+                        <!-- info is deprecated and will be removed -->
+			<xs:element name="info" type="xs:string" />
+                        <xs:element name="text" type="xs:string" />
+			<xs:element name="button" type="button-type" />
+			<xs:element name="checkbox" type="checkbox-type" />
+			<xs:element name="buttongroup" type="buttongroup-type" />
+			<xs:element ref="canvas" />
+			<xs:element name="list" type="list-type" />
+			<xs:element name="choice" type="choice-type" />
+			<xs:element name="glue" />
+		</xs:choice>
+	</xs:group>
+
+</xs:schema>

@@ -1,0 +1,257 @@
+<?xml version="1.0" ?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:include schemaLocation="dasMLtypes.xsd"/>
+
+    <xs:element name="canvas" type="canvas-type"/>
+    
+    <xs:element name="axis" type="standalone-axis-type"/>
+    
+    <xs:element name="timeaxis" type="standalone-timeaxis-type"/>
+    
+    <xs:element name="colorbar" type="standalone-colorbar-type"/>
+    
+    <xs:element name="plot" type="plot-type"/>
+    
+    <xs:complexType name="canvas-type">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="row" type="row-column-type" />
+            <xs:element name="column" type="row-column-type" />
+            <xs:element name="axis" type="standalone-axis-type" />
+            <xs:element name="timeaxis" type="standalone-timeaxis-type" />
+            <xs:element name="attachedaxis" type="standalone-attachedaxis-type" />
+            <xs:element name="spectrogram" type="spectrogram-type" />
+            <xs:element name="plot" type="plot-type" />
+            <xs:element name="colorbar" type="standalone-colorbar-type" />
+        </xs:choice>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
+	
+    <xs:complexType name="row-column-type">
+        <xs:attribute name="name" type="xs:ID" use="required" />
+        <xs:attribute name="minimum" type="normalized-double" use="required" />
+        <xs:attribute name="maximum" type="normalized-double" use="required" />
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
+        
+    <!-- AXIS ATTRIBUTES AND ATTRIBUTE GROUPS -->
+        
+    <xs:attributeGroup name="general-axis-attributes">
+        <xs:attribute name="name" type="xs:ID" use="optional" />
+        <xs:attribute name="row" type="xs:IDREF" use="optional" />
+        <xs:attribute name="column" type="xs:IDREF" use="optional" />
+        <xs:attribute name="label" type="xs:string" />
+        <xs:attribute name="tickLabelsVisible" type="java-boolean" default="true" />
+        <xs:attribute name="oppositeAxisVisible" type="java-boolean" default="false" />
+    </xs:attributeGroup>
+       
+    <xs:attributeGroup name="axis-attributes">
+        <xs:attribute name="dataMinimum" type="xs:double" default="1.0" />
+        <xs:attribute name="dataMaximum" type="xs:double" default="10.0" />
+        <xs:attribute name="log" type="java-boolean" default="false" />
+        <xs:attributeGroup ref="general-axis-attributes" />
+    </xs:attributeGroup>
+        
+    <xs:attributeGroup name="timeaxis-attributes">
+        <xs:attribute name="timeMinimum" type="xs:string" default="1996-01-01" />
+        <xs:attribute name="timeMaximum" type="xs:string" default="1996-01-02" />
+        <xs:attributeGroup ref="general-axis-attributes" />
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="attachedaxis-attributes">
+        <xs:attribute name="ref" type="xs:IDREF" />
+        <xs:attributeGroup ref="general-axis-attributes" />
+    </xs:attributeGroup>
+        
+    <xs:attributeGroup name="colorbar-attributes">
+        <xs:attribute name="orientation" type="axis-orientation-type" default="right" />
+        <xs:attribute name="type" type="colorbar-color-type" default="color_wedge" />
+    </xs:attributeGroup>
+        
+    <xs:attribute name="orientation" type="axis-orientation-type" />
+    
+    <!-- END AXIS ATTRIBUTES AND ATTRIBUTE GROUPS -->
+    
+    <!-- AXIS TYPE DECLARATIONS -->
+       
+    <xs:complexType name="standalone-axis-type">
+        <xs:attributeGroup ref="axis-attributes" />
+        <xs:attribute ref="orientation" use="required" />
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="standalone-timeaxis-type">
+        <xs:attributeGroup ref="timeaxis-attributes" />
+        <xs:attribute ref="orientation" use="required" />
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="standalone-attachedaxis-type">
+        <xs:attributeGroup ref="attachedaxis-attributes" />
+        <xs:attribute ref="orientation" use="required" />
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="standalone-colorbar-type">
+        <xs:attributeGroup ref="axis-attributes" />
+        <xs:attributeGroup ref="colorbar-attributes" />
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <!-- THE FOLLOWING AXIS TYPES ARE DECLARED SEPARATELY FOR AXES
+         NESTED IN xAxis AND yAxis ELEMENTS SO THAT BETTER ERROR
+         MESSAGES WILL BE GENERATED FOR EACH CASE -->
+        
+    <xs:complexType name="xAxis-axis-type">
+        <xs:attributeGroup ref="axis-attributes" />
+        <xs:attribute name="orientation" type="axis-orientation-type"
+            default="horizontal"/>
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="yAxis-axis-type">
+        <xs:attributeGroup ref="axis-attributes" />
+        <xs:attribute name="orientation" type="axis-orientation-type"
+            default="vertical"/>
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="xAxis-timeaxis-type">
+        <xs:attributeGroup ref="timeaxis-attributes" />
+        <xs:attribute name="orientation" type="axis-orientation-type"
+            default="horizontal"/>
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="yAxis-timeaxis-type">
+        <xs:attributeGroup ref="timeaxis-attributes" />
+        <xs:attribute name="orientation" type="axis-orientation-type"
+            default="vertical"/>
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="xAxis-attachedaxis-type">
+        <xs:attributeGroup ref="attachedaxis-attributes" />
+        <xs:attribute ref="orientation"/>
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="yAxis-attachedaxis-type">
+        <xs:attributeGroup ref="attachedaxis-attributes" />
+        <xs:attribute ref="orientation"/>
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="zAxis-colorbar-type">
+        <xs:attributeGroup ref="axis-attributes" />
+        <xs:attributeGroup ref="colorbar-attributes" />
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <!-- END AXIS TYPE DECLARATIONS -->
+	
+    <xs:complexType name="spectrogram-type">
+        <xs:sequence>
+            <xs:element name="xAxis" minOccurs="0" maxOccurs="1"
+                type="xAxis-element-type"/>
+            <xs:element name="yAxis" minOccurs="0" maxOccurs="1"
+                type="yAxis-element-type"/>
+            <xs:element name="zAxis" minOccurs="0" maxOccurs="1"
+                type="zAxis-element-type"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:ID" use="required" />
+        <xs:attribute name="row" type="xs:IDREF" use="required" />
+        <xs:attribute name="column" type="xs:IDREF" use="required" />
+        <xs:attribute name="xAxis" type="xs:IDREF" />
+        <xs:attribute name="yAxis" type="xs:IDREF" />
+		<xs:attribute name="colorbar" type="xs:IDREF" />
+        <xs:anyAttribute processContents="lax" />
+    </xs:complexType>
+        
+    <xs:complexType name="xAxis-element-type">
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="axis" type="xAxis-axis-type"/>
+            <xs:element name="timeaxis" type="xAxis-timeaxis-type"/>
+            <xs:element name="attachedaxis" type="xAxis-attachedaxis-type"/>
+        </xs:choice>
+    </xs:complexType>
+       
+    <xs:complexType name="yAxis-element-type">
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="axis" type="yAxis-axis-type"/>
+            <xs:element name="timeaxis" type="yAxis-timeaxis-type"/>
+            <xs:element name="attachedaxis" type="yAxis-attachedaxis-type"/>
+        </xs:choice>
+    </xs:complexType>
+        
+    <xs:complexType name="zAxis-element-type">
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="colorbar" type="zAxis-colorbar-type"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <!--  GENERALIZED PLOT ELEMENT DECLARATIONS  -->
+    
+    <xs:complexType name="plot-type">
+        <xs:sequence>
+            <xs:element name="xAxis" minOccurs="0" maxOccurs="1"
+                type="xAxis-element-type"/>
+            <xs:element name="yAxis" minOccurs="0" maxOccurs="1"
+                type="yAxis-element-type"/>
+            <xs:element name="renderers" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:choice minOccurs="1" maxOccurs="unbounded">
+                        <xs:element name="spectrogram"
+                            type="spectrogram-renderer-type" />
+                        <xs:element name="lineplot" type="lineplot-renderer-type" />
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:ID" use="required" />
+        <xs:attribute name="row" type="xs:IDREF" use="required" />
+        <xs:attribute name="column" type="xs:IDREF" use="required" />
+        <xs:attribute name="xAxis" type="xs:IDREF" />
+        <xs:attribute name="yAxis" type="xs:IDREF" />
+        <xs:attribute name="title" type="xs:string" default="" />
+    </xs:complexType>
+    
+    <xs:complexType name="spectrogram-renderer-type">
+        <xs:sequence>
+            <xs:element name="zAxis" minOccurs="0" maxOccurs="1"
+                type="zAxis-element-type"/>
+        </xs:sequence>
+		<xs:attribute name="colorbar" type="xs:IDREF" />
+        <xs:attribute name="dataSetID" type="xs:string" />
+    </xs:complexType>
+    
+    <xs:simpleType name="lineplot-color">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="black" />
+            <xs:enumeration value="blue" />
+            <xs:enumeration value="red" />
+            <xs:enumeration value="green" />
+            <xs:enumeration value="white" />
+            <xs:enumeration value="gray" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="lineplot-psym">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="lines" />
+            <xs:enumeration value="dots" />
+            <xs:enumeration value="circles" />
+            <xs:enumeration value="triangles" />
+            <xs:enumeration value="cross" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="lineplot-renderer-type">
+        <xs:attribute name="dataSetID" type="xs:string" />
+        <xs:attribute name="color" type="lineplot-color" default="black" />
+        <xs:attribute name="psym" type="lineplot-psym" default="lines" />
+        <xs:attribute name="lineWidth" type="xs:float" default="1.0" />
+    </xs:complexType>
+    
+</xs:schema>
