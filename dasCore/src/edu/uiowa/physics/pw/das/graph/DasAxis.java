@@ -832,7 +832,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int nTicksMax;
         int axisSize;
         if (isHorizontal()) {
-            int tickSizePixels= getFontMetrics(getTickLabelFont()).stringWidth("0.0000") ;
+            int tickSizePixels= (int)(getFontMetrics(getTickLabelFont()).stringWidth("0.0000")*1.5) ;
             axisSize= getColumn().getWidth();
             nTicksMax= axisSize / tickSizePixels;
         } else {
@@ -904,7 +904,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         updateDataSet();
     }
     
-    protected void updateTickV() {
+    public void updateTickV() {
         if (getUnits() instanceof TimeLocationUnits) {
             updateTickVTime();
         } else if (dataRange.isLog()) {
