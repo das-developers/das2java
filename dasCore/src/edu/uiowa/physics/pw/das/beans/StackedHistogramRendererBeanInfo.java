@@ -35,7 +35,6 @@ public class StackedHistogramRendererBeanInfo extends AccessLevelBeanInfo {
     private static final Property[] properties  = {
         new Property("ZAxis", AccessLevel.DASML, "getZAxis", "setZAxis", null),
         new Property("PeaksIndicator", AccessLevel.DASML, "getPeaksIndicator", "setPeaksIndicator", null),
-        new Property("DumpData", AccessLevel.DASML, "isDumpDataSet", "setDumpDataSet", null),
         new Property("sliceRebinnedData", AccessLevel.DASML, "isSliceRebinnedData", "setSliceRebinnedData", null),
     };
     

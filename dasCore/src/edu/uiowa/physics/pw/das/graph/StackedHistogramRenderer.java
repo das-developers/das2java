@@ -67,9 +67,6 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     private PeaksIndicator peaksIndicator;
     
-    /** Holds value of property dumpDataSet. */
-    private boolean dumpDataSet;
-    
     /** Holds value of property sliceRebinnedData. */
     private boolean sliceRebinnedData;
     
@@ -396,41 +393,6 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
         super.setDataSetDescriptor(dataSetDescriptor);
         dataSetDescriptor.addDataSetUpdateListener( this );
-    }
-    
-    /** Getter for property dumpDataSet.
-     * @return Value of property dumpDataSet.
-     *
-     */
-    public boolean isDumpDataSet() {
-        return this.dumpDataSet;
-    }
-    
-    /** Setter for property dumpDataSet.
-     * @param dumpDataSet New value of property dumpDataSet.
-     *
-     */
-    public void setDumpDataSet(boolean dumpDataSet) {
-        try {
-            if ( dumpDataSet==true ) {
-                System.out.println("Dumping data set");
-                JFileChooser chooser= new JFileChooser();
-                int xx= chooser.showSaveDialog(this.getParent());
-                if ( xx==JFileChooser.APPROVE_OPTION ) {
-                    File file= chooser.getSelectedFile();
-                    DataSet ds= getDataSet();
-                    if ( ds instanceof TableDataSet ) {
-                        TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
-                    } else {
-                        throw new DasException("don't know how to serialize data set" );
-                    }
-                }
-                setDumpDataSet( false );
-            }
-        } catch ( Exception e ) {
-            DasExceptionHandler.handle( e );
-        }
-        this.dumpDataSet= dumpDataSet;
     }
     
     /** Getter for property sliceRebinnedData.
