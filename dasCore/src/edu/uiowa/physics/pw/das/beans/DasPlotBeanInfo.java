@@ -31,7 +31,7 @@ public class DasPlotBeanInfo extends AccessLevelBeanInfo {
         new Property("xAxis", AccessLevel.DASML, "getXAxis", "setXAxis", null),
         new Property("yAxis", AccessLevel.DASML, "getYAxis", "setYAxis", null),
         new Property("title", AccessLevel.DASML, "getTitle", "setTitle", null),
-        new Property("renderers", AccessLevel.DASML, "getRenderers", null, "getRenderer", null, null)
+        new Property("renderers", AccessLevel.DASML, "getRenderers", null, "getRenderer", null, null),        
     };
     
     public DasPlotBeanInfo() {
