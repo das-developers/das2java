@@ -212,6 +212,14 @@ public class TableDataSetBuilder {
         return new DefaultTableDataSet(xTags.toArray(), xUnits, collapsedYTags, yUnits, collapsedZValues, zUnitsArray, (String[])planeIDs.toArray(new String[planeIDs.size()]), tableOffsets, properties);
     }
     
+    public int getXLength() {
+        return xTags.size();
+    }
+    
+    public double getXTag(int i) {
+        return xTags.get(i);
+    }
+    
     private static double[] insert(double[] array, double value, int index) {
         double[] result = new double[array.length + 1];
         System.arraycopy(array, 0, result, 0, index);
