@@ -870,7 +870,11 @@ public class XTaggedYScanDataSet extends DataSet_jbf implements TableDataSet, ja
         result.y_coordinate= this.y_coordinate;
         result.auxData= this.auxData;
         result.data= (XTaggedYScan[])this.auxData.get(planeID);
-        return result;
+        if ( result.data==null ) {
+            return null; 
+        } else {
+            return result;
+        }
     }
     
     public double getXTagDouble(int i, Units units) {
