@@ -98,6 +98,35 @@ public class TableUtil {
         return result;
     }
     
+    public static void checkForNaN( TableDataSet tds ) {
+        for ( int i=0; i<tds.getXLength(); i++ ) {
+            for ( int j=0; j<16; j++ ) {
+                double zz= tds.getDouble(i,j, tds.getZUnits() );
+                if ( Double.isNaN( zz ) ) {
+                    System.out.println("found NaN at "+i+","+j );
+                    if ( tds.getPlanarView("weights")!=null ) {
+                        System.out.println("  weight: "+((TableDataSet)tds.getPlanarView("weights")).getDouble(i, j, Units.dimensionless ) );
+                    }
+                } else {
+                    // System.out.println("zz="+zz );
+                }
+            }
+        }
+    }
+    
+    protected static void checkForNaN( double[][] t ) {
+       for ( int i=0; i<t.length; i++ ) {
+            for ( int j=0; j<t[0].length; j++ ) {
+                double zz= t[i][j];
+                if ( Double.isNaN( zz ) ) {
+                    System.out.println("found NaN at "+i+","+j );                    
+                } else {
+                    // System.out.println("zz="+zz );
+                }
+            }
+        } 
+    }    
+    
     public static String toString(TableDataSet tds) {
         StringBuffer buffer= new StringBuffer();
         buffer.append( tds.getYLength(0) );
@@ -194,14 +223,14 @@ public class TableUtil {
     public static void dumpToAsciiStream(TableDataSet tds, WritableByteChannel out) {
         dumpToDas2Stream( tds, out, true );
     }
-
+    
     public static void dumpToDas2Stream( TableDataSet tds, OutputStream out, boolean asciiTransferTypes ) {
-         dumpToDas2Stream(tds, Channels.newChannel(out), asciiTransferTypes );
+        dumpToDas2Stream(tds, Channels.newChannel(out), asciiTransferTypes );
     }
     
     public static void dumpToBinaryStream( TableDataSet tds, OutputStream out ) {
         dumpToDas2Stream(tds, Channels.newChannel(out), false );
-    }    
+    }
     
     private static void dumpToDas2Stream( TableDataSet tds, WritableByteChannel out, boolean asciiTransferTypes ) {
         try {
@@ -212,7 +241,7 @@ public class TableUtil {
             
             DataTransferType zTransferType;
             DataTransferType xTransferType;
-
+            
             if ( asciiTransferTypes ) {
                 zTransferType= DataTransferType.getByName("ascii10");
                 xTransferType= DataTransferType.getByName("ascii24");
@@ -224,7 +253,7 @@ public class TableUtil {
             producer.streamDescriptor(sd);
             DatumVector[] zValues = new DatumVector[1];
             for (int table = 0; table < tds.tableCount(); table++) {
-                StreamXDescriptor xDescriptor = new StreamXDescriptor();                
+                StreamXDescriptor xDescriptor = new StreamXDescriptor();
                 xDescriptor.setDataTransferType(xTransferType);
                 xDescriptor.setUnits(tds.getXUnits());
                 StreamYScanDescriptor yDescriptor = new StreamYScanDescriptor();
