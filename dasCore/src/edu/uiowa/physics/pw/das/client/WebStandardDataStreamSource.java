@@ -44,6 +44,10 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Properties;
 
+/*
+ * Web standard data stream source */
+
+/** */
 public class WebStandardDataStreamSource implements StandardDataStreamSource {
     
     private Key key;
@@ -109,7 +113,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     
     
     public InputStream getReducedInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
-        // params is either String, or object with toString properly defined.
                 
         String formData;
         String form = (String)dsd.getProperty("form");
@@ -181,10 +184,10 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 }
             }
             
-            URL server= this.server.getURL(formData);
-            DasDie.println(DasDie.VERBOSE,server.toString());
+            URL serverURL= this.server.getURL(formData);
+            DasDie.println(DasDie.VERBOSE,serverURL.toString());
             
-            URLConnection urlConnection = server.openConnection();
+            URLConnection urlConnection = serverURL.openConnection();
             urlConnection.connect();
             
             String contentType = urlConnection.getContentType();
@@ -200,7 +203,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 throw new DasIOException(message);
             }
             
-            InputStream in= server.openStream();
+            InputStream in= serverURL.openStream();
             
             if (isLegacyStream()) {
                 return processLegacyStream(in);
@@ -214,7 +217,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     }
     
     private InputStream processLegacyStream(InputStream in) throws IOException, DasException {
-
+        /* advances the inputStream past the old das2server tags */
         BufferedInputStream bin= new BufferedInputStream(in);
 
         bin.mark(Integer.MAX_VALUE);
