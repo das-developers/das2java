@@ -84,6 +84,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                         if (weights != null) {
                             double w = weights.getDouble(i, j, Units.dimensionless);
                             rebinData[ibinx*ny + ibiny[j]] += tds.getDouble(i, j, tds.getZUnits()) * w;
+                            rebinWeights[ibinx*ny + ibiny[j]] += w;
                         }
                         else {
                             rebinData[ibinx*ny + ibiny[j]] += tds.getDouble(i, j, tds.getZUnits());
