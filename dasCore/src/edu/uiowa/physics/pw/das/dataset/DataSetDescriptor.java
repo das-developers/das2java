@@ -89,11 +89,17 @@ public abstract class DataSetDescriptor {
      * if such a resolution exists.
      */
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
+        if (monitor != null) {
+            monitor.started();
+        }
         if ( cacheTag!=null &&
         defaultCaching &&
         cacheTag.start.le(start) &&
         cacheTag.end.ge(end) &&
         ( cacheTag.resolution==null || (resolution != null && cacheTag.resolution.le(resolution)) ) ) {
+            if (monitor != null) {
+                monitor.finished();
+            }
             return cacheDataSet;
         } else {
             try {
@@ -101,6 +107,9 @@ public abstract class DataSetDescriptor {
                 if ( cacheDataSet!=null ) {
                     cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
                     if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
+                }
+                if (monitor != null) {
+                    monitor.finished();
                 }
                 return cacheDataSet;
             } catch ( DasException e ) {
