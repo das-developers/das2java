@@ -138,7 +138,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         
         Datum resolution;
         Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-        double dataRange= dataRange1.doubleValue(Units.seconds);
+
         double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
         resolution =  dataRange1.divide(deviceRange);
         
