@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.beans.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
@@ -63,9 +64,18 @@ public class TimeRangeLabel extends DasCanvasComponent {
     
     private DatumFormatter df;
     
+    private class DataRangePropertyChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            repaint();
+        }
+    }
+    
     /** Creates a new instance of TimeRangeLabel */
     public TimeRangeLabel(DataRange dataRange) {
         this.dataRange= dataRange;
+        DataRangePropertyChangeListener listener = new DataRangePropertyChangeListener();
+        dataRange.addPropertyChangeListener("minimum", listener);
+        dataRange.addPropertyChangeListener("maximum", listener);
         updateFormatter();
     }
     
