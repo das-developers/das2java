@@ -263,16 +263,16 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         try {
             PushbackInputStream in = new PushbackInputStream(in0, 50);
             PacketDescriptor sd = getPacketDescriptor(in);
-            VectorDataSetBuilder builder = new VectorDataSetBuilder();
-            builder.setXUnits(start.getUnits());
-            builder.setYUnits(Units.dimensionless);
+            VectorDataSetBuilder builder = new VectorDataSetBuilder(start.getUnits(),Units.dimensionless);   // Units will be set when "" is encountered                     
             for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
                 Object o = i.next();
                 if (o instanceof StreamMultiYDescriptor) {
                     StreamMultiYDescriptor y = (StreamMultiYDescriptor)o;
                     String name =  y.getName();
                     if (name != null && !name.equals("")) {
-                        builder.addPlane(name);
+                        builder.addPlane(name,y.getUnits());
+                    } else if ( "".equals(name) ) {
+                        builder.setYUnits(y.getUnits());
                     }
                 }
                 else {
