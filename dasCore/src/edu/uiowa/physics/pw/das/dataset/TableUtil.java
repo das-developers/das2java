@@ -19,7 +19,7 @@ import java.util.*;
 public class TableUtil {
     
     //  maybe a cache to keep track of last finds
-        
+    
     public static double[] getYTagArrayDouble( TableDataSet table, int itable, Units units ) {
         double[] yy= new double[table.getYLength(itable)];
         for ( int j=0; j<yy.length; j++ ) {
@@ -27,13 +27,13 @@ public class TableUtil {
         }
         return yy;
     }
-     
+    
     public static Datum getLargestYTag( TableDataSet tds ) {
         Datum result= tds.getYTagDatum( 0, tds.getYLength(0)-1 );
         for ( int itable=1; itable<tds.tableCount(); itable++ ) {
             Datum r= tds.getYTagDatum( itable, tds.getYLength(itable)-1 );
             if ( r.gt(result) ) result= r;
-        }            
+        }
         return result;
     }
     
@@ -42,7 +42,7 @@ public class TableUtil {
         for ( int itable=1; itable<tds.tableCount(); itable++ ) {
             Datum r= tds.getYTagDatum( itable, 0 );
             if ( r.lt(result) ) result= r;
-        }                   
+        }
         return result;
     }
     
@@ -66,7 +66,7 @@ public class TableUtil {
         while ( table.tableEnd(itable)<=i ) itable++;
         return itable;
     }
-        
+    
     public static Datum guessYTagWidth( TableDataSet table ) {
         // cheat and check for logarithmic scale.  If logarithmic, then return YTagWidth as percent.
         double y0= table.getYTagDouble( 0, 0, table.getYUnits());
@@ -101,8 +101,76 @@ public class TableUtil {
         buffer.append( tds.getYLength(0) );
         for ( int i=1; i<tds.tableCount(); i++ ) {
             buffer.append( ", "+tds.getYLength(i) );
-        }        
-        return "["+tds.getXLength()+" xTags, "+buffer.toString()+" yTags]";        
+        }
+        return "["+tds.getXLength()+" xTags, "+buffer.toString()+" yTags]";
+    }
+    
+    
+    public static void dumpToAsciiStream( TableDataSet tds, Datum xmin, Datum xmax, OutputStream out ) {
+        PrintStream pout= new PrintStream(out);
+        
+        Datum base=null;
+        Units offsetUnits= null;
+        
+        pout.print("This is not a das2 stream, even though it looks like it.");
+        pout.print("[00]");
+        pout.println("<stream start=\""+xmin+"\" end=\""+xmax+"\" >");
+        pout.println("<comment>Stream creation date: "+TimeUtil.now().toString()+"</comment>");
+        pout.print("</stream>");
+        
+        if ( tds.getXUnits() instanceof LocationUnits ) {
+            base= xmin;
+            offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
+            if ( offsetUnits==Units.microseconds ) {
+                offsetUnits= Units.seconds;
+            }
+        }
+        
+        pout.print("[01]<packet>\n");
+        pout.print("<x type=\"asciiTab10\" ");
+        if ( base!=null ) {
+            pout.print("base=\""+base+"\" ");
+            pout.print(" xUnits=\""+offsetUnits+"\" ");
+        } else {
+            pout.print(" xUnits=\""+tds.getXUnits());
+        }
+        pout.println(" />");
+        
+        String yTagsString= ""+tds.getYTagDatum(0,0);
+        for ( int j=1; j<tds.getYLength(0); j++ ) {
+            yTagsString+= ", "+tds.getYTagDatum(0, j);
+        }
+        pout.println("<yscan type=\"asciiTab10\" zUnits=\""+tds.getZUnits()+"\" yTags=\""+yTagsString+"\"/>");
+        pout.print("</packet>");
+        
+        NumberFormat xnf= new DecimalFormat("00000.000");
+        NumberFormat ynf= new DecimalFormat("0.00E00");
+        
+        double dx= xmax.subtract(xmin).doubleValue(offsetUnits);
+        for (int i=0; i<tds.getXLength(); i++) {
+            double x;
+            if ( base!=null ) {
+                x= tds.getXTagDatum(i).subtract(base).doubleValue(offsetUnits);
+            } else {
+                x= tds.getXTagDouble(i,tds.getXUnits());
+            }
+            if ( x>=0 && x<dx ) {
+                pout.print(":01:");
+                pout.print(xnf.format(x)+" ");
+                int itable= tds.tableOfIndex(i);
+                for ( int j=0; j<tds.getYLength(itable); j++ ) {
+                    String delim;
+                    if ( (j+1)==tds.getYLength(itable) ) {
+                        delim= "\n";
+                    } else {
+                        delim= " ";
+                    }
+                    pout.print(FixedWidthFormatter.format(ynf.format(tds.getDouble(i,j,tds.getZUnits())),9)+delim);
+                }
+            }
+        }
+        
+        pout.close();
     }
     
     public static void dumpToAsciiStream( TableDataSet tds, OutputStream out ) {
@@ -122,8 +190,8 @@ public class TableUtil {
             offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
             if ( offsetUnits==Units.microseconds ) {
                 offsetUnits= Units.seconds;
-            }            
-        }                
+            }
+        }
         
         pout.print("[01]<packet>\n");
         pout.print("<x type=\"asciiTab10\" ");
@@ -138,7 +206,7 @@ public class TableUtil {
         String yTagsString= ""+tds.getYTagDatum(0,0);
         for ( int j=1; j<tds.getYLength(0); j++ ) {
             yTagsString+= ", "+tds.getYTagDatum(0, j);
-        }        
+        }
         pout.println("<yscan type=\"asciiTab10\" zUnits=\""+tds.getZUnits()+"\" yTags=\""+yTagsString+"\"/>");
         pout.print("</packet>");
         
@@ -219,7 +287,7 @@ public class TableUtil {
             
         }
     }
-
+    
     public static int getPreviousRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
         if ( i>0 && ds.getYTagDatum(itable,i).gt(datum) ) {
