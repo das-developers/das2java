@@ -26,7 +26,7 @@ public class BatchMaster {
     
     /* TODO: create ExceptionHandler, set DasExceptionHandler to this handler
      * to collect all the messages, then display them at the end.  Also keep
-     * list of completed/uncompleted tasks 
+     * list of completed/uncompleted tasks
      */
     
     java.util.List taskList;
@@ -54,8 +54,8 @@ public class BatchMaster {
         return new TaskOutputDescriptor() {
             public void completeTask( Image image, Datum begin, Datum end ) {
                 String s= pngFilenameTemplate
-                .replaceAll( "BEGIN", begin.toString().replaceAll(":","-") )
-                .replaceAll( "END", end.toString().replaceAll(":","-") );
+                        .replaceAll( "BEGIN", begin.toString().replaceAll(":","-") )
+                        .replaceAll( "END", end.toString().replaceAll(":","-") );
                 try {
                     OutputStream out= new FileOutputStream( s );
                     try {
@@ -78,10 +78,13 @@ public class BatchMaster {
         String s= r.readLine();
         BatchMaster result= new BatchMaster(canvas, createPngsTaskOutputDescriptor(pngFilenameTemplate) );
         while ( s!=null ) {
-            String[] s1= s.split(" ");
-            Datum begin= TimeUtil.create(s1[0]);
-            Datum end= TimeUtil.create(s1[1]);
-            result.addTask( begin, end );
+            s= s.trim();
+            if ( !s.equals("") && !s.startsWith("#") ) {
+                String[] s1= s.split(" ");
+                Datum begin= TimeUtil.create(s1[0]);
+                Datum end= TimeUtil.create(s1[1]);
+                result.addTask( begin, end );
+            }
             s= r.readLine();
         }
         return result;
