@@ -69,7 +69,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
     private class mouseModule extends MouseModule {
     }
     
-    public void paintComponent(Graphics graphics) {
+    protected void paintComponent(Graphics graphics) {
         Graphics2D g= (Graphics2D) graphics;
         g.setRenderingHints(DasProperties.getRenderingHints());
         
