@@ -26,6 +26,7 @@ package edu.uiowa.physics.pw.das.datum;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.util.DasMath;
+import java.text.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -245,7 +246,31 @@ public final class DatumUtil {
         }
     }
     
-    public static Datum createValid(java.lang.String s) {
+    public static Datum parse(java.lang.String s) throws ParseException {
+        String[] ss= s.trim().split("\\s");
+        Units units;
+        double value;
+        if ( ss.length==1 ) {
+            units= Units.dimensionless;
+        } else {
+            try {
+                units= Units.getByName(ss[1]);
+            } catch ( IllegalArgumentException e ) {
+                throw new ParseException( e.getMessage(), 0 );
+            }
+        }
+        return Datum.create( Double.parseDouble(ss[0]), units );
+    }
+    
+    public static Datum parseValid(java.lang.String s) {
+        try {
+            return parse( s );
+        } catch ( ParseException e ) {
+            throw new RuntimeException(e);        
+        }
+    }
+    
+    public static Datum createValid( String s ) {
         return Datum.create( Double.parseDouble(s), Units.dimensionless );
     }
     
