@@ -840,22 +840,38 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         int nTicksMax;
         if (isHorizontal()) {
+            // two passes to avoid clashes -- not guarenteed
+            tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 6 );
+            Datum atick= tickV.getMajorTicks().get(0);
+            String granny= tickV.getFormatter().grannyFormat(atick);
+            
             GrannyTextRenderer idlt= new GrannyTextRenderer();
-            idlt.setString(this, "0000-00-00");
+            idlt.setString(this, granny );
             int tickSizePixels= (int) idlt.getWidth();
             int axisSize= getColumn().getWidth();
-            nTicksMax= axisSize / tickSizePixels;
+            nTicksMax= axisSize / tickSizePixels;                        
+            
+            tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), nTicksMax );                
+            datumFormatter= tickV.getFormatter();
+            atick= tickV.getMajorTicks().get(0);
+            granny= tickV.getFormatter().grannyFormat(atick); 
+            
+            idlt.setString(this, granny );
+            tickSizePixels= (int) idlt.getWidth();            
+            nTicksMax= axisSize / tickSizePixels;  
+                        
         } else {
             int tickSizePixels= getFontMetrics(getTickLabelFont()).getHeight();
             int axisSize= getRow().getHeight();
             nTicksMax= axisSize / tickSizePixels;
         }
         nTicksMax= ( nTicksMax>1 ? nTicksMax : 2 ) ;
-        nTicksMax= ( nTicksMax<10 ? nTicksMax : 10 ) ;
+        nTicksMax= ( nTicksMax<14 ? nTicksMax : 14 ) ;
         
-        tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), nTicksMax );
+        tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), nTicksMax );        
         
         datumFormatter= tickV.getFormatter();
+        
         
         updateDataSet();
     }
