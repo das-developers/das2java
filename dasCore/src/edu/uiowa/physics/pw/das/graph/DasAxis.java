@@ -84,7 +84,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected String axisLabel = "";
     
     protected DatumFormatter datumFormatter
-        = DefaultDatumFormatterFactory.getInstance().defaultFormatter();
+    = DefaultDatumFormatterFactory.getInstance().defaultFormatter();
     
     private MouseModule zoom=null;
     
@@ -551,13 +551,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     
-    /** 
+    /**
      * @return returns the length in pixels of the axis.
      */
     public int getDLength() {
         if (isHorizontal())
             return getColumn().getWidth();
-        else 
+        else
             return getRow().getHeight();
     }
     
@@ -799,7 +799,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         
         datumFormatter = DatumUtil.bestFormatter(getDataMaximum(), getDataMaximum(), nTicks);
-
+        
         double axisLengthData= maximum-minimum;
         double firstMinor= minor * Math.ceil( ( minimum - axisLengthData*0.3 ) / minor );
         double lastMinor= minor * Math.floor( ( maximum + axisLengthData*0.3 ) / minor );
@@ -891,7 +891,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int tickLengthMinor = tickLengthMajor / 2;
         int tickLength;
         int tickv_length= (tickv==null) ? 0 : tickv.length;
-                
+        
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
             if ( tick1>=(dataMin-pixelSizeData()/2) && tick1<=(dataMax+pixelSizeData()/2) ) {
@@ -1446,33 +1446,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     public Datum invTransform(int idata) {
         double data;
-        int nPixels;
+        int nPixels= getDLength();
+        DasDevicePosition range = (isHorizontal()
+        ? (DasDevicePosition) getColumn()
+        : (DasDevicePosition) getRow());
+
+        double alpha= (idata-range.getDMinimum())/(double)getDLength();
+        if ( !isHorizontal() ) alpha= 1.0 - alpha;
         if (dataRange.isLog()) {
-            DasDevicePosition range = (isHorizontal()
-            ? (DasDevicePosition) getColumn()
-            : (DasDevicePosition) getRow());
-            int device_range = range.getDMaximum() - range.getDMinimum();
-            nPixels= device_range;
             double data_log_min = Math.log(dataRange.getMinimum());
             double data_log_max = Math.log(dataRange.getMaximum());
             double data_log_range = data_log_max - data_log_min;
-            double data_log= (isHorizontal()
-            ? data_log_min+data_log_range*(idata-range.getDMinimum())/((double)device_range)
-            : data_log_min+data_log_range*(1-(idata-range.getDMinimum())/((double)device_range)));
+            double data_log= data_log_range*alpha + data_log_min;            
             data= Math.exp(data_log);
         }
         else {
-            DasDevicePosition range = (isHorizontal()
-            ? (DasDevicePosition) getColumn()
-            : (DasDevicePosition) getRow());
-            int device_range = range.getDMaximum()-range.getDMinimum();
-            nPixels= (int)device_range;
             double minimum= dataRange.getMinimum();
             double maximum= dataRange.getMaximum();
             double data_range = maximum-minimum;
-            data= (isHorizontal()
-            ? data_range*(idata-range.getDMinimum())/((double)device_range) + minimum
-            : data_range*(1-(idata-range.getDMinimum())/((double)device_range)) + minimum);
+            data= data_range*alpha + minimum;            
         }
         Datum result= Datum.create( data, dataRange.getUnits() );
         return result;
