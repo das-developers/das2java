@@ -78,6 +78,8 @@ public final class DataTransferType {
                 int charCount = Integer.parseInt(m.group(1));
                 type = new DataTransferType(name, I_ASCII, charCount, true);
                 map.put(name, type);
+            } else {
+                throw new RuntimeException( "Unsupported type: "+name );
             }
         }
         return type;
