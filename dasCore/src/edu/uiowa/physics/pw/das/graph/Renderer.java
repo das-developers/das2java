@@ -182,9 +182,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         if ( e instanceof NoDataInIntervalException ) {
             s= "no data in interval";
-            message= e.getMessage();             
+            message= e.getMessage();
         } else {
-            s= e.getMessage();      
+            s= e.getMessage();
             message= "";
             if ( s == null || s.equals("") ) {
                 s= e.toString();
@@ -231,7 +231,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             public void run() {
                 Datum resolution;
                 Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-
+                
                 double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
                 if (fullResolution) {
                     resolution = null;
@@ -239,14 +239,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 else {
                     resolution =  dataRange1.divide(deviceRange);
                 }
-            
+                
                 if ( deviceRange==0.0 ) {
                     // this conidition occurs sometimes at startup, it's not known why
                     return;
                 }
-            
+                
                 if (progressPanel == null) {
-                    progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");                
+                    progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
                 } else {
                     progressPanel.setLabel("Loading data set" );
                 }
@@ -255,8 +255,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 dsd.requestDataSet(xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel);
             }
         };
-
-        //Give the user something pretty to look at.
+        
+        //Give the user something pretty (and consistent with the axes) to look at.
         //This will scale the current data, or move it off screen
         //as a sort of preview.
         try {
@@ -265,7 +265,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         catch (DasException de) {
             //We don't care if this throws an exception.
         }
-
+        
+        // the request should come back with a DataSetUpdated event
         RequestProcessor.invokeLater(request, getParent().getCanvas());
     }
     
@@ -305,10 +306,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     
     public void dataSetUpdated( DataSetUpdateEvent e ) {
         //updateImmediately();
+        
         if (e.getException() != null) {
             Exception exception = e.getException();
             if (!(exception instanceof InterruptedIOException) &&
-                !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
+            !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                     lastException= exception;
                 }
@@ -318,6 +320,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             }
         }
         try {
+            if ( e.getDataSet()==null ) {
+                // this indicates that the DataSetDescriptor has changed, and that the
+                // renderer needs to reread the data.  Cause this by invalidating the
+                // component.
+                parent.markDirty();
+                parent.update();
+                parent.repaint();
+                return;
+            }
+            
             ds= e.getDataSet();
             if (progressPanel != null) {
                 progressPanel.setLabel("Rebinning data set");
