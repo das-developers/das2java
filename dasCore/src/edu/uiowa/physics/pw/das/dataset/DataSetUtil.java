@@ -62,7 +62,7 @@ public class DataSetUtil {
     }
 
     
-    public static Datum guessXTagWidth( TableDataSet table ) {
+    public static Datum guessXTagWidth( DataSet table ) {
         if ( table.getXLength()>2 ) {
             return table.getXTagDatum(2).subtract( table.getXTagDatum(0) ).divide(2.);
         } else {
@@ -72,6 +72,9 @@ public class DataSetUtil {
 
     
     protected static int closest( double[] xx, double x ) {
+        if ( xx.length==0 ) {
+            throw new IllegalArgumentException("array has no elements");
+        }
         int result=0;
         while ( result<(xx.length-1) && xx[result]<x ) result++;
         while ( result>0 && xx[result]>x ) result--;
@@ -107,4 +110,6 @@ public class DataSetUtil {
             return i;
         }
     }
+    
+    
 }
