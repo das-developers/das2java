@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.nio.ByteBuffer;
+import java.util.*;
 
 /**
  *
@@ -41,6 +42,7 @@ public class DataSetStreamHandler implements StreamHandler {
     
     StreamHandlerDelegate delegate;
     StreamDescriptor sd;
+    Map extraProperties;
     
     DasProgressMonitor monitor;
     static final int ntasks= 100;
@@ -48,12 +50,13 @@ public class DataSetStreamHandler implements StreamHandler {
     Datum start, taskWidth;
     
     /** Creates a new instance of DataSetStreamHandler */
-    public DataSetStreamHandler( DasProgressMonitor _monitor, Datum _start, Datum end ) {
+    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor _monitor, Datum _start, Datum end ) {
         //this.monitor= _monitor;
         //this.start= _start;
         //this.taskWidth= end.subtract(_start).divide(ntasks);
         //monitor.setTaskSize(ntasks);
         for ( int i=0; i<taskStarted.length; i++ ) taskStarted[i]= false;
+        this.extraProperties = new HashMap(extraProperties);
     }
     
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {                
@@ -185,6 +188,7 @@ public class DataSetStreamHandler implements StreamHandler {
         
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
+            builder.addProperties(extraProperties);
             return builder.toVectorDataSet();
         }
         
@@ -233,6 +237,7 @@ public class DataSetStreamHandler implements StreamHandler {
         
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
+            builder.addProperties(extraProperties);
             return builder.toTableDataSet();
         }
         

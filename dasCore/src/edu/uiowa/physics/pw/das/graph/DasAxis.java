@@ -664,10 +664,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             public void finished(DataSet dsFinished) {
                 VectorDataSet ds = (VectorDataSet)dsFinished;
                 List itemList = (List)ds.getProperty("plane-list");
-                VectorDataSet[] newData = new VectorDataSet[itemList.size() + 1];
+                VectorDataSet[] newData = new VectorDataSet[itemList.size()];
                 newData[0] = ds;
-                for (int i = 0; i < itemList.size(); i++) {
-                    newData[i + 1] = (VectorDataSet)ds.getPlanarView((String)itemList.get(i));
+                for (int i = 1; i < itemList.size(); i++) {
+                    newData[i] = (VectorDataSet)ds.getPlanarView((String)itemList.get(i));
                 }
                 tcaData = newData;
                 update();

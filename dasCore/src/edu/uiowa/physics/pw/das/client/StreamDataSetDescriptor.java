@@ -227,7 +227,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                 
                 ReadableByteChannel channel = Channels.newChannel(mpin);
                 
-                DataSetStreamHandler handler = new DataSetStreamHandler( monitor, start, end );
+                DataSetStreamHandler handler = new DataSetStreamHandler( properties, monitor, start, end );
                 StreamTool.readStream(channel, handler);
                 return handler.getDataSet();
             }
