@@ -175,20 +175,31 @@ public class VectorUtil {
             }
             
             producer.streamDescriptor(sd);
-            DatumVector[] yValues = new DatumVector[1];
+            
             StreamXDescriptor xDescriptor = new StreamXDescriptor();
             xDescriptor.setDataTransferType(xTransferType);
             xDescriptor.setUnits(vds.getXUnits());
-            StreamMultiYDescriptor yDescriptor = new StreamMultiYDescriptor();
-            yDescriptor.setDataTransferType(yTransferType);
-            yDescriptor.setUnits(vds.getYUnits());
+            
             PacketDescriptor pd = new PacketDescriptor();
             pd.setXDescriptor(xDescriptor);
-            pd.addYDescriptor(yDescriptor);
+            
+            String[] planeIds= vds.getPlaneIds();
+            DatumVector[] yValues = new DatumVector[planeIds.length];
+            
+            for ( int i=0; i<planeIds.length; i++ ) {
+                StreamMultiYDescriptor yDescriptor = new StreamMultiYDescriptor();
+                yDescriptor.setName(planeIds[i]);
+                yDescriptor.setDataTransferType(yTransferType);
+                yDescriptor.setUnits(((VectorDataSet)vds.getPlanarView(planeIds[i])).getYUnits());
+                pd.addYDescriptor(yDescriptor);
+            }
+                        
             producer.packetDescriptor(pd);
             for (int i = 0; i < vds.getXLength(); i++) {
                 Datum xTag = vds.getXTagDatum(i);
-                yValues[0] = toDatumVector(vds.getDatum(i));
+                for ( int j=0; j<planeIds.length; j++ ) {
+                    yValues[j] = toDatumVector(((VectorDataSet)vds.getPlanarView(planeIds[j])).getDatum(i));
+                }
                 producer.packet(pd, xTag, yValues);
             }
             producer.streamClosed(sd);
