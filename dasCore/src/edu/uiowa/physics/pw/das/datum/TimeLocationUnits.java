@@ -34,7 +34,7 @@ public class TimeLocationUnits extends LocationUnits {
     /* TimeLocationUnits class is introduced because it is often necessary to
      * easily identify a time quantity, for instance when deciding whether to
      * use a timeAxis or not.
-     */
+     */        
     
     public TimeLocationUnits( String id, String description, Units offsetUnits ) {
         super(id,description,offsetUnits);
@@ -48,4 +48,8 @@ public class TimeLocationUnits extends LocationUnits {
         return TimeUtil.toDatum(TimeUtil.parseTime(s));
     }
     
+    public String getTimeZone() {
+        return "UT";
+    }
+          
 }
