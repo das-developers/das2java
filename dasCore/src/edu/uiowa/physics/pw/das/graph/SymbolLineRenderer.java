@@ -178,7 +178,7 @@ public class SymbolLineRenderer extends Renderer {
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
-        path = new GeneralPath();
+        GeneralPath newPath = new GeneralPath();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         if (dataSet == null || dataSet.getXLength() == 0) {            
@@ -234,11 +234,11 @@ public class SymbolLineRenderer extends Renderer {
                     skippedLast = true;
                 }
                 else if (skippedLast || Math.abs(x - x0) > xSampleWidth) {
-                    path.moveTo((float)i, (float)j);
+                    newPath.moveTo((float)i, (float)j);
                     skippedLast = false;
                 }
                 else {
-                    path.lineTo((float)i, (float)j);
+                    newPath.lineTo((float)i, (float)j);
                     skippedLast = false;
                 }
                 x0= x;
@@ -247,6 +247,7 @@ public class SymbolLineRenderer extends Renderer {
                 j0= j;
             }
         }
+        path = newPath;
     }
     
 
