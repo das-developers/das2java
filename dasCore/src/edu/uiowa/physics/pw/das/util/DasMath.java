@@ -125,6 +125,7 @@ public class DasMath {
         }
     }
     
+    /* just like modulo (%) function, but negative numbers return positive phase. */
     public static double modp(double x, double t) {
         double result= x % t;
         return result >= 0 ? result : t + result;
@@ -134,4 +135,62 @@ public class DasMath {
         return ( x1>x2 ) ? x1 : x2;
     }
     
+    private static double gcd( double a, double d, double error ) {
+        
+        if ( error>0 ) {
+            a= Math.round( a/error );
+            d= Math.round( d/error );
+        }
+        
+        if ( a<d ) {
+            double t= a;
+            a= d;
+            d= t;
+        }
+        
+        if ( d==0 ) {
+            if ( error>0 ) {
+                return a * error;
+            } else {
+                return a;
+            }
+        }
+        
+        double r= a % d;                
+        
+        int iterations=0;
+        
+        while ( r > 0 && iterations<15 ) {
+            d= r;
+            r= a % d;
+            iterations++;
+        }
+        
+        if ( error>0 ) {
+            return d * error;
+        } else {
+            return d;
+        }
+    }
+    
+    
+   /*
+    * Returns the greatest common divisor of a group of numbers.  This is useful for
+    * a number of visualization techniques, for instance when you need to integerize
+    * your data, the binsize should be the gcd.  An error parameter is provided to
+    * avoid numerical noise, and in case there is a granularity that needn't be 
+    * surpassed.
+    */
+    public static double gcd( double[] A, double error ) {
+        double guess= A[0];
+        
+        double result= guess;
+        
+        for ( int i=1; i<A.length; i++ ) {
+            result= gcd( result, A[i], error );
+        }
+        
+        return result;
+    }
+        
 }
