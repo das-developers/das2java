@@ -169,6 +169,11 @@ public abstract class Datum {
         return (value.doubleValue()!=java.lang.Double.NaN);
     }
     
+    public boolean isFinite() {
+        return ( value.doubleValue()!=java.lang.Double.POSITIVE_INFINITY )
+        && ( value.doubleValue()!=java.lang.Double.NEGATIVE_INFINITY );
+    }
+    
     public String toString() {
         if (formatter==null) {
             return ""+value+" "+units;
