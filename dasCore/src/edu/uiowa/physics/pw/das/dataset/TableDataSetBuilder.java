@@ -35,8 +35,6 @@ import java.util.logging.Logger;
  */
 public class TableDataSetBuilder {
     
-    private static final boolean DEBUG = true;
-    
     private static final double[] EMPTY = new double[0];
     
     private GapListDouble xTags = new GapListDouble();
@@ -64,10 +62,6 @@ public class TableDataSetBuilder {
         setXUnits(xUnits);
         setYUnits(yUnits);
         setZUnits(zUnits);
-        if (DEBUG) {
-            Logger logger = DasApplication.getDefaultApplication().getDebugLogger();
-            logger.log(Level.FINEST, "TableDataSetBuilder( " + xUnits + ", " + yUnits + ", " + zUnits + ")");
-        }
     }
     
     public void setProperty(String name, Object value) {
@@ -93,10 +87,18 @@ public class TableDataSetBuilder {
         insertYScan(x, y, new DatumVector[]{z}, new String[]{""});
     }
     
+    private int count = 0;
+    
     public void insertYScan(Datum xTag, DatumVector yTags, DatumVector[] scans, String[] planeIDs) {
         double x = xTag.doubleValue(xUnits);
         double[] y = yTags.toDoubleArray(yUnits);
         int insertionIndex = xTags.indexOf(x);
+        for (int i = 0; i < scans.length; i++) {
+            if (yTags.getLength() != scans[i].getLength()) {
+                IllegalArgumentException iae = new IllegalArgumentException
+                    ("Scan length must equal yTags length");
+            }
+        }
         if (yTagSet.contains(y)) {
             y = (double[])yTagSet.tailSet(y).iterator().next();
         }
@@ -116,6 +118,7 @@ public class TableDataSetBuilder {
                 addPlane(planeID, zUnits);
             }
             double[] z = scans[i].toDoubleArray(zUnits);
+            assert(y.length == z.length);
             scan.put(planeID, z);
             scan.setYTags(y);
             zValues.add(insertionIndex, scan);
