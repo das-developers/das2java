@@ -298,7 +298,4 @@ public class DasProperties extends Properties {
         }
     }
     
-    public static void main(String[] args) {
-        DasProperties.showEditor();
-    }
 }
