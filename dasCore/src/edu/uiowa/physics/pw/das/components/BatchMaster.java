@@ -135,6 +135,7 @@ public class BatchMaster {
     /**
      * @param args the command line arguments
      */
+    /*
     public static void main(String[] args) throws Exception {
         TimeAxisDemo t= new TimeAxisDemo();
         t.getAxis().setAnimated(false);
@@ -142,5 +143,6 @@ public class BatchMaster {
         bm.addDataRangeSelectionListener( t.getAxis() );
         bm.start();
     }
+     */
     
 }
