@@ -209,9 +209,6 @@ public class TableUtil {
             StreamDescriptor sd = new StreamDescriptor();
             sd.setProperty("start", tds.getXTagDatum(0).toString());
             sd.setProperty("end", tds.getXTagDatum(tds.getXLength()-1));
-            /** == This can be removed after 2004-10-19 == */
-            if (TimeUtil.now().lt(TimeUtil.createValid("2004-05-19"))) sd.setProperty("comment", "This *IS* a das2 stream, and it looks like it.");
-            /** == == */
             
             DataTransferType zTransferType;
             DataTransferType xTransferType;
