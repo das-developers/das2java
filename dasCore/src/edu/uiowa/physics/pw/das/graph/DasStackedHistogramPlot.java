@@ -60,6 +60,9 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     /** Holds value of property dumpDataSet. */
     private boolean dumpDataSet;
     
+    /** Holds value of property sliceRebinnedData. */
+    private boolean sliceRebinnedData;
+    
     public static class PeaksIndicator implements Enumeration {
         
         String id;
@@ -251,18 +254,13 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         int xDMax= getColumn().getDMaximum();
         int xDMin= getColumn().getDMinimum();
         
-        //boolean drawnZAxis=false;
-        //DasRow drawZAxisRow=null;
-        //DasAxis drawThisZAxis=null;
-        
         TableDataSet xtysData= (TableDataSet)Data;
-        
+                
         if ( Data==null ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("null data set");
             return;
         }
         
-        //xtysData.getPeaks();  // create peaks if it doesn't have them already
         DataSetRebinner rebinner = new Rebinner();
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
@@ -338,6 +336,11 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 }
             }
             
+        }
+
+        if ( isSliceRebinnedData() ) {
+            DasApplication.getDefaultApplication().getLogger().fine("slicing rebin data");
+            super.Data= data;
         }
         
         g.setRenderingHints(hints0);
@@ -468,9 +471,12 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
             
+            DasApplication.getDefaultApplication().getLogger().info("targetBinWidth="+x.getUnits().getOffsetUnits().createDatum(x.binWidth()).convertTo(Units.seconds)+" dsBinWidth="+xwidth.convertTo(Units.seconds));
             if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                DasApplication.getDefaultApplication().getLogger().info("rebinning with "+highResRebinner);
                 return highResRebinner.rebin( ds, x, y );
             } else {
+                DasApplication.getDefaultApplication().getLogger().info("rebinning with "+lowResRebinner);
                 return lowResRebinner.rebin( ds, x, y );
             }
         }
@@ -542,6 +548,22 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             DasExceptionHandler.handle( e );
         }
         this.dumpDataSet= dumpDataSet;
+    }
+    
+    /** Getter for property sliceRebinnedData.
+     * @return Value of property sliceRebinnedData.
+     *
+     */
+    public boolean isSliceRebinnedData() {
+        return this.sliceRebinnedData;
+    }
+    
+    /** Setter for property sliceRebinnedData.
+     * @param sliceRebinnedData New value of property sliceRebinnedData.
+     *
+     */
+    public void setSliceRebinnedData(boolean sliceRebinnedData) {
+        this.sliceRebinnedData = sliceRebinnedData;
     }
     
 }
