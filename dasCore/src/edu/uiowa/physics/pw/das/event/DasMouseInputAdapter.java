@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
@@ -178,7 +179,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         for ( Iterator i= primaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
             try {
                 Object ii= ((Map.Entry)i.next()).getValue();
-                ((JCheckBoxMenuItem)ii).setSelected(false);                       
+                ((JCheckBoxMenuItem)ii).setSelected(false);
             } catch ( RuntimeException e ) {
                 e.printStackTrace();
                 throw e;
@@ -197,7 +198,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         for ( Iterator i= secondaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
             try {
                 Object ii= ((Map.Entry)i.next()).getValue();
-                ((JCheckBoxMenuItem)ii).setSelected(false);                       
+                ((JCheckBoxMenuItem)ii).setSelected(false);
             } catch ( RuntimeException e ) {
                 e.printStackTrace();
                 throw e;
@@ -218,30 +219,26 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
-        popupListener = createPopupMenuListener();
-        popup.addSeparator();
+        popupListener = createPopupMenuListener();               
+        
         if (parent instanceof PropertyEditor.Editable) {
             JMenuItem properties = new JMenuItem("properties");
             properties.addActionListener(popupListener);
             properties.setToolTipText("edit object properties");
             popup.add(properties);
             popup.addSeparator();
-            JMenuItem print = new JMenuItem("print...");
-            print.setActionCommand("print");
-            print.addActionListener(popupListener);
-            print.setToolTipText("print entire canvas");
-            popup.add(print);
-            JMenuItem toPng = new JMenuItem("save as PNG...");
-            toPng.setActionCommand("toPng");
-            toPng.setToolTipText("save canvas to png image file");
-            toPng.addActionListener(popupListener);
-            popup.add(toPng);
-            popup.addSeparator();
-            JMenuItem x = new JMenuItem("close");
-            x.addActionListener(popupListener);
-            x.setToolTipText("close this popup");
-            popup.add(x);
         }
+        JMenuItem print = new JMenuItem("print...");
+        print.setActionCommand("print");
+        print.addActionListener(popupListener);
+        print.setToolTipText("print entire canvas");
+        popup.add(print);
+        JMenuItem toPng = new JMenuItem("save as PNG...");
+        toPng.setActionCommand("toPng");
+        toPng.setToolTipText("save canvas to png image file");
+        toPng.addActionListener(popupListener);
+        popup.add(toPng);
+        
         return popup;
     }
     
@@ -310,7 +307,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                 }
                 else if (command.equals("close")) {
                 }
-                else if (command.equals("primary")) {                    
+                else if (command.equals("primary")) {
                     if (primarySelectedItem!=null) primarySelectedItem.setSelected(false);
                     for (int i=0; i<modules.size(); i++) {
                         JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(modules.get(i));
@@ -318,7 +315,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                             primarySelectedItem=j;
                             break;
                         }
-                    }                    
+                    }
                     primarySelectedItem.setSelected(true); // for case when selection wasn't changed.
                     //primaryPopup.show( parent, l.x, l.y );
                 } else if (command.equals("secondary")) {
@@ -369,7 +366,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
             int xRight= parent.getColumn().getDMaximum()-xOffset;
             int yTop= parent.getRow().getDMinimum()-yOffset;
             int yBottom= parent.getRow().getDMaximum()-yOffset;
-        
+            
             xLeftSide= e.getX()<xLeft+5;
             xRightSide= e.getX()>xRight-5;
             yTopSide= (e.getY()<yTop+5) && (e.getY()>=yTop);
@@ -446,7 +443,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         }
     }
     
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent e) {        
         Point l= parent.getLocation();
         xOffset= l.x;
         yOffset= l.y;
