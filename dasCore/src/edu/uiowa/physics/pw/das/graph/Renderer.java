@@ -342,17 +342,17 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 }
             }
         }
-        try {
-            if ( e.getDataSet()==null ) {
-                // this indicates that the DataSetDescriptor has changed, and that the
-                // renderer needs to reread the data.  Cause this by invalidating the
-                // component.
-                parent.markDirty();
-                parent.update();
-                parent.repaint();
-                return;
-            }
+        else if ( e.getDataSet()==null ) {
+            // this indicates that the DataSetDescriptor has changed, and that the
+            // renderer needs to reread the data.  Cause this by invalidating the
+            // component.
+            parent.markDirty();
+            parent.update();
+            parent.repaint();
+            return;
+        }
             
+        try {
             ds= e.getDataSet();
             if (progressPanel != null) {
                 progressPanel.setLabel("Rebinning data set");
