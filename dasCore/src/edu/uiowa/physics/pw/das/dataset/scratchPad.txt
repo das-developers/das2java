@@ -1,2 +1,10 @@
 jbf> TableDataSetConsumer should be renamed ZAxisDataSetComsumer or something like that
  DataSet.hasZAxis()?
+
+
+jbf> Suggested Properties for DataSets:
+  xSampleWidth       Datum typical time between samples
+  spacecraft         Spacecraft enumeration object
+  xRange             DataRange object suggestion
+  yRange             DataRange object suggestion
+  
