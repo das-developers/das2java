@@ -29,54 +29,30 @@ import edu.uiowa.physics.pw.das.datum.Units;
  *
  * @author  jbf
  */
-public class UnitsConverter {
+public abstract class UnitsConverter {
     
-    public static final UnitsConverter IDENTITY = new UnitsConverter(1.0, 0.0);
-    public static final UnitsConverter TERA = new UnitsConverter(1e-12, 0.0);
-    public static final UnitsConverter GIGA = new UnitsConverter(1e-9, 0.0);
-    public static final UnitsConverter MEGA = new UnitsConverter(1e-6, 0.0);
-    public static final UnitsConverter KILO = new UnitsConverter(1e-3, 0.0);
-    public static final UnitsConverter MILLI = new UnitsConverter(1e3, 0.0);
-    public static final UnitsConverter MICRO = new UnitsConverter(1e6, 0.0);
-    public static final UnitsConverter NANO = new UnitsConverter(1e9, 0.0);
-    public static final UnitsConverter PICO = new UnitsConverter(1e12, 0.0);
+    public static final UnitsConverter IDENTITY = new ScaleOffset(1.0, 0.0);
+    public static final UnitsConverter TERA = new ScaleOffset(1e-12, 0.0);
+    public static final UnitsConverter GIGA = new ScaleOffset(1e-9, 0.0);
+    public static final UnitsConverter MEGA = new ScaleOffset(1e-6, 0.0);
+    public static final UnitsConverter KILO = new ScaleOffset(1e-3, 0.0);
+    public static final UnitsConverter MILLI = new ScaleOffset(1e3, 0.0);
+    public static final UnitsConverter MICRO = new ScaleOffset(1e6, 0.0);
+    public static final UnitsConverter NANO = new ScaleOffset(1e9, 0.0);
+    public static final UnitsConverter PICO = new ScaleOffset(1e12, 0.0);
     
-    private final double offset;
-    private final double scale;
-    private final int hashCode;
-    private UnitsConverter inverse;
-
-    /** Creates a new instance of UnitsConverter.ScaleOffset */
-    public UnitsConverter(double scale, double offset) {
-        this(scale, offset, null);
+    protected UnitsConverter inverse;
+    
+    protected UnitsConverter() {
     }
-
-    private UnitsConverter(double scale, double offset, UnitsConverter inverse) {
-        this.scale = scale;
-        this.offset = offset;
+    
+    protected UnitsConverter(UnitsConverter inverse) {
         this.inverse = inverse;
-        hashCode = computeHashCode();
     }
     
-    private int computeHashCode() {
-        long scaleBits = Double.doubleToLongBits(scale);
-        long offsetBits = Double.doubleToLongBits(offset);
-        long code = (11 * 13 * 13) + (13 * scaleBits) + offsetBits;
-        int a = (int)(code >> 32);
-        int b = (int)(0xFFFFFFFFL & code);
-        return a + b;
-    }
+    public abstract UnitsConverter getInverse();
 
-    public UnitsConverter getInverse() {
-        if (inverse == null) {
-            inverse = new UnitsConverter(1.0 / scale, -(offset / scale), this);
-        }
-        return inverse;
-    }
-
-    public double convert( double value ) {
-        return scale * value + offset;
-    }
+    public abstract double convert(double value);
     
     public Number convert( Number number ) {
         double value = number.doubleValue();
@@ -91,35 +67,140 @@ public class UnitsConverter {
             return new Double(value);
         }
     }
-
+    
     public UnitsConverter append(UnitsConverter that) {
-        if (this.equals(IDENTITY)) {
-            return that;
-        }
-        else if (that.equals(IDENTITY)) {
-            return this;
-        }
-        else {
-            double aScale = this.scale * that.scale;
-            double aOffset = this.offset * that.scale + that.offset;
-            return new UnitsConverter(aScale, aOffset);
-        }
+        return new Appended(this, that);
     }
 
-    public String toString() {
-        return getClass().getName() + "[scale=" + scale + ",offset=" + offset + "]";
-    }
+    public static class ScaleOffset extends UnitsConverter {
+        private final double offset;
+        private final double scale;
+        private final int hashCode;
     
-    public int hashCode() {
-        return hashCode;
-    }
-    
-    public boolean equals(Object o) {
-        if (!(o instanceof UnitsConverter)) {
-            return false;
+        /** Creates a new instance of UnitsConverter.ScaleOffset */
+        public ScaleOffset(double scale, double offset) {
+            this(scale, offset, null);
         }
-        UnitsConverter that = (UnitsConverter)o;
-        return this.scale == that.scale && this.offset == that.offset;
+
+        private ScaleOffset(double scale, double offset, UnitsConverter inverse) {
+            super(inverse);
+            this.scale = scale;
+            this.offset = offset;
+            hashCode = computeHashCode();
+        }
+
+        private int computeHashCode() {
+            long scaleBits = Double.doubleToLongBits(scale);
+            long offsetBits = Double.doubleToLongBits(offset);
+            long code = (11 * 13 * 13) + (13 * scaleBits) + offsetBits;
+            int a = (int)(code >> 32);
+            int b = (int)(0xFFFFFFFFL & code);
+            return a + b;
+        }
+
+        public UnitsConverter getInverse() {
+            if (((UnitsConverter)this).inverse == null) {
+                ((UnitsConverter)this).inverse = new ScaleOffset(1.0 / scale, -(offset / scale), this);
+            }
+            return ((UnitsConverter)this).inverse;
+        }
+
+        public double convert( double value ) {
+            return scale * value + offset;
+        }
+
+        public UnitsConverter append(UnitsConverter that) {
+            if (this.equals(IDENTITY)) {
+                return that;
+            }
+            else if (that.equals(IDENTITY)) {
+                return this;
+            }
+            else if (that instanceof ScaleOffset) {
+                ScaleOffset so = (ScaleOffset)that;
+                double aScale = this.scale * so.scale;
+                double aOffset = this.offset * so.scale + so.offset;
+                return new ScaleOffset(aScale, aOffset);
+            }
+            else {
+                return super.append(that);
+            }
+        }
+        
+        public boolean equals(Object o) {
+            if (!(o instanceof ScaleOffset)) {
+                return false;
+            }
+            ScaleOffset that = (ScaleOffset)o;
+            return this.scale == that.scale && this.offset == that.offset;
+        }
+
+        public String toString() {
+            return getClass().getName() + "[scale=" + scale + ",offset=" + offset + "]";
+        }
+
+        public int hashCode() {
+            return hashCode;
+        }
+    
+    }
+    
+    public static class Appended extends UnitsConverter{
+        
+        UnitsConverter[] converters;
+        
+        public Appended(UnitsConverter uc1, UnitsConverter uc2) {
+            UnitsConverter[] a1 = ucToArray(uc1);
+            UnitsConverter[] a2 = ucToArray(uc2);
+            converters = new UnitsConverter[a1.length + a2.length];
+            for (int i = 0; i < a1.length; i++) {
+                converters[i] = a1[i];
+            }
+            for (int i = 0; i < a2.length; i++) {
+                converters[i + a1.length] = a2[i];
+            }
+        }
+        
+        private Appended(UnitsConverter[] array, UnitsConverter inverse) {
+            super(inverse);
+            converters = array;
+        }
+        
+        public double convert(double value) {
+            for (int i = 0; i < converters.length; i++) {
+                value = converters[i].convert(value);
+            }
+            return value;
+        }
+        
+        public Number convert(Number value) {
+            for (int i = 0; i < converters.length; i++) {
+                value = converters[i].convert(value);
+            }
+            return value;
+        }
+        
+        public UnitsConverter getInverse() {
+            if (inverse == null) {
+                int length = converters.length;
+                UnitsConverter[] inverseArray = new UnitsConverter[length];
+                for (int i = 0; i < length; i++) {
+                    inverseArray[i] = converters[length - i - 1].getInverse();
+                }
+                inverse = new Appended(inverseArray, this);
+            }
+            return inverse;
+        }
+        
+        private static UnitsConverter[] ucToArray(UnitsConverter uc) {
+            if (uc instanceof Appended) {
+                return ((Appended)uc).converters;
+            }
+            else {
+                return new UnitsConverter[] {uc};
+            }
+        }
+        
     }
     
     public static UnitsConverter getConverter(Units fromUnits, Units toUnits) {
