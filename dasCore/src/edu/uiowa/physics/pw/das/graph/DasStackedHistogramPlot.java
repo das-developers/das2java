@@ -278,14 +278,14 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
             Line2D.Float lBase;
             
             if ( j==(data.getYLength(0)-1) ) {   /* Draw top grey line */
-                yBase= yAxis.getItemMin(data.getYTagDatum(0, j));                
+                yBase= yAxis.getItemMin(data.getYTagDatum(0, j));
                 g.setColor(Color.lightGray);
                 g.drawLine(xDMin, yBase, xDMax, yBase );
                 g.setColor(Color.darkGray);
             }
             
-            yBase= yAxis.getItemMax(data.getYTagDatum(0, j));            
-            g.setColor(Color.lightGray);            
+            yBase= yAxis.getItemMax(data.getYTagDatum(0, j));
+            g.setColor(Color.lightGray);
             g.drawLine(xDMin, yBase, xDMax, yBase );
             g.setColor(Color.darkGray);
             
@@ -294,7 +294,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
             
             zAxisComponent.setLittleRow(yBase1,yBase);
             
-            double [] binStarts= xbins.binStarts(); 
+            double [] binStarts= xbins.binStarts();
             double [] binStops= xbins.binStops();
             
             int y0= yBase;
@@ -474,10 +474,19 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
             
-            if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                return highResRebinner.rebin( ds, x, y );
-            } else {
-                return lowResRebinner.rebin( ds, x, y );
+            try {
+                DataSet result;
+                Datum start= DasStackedHistogramPlot.this.getXAxis().getDataMinimum();
+                Datum stop= DasStackedHistogramPlot.this.getXAxis().getDataMaximum();
+                if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                    result= highResRebinner.rebin( ds, x, y );                  
+                } else {
+                    result= lowResRebinner.rebin( ds, x, y );                    
+                }
+                return result;
+            } catch ( Exception e ) {
+                DasExceptionHandler.handle(e);
+                return null;
             }
         }
         
