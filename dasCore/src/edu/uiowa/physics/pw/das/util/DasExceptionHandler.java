@@ -37,9 +37,9 @@ import java.io.StringWriter;
  */
 public final class DasExceptionHandler {
 
-    private static JDialog dialog;
-    private static JTextArea messageArea;
-    private static JTextArea traceArea;
+    //private static JDialog dialog;
+    //private static JTextArea messageArea;
+    //private static JTextArea traceArea;
     private static final String UNCAUGHT = "An unexpected error has occurred.  " +
         "The system may not be able to recover properly.  Please report this " +
         "error to the Das2 bug database at http://bugs-pw.physics.uiowa.edu/." +
@@ -72,12 +72,12 @@ public final class DasExceptionHandler {
     private static void showExceptionDialog(Throwable t, String extraInfo) {
         String errorMessage = extraInfo + t.getClass().getName() + "\n"
             + (t.getMessage() == null ? "" : t.getMessage());
-        dialog = new JDialog();
+        final JDialog dialog = new JDialog();
         dialog.setTitle("Error");
         dialog.setModal(false);
         dialog.setResizable(false);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        messageArea = new JTextArea(10, 40);
+        final JTextArea messageArea = new JTextArea(10, 40);
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
         messageArea.setEditable(false);
@@ -96,7 +96,7 @@ public final class DasExceptionHandler {
         
         dialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
         
-        traceArea = new JTextArea(10, 40);
+        final JTextArea traceArea = new JTextArea(10, 40);
         traceArea.setLineWrap(false);
         traceArea.setEditable(false);
         traceArea.setTabSize(4);
