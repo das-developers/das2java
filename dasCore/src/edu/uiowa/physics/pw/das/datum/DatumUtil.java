@@ -48,16 +48,16 @@ public final class DatumUtil {
             units= ((LocationUnits)datums.get(0).getUnits()).getOffsetUnits();
             array[0]= 0.;
             for ( int i=1; i<datums.getLength(); i++ ) {
-                array[i]= datums.get(i).subtract(datums.get(0)).doubleValue(units);                
+                array[i]= datums.get(i).subtract(datums.get(0)).doubleValue(units);
             }
         } else {
             units= datums.getUnits();
             for ( int i=0; i<datums.getLength(); i++ ) {
-                array[i]= datums.get(i).doubleValue(units);    
+                array[i]= datums.get(i).doubleValue(units);
             }
         }
         
-        double limit= DasMath.exp10( (int)DasMath.log10( DasMath.max( array ) ) - 3 );
+        double limit= DasMath.exp10( (int)DasMath.log10( DasMath.max( array ) ) - 7 );
         double gcd= DasMath.gcd( array, limit );
         Datum resolution= units.createDatum(gcd);
         return bestFormatter( datums.get(0), datums.get(0).add( resolution ), 1 );
@@ -85,13 +85,22 @@ public final class DatumUtil {
                 return factory.defaultFormatter();
             }
             double discernable= Math.abs( maximum.subtract(minimum).doubleValue(units) / nsteps );
-            if (discernable < 0.001) {
-                int power = Math.abs((int)Math.floor(DasMath.log10(discernable)));
-                String formatString = exp(power);
-                return factory.newFormatter(formatString);
+            int expDisc= (int)Math.floor(0.05+DasMath.log10(discernable));
+            int smallestExp=99;
+            Datum step= maximum.subtract(minimum).divide( nsteps );
+            double dstep= step.doubleValue(units);
+            for ( int j=0; j<nsteps; j++ ) {
+                double d= minimum.add(step.multiply(j)).doubleValue(units);
+                if ( Math.abs(d)>(discernable*0.1) ) { // don't look at fuzzy zero
+                    int ee= (int)Math.floor(0.05+DasMath.log10(Math.abs(d)));
+                    if ( ee<smallestExp ) smallestExp=ee;
+                }
             }
-            else {
-                int nFraction= -1 * (int)Math.floor(DasMath.log10(discernable));
+            if ( smallestExp < -3 || smallestExp > 3 ) {
+                int digits= smallestExp - expDisc + 1;
+                return new ExponentialDatumFormatter( digits, smallestExp );
+            } else {
+                int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
                 nFraction= nFraction<0 ? 0 : nFraction;
                 String formatString = zeros(nFraction);
                 return factory.newFormatter(formatString);
@@ -133,18 +142,27 @@ public final class DatumUtil {
         else if (secondsPerStep < 60.) {
             return TimeDatumFormatter.SECONDS;
         }
-        else if (secondsPerStep < 86400.) {
+        else if (secondsPerStep < 3600.) {
             return TimeDatumFormatter.MINUTES;
         }
-        else {
+        else if (secondsPerStep < 86400. ) {
+            return TimeDatumFormatter.HOURS;
+        }
+        else if ( secondsPerStep < 28*86400.0 ) {
             return TimeDatumFormatter.DAYS;
+        }
+        else if ( secondsPerStep < 31557600.0 ) {
+            return TimeDatumFormatter.MONTHS;
+        }
+        else {
+            return TimeDatumFormatter.YEARS;
         }
     }
     
     public static Datum createValid(java.lang.String s) {
         return Datum.create( Double.parseDouble(s), Units.dimensionless );
-    }    
-
+    }
+    
     public static double[] doubleValues( Datum[] datums, Units units ) {
         double[] result= new double[datums.length];
         for (int j=0; j<datums.length; j++ ) {
@@ -152,7 +170,7 @@ public final class DatumUtil {
         }
         return result;
     }
-        
+    
     public static double[] doubleValues( Datum[] datums, Units[] unitsArray ) {
         double[] result= new double[datums.length];
         for (int j=0; j<datums.length; j++ ) {
@@ -161,12 +179,12 @@ public final class DatumUtil {
         return result;
     }
     
-   /**
+    /**
      * This method takes the input datum and gets it as close to order one as
      * possible by trying all possible conversions.
      * @param d A datum that needs to have its units changed to order one units.
      * @return The order-one-ified Datum.
-     */    
+     */
     public static Datum asOrderOneUnits(Datum d) {
         Units dunits = d.getUnits();
         
