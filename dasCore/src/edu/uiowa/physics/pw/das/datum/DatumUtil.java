@@ -90,7 +90,7 @@ public final class DatumUtil {
          * the resolution is a integer multiple of 10,100, etc...
          */ 
         double d= Math.abs( resolution.doubleValue() );
-        double frac= d-(int)d;
+        double frac= d-Math.floor(d);
         if ( frac==0. ) {
             int e=0;
             int emax= (int)DasMath.log10(d+0.1);
