@@ -83,8 +83,12 @@ public class TableDataSetBuilder {
         }
     }
     
-    public void insertYScan(Datum x, DatumVector y, DatumVector z) {
+    public void insertYScan( Datum x, DatumVector y, DatumVector z) {
         insertYScan(x, y, new DatumVector[]{z}, new String[]{""});
+    }
+    
+    public void insertYScan( Datum x, DatumVector y, DatumVector z, String planeId ) {
+        insertYScan( x, y, new DatumVector[]{z}, new String[]{ planeId } );
     }
     
     private int count = 0;
