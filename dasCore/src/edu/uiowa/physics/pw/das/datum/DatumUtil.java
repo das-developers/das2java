@@ -23,8 +23,11 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.util.DasMath;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import java.util.regex.*;
 
@@ -43,6 +46,8 @@ public final class DatumUtil {
             throw new IllegalArgumentException( "Units don't match!" );
         }
         
+        Units units = minimum.getUnits();
+        
         //Swap them if they are in the wrong order.
         if (maximum.lt(minimum)) {
             Datum tmp = maximum;
@@ -51,27 +56,46 @@ public final class DatumUtil {
         }
         
         //Time units we will handle separately
-        if ( minimum.getUnits() instanceof TimeLocationUnits ) {
+        if ( units instanceof TimeLocationUnits ) {
             return bestTimeFormatter(minimum, maximum, nsteps);
-        } else {
-            DatumFormatterFactory factory = minimum.getUnits().getDatumFormatterFactory();
+        }
+        
+        DatumFormatterFactory factory = minimum.getUnits().getDatumFormatterFactory();
+        try {
             if (!(factory instanceof DefaultDatumFormatterFactory)) {
                 return factory.defaultFormatter();
             }
-            double discernable= Math.abs( maximum.subtract(minimum).doubleValue() / ( nsteps) );
-            int nFraction= -1 * (int)Math.floor(DasMath.log10(discernable));
-            nFraction= nFraction<0 ? 0 : nFraction;
-            String formatString = zeros(nFraction);
-            try {
+            double discernable= Math.abs( maximum.subtract(minimum).doubleValue(units) / nsteps );
+            if (discernable < 0.001) {
+                int power = Math.abs((int)Math.floor(DasMath.log10(discernable)));
+                String formatString = exp(power);
                 return factory.newFormatter(formatString);
             }
-            catch (java.text.ParseException pe) {
-                //Should not happen under normal circumstances, so bail.
-                throw new RuntimeException(pe);
+            else {
+                int nFraction= -1 * (int)Math.floor(DasMath.log10(discernable));
+                nFraction= nFraction<0 ? 0 : nFraction;
+                String formatString = zeros(nFraction);
+                return factory.newFormatter(formatString);
             }
         }
+        catch (java.text.ParseException pe) {
+            Logger logger = DasApplication.getDefaultApplication().getLogger();
+            //Should not happen under normal circumstances, so bail.
+            RuntimeException re = new RuntimeException(pe);
+            logger.log(Level.SEVERE, pe.getMessage(), re);
+            throw re;
+        }
     }
-        
+    
+    private static String exp(int power) {
+        StringBuffer buffer = new StringBuffer(power+4);
+        for (int i = 0; i < power - 1; i++) {
+            buffer.append('#');
+        }
+        buffer.append("0.#E0");
+        return buffer.toString();
+    }
+    
     private static String zeros(int count) {
         if (count <= 0) return "0";
         StringBuffer buff = new StringBuffer(count+2).append("0.");
