@@ -99,18 +99,22 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      */
     public void setDumpDataSet(boolean dumpDataSet) {
         try {
-            System.out.println("Dumping data set");
-            JFileChooser chooser= new JFileChooser();
-            int xx= chooser.showSaveDialog(this.getParent());
-            if ( xx==JFileChooser.APPROVE_OPTION ) {
-                File file= chooser.getSelectedFile();
-                if ( ds instanceof TableDataSet ) {
-                    TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
-                } else if ( ds instanceof VectorDataSet ) {
-                    VectorUtil.dumpToAsciiStream((VectorDataSet)ds, new FileOutputStream(file) );
-                } else {
-                    throw new DasException("don't know how to serialize data set" );
-                }
+            this.dumpDataSet= dumpDataSet;
+            if ( dumpDataSet ) {
+                System.out.println("Dumping data set");
+                JFileChooser chooser= new JFileChooser();
+                int xx= chooser.showSaveDialog(this.getParent());
+                if ( xx==JFileChooser.APPROVE_OPTION ) {
+                    File file= chooser.getSelectedFile();
+                    if ( ds instanceof TableDataSet ) {
+                        TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
+                    } else if ( ds instanceof VectorDataSet ) {
+                        VectorUtil.dumpToAsciiStream((VectorDataSet)ds, new FileOutputStream(file) );
+                    } else {
+                        throw new DasException("don't know how to serialize data set" );
+                    }
+                } 
+                setDumpDataSet( false );
             }
         } catch ( Exception e ) {
             DasExceptionHandler.handle( e );

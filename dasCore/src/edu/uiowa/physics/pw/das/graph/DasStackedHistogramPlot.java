@@ -526,18 +526,21 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
      */
     public void setDumpDataSet(boolean dumpDataSet) {
         try {
-            System.out.println("Dumping data set");
-            JFileChooser chooser= new JFileChooser();
-            int xx= chooser.showSaveDialog(this.getParent());
-            if ( xx==JFileChooser.APPROVE_OPTION ) {
-                File file= chooser.getSelectedFile();
-                DataSet ds= getDataSet();
-                if ( ds instanceof TableDataSet ) {
-                    TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
-                } else {
-                    throw new DasException("don't know how to serialize data set" );
+            if ( dumpDataSet==true ) {
+                System.out.println("Dumping data set");
+                JFileChooser chooser= new JFileChooser();
+                int xx= chooser.showSaveDialog(this.getParent());
+                if ( xx==JFileChooser.APPROVE_OPTION ) {
+                    File file= chooser.getSelectedFile();
+                    DataSet ds= getDataSet();
+                    if ( ds instanceof TableDataSet ) {
+                        TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
+                    } else {
+                        throw new DasException("don't know how to serialize data set" );
+                    }
                 }
             }
+            setDumpDataSet( false );
         } catch ( Exception e ) {
             DasExceptionHandler.handle( e );
         }
