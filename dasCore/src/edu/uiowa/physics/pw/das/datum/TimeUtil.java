@@ -307,14 +307,24 @@ public final class TimeUtil {
         int second= cal.get(Calendar.SECOND);
         int year= cal.get(Calendar.YEAR);
         int doy= cal.get(Calendar.DAY_OF_YEAR);
-        
+        java.text.DecimalFormat doyFormat = new java.text.DecimalFormat("000");
         try {
-            return TimeUtil.create(year+"//"+doy+" "+hour+":"+minute+":"+second);
+            return TimeUtil.create(year+"//"+doyFormat.format(doy)+" "+hour+":"+minute+":"+second);
         } catch ( java.text.ParseException ex ) {
             throw new IllegalStateException(ex.getMessage());
         }
     }
     
+    /** 
+     * @param year
+     * @param month
+     * @param day if month==0, then day is day of year.
+     * @param hour
+     * @param minute
+     * @param second
+     * @param units
+     * @return
+     */
     public static double convert(int year, int month, int day, int hour, int minute, double second, TimeLocationUnits units) {
         // if month==0, then day is doy (day of year).
         int jd;
@@ -324,7 +334,7 @@ public final class TimeUtil {
             // if month==0 then day is doy
             int month1= 1;
             int day1= 1;
-            jd = julday(month,day,year);
+            jd = julday(month1,day1,year);
             jd+= ( day - 1 );
         }
         
