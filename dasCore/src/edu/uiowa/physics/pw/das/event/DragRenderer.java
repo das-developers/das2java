@@ -25,9 +25,12 @@ package edu.uiowa.physics.pw.das.event;
 
 import java.awt.*;
 
-/**
- *
- * @author  eew
+/** A DragRenderer provides the feedback to the human operator
+ * of what his mousing is doing.  It applies constraints to the
+ * drag as well. It promotes the awt mouse events into events
+ * that represent the operation, implementing for example mouse
+ * gestures.
+ * @author eew
  */
 public interface DragRenderer
 { 
