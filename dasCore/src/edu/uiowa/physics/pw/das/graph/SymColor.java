@@ -45,6 +45,7 @@ public final class SymColor extends Color implements Enumeration {
     public static final SymColor green= new SymColor( "green",Color.green );
     public static final SymColor white= new SymColor( "white",Color.white );
     public static final SymColor gray= new SymColor( "gray",Color.gray );
+    public static final SymColor magenta = new SymColor( "magenta",Color.magenta);
     
     /** Creates a new instance of SymColor */
     private SymColor(String name, Color color) {
