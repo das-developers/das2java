@@ -207,8 +207,8 @@ public class RebinDescriptor {
         return units;
     }
     
-    public String toString() {
-        return "["+start+"-"+end+" in "+nBin+" bins "+(isLog?"Log":"")+"]";
+    public String toString() {        
+        return "["+units.createDatum(start)+" - "+units.createDatum(end)+" in "+nBin+" bins "+(isLog?"Log":"")+"]";
     }
     
 }
