@@ -71,7 +71,6 @@ public class HttpWebFileSystem extends WebFileSystem {
             int br= in.read(buf);
             DasApplication.getDefaultApplication().getLogger().info("transferring file "+filename);
             while ( br!=-1 ) {
-                System.out.println("br="+br);
                 out.write( buf, 0, br );
                 br= in.read(buf);
             }
