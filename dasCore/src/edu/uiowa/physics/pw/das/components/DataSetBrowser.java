@@ -59,21 +59,24 @@ public class DataSetBrowser extends JPanel implements DragSourceListener, DragGe
         
         DragSource ds= DragSource.getDefaultDragSource();
         DragGestureRecognizer dgr=
-        ds.createDefaultDragGestureRecognizer(tree,DnDConstants.ACTION_COPY_OR_MOVE,
-        this );
+                ds.createDefaultDragGestureRecognizer(tree,DnDConstants.ACTION_COPY_OR_MOVE,
+                this );
         
         this.add(new JScrollPane(tree),java.awt.BorderLayout.CENTER);
         
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        JFrame jframe= new JFrame();
-        jframe.getContentPane().add(new DataSetBrowser(DasServer.plasmaWaveGroup));
-        jframe.pack();
-        jframe.setVisible(true);
+    public String getSelectedDataSetId() {
+        TreePath tp= tree.getLeadSelectionPath();
+        TreeNode tn = (TreeNode)tp.getLastPathComponent();        
+        if (tn.isLeaf()) {
+            String s = dasServer.getURL()+"?"+tp.getPathComponent(1);
+            for (int index = 2; index < tp.getPathCount(); index++)
+                s = s + "/" + tp.getPathComponent(index);
+            return s;
+        } else {
+            return null;
+        }        
     }
     
     public void dragDropEnd(java.awt.dnd.DragSourceDropEvent dragSourceDropEvent) {
@@ -86,15 +89,11 @@ public class DataSetBrowser extends JPanel implements DragSourceListener, DragGe
     }
     
     public void dragGestureRecognized(java.awt.dnd.DragGestureEvent dragGestureEvent) {
-        TreePath tp= tree.getLeadSelectionPath();
-        TreeNode tn = (TreeNode)tp.getLastPathComponent();
-        if (tn.isLeaf()) {
-            String s = dasServer.getURL()+"?"+tp.getPathComponent(1);
-            for (int index = 2; index < tp.getPathCount(); index++)
-                s = s + "/" + tp.getPathComponent(index);
+        String s= getSelectedDataSetId();
+        if ( s!=null ) {
             Transferable t= new StringSelection(s);
             dragGestureEvent.startDrag(null,t,this);
-        } 
+        }
     }
     
     public void dragOver(java.awt.dnd.DragSourceDragEvent dragSourceDragEvent) {
