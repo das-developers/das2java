@@ -23,7 +23,10 @@
 
 package edu.uiowa.physics.pw.das;
 
+import java.awt.event.*;
 import java.util.logging.*;
+import java.util.prefs.*;
+import javax.swing.*;
 
 /**
  *
@@ -110,6 +113,24 @@ public class DasApplication {
             }                 
             System.setProperty("java.awt.headless","false");
         }
+    }
+    
+    public JFrame getMainFrame() {
+        final JFrame result= new JFrame("Das2");        
+        final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
+               
+        int xlocation= prefs.getInt( "xlocation", 20 );
+        int ylocation= prefs.getInt( "ylocation", 20 );
+        result.setLocation(xlocation, ylocation);
+        result.addWindowListener( new WindowAdapter() {
+            public void windowClosing( WindowEvent e ) {
+                prefs.putInt( "xlocation", result.getLocation().x );
+                prefs.putInt( "ylocation", result.getLocation().y );
+                System.out.println("bye!"+result.getLocation());
+            }
+        } );
+        result.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        return result;
     }
     
     public Logger getLogger() {
