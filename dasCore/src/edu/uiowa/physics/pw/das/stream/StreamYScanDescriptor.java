@@ -57,7 +57,6 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
             for (int i = 0; i < nitems; i++) {
                 yTags[i] = Double.parseDouble(tokens[i]);
             }
-            System.out.println();
         }
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
