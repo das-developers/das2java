@@ -105,6 +105,18 @@ public class TableUtil {
         return "["+tds.getXLength()+" xTags, "+buffer.toString()+" yTags]";
     }
     
+    public static DatumVector getDatumVector( TableDataSet tds, int i ) {
+        Units zunits= tds.getZUnits();
+        double[] array= new double[tds.getYLength(tds.tableOfIndex(i))];
+        for ( int j=0; j<array.length; j++ ) array[j]= tds.getDouble( i,j,zunits );
+        return DatumVector.newDatumVector(array, zunits);
+    }
+    
+    public static DatumVector getYTagsDatumVector( TableDataSet tds, int itable ) {
+        Units yunits= tds.getYUnits();
+        DatumVector result= DatumVector.newDatumVector( TableUtil.getYTagArrayDouble(tds, itable, yunits), yunits );
+        return result;
+    }
     
     public static void dumpToAsciiStream( TableDataSet tds, Datum xmin, Datum xmax, OutputStream out ) {
         PrintStream pout= new PrintStream(out);
