@@ -81,7 +81,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         }
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
         AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagWidthDouble  );
-        AverageTableRebinner.fillInterpolateY(averageData, averageWeights, yTags[0], Double.POSITIVE_INFINITY, ddY == null ? false : ddY.isLog());
+        if ( ddY!=null ) AverageTableRebinner.fillInterpolateY(averageData, averageWeights, yTags[0], Double.POSITIVE_INFINITY, ddY == null ? false : ddY.isLog());
         
         if (peaks == null) {
             PeakTableRebinner.peaks(tds, peakData, ddX, ddY);
