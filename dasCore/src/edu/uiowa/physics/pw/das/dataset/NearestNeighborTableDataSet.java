@@ -89,7 +89,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
             return source.getDatum(imap[i], jmap[itableMap[i]][j]);
         } else {
-            return source.getZUnits().getFill();
+            return source.getZUnits().createDatum(source.getZUnits().getFillDouble());
         }
     }
     
@@ -97,7 +97,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
             return source.getDouble(imap[i], jmap[itableMap[i]][j], units);
         } else {
-            return source.getZUnits().getFill().doubleValue(units);
+            return source.getZUnits().getFillDouble();
         }
     }
     
@@ -105,7 +105,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
             return source.getInt(imap[i], jmap[itableMap[i]][j],units);
         } else {
-            return source.getZUnits().getFill().intValue(units);
+            return source.getZUnits().getFillInt();
         }
     }
     

@@ -148,7 +148,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 if (rebinWeights[i][j] > 0.0) {
                     rebinData[i][j] = rebinData[i][j] / rebinWeights[i][j];
                 } else {
-                    rebinData[i][j] = tds.getZUnits().getFill().doubleValue(tds.getZUnits());
+                    rebinData[i][j] = tds.getZUnits().getFillDouble();
                 }
             }
         }
