@@ -119,7 +119,7 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
     }
     
     public void setDPosition( int minimum, int maximum) {
-        setPosition(minimum / getDeviceSize(), maximum / getDeviceSize());
+        setPosition((double)minimum / getDeviceSize(), (double)maximum / getDeviceSize());
     }
     
     public void setMaximum(double maximum) {
