@@ -22,17 +22,13 @@
  */
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.client.*;
-import edu.uiowa.physics.pw.das.dataset.*;
-import org.w3c.dom.*;
-
+import edu.uiowa.physics.pw.das.datum.Units;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
 
-public class StreamYScanDescriptor implements SkeletonDescriptor {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 
     private Units yUnits = Units.dimensionless;
     private Units zUnits = Units.dimensionless;
@@ -165,6 +161,36 @@ public class StreamYScanDescriptor implements SkeletonDescriptor {
     public void write(double[] input, int offset, ByteBuffer output) {
         for (int i = 0; i < nitems; i++) {
             transferType.write(input[offset + i], output);
+        }
+    }
+    
+    public Element getDOMElement(Document document) {
+        Element element = document.createElement("yscan");
+        element.setAttribute("nitems", String.valueOf(nitems));
+        element.setAttribute("yTags", toString(yTags));
+        element.setAttribute("yUnits", yUnits.toString());
+        element.setAttribute("zUnits", zUnits.toString());
+        element.setAttribute("type", transferType.toString());
+        return element;
+    }
+    
+    private static String toString(double[] d) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(d[0]);
+        for (int i = 1; i < d.length; i++) {
+            buffer.append(", ").append(d[i]);
+        }
+        return buffer.toString();
+    }
+    
+    public Object clone() {
+        try {
+            StreamYScanDescriptor clone = (StreamYScanDescriptor)super.clone();
+            clone.yTags = (double[])this.yTags.clone();
+            return clone;
+        }
+        catch (CloneNotSupportedException cnse) {
+            throw new RuntimeException(cnse);
         }
     }
     

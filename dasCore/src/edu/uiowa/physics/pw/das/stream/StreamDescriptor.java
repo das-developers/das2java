@@ -23,27 +23,28 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.util.*;
-import edu.uiowa.physics.pw.das.client.*;
-import org.apache.xml.serialize.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import edu.uiowa.physics.pw.das.DasIOException;
+import edu.uiowa.physics.pw.das.util.IDLParser;
+import java.io.*;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.w3c.dom.*;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
 
 /** Represents the global properties of the stream, that are accessible to
  * datasets within.
  * @author jbf
  */
-public class StreamDescriptor implements SkeletonDescriptor {
+public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
     
     private Map properties = new HashMap();
     
@@ -167,10 +168,10 @@ public class StreamDescriptor implements SkeletonDescriptor {
         return -1;
     }
     
-    public void read(java.nio.ByteBuffer input, double[] output, int offset) {
+    public void read(ByteBuffer input, double[] output, int offset) {
     }
     
-    public void write(double[] output, int offset, java.nio.ByteBuffer input) {
+    public void write(double[] output, int offset, ByteBuffer input) {
     }
 
     public static StreamDescriptor createLegacyDescriptor(BufferedReader in) throws IOException {
@@ -372,6 +373,25 @@ public class StreamDescriptor implements SkeletonDescriptor {
      */
     public void setCompression(String compression) {
         this.compression = compression;
+    }
+    
+    public Element getDOMElement(Document document) {
+        Element element = document.createElement("stream");
+        if (compression != null && !compression.equals("")) {
+            element.setAttribute("compression", compression);
+        }
+        return element;
+    }
+    
+    public Object clone() {
+        try {
+            StreamDescriptor clone = (StreamDescriptor)super.clone();
+            clone.properties = new HashMap(this.properties);
+            return clone;
+        }
+        catch (CloneNotSupportedException cnse) {
+            throw new RuntimeException(cnse);
+        }
     }
     
 }

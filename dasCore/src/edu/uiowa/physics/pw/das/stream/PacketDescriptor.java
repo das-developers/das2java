@@ -23,27 +23,23 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.util.*;
-import edu.uiowa.physics.pw.das.client.*;
-import org.apache.xml.serialize.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
 
 /** Represents the global properties of the stream, that are accessible to
  * datasets within.
  * @author jbf
  */
-public class PacketDescriptor implements SkeletonDescriptor {
+public class PacketDescriptor implements SkeletonDescriptor, Cloneable {
     
     private StreamXDescriptor xDescriptor;
     private SkeletonDescriptor[] yDescriptors = new SkeletonDescriptor[6];
@@ -143,24 +139,6 @@ public class PacketDescriptor implements SkeletonDescriptor {
         return yDescriptors[index];
     }
 
-    public static Document parseHeader(String header) throws DasIOException, DasStreamFormatException {
-        try {
-            DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            InputSource source = new InputSource(new StringReader(header));
-            Document document= builder.parse(source);
-            return document;
-        }
-        catch ( ParserConfigurationException ex ) {
-            throw new IllegalStateException(ex.getMessage());
-        }
-        catch ( SAXException ex ) {
-            throw new DasIOException(ex.getMessage());
-        }
-        catch ( IOException ex) {
-            throw new DasIOException(ex.getMessage());
-        }
-    }
-    
     public int getSizeBytes() {
         int sizeBytes = xDescriptor.getSizeBytes();
         for (int i = 0; i < yCount; i++) {
@@ -169,10 +147,10 @@ public class PacketDescriptor implements SkeletonDescriptor {
         return sizeBytes;
     }
     
-    public void read(java.nio.ByteBuffer input, double[] output, int offset) {
+    public void read(ByteBuffer input, double[] output, int offset) {
     }
     
-    public void write(double[] output, int offset, java.nio.ByteBuffer input) {
+    public void write(double[] output, int offset, ByteBuffer input) {
     }
     
     private static String trimComment(String line) {
@@ -214,34 +192,6 @@ public class PacketDescriptor implements SkeletonDescriptor {
         return packetDescriptor;
     }
     
-    public static String createHeader(Document document) throws DasIOException {
-        StringWriter writer= new StringWriter();
-        OutputFormat format= new OutputFormat();
-        format.setOmitXMLDeclaration(true);
-        format.setEncoding("UTF-8");
-        XMLSerializer serializer= new XMLSerializer(writer, format);
-        try {
-            serializer.serialize(document);
-        } catch ( IOException ex) {
-            throw new DasIOException(ex.getMessage());
-        }
-        String result= writer.toString();
-        return result;
-    }
-    
-    /*
-    // read off the bytes that are the xml header of the stream.  
-    protected static byte[] readHeader( InputStream in ) throws IOException {              
-        byte[] buffer= new byte[10000];
-        int b;
-        b= in.read();
-        if ( b==(int)'[' ) {  // [00]
-            for ( int i=0; i<3; i++ ) b= in.read(); 
-        }        
-        return StreamTool.readXML( in );
-    }
-     */
-    
     private static String[] ensureCapacity(String[] array, int capacity) {
         if (array == null) {
             return new String[capacity];
@@ -256,4 +206,28 @@ public class PacketDescriptor implements SkeletonDescriptor {
         }
     }
 
+    public Element getDOMElement(Document document) {
+        Element element = document.createElement("packet");
+        element.appendChild(xDescriptor.getDOMElement(document));
+        for (int i = 0; i < yCount; i++) {
+            element.appendChild(yDescriptors[i].getDOMElement(document));
+        }
+        return element;
+    }
+    
+    public Object clone() {
+        try {
+            PacketDescriptor clone = (PacketDescriptor)super.clone();
+            clone.xDescriptor = (StreamXDescriptor)xDescriptor.clone();
+            clone.yDescriptors = new SkeletonDescriptor[yCount];
+            for (int i = 0; i < yCount; i++) {
+                clone.yDescriptors[i] = (SkeletonDescriptor)yDescriptors[i].clone();
+            }
+            return clone;
+        }
+        catch (CloneNotSupportedException cnse) {
+            throw new RuntimeException(cnse);
+        }
+    }
+    
 }

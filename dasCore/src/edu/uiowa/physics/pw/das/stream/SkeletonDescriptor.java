@@ -24,13 +24,19 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import java.nio.ByteBuffer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public interface SkeletonDescriptor {
     
-    public int getSizeBytes();
+    int getSizeBytes();
     
-    public void read(ByteBuffer input, double[] output, int offset);
+    void read(ByteBuffer input, double[] output, int offset);
     
-    public void write(double[] input, int offset, ByteBuffer output);
+    void write(double[] input, int offset, ByteBuffer output);
+    
+    Element getDOMElement(Document document);
+    
+    Object clone();
     
 }

@@ -22,18 +22,13 @@
  */
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.UnitsConverter;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.client.*;
-import org.w3c.dom.*;
-
+import edu.uiowa.physics.pw.das.datum.Units;
 import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.util.ArrayList;
 
-public class StreamMultiYDescriptor implements SkeletonDescriptor {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     
     private String name = "";
     private Units units = Units.dimensionless;
@@ -114,6 +109,22 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor {
     
     public void write(double[] input, int offset, ByteBuffer output) {
         transferType.write(input[offset], output);
+    }
+    
+    public Element getDOMElement(Document document) {
+        Element element = document.createElement("y");
+        element.setAttribute("units", units.toString());
+        element.setAttribute("type", transferType.toString());
+        return element;
+    }
+    
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException cnse) {
+            throw new RuntimeException(cnse);
+        }
     }
     
 }

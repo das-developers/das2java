@@ -23,6 +23,9 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
+import edu.uiowa.physics.pw.das.util.FixedWidthFormatter;
+import java.text.DecimalFormat;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -54,12 +57,17 @@ public final class DataTransferType {
     
     private final int id;
     
+    private DecimalFormat doubleFormatter;
+    
     private DataTransferType(String name, int id, int sizeBytes, boolean ascii) {
         this.name = name;
         this.id = id;
         this.sizeBytes = sizeBytes;
         this.ascii = ascii;
         map.put(name, this);
+        if (ascii) {
+            doubleFormatter = new DecimalFormat(getFormat(sizeBytes-1));
+        }
     }
     
     public String toString() {
@@ -139,23 +147,39 @@ public final class DataTransferType {
                     buffer.putDouble(d);
                 } break;
                 case I_ASCII: {
-                    if (true) {
-                        //I included the 'if (true)' so that the compiler would not
-                        //complain that the following break is an unreachable statement.
-                        //I did not want to remove the break since there is no guarantee
-                        //that I or somebody else would remember to put it back when this
-                        //section is implemented.  With out the break this case would
-                        //fall through to the next.  We don't want that to happen. -eew
-                        throw new UnsupportedOperationException("Cannot output ascii values yet");
+                    String s = doubleFormatter.format(d) + " ";
+                    if (sizeBytes < 10) {
+                        s = FixedWidthFormatter.format(s, sizeBytes - 1);
                     }
+                    byte[] bytes = s.getBytes("US-ASCII");
+                    buffer.put(bytes);
                 } break;
                 default: {
                     throw new IllegalStateException("Invalid id: " + id);
                 }
             }
         }
+        catch (java.io.UnsupportedEncodingException uee) {
+            //US-ASCII encoding should be supported by all JVM implementations.
+            throw new RuntimeException(uee);
+        }
         finally {
             buffer.order(bo);
+        }
+    }
+    
+    private static String getFormat(int length) {
+        if (length < 9) {
+            return "0.#";
+        }
+        else {
+            StringBuffer buffer = new StringBuffer(length);
+            buffer.append("+0.");
+            for (int i = 0; i < length - 7; i++) {
+                buffer.append('0');
+            }
+            buffer.append("E00;-#");
+            return buffer.toString();
         }
     }
     
