@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import edu.uiowa.physics.pw.das.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -52,7 +53,7 @@ public final class DasExceptionHandler {
     }
     
     public static void handle(Throwable t) {
-        if (System.getProperty("java.awt.headless", "").equals("true")) {
+        if ( DasApplication.getDefaultApplication().isHeadless() ) {
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.CRITICAL, t.toString());
         }
         else {
@@ -61,7 +62,7 @@ public final class DasExceptionHandler {
     }
     
     public static void handleUncaught(Throwable t) {
-        if ("true".equals(System.getProperty("java.awt.headless"))) {
+        if ( DasApplication.getDefaultApplication().isHeadless() ) {
             t.printStackTrace();
         }
         else {
