@@ -268,7 +268,7 @@ public class DasServer {
         } catch ( FileNotFoundException e ) {
             throw new DasServerNotFoundException( e.getMessage() );
         } catch ( IOException e ) {
-            throw new DasIOException(e.getMessage());
+            throw new DasIOException(e.toString());
         }
         
         
