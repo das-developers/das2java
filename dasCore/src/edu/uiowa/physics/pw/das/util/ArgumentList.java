@@ -84,14 +84,16 @@ public class ArgumentList {
     }
     
     public void addSwitchArgument(String name, String abbrev, String key, String description) {
-        if ( abbrev!=null && abbrev.length()>1 ) {
-            throw new IllegalArgumentException( "abbrev can only be one character for "+key+": "+abbrev );
-        }
         if ( abbrev==null && name==null ) {
             throw new IllegalArgumentException( "both abbrev and name are null, one must be specified" );
         }
         descriptions.put( key,  description );
-        if ( abbrev!=null ) abbrevs.put( abbrev, key );
+        if ( abbrev!=null ) {
+            if ( abbrevs.containsKey(abbrev) ) {
+                throw new IllegalArgumentException( "abbrev already used: "+abbrev );
+            }
+            abbrevs.put( abbrev, key );
+        }
         if ( name!=null ) {
             names.put( name, key );
             reverseNames.put( key, name );
@@ -212,12 +214,17 @@ public class ArgumentList {
         
         if ( errorList.size()>0 ) {
             printUsage();
+            System.err.println( "" );
             for ( int ii=0; ii<errorList.size(); ii++ ) {
                 System.err.println( errorList.get(ii) );
             }
             System.exit(-1);
         }
         
+    }
+    
+    public Map getMap() {
+        return new HashMap( values );
     }
     
     public void process(String[] args) {
@@ -240,6 +247,7 @@ public class ArgumentList {
                     }
                     key= (String)names.get(name);
                 } else {
+                    // TODO: should support several abbrevs: e.g.,  -xvf (Throw exception if ambiguous)
                     String abbrev= args[i].substring(1);
                     if ( abbrev.indexOf('=') != -1 ) {
                         abbrev= abbrev.substring(0,abbrev.indexOf('='));
@@ -250,7 +258,8 @@ public class ArgumentList {
                 if ( key==null ) {
                     key= args[i];
                     values.put( key, this.UNDEFINED_SWITCH );
-                    formUsed.put( key, args[i] );                    
+                    formUsed.put( key, args[i] );    
+                    DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("undefined switch: "+key);
                 } else {
                     formUsed.put( key,args[i] );
                     if ( values.get(key) == this.FALSE || values.get(key) == this.TRUE ) { // is boolean
