@@ -38,7 +38,7 @@ import java.util.logging.*;
  *
  * @author  eew
  */
-public abstract class DasCanvasComponent extends JPanel implements Editable {
+public abstract class DasCanvasComponent extends JComponent implements Editable {
     
     private DasRow row;
     private DasColumn column;
