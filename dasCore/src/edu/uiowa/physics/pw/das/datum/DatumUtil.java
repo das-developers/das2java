@@ -103,6 +103,26 @@ public final class DatumUtil {
         }
     }
     
+    public static DatumFormatter limitResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {        
+        Units units = minimum.getUnits();
+        
+        if ( units instanceof TimeLocationUnits ) {
+            return bestTimeFormatter(minimum, maximum, nsteps);
+        }
+
+        Datum resolution= maximum.subtract(minimum).divide(nsteps);
+        double discernable= resolution.doubleValue(units);        
+        int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
+        nFraction= nFraction<0 ? 0 : nFraction;
+        String formatString = zeros(nFraction);
+        DatumFormatterFactory factory = units.getDatumFormatterFactory();
+        try {
+            return factory.newFormatter(formatString);
+        } catch ( java.text.ParseException e ) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     public static DatumFormatter bestFormatter(Datum minimum, Datum maximum, int nsteps) {
         
         Units units = minimum.getUnits();
