@@ -497,11 +497,9 @@ public class DasServer {
     }
     
     public Key getKey( String resource ) {
-        /* TODO: resource ignored, we need to provide means for switching credentials */
-        System.out.println(Thread.currentThread().getName()+" server hash:"+this.hashCode());
+        /* TODO: resource ignored, we need to provide means for switching credentials */        
         synchronized (this) {
-            if ( key==null ) {
-                System.out.println(Thread.currentThread().getName());
+            if ( key==null ) {                
                 Authenticator authenticator;
                 authenticator= new Authenticator(this,resource);
                 Key key= authenticator.authenticate();
