@@ -22,7 +22,7 @@
  */
 
 package edu.uiowa.physics.pw.das.graph;
- 
+
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -41,11 +41,12 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
     
     // avoid get/set methods unless you know what you're doing.
     private DataSet ds;
-    DasPlot parent;
+       
+    DasPlot parent;        
     
     private DasProgressPanel progressPanel;
     private DataRequestThread drt;
-
+    
     protected Exception lastException;
     
     protected Renderer(DataSetDescriptor dsd) {
@@ -78,7 +79,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
     
     public void setDataSet(DataSet ds) {
         setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
-    } 
+    }
     
     public void setDataSetID(String id) throws edu.uiowa.physics.pw.das.DasException {
         if (id == null) throw new NullPointerException("Null dataPath not allowed");
@@ -115,7 +116,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         Color color0= g.getColor();
         g.setColor(Color.lightGray);
         g.drawString(s,x-width/2,y);
-        g.setColor(color0);        
+        g.setColor(color0);
     }
     
     protected void loadDataSet(final DasAxis xAxis, final DasAxis yAxis) {
@@ -123,44 +124,40 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         if (parent == null || !parent.isDisplayable() || dsd == null) return;
         
         lastException= null;
-
+        
         final DasPlot parent= getParent();
         final Cursor cursor0= null;
         if (parent != null) {
             parent.getCursor();
             parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         }
-
+        
         if (parent != null) {
             ((DasCanvas)parent.getParent()).lockDisplay(this);
         }
-
-        double resolution;
-        if (xAxis.getUnits() instanceof TimeLocationUnits) {
-            Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-            double dataRange= dataRange1.doubleValue(Units.seconds);
-            double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-            resolution =  dataRange/deviceRange;
-        }
-        else {
-            resolution = 0.0;
-        }
+        
+        Datum resolution;
+        Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
+        double dataRange= dataRange1.doubleValue(Units.seconds);
+        double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
+        resolution =  dataRange1.divide(deviceRange);
+        
         if (progressPanel == null) {
             progressPanel = new DasProgressPanel();
             ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
         }
         progressPanel.setSize(progressPanel.getPreferredSize());
-
+        
         int x= xAxis.getColumn().getDMiddle();
         int y= xAxis.getRow().getDMiddle();
-
+        
         progressPanel.setLocation( x - progressPanel.getWidth()/2,
-                                   y - progressPanel.getHeight()/2 );
+        y - progressPanel.getHeight()/2 );
         DataRequestor requestor = new DataRequestor() {
             public void exception(Exception exception) {
                 if (!(exception instanceof InterruptedIOException)) {
                     if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
-                        lastException= exception; 
+                        lastException= exception;
                         finished(null);
                     } else {
                         DasExceptionHandler.handle(exception);
@@ -172,7 +169,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
                 progressPanel.setVisible(false);
                 if ( parent != null) {
                     parent.setCursor(cursor0);
-                }                    
+                }
                 ds= dsFinished;
                 updatePlotImage(xAxis,yAxis);
                 if ( parent!= null) {
@@ -185,17 +182,17 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             drt = new DataRequestThread();
         }
         try {
-            drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
+            drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
         }
         catch (InterruptedException ie) {
             DasExceptionHandler.handle(ie);
         }
-
-    }
         
+    }
+    
     public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis);
     
-    public void update(DasAxis xAxis, DasAxis yAxis) {    
+    public void update(DasAxis xAxis, DasAxis yAxis) {        
         loadDataSet(xAxis,yAxis);
     }
     
