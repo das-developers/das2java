@@ -96,17 +96,16 @@ public class TimeRangeLabel extends DasCanvasComponent {
         
         g.translate(-getX(),-getY());
         
-        g.drawString(df.format(min), x, y-fm.getHeight()/2);
+        g.drawString(df.format(min), x, y-getFont().getSize()*2);
         
         String label= df.format(max);
         g.drawString(label,
            ( x + getColumn().getWidth() - fm.stringWidth(label)),
-           y-fm.getHeight()/2);        
+           y-getFont().getSize()*2);        
     }
-        
     public void resize() {
-        Rectangle bounds= new Rectangle( getColumn().getDMinimum()-30, getRow().getDMinimum()-30, 
-              getColumn().getWidth()+60, 30 );
+        Rectangle bounds= new Rectangle( getColumn().getDMinimum()-30, getRow().getDMinimum()-getFont().getSize()*3, 
+              getColumn().getWidth()+60, getFont().getSize()*3 );
         this.setBounds( bounds );
     }
     

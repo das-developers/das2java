@@ -448,7 +448,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
     }
     
-    private static class RowWrapper extends DasRow {
+    public static class RowWrapper extends DasRow {
         private DasRow delegate = DasRow.NULL;
 
         private static RowWrapper wrap(DasCanvas canvas, DasRow row) {
@@ -555,7 +555,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
     }
     
-    private static class ColumnWrapper extends DasColumn {
+    public static class ColumnWrapper extends DasColumn {
         private DasColumn delegate;
         
         private static ColumnWrapper wrap(DasCanvas canvas, DasColumn column) {
