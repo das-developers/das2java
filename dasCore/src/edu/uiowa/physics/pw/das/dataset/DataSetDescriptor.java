@@ -1,4 +1,4 @@
-/* File: AbstractDataSetDescriptor.java
+/* File: DataSetDescriptor.java
  * Copyright (C) 2002-2003 The University of Iowa
  *
  * Created on October 22, 2003, 12:49 PM by __FULLNAME__ <__EMAIL__>
@@ -29,6 +29,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.system.RequestProcessor;
 
 import java.net.*;
 import java.util.*;
@@ -50,6 +51,7 @@ public abstract class DataSetDescriptor {
     private DataSet cacheDataSet;
     private String dataSetID;
     private CacheTag cacheTag;
+    private EventListenerList listenerList;
     
     protected DataSetDescriptor(final String dataSetID) {
         cacheTag=null;
@@ -66,6 +68,18 @@ public abstract class DataSetDescriptor {
     protected abstract DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException ;
     
     public abstract Units getXUnits();
+    
+    public void requestDataSet(final Datum start, final Datum end, final Datum resolution, final DasProgressMonitor monitor) {
+        DataSetUpdateEvent dsue;
+        try {
+            DataSet ds = getDataSet(start, end, resolution, monitor);
+            dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
+        }
+        catch (DasException de) {
+            dsue = new DataSetUpdateEvent(DataSetDescriptor.this, de);
+        }
+        fireDataSetUpdateEvent(dsue);
+    }
     
     /* Retrieve the dataset for this interval and resolution.  The contract for this function is that
      * identical start,end,resolution parameters will yield an identical dataSet, except for when an
@@ -101,8 +115,6 @@ public abstract class DataSetDescriptor {
     protected void setDefaultCaching( boolean value ) {
         defaultCaching= value;
     }
-    
-    EventListenerList listenerList;
     
     public void addDataSetUpdateListener( DataSetUpdateListener listener ) {
         if (listenerList == null ) {
