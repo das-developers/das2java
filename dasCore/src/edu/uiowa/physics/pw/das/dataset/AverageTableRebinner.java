@@ -201,7 +201,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                                 vInterpWeights[0][ibiny[j]] = w;
                                 vInterpIndex[0][ibiny[j]] = ibinx;
                         }
-                        else if (ibinx == vInterpIndex[0][j]) {
+                        else if (ibinx == vInterpIndex[0][ibiny[j]]) {
                             vInterpData[0][ibiny[j]] += z * w;
                             vInterpWeights[0][ibiny[j]] += w;
                         }
@@ -216,7 +216,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                         double w = weights == null
                             ? (zUnits.isFill(z) ? 0. : 1.)
                             : weights.getDouble(i, j, Units.dimensionless);
-                        if (vInterpIndex[1][j] == -1
+                        if (vInterpIndex[1][ibiny[j]] == -1
                             || ibinx < vInterpIndex[1][ibiny[j]]) {
                                 vInterpData[1][ibiny[j]] = z * w;
                                 vInterpWeights[1][ibiny[j]] = w;
