@@ -381,8 +381,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param g
      */
     protected void paintComponent(Graphics g) {
-        g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+        if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
         g.setColor(getForeground());
 
         if (isPrintingThread()) {
