@@ -1,0 +1,15 @@
+Single Key MouseModule Activation:
+  X  zoom X
+  Y  zoom Y
+  V  slice Vertical
+  H  slice Horizontal
+  D  crosshair digitizer
+  B  bookmarks
+  E  edge detector
+  F  frequency measurer
+
+
+Should DragRenderers only be allowed to communicate science events?  If so,
+then what is the purpose of a MouseModule?
+
+  
