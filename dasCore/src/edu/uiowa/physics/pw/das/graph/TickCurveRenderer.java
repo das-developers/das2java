@@ -49,6 +49,8 @@ public class TickCurveRenderer extends Renderer {
     private Units yunits; // yUnits of the axis
     private double[][] idata;  // data transformed to pixel space
     
+    TickLabeller tickLabeller;
+    
     /** Holds value of property tickStyle. */
     private TickStyle tickStyle;
     
@@ -177,9 +179,12 @@ public class TickCurveRenderer extends Renderer {
     private void drawTick( Graphics2D g, double findex ) {  
         float tl= getTickLength()*2/3;
         Line2D tick= normalize( outsideNormalAt( findex ), tl );        
-        g.draw( tick );
         if ( tickStyle==TickStyle.both ) {
-            g.draw( normalize( tick, -tl ) );
+            Line2D flipTick= normalize( tick, -tl );
+            Line2D bothTick= new Line2D.Double( flipTick.getP2(), tick.getP2() );
+            g.draw( bothTick );            
+        } else {
+            g.draw( tick );
         }
     }
     
@@ -187,48 +192,18 @@ public class TickCurveRenderer extends Renderer {
         return ( line.getY2()-line.getY1() ) / ( line.getX2()-line.getX1() );
     }
     
-    private void drawLabelTick( Graphics2D g, double findex, String label ) {        
+    private void drawLabelTick( Graphics2D g, double findex, int tickNumber ) {        
         float tl= getTickLength();
         Line2D tick= normalize( outsideNormalAt( findex ), tl );
-        g.draw( tick );
         if ( tickStyle==TickStyle.both ) {
-            g.draw( normalize( tick, -tl ) );
+            Line2D flipTick= normalize( tick, -tl );
+            Line2D bothTick= new Line2D.Double( flipTick.getP2(), tick.getP2() );
+            g.draw( bothTick );            
+        } else {
+            g.draw( tick );
         }
 
-        // the goal is to position the label such that the tick would intersect the label's center of mass.
-        double tickSlope= slope(tick);
-        double labelWidth= g.getFontMetrics().stringWidth(label);
-        double labelHeight= g.getFontMetrics().getAscent();        
-        double labelSlope= labelHeight / labelWidth;
-        
-        double labelX;
-        double labelY;
-        
-        tick= normalize( tick, length(tick)+2 ); // add 2 pixels space to end of tick
-        
-        if ( labelSlope > Math.abs( tickSlope ) ) { // tick intersects the height of the label bounds.
-            if ( tick.getX2()>tick.getX1() ) {  // e.g. 3 O'Clock
-                double rise= tickSlope * labelWidth / 2;
-                labelX= tick.getX2();
-                labelY= tick.getY2() + labelHeight/2 + rise;
-            } else { // e.g. 9 O'Clock                
-                double rise= - tickSlope * labelWidth / 2;
-                labelX= tick.getX2() - labelWidth;
-                labelY= tick.getY2() + labelHeight/2 + rise;
-            }
-        } else { // tick intersects the width of the label bounds
-            if ( tick.getY2()<tick.getY1() ) {  // e.g. 12 O'Clock
-                double run= - labelHeight / tickSlope / 2;
-                labelX= tick.getX2() + run - labelWidth/2;
-                labelY= tick.getY2();
-            } else { // e.g. 6 O'Clock
-                double run= labelHeight / tickSlope / 2;
-                labelX= tick.getX2() + run - labelWidth/2;
-                labelY= tick.getY2() + labelHeight;
-            }   
-        }
-        
-        g.drawString( label, (float)labelX, (float)labelY );
+        tickLabeller.labelMajorTick( g, tickNumber, tick );
         
     }
 
@@ -255,15 +230,19 @@ public class TickCurveRenderer extends Renderer {
         double[] findex;
         findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.minorTickV );
 
+        tickLabeller= new GrannyTickLabeller( xAxis ); // xAxis is a convenient Component
+        tickLabeller.init( tickv );
+        
         for ( int i=0; i<tickv.minorTickV.length; i++ ) {
             drawTick( g, findex[i] );
         }
 
         findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.tickV );
-        for ( int i=0; i<tickv.tickV.length; i++ ) {
-            String label= tickv.units.createDatum(tickv.tickV[i]).toString();
-            drawLabelTick( g, findex[i], label );            
+        for ( int i=0; i<tickv.tickV.length; i++ ) {            
+            drawLabelTick( g, findex[i], i );            
         }
+        
+        tickLabeller.finished();
         
     }
     
