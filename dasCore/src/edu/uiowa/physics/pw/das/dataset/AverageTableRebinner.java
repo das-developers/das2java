@@ -111,7 +111,6 @@ public class AverageTableRebinner implements DataSetRebinner {
         } else {
             enlargePixels( rebinData, rebinWeights );
         }
-        
         double[][][] zValues = {rebinData,rebinWeights};
         
         int[] tableOffsets = {0};
@@ -135,7 +134,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         int nx, ny;
         double[][] hInterpData, hInterpWeights, vInterpData, vInterpWeights;
         int[][] hInterpIndex, vInterpIndex;
-
+        
         xUnits = tds.getXUnits();
         zUnits= tds.getZUnits();
         
@@ -155,7 +154,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         for (int i = 0; i < vInterpIndex.length; i++) {
             Arrays.fill(vInterpIndex[i], -1);
         }
-
+        
         if (ddY != null) {
             ycoordinate = ddY.binCenters();
         }
@@ -193,13 +192,13 @@ public class AverageTableRebinner implements DataSetRebinner {
                         }
                         double z = tds.getDouble(i, j, zUnits);
                         double w = weights == null
-                            ? (zUnits.isFill(z) ? 0. : 1.)
-                            : weights.getDouble(i, j, Units.dimensionless);
+                        ? (zUnits.isFill(z) ? 0. : 1.)
+                        : weights.getDouble(i, j, Units.dimensionless);
                         if (vInterpIndex[0][ibiny[j]] == -1
-                            || ibinx > vInterpIndex[0][ibiny[j]]) {
-                                vInterpData[0][ibiny[j]] = z * w;
-                                vInterpWeights[0][ibiny[j]] = w;
-                                vInterpIndex[0][ibiny[j]] = ibinx;
+                        || ibinx > vInterpIndex[0][ibiny[j]]) {
+                            vInterpData[0][ibiny[j]] = z * w;
+                            vInterpWeights[0][ibiny[j]] = w;
+                            vInterpIndex[0][ibiny[j]] = ibinx;
                         }
                         else if (ibinx == vInterpIndex[0][ibiny[j]]) {
                             vInterpData[0][ibiny[j]] += z * w;
@@ -214,13 +213,13 @@ public class AverageTableRebinner implements DataSetRebinner {
                         }
                         double z = tds.getDouble(i, j, zUnits);
                         double w = weights == null
-                            ? (zUnits.isFill(z) ? 0. : 1.)
-                            : weights.getDouble(i, j, Units.dimensionless);
+                        ? (zUnits.isFill(z) ? 0. : 1.)
+                        : weights.getDouble(i, j, Units.dimensionless);
                         if (vInterpIndex[1][ibiny[j]] == -1
-                            || ibinx < vInterpIndex[1][ibiny[j]]) {
-                                vInterpData[1][ibiny[j]] = z * w;
-                                vInterpWeights[1][ibiny[j]] = w;
-                                vInterpIndex[1][ibiny[j]] = ibinx;
+                        || ibinx < vInterpIndex[1][ibiny[j]]) {
+                            vInterpData[1][ibiny[j]] = z * w;
+                            vInterpWeights[1][ibiny[j]] = w;
+                            vInterpIndex[1][ibiny[j]] = ibinx;
                         }
                         else {
                             vInterpData[1][ibiny[j]] += z * w;
@@ -232,14 +231,14 @@ public class AverageTableRebinner implements DataSetRebinner {
                     for (int j = 0; j < tds.getYLength(iTable); j++) {
                         double z = tds.getDouble(i,j,zUnits);
                         double w = weights == null
-                            ? (zUnits.isFill(z) ? 0. : 1.)
-                            : weights.getDouble(i, j, Units.dimensionless);
+                        ? (zUnits.isFill(z) ? 0. : 1.)
+                        : weights.getDouble(i, j, Units.dimensionless);
                         if (ibiny[j] < 0) {
                             if (hInterpIndex[ibinx][0] == -1
-                                || ibiny[j] > hInterpIndex[ibinx][0]) {
-                                    hInterpData[ibinx][0] = z * w;
-                                    hInterpWeights[ibinx][0] = w;
-                                    hInterpIndex[ibinx][0] = ibiny[j];
+                            || ibiny[j] > hInterpIndex[ibinx][0]) {
+                                hInterpData[ibinx][0] = z * w;
+                                hInterpWeights[ibinx][0] = w;
+                                hInterpIndex[ibinx][0] = ibiny[j];
                             }
                             else if (ibiny[j] == hInterpIndex[ibinx][0]) {
                                 hInterpData[ibinx][0] += z * w;
@@ -248,10 +247,10 @@ public class AverageTableRebinner implements DataSetRebinner {
                         }
                         else if (ibiny[j] >= ny) {
                             if (hInterpIndex[ibinx][1] == -1
-                                || ibiny[j] < hInterpIndex[ibinx][1]) {
-                                    hInterpData[ibinx][1] = z * w;
-                                    hInterpWeights[ibinx][1] = w;
-                                    hInterpIndex[ibinx][1] = ibiny[j];
+                            || ibiny[j] < hInterpIndex[ibinx][1]) {
+                                hInterpData[ibinx][1] = z * w;
+                                hInterpWeights[ibinx][1] = w;
+                                hInterpIndex[ibinx][1] = ibiny[j];
                             }
                             else if (ibiny[j] == hInterpIndex[ibinx][1]) {
                                 hInterpData[ibinx][1] += z * w;
@@ -277,9 +276,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 while (j0 < ny && rebinWeights[i][j0] == 0.0) j0++;
                 if (j0 < ny) {
                     rebinData[i][0] = linearlyInterpolate
-                        (hInterpIndex[i][0], hInterpData[i][0], j0, rebinData[i][j0], 0);
+                    (hInterpIndex[i][0], hInterpData[i][0], j0, rebinData[i][j0], 0);
                     rebinWeights[i][0] = linearlyInterpolate
-                        (hInterpIndex[i][0], hInterpWeights[i][0], j0, rebinWeights[i][j0], 0);
+                    (hInterpIndex[i][0], hInterpWeights[i][0], j0, rebinWeights[i][j0], 0);
                 }
             }
             if (rebinWeights[i][ny - 1] == 0.0 && hInterpWeights[i][1] != 0.0) {
@@ -287,9 +286,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 while (j0 >= 0 && rebinWeights[i][j0] == 0.0) j0--;
                 if (j0 >= 0) {
                     rebinData[i][ny - 1] = linearlyInterpolate
-                        (j0, rebinData[i][j0], hInterpIndex[i][1], hInterpData[i][1], ny - 1);
+                    (j0, rebinData[i][j0], hInterpIndex[i][1], hInterpData[i][1], ny - 1);
                     rebinWeights[i][ny - 1] = linearlyInterpolate
-                        (j0, rebinWeights[i][j0], hInterpIndex[i][1], hInterpWeights[i][1], ny - 1);
+                    (j0, rebinWeights[i][j0], hInterpIndex[i][1], hInterpWeights[i][1], ny - 1);
                 }
             }
         }
@@ -300,9 +299,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 while (i0 < nx && rebinWeights[i0][j] == 0.0) i0++;
                 if (i0 < nx) {
                     rebinData[0][j] = linearlyInterpolate
-                        (vInterpIndex[0][j], vInterpData[0][j], i0, rebinData[i0][j], 0);
+                    (vInterpIndex[0][j], vInterpData[0][j], i0, rebinData[i0][j], 0);
                     rebinWeights[0][j] = linearlyInterpolate
-                        (vInterpIndex[0][j], vInterpWeights[0][j], i0, rebinWeights[i0][j], 0);
+                    (vInterpIndex[0][j], vInterpWeights[0][j], i0, rebinWeights[i0][j], 0);
                 }
             }
             if (rebinWeights[nx - 1][j] == 0.0 && vInterpWeights[1][j] != 0.0) {
@@ -310,9 +309,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 while (i0 >= 0 && rebinWeights[i0][j] == 0.0) i0--;
                 if (i0 >= 0) {
                     rebinData[nx - 1][j] = linearlyInterpolate
-                        (i0, rebinData[i0][j], vInterpIndex[1][j], vInterpData[1][j], nx - 1);
+                    (i0, rebinData[i0][j], vInterpIndex[1][j], vInterpData[1][j], nx - 1);
                     rebinWeights[nx - 1][j] = linearlyInterpolate
-                        (i0, rebinWeights[i0][j], vInterpIndex[1][j], vInterpWeights[1][j], nx - 1);
+                    (i0, rebinWeights[i0][j], vInterpIndex[1][j], vInterpWeights[1][j], nx - 1);
                 }
             }
         }
@@ -348,12 +347,13 @@ public class AverageTableRebinner implements DataSetRebinner {
             int ii1 = -1;
             int ii2 = -1;
             for (int i = 0; i < nx; i++) {
-                
                 if (weights[i][j] > 0. && ii1 == (i-1)) { // ho hum another valid point
                     i1[i] = -1;
                     i2[i] = -1;
                     ii1 = i;
                 } else if (weights[i][j] > 0. && ii1 == -1) { // first valid point
+                    i1[i] = -1;
+                    i2[i] = -1;
                     ii1 = i;
                 } else if (weights[i][j] > 0. && ii1 < (i-1)) { // bracketed a gap, interpolate
                     if (ii1 > -1) {
@@ -411,6 +411,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i2[j] = -1;
                     ii1 = j;
                 } else if (weights[i][j] > 0. && ii1 == -1) { // first valid point
+                    i1[j] = -1;
+                    i2[j] = -1;
                     ii1=j;
                 } else if (weights[i][j] > 0. && ii1 < (j-1)) { // bracketed a gap, interpolate
                     if ((ii1 > -1)) {   // need restriction on Y gap size
