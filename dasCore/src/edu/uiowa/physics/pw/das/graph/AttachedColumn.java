@@ -30,6 +30,7 @@ public class AttachedColumn extends DasColumn {
     private DasColumn column;
     
     /** Creates a new instance of AttachedColumn.
+     * TODO
      * @param column the new column.
      * @param minimum the new minimum.
      * @param maximum the new maximum.
