@@ -176,22 +176,33 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         int y= yAxis.getRow().getDMiddle();
         
         String s;
+        String message;
         FontMetrics fm= g.getFontMetrics();
         
         if ( e instanceof NoDataInIntervalException ) {
             s= "no data in interval";
+            message= e.getMessage();             
         } else {
-            s= e.getMessage();
+            s= e.getMessage();      
+            message= "";
             if ( s == null || s.equals("") ) {
                 s= e.toString();
             }
         }
         
-        int width= fm.stringWidth(s);
+        if ( !message.equals("") ) {
+            s+= ":!c"+message;
+        }
+        
+        GrannyTextRenderer gtr= new GrannyTextRenderer();
+        gtr.setString( parent, s );
+        gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
+        
+        int width= (int)gtr.getWidth();
         
         Color color0= g.getColor();
         g.setColor(Color.lightGray);
-        g.drawString(s,x-width/2,y);
+        gtr.draw(g,x-width/2,y);
         g.setColor(color0);
     }
     
