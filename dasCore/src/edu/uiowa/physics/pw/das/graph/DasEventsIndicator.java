@@ -122,9 +122,13 @@ public class DasEventsIndicator extends DasCanvasComponent {
                     if ( iwidth==0 ) iwidth=1;
                     g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
                     int im= ix-getX();
-                    if ( im>=0 && im<eventMap.length ) eventMap[im]= i;
+                    int em0= im-1;
+                    int em1= im+iwidth+1;
+                    for ( int k=em0; k<em1; k++ ) {
+                        if ( k>=0 && k<eventMap.length ) eventMap[k]= i;
+                    }
                 }
-                for ( int k1=1; k1<=3; k1++ ) {
+                for ( int k1=1; k1<=2; k1++ ) { /* add fuzziness using Larry's algorithm */
                     for ( int k2=-1; k2<=1; k2+=2 ) {                     
 			int em0= ( k2==1 ) ? 0 : eventMap.length-1;
                         int em1= ( k2==1 ) ? eventMap.length-k1 : k1;
