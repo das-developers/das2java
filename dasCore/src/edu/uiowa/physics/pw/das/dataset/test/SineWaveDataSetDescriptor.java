@@ -77,4 +77,24 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
         return period.getUnits();
     }
     
+    public static SineWaveDataSetDescriptor newDataSetDescriptor(Map map) throws DasException {
+        String periodStr = (String)map.get("period");
+        String xUnitsStr = (String)map.get("xUnits");
+        String amplitudeStr = (String)map.get("amplitude");
+        String yUnitsStr = (String)map.get("yUnits");
+        if (periodStr == null || amplitudeStr == null) {
+            throw new DasException("period and amplitude must be specified for SineWaveDataSetDescriptors");
+        }
+        Units xUnits = xUnitsStr == null ? Units.dimensionless : Units.getByName(xUnitsStr);
+        Units yUnits = xUnitsStr == null ? Units.dimensionless : Units.getByName(yUnitsStr);
+        try {
+            Datum period = xUnits.getOffsetUnits().parse(periodStr);
+            Datum amplitude = yUnits.parse(amplitudeStr);
+            return new SineWaveDataSetDescriptor(amplitude, period);
+        }
+        catch (java.text.ParseException pe) {
+            throw new DasException(pe.getMessage());
+        }
+    }
+    
 }
