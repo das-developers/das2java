@@ -84,8 +84,9 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             return this.id;
         }
         
-        public static final PeaksIndicator GrayPeaks= new PeaksIndicator("Gray Peaks");
         public static final PeaksIndicator NoPeaks= new PeaksIndicator("None");
+        public static final PeaksIndicator GrayPeaks= new PeaksIndicator("Gray Peaks");
+        public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");        
         public static final PeaksIndicator MaxLines= new PeaksIndicator("Lines");
         
         public javax.swing.Icon getListIcon() {
@@ -301,17 +302,14 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                                     g.setColor(Color.lightGray);
                                     g.fillRect(x0,yMax,(x1-x0),y0-yMax);
                                     g.setColor(BAR_COLOR);
+                                } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {                                    
+                                    g.setColor(BAR_COLOR);
+                                    g.fillRect(x0,yMax,(x1-x0),y0-yMax);                                                                        
                                 }
                             }
                         }
-                        // TODO: where are the NaN's coming from ?
-                        // if ( !Double.isNaN(zz) ) {
-                        g.fillRect(x0,yAvg,(x1-x0),yHeight);
-                        // } else {
-                        //   System.out.println("yHeight="+yHeight+" zz="+zz);
-                        // System.out.println("peak="+peaks.getDouble(ibin, j, peaks.getZUnits()));
-                        // }
-                        
+                       
+                        g.fillRect(x0,yAvg,(x1-x0),yHeight);                        
                     }
                 }
             }
