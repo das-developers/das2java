@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.client;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetBuilder;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
@@ -43,52 +44,40 @@ public class DataSetStreamHandler implements StreamHandler {
     StreamHandlerDelegate delegate;
     StreamDescriptor sd;
     Map extraProperties;
-    
     DasProgressMonitor monitor;
-    static final int ntasks= 100;
-    boolean [] taskStarted= new boolean[ntasks];
-    Datum start, taskWidth;
+    int totalPacketCount= -1;   
+    int taskSize= -1;
+    int packetCount= 0;
     
     /** Creates a new instance of DataSetStreamHandler */
-    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor _monitor, Datum _start, Datum end ) {
-        //this.monitor= _monitor;
-        //this.start= _start;
-        //this.taskWidth= end.subtract(_start).divide(ntasks);
-        //monitor.setTaskSize(ntasks);
-        for ( int i=0; i<taskStarted.length; i++ ) taskStarted[i]= false;
+    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor _monitor, Datum _start, Datum end ) {        
         this.extraProperties = new HashMap(extraProperties);
+        this.monitor= _monitor==null ? DasProgressMonitor.NULL : _monitor;        
     }
     
-    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {                
-        ensureNotNullDelegate();
-        delegate.packet(pd, xTag, vectors);
-        //Units u= taskWidth.getUnits();
-        //int itask= (int)( xTag.subtract(start).doubleValue(u) / taskWidth.doubleValue(u) );
-        //if ( itask<0 ) itask=0;
-        //if ( itask>=ntasks ) itask=ntasks-1;
-        //boolean monitorUpdateNeeded= taskStarted[itask]==false;
-        //taskStarted[itask]= true;
-        //monitor.setTaskProgress( itask );
-        //if ( monitorUpdateNeeded ) {
-        //    updateMonitor();
-        //}
+    public void streamDescriptor(StreamDescriptor sd) throws StreamException {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream descriptor");
+        this.sd = sd;
+        Object o;
+        if ( ( o= sd.getProperty("taskSize") )!=null ) {
+            this.taskSize= ((Integer)o).intValue();
+            monitor.setTaskSize( taskSize );
+        } else if ( ( o= sd.getProperty("packetCount" ) )!=null ) {
+            this.totalPacketCount= ((Integer)o).intValue();
+            monitor.setTaskSize( totalPacketCount );
+        } 
     }
     
-    private void updateMonitor() {
-        int tasksStarted=0;
-        for ( int i=0; i<ntasks; i++ ) {
-            if ( taskStarted[i] ) tasksStarted++;
-        }
-        monitor.setTaskProgress(tasksStarted);
-    }
-    
-    public void packetDescriptor(PacketDescriptor pd) throws StreamException {        
+    public void packetDescriptor(PacketDescriptor pd) throws StreamException {       
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got packet descriptor");
         if (delegate == null) {
             SkeletonDescriptor descriptor = pd.getYDescriptor(0);
             if (descriptor instanceof StreamMultiYDescriptor) {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("using VectorDS delegate");
                 delegate = new VectorDataSetStreamHandler(pd);
             }
             else if (descriptor instanceof StreamYScanDescriptor) {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("using TableDS delegate");
                 delegate = new TableDataSetStreamHandler(pd);
             }
         }
@@ -97,17 +86,32 @@ public class DataSetStreamHandler implements StreamHandler {
         }
     }
     
+    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {                
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got packet");
+        ensureNotNullDelegate();
+        delegate.packet(pd, xTag, vectors);
+        packetCount++;
+        if ( totalPacketCount!=-1 ) {
+            monitor.setTaskProgress(packetCount);
+        }
+    }
+    
     public void streamClosed(StreamDescriptor sd) throws StreamException {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got streamClosed");
         if (delegate != null) {
             delegate.streamClosed(sd);
         }
     }
     
-    public void streamDescriptor(StreamDescriptor sd) throws StreamException {
-        this.sd = sd;
+    public void streamException(StreamException se) throws StreamException {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream exception");
     }
     
-    public void streamException(StreamException se) throws StreamException {
+    public void streamComment(StreamComment sc) throws StreamException {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream comment");
+        if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
+            monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );            
+        } 
     }
     
     public DataSet getDataSet() {
@@ -174,6 +178,7 @@ public class DataSetStreamHandler implements StreamHandler {
         }
         
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
+            DasApplication.getDefaultApplication().getDebugLogger().fine("got packet descriptor: "+pd);
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(),y.getUnits());
@@ -185,6 +190,8 @@ public class DataSetStreamHandler implements StreamHandler {
         public void streamDescriptor(StreamDescriptor sd) throws StreamException {}
         
         public void streamException(StreamException se) throws StreamException {}
+        
+        public void streamComment(StreamComment sc) throws StreamException {}
         
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
@@ -228,12 +235,13 @@ public class DataSetStreamHandler implements StreamHandler {
             }
         }
         
-        public void streamClosed(StreamDescriptor sd) throws StreamException {
-        }
+        public void streamClosed(StreamDescriptor sd) throws StreamException {}
         
         public void streamDescriptor(StreamDescriptor sd) throws StreamException {}
         
         public void streamException(StreamException se) throws StreamException {}
+        
+        public void streamComment(StreamComment sc) throws StreamException {}
         
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
