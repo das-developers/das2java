@@ -385,7 +385,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
         super.setDataSetDescriptor(dataSetDescriptor);
-        dataSetDescriptor.addDataSetUpdateListener( this );
+        if ( dataSetDescriptor!=null) dataSetDescriptor.addDataSetUpdateListener( this );
     }
     
     /** Getter for property sliceRebinnedData.
