@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
 
 /**
@@ -31,10 +32,11 @@ import edu.uiowa.physics.pw.das.datum.Datum;
  */
 public class BoxSelectionEvent extends DasEvent {
     
-    edu.uiowa.physics.pw.das.datum.Datum xMin;
-    edu.uiowa.physics.pw.das.datum.Datum xMax;
-    edu.uiowa.physics.pw.das.datum.Datum yMin;
-    edu.uiowa.physics.pw.das.datum.Datum yMax;
+    private Datum xMin;
+    private Datum xMax;
+    private Datum yMin;
+    private Datum yMax;
+    private DataSet ds;
        
     public BoxSelectionEvent(Object source, edu.uiowa.physics.pw.das.datum.Datum xMin, edu.uiowa.physics.pw.das.datum.Datum xMax, edu.uiowa.physics.pw.das.datum.Datum yMin, edu.uiowa.physics.pw.das.datum.Datum yMax) {
         super(source);
@@ -68,6 +70,14 @@ public class BoxSelectionEvent extends DasEvent {
     
     public edu.uiowa.physics.pw.das.datum.Datum getYMaximum() {
         return yMax; 
+    }
+    
+    public void setDataSet(DataSet ds) {
+        this.ds = ds;
+    }
+    
+    public DataSet getDataSet() {
+        return ds;
     }
     
     public String toString() {
