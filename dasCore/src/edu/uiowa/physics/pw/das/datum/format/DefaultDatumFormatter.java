@@ -69,7 +69,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
             StringBuffer granny = new StringBuffer(format.length() + 4);
             String mant= format.substring(0,iE);
             if (Double.parseDouble(mant)!=1.0) {
-                granny.append(mant).append("*");
+                granny.append(mant).append("\u00d7");
             }
             granny.append("10").append("!A").append(format.substring(iE+1)).append("!N");
             format = granny.toString();
