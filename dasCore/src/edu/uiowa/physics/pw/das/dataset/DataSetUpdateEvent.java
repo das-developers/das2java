@@ -14,9 +14,34 @@ import edu.uiowa.physics.pw.das.event.*;
  */
 public class DataSetUpdateEvent extends DasEvent {
     
-    /** Creates a new instance of DataSetUpdateEvent */
-    public DataSetUpdateEvent(Object source) {
+    private DataSet dataSet;
+    private Exception exception;
+    
+    public DataSetUpdateEvent(DataSetDescriptor source) {
         super(source);
+    }
+    
+    /** Creates a new instance of DataSetUpdateEvent */
+    public DataSetUpdateEvent(DataSetDescriptor source, DataSet dataSet) {
+        super(source);
+        this.dataSet = dataSet;
+    }
+    
+    public DataSetUpdateEvent(DataSetDescriptor source, Exception exception) {
+        super(source);
+        this.exception = exception;
+    }
+    
+    public DataSetDescriptor getDataSetDescriptor() {
+        return (DataSetDescriptor)getSource();
+    }
+    
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+    
+    public Exception getException() {
+        return exception;
     }
     
 }

@@ -13,5 +13,6 @@ import java.util.*;
  * @author  jbf
  */
 public interface DataSetUpdateListener extends java.util.EventListener {    
-    public void dataSetUpdated( DataSetUpdateEvent e);    
+    public void dataSetUpdated( DataSetUpdateEvent e);
+    //public void dataSetException( DataSetUpdateEvent e);
 }
