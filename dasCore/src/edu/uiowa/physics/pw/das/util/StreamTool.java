@@ -26,26 +26,16 @@ package edu.uiowa.physics.pw.das.util;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.stream.*;
-import edu.uiowa.physics.pw.das.stream.PacketDescriptor;
-import edu.uiowa.physics.pw.das.stream.StreamDescriptor;
-import edu.uiowa.physics.pw.das.stream.StreamException;
-import edu.uiowa.physics.pw.das.stream.StreamHandler;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 /**
  *
  * @author  jbf
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PushbackInputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,20 +47,11 @@ import org.apache.xml.serialize.Method;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.xml.sax.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+
 public class StreamTool {
-    
-    public static final int MAX_DESCRIPTOR_LENGTH;
-    static {
-        MAX_DESCRIPTOR_LENGTH = 4096;
-    }
     
     /** Creates a new instance of StreamTool */
     public StreamTool() {
@@ -157,7 +138,7 @@ public class StreamTool {
      */    
     public static byte[] readXML(PushbackInputStream in) throws IOException {
         ReadableByteChannel channel = Channels.newChannel(in);
-        byte[] back = new byte[MAX_DESCRIPTOR_LENGTH];
+        byte[] back = new byte[4096];
         ByteBuffer buffer = ByteBuffer.wrap(back);
         channel.read(buffer);
         buffer.flip();
@@ -304,13 +285,27 @@ public class StreamTool {
             }
             struct.bigBuffer.flip();
             Document doc = getXMLDocument(struct.bigBuffer, contentLength);
-            StreamDescriptor sd = new StreamDescriptor(doc.getDocumentElement());
-            struct.bigBuffer.clear();
-            return sd;
+            Element root = doc.getDocumentElement();
+            if (root.getTagName().equals("stream")) {
+                StreamDescriptor sd = new StreamDescriptor(doc.getDocumentElement());
+                struct.bigBuffer.clear();
+                return sd;
+            }
+            else if (root.getTagName().equals("exception")) {
+                throw exception(root);
+            }
+            else {
+                throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+            }
         }
         else {
             throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(struct.four, 0, 4) + "'");
         }
+    }
+    
+    private static final StreamException exception(Element exception) {
+        String type = exception.getAttribute("type");
+        return new StreamException(type);
     }
     
     private static boolean getChunk(ReadStreamStructure struct) throws StreamException, IOException {
@@ -338,9 +333,18 @@ public class StreamTool {
                 return false;
             }
             Document doc = getXMLDocument(struct.bigBuffer, contentLength);
-            PacketDescriptor pd = new PacketDescriptor(doc.getDocumentElement());
-            struct.handler.packetDescriptor(pd);
-            struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
+            Element root = doc.getDocumentElement();
+            if (root.getTagName().equals("packet")) {
+                PacketDescriptor pd = new PacketDescriptor(doc.getDocumentElement());
+                struct.handler.packetDescriptor(pd);
+                struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
+            }
+            else if (root.getTagName().equals("exception")) {
+                throw exception(root);
+            }
+            else {
+                throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+            }
         }
         else if (isPacketHeader(struct.four)) {
             String key = asciiBytesToString(struct.four, 1, 2);
@@ -374,7 +378,7 @@ public class StreamTool {
         try {
             return new String(bytes, offset, length, "US-ASCII");
         }
-        catch (java.io.UnsupportedEncodingException uee) {
+        catch (UnsupportedEncodingException uee) {
             //All JVM implementations are required to support US-ASCII
             throw new RuntimeException(uee);
         }
@@ -494,7 +498,7 @@ public class StreamTool {
             }
             return map;
         }
-        catch (java.text.ParseException pe) {
+        catch (ParseException pe) {
             StreamException se = new StreamException(pe.getMessage());
             se.initCause(pe);
             throw se;
