@@ -28,7 +28,7 @@ package edu.uiowa.physics.pw.das.datum;
  * @author  eew
  */
 public final class DatumVector {
-
+    
     private final Units units;
     private final Object store;
     private final int offset;
@@ -99,7 +99,39 @@ public final class DatumVector {
     public int getLength() {
         return length;
     }
-        
+    
+    public DatumVector add( Datum d ) {
+        double[] dd= new double[getLength()];
+        Units newUnits;
+        if ( d.getUnits() instanceof LocationUnits ) {
+            newUnits= d.getUnits();
+            for ( int i=0; i<dd.length; i++ ) {
+                dd[i]= d.add(get(i)).doubleValue(newUnits);
+            }        
+        } else {
+            newUnits= units;            
+            for ( int i=0; i<dd.length; i++ ) {
+                dd[i]= get(i).add(d).doubleValue(newUnits);
+            }
+        }
+        return new DatumVector( dd, 0, dd.length, newUnits );
+    }
+    
+    public DatumVector subtract( Datum d ) {
+        double[] dd= new double[getLength()];
+        Units newUnits;
+        if ( units instanceof LocationUnits && d.getUnits() instanceof LocationUnits ) {
+            newUnits= units.getOffsetUnits();
+        } else {
+            newUnits= units;
+        }
+        for ( int i=0; i<dd.length; i++ ) {
+            Datum diff= get(i).subtract(d);
+            dd[i]= diff.doubleValue(newUnits);
+        }        
+        return new DatumVector( dd, 0, dd.length, newUnits );
+    }
+    
     public String toString() {
         StringBuffer result= new StringBuffer();
         result.append("[");
