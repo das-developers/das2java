@@ -270,9 +270,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                         ds= dsFinished;
                         progressPanel.setLabel("Rebinning data set");
                         updatePlotImage(xAxis,yAxis, progressPanel);
-                        if ( parent!= null) {
-                            ((DasCanvas)parent.getParent()).freeDisplay(this);
-                        }                        
+                        if (parent != null) {
+                            parent.repaint();
+                        }
                     }
                     catch (DasException de) {
                         ds = null;
@@ -284,6 +284,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                     }
                     finally {
                         progressPanel.finished();
+                        if ( parent!= null) {
+                            ((DasCanvas)parent.getParent()).freeDisplay(this);
+                        }
                     }
                 }
             };
