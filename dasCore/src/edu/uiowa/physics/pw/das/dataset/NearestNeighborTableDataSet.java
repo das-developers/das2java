@@ -30,7 +30,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         
         Datum xTagWidth= (Datum)source.getProperty("xTagWidth");
         Datum yTagWidth= (Datum)source.getProperty("yTagWidth");
-        if ( xTagWidth==null ) xTagWidth= TableUtil.guessXTagWidth(source);
+        if ( xTagWidth==null ) xTagWidth= DataSetUtil.guessXTagWidth(source);
         if ( yTagWidth==null ) yTagWidth= TableUtil.guessYTagWidth(source);
         
         this.ddX= ddX;
@@ -47,7 +47,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         
         int itable0=-1;
         for ( int i=0; i<imap.length; i++ ) {
-            imap[i]= TableUtil.closestColumn(source, xx[i], ddX.getUnits() );
+            imap[i]= DataSetUtil.closestColumn(source, xx[i], ddX.getUnits() );
             Datum xclose= source.getXTagDatum(imap[i]);
             Units xunits= xTagWidth.getUnits();
             if ( Math.abs(xclose.subtract(xx[i],ddX.getUnits()).doubleValue(xunits)) > xTagWidth.doubleValue(xunits) ) {
