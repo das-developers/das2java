@@ -27,6 +27,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -35,6 +36,17 @@ import java.io.StringWriter;
  * @author  jbf
  */
 public final class DasExceptionHandler {
+
+    private static JDialog dialog;
+    private static JTextArea messageArea;
+    private static JTextArea traceArea;
+    private static final String UNCAUGHT = "An unexpected error has occurred.  " +
+        "The system may not be able to recover properly.  Please report this " +
+        "error to the Das2 bug database at http://bugs-pw.physics.uiowa.edu/." +
+        "  Please include all error information and a description of how you" +
+        " encountered the error.  For your convenience, you may click the " +
+        "\"Show Details\" button then click the \"Save to file\" button to save" +
+        " all the relevant error messages to a file.\n";
     
     private DasExceptionHandler() {
     }
@@ -44,40 +56,34 @@ public final class DasExceptionHandler {
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.CRITICAL, t.toString());
         }
         else {
-            showExceptionDialog(t);
+            showExceptionDialog(t, "");
         }
     }
     
-    public static void showExceptionDialog(final Throwable t) {
-        final JDialog dialog = new JDialog();
+    public static void handleUncaught(Throwable t) {
+        if ("true".equals(System.getProperty("java.awt.headless"))) {
+            t.printStackTrace();
+        }
+        else {
+            showExceptionDialog(t, UNCAUGHT);
+        }
+    }
+
+    private static void showExceptionDialog(Throwable t, String extraInfo) {
+        String errorMessage = extraInfo + t.getClass().getName() + "\n"
+            + (t.getMessage() == null ? "" : t.getMessage());
+        dialog = new JDialog();
         dialog.setTitle("Error");
         dialog.setModal(false);
         dialog.setResizable(false);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        JComponent message;
-        String errorMessage = t.getMessage();
-
-        if (errorMessage == null) {
-            JTextField field = new JTextField(t.toString());
-            field.setEditable(false);
-            field.setOpaque(false);
-            message = field;
-        }
-        else if (java.util.regex.Pattern.matches(".*<[Hh][Tt][Mm][Ll]>.*</[Hh][Tt][Mm][Ll]>.*", errorMessage)) {
-            JEditorPane pane = new JEditorPane("text/html", errorMessage);
-            pane.setEditable(false);
-            message = new JScrollPane(pane);
-        }
-        else {
-            JTextArea area = new JTextArea(t.getMessage());
-            area.setLineWrap(true);
-            area.setEditable(false);
-            area.setOpaque(false);
-            message = new JScrollPane(area);
-        }
-        
-        message.setBorder(new javax.swing.border.EmptyBorder(10, 10, 10, 10));
-        
+        messageArea = new JTextArea(10, 40);
+        messageArea.setLineWrap(true);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setEditable(false);
+        messageArea.setText(errorMessage);
+        JScrollPane message = new JScrollPane(messageArea);
+        message.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(message, BorderLayout.CENTER);
         
@@ -90,16 +96,14 @@ public final class DasExceptionHandler {
         
         dialog.getContentPane().add(mainPanel, BorderLayout.CENTER);
         
-        JTextArea traceArea = new JTextArea(10, 40);
+        traceArea = new JTextArea(10, 40);
         traceArea.setLineWrap(false);
         traceArea.setEditable(false);
-
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter writer = new PrintWriter(stringWriter);
-        t.printStackTrace(writer);
-        writer.close();
-        traceArea.setText(stringWriter.toString());
         traceArea.setTabSize(4);
+        
+        StringWriter writer = new StringWriter();
+        t.printStackTrace(new PrintWriter(writer));
+        traceArea.setText(writer.toString());
         
         final JPanel stackPane = new JPanel(new BorderLayout());
         stackPane.add(new JScrollPane(traceArea), BorderLayout.NORTH);
@@ -112,7 +116,6 @@ public final class DasExceptionHandler {
         Dimension size = message.getPreferredSize();
         size.width = stackPane.getPreferredSize().width;
         message.setPreferredSize(size);
-        
         
         ok.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -137,9 +140,28 @@ public final class DasExceptionHandler {
         
         dump.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                t.printStackTrace(System.err);
+                String text = traceArea.getText();
+                System.err.print(text);
             }
         });
+
+        /*
+        save.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    JFileChooser chooser = new JFileChooser();
+                    int result = chooser.showSaveDialog(dialog);
+                    if (result == chooser.APPROVE_OPTION) {
+                        File selected = chooser.getSelectedFile();
+                        FileWriter writer = new FileWriter(selected);
+                    }
+                }
+                catch (IOException ioe) {
+                    handle(ioe);
+                }
+            }
+        });
+         */
         
         dialog.pack();
         dialog.setLocationRelativeTo(null);
