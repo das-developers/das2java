@@ -80,7 +80,7 @@ public class DasDie {
     public static final void die(String message) {                
               
         System.out.print(calledBy()+": ");
-        edu.uiowa.physics.pw.das.util.DasDie.println(message);
+        edu.uiowa.physics.pw.das.util.DasDie.println(CRITICAL,message);
         System.exit(-1);
     }
     
