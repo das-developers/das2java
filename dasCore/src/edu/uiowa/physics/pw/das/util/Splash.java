@@ -48,7 +48,7 @@ public class Splash extends JWindow {
     }
     
     private static ImageIcon getSplashImage() {
-        URL url= Splash.class.getResource("/images/dasSplash.png");
+        URL url= Splash.class.getResource("/images/dasSplash.gif");
         return new ImageIcon(url);        
     }
     
