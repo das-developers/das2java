@@ -33,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.*;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
@@ -51,11 +52,27 @@ import org.w3c.dom.Element;
 public class StreamProducer implements StreamHandler {
     
     private Map descriptors = new IdentityHashMap();
+    private Map idMap = new HashMap();
     private WritableByteChannel stream;
     private ByteBuffer bigBuffer = ByteBuffer.allocate(4096);
     private byte[] six = new byte[6];
-    private int nextAvailable = 1;
+    private int nextAvail = 1;
     private DocumentBuilder builder;
+    
+    private static class IdentitySet extends AbstractCollection implements Set {
+        
+        private IdentityHashMap map = new IdentityHashMap();
+        private static final Object VALUE = new Object();
+        
+        public Iterator iterator() {
+            return map.keySet().iterator();
+        }
+        
+        public int size() {
+            return map.size();
+        }
+        
+    }
     
     /** Creates a new instance of StreamProducer */
     public StreamProducer(WritableByteChannel stream) {
@@ -70,6 +87,9 @@ public class StreamProducer implements StreamHandler {
     
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         try {
+            if (!descriptors.containsKey(pd)) {
+                packetDescriptor(pd);
+            }
             String header = (String)descriptors.get(pd);
             if (pd.getSizeBytes() > bigBuffer.capacity()) {
                 resizeBuffer(pd.getSizeBytes() + pd.getSizeBytes() >> 1);
@@ -105,10 +125,26 @@ public class StreamProducer implements StreamHandler {
         }
     }
     
+    private int nextAvailable() {
+        int result = nextAvail;
+        if (nextAvail == 99) {
+            nextAvail = 1;
+        }
+        else {
+            nextAvail++;
+        }
+        return result;
+    }
+    
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         try {
-            String id = toString2(nextAvailable++);
+            String id = toString2(nextAvailable());
+            if (idMap.containsKey(id)) {
+                Object d = idMap.get(id);
+                descriptors.remove(d);
+            }
             descriptors.put(pd, id);
+            idMap.put(id, pd);
             Document document = builder.newDocument();
             Element root = pd.getDOMElement(document);
             document.appendChild(root);
