@@ -6,7 +6,17 @@ jbf> Suggested Properties for DataSets:
   xRange             DataRange object suggestion
   yRange             DataRange object suggestion
   defaultRenderer    Renderer Object
+  xOffset            offsets to be applied to yscan
+  mouseModules       list of mouseModules that should be installed
+
+jbf> suggested logic for per-plane properties for das2Stream client-side DataSets:
+  the data of the primary plane is merged with the stream and packet properties.
+  name clashes to be resolved by using plane overrides packet overrides stream.
   
+jbf> suggest introduce getPropertyNames() method and policy that rebinners 
+  propogate the properties listed.  Alternatively, this could be expressed as
+  an optional property.
+
 eew> Agreed proeprties for DataSets
     xTagWidth        Datum the extent of relevance of the x tags
     yTagWidth        Datum "   "   "  of the y tags
