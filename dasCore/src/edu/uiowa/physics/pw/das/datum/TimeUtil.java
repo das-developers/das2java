@@ -70,6 +70,9 @@ public final class TimeUtil {
         public int hour;
         public int minute;
         public double seconds; // remaining number of seconds past minute boundary
+        public String toString() {
+            return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
+        }
     }
     
     public static final int YEAR = 1;
@@ -237,6 +240,7 @@ public final class TimeUtil {
         switch (step) {
             case DAY:
                 array.day= array.day+1;
+                break;
             case MONTH:
                 array.month=array.month+1;
                 array.day=1;
