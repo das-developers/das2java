@@ -268,17 +268,14 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     private DataSet getTableDataSet(InputStream in0, Datum start) throws DasException {
         PushbackInputStream in= new PushbackInputStream(in0,50);
         StreamDescriptor sd = getStreamDescriptor(in);
-        TableDataSetBuilder builder = new TableDataSetBuilder();
-        builder.setXUnits(start.getUnits());
-        builder.setYUnits(Units.dimensionless);
-        builder.setZUnits(Units.dimensionless);
+        TableDataSetBuilder builder = new TableDataSetBuilder(start.getUnits(),Units.dimensionless,Units.dimensionless);
         for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
             Object o = i.next();
             if (o instanceof StreamYScanDescriptor) {
                 StreamYScanDescriptor scan = (StreamYScanDescriptor)o;
                 String name = scan.getName();
                 if (name != null && !name.equals("")) {
-                    builder.addPlane(name);
+                    builder.addPlane(name,scan.getZUnits());
                 }
             }
             else {
