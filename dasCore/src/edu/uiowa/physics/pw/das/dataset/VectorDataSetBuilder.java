@@ -51,8 +51,9 @@ public class VectorDataSetBuilder {
     private Map properties = new HashMap();
     
     /** Creates a new instance of VectorDataSetBuilder */
-    public VectorDataSetBuilder( Units xUnits ) {
+    public VectorDataSetBuilder( Units xUnits, Units yUnits ) {
         this.xUnits= xUnits;
+        setYUnits(yUnits);
     }
 
     public void setProperty(String name, Object value) {
