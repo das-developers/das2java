@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
@@ -52,7 +53,7 @@ public class SymbolLineRenderer extends Renderer {
     private long lastUpdateMillis;
     
     /** Holds value of property antiAliased. */
-    private boolean antiAliased;
+    private boolean antiAliased= ("on".equals(DasProperties.getInstance().get("antiAlias")));
     
     public SymbolLineRenderer(DataSet ds) {
         super(ds);
