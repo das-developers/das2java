@@ -130,7 +130,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptors().get(0);
                 Datum[] datums= new Datum[yscan.getNItems()];
                 Units units= yscan.getYUnits();
-                double[] y_coordinate = yscan.getYCoordinates();
+                double[] y_coordinate = yscan.getYTags();
                 for ( int i=0; i<y_coordinate.length; i++ ) {
                     datums[i]= Datum.create(y_coordinate[i],units);
                 }
