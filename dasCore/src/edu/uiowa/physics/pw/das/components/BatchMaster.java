@@ -24,6 +24,11 @@ import javax.swing.*;
  */
 public class BatchMaster {
     
+    /* TODO: create ExceptionHandler, set DasExceptionHandler to this handler
+     * to collect all the messages, then display them at the end.  Also keep
+     * list of completed/uncompleted tasks 
+     */
+    
     java.util.List taskList;
     int itask;
     DasCanvas canvas;

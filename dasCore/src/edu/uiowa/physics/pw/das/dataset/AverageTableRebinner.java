@@ -87,6 +87,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", "weights"};
         
+        /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
+         * new dataset. 
+         */
         return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
     }
     
