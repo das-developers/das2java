@@ -62,7 +62,7 @@ public class EnumerationUnits extends Units {
         } else {
             highestOrdinal++;
             Integer ordinal= new Integer( highestOrdinal );
-            Datum result= Datum.create( highestOrdinal, this );
+            Datum result= new Datum.Double( ordinal, this );
             ordinals.put(ordinal,result);            
             invObjects.put(result,object);
             objects.put(object,result);
