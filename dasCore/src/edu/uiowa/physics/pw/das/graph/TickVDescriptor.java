@@ -49,6 +49,10 @@ public class TickVDescriptor {
         return this.datumFormatter;
     }
     
+    public void setFormatter(DatumFormatter datumFormatter) {
+        this.datumFormatter = datumFormatter;
+    }
+    
     /** Returns a String representation of the TickVDescriptor.
      * @return a String representation of the TickVDescriptor.
      *
