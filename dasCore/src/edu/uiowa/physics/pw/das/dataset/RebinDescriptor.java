@@ -183,13 +183,20 @@ public class RebinDescriptor {
             i0= 0;
             ymin= units.createDatum(ddY.binStart(0, units));
         }
+        if ( i0< -10000000 ) {
+            throw new IllegalArgumentException( "ymin would result in impossibly large rebin descriptor (ymin="+ymin+" falls in bin number "+i0+")" );
+        }
         
         int i1= dd.whichBin( ymax.doubleValue(units), units );
         if ( i1<dd.numberOfBins() ) {
             i1= dd.numberOfBins();
             ymax= units.createDatum(dd.binStop(dd.numberOfBins()-1,units));
         }
-            
+
+        if ( i0> 10000000 ) {
+            throw new IllegalArgumentException( "ymax would result in impossibly large rebin descriptor (ymax="+ymax+" falls in bin number "+i0+")" );
+        }
+
         int nbins= i1-i0+1;                        
                     
         return new RebinDescriptor( units.createDatum(dd.binStart(i0,units)), units.createDatum(dd.binStop(i1,units)), nbins, dd.isLog() );
