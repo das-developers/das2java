@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
-class IDLValue {
+public class IDLValue {
     
     static int SCALAR = 1;
     static int ARRAY = 2;
