@@ -258,9 +258,11 @@ public final class TimeUtil {
             default:
                 break;
         }
-        array.hour=0;
-        array.minute=0;
-        array.seconds=0.;
+        if ( step < HOUR )  {
+            array.hour=0;
+	    array.minute=0;
+	    array.seconds=0.;
+        }
         
         if (array.month>12) {
             array.year++;
