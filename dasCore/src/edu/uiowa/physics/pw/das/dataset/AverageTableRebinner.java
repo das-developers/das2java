@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.*;
 import java.io.*;
+import java.util.*;
 import java.util.Collections;
 import java.util.logging.*;
 
@@ -47,34 +48,25 @@ public class AverageTableRebinner implements DataSetRebinner {
     public AverageTableRebinner() {
     }
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddXin, RebinDescriptor ddYin) throws IllegalArgumentException, DasException {
+    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, DasException {
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException();
         }
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
-        if (ddXin != null && tds.getXLength() > 0) {
-            double start = tds.getXTagDouble(0, ddXin.getUnits());
-            double end = tds.getXTagDouble(tds.getXLength() - 1, ddXin.getUnits());
-            if (start > ddXin.end ) {
+        if (ddX != null && tds.getXLength() > 0) {
+            double start = tds.getXTagDouble(0, ddX.getUnits());
+            double end = tds.getXTagDouble(tds.getXLength() - 1, ddX.getUnits());
+            if (start > ddX.end ) {
                 throw new NoDataInIntervalException("data starts after range");
-            } else if ( end < ddXin.start ) {
+            } else if ( end < ddX.start ) {
                 throw new NoDataInIntervalException("data ends before range");
             }
         }
         
         long timer= System.currentTimeMillis();
         
-        Units xunits= ddXin.getUnits();
-        
-        
-        int ix0= DataSetUtil.getPreviousColumn( tds, xunits.createDatum( ddXin.binStart(0,xunits) ) );
-        int ix1= DataSetUtil.getNextColumn( tds, xunits.createDatum( ddXin.binStop( ddXin.numberOfBins()-1, xunits ) ) );
-        
-        RebinDescriptor ddX= RebinDescriptor.createSubsumingRebinDescriptor( ddXin, tds.getXTagDatum(ix0), tds.getXTagDatum(ix1) );
-        Datum yMin= TableUtil.getSmallestYTag(tds);
-        Datum yMax= TableUtil.getLargestYTag(tds);
-        RebinDescriptor ddY= RebinDescriptor.createSubsumingRebinDescriptor( ddYin, yMin, yMax );
+        Units xunits= ddX.getUnits();
         
         int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
         int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
@@ -133,23 +125,37 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units resultYUnits= ddY==null ? tds.getYUnits() : ddY.getUnits();
         TableDataSet result= new DefaultTableDataSet(xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
         
-        int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits);
-        int xlength= ddXin.numberOfBins();
-        int yoffset;
-        int ylength;
-        if ( ddY!=null ) {
-            Units yunits= ddYin.getUnits();
-            yoffset= ddY.whichBin( ddYin.binCenter(0),yunits);
-            ylength= ddYin.numberOfBins();
-        } else {
-            yoffset= 0;
-            ylength= yTags.length;
-        }
-        return new ClippedTableDataSet( result, xoffset, xlength, yoffset, ylength );
+        return result;
     }
     
     static void average(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
         double[] ycoordinate;
+        int nTables;
+        Units xUnits, zUnits;
+        int nx, ny;
+        double[][] hInterpData, hInterpWeights, vInterpData, vInterpWeights;
+        int[][] hInterpIndex, vInterpIndex;
+
+        xUnits = tds.getXUnits();
+        zUnits= tds.getZUnits();
+        
+        nx = (ddX == null ? tds.getXLength() : ddX.numberOfBins());
+        ny = (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
+        
+        hInterpData = new double[nx][2];
+        hInterpWeights = new double[nx][2];
+        hInterpIndex = new int[nx][2];
+        vInterpData = new double[2][ny];
+        vInterpWeights = new double[2][ny];
+        vInterpIndex = new int[2][ny];
+        
+        for (int i = 0; i < hInterpIndex.length; i++) {
+            Arrays.fill(hInterpIndex[i], -1);
+        }
+        for (int i = 0; i < vInterpIndex.length; i++) {
+            Arrays.fill(vInterpIndex[i], -1);
+        }
+
         if (ddY != null) {
             ycoordinate = ddY.binCenters();
         }
@@ -160,55 +166,170 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
         
-        int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
-        int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
-        
-        
-        for (int table = 0; table < tds.tableCount(); table++) {
-            int [] ibiny= new int[tds.getYLength(table)];
+        nTables = tds.tableCount();
+        for (int iTable = 0; iTable < nTables; iTable++) {
+            int [] ibiny= new int[tds.getYLength(iTable)];
             for (int j=0; j < ibiny.length; j++) {
                 if (ddY != null) {
-                    ibiny[j]= ddY.whichBin(tds.getYTagDouble(table, j, tds.getYUnits()), tds.getYUnits());
+                    ibiny[j]= ddY.whichBin(tds.getYTagDouble(iTable, j, tds.getYUnits()), tds.getYUnits());
                 }
                 else {
                     ibiny[j] = j;
                 }
             }
-            for (int i=tds.tableStart(table); i < tds.tableEnd(table); i++) {
+            for (int i=tds.tableStart(iTable); i < tds.tableEnd(iTable); i++) {
                 int ibinx;
                 if (ddX != null) {
-                    ibinx= ddX.whichBin(tds.getXTagDouble(i, tds.getXUnits()), tds.getXUnits());
+                    ibinx= ddX.whichBin(tds.getXTagDouble(i, xUnits), xUnits);
                 }
                 else {
                     ibinx = i;
                 }
-                if (ibinx>=0 && ibinx<nx) {
-                    for (int j = 0; j < tds.getYLength(table); j++) {
-                        if (ibiny[j] >= 0 && ibiny[j] < ny) {
-                            if (weights != null) {
-                                double w = weights.getDouble(i, j, Units.dimensionless);
-                                rebinData[ibinx][ibiny[j]] += tds.getDouble(i, j, tds.getZUnits()) * w;
-                                rebinWeights[ibinx][ibiny[j]] += w;
+                
+                if (ibinx < 0) {
+                    for (int j = 0; j < tds.getYLength(iTable); j++) {
+                        if (ibiny[j] < 0 || ibiny[j] >= ny) {
+                            continue;
+                        }
+                        double z = tds.getDouble(i, j, zUnits);
+                        double w = weights == null
+                            ? (zUnits.isFill(z) ? 0. : 1.)
+                            : weights.getDouble(i, j, Units.dimensionless);
+                        if (vInterpIndex[0][ibiny[j]] == -1
+                            || ibinx > vInterpIndex[0][ibiny[j]]) {
+                                vInterpData[0][ibiny[j]] = z * w;
+                                vInterpWeights[0][ibiny[j]] = w;
+                                vInterpIndex[0][ibiny[j]] = ibinx;
+                        }
+                        else if (ibinx == vInterpIndex[0][j]) {
+                            vInterpData[0][ibiny[j]] += z * w;
+                            vInterpWeights[0][ibiny[j]] += w;
+                        }
+                    }
+                }
+                else if (ibinx >= nx) {
+                    for (int j = 0; j < tds.getYLength(iTable); j++) {
+                        if (ibiny[j] < 0 || ibiny[j] >= ny) {
+                            continue;
+                        }
+                        double z = tds.getDouble(i, j, zUnits);
+                        double w = weights == null
+                            ? (zUnits.isFill(z) ? 0. : 1.)
+                            : weights.getDouble(i, j, Units.dimensionless);
+                        if (vInterpIndex[1][j] == -1
+                            || ibinx < vInterpIndex[1][ibiny[j]]) {
+                                vInterpData[1][ibiny[j]] = z * w;
+                                vInterpWeights[1][ibiny[j]] = w;
+                                vInterpIndex[1][ibiny[j]] = ibinx;
+                        }
+                        else {
+                            vInterpData[1][ibiny[j]] += z * w;
+                            vInterpWeights[1][ibiny[j]] += w;
+                        }
+                    }
+                }
+                else { //if (ibinx>=0 && ibinx<nx) {
+                    for (int j = 0; j < tds.getYLength(iTable); j++) {
+                        double z = tds.getDouble(i,j,zUnits);
+                        double w = weights == null
+                            ? (zUnits.isFill(z) ? 0. : 1.)
+                            : weights.getDouble(i, j, Units.dimensionless);
+                        if (ibiny[j] < 0) {
+                            if (hInterpIndex[ibinx][0] == -1
+                                || ibiny[j] > hInterpIndex[ibinx][0]) {
+                                    hInterpData[ibinx][0] = z * w;
+                                    hInterpWeights[ibinx][0] = w;
+                                    hInterpIndex[ibinx][0] = ibiny[j];
                             }
-                            else {
-                                Units zUnits= tds.getZUnits();
-                                double z= tds.getDouble(i,j,zUnits);
-                                double w= zUnits.isFill(z) ? 0. : 1. ;
-                                rebinData[ibinx][ibiny[j]] += z * w;
-                                rebinWeights[ibinx][ibiny[j]] += w;
+                            else if (ibiny[j] == hInterpIndex[ibinx][0]) {
+                                hInterpData[ibinx][0] += z * w;
+                                hInterpWeights[ibinx][0] += w;
                             }
+                        }
+                        else if (ibiny[j] >= ny) {
+                            if (hInterpIndex[ibinx][1] == -1
+                                || ibiny[j] < hInterpIndex[ibinx][1]) {
+                                    hInterpData[ibinx][1] = z * w;
+                                    hInterpWeights[ibinx][1] = w;
+                                    hInterpIndex[ibinx][1] = ibiny[j];
+                            }
+                            else if (ibiny[j] == hInterpIndex[ibinx][1]) {
+                                hInterpData[ibinx][1] += z * w;
+                                hInterpWeights[ibinx][1] += w;
+                            }
+                        }
+                        else { //if (ibiny[j] >= 0 && ibiny[j] < ny) {
+                            rebinData[ibinx][ibiny[j]] += z * w;
+                            rebinWeights[ibinx][ibiny[j]] += w;
                         }
                     }
                 }
             }
         }
         
-        for (int i = 0; i < rebinData.length; i++) {
-            for (int j = 0; j < rebinData[i].length; j++) {
-                if (rebinWeights[i][j] > 0.0) {
-                    rebinData[i][j] = rebinData[i][j] / rebinWeights[i][j];
+        multiplyWeights(rebinData, rebinWeights, zUnits);
+        multiplyWeights(hInterpData, hInterpWeights, zUnits);
+        multiplyWeights(vInterpData, vInterpWeights, zUnits);
+        
+        for (int i = 0; i < nx; i++) {
+            if (rebinWeights[i][0] == 0.0 && hInterpWeights[i][0] != 0.0) {
+                int j0 = 0;
+                while (j0 < ny && rebinWeights[i][j0] == 0.0) j0++;
+                if (j0 < ny) {
+                    rebinData[i][0] = linearlyInterpolate
+                        (hInterpIndex[i][0], hInterpData[i][0], j0, rebinData[i][j0], 0);
+                    rebinWeights[i][0] = linearlyInterpolate
+                        (hInterpIndex[i][0], hInterpWeights[i][0], j0, rebinWeights[i][j0], 0);
+                }
+            }
+            if (rebinWeights[i][ny - 1] == 0.0 && hInterpWeights[i][1] != 0.0) {
+                int j0 = ny - 1;
+                while (j0 >= 0 && rebinWeights[i][j0] == 0.0) j0--;
+                if (j0 >= 0) {
+                    rebinData[i][ny - 1] = linearlyInterpolate
+                        (j0, rebinData[i][j0], hInterpIndex[i][1], hInterpData[i][1], ny - 1);
+                    rebinWeights[i][ny - 1] = linearlyInterpolate
+                        (j0, rebinWeights[i][j0], hInterpIndex[i][1], hInterpWeights[i][1], ny - 1);
+                }
+            }
+        }
+        
+        for (int j = 0; j < ny; j++) {
+            if (rebinWeights[0][j] == 0.0 && vInterpWeights[0][j] != 0.0) {
+                int i0 = 0;
+                while (i0 < nx && rebinWeights[i0][j] == 0.0) i0++;
+                if (i0 < nx) {
+                    rebinData[0][j] = linearlyInterpolate
+                        (vInterpIndex[0][j], vInterpData[0][j], i0, rebinData[i0][j], 0);
+                    rebinWeights[0][j] = linearlyInterpolate
+                        (vInterpIndex[0][j], vInterpWeights[0][j], i0, rebinWeights[i0][j], 0);
+                }
+            }
+            if (rebinWeights[nx - 1][j] == 0.0 && vInterpWeights[1][j] != 0.0) {
+                int i0 = nx - 1;
+                while (i0 >= 0 & rebinWeights[i0][j] == 0.0) i0--;
+                if (i0 >= 0) {
+                    rebinData[nx - 1][j] = linearlyInterpolate
+                        (i0, rebinData[i0][j], vInterpIndex[1][j], vInterpData[1][j], nx - 1);
+                    rebinWeights[nx - 1][j] = linearlyInterpolate
+                        (i0, rebinWeights[i0][j], vInterpIndex[1][j], vInterpWeights[1][j], nx - 1);
+                }
+            }
+        }
+    }
+    
+    private static double linearlyInterpolate(int i0, double z0, int i1, double z1, int i) {
+        double r = ((double)(i - i0))/(i1 - i0);
+        return z0 + r * (z1 - z0);
+    }
+    
+    private static void multiplyWeights(double[][] data, double[][] weights, Units zUnits) {
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[i].length; j++) {
+                if (weights[i][j] > 0.0) {
+                    data[i][j] = data[i][j] / weights[i][j];
                 } else {
-                    rebinData[i][j] = tds.getZUnits().getFillDouble();
+                    data[i][j] = zUnits.getFillDouble();
                 }
             }
         }

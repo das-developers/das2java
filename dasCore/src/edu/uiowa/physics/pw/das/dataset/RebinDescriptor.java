@@ -43,7 +43,7 @@ public class RebinDescriptor {
     public static final int MINUSONE= -3;    // return sentinel -1.
     public static final int EXTRAPOLATE= -4; // return negative or >nBin.
     
-    private int outOfBoundsAction= MINUSONE;
+    private int outOfBoundsAction= EXTRAPOLATE;
     
     /** Creates a new instance of RebinDescriptor */
     private RebinDescriptor() {
