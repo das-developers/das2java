@@ -70,7 +70,9 @@ public class TickVDescriptor {
         double minimum= min.doubleValue(res.units);
         double maximum= max.doubleValue(res.units);
         
-        double maj= (maximum-minimum)/nTicksMax;
+        int targetTicks= Math.max( Math.min( 6, nTicksMax ), nTicksMin );
+        
+        double maj= (maximum-minimum)/targetTicks;
         double mag= DasMath.exp10(Math.floor(DasMath.log10(maj)));
         double absissa= maj/mag;
         
@@ -258,6 +260,26 @@ public class TickVDescriptor {
             TickVDescriptor result= TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks );
         }
         
+        if ( maxD.subtract(minD).gt( Datum.create(10*365,Units.days)) ) {
+            int yearMin= TimeUtil.toTimeStruct(minD).year;
+            int yearMax= TimeUtil.toTimeStruct(maxD).year;
+            TickVDescriptor yearTicks= bestTickVLinear( Units.dimensionless.createDatum(yearMin), 
+                Units.dimensionless.createDatum(yearMax), nTicksMin, nTicksMax );
+            yearTicks.units= minD.getUnits();
+            for ( int i=0; i<yearTicks.tickV.length; i++ ) {
+                int iyear= (int)yearTicks.tickV[i];                
+                yearTicks.tickV[i]= TimeUtil.convert( iyear, 1, 1, 0, 0, 0, (TimeLocationUnits)yearTicks.units );
+            }
+            for ( int i=0; i<yearTicks.minorTickV.length; i++ ) {
+                int iyear= (int)yearTicks.minorTickV[i];                
+                yearTicks.minorTickV[i]= TimeUtil.convert( iyear, 1, 1, 0, 0, 0, (TimeLocationUnits)yearTicks.units );                
+            }
+            Datum t1= yearTicks.getMajorTicks().get(0);
+            int nticks= yearTicks.getMajorTicks().getLength();
+            Datum t2= yearTicks.getMajorTicks().get(nticks-1);
+            yearTicks.datumFormatter= DatumUtil.bestTimeFormatter( t1, t2, nticks );
+            return yearTicks;
+        }
         TickVDescriptor res= new TickVDescriptor();
         
         double data_minimum = minD.doubleValue(Units.t2000);
