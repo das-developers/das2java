@@ -215,10 +215,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         }
         
         if (progressPanel == null) {
-            progressPanel = new DasProgressPanel();
+            progressPanel = new DasProgressPanel("Loading data set");
             ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
+        } else {
+            progressPanel.setLabel("Loading data set" );
         }
-        progressPanel.setLabel("Loading data set");
         progressPanel.cancel();
         progressPanel.setSize(progressPanel.getPreferredSize());
         
@@ -271,6 +272,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             drt = new DataRequestThread();
         }
         try {
+            progressPanel.setLabel("Loading Data Set" );
             drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
             updatePlotImage(xAxis, yAxis, null);
         }
