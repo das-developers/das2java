@@ -22,10 +22,8 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.datum.DasFormatter;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.EnumerationDatum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
@@ -39,7 +37,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     double[] labelValues= null;
     edu.uiowa.physics.pw.das.datum.Units labelUnits=null;
     int[] labelPositions= null;
-    edu.uiowa.physics.pw.das.datum.DasFormatter df= null;
+    DatumFormatter df= null;
     int indexMinimum;  // first label to be displayed
     int indexMaximum;  // last label to be displayed
 
@@ -60,7 +58,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
                 throw new IllegalArgumentException( "Datums must all have same units!" );
             }
         }
-        this.df= labels[0].getFormatter(labels[1],1);
+        this.df = DatumUtil.bestFormatter(labels[0], labels[1],1);
     }
     
     protected DasLabelAxis(edu.uiowa.physics.pw.das.datum.Datum[] labels, DataRange dataRange, DasRow row, DasColumn column, int orientation) {
@@ -119,7 +117,6 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         result.tickV= new double[ny];
         result.minorTickV= new double[0];  // no minor ticks
         for (int i=0; i<ny; i++) result.tickV[i]= labels[i+indexMinimum].doubleValue(result.units);
-        result.nf= df;
         return result;
     }
     
@@ -167,7 +164,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
          
     protected String tickFormatter(double tickv) {                
-        return df.format(tickv,labels[0].getUnits());
+        return df.format(Datum.create(tickv,labels[0].getUnits()));
     }
     
     public String getLabel(double tickv) {

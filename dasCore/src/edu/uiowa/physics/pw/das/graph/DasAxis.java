@@ -29,6 +29,7 @@ import edu.uiowa.physics.pw.das.DasPropertyException;
 import edu.uiowa.physics.pw.das.NameContext;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
@@ -41,7 +42,6 @@ import org.w3c.dom.Element;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
 import javax.swing.*;
 
 /** TODO
@@ -83,7 +83,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     protected String axisLabel = "";
     
-    private DasFormatter nf;
+    protected DatumFormatter datumFormatter
+        = DefaultDatumFormatterFactory.getInstance().defaultFormatter();
     
     private MouseModule zoom=null;
     
@@ -109,7 +110,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double [] tickV=null;
         double [] minorTickV=null;
         Units units=null;
-        DasFormatter nf=null;
         
         /** Returns a String representation of the tickVDescriptor.
          * @return a String representation of the tickVDescriptor.
@@ -474,7 +474,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public Datum getDataMinimum() {
         Datum result= Datum.create( dataRange.getMinimum(), dataRange.getUnits() );
         // We're going to want to add a decimal place or two here
-        result.setFormatter(nf);
         return result;
     }
     
@@ -484,7 +483,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public Datum getDataMaximum() {
         Datum result= Datum.create( dataRange.getMaximum(), dataRange.getUnits() );
         // We're going to want to add a decimal place or two here
-        result.setFormatter(nf);
         return result;
     }
     
@@ -693,19 +691,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         ticks.tickV= result;
         
-        if ( DasMath.log10( max / min ) >= 5 ||
-        DasMath.log10( max ) >= 5 ||
-        DasMath.log10( min ) <= -5 ) {
-            setFormatter( new DasFormatter( new DecimalFormat("0E0") ) );
-        } else {
-            DasFormatter nf= new DasFormatter( new DecimalFormat() );
-            if (minTick<0) {
-                nf.setMinimumFractionDigits(-1*minTick);
+        if ( DasMath.log10( max / min ) >= 5 || DasMath.log10( max ) >= 5 || DasMath.log10( min ) <= -5 ) {
+            DatumFormatterFactory factory = getUnits().getDatumFormatterFactory();
+            if (factory instanceof DefaultDatumFormatterFactory) {
+                try {
+                    datumFormatter = factory.newFormatter("0E0");
+                }
+                catch (java.text.ParseException pe) {
+                    //If this happened then something is seriously wrong,
+                    //so respond accordingly.
+                    throw new RuntimeException(pe);
+                }
             }
-            setFormatter( nf );
+            else {
+                datumFormatter = factory.defaultFormatter();
+            }
+        } else {
+            datumFormatter = DatumUtil.bestFormatter(getDataMaximum(), getDataMaximum(), nTicks);
         }
-        
-        ticks.nf= nf;
         
         int firstMinorTick= (int)Math.floor(DasMath.log10(min));
         int lastMinorTick= (int)Math.floor(DasMath.log10(max));
@@ -794,9 +797,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         res.minorTickV= minorTickV;
         
         int nPixels= axisSize;
-        nf= Datum.getFormatter( getDataMinimum(), getDataMaximum(), nTicks );
-        
-        res.nf=nf;
         
         tickV = res;
         return;
@@ -1361,27 +1361,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @return
      */
-    public DasFormatter getFormatter() {
-        
-        if (nf==null) {
-            updateTickV();
-            /*if ( isLog() ) {
-                double max= dataRange.maximum;
-                double min= dataRange.minimum;
-                if ( edu.uiowa.physics.pw.das.util.DasMath.log10( max / min ) >= 5 ) {
-                    setFormatter( new DasFormatter( new DecimalFormat("0E0") ) );
-                } else {
-                    DasFormatter nf= new DasFormatter( new DecimalFormat() );
-                    //if (minTick<0) {
-                    //    nf.setMinimumFractionDigits(-1*minTick);
-                    //}
-                    setFormatter( nf );
-                }
-            } else {
-                setFormatter( getDataMinimum().getFormatter(getDataMaximum(),6) );
-            }*/
-        }
-        return this.nf;
+    public DatumFormatter getDatumFormatter() {
+        return datumFormatter;
     }
     
     /** TODO
@@ -1476,7 +1457,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             : data_range*(1-(idata-range.getDMinimum())/((double)device_range)) + minimum);
         }
         Datum result= Datum.create( data, dataRange.getUnits() );
-        result.setFormatter( getDataMinimum().getFormatter( getDataMaximum(), nPixels ) );
         return result;
     }
     
@@ -1492,10 +1472,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */
     protected String tickFormatter(double tickv) {
-        if (nf==null) {
-            DasDie.println("this");
-        }
-        return nf.grannyFormat(tickv,getUnits());
+        return datumFormatter.grannyFormat(Datum.create(tickv, getUnits()));
     }
     
     /** TODO
@@ -1732,13 +1709,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         tickLabelsVisible = b;
         update();
         firePropertyChange("tickLabelsVisible", oldValue, b);
-    }
-    
-    /** TODO
-     * @param nf
-     */
-    public void setFormatter(DasFormatter nf) {
-        this.nf= nf;
     }
     
     /** TODO */

@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.GrannyTextRenderer;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -289,7 +290,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         
             res.minorTickV= minorTickV;
         
-            setFormatter( Datum.getFormatter( getDataMinimum(), getDataMaximum(), nTicks ) );
+            datumFormatter = DatumUtil.bestFormatter(getDataMinimum(), getDataMaximum(), nTicks );
             
         } else  { // pick off month boundaries
             double [] result= new double[30];
@@ -339,7 +340,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             for ( int ii=0; ii<minorTickV.size(); ii++ ) 
                 res.minorTickV[ii]= ((Datum)minorTickV.get(ii)).doubleValue(Units.t2000);            
             
-            setFormatter( Datum.getFormatter( getDataMinimum(), getDataMaximum(), 6 ) );
+            datumFormatter = DatumUtil.bestFormatter( getDataMinimum(), getDataMaximum(), 6 );
         }
         
         UnitsConverter uc= Units.getConverter(Units.t2000,getUnits());
@@ -564,11 +565,9 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
                 leftEdge = rightEdge - width;
                 g.drawString(item, leftEdge, baseLine);
             }
-            Datum date = Datum.create(value,getUnits());
-            DasTimeFormatter nf= (DasTimeFormatter)getFormatter();
-            if (TimeUtil.getSecondsSinceMidnight(date) == 0 &&
-            nf.getContext() == TimeContext.HOURS ) {
-                DasTimeFormatter nfdate= new DasTimeFormatter(TimeContext.DAYS);
+            Datum date = Datum.create(value, getUnits());
+            if (TimeUtil.getSecondsSinceMidnight(date) == 0 && datumFormatter == TimeDatumFormatter.MINUTES) {
+                DatumFormatter nfdate = TimeDatumFormatter.DAYS;
                 label = nfdate.format(date);
                 width = getFontMetrics(getTickLabelFont()).stringWidth(label);
                 leftEdge = x - width/2;
@@ -578,10 +577,9 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         }
         else if (getOrientation() == BOTTOM && areTickLabelsVisible()) {
             Datum date = Datum.create(value,getUnits());
-            DasTimeFormatter nf= (DasTimeFormatter)getFormatter();
-            if (TimeUtil.getSecondsSinceMidnight(date) == 0 &&
-            nf.getContext() == TimeContext.HOURS ) {
-                DasTimeFormatter nfdate= new DasTimeFormatter(TimeContext.DAYS);
+            DatumFormatter nf = datumFormatter;
+            if (TimeUtil.getSecondsSinceMidnight(date) == 0 && datumFormatter == TimeDatumFormatter.MINUTES) {
+                DatumFormatter nfdate= TimeDatumFormatter.DAYS;
                 label = nfdate.format(date);
                 width = getFontMetrics(getTickLabelFont()).stringWidth(label);
                 leftEdge = x - width/2;

@@ -25,10 +25,12 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.DasProperties;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.util.DasMath;
-import java.awt.*;
+import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 
+import java.awt.*;
 import java.awt.geom.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -43,7 +45,7 @@ import javax.swing.JPanel;
 public class TimeRangeLabel extends DasCanvasComponent {
     
     DataRange dataRange;
-    Formatter df;
+    DatumFormatter df;
     
     /** Creates a new instance of TimeRangeLabel */
     public TimeRangeLabel(DataRange dataRange, DasRow row, DasColumn column ) {
@@ -55,100 +57,16 @@ public class TimeRangeLabel extends DasCanvasComponent {
         MouseModule mm= new mouseModule();
         mouseAdapter.addMouseModule(mm);
         mouseAdapter.setPrimaryModule(mm); // THIS SHOULD BE AUTOMATIC!!!
-        df= new Formatter();
+        try {
+            df = TimeDatumFormatterFactory.getInstance().newFormatter(
+                "yyyy'-'MM'-'dd' ('DDD') 'HH':'mm':'ss.sss");
+        }
+        catch (java.text.ParseException pe) {
+            df = TimeDatumFormatterFactory.getInstance().defaultFormatter();
+        }
     }
     
     private class mouseModule extends MouseModule {
-    }
-    
-    private static class Formatter extends DasFormatter {
-        private boolean showSeconds=false;
-        private boolean showMilli=false;
-        
-        private static int julday( int month, int day, int year ) {
-            int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
-            3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
-            275 * month / 9 + day + 1721029;
-            return jd;
-        }
-        public String format(Object tdo) {
-            double seconds;
-            int jd;  // julianDay
-            
-            Datum td= (Datum)tdo;
-            
-            if (td.getUnits()==Units.mj1958) {
-                double mj1958= td.doubleValue(Units.mj1958);
-                seconds= mj1958 % 1 * 86400.;
-                jd= (int)Math.floor(mj1958) + 2436205;
-            } else if (td.getUnits()==Units.us2000) {
-                double us2000= td.doubleValue(Units.us2000);
-                seconds= DasMath.modp( us2000, 86400000000. ) / 1000000;
-                jd= (int)Math.floor( us2000 / 86400000000. ) + 2451545;
-            } else {
-                double us2000= td.doubleValue(Units.us2000);
-                seconds= DasMath.modp( us2000, 86400000000. ) / 1000000;
-                jd= (int)Math.floor( us2000 / 86400000000. ) + 2451545;
-            }
-            
-            int iseconds= (int)(seconds+0.5);
-            
-            int year, month, day, hour, minute, second;
-            
-            hour = (int)(iseconds/3600);
-            String shour=(hour<10.)?"0"+hour:""+hour;
-            minute = (int)((iseconds - hour*3600)/60);
-            String sminute=(minute<10.)?"0"+minute:""+minute;
-            second = (int)(iseconds%60);
-            String ssecond=(second<10.)?"0"+second:""+second;
-            
-            int jalpha, j1, j2, j3, j4, j5;
-            
-            float justSeconds;
-            
-            jalpha = (int)(((double)(jd - 1867216) - 0.25)/36524.25);
-            j1 = jd + 1 + jalpha - jalpha/4;
-            j2 = j1 + 1524;
-            j3 = 6680 + (int)(((j2-2439870)-122.1)/365.25);
-            j4 = 365*j3 + j3/4;
-            j5 = (int)((j2-j4)/30.6001);
-            
-            day = j2 - j4 - (int)(30.6001*j5);
-            month = j5-1;
-            month = ((month - 1) % 12) + 1;
-            year = j3 - 4715;
-            year = year - (month > 2 ? 1 : 0);
-            year = year - (year <= 0 ? 1 : 0);
-            
-            DecimalFormat nf= new DecimalFormat();
-            nf.setMinimumIntegerDigits(2);
-            String sdate= year + "-" + nf.format(month) + "-" + nf.format(day);
-            
-            int jd_jan1= julday(1,1,year);
-            DecimalFormat df1= new DecimalFormat();
-            df1.setMinimumIntegerDigits(3);
-            sdate+= " ("+df1.format(jd-jd_jan1+1)+")";
-            
-            String result= sdate + " " + shour + ":" + sminute;
-
-            showSeconds= ( iseconds % 60 ) != 0.;
-            showMilli= (seconds % 1 ) != 0.;
-            
-            if (showSeconds) {
-                if (showMilli) {
-                    DecimalFormat df= new DecimalFormat();
-                    df.setMinimumFractionDigits(3);
-                    df.setMinimumIntegerDigits(2);
-                    
-                    result+= ":" + df.format(iseconds%60);
-                    
-                } else {
-                    result+= ":" + ssecond;
-                }
-            }
-            
-            return result;
-        }
     }
     
     public void paintComponent(Graphics graphics) {
