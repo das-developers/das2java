@@ -48,11 +48,10 @@ public class DataSetStreamHandler implements StreamHandler {
     int totalPacketCount= -1;   
     int taskSize= -1;
     int packetCount= 0;
-    
-    /** Creates a new instance of DataSetStreamHandler */
-    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor _monitor, Datum _start, Datum end ) {        
+       
+    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor monitor ) {        
         this.extraProperties = new HashMap(extraProperties);
-        this.monitor= _monitor==null ? DasProgressMonitor.NULL : _monitor;        
+        this.monitor= monitor==null ? DasProgressMonitor.NULL : monitor;        
     }
     
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
@@ -66,6 +65,9 @@ public class DataSetStreamHandler implements StreamHandler {
             this.totalPacketCount= ((Integer)o).intValue();
             monitor.setTaskSize( totalPacketCount );
         } 
+        if ( ( o=sd.getProperty("pid") )!=null ) {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("stream pid="+o);
+        }
     }
     
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {       
@@ -108,9 +110,9 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public void streamComment(StreamComment sc) throws StreamException {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream comment");
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream comment: "+sc);
         if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
-            monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );            
+            if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );            
         } 
     }
     
