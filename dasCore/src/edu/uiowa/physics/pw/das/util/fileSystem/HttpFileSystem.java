@@ -29,13 +29,13 @@ public class HttpFileSystem extends FileSystem {
     
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URL root, File localRoot) {
-        try {
-            URL[] urls= HtmlUtil.getDirectoryListing( root );
+        /*try {
+            root.openConnection().getContentLength();            
         } catch ( FileNotFoundException e ) {
             throw new RuntimeException( "URL doesn't appear to exist: "+root );
         } catch ( IOException e ) {
             throw new RuntimeException( e );
-        }
+        }*/
         if ( !root.toString().endsWith("/" ) ) {
             String s= root.toString();
             try {
