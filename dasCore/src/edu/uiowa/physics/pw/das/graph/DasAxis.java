@@ -785,8 +785,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             pixelsPerTick = getRow().getHeight() / nTicks;
         }
         
-        //if (nTicks>5) {
-        if ( pixelsPerTick < 30 && pixelsPerTick>0 ) {
+        /** TODO: The case where there are less than five ticks and
+         * the ticks are too close together is not handled properly
+         * Also, the minor ticks should go away befor the number of cycles
+         * is reduced.
+         */
+        if (nTicks>5 && pixelsPerTick < 30 && pixelsPerTick>0 ) {
             stepSize= (int) Math.floor( ( maxTick - minTick ) / 5. );
             minTick= (int) Math.ceil( minTick / (float)stepSize ) * stepSize;
             maxTick= (int) Math.floor( maxTick / (float)stepSize ) * stepSize;
