@@ -86,20 +86,20 @@ public abstract class Units {
     
     public static final EnumerationUnits spacecraft= new EnumerationUnits( "spacecraft", "Enumeration of various spacecraft" );
     
-    /*
-     * Units.percent might be useful for specifying logarithmic spacing.  Define percent space between two numbers a, b where a<b
-     * as ( b-a )*100. / a.  So { 1,2,4,8 } has a spacing of 100%.  
-     */
-    public static final Units percent= new NumberUnits("%","Special dimensionless number, possibly useful for specifying Tag relevance on logarithmic scale");
-    
-    static { 
-      Units.spacecraft.createDatum( "Voyager1" );
-      Units.spacecraft.createDatum( "Voyager2" );
-      Units.spacecraft.createDatum( "Cluster Rumba" );
-      Units.spacecraft.createDatum( "Cluster Salsa" );
-      Units.spacecraft.createDatum( "Cluster Samba" );
-      Units.spacecraft.createDatum( "Cluster Tango" );
+    static {
+        Units.spacecraft.createDatum( "Voyager1" );
+        Units.spacecraft.createDatum( "Voyager2" );
+        Units.spacecraft.createDatum( "Cluster Rumba" );
+        Units.spacecraft.createDatum( "Cluster Salsa" );
+        Units.spacecraft.createDatum( "Cluster Samba" );
+        Units.spacecraft.createDatum( "Cluster Tango" );
     }
+    
+  /*
+   * Units.percent might be useful for specifying logarithmic spacing.  Define percent space between two numbers a, b where a<b
+   * as ( b-a )*100. / a.  So { 1,2,4,8 } has a spacing of 100%.
+   */
+    public static final Units percent= new NumberUnits("%","Special dimensionless number, possibly useful for specifying Tag relevance on logarithmic scale");
     
     private static Map unitsMap = new HashMap();
     static {
@@ -129,15 +129,15 @@ public abstract class Units {
     };
     
     private void registerConverter(Units toUnits, UnitsConverter converter) {
-        conversionMap.put(toUnits, converter);        
+        conversionMap.put(toUnits, converter);
         UnitsConverter inverse = (UnitsConverter)toUnits.conversionMap.get(this);
         if (inverse == null || inverse.getInverse() != converter) {
             toUnits.registerConverter(this, converter.getInverse());
         }
     }
-     
-    public Units[] getUnitConversions() {
-        return new Units[0];
+    
+    public Units[] getConvertableUnits() {
+        return new Units[] { this };
     }
     
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
@@ -165,8 +165,8 @@ public abstract class Units {
                 }
             }
         }
-        String sfrom= ( fromUnits==Units.dimensionless ) ? "(dimensionless)" : fromUnits.toString();                
-        String sto= ( toUnits==Units.dimensionless ) ? "(dimensionless)" : toUnits.toString();                        
+        String sfrom= ( fromUnits==Units.dimensionless ) ? "(dimensionless)" : fromUnits.toString();
+        String sto= ( toUnits==Units.dimensionless ) ? "(dimensionless)" : toUnits.toString();
         throw new IllegalArgumentException("Inconvertible units: " + sfrom + " -> " + sto );
     }
     
@@ -208,16 +208,16 @@ public abstract class Units {
         return this;
     }
     
-    public abstract Datum createDatum( double value );    
-    public abstract Datum createDatum( int value );    
-    public abstract Datum createDatum( long value );    
+    public abstract Datum createDatum( double value );
+    public abstract Datum createDatum( int value );
+    public abstract Datum createDatum( long value );
     public abstract Datum createDatum( Number value );
     
     private static double FILL_DOUBLE= -1e31;
     private static float FILL_FLOAT= -1e31f;
     private static int FILL_INT= Integer.MAX_VALUE;
     private static long FILL_LONG= Long.MAX_VALUE;
-        
+    
     public double getFillDouble() { return FILL_DOUBLE; }
     public float getFillFloat() { return FILL_FLOAT; }
     public int getFillInt() { return FILL_INT; }
@@ -238,7 +238,7 @@ public abstract class Units {
             return isFill(value.longValue());
         } else {
             throw new IllegalArgumentException("Unknown Number class: "+value.getClass().toString());
-        }    
+        }
     }
     
     public abstract DatumFormatterFactory getDatumFormatterFactory();
