@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 /**
  *
@@ -18,6 +19,7 @@ public class HttpFileObject implements FileObject {
     HttpFileSystem wfs;
     String pathname;
     File localFile;
+    Date modifiedDate;
     
     boolean isRoot;
     boolean isFolder;
@@ -28,18 +30,15 @@ public class HttpFileObject implements FileObject {
     
     public FileObject[] getChildren() {
         if ( !isFolder ) {
-            throw new IllegalArgumentException("is not a folder");
+            throw new IllegalArgumentException(toString()+"is not a folder");
         }
         try {
             URL[] list= HtmlUtil.getDirectoryListing( new URL( wfs.getRoot().toString()+pathname ) );
-            if ( list.length>100 ) {
-                throw new IllegalStateException( "URL list is very long, refusing to transfer" );
-            }
             FileObject[] result= new FileObject[list.length];
             for ( int i=0; i<list.length; i++ ) {
                 URL url= list[i];
                 String localName= wfs.getLocalName(url);
-                result[i]= new HttpFileObject( wfs, localName );
+                result[i]= new HttpFileObject( wfs, localName, new Date(System.currentTimeMillis()) );
             }
             return result;
         } catch ( MalformedURLException e ) {
@@ -55,11 +54,18 @@ public class HttpFileObject implements FileObject {
         if ( isFolder ) {
             throw new IllegalArgumentException( "is a folder" );
         }
+        if ( !localFile.exists() ) {
+            try {
+                wfs.transferFile(pathname,localFile);
+            } catch ( IOException e ) {
+                wfs.handleException(e);
+            }
+        }
         return new FileInputStream( localFile );
     }
     
     public FileObject getParent() {
-        return new HttpFileObject( wfs, wfs.getLocalName( localFile.getParentFile() ) );
+        return new HttpFileObject( wfs, wfs.getLocalName( localFile.getParentFile() ), new Date(System.currentTimeMillis()) );
     }
     
     public long getSize() {
@@ -86,7 +92,7 @@ public class HttpFileObject implements FileObject {
     }
     
     public java.util.Date lastModified() {
-        return new java.util.Date(localFile.lastModified());
+        return new java.util.Date(System.currentTimeMillis());
     }
     
     protected File getLocalFile() {
@@ -94,10 +100,20 @@ public class HttpFileObject implements FileObject {
     }
     
     public boolean exists() {
-        return localFile.exists();
+        if ( localFile.exists() ) {
+            return true;
+        } else {
+            try {
+                wfs.transferFile(pathname,localFile);
+                return localFile.exists();
+            } catch ( IOException e ) {
+                wfs.handleException(e);
+                return false;
+            }
+        }
     }
     
-    protected HttpFileObject( HttpFileSystem wfs, String pathname ) {
+    protected HttpFileObject( HttpFileSystem wfs, String pathname, Date modifiedDate ) {
         this.localFile= new File( wfs.getLocalRoot(), pathname );
         this.wfs= wfs;
         this.pathname= pathname;
@@ -109,16 +125,21 @@ public class HttpFileObject implements FileObject {
                     this.isRoot= true;
                 }
             } else {
-                try {
-                    wfs.transferFile(pathname,localFile);
-                } catch ( IOException e ) {
-                    wfs.handleException(e);
-                }
+                this.isFolder= false;
             }
         } else {
-            
+            this.isFolder= localFile.isDirectory();
         }
         
         
     }
+    
+    public String toString() {
+        return "[wfs]"+getNameExt();    
+    }
+    
+    public String getNameExt() {
+        return pathname;
+    }
+    
 }

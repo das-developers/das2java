@@ -170,7 +170,7 @@ public class HttpFileSystem extends FileSystem {
     
     public URL getURL( String filename ) {
         try {
-            if ( filename.charAt(0)!='/' ) { filename= "/"+filename; }
+            filename= FileSystem.toCanonicalFilename(filename);
             return new URL( root+filename.substring(1) );
         } catch ( MalformedURLException e ) {
             throw new RuntimeException(e);
@@ -190,12 +190,12 @@ public class HttpFileSystem extends FileSystem {
         if ( !url.toString().startsWith(root.toString() ) ) {
             throw new IllegalArgumentException( "url \""+url+"\"is not of this web file system" );
         }
-        String filename= url.toString().substring(root.toString().length() );
+        String filename= FileSystem.toCanonicalFilename( url.toString().substring(root.toString().length() ) );
         return filename;
     }
     
     public FileObject getFile( String filename ) {
-        HttpFileObject f= new HttpFileObject( this, filename );        
+        HttpFileObject f= new HttpFileObject( this, filename, new Date(System.currentTimeMillis()) );        
         if ( f.canRead() ) {
             return f;
         } else {
@@ -211,4 +211,5 @@ public class HttpFileSystem extends FileSystem {
     public String toString() {
         return "wfs: "+root;
     }
+    
 }
