@@ -36,6 +36,8 @@ public abstract class Units {
     
     public static final Units dimensionless= new NumberUnits("");
     public static final Units dB = new NumberUnits("dB");
+    public static final Units radians= new NumberUnits("radian");
+    public static final Units degrees= new NumberUnits("degrees");
     static {
         dimensionless.registerConverter(dB, new dBConverter());
     }
