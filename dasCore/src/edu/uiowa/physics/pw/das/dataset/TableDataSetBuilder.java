@@ -59,7 +59,10 @@ public class TableDataSetBuilder {
     private Datum zFill = Units.dimensionless.getFill();
     
     /** Creates a new instance of TableDataSetBuilder */
-    public TableDataSetBuilder() {
+    public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits ) {
+        setXUnits(xUnits);
+        setYUnits(yUnits);
+        setZUnits(zUnits);
     }
     
     public void setProperty(String name, Object value) {
@@ -74,10 +77,10 @@ public class TableDataSetBuilder {
         properties.putAll(map);
     }
 
-    public void addPlane(String name) {
+    public void addPlane(String name, Units zUnits ) {
         if (!planeIDs.contains(name)) {
             planeIDs.add(name);
-            zUnitsMap.put(name, Units.dimensionless);
+            zUnitsMap.put(name, zUnits );
         }
     }
     
