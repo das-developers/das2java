@@ -7,8 +7,10 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
+import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
 
@@ -186,67 +188,47 @@ public class TableUtil {
     }
     
     public static void dumpToAsciiStream( TableDataSet tds, OutputStream out ) {
-        PrintStream pout= new PrintStream(out);
-        
-        Datum base=null;
-        Units offsetUnits= null;
-        
-        pout.print("This is not a das2 stream, even though it looks like it.");
-        pout.print("[00]");
-        pout.println("<stream start=\""+tds.getXTagDatum(0)+"\" end=\""+tds.getXTagDatum(tds.getXLength()-1)+"\" >");
-        pout.println("<comment>Stream creation date: "+TimeUtil.now().toString()+"</comment>");
-        pout.print("</stream>");
-        
-        if ( tds.getXUnits() instanceof LocationUnits ) {
-            base= tds.getXTagDatum(0);
-            offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
-            if ( offsetUnits==Units.microseconds ) {
-                offsetUnits= Units.seconds;
-            }
-        }
-        
-        pout.print("[01]<packet>\n");
-        pout.print("<x type=\"asciiTab10\" ");
-        if ( base!=null ) {
-            pout.print("base=\""+base+"\" ");
-            pout.print(" xUnits=\""+offsetUnits+"\" ");
-        } else {
-            pout.print(" xUnits=\""+tds.getXUnits());
-        }
-        pout.println(" />");
-        
-        String yTagsString= ""+tds.getYTagDatum(0,0);
-        for ( int j=1; j<tds.getYLength(0); j++ ) {
-            yTagsString+= ", "+tds.getYTagDatum(0, j);
-        }
-        pout.println("<yscan type=\"asciiTab10\" zUnits=\""+tds.getZUnits()+"\" yTags=\""+yTagsString+"\"/>");
-        pout.print("</packet>");
-        
-        NumberFormat xnf= new DecimalFormat("00000.000");
-        NumberFormat ynf= new DecimalFormat("0.00E00");
-        
-        for (int i=0; i<tds.getXLength(); i++) {
-            pout.print(":01:");
-            double x;
-            if ( base!=null ) {
-                x= tds.getXTagDatum(i).subtract(base).doubleValue(offsetUnits);
-            } else {
-                x= tds.getXTagDouble(i,tds.getXUnits());
-            }
-            pout.print(xnf.format(x)+" ");
-            int itable= tds.tableOfIndex(i);
-            for ( int j=0; j<tds.getYLength(itable); j++ ) {
-                String delim;
-                if ( (j+1)==tds.getYLength(itable) ) {
-                    delim= "\n";
-                } else {
-                    delim= " ";
+        dumpToAsciiStream(tds, Channels.newChannel(out));
+    }
+    
+    public static void dumpToAsciiStream(TableDataSet tds, WritableByteChannel out) {
+        try {
+            StreamProducer producer = new StreamProducer(out);
+            StreamDescriptor sd = new StreamDescriptor();
+            sd.setProperty("start", tds.getXTagDatum(0).toString());
+            sd.setProperty("end", tds.getXTagDatum(tds.getXLength()-1));
+            /** == This can be removed after 2004-10-19 == */
+            if (TimeUtil.now().lt(TimeUtil.createValid("2004-05-19"))) sd.setProperty("comment", "This *IS* a das2 stream, and it looks like it.");
+            /** == == */
+            
+            DataTransferType ascii10 = DataTransferType.getByName("ascii10");
+            DataTransferType ascii24 = DataTransferType.getByName("ascii24");
+
+            producer.streamDescriptor(sd);
+            DatumVector[] zValues = new DatumVector[1];
+            for (int table = 0; table < tds.tableCount(); table++) {
+                StreamXDescriptor xDescriptor = new StreamXDescriptor();
+                xDescriptor.setDataTransferType(ascii24);
+                xDescriptor.setUnits(tds.getXUnits());
+                StreamYScanDescriptor yDescriptor = new StreamYScanDescriptor();
+                yDescriptor.setDataTransferType(ascii10);
+                yDescriptor.setZUnits(tds.getZUnits());
+                yDescriptor.setYCoordinates(tds.getYTags(table));
+                PacketDescriptor pd = new PacketDescriptor();
+                pd.setXDescriptor(xDescriptor);
+                pd.addYDescriptor(yDescriptor);
+                producer.packetDescriptor(pd);
+                for (int i = tds.tableStart(table); i < tds.tableEnd(table); i++) {
+                    Datum xTag = tds.getXTagDatum(i);
+                    zValues[0] = tds.getScan(i);
+                    producer.packet(pd, xTag, zValues);
                 }
-                pout.print(FixedWidthFormatter.format(ynf.format(tds.getDouble(i,j,tds.getZUnits())),9)+delim);
             }
+            producer.streamClosed(sd);
         }
-        
-        pout.close();
+        catch (StreamException se) {
+            throw new RuntimeException(se);
+        }
     }
     
     public static void dumpToStream( TableDataSet table, OutputStream out ) {

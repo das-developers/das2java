@@ -210,5 +210,29 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     public String toString() {
         return "NearestNeighborTableDataSet " + TableUtil.toString(this);
     }
+    
+    public double[] getDoubleScan(int i, Units units) {
+        int yLength = getYLength(tableOfIndex(i));
+        double[] array = new double[yLength];
+        for (int j = 0; j < yLength; j++) {
+            array[j] = getDouble(i, j, units);
+        }
+        return array;
+    }
+    
+    public DatumVector getScan(int i) {
+        Units zUnits = getZUnits();
+        return DatumVector.newDatumVector(getDoubleScan(i, zUnits), zUnits);
+    }
+    
+    public DatumVector getYTags(int table) {
+        double[] tags = new double[getYLength(table)];
+        Units yUnits = getYUnits();
+        for (int j = 0; j < tags.length; j++) {
+            tags[j] = getYTagDouble(table, j, yUnits);
+        }
+        return DatumVector.newDatumVector(tags, yUnits);
+    }
+    
 }
 

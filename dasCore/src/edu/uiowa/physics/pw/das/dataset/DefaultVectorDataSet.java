@@ -133,6 +133,9 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
      * @return the value at index location i as a <code>double</code>.
      */    
     public double getDouble(int i, Units units) {
+        if (yUnits[0].isFill(yValues[0][i])) {
+            return units.getFillDouble();
+        }
         return getYUnits().getConverter(units).convert(yValues[0][i]);
     }
     

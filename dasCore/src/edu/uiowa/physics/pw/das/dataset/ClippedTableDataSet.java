@@ -116,6 +116,21 @@ public class ClippedTableDataSet implements TableDataSet {
         return source.getDouble( i+xoffset, j+yoffsets[tableOfIndex(i)], units );
     }
     
+    public double[] getDoubleScan(int i, Units units) {
+        int table = tableOfIndex(i);
+        int yLength = getYLength(table);
+        double[] array = new double[yLength];
+        double[] sourceArray = source.getDoubleScan(i + xoffset, units);
+        System.arraycopy(sourceArray, yoffsets[table], array, 0, yLength);
+        return array;
+    }
+    
+    public DatumVector getScan(int i) {
+        int table = tableOfIndex(i);
+        int yLength = getYLength(table);
+        return source.getScan(i+xoffset).getSubVector(yoffsets[table], yoffsets[table] + yLength);
+    }
+    
     public int getInt(int i, int j, Units units) {
         return source.getInt( i+xoffset, j+yoffsets[tableOfIndex(i)], units );
     }
@@ -208,6 +223,15 @@ public class ClippedTableDataSet implements TableDataSet {
     
     public String toString() {
         return "ClippedTableDataSet " + TableUtil.toString(this);
+    }
+    
+    public DatumVector getYTags(int table) {
+        double[] tags = new double[getYLength(table)];
+        Units yUnits = getYUnits();
+        for (int j = 0; j < tags.length; j++) {
+            tags[j] = getYTagDouble(table, j, yUnits);
+        }
+        return DatumVector.newDatumVector(tags, yUnits);
     }
     
 }

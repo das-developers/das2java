@@ -1,8 +1,10 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
+import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
 
@@ -117,75 +119,47 @@ public class VectorUtil {
     }
     
     public static void dumpToAsciiStream( VectorDataSet vds, OutputStream out ) {
-        PrintStream pout= new PrintStream(out);
-        
-        Datum base=null;
-        Units offsetUnits= null;
-        
-        pout.print("[00]");
-        pout.println("<stream start=\""+vds.getXTagDatum(0)+"\" end=\""+vds.getXTagDatum(vds.getXLength()-1)+"\" >");
-        pout.println("<comment>Stream creation date: "+TimeUtil.now().toString()+"</comment>");
-        pout.print("</stream>");
-        
-        if ( vds.getXUnits() instanceof LocationUnits ) {
-            base= vds.getXTagDatum(0);
-            offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
-            if ( offsetUnits==Units.microseconds ) {
-                offsetUnits= Units.seconds;
-            }
-        }
-        
-        
-        pout.print("[01]<packet>\n");
-        pout.print("<x type=\"asciiTab10\" ");
-        if ( base!=null ) {
-            pout.print("base=\""+base+"\" ");
-            pout.print(" xUnits=\""+offsetUnits+"\" ");
-        } else {
-            pout.print(" xUnits=\""+vds.getXUnits()+"\"");
-        }
-        pout.println(" />");
-        
-        List planeIDs;
-        if ( vds.getProperty("plane-list")!=null ) {
-            planeIDs= (List)vds.getProperty("plane-list");
-        } else {
-            planeIDs= new ArrayList();
-            planeIDs.add("");
-        }
-        
-        for ( int i=0; i<planeIDs.size(); i++ ) {
-            pout.println("<y type=\"asciiTab10\" name=\""+planeIDs.get(i)+"\" yUnits=\""+vds.getYUnits()+"\" />");
-        }
-        pout.print("</packet>");
-        
-        NumberFormat xnf= new DecimalFormat("00000.000");
-        NumberFormat ynf= new DecimalFormat("0.00E00");
-        
-        for (int i=0; i<vds.getXLength(); i++) {
-            pout.print(":01:");
-            double x;
-            if ( base!=null ) {
-                x= vds.getXTagDatum(i).subtract(base).doubleValue(offsetUnits);
-            } else {
-                x= vds.getXTagDouble(i,vds.getXUnits());
-            }
-            pout.print(xnf.format(x)+" ");
-            for ( int iplane=0; iplane<planeIDs.size(); iplane++ ) {
-                VectorDataSet vds1= (VectorDataSet)vds.getPlanarView((String)planeIDs.get(iplane));
-                pout.print(FixedWidthFormatter.format(ynf.format(vds1.getDouble(i,vds1.getYUnits())),9));
-                if ( iplane==planeIDs.size()-1) {
-                    pout.print("\n");
-                } else {
-                    pout.print(" ");
-                }
-            }
-            
-        }
-        
-        pout.close();
+        dumpToAsciiStream(vds, Channels.newChannel(out));
     }
     
+    public static void dumpToAsciiStream(VectorDataSet vds, WritableByteChannel out) {
+        try {
+            Units yUnits = vds.getYUnits();
+            StreamProducer producer = new StreamProducer(out);
+            StreamDescriptor sd = new StreamDescriptor();
+            sd.setProperty("start", vds.getXTagDatum(0).toString());
+            sd.setProperty("end", vds.getXTagDatum(vds.getXLength()-1));
+            /** == This can be removed after 2004-10-19 == */
+            if (TimeUtil.now().lt(TimeUtil.createValid("2004-05-19"))) sd.setProperty("comment", "This *IS* a das2 stream, and it looks like it.");
+            /** == == */
+            
+            DataTransferType ascii10 = DataTransferType.getByName("ascii10");
+            DataTransferType ascii24 = DataTransferType.getByName("ascii24");
+
+            producer.streamDescriptor(sd);
+            DatumVector[] yValues = new DatumVector[1];
+            StreamXDescriptor xDescriptor = new StreamXDescriptor();
+            xDescriptor.setDataTransferType(ascii24);
+            xDescriptor.setUnits(vds.getXUnits());
+            StreamMultiYDescriptor yDescriptor = new StreamMultiYDescriptor();
+            yDescriptor.setDataTransferType(ascii10);
+            yDescriptor.setUnits(vds.getYUnits());
+            PacketDescriptor pd = new PacketDescriptor();
+            pd.setXDescriptor(xDescriptor);
+            pd.addYDescriptor(yDescriptor);
+            producer.packetDescriptor(pd);
+            for (int i = 0; i < vds.getXLength(); i++) {
+                Datum xTag = vds.getXTagDatum(i);
+                yValues[0] = DatumVector.newDatumVector
+                    (new double[]{vds.getDouble(i, yUnits)}, yUnits);
+                producer.packet(pd, xTag, yValues);
+            }
+            producer.streamClosed(sd);
+        }
+        catch (StreamException se) {
+            throw new RuntimeException(se);
+        }
+    }
     
     public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
         PrintStream pout= new PrintStream(out);

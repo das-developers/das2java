@@ -60,6 +60,10 @@ public interface TableDataSet extends DataSet {
      */    
     double getDouble(int i, int j, Units units);
     
+    DatumVector getScan(int i);
+    
+    double[] getDoubleScan(int i, Units units);
+    
     /** Returns the Z value for the given indices into the x and y tags as a
      * <code>int</code> with the given units.
      * @param i index of the x tag for the requested value.
@@ -68,6 +72,11 @@ public interface TableDataSet extends DataSet {
      * @return the value at index location (i, j) as a <code>int</code>.
      */    
     int getInt(int i, int j, Units units);
+    
+    /** Returns the yTags for this data set as a <code>DatumVector</code>
+     * @return the yTags for this data set as a <code>DatumVector</code>
+     */
+    DatumVector getYTags(int table);
 
     /** Returns the value of the y tag at the given index j as a
      *      <code>Datum</datum>.

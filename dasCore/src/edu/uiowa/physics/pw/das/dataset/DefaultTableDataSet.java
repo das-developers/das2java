@@ -186,7 +186,28 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return Datum.create(value, zUnits[0]);
         }
         catch (ArrayIndexOutOfBoundsException aioobe) {
-            throw aioobe;
+            throw aioobe; //This is just here so developers can put a breakpoint
+            //here if ArrayIndexOutOfBoundsException is thrown.
+        }
+    }
+    
+    public DatumVector getScan(int i) {
+        int table = tableOfIndex(i);
+        if (i < 0 || i >= tableData[0].length) {
+            IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
+                ("x index is out of bounds: " + i + " xLength: " + getXLength());
+            Logger logger = DasApplication.getDefaultApplication().getLogger();
+            logger.throwing(DefaultTableDataSet.class.getName(),
+                            "getDatum(int,int)", ioobe);
+            throw ioobe;
+        }
+        try {
+            double[] values = tableData[0][i];
+            return DatumVector.newDatumVector(values, 0, getYLength(table), zUnits[0]);
+        }
+        catch (ArrayIndexOutOfBoundsException aioobe) {
+            throw aioobe; //This is just here so developers can put a breakpoint
+            //here if ArrayIndexOutOfBoundsException is thrown.
         }
     }
     
@@ -198,6 +219,23 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return value;
         }
         return zUnits[0].getConverter(units).convert(value);
+    }
+    
+    public double[] getDoubleScan(int i, Units units) {
+        int table = tableOfIndex(i);
+        int yLength = yTags[table].length;
+        double[] values = tableData[0][i];
+        double[] retValues = new double[yLength];
+        if (units == getZUnits()) {
+            System.arraycopy(values, 0, retValues, 0, yLength);
+        }
+        else {
+            UnitsConverter uc = zUnits[0].getConverter(units);
+            for (int j = 0; j < yLength; j++) {
+                retValues[j] = uc.convert(values[j]);
+            }
+        }
+        return retValues;
     }
     
     public int getInt(int i, int j, Units units) {
@@ -238,6 +276,10 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     public int getYTagInt(int table, int j, Units units) {
         return (int)Math.round(getYTagDouble(table, j, units));
+    }
+    
+    public DatumVector getYTags(int table) {
+        return DatumVector.newDatumVector(yTags[table], 0, getYLength(table), getYUnits());
     }
     
     public int tableCount() {
@@ -362,6 +404,43 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return zUnits[index].getConverter(units).convert(value);
         }
         
+        public double[] getDoubleScan(int i, Units units) {
+            int table = tableOfIndex(i);
+            int yLength = yTags[table].length;
+            double[] values = tableData[index][i];
+            double[] retValues = new double[yLength];
+            if (units == getZUnits()) {
+                System.arraycopy(values, 0, retValues, 0, yLength);
+            }
+            else {
+                UnitsConverter uc = zUnits[index].getConverter(units);
+                for (int j = 0; j < yLength; j++) {
+                    retValues[j] = uc.convert(values[j]);
+                }
+            }
+            return retValues;
+        }
+        
+        public DatumVector getScan(int i) {
+            int table = tableOfIndex(i);
+            if (i < 0 || i >= tableData[0].length) {
+                IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
+                    ("x index is out of bounds: " + i + " xLength: " + getXLength());
+                Logger logger = DasApplication.getDefaultApplication().getLogger();
+                logger.throwing(DefaultTableDataSet.class.getName(),
+                                "getDatum(int,int)", ioobe);
+                throw ioobe;
+            }
+            try {
+                double[] values = tableData[index][i];
+                return DatumVector.newDatumVector(values, 0, getYLength(table), zUnits[index]);
+            }
+            catch (ArrayIndexOutOfBoundsException aioobe) {
+                throw aioobe; //This is just here so developers can put a breakpoint
+                //here if ArrayIndexOutOfBoundsException is thrown.
+            }
+        }
+        
         public int getInt(int i, int j, Units units) {
             return (int)Math.round(getDouble(i, j, units));
         }
@@ -412,6 +491,10 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         
         public Object getProperty(String name) {
             return DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
+        }
+        
+        public DatumVector getYTags(int table) {
+            return DefaultTableDataSet.this.getYTags(table);
         }
         
     }
