@@ -638,6 +638,15 @@ public final class TimeUtil {
         }
     }
     
+    public static boolean isValidTime( String string ) {
+        try {
+            create( string );
+            return true;
+        } catch ( java.text.ParseException ex ) {
+            return false;
+        }
+    }
+    
     public static void main(String[] args) throws Exception {
         System.out.println( TimeUtil.now() );
         System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 ));
