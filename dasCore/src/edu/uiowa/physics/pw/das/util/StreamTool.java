@@ -424,6 +424,7 @@ public class StreamTool {
 
     public static Document parseHeader(Reader header) throws StreamException {
         try {
+            /*
             header = new FilterReader(header) {
                 public int read() throws IOException {
                     int result = super.read();
@@ -440,6 +441,7 @@ public class StreamTool {
                     return result;
                 }
             };
+             */
             DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
             InputSource source = new InputSource(header);
             Document document= builder.parse(source);
