@@ -26,19 +26,22 @@ package edu.uiowa.physics.pw.das.event;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
-import edu.uiowa.physics.pw.das.graph.DasStackedHistogramPlot;
+
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.client.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
+import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
+import java.text.*;
 import java.text.DecimalFormat;
 
 /**
  *
  * @author  eew
  */
-public class CrossHairRenderer implements DragRenderer {
+public class CrossHairRenderer implements DragRenderer, Editable {
     
     protected int xInitial;
     protected int yInitial;
@@ -66,6 +69,16 @@ public class CrossHairRenderer implements DragRenderer {
     
     private DataSetConsumer dataSetConsumer;
     
+    /**
+     * Holds value of property allPlanesReport.
+     */
+    private boolean allPlanesReport;
+    
+    /**
+     * Holds value of property debugging.
+     */
+    private boolean debugging;
+    
     public CrossHairRenderer(  DasPlot parent, DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
         this.XAxis= xAxis;
         this.YAxis= yAxis;
@@ -74,6 +87,62 @@ public class CrossHairRenderer implements DragRenderer {
         dirtyBounds= new Rectangle();
         hDirtyBounds = new Rectangle();
         vDirtyBounds = new Rectangle();
+    }
+    
+    private DatumFormatter addResolutionToFormat( DatumFormatter nfz ) throws ParseException {
+        String formatString= nfz.toString();
+        String result;
+        if ( formatString.indexOf('E')==-1 ) {
+            result= formatString+"0";
+        } else {
+            String[] ss= formatString.split("E");
+            if ( ss[0].indexOf('.')==-1 ) {
+                result= ss[0]+".0"+"E0";
+            } else {
+                result= ss[0]+"0"+"E0";
+            }
+        }
+        return DefaultDatumFormatterFactory.getInstance().newFormatter( result );
+    }
+    
+    private String getZString( TableDataSet tds, Datum x, Datum y ) {
+        int i= DataSetUtil.closestColumn( tds, x );
+        int j= TableUtil.closestRow( tds, tds.tableOfIndex(i), y );
+        Datum zValue= tds.getDatum(i,j);
+        
+        try {
+            if ( dataSetConsumer instanceof TableDataSetConsumer ) {
+                nfz= ((TableDataSetConsumer)dataSetConsumer).getZAxis().getDatumFormatter();
+                nfz = addResolutionToFormat(nfz);
+            } else  {
+                nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.00");
+            }
+        }
+        catch (java.text.ParseException pe) {
+            edu.uiowa.physics.pw.das.DasProperties.getLogger().severe("failure to create formatter");
+            DasAxis axis = ((TableDataSetConsumer)dataSetConsumer).getZAxis();
+            axis.getUnits().getDatumFormatterFactory().defaultFormatter();
+        }
+        
+        String result;
+        if ( zValue.isFill() ) {
+            result= "fill";
+        } else {
+            result= nfz.grannyFormat(zValue);
+        }
+        if (allPlanesReport) {    
+            if ( debugging ) result+= " "+tds.toString();
+            String [] planeIds= tds.getPlaneIds();
+            for ( int iplane=0; iplane<planeIds.length; iplane++ ) {                
+                if ( !planeIds[iplane].equals("") ) {
+                    result= result+"!c";
+                    result+= planeIds[iplane]+":"+nfz.grannyFormat(((TableDataSet)tds.getPlanarView(planeIds[iplane])).getDatum(i,j));
+                    if ( debugging ) result+= " "+((TableDataSet)tds.getPlanarView(planeIds[iplane])).toString();
+                }
+            }
+            if ( debugging ) result+="!ci:"+i+" j:"+j;            
+        }
+        return result;
     }
     
     public void renderDrag(Graphics g1, Point p1, Point p2) {
@@ -103,35 +172,11 @@ public class CrossHairRenderer implements DragRenderer {
             String yAsString;
             yAsString= nfy.format(y);
             
-            String zAsString="";
             String report;
             
             if (ds instanceof TableDataSet) {
                 TableDataSet tds= (TableDataSet)ds;
-                Datum zValue= TableUtil.closestDatum(tds,x,y);
-                
-                try {
-                    if ( dataSetConsumer instanceof TableDataSetConsumer ) {
-                        nfz= ((TableDataSetConsumer)dataSetConsumer).getZAxis().getDatumFormatter();
-                        nfz = DefaultDatumFormatterFactory.getInstance().newFormatter(nfz.toString() + "0");
-                    } else if ( parent instanceof DasStackedHistogramPlot ) {
-                        nfz = ((DasStackedHistogramPlot) parent).getZAxis().getDatumFormatter();
-                        nfz = DefaultDatumFormatterFactory.getInstance().newFormatter(nfz.toString() + "0");
-                    } else  {
-                        nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.00");
-                    }
-                }
-                catch (java.text.ParseException pe) {
-                    edu.uiowa.physics.pw.das.DasProperties.getLogger().severe("failure to create formatter");
-                    DasAxis axis = ((TableDataSetConsumer)dataSetConsumer).getZAxis();
-                    axis.getUnits().getDatumFormatterFactory().defaultFormatter();
-                }
-                /* TODO: zValue.toString() should work fine */
-                if ( zValue.isFill() ) {
-                    zAsString= "fill";
-                } else {
-                    zAsString= nfz.format(zValue);
-                }
+                String zAsString= getZString(tds,x,y);
                 report= "x:"+xAsString+" y:"+yAsString+" z:"+zAsString;
             } else {
                 report= "x:"+xAsString+" y:"+yAsString;
@@ -143,10 +188,13 @@ public class CrossHairRenderer implements DragRenderer {
             g.setColor(new Color(255,255,255,200));
             
             Dimension d= parent.getSize();
+                        
+            GrannyTextRenderer gtr= new GrannyTextRenderer();
+            gtr.setString( parent, report );
             
-            int dx= fm.stringWidth(report)+6;
+            int dx= (int)gtr.getWidth()+6;
             if (dxMax<dx) dxMax=dx;
-            int dy= fm.getAscent()+fm.getDescent();
+            int dy= (int)gtr.getHeight();
             int xp= p2.x+3;
             int yp= p2.y-3-dy;
             
@@ -158,11 +206,11 @@ public class CrossHairRenderer implements DragRenderer {
                 yp= p2.y+3;
             }
             
-            dirtyBounds.setRect(xp,yp,dx,dy);
+            dirtyBounds.setRect(xp,yp,gtr.getWidth()+6,gtr.getHeight()+6);            
             g.fill(dirtyBounds);
             
             g.setColor(new Color(20,20,20));
-            g.drawString(report,xp+3,yp+fm.getAscent());
+            gtr.draw( g, xp+3, (float)( yp+gtr.getAscent() ) );
             g.setColor(color0);
         }
         
@@ -220,7 +268,7 @@ public class CrossHairRenderer implements DragRenderer {
         parent.paintImmediately(dirtyBounds);
         parent.paintImmediately(hDirtyBounds);
         parent.paintImmediately(vDirtyBounds);
-        //sorry about that...        
+        //sorry about that...
     }
     
     public boolean isXRangeSelection() {
@@ -238,4 +286,37 @@ public class CrossHairRenderer implements DragRenderer {
     public boolean isUpdatingDragSelection() {
         return false;
     }
+    
+    /**
+     * Getter for property allPlanesReport.
+     * @return Value of property allPlanesReport.
+     */
+    public boolean isAllPlanesReport() {
+        return this.allPlanesReport;
+    }
+    
+    /**
+     * Setter for property allPlanesReport.
+     * @param allPlanesReport New value of property allPlanesReport.
+     */
+    public void setAllPlanesReport(boolean allPlanesReport) {
+        this.allPlanesReport = allPlanesReport;
+    }
+    
+    /**
+     * Getter for property debugging.
+     * @return Value of property debugging.
+     */
+    public boolean isDebugging() {
+        return this.debugging;
+    }
+    
+    /**
+     * Setter for property debugging.
+     * @param debugging New value of property debugging.
+     */
+    public void setDebugging(boolean debugging) {
+        this.debugging = debugging;
+    }
+    
 }
