@@ -43,7 +43,7 @@ public class DataSetStreamHandler implements StreamHandler {
     StreamDescriptor sd;
     
     DasProgressMonitor monitor;
-    static final int ntasks= 100;    
+    static final int ntasks= 100;
     boolean [] taskStarted= new boolean[ntasks];
     Datum start, taskWidth;
     
@@ -56,19 +56,19 @@ public class DataSetStreamHandler implements StreamHandler {
         for ( int i=0; i<taskStarted.length; i++ ) taskStarted[i]= false;
     }
     
-    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
+    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {                
         ensureNotNullDelegate();
         delegate.packet(pd, xTag, vectors);
         Units u= taskWidth.getUnits();
         int itask= (int)( xTag.subtract(start).doubleValue(u) / taskWidth.doubleValue(u) );
-        if ( itask>=0 && itask<ntasks ) {
-            boolean monitorUpdateNeeded= taskStarted[itask]==false;
-            taskStarted[itask]= true;
-            monitor.setTaskProgress( itask );
-            //if ( monitorUpdateNeeded ) {
-            //    updateMonitor();
-            //}
-        }
+        if ( itask<0 ) itask=0;
+        if ( itask>=ntasks ) itask=ntasks-1;
+        boolean monitorUpdateNeeded= taskStarted[itask]==false;
+        taskStarted[itask]= true;
+        monitor.setTaskProgress( itask );
+        //if ( monitorUpdateNeeded ) {
+        //    updateMonitor();
+        //}
     }
     
     private void updateMonitor() {
@@ -79,7 +79,7 @@ public class DataSetStreamHandler implements StreamHandler {
         monitor.setTaskProgress(tasksStarted);
     }
     
-    public void packetDescriptor(PacketDescriptor pd) throws StreamException {
+    public void packetDescriptor(PacketDescriptor pd) throws StreamException {        
         if (delegate == null) {
             SkeletonDescriptor descriptor = pd.getYDescriptor(0);
             if (descriptor instanceof StreamMultiYDescriptor) {
@@ -139,7 +139,7 @@ public class DataSetStreamHandler implements StreamHandler {
             StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(0);
             Units xUnits = pd.getXDescriptor().getUnits();
             Units yUnits = y.getUnits();
-            builder = new VectorDataSetBuilder(xUnits,yUnits);                        
+            builder = new VectorDataSetBuilder(xUnits,yUnits);
             this.packetDescriptor(pd);
         }
         
@@ -166,7 +166,7 @@ public class DataSetStreamHandler implements StreamHandler {
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
-                builder.addPlane(y.getName(),y.getUnits());                
+                builder.addPlane(y.getName(),y.getUnits());
             }
         }
         
@@ -196,7 +196,7 @@ public class DataSetStreamHandler implements StreamHandler {
             builder = new TableDataSetBuilder(xUnits, yUnits, zUnits);
             this.packetDescriptor(pd);
         }
-
+        
         public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
