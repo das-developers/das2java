@@ -187,8 +187,6 @@ public class DataSetStreamHandler implements StreamHandler {
         
         private TableDataSetBuilder builder;
         
-        private double[] doubles;
-        
         private TableDataSetStreamHandler(PacketDescriptor pd) throws StreamException {
             StreamYScanDescriptor y = (StreamYScanDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
@@ -202,30 +200,17 @@ public class DataSetStreamHandler implements StreamHandler {
         public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
-            double x = getXWithBase(base, xTag);
-            double[] doubles = null;
+            Datum x = base.add(xTag);
+            DatumVector y = DatumVector.newDatumVector(yscan.getYTags(), yscan.getYUnits());
+            String[] planeIDs = new String[pd.getYCount()];
             for (int i = 0; i < pd.getYCount(); i++) {
-                if (pd.getYDescriptor(i) instanceof StreamYScanDescriptor) {
-                    yscan = (StreamYScanDescriptor)pd.getYDescriptor(i);
-                    doubles = vectors[i].toDoubleArray(doubles, yscan.getZUnits());
-                    if (i != 0) {
-                        builder.insertYScan(x, yscan.getYTags(), doubles, yscan.getName());
-                    }
-                    else {
-                        builder.insertYScan(x, yscan.getYTags(), doubles);
-                    }
-                }
-                else {
-                    throw new StreamException("Mixed data sets are not currently supported");
-                }
+                planeIDs[i] = ((StreamYScanDescriptor)pd.getYDescriptor(i)).getName();
             }
+            builder.insertYScan(x, y, vectors, planeIDs);
         }
         
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
             StreamYScanDescriptor y = (StreamYScanDescriptor)pd.getYDescriptor(0);
-            if (doubles == null || doubles.length < y.getNItems()) {
-                doubles = new double[y.getNItems()];
-            }
             for (int i = 1; i < pd.getYCount(); i++) {
                 y = (StreamYScanDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(), y.getZUnits());

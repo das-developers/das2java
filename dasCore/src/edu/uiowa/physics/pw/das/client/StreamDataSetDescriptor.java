@@ -296,7 +296,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                 recordSize += yDescriptors[planeIndex+1].getSizeBytes();
             }
             ByteBuffer data = getByteBuffer(in);
-            int recordCount = data.remaining() / recordSize;
             double timeBaseValue = start.doubleValue(start.getUnits());
             Units offsetUnits = start.getUnits().getOffsetUnits();
             UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
@@ -326,11 +325,9 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         PushbackInputStream in= new PushbackInputStream(in0,50);
         PacketDescriptor sd = getPacketDescriptor(in);
         TableDataSetBuilder builder = new TableDataSetBuilder(start.getUnits(),Units.dimensionless,Units.dimensionless);
+        Units yUnits = Units.dimensionless;
         Units zUnits= Units.dimensionless;
         
-        builder.setXUnits(start.getUnits());
-        builder.setYUnits(Units.dimensionless);
-        builder.setZUnits(zUnits);
         for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
             Object o = i.next();
             if (o instanceof StreamYScanDescriptor) {
@@ -345,48 +342,27 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             }
         }
         StreamYScanDescriptor[] yScans = (StreamYScanDescriptor[])sd.getYDescriptors().toArray(new StreamYScanDescriptor[0]);
-        int planeCount = yScans.length - 1;
+        int planeCount = yScans.length;
         String[] planeIDs = new String[planeCount];
-        int recordSize = sd.getXDescriptor().getSizeBytes() + yScans[0].getSizeBytes();
+        int recordSize = sd.getXDescriptor().getSizeBytes();
         for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
-            planeIDs[planeIndex] = yScans[planeIndex+1].getName();
-            recordSize += yScans[planeIndex+1].getSizeBytes();
+            planeIDs[planeIndex] = yScans[planeIndex].getName();
+            recordSize += yScans[planeIndex].getSizeBytes();
         }
         ByteBuffer data = getByteBuffer(in);
-        int recordCount = data.remaining() / recordSize;
         double timeBaseValue= start.doubleValue(start.getUnits());
         Units offsetUnits = start.getUnits().getOffsetUnits();
         UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
         double[] yCoordinates = yScans[0].getYTags();
-        double[] scan = new double[yScans[0].getNItems()];
-        
-        double zfill;
-        if ( properties.get( "z_fill" )!= null ) {
-            zfill= ((Float)properties.get("z_fill")).doubleValue();
-        } else {
-            zfill= zUnits.getFillDouble();
-        }
+        DatumVector y = DatumVector.newDatumVector(yCoordinates, yUnits);
         
         while (data.remaining() > recordSize) {
             DatumVector vector = sd.getXDescriptor().read(data);
-            double xTag = timeBaseValue + uc.convert(vector.doubleValue(0, sd.getXDescriptor().getUnits()));
-            vector = yScans[0].read(data);
-            scan = vector.toDoubleArray(scan, yScans[0].getZUnits());
-            if (zfill!=zUnits.getFillDouble()) {
-                for ( int i=0; i<scan.length; i++ ) {
-                    if ( scan[i]==zfill ) scan[i]= zUnits.getFillDouble();
-                }
-            }
-            builder.insertYScan(xTag, yCoordinates, scan);
-            for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
-                vector = yScans[planeIndex + 1].read(data);
-                scan = vector.toDoubleArray(scan, yScans[planeIndex + 1].getZUnits());
-                if (zfill!=zUnits.getFillDouble()) {
-                    for ( int i=0; i<scan.length; i++ ) {
-                        if ( scan[i]==zfill ) scan[i]= zUnits.getFillDouble();
-                    }
-                }
-                builder.insertYScan(xTag, yCoordinates, scan, yScans[planeIndex + 1].getName());
+            Datum xTag = start.add(vector.get(0));
+            DatumVector[] z = new DatumVector[yScans.length + 1];
+            for (int planeIndex = 0; planeIndex < z.length; planeIndex++) {
+                z[0]= yScans[planeIndex].read(data);
+                builder.insertYScan(xTag, y, z, planeIDs);
             }
         }
         builder.addProperties(properties);
