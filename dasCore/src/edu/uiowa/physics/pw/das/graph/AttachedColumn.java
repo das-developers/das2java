@@ -24,20 +24,24 @@
 package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
-/**
- *
- * @author  jbf
- */
+/** TODO */
 public class AttachedColumn extends DasColumn {
     
     private DasColumn column;
     
-    /** Creates a new instance of AttachedColumn */
+    /** Creates a new instance of AttachedColumn.
+     * @param column the new column.
+     * @param minimum the new minimum.
+     * @param maximum the new maximum.
+     */
     public AttachedColumn(DasColumn column, double minimum, double maximum) {
         super(column.getParent(),minimum,maximum);
         this.column= column;
     }
     
+    /** Gets the maximum for the column in the device space.
+     * @return the maximum value for the column in the device space.
+     */    
     public double getDMaximum() {
         if ( column==null ) {
             return 0.;
@@ -47,6 +51,9 @@ public class AttachedColumn extends DasColumn {
         }
     }
     
+    /** Gets the minimum for the column in the device space.
+     * @return the minimum for the column in the device space.
+     */    
     public double getDMinimum() {
         if ( column==null ) { // called during construction
             return 0.;
@@ -56,12 +63,18 @@ public class AttachedColumn extends DasColumn {
         }
     }
     
+    /** Sets the minimum for the column in the device space.
+     * @param minimum the new minimum value for the column.
+     */    
     public void setDMinimum(double minimum) {
         double delta= column.getWidth();
         this.setMinimum((minimum-column.getDMinimum())/delta);
         fireUpdate();
     }
     
+    /** Sets the maximum for the column in the device space.
+     * @param maximum The new maximum value for the column.
+     */    
     public void setDMaximum(double maximum) {
         double delta= column.getWidth();
         this.setMaximum((maximum-column.getDMinimum())/delta);
@@ -69,6 +82,10 @@ public class AttachedColumn extends DasColumn {
     }
     
     
+    /** Sets the minimum and maximum for the column in the device space.
+     * @param minimum the new minimum for the column.
+     * @param maximum the new maximum for the column.
+     */    
     public void setDPosition(double minimum, double maximum) {
         double delta= column.getWidth();
         this.setMinimum((minimum-column.getDMinimum())/delta);
@@ -76,15 +93,24 @@ public class AttachedColumn extends DasColumn {
         fireUpdate();
     }
     
+    /** Gets the width of the column.
+     * @return the width of the column.
+     */    
     public double getWidth() {
         return column.getWidth()*(getMaximum()-getMinimum());
     }
     
+    /** Adds a listener to the column to receive DasUpdateEvents.
+     * @param l the new listener.
+     */    
     public void addpwUpdateListener(DasUpdateListener l) {
         super.addpwUpdateListener(l);
         column.addpwUpdateListener(l);
     }
     
+    /** Removes a listener from the column to stop receving DasUpdateEvents.
+     * @param l the listener to be removed.
+     */    
     public void removepwUpdateListener(DasUpdateListener l) {
         super.removepwUpdateListener(l);
         column.removepwUpdateListener(l);
