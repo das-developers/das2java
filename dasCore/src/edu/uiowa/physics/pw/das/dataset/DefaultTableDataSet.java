@@ -23,11 +23,13 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.*;
 import java.io.PrintStream;
 
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.logging.Logger;
 
 /**
  *
@@ -162,14 +164,28 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     public Datum getDatum(int i, int j) {
         int table = tableOfIndex(i);
-        int iTable = i - tableOffsets[table];
         int yLength = yTags[table].length;
+        if (i < 0 || i >= tableData[0].length) {
+            IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
+                ("x index is out of bounds: " + i + " xLength: " + getXLength());
+            Logger logger = DasApplication.getDefaultApplication().getLogger();
+            logger.throwing(DefaultTableDataSet.class.getName(),
+                            "getDatum(int,int)", ioobe);
+            throw ioobe;
+        }
+        if (j < 0 || j >= this.yTags[table].length) {
+            IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
+                ("y index is out of bounds: " + i + " yLength(" + table + "): " + getYLength(table));
+            Logger logger = DasApplication.getDefaultApplication().getLogger();
+            logger.throwing(DefaultTableDataSet.class.getName(),
+                            "getDatum(int,int)", ioobe);
+            throw ioobe;
+        }
         try {
             double value = tableData[0][i][j];
             return Datum.create(value, zUnits[0]);
         }
         catch (ArrayIndexOutOfBoundsException aioobe) {
-            System.out.println("i=" + i + " table=" + tableOfIndex(i));
             throw aioobe;
         }
     }
