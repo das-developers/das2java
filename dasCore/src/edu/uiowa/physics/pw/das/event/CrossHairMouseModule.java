@@ -36,7 +36,7 @@ public class CrossHairMouseModule extends MouseModule {
     DasAxis xaxis;
     DasAxis yaxis;
     
-    DataPointSelectionEvent de;
+    protected DataPointSelectionEvent de;
 
     edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer;
     
@@ -67,10 +67,14 @@ public class CrossHairMouseModule extends MouseModule {
         return new CrossHairMouseModule(parent,xaxis,yaxis);
     }       
     
-    public void mousePointSelected(MousePointSelectionEvent e) {
+    protected DataPointSelectionEvent getDataPointSelectionEvent(MousePointSelectionEvent e) {
         de.setDataSet(dataSetConsumer.getDataSet());
         de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
-        fireDataPointSelectionListenerDataPointSelected(de);
+        return de;
+    }        
+        
+    public void mousePointSelected(MousePointSelectionEvent e) {        
+        fireDataPointSelectionListenerDataPointSelected(getDataPointSelectionEvent(e));
     }
 
     /** Registers DataPointSelectionListener to receive events.
