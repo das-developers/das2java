@@ -221,7 +221,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
                 } catch ( InterruptedException e ) { };
                 setTaskProgress(getTaskProgress());
             }
-        } );
+        } ).start();
     }
     
     public void cancel() {
