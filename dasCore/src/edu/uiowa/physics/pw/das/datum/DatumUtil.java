@@ -26,7 +26,6 @@ package edu.uiowa.physics.pw.das.datum;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.util.DasMath;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,13 +41,28 @@ public final class DatumUtil {
     private DatumUtil() {
     }
     
-    /**
-     *
-     * @param minimum
-     * @param maximum
-     * @param nsteps
-     * @return
-     */    
+    public static DatumFormatter bestFormatter( DatumVector datums ) {
+        double[] array= new double[ datums.getLength() ];
+        Units units;
+        if ( datums.getUnits() instanceof LocationUnits ) {
+            units= ((LocationUnits)datums.get(0).getUnits()).getOffsetUnits();
+            array[0]= 0.;
+            for ( int i=1; i<datums.getLength(); i++ ) {
+                array[i]= datums.get(i).subtract(datums.get(0)).doubleValue(units);                
+            }
+        } else {
+            units= datums.getUnits();
+            for ( int i=0; i<datums.getLength(); i++ ) {
+                array[i]= datums.get(i).doubleValue(units);    
+            }
+        }
+        
+        double limit= DasMath.exp10( (int)DasMath.log10( DasMath.max( array ) ) - 3 );
+        double gcd= DasMath.gcd( array, limit );
+        Datum resolution= units.createDatum(gcd);
+        return bestFormatter( datums.get(0), datums.get(0).add( resolution ), 1 );
+    }
+    
     public static DatumFormatter bestFormatter(Datum minimum, Datum maximum, int nsteps) {
         
         Units units = minimum.getUnits();
@@ -147,16 +161,7 @@ public final class DatumUtil {
         return result;
     }
     
-    /* convert to human-friendly units.  Right now this will just convert us2000 to seconds. */
-   /* public static Datum asOrderOneUnits(Datum d) {
-        if ( d.getUnits()==Units.microseconds ) {
-            return d.convertTo(Units.seconds);
-        } else {
-            return d;
-        }
-    }*/
-    
-    /**
+   /**
      * This method takes the input datum and gets it as close to order one as
      * possible by trying all possible conversions.
      * @param d A datum that needs to have its units changed to order one units.
@@ -192,5 +197,6 @@ public final class DatumUtil {
         }
         return bestDatum;
     }
+    
     
 }
