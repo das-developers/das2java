@@ -94,6 +94,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         return new AbstractAction("mode") {
             public void actionPerformed( ActionEvent e ) {
                 updateRangeString= !updateRangeString;
+                Preferences.userNodeForPackage(this.getClass()).putBoolean("updateRangeString", updateRangeString );
                 revalidateUpdateMode();
                 update();                
             }
@@ -136,7 +137,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         startStopPane.add(idStop);
         
         viewButton= new JButton(getModeAction());
-        viewButton.setToolTipText("mode");
+        viewButton.setToolTipText("input mode: start/end vs time range string");
         viewButton.setPreferredSize(new Dimension( 20,20 ) );
         startStopPane.add(viewButton);
         
