@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.datum;
 
 import edu.uiowa.physics.pw.das.datum.format.*;
+import edu.uiowa.physics.pw.das.util.*;
 
 import java.util.*;
 import java.text.ParseException;
@@ -34,11 +35,33 @@ import java.text.ParseException;
 public abstract class Units {
     
     public static final Units dimensionless= new NumberUnits("");
+    public static final Units dB = new NumberUnits("dB");
+    static {
+        dimensionless.registerConverter(dB, new dBConverter());
+    }
+    private static final class dBConverter extends UnitsConverter {
+        public double convert(double value) {
+            return 10 * DasMath.log10(value);
+        }
+        public UnitsConverter getInverse() {
+            if (inverse == null) {
+                inverse = new UnitsConverter() {
+                    public double convert(double value) {
+                        return Math.pow(10.0, value / 10.0);
+                    }
+                    public UnitsConverter getInverse() {
+                        return dBConverter.this;
+                    }
+                };
+            }
+            return inverse;
+        }
+    }
     
     public static final Units celcius= new NumberUnits("deg C");
     public static final Units fahrenheit= new NumberUnits("deg F");
     static {
-        celcius.registerConverter(fahrenheit, new UnitsConverter(1.8, 32));
+        celcius.registerConverter(fahrenheit, new UnitsConverter.ScaleOffset(1.8, 32));
     }
     
     public static final Units seconds= new NumberUnits("s");
@@ -46,7 +69,7 @@ public abstract class Units {
     public static final Units days= new NumberUnits("days");
     static {
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
-        days.registerConverter(seconds, new UnitsConverter(8.64e4, 0.0));
+        days.registerConverter(seconds, new UnitsConverter.ScaleOffset(8.64e4, 0.0));
     }
     
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
@@ -55,8 +78,8 @@ public abstract class Units {
     public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
-        ((Units)t2000).registerConverter(t1970, new UnitsConverter(1.0, 9.466848e8));
-        ((Units)t2000).registerConverter(mj1958, new UnitsConverter(1.0/8.64e4, 1.534e4));
+        ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
+        ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 1.534e4));
     }
     
     public static final EnumerationUnits spacecraft= new EnumerationUnits( "spacecraft", "Enumeration of various spacecraft" );
@@ -233,12 +256,9 @@ public abstract class Units {
     }
     
     public static void main( String[] args ) throws java.text.ParseException {
-        Datum days = Datum.create(1.0, Units.days);
-        Datum seconds = days.convertTo(Units.seconds);
-        System.out.println(seconds);
-        
-        Datum cel = Datum.create(37.0, Units.celcius);
-        Datum fah = cel.convertTo(Units.fahrenheit);
-        System.out.println(fah);
+        Datum ratio = Datum.create(100);
+        Datum db = ratio.convertTo(dB);
+        System.out.println("ratio: " + ratio);
+        System.out.println("dB: " + db);
     }
 }
