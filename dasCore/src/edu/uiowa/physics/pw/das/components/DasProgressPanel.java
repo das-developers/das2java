@@ -49,6 +49,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private boolean isCancelled = false;
     private String label;
     private static final int hideInitiallyMilliSeconds= 600;
+    private boolean running = false;
     
     /** Creates new form DasProgressPanel */
     
@@ -141,6 +142,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     }
     
     public void finished() {
+        running = false;
         if ( jframe==null ) {
             setVisible(false);
         } else {
@@ -214,18 +216,22 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         currentTaskPosition = 0;
         isCancelled = false;
         setVisible(false);
+        running = true;
         new Thread( new Runnable() {
             public void run() {
                 try {
                     Thread.sleep(hideInitiallyMilliSeconds);
                 } catch ( InterruptedException e ) { };
-                setTaskProgress(getTaskProgress());
+                if (running) {
+                    setTaskProgress(getTaskProgress());
+                }
             }
         } ).start();
     }
     
     public void cancel() {
         isCancelled = true;
+        running = false;
         setVisible(false);
     }
     
