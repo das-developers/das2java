@@ -48,7 +48,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     
     /** Holds value of property floppyltemSpacing. */
     private boolean floppyItemSpacing=false;
-    
+      
   // last label to be displayed
     
     private void setLabels(Datum[] labels) {
@@ -113,6 +113,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
             labelPositions[i]= min + (int)(interItemSpacing * ( (i-indexMinimum)+0 ));
         }
         
+        firePropertyChange("labelPositions", null, labelPositions );
     }
     
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
@@ -289,19 +290,20 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
+            Datum d= ticks.units.createDatum(tick1);
             int w= getInterItemSpace();
             int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5)-w/2;
             tickLength= tickLengthMajor;
             if (bottomTicks) {
-                g.drawLine( tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
-                if ( i==ticks.tickV.length-1 ) g.drawLine( tickPosition+w, bottomPosition, tickPosition+w, bottomPosition + tickLength);
+                g.drawLine( getItemMin(d), bottomPosition, getItemMin(d), bottomPosition + tickLength);
+                if ( i==ticks.tickV.length-1 ) g.drawLine( getItemMax(d), bottomPosition, getItemMax(d), bottomPosition + tickLength);
                 if (bottomTickLabels) {
                     drawLabel(g, tick1, i, tickPosition+w/2 , bottomPosition + tickLength);
                 }
             }
             if (topTicks) {
-                g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
-                if ( i==ticks.tickV.length-1 ) g.drawLine( tickPosition+w, topPosition, tickPosition+w, topPosition - tickLength);
+                g.drawLine( getItemMin(d), topPosition, getItemMin(d), topPosition - tickLength);
+                if ( i==ticks.tickV.length-1 ) g.drawLine( getItemMax(d), topPosition, getItemMax(d), topPosition - tickLength);
                 if (topTickLabels) {
                     drawLabel(g, tick1, i, tickPosition+w/2, topPosition - tickLength);
                 }
@@ -367,20 +369,21 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
+            Datum datum= ticks.units.createDatum(tick1);
             if ( tick1>=(dataMin*0.999) && tick1<=(dataMax*1.001) ) {
                 int w= getInterItemSpace();
                 int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5) - w/2;
                 tickLength= tickLengthMajor;
                 if (leftTicks) {
-                    if ( i==ticks.tickV.length-1 ) g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition );
-                    g.drawLine( leftPosition, tickPosition+w, leftPosition - tickLength, tickPosition+w );
+                    if ( i==ticks.tickV.length-1 ) g.drawLine( leftPosition, getItemMin(datum), leftPosition - tickLength, getItemMin(datum) );
+                    g.drawLine( leftPosition, getItemMax(datum), leftPosition - tickLength, getItemMax(datum) );
                     if (leftTickLabels) {
                         drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition+w/2);
                     }
                 }
                 if (rightTicks) {
-                    if ( i==ticks.tickV.length-1 ) g.drawLine( rightPosition, tickPosition, rightPosition + tickLength, tickPosition );
-                    g.drawLine( rightPosition, tickPosition+w, rightPosition + tickLength, tickPosition+w );
+                if ( i==ticks.tickV.length-1 ) g.drawLine( rightPosition, getItemMin(datum), rightPosition + tickLength, getItemMin(datum) );
+                    g.drawLine( rightPosition, getItemMax(datum), rightPosition + tickLength, getItemMax(datum) );
                     if (rightTickLabels) {
                         drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition+w/2);
                     }
@@ -427,7 +430,9 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
      *
      */
     public void setOutsidePadding(int outsidePadding) {
-        this.outsidePadding = outsidePadding;        
+        int oldValue= outsidePadding;
+        this.outsidePadding = outsidePadding;          
+        firePropertyChange("setOutsidePadding",oldValue,outsidePadding);
         updateTickPositions();
         update();
     }
@@ -445,7 +450,9 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
      *
      */
     public void setFloppyItemSpacing(boolean floppyItemSpacing) {
+        boolean oldValue= this.floppyItemSpacing;
         this.floppyItemSpacing = floppyItemSpacing;
+        firePropertyChange("floppyItemSpacing",oldValue,floppyItemSpacing);
         updateTickPositions();
         update();
     }
