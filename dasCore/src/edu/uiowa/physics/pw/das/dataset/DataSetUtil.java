@@ -121,7 +121,12 @@ public class DataSetUtil {
     
     public static Datum guessXTagWidth( DataSet table ) {
         if ( table.getXLength()>2 ) {
-            return table.getXTagDatum(2).subtract( table.getXTagDatum(0) ).divide(2.);
+            Datum min= table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
+            for ( int i=2; i<table.getXLength(); i++ ) {
+                Datum min0= table.getXTagDatum(i).subtract( table.getXTagDatum(i-1) );
+                if ( min0.lt(min) ) min= min0;
+            }
+            return min;
         } else {
             return table.getXUnits().getOffsetUnits().createDatum(0);
         }
