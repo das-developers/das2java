@@ -140,6 +140,7 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
         xValue = e.getX();
         
         TableDataSet tds = (TableDataSet)ds;
+        //TableDataSet tds = (TableDataSet)renderer.getDataSet();
         
         int itable= TableUtil.tableIndexAt( tds, DataSetUtil.closestColumn( tds, e.getX() ) );
         VectorDataSet sliceDataSet= tds.getYSlice( TableUtil.closestRow( tds, itable, e.getY() ), itable );
@@ -178,7 +179,7 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
         Units yUnits = zAxis.getUnits();
         double min = getXAxis().getDataMinimum(yUnits);
         double max = getXAxis().getDataMaximum(yUnits);
-        double delta = 1.0 / vds.getXLength();
+        int sampleCount = vds.getXLength();
         if (zAxis.isLog()) {
             double minLog = Math.floor(DasMath.log10(min));
             double maxLog = Math.ceil(DasMath.log10(max));
@@ -186,7 +187,10 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
             double[] bins = new double[binCount];
             for (int i = 0; i < vds.getXLength(); i++) {
                 double y = vds.getDouble(i, yUnits);
-                if (yUnits.isFill(y)) { continue; }
+                if (yUnits.isFill(y) || Double.isNaN(y)) {
+                    sampleCount--;
+                    continue;
+                }
                 double yLog = DasMath.log10(y);
                 if (yLog < minLog) {
                     double newMinLog = Math.floor(yLog);
@@ -208,12 +212,13 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
                 }
                 int index = (int)((yLog - minLog) * (double)BINS_PER_DECADE);
                 if (index >= 0 && index < bins.length) {
-                    bins[index] += delta;
+                    bins[index] += 1.0;
                 }
             }
             double[] x = new double[binCount];
-            for (int i = 0; i < binCount; i++) {
-                x[i] = DasMath.exp10(minLog + (i / (double)BINS_PER_DECADE));
+            for (int index = 0; index < binCount; index++) {
+                x[index] = DasMath.exp10(minLog + (index / (double)BINS_PER_DECADE));
+                bins[index] = bins[index] / (double)sampleCount;
             }
             return new DefaultVectorDataSet(x, yUnits, bins, Units.dimensionless, Collections.EMPTY_MAP);
         }
@@ -225,7 +230,10 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
             double[] bins = new double[binCount];
             for (int i = 0; i < vds.getXLength(); i++) {
                 double y = vds.getDouble(i, yUnits);
-                if (yUnits.isFill(y)) { continue; }
+                if (yUnits.isFill(y) || Double.isNaN(y)) {
+                    sampleCount--;
+                    continue;
+                }
                 if (y < min) {
                     double newMin = Math.floor(y);
                     int binCountDelta = (int)(min - newMin);
@@ -246,12 +254,13 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
                 }
                 int index = (int)(y - min);
                 if (index >= 0 && index < bins.length) {
-                    bins[index] += delta;
+                    bins[index] += 1.0;
                 }
             }
             double[] x = new double[binCount];
-            for (int i = 0; i < binCount; i++) {
-                x[i] = min + (double)i;
+            for (int index = 0; index < binCount; index++) {
+                x[index] = min + (double)index + 0.5;
+                bins[index] = bins[index] / (double)sampleCount;
             }
             return new DefaultVectorDataSet(x, yUnits, bins, Units.dimensionless, Collections.EMPTY_MAP);
         }
