@@ -465,8 +465,8 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     public Element getDOMElement(Document document) {
         
-        Element element = document.createElement("stackedHistogram");        
-        element.setAttribute("zAxis", zAxis.getName() );
+        Element element = document.createElement("stackedHistogram");                
+        element.setAttribute("zAxis", zAxis.getDasName() );
         element.setAttribute("dataSetID", getDataSetID() );      
         return element;
     }
