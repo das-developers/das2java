@@ -629,11 +629,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Object oldValue = this.dataset;
         if (dataset.equals(this.dataset)) return;
         this.dataset=dataset;
-        try {
-            dsd = DataSetDescriptor.create(dataset);
+        if (dataset.equals("")) {
+            dsd = null;
         }
-        catch (edu.uiowa.physics.pw.das.DasException de) {
-            DasExceptionHandler.handle(de);
+        else {
+            try {
+                dsd = DataSetDescriptor.create(dataset);
+            }
+            catch (edu.uiowa.physics.pw.das.DasException de) {
+                DasExceptionHandler.handle(de);
+            }
         }
         markDirty();
         update();
