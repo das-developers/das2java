@@ -79,7 +79,11 @@ public class TableUtil {
     }
     
     public static Datum guessXTagWidth( TableDataSet table ) {
-        return table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
+        if ( table.getXLength()>1 ) {
+            return table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
+        } else {
+            return table.getXUnits().getOffsetUnits().createDatum(0);
+        }
     }
     
     public static Datum guessYTagWidth( TableDataSet table ) {
