@@ -884,7 +884,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     private void updateTickVLinear() {
-        
         int nTicksMax;
         int axisSize;
         if (isHorizontal()) {
@@ -906,7 +905,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double maximum= dataRange.getMaximum();
         
         double maj= (maximum-minimum)/nTicksMax;
-        double mag= Math.exp(Math.log(10)*Math.floor(Math.log(maj)/Math.log(10)));
+        double mag= DasMath.exp10(Math.floor(DasMath.log10(maj)));
         double absissa= maj/mag;
         
         if (absissa<1.666) absissa=1.0;
