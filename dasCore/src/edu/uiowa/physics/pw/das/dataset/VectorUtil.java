@@ -43,11 +43,84 @@ public class VectorUtil {
         return closest( xx, x );
     }
     
+    public static void dumpToAsciiStream( VectorDataSet vds, Datum xmin, Datum xmax, OutputStream out ) {
+        PrintStream pout= new PrintStream(out);
+        
+        Datum base=null;
+        Units offsetUnits= null;
+        
+        pout.print("[00]");
+        pout.println("<stream start=\""+vds.getXTagDatum(0)+"\" end=\""+vds.getXTagDatum(vds.getXLength()-1)+"\" >");
+        pout.println("<comment>Stream creation date: "+TimeUtil.now().toString()+"</comment>");
+        pout.print("</stream>");
+        
+        if ( vds.getXUnits() instanceof LocationUnits ) {
+            base= xmin;
+            offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
+            if ( offsetUnits==Units.microseconds ) {
+                offsetUnits= Units.seconds;
+            }
+        }
+        
+        
+        pout.print("[01]<packet>\n");
+        pout.print("<x type=\"asciiTab10\" ");
+        if ( base!=null ) {
+            pout.print("base=\""+base+"\" ");
+            pout.print(" xUnits=\""+offsetUnits+"\" ");
+        } else {
+            pout.print(" xUnits=\""+vds.getXUnits()+"\"");
+        }
+        pout.println(" />");
+        
+        List planeIDs;
+        if ( vds.getProperty("plane-list")!=null ) {
+            planeIDs= (List)vds.getProperty("plane-list");
+        } else {
+            planeIDs= new ArrayList();
+            planeIDs.add("");
+        }
+        
+        for ( int i=0; i<planeIDs.size(); i++ ) {
+            String plid= (String)planeIDs.get(i);
+            pout.println("<y type=\"asciiTab10\" name=\""+plid+"\" yUnits=\""+vds.getPlanarView(plid).getYUnits()+"\" />");
+        }
+        pout.print("</packet>");
+        
+        NumberFormat xnf= new DecimalFormat("00000.000");
+        NumberFormat ynf= new DecimalFormat("0.00E00");
+        
+        double dx= xmax.subtract(xmin).doubleValue(offsetUnits);
+        for (int i=0; i<vds.getXLength(); i++) {
+            double x;
+            if ( base!=null ) {
+                x= vds.getXTagDatum(i).subtract(base).doubleValue(offsetUnits);
+            } else {
+                x= vds.getXTagDouble(i,vds.getXUnits());
+            }
+            if ( x>=0 && x<dx ) {
+                pout.print(":01:");
+                pout.print(xnf.format(x)+" ");
+                for ( int iplane=0; iplane<planeIDs.size(); iplane++ ) {
+                    VectorDataSet vds1= (VectorDataSet)vds.getPlanarView((String)planeIDs.get(iplane));
+                    pout.print(FixedWidthFormatter.format(ynf.format(vds1.getDouble(i,vds1.getYUnits())),9));
+                    if ( iplane==planeIDs.size()-1) {
+                        pout.print("\n");
+                    } else {
+                        pout.print(" ");
+                    }
+                }
+            }
+        }
+        
+        pout.close();
+    }
+    
     public static void dumpToAsciiStream( VectorDataSet vds, OutputStream out ) {
         PrintStream pout= new PrintStream(out);
         
         Datum base=null;
-        Units offsetUnits= null;                 
+        Units offsetUnits= null;
         
         pout.print("[00]");
         pout.println("<stream start=\""+vds.getXTagDatum(0)+"\" end=\""+vds.getXTagDatum(vds.getXLength()-1)+"\" >");
@@ -59,15 +132,15 @@ public class VectorUtil {
             offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
             if ( offsetUnits==Units.microseconds ) {
                 offsetUnits= Units.seconds;
-            }                       
-        } 
-
+            }
+        }
+        
         
         pout.print("[01]<packet>\n");
         pout.print("<x type=\"asciiTab10\" ");
         if ( base!=null ) {
             pout.print("base=\""+base+"\" ");
-            pout.print(" xUnits=\""+offsetUnits+"\" ");            
+            pout.print(" xUnits=\""+offsetUnits+"\" ");
         } else {
             pout.print(" xUnits=\""+vds.getXUnits()+"\"");
         }
@@ -85,9 +158,9 @@ public class VectorUtil {
             pout.println("<y type=\"asciiTab10\" name=\""+planeIDs.get(i)+"\" yUnits=\""+vds.getYUnits()+"\" />");
         }
         pout.print("</packet>");
-                                
+        
         NumberFormat xnf= new DecimalFormat("00000.000");
-        NumberFormat ynf= new DecimalFormat("0.00E00");                
+        NumberFormat ynf= new DecimalFormat("0.00E00");
         
         for (int i=0; i<vds.getXLength(); i++) {
             pout.print(":01:");
@@ -100,9 +173,9 @@ public class VectorUtil {
             pout.print(xnf.format(x)+" ");
             for ( int iplane=0; iplane<planeIDs.size(); iplane++ ) {
                 VectorDataSet vds1= (VectorDataSet)vds.getPlanarView((String)planeIDs.get(iplane));
-                pout.print(FixedWidthFormatter.format(ynf.format(vds1.getDouble(i,vds.getYUnits())),9));    
+                pout.print(FixedWidthFormatter.format(ynf.format(vds1.getDouble(i,vds1.getYUnits())),9));
                 if ( iplane==planeIDs.size()-1) {
-                    pout.print("\n");                    
+                    pout.print("\n");
                 } else {
                     pout.print(" ");
                 }
@@ -113,7 +186,7 @@ public class VectorUtil {
         pout.close();
     }
     
-
+    
     public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
         PrintStream pout= new PrintStream(out);
         
