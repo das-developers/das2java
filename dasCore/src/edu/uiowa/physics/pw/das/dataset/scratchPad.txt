@@ -1,20 +1,22 @@
 jbf> TableDataSetConsumer should be renamed ZAxisDataSetComsumer or something like that
  DataSet.hasZAxis()?
 
-
 jbf> Suggested Properties for DataSets:
-  xSampleWidth       Datum typical time between samples
-    xTagWidth        Datum the extent of relevance of the x tags
-    yTagWidth        Datum "   "   "  of the y tags
-       introduce Units.percent, which is useful for specifying log width.
   spacecraft         Spacecraft enumeration object
   xRange             DataRange object suggestion
   yRange             DataRange object suggestion
-  dataType           String identifier for data type
   defaultRenderer    Renderer Object
+  
+eew> Agreed proeprties for DataSets
+    xTagWidth        Datum the extent of relevance of the x tags
+    yTagWidth        Datum "   "   "  of the y tags
+       introduce Units.percent, which is useful for specifying log width.
   rebinner           Rebinner Object
-  dataPlanes         String[]
   cacheTag           Description of the start, end and resolution satisfied by this
                      data set.
+  planeIDs			 java.util.List 
 
-
+eew> Agreed plane identifiers
+	 peaks - peaks
+	 weights - rebinning weights (always dimensionless)
+	 uncertainty - errors plane
