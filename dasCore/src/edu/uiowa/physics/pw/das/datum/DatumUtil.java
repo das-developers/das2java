@@ -76,15 +76,16 @@ public final class DatumUtil {
         if (count <= 0) return "0";
         StringBuffer buff = new StringBuffer(count+2).append("0.");
         for (int index = 0; index < count; index++) {
-            buff.setCharAt(index, '0');
+            buff.append('0');
         }
         return buff.toString();
     }
     
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
         double secondsPerStep = maximum.subtract(minimum).convertTo(Units.seconds).getValue() / nsteps;
+        
         if (secondsPerStep < 1.) {
-            return TimeDatumFormatter.MILLESECONDS;
+            return TimeDatumFormatter.MILLISECONDS;
         }
         else if (secondsPerStep < 60.) {
             return TimeDatumFormatter.SECONDS;
