@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import javax.swing.*;
+import javax.swing.border.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 
 /**
@@ -63,12 +64,13 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         messageLabel.setFont(new Font("Dialog", 1, 18));
         messageLabel.setHorizontalAlignment(JLabel.CENTER);
         messageLabel.setText("Loading Data Set");
-        messageLabel.setOpaque(true);
+        messageLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
         progressBar = new JProgressBar();
         progressBar.setOpaque(false);
         progressBar.setMaximumSize(progressBar.getPreferredSize());
         progressBar.setMinimumSize(progressBar.getPreferredSize());
+        progressBar.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         
         kbLabel = new JLabel();
         kbLabel.setOpaque(false);
@@ -78,6 +80,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         kbLabel.setMaximumSize(progressBar.getPreferredSize());
         kbLabel.setMinimumSize(progressBar.getPreferredSize());
         kbLabel.setPreferredSize(progressBar.getPreferredSize());
+        kbLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
         mainPanel = new JPanel();
         mainPanel.setOpaque(false);
@@ -86,7 +89,14 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         mainPanel.add(progressBar);
         mainPanel.add(kbLabel);
         
+        Border lineBorder = new LineBorder(Color.BLACK, 2);
+        Border emptyBorder = new EmptyBorder(2, 2, 2, 2);
+        CompoundBorder border = new CompoundBorder(lineBorder, emptyBorder);
+        
         cancelButton = new JButton("cancel");
+        cancelButton.setOpaque(false);
+        cancelButton.setBorder(border);
+        cancelButton.setFocusPainted(false);
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cancel();
@@ -94,6 +104,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         });
         
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setOpaque(false);
         buttonPanel.add(cancelButton);
 
         setLayout(new BorderLayout());
