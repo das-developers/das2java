@@ -135,7 +135,7 @@ public class CurveRenderer extends Renderer {
     }
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
-        return null;
+        throw new UnsupportedOperationException();
     }    
     
 }

@@ -318,4 +318,8 @@ public class TickCurveRenderer extends Renderer {
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
     }
     
+    protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
+        throw new UnsupportedOperationException();
+    }    
+    
 }
