@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.client;
 
+import edu.uiowa.physics.pw.das.*;
 /**
  *
  * @author  jbf
@@ -49,8 +50,7 @@ import java.util.Properties;
 
 /** */
 public class WebStandardDataStreamSource implements StandardDataStreamSource {
-    
-    private Key key;
+        
     private DasServer server;
     private MeteredInputStream min;
     private boolean legacyStream = true;
@@ -63,40 +63,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         return legacyStream;
     }
     
-    private Key getKey() {
-        return getStoredKey();
-    }
-        
-    private Key getStoredKey() {
-        String keyfile= System.getProperty("user.home")+System.getProperty("file.separator")+".das2rc";
-        File f= new File(keyfile);
-        Properties dasProperties=new Properties();
-        if (f.canRead()) {
-            try {
-                InputStream in= new FileInputStream(f);
-                dasProperties.load(in);
-                in.close();
-            } catch (IOException e) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(e);
-            }
-        } else {
-            String keyString= JOptionPane.showInputDialog(null,"Enter temporary key: ","Need a key", JOptionPane.QUESTION_MESSAGE);
-            dasProperties.put("keyHack",keyString);
-            try {
-                OutputStream out= new FileOutputStream(f);
-                dasProperties.store(out,"");
-                out.close();
-            } catch (IOException e) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(e);
-            }
-        }
-        
-        if (dasProperties.containsKey("keyHack")) {
-            return new Key((String)dasProperties.get("keyHack"));
-        } else {
-            return null;
-        }
-    }
     
     public InputStream getInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException {
         String serverType;
@@ -104,7 +70,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         
         String formData= "server="+serverType;
         
-        InputStream in= openURLConnection( dsd, start, end, formData );        
+        InputStream in= openURLConnection( dsd, start, end, formData );
         MeteredInputStream min= new MeteredInputStream(in);
         min.setSpeedLimit(3300);
         return min;
@@ -113,23 +79,21 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     
     
     public InputStream getReducedInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
-                
+        
         String formData;
         String form = (String)dsd.getProperty("form");
         
-        if ( "x_tagged_y_scan".equals(form) ) {            
+        if ( "x_tagged_y_scan".equals(form) ) {
             formData= "server=compactdataset";
             StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
             formData+= "&nitems=" + (y.getNItems() + 1);
             formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
-        } else if ( "x_multi_y".equals(form) && dsd.getProperty("ny") != null) {            
+        } else if ( "x_multi_y".equals(form) && dsd.getProperty("ny") != null) {
             formData= "server=dataset";
-        }
-        else if ( "x_multi_y".equals(form) ) {
+        } else if ( "x_multi_y".equals(form) ) {
             formData= "server=dataset";
             formData+= "&interval="+timeResolution.doubleValue(Units.seconds);
-        }
-        else {
+        } else {
             formData = "server=compactdataset&resolution="+timeResolution.doubleValue(Units.seconds);
         }
         
@@ -143,18 +107,17 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         if ( min!=null && min.calcTransmitSpeed()>30000 ) {
             compress= false;
         }
-            
+        
+        //compress= true;
         if (compress) {
             formData+= "&compress=true";
         }
         
-        InputStream in= openURLConnection( dsd, start, end, formData );        
+        InputStream in= openURLConnection( dsd, start, end, formData );
         min= new MeteredInputStream(in);
-        if (compress) {
-            return new java.util.zip.ZipInputStream(min);
-        }
+        
         return min;
-
+        
     }
     
     private String createFormDataString(String dataSetID, Datum start, Datum end, String additionalFormData) throws UnsupportedEncodingException {
@@ -175,17 +138,15 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         
         try {
             String formData = createFormDataString(dataSetID, start, end, additionalFormData);
-            if (dsd.isRestrictedAccess() || key!=null ) {
-                if (key==null) {
-                    authenticate();
-                }
+            if ( dsd.isRestrictedAccess() ) {
+                Key key= server.getKey("");
                 if (key!=null) {
                     formData+= "&key="+URLEncoder.encode(key.toString(),"UTF-8");
                 }
             }
             
             URL serverURL= this.server.getURL(formData);
-            DasDie.println(DasDie.VERBOSE,serverURL.toString());
+            DasApplication.getDefaultApplication().getLogger().info(serverURL.toString());
             
             URLConnection urlConnection = serverURL.openConnection();
             urlConnection.connect();
@@ -219,50 +180,53 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     private InputStream processLegacyStream(InputStream in) throws IOException, DasException {
         /* advances the inputStream past the old das2server tags */
         BufferedInputStream bin= new BufferedInputStream(in);
-
+        
         bin.mark(Integer.MAX_VALUE);
         String serverResponse= readServerResponse(bin);
-
+        
         if ( serverResponse.equals("") ) {
             return bin;
-
+            
         } else {
-
+            
             if (serverResponse.equals("<noDataInInterval/>")) {
                 throw new NoDataInIntervalException("no data in interval");
             }
-
+            
             String errorTag= "error";
             if (serverResponse.startsWith("<"+errorTag+">")) {
                 int index2= serverResponse.indexOf("</"+errorTag+">");
-
+                
                 String error= serverResponse.substring( errorTag.length()+2,
                 serverResponse.length()-(errorTag.length()+3));
-
+                
                 edu.uiowa.physics.pw.das.util.DasDie.println("error="+error);
-
-                if (error.equals("<needKey/>")) {
-                    authenticate();
-                    throw new NoKeyProvidedException("");
+                
+                /* presume that the endUser has opted out */
+                if (error.equals("<needKey/>")) {;
+                throw new NoKeyProvidedException("");
                 }
-
-                if (error.equals("<accessDenied/>")) {
+                
+                if (error.equals("<accessDenied/>")) {    
+                    /* the server says the key used does not have access to the resouce requested. Allow the user to reauthenticate */
+                    server.setKey(null);
+                    server.getKey("");
                     throw new AccessDeniedException("");
                 }
-
+                
                 if (error.equals("<invalidKey/>" )) {
                     throw new NoKeyProvidedException("invalid Key");
                 }
-
+                
                 if (error.equals("<noSuchDataSet/>")) {
                     throw new NoSuchDataSetException("");
                 }
-
+                
                 else {
                     throw new DasServerException("Error response from server: "+error);
                 }
             }
-
+            
             return bin;
         }
     }
@@ -324,10 +288,11 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     public void reset() {
     }
     
-    public void authenticate() {
+    public void authenticate( String restrictedResourceLabel ) {
         Authenticator authenticator;
-        authenticator= new Authenticator(server);
-        key= authenticator.authenticate();
-    }      
+        authenticator= new Authenticator(server,restrictedResourceLabel);
+        Key key= authenticator.authenticate();
+        if ( key!=null ) server.setKey(key);
+    }
     
 }
