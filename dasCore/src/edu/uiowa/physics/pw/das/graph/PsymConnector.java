@@ -38,7 +38,7 @@ public class PsymConnector implements PropertyEditor.Enumeration {
     
     String name;
     Icon imageIcon;
-    BasicStroke stroke;  
+    BasicStroke stroke;
     BasicStroke cacheStroke;
     float cacheWidth;
     Line2D line;
@@ -53,7 +53,8 @@ public class PsymConnector implements PropertyEditor.Enumeration {
     BasicStroke.JOIN_ROUND, 1.0f, new float[] {3.0f,2.0f}, 0.f ) );
     
     public static final PsymConnector PSYM10= new PsymConnector( "Psym10", new BasicStroke( 1.0f ) ) {
-        public void drawLine( Graphics2D g, int x1, int y1, int x2, int y2, float width ) {            
+        public void drawLine( Graphics2D g, int x1, int y1, int x2, int y2, float width ) {
+            g.setStroke( getStroke(width) );
             int xMid= (x1 + x2) / 2;
             line.setLine(x1,y1,xMid,y1);  g.draw(line);
             line.setLine(xMid,y1,xMid,y2);  g.draw(line);
@@ -80,11 +81,7 @@ public class PsymConnector implements PropertyEditor.Enumeration {
         this.imageIcon= new ImageIcon(i);
     }
     
-    public void drawLine(Graphics2D g, int x1, int y1, int x2, int y2, float width ) {
-        // jbf: this thing really wants a state, especially if it is going to 
-        // keep track of the dash phase between calls.  Perhaps this needs a 
-        // state object to go with it.
-        if ( stroke==null ) return;
+    protected Stroke getStroke( float width ) {
         if ( width!=cacheWidth ) {
             float[] dashArray= stroke.getDashArray();
             float[] dashArrayWidth=null;
@@ -94,19 +91,29 @@ public class PsymConnector implements PropertyEditor.Enumeration {
                     dashArrayWidth[i]= dashArray[i] * width;
                 }
             }
-                        
             cacheStroke= new BasicStroke( width, stroke.getEndCap(), stroke.getLineJoin(),
             stroke.getMiterLimit(), dashArrayWidth, stroke.getDashPhase()*width );
             cacheWidth= width;
         }
-        g.setStroke( cacheStroke );
-        g.drawLine(x1,y1,x2,y2);
+        return cacheStroke;
+    }
+    
+    public void drawLine(Graphics2D g, int x1, int y1, int x2, int y2, float width ) {
+        // jbf: this thing really wants a state, especially if it is going to
+        // keep track of the dash phase between calls.  Perhaps this needs a
+        // state object to go with it.
+        if ( stroke==null ) {
+            return;
+        } else {
+            g.setStroke( getStroke(width) );
+            g.drawLine(x1,y1,x2,y2);
+        }
     }
     
     public javax.swing.Icon getListIcon() {
         return imageIcon;
     }
-
+    
     public String toString() {
         return name;
     }
