@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import javax.swing.*;
 
 /**
  *
@@ -39,18 +40,34 @@ public class DataSetUtil {
         DasAxis yaxis= guessYAxis( ds );
         DasPlot plot= new DasPlot( xaxis, yaxis );
         if ( ds instanceof VectorDataSet ) {
-            Renderer rend= new SymbolLineRenderer( ds );
+            edu.uiowa.physics.pw.das.graph.Renderer rend= new SymbolLineRenderer( ds );
             plot.addRenderer(rend);
         } else if (ds instanceof TableDataSet ) {
             Units zunits= ((TableDataSet)ds).getZUnits();
             DasColorBar colorbar= new DasColorBar( zunits.createDatum( -20 ), zunits.createDatum(20), false );
-            Renderer rend= new SpectrogramRenderer( new ConstantDataSetDescriptor(ds), colorbar );
+            edu.uiowa.physics.pw.das.graph.Renderer rend= new SpectrogramRenderer( new ConstantDataSetDescriptor(ds), colorbar );
             plot.addRenderer(rend);
         }
         
         return plot;
     }
     
+    public static DasPlot visualize( DataSet ds, double xmin, double xmax, double ymin, double ymax ) {
+        JFrame jframe= new JFrame("DataSetUtil.visualize");
+        DasCanvas canvas= new DasCanvas(400,400);
+        jframe.getContentPane().add( canvas );
+        DasPlot result= guessPlot( ds );
+        canvas.add( result, DasRow.create(canvas), DasColumn.create( canvas ) );
+        Units xunits= result.getXAxis().getUnits();
+        result.getXAxis().setDataRange(xunits.createDatum(xmin), xunits.createDatum(xmax) );
+        Units yunits= result.getYAxis().getUnits();
+        result.getYAxis().setDataRange(yunits.createDatum(ymin), yunits.createDatum(ymax) );
+        jframe.pack();
+        jframe.setVisible(true);
+        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        return result;
+    }
+        
     public static double[] getXTagArrayDouble( DataSet table, Units units ) {
         
         int ixmax= table.getXLength();
