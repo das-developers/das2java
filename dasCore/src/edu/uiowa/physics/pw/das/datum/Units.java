@@ -24,9 +24,10 @@
 package edu.uiowa.physics.pw.das.datum;
 
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
+import java.util.*;
 
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 /**
  *
  * @author  jbf
@@ -36,9 +37,9 @@ public class Units {
     String id;
     String description;
     
-    private static Hashtable conversionTable;
+    private static HashMap conversionTable;
     
-    private static Hashtable getConversionTable() {
+    private static HashMap getConversionTable() {
         if ( conversionTable==null ) {
             conversionTable= buildConversionTable();
         }
@@ -46,36 +47,42 @@ public class Units {
     }
     
     public static void dumpConversionTable() {
-        Hashtable conversionTable= getConversionTable();
-        Enumeration e= conversionTable.elements();
-        while (e.hasMoreElements()) {
-            Enumeration e2= ((Hashtable)e.nextElement()).elements();
-            while (e2.hasMoreElements()) {
-                edu.uiowa.physics.pw.das.util.DasDie.println(e2.nextElement());
+        HashMap conversionTable= getConversionTable();
+        
+        for ( Iterator i= conversionTable.values().iterator(); i.hasNext(); ) {            
+            for ( Iterator j= ((HashMap)i.next()).values().iterator(); j.hasNext(); ) {
+                edu.uiowa.physics.pw.das.util.DasDie.println(j.next());
             }
         }
     }
     
-    private static Hashtable buildConversionTable() {
-        Hashtable conversionTable= new Hashtable();
-        Hashtable t2000= new Hashtable();
+    private static HashMap buildConversionTable() {
+        HashMap conversionTable= new HashMap();
+
+        HashMap t2000= new HashMap();
         t2000.put(Units.us2000,new UnitsConverter(1e6,0.0));
         t2000.put(Units.mj1958,new UnitsConverter(1./86400.,15340.));
-        Hashtable us2000= new Hashtable();
+        conversionTable.put(Units.t2000,t2000);
+
+        HashMap us2000= new HashMap();
         us2000.put(Units.mj1958,new UnitsConverter(1./86400000000.,15340.,"us2000->mj1958"));
         us2000.put(Units.t2000,new UnitsConverter(1e-6,0.0,"us2000->t2000"));
-        Hashtable seconds= new Hashtable();
+        conversionTable.put(Units.us2000,us2000);
+
+        HashMap seconds= new HashMap();
         seconds.put(Units.microseconds, new UnitsConverter(1e6,0.0,"seconds->microseconds"));
         seconds.put(Units.days, new UnitsConverter(1./86400,0.0));
-        Hashtable days= new Hashtable();
-        days.put(Units.microseconds, new UnitsConverter(1e6*86400,0.0,"days->microseconds"));
-        Hashtable celcius= new Hashtable();
-        celcius.put(Units.fahrenheit, (new UnitsConverter(9./5,32)));
-        conversionTable.put(Units.t2000,t2000);
-        conversionTable.put(Units.us2000,us2000);
-        conversionTable.put(Units.celcius,celcius);
         conversionTable.put(Units.seconds,seconds);
+
+        HashMap days= new HashMap();
+        days.put(Units.microseconds, new UnitsConverter(1e6*86400,0.0,"days->microseconds"));
+        days.put(Units.seconds, new UnitsConverter(86400,0.0,"days->seconds"));
         conversionTable.put(Units.days,days);
+
+        HashMap celcius= new HashMap();
+        celcius.put(Units.fahrenheit, (new UnitsConverter(9./5,32)));
+        conversionTable.put(Units.celcius,celcius);
+
         return conversionTable;
     }
     
@@ -106,16 +113,16 @@ public class Units {
     
     public static UnitsConverter getConverter( Units fromUnits, Units toUnits ) {
         if ( toUnits==fromUnits ) return UnitsConverter.identity;
-        Hashtable conversionTable= getConversionTable();
-        if ( conversionTable.containsKey(fromUnits) ) {
-            Hashtable conversionsTo= (Hashtable)conversionTable.get(fromUnits);
-            if ( !conversionsTo.containsKey(toUnits) ) {
-               throw new IllegalArgumentException("Can't convert from "+fromUnits.toString()+" to "+toUnits.toString());
-            } else {
-                return (UnitsConverter)conversionsTo.get(toUnits);
-            }
-        } else if ( conversionTable.containsKey(toUnits) ) {
-            Hashtable conversionsFrom= (Hashtable)conversionTable.get(toUnits);
+        HashMap conversionTable= getConversionTable();
+        HashMap conversionsFrom1= (HashMap)conversionTable.get(toUnits);
+        HashMap conversionsTo1= (HashMap)conversionTable.get(fromUnits);
+        if ( conversionTable.containsKey(fromUnits) && 
+             ((HashMap)conversionTable.get(fromUnits)).containsKey(toUnits) ) {
+            HashMap conversionsTo= (HashMap)conversionTable.get(fromUnits);
+            return (UnitsConverter)conversionsTo.get(toUnits);            
+        } else if ( conversionTable.containsKey(toUnits) && 
+            ((HashMap)conversionTable.get(toUnits)).containsKey(fromUnits) ) {
+            HashMap conversionsFrom= (HashMap)conversionTable.get(toUnits);
             if ( !conversionsFrom.containsKey(fromUnits) ) {
                throw new IllegalArgumentException("Can't convert from "+fromUnits.toString()+" to "+toUnits.toString());
             } else {               
@@ -145,8 +152,10 @@ public class Units {
     public static void main( String[] args ) {
         dumpConversionTable();
         
+        System.out.println( Datum.create(1,Units.days).convertTo(Units.seconds) );
+        System.out.println("Test of uc.convert vs manual convesion:");
         UnitsConverter uc= Units.t2000.getConverter(Units.us2000);
-        int nn=50000000;        
+        int nn=500000;        
         
         double varient=0.;
                
@@ -154,8 +163,8 @@ public class Units {
         for (int i=0; i<nn; i++) {            
             varient+= uc.convert(i);
         }
-        System.out.println(System.currentTimeMillis()-t1);
-        System.out.println(varient);
+        long x= System.currentTimeMillis()-t1;
+        System.out.println("Time(ms) of uc.convert: "+x);        
         varient=0;
         
         t1= System.currentTimeMillis();
@@ -165,9 +174,8 @@ public class Units {
         for (int i=0; i<nn; i++) {
             varient+= scale * i + offset;
         }
-        System.out.println(System.currentTimeMillis()-t1);
-        System.out.println(varient);
-        
+        x= System.currentTimeMillis()-t1;
+        System.out.println("Time(ms) of scale, offset calculation: "+x);                
         
     }
     
