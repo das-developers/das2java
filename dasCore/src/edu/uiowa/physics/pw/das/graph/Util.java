@@ -38,7 +38,7 @@ public class Util {
         try {
             Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             document.appendChild(canvas.getDOMElement(document));
-            StringWriter writer = new StringWriter();
+            StringWriter writer = new StringWriter(); 
             OutputFormat format = new OutputFormat(Method.XML, "UTF-8", true);
             XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
             serializer.serialize(document);
@@ -79,8 +79,10 @@ public class Util {
         if (xds.getProperty("xTagWidth") != null) {
             Datum xSampleWidthDatum = (Datum)xds.getProperty("xTagWidth");
             xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
-        }
-        else {
+        } else if (xds.getProperty("xSampleWidth") != null) {
+            Datum xSampleWidthDatum = (Datum)xds.getProperty("xSampleWidth");   // this is not the correct property name, but we'll allow it for now
+            xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
+        } else {
             //Try to load the legacy sample-width property.
             String xSampleWidthString = (String)xds.getProperty("x_sample_width");
             if (xSampleWidthString != null) {
@@ -92,6 +94,7 @@ public class Util {
             }
         }
         
+        double t0 = -Double.MAX_VALUE;
         double x0 = -Double.MAX_VALUE;
         double y0 = -Double.MAX_VALUE;
         double i0 = -Double.MAX_VALUE;
@@ -99,14 +102,15 @@ public class Util {
         boolean skippedLast = true;        
         int n= xds.getXLength();
         for (int index = 0; index < n; index++) {
-            double x = xds.getDouble(index, xUnits);
+            double t= xds.getXTagDouble(index, xUnits);
+            double x = xds.getDouble(index, yUnits);
             double y = yds.getDouble(index, yUnits);
             double i = xAxis.transform(x, xUnits);
             double j = yAxis.transform(y, yUnits);
             if ( yUnits.isFill(y) || Double.isNaN(y)) {
                 skippedLast = true;
             }
-            else if (skippedLast || Math.abs(x - x0) > xSampleWidth) {
+            else if (skippedLast || (t - t0) > xSampleWidth) {
                 newPath.moveTo((float)i, (float)j);
                 skippedLast = false;
             }
@@ -122,8 +126,9 @@ public class Util {
                 }
                 skippedLast = false;
             }
+            t0= t;
             x0= x;
-            y0= y;
+            y0= y;            
             i0= i;
             j0= j;
         }
