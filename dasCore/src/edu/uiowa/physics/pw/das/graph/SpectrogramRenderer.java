@@ -122,9 +122,9 @@ public class SpectrogramRenderer extends Renderer implements XTaggedYScanDataSet
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         if (plotImage!=null) {
-            double x = xAxis.getColumn().getDMinimum();
-            double y = yAxis.getRow().getDMinimum();
-            g.drawImage( plotImage,(int)x, (int)y, getParent() );
+            int x = xAxis.getColumn().getDMinimum();
+            int y = yAxis.getRow().getDMinimum();
+            g.drawImage( plotImage,x,y, getParent() );
         } 
         if (getDataSet()==null && lastException!=null ) {
              renderException(g,xAxis,yAxis,lastException);
@@ -135,8 +135,8 @@ public class SpectrogramRenderer extends Renderer implements XTaggedYScanDataSet
                
         XTaggedYScanDataSet rebinData;
         
-        int w = (int)Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - (int)Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-        int h = (int)Math.floor(yAxis.getRow().getDMaximum() + 0.5) - (int)Math.floor(yAxis.getRow().getDMinimum() + 0.5);
+        int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
+        int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
         
       	if (getParent()==null  || w<=1 || h<=1 ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("canvas not useable!!!");

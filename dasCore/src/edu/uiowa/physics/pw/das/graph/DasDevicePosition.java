@@ -86,12 +86,12 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
         return dasName;
     }
     
-    public double getDMinimum() {
-        return minimum*getDeviceSize();
+    public int getDMinimum() {
+        return (int)(minimum*getDeviceSize());
     }
     
-    public double getDMaximum() {
-        return maximum*getDeviceSize();
+    public int getDMaximum() {
+        return (int)(maximum*getDeviceSize());
     }
     
     public double getMinimum() {
@@ -118,7 +118,7 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
         fireUpdate();
     }
     
-    public void setDPosition(double minimum, double maximum) {
+    public void setDPosition( int minimum, int maximum) {
         setPosition(minimum / getDeviceSize(), maximum / getDeviceSize());
     }
     
@@ -138,11 +138,11 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
         }
     }
     
-    public void setDMaximum(double maximum) {
-        setMaximum(maximum / getDeviceSize());
+    public void setDMaximum( int maximum) {
+        setMaximum( (double)maximum / getDeviceSize());
     }
     
-    public void setMinimum(double minimum) {
+    public void setMinimum( double minimum) {
         if (minimum == this.minimum) {
             return;
         }
@@ -158,16 +158,16 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
         }
     }
     
-    public void setDMinimum(double minimum) {
-        setMinimum(minimum / getDeviceSize());
+    public void setDMinimum( int minimum) {
+        setMinimum( (double)minimum / getDeviceSize());
     }
     
     public void translate(double nDelta) {
         setPosition(this.minimum + nDelta, this.maximum + nDelta);
     }
     
-    public void dTranslate(double delta) {
-        setDPosition(getDMinimum() + delta, getDMaximum() + delta);
+    public void dTranslate( int delta ) {
+        setDPosition( getDMinimum() + delta, getDMaximum() + delta);
     }
     
     public DasCanvas getParent() {
@@ -231,12 +231,12 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
         propertyChangeDelegate.firePropertyChange(propertyName, oldValue, newValue);
     }
     
-    protected abstract double getDeviceSize();
+    protected abstract int getDeviceSize();
     
-    public static java.awt.geom.Rectangle2D.Double toRectangle(DasRow row, DasColumn column) {
-        double xmin=column.getDMinimum();
-        double ymin=row.getDMinimum();
-        return new java.awt.geom.Rectangle2D.Double(xmin,ymin,
+    public static java.awt.Rectangle toRectangle(DasRow row, DasColumn column) {
+        int xmin=column.getDMinimum();
+        int ymin=row.getDMinimum();
+        return new java.awt.Rectangle(xmin,ymin,
         column.getDMaximum()-xmin,
         row.getDMaximum()-ymin);
     }
@@ -245,11 +245,11 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
         return getClass().getName() + "[minimum=" + getDMinimum() + " maximum=" + getDMaximum() + "]";
     }
     
-    public boolean contains(double x) {
+    public boolean contains( int x ) {
         return ( getDMinimum() <= x ) && ( x <= getDMaximum() );
     }
     
-    public double getDMiddle() {
+    public int getDMiddle() {
         return (getDMinimum()+getDMaximum())/2;
     }
     

@@ -43,32 +43,32 @@ public class AttachedRow extends DasRow {
     /** Gets the maximum for the row in the device space.
      * @return the maximum value for the row in the device space.
      */    
-    public double getDMaximum() {
+    public int getDMaximum() {
         if (row==null) {
-            return 0.;
+            return 0;
         } else {
-            double delta= row.getHeight();
-            return row.getDMinimum()+delta*getMaximum();
+            int delta= row.getHeight();
+            return row.getDMinimum()+(int)(delta*getMaximum());
         }
     }
     
     /** Gets the minimum for the row in the device space.
      * @return the minimum value for the row in the device space.
      */    
-    public double getDMinimum() {
+    public int getDMinimum() {
         if (row==null) { // during construction, this is called.
-            return 0.;
+            return 0;
         } else {
             double delta= row.getHeight();
-            return row.getDMinimum()+delta*getMinimum();
+            return row.getDMinimum()+(int)(delta*getMinimum());
         }
     }
     
     /** Gets the height of the row in the device space.
      * @return the height of the row in the device space.
      */    
-    public double getHeight() {
-        return row.getHeight()*(getMaximum()-getMinimum());
+    public int getHeight() {
+        return (int)(row.getHeight()*(getMaximum()-getMinimum()));
     }
     
     /** Adds a listener to the row to receive DasUpdateEvents.
@@ -90,7 +90,7 @@ public class AttachedRow extends DasRow {
     /** Sets the minimum value for the row in the device space.
      * @param value the new minimum value of the row in the device space.
      */    
-    public void setDMinimum(double value) {
+    public void setDMinimum(int value) {
         double delta= row.getHeight();
         setMinimum((value-row.getDMinimum())/delta);
     }
@@ -98,9 +98,15 @@ public class AttachedRow extends DasRow {
     /** Sets the maximum value of the row in the device space.
      * @param value the new maximum value of the row in the device space.
      */    
-    public void setDMaximum(double value) {
+    public void setDMaximum(int value) {
         double delta= row.getHeight();
         setMaximum((value-row.getDMinimum())/delta);
     }
     
+    public void setDPosition(int minimum, int maximum) {
+        double delta= row.getHeight();
+        this.setMinimum((minimum-row.getDMinimum())/delta);
+        this.setMaximum((maximum-row.getDMinimum())/delta);
+        fireUpdate();
+    }
 }

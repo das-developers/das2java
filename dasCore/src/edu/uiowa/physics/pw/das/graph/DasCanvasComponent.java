@@ -84,9 +84,9 @@ implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
         } else if ( row==null ) {
             edu.uiowa.physics.pw.das.util.DasDie.println(""+this+" has null row in resize");
         } else {
-            setBounds((int)column.getDMinimum(),(int)row.getDMinimum(),
-            (int)(column.getDMaximum()-column.getDMinimum()),
-            (int)(row.getDMaximum()-row.getDMinimum()));
+            setBounds(column.getDMinimum(),row.getDMinimum(),
+            (column.getDMaximum()-column.getDMinimum()),
+            (row.getDMaximum()-row.getDMinimum()));
         }
     }
     
@@ -272,10 +272,10 @@ implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
     }
     
     public Shape getActiveRegion() {
-        int x = (int)Math.round(getColumn().getDMinimum());
-        int y = (int)Math.round(getRow().getDMinimum());
-        int width = (int)Math.round(getColumn().getDMaximum()) - x;
-        int height = (int)Math.round(getRow().getDMaximum()) - y;
+        int x = getColumn().getDMinimum();
+        int y = getRow().getDMinimum();
+        int width = getColumn().getDMaximum() - x;
+        int height = getRow().getDMaximum() - y;
         return new Rectangle(x, y, width, height);
     }
     

@@ -141,10 +141,10 @@ extends DasSymbolPlot implements DataPointSelectionListener {
     
     public void drawContent(Graphics2D g) {
         super.drawContent(g);
-        int ix= (int)this.getXAxis().transform(xValue);
+        int ix= this.getXAxis().transform(xValue);
         DasRow row= this.getRow();
-        int iy0= (int)row.getDMinimum();
-        int iy1= (int)row.getDMaximum();
+        int iy0= row.getDMinimum();
+        int iy1= row.getDMaximum();
         g.drawLine(ix+3,iy0,ix,iy0+3);
         g.drawLine(ix-3,iy0,ix,iy0+3);
         g.drawLine(ix+3,iy1,ix,iy1-3);

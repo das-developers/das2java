@@ -189,7 +189,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         g.translate(-getX(), -getY());
         
-        java.awt.geom.Rectangle2D.Double r= DasRow.toRectangle(getRow(),getColumn());
+        java.awt.Rectangle r= DasRow.toRectangle(getRow(),getColumn());
         r.width= r.width-1;
         r.height= r.height-1;
         r.y= r.y+1;
@@ -200,8 +200,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     protected void updateImmediately() {
-        if (dataSetDescriptor==null) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("DataSetDescriptor is null");
+        if (dataSetDescriptor==null) {            
         } else {
             loadDataSet();
         }
@@ -299,10 +298,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         Graphics2D graphics= (Graphics2D)graphics1;
         graphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
 
-        int x = (int)Math.floor(getColumn().getDMinimum() + 0.5);
-        int y = (int)Math.floor(getRow().getDMinimum() + 0.5);
-        int xSize= (int)Math.floor(getColumn().getDMaximum() + 0.5) - x;
-        int ySize= (int)Math.floor(getRow().getDMaximum() + 0.5) - y;
+        int x = getColumn().getDMinimum();
+        int y = getRow().getDMinimum();
+        int xSize= getColumn().getDMaximum() - x;
+        int ySize= getRow().getDMaximum() - y;
         
         graphics.translate(-getX(), -getY());
         
@@ -334,8 +333,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected void drawContent(Graphics2D g) {
         //if (plotImage==null) updateImmediately();
         if (plotImage!=null) {
-            int x = (int)Math.floor(getColumn().getDMinimum() + 0.5);
-            int y = (int)Math.floor(getRow().getDMinimum() + 0.5);
+            int x = getColumn().getDMinimum();
+            int y = getRow().getDMinimum();
             g.drawImage(plotImage, x, y+1,this);
         }
     }
@@ -347,10 +346,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         int titleHeight = (int)gtr.getHeight() + (int)gtr.getAscent() / 2;
         
         Rectangle bounds = new Rectangle();
-        bounds.x = (int)Math.floor(getColumn().getDMinimum() + 0.5) - 1;
-        bounds.y = (int)Math.floor(getRow().getDMinimum() + 0.5) - 1;
-        bounds.width = (int)Math.floor(getColumn().getDMaximum() + 0.5) - bounds.x + 1;
-        bounds.height = (int)Math.floor(getRow().getDMaximum() + 0.5) - bounds.y + 1;
+        bounds.x = getColumn().getDMinimum() - 1;
+        bounds.y = getRow().getDMinimum() - 1;
+        bounds.width = getColumn().getDMaximum() - bounds.x + 1;
+        bounds.height = getRow().getDMaximum() - bounds.y + 1;
         if (!getTitle().equals("")) {
             bounds.y -= titleHeight;
             bounds.height += titleHeight;

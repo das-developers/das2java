@@ -349,10 +349,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         boolean yBottomSide = false;
         
         if (parent.getRow() != null && parent.getColumn() != null) {
-            double xLeft= parent.getColumn().getDMinimum()-xOffset;
-            double xRight= parent.getColumn().getDMaximum()-xOffset;
-            double yTop= parent.getRow().getDMinimum()-yOffset;
-            double yBottom= parent.getRow().getDMaximum()-yOffset;
+            int xLeft= parent.getColumn().getDMinimum()-xOffset;
+            int xRight= parent.getColumn().getDMaximum()-xOffset;
+            int yTop= parent.getRow().getDMinimum()-yOffset;
+            int yBottom= parent.getRow().getDMaximum()-yOffset;
         
             xLeftSide= e.getX()<xLeft+5;
             xRightSide= e.getX()>xRight-5;
@@ -439,14 +439,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
             g= (Graphics2D) getGlassPane().getGraphics();
             g.translate(parent.getX(),parent.getY());
             if (mouseMode.resizeRight) {
-                resizeStart.x= (int) 0;
+                resizeStart.x=  0;
             } else if (mouseMode.resizeLeft) {
-                resizeStart.x= (int) parent.getWidth();
+                resizeStart.x=  parent.getWidth();
             }
             if (mouseMode.resizeTop) {
-                resizeStart.y= (int) parent.getHeight();
+                resizeStart.y=  parent.getHeight();
             } else if (mouseMode.resizeBottom) {
-                resizeStart.y= (int) 0;
+                resizeStart.y=  0;
             }
         } else if ( mouseMode==MouseMode.hotSpot ) {
             Vector v= hotSpots;
@@ -532,13 +532,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     
     private void performResize(MouseEvent e) {
         DasCanvas canvas= (DasCanvas)parent.getParent();
-        double dxLeft= parent.getColumn().getDMinimum();
-        double dxRight= parent.getColumn().getDMaximum();
-        double dyTop= parent.getRow().getDMinimum();
-        double dyBottom= parent.getRow().getDMaximum();
+        int dxLeft= parent.getColumn().getDMinimum();
+        int dxRight= parent.getColumn().getDMaximum();
+        int dyTop= parent.getRow().getDMinimum();
+        int dyBottom= parent.getRow().getDMaximum();
         
-        double dx= (double)e.getX()+xOffset;
-        double dy= (double)e.getY()+yOffset;
+        int dx= e.getX()+xOffset;
+        int dy= e.getY()+yOffset;
         if (mouseMode.resizeRight) {
             dxRight= dx;
         } else if (mouseMode.resizeLeft) {

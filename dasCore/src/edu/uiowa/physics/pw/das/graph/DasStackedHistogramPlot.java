@@ -209,13 +209,13 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         Cursor cursor0= parent.getCursor();
         parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         
-        int w= (int)getColumn().getWidth();
-        int h= (int)getRow().getHeight();
+        int w= getColumn().getWidth();
+        int h= getRow().getHeight();
         
         plotImage = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
         Graphics2D g = (Graphics2D)plotImage.getGraphics();
-        g.translate(-(int)getColumn().getDMinimum(),-(int)getRow().getDMinimum());
+        g.translate(-getColumn().getDMinimum(),-getRow().getDMinimum());
         
         Dimension d;
         
@@ -233,12 +233,12 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         new RebinDescriptor(
         xaxis.getDataMinimum(),
         xaxis.getDataMaximum(),
-        (int)(Math.abs(getColumn().getDMaximum()-getColumn().getDMinimum())/1)+1,
+        (int)(Math.abs(getColumn().getWidth())/1)+1,
         (getXAxis().isLog())
         );
         
-        float xDMax= (float)getColumn().getDMaximum();
-        float xDMin= (float)getColumn().getDMinimum();
+        int xDMax= getColumn().getDMaximum();
+        int xDMin= getColumn().getDMinimum();
         
         //boolean drawnZAxis=false;
         //DasRow drawZAxisRow=null;
@@ -260,14 +260,14 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         for (int j=0; j<xtysData.y_coordinate.length; j++) {
             DasLabelAxis yAxis= (DasLabelAxis)getYAxis();
             
-            double yBase= getYAxis().transform(xtysData.y_coordinate[j],xtysData.getYUnits());
+            int yBase= getYAxis().transform(xtysData.y_coordinate[j],xtysData.getYUnits());
             
-            Line2D.Float lBase= new Line2D.Float( xDMin, (float)yBase, xDMax, (float)yBase );
+            Line2D.Float lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
             g.setColor(Color.lightGray);
             g.draw(lBase);
             g.setColor(Color.darkGray);
             
-            double yBase1= yBase - yAxis.getInterItemSpace();
+            int yBase1= yBase - yAxis.getInterItemSpace();
             double canvasHeight= parent.getHeight();
             DasRow littleRow= new DasRow(getCanvas(),yBase1/canvasHeight,yBase/canvasHeight);
             
@@ -288,34 +288,32 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             double [] binStarts= xbins.binStarts();
             double [] binStops= xbins.binStops();
             
-            double y0= yBase;
+            int y0= yBase;
             Rectangle2D.Double r= new Rectangle2D.Double();
             Line2D.Double l= new Line2D.Double();
             Rectangle2D.Double rmax= new Rectangle2D.Double();
             
-            int littleRowHeight= (int)littleRow.getHeight();
+            int littleRowHeight= littleRow.getHeight();
             double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
-            double dd= TimeUtil.create("2003-7-12").doubleValue((getXAxis().getUnits()));
-            int ibinMax= 0;
+                        
             for (int ibin=0; ibin<data.length; ibin++) {
-                double x0= (int)getXAxis().transform(binStarts[ibin],xbins.getUnits());
-                double x1;
+                int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
+                int x1;
                 x1=x0+1; // 1 pixel wide
-                if (weights[ibin].z[j]>0) {
-                    if (ibin>ibinMax) ibinMax= ibin;
-                }
-                if (true) {
-                    double yAvg= zAxisComponent.transform(data[ibin].z[j],xtysData.getZUnits());
+                if ( weights[ibin].z[j]>0 ) {
+                    int yAvg= zAxisComponent.transform(data[ibin].z[j],xtysData.getZUnits());
+                    if ( yAvg<0 ) {
+                        System.out.println("yAvg < 0 " );
+                    }
                     yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
-                    double yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
+                    int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
                     yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                     if (peaks[ibin].z[j]<=zAxisMax) {
-                        double yMax= zAxisComponent.transform(peaks[ibin].z[j],xtysData.getZUnits());
+                        int yMax= zAxisComponent.transform(peaks[ibin].z[j],xtysData.getZUnits());
                         yMax= (y0-yMax)>(0) ? yMax : (y0);
                         if (peaksIndicator==PeaksIndicator.MaxLines) {
                             l.setLine(x0,yMax,x0,yMax);
-                            g.drawLine((int)x0,(int)yMax,(int)x0,(int)yMax);
-                            //g.draw(l);
+                            g.drawLine(x0,yMax,x0,yMax);
                         } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
                             rmax.setRect(x0,yMax,(x1-x0),y0-yMax);
                             g.setColor(Color.lightGray);
@@ -324,8 +322,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                         }
                     }
                     r.setRect(x0,yAvg,(x1-x0),yHeight);
-                    g.fill(r);
-                    
+                    g.fill(r);                    
                 }
             }
             
@@ -366,14 +363,14 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         }
         
         public Rectangle getBounds(){
-            double x1= parent.getColumn().getDMaximum();
-            double x2= zAxis.getColumn().getDMaximum();
-            double ylow1= parent.getRow().getDMaximum();
-            double ylow2= zAxis.getRow().getDMaximum();
-            double yhigh1= parent.getRow().getDMinimum();
-            double yhigh2= zAxis.getRow().getDMinimum();
+            int x1= parent.getColumn().getDMaximum();
+            int x2= zAxis.getColumn().getDMaximum();
+            int ylow1= parent.getRow().getDMaximum();
+            int ylow2= zAxis.getRow().getDMaximum();
+            int yhigh1= parent.getRow().getDMinimum();
+            int yhigh2= zAxis.getRow().getDMinimum();
             
-            Rectangle result= new Rectangle((int)x1,(int)yhigh1-1,(int)(x2-x1),(int)(ylow1-yhigh1+2));
+            Rectangle result= new Rectangle( x1, yhigh1-1, (x2-x1), (ylow1-yhigh1+2));
             
             result.add(x2,yhigh2-1);
             result.add(x2,ylow2+1);
@@ -387,14 +384,14 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
         public void setLittleRow(DasRow row) {
             rowLittle= row;
-            double zAxisMid= ( zAxis.getRow().getDMinimum() + zAxis.getRow().getDMaximum() ) / 2;
+            int zAxisMid= zAxis.getRow().getDMiddle();
             if (row.contains(zAxisMid))  {
                 rowLittleDoc= row;
             }
         }
         
-        public double transform( double x, Units units ) {
-            double result= zAxis.transform(x,units,rowLittle.getDMaximum(),rowLittle.getDMinimum());
+        public int transform( double x, Units units ) {
+            int result= zAxis.transform(x,units,rowLittle.getDMaximum(),rowLittle.getDMinimum());
             return result;
         }
         
@@ -413,12 +410,12 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             
             int hlen=3;
             
-            double x1= parent.getColumn().getDMaximum()+hlen;
-            double x2= zAxis.getColumn().getDMaximum()-hlen;
-            double ylow1= rowLittleDoc.getDMaximum();
-            double ylow2= zAxis.getRow().getDMaximum();
-            double yhigh1= rowLittleDoc.getDMinimum();
-            double yhigh2= zAxis.getRow().getDMinimum();
+            int x1= parent.getColumn().getDMaximum()+hlen;
+            int x2= zAxis.getColumn().getDMaximum()-hlen;
+            int ylow1= rowLittleDoc.getDMaximum();
+            int ylow2= zAxis.getRow().getDMaximum();
+            int yhigh1= rowLittleDoc.getDMinimum();
+            int yhigh2= zAxis.getRow().getDMinimum();
             
             g.setColor(Color.lightGray);
             g.draw(new java.awt.geom.Line2D.Double(x1-hlen,ylow1,x1,ylow1));

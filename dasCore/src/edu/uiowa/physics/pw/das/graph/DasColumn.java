@@ -45,12 +45,12 @@ public class DasColumn extends DasDevicePosition {
         return new DasColumn(this.parent,left+pleft*delta,left+pright*delta);
     }
     
-    protected double getDeviceSize()
+    protected int getDeviceSize()
     {
-        return (double)parent.getWidth();
+        return parent.getWidth();
     }
     
-    public double getWidth() {
+    public int getWidth() {
         return getDMaximum()-getDMinimum();
     }
     
@@ -88,4 +88,5 @@ public class DasColumn extends DasDevicePosition {
         return element;
     }
     
+        
 }

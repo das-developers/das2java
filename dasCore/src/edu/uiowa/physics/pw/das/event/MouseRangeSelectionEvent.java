@@ -32,15 +32,14 @@ package edu.uiowa.physics.pw.das.event;
 public class MouseRangeSelectionEvent extends MouseDragEvent
 {
     
-    private double min, max;
+    private int min, max;
     private boolean isModified;
     
     /** Creates a new instance of DasDevicePositionEvent */
-    public MouseRangeSelectionEvent(Object source, double min, double max, boolean isModified)
-    {
+    public MouseRangeSelectionEvent(Object source, int min, int max, boolean isModified) {
         super(source);
         if (min>max) {
-            double t= min;
+            int t= min;
             min= max;
             max= t;
         }            
@@ -50,13 +49,11 @@ public class MouseRangeSelectionEvent extends MouseDragEvent
         this.isModified= isModified;
     }
         
-    public double getMinimum()
-    {
+    public int getMinimum() {
         return min;
     }
     
-    public double getMaximum()
-    {
+    public int getMaximum() {
         return max;
     }
     public boolean isModified() {

@@ -38,9 +38,9 @@ public class DasRow extends DasDevicePosition {
         super(parent,top,bottom);
     }
        
-    protected double getDeviceSize()
+    protected int getDeviceSize()
     {
-        return (double)parent.getHeight();
+        return parent.getHeight();
     }
 
     public DasRow createSubRow(double ptop, double pbottom) {
@@ -50,7 +50,7 @@ public class DasRow extends DasDevicePosition {
         return new DasRow(this.parent,bottom+ptop*delta,bottom+pbottom*delta);
     }
     
-    public double getHeight() {
+    public int getHeight() {
         return getDMaximum()-getDMinimum();
     }
     

@@ -38,7 +38,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     edu.uiowa.physics.pw.das.datum.Datum[] labels= null;
     double[] labelValues= null;
     edu.uiowa.physics.pw.das.datum.Units labelUnits=null;
-    double[] labelPositions= null;
+    int[] labelPositions= null;
     edu.uiowa.physics.pw.das.datum.DasFormatter df= null;
     int indexMinimum;  // first label to be displayed
     int indexMaximum;  // last label to be displayed
@@ -48,7 +48,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
             throw new IllegalArgumentException( "labels can not be a zero-length array!" );
         }
         this.labels= labels;
-        this.labelPositions= new double[labels.length];
+        this.labelPositions= new int[labels.length];
         indexMinimum= 0;
         indexMaximum= labels.length-1;
         //this.df= new DecimalFormat();
@@ -80,10 +80,10 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     private void updateTickPositions() {        
         int nlabel= indexMaximum - indexMinimum + 1;
 
-        double size;
-        double min;
+        int size;
+        int min;
         
-        double interItemSpacing;
+        int interItemSpacing;
         
         if ( this.getOrientation()==DasAxis.HORIZONTAL ) {
             size= getColumn().getWidth();            
@@ -96,7 +96,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         }
                                       
         for ( int i=0; i<labelPositions.length; i++ ) {
-            labelPositions[i]= min + interItemSpacing * ( (i-indexMinimum)+0.0 );
+            labelPositions[i]= min + interItemSpacing * ( (i-indexMinimum)+0 );
         }        
        
     }
@@ -123,12 +123,25 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return result;
     }
     
-    public double transform( double value, edu.uiowa.physics.pw.das.datum.Units units ) {
+    public int transform( double value, edu.uiowa.physics.pw.das.datum.Units units ) {
         if ( units!=this.labelUnits ) {
             throw new IllegalArgumentException("units don't match");
         }        
         int iclose= findClosestIndex( labelValues, value );        
         return labelPositions[iclose];
+    }
+    
+    private int findClosestIndex( int[] data, int searchFor ) {
+        int iclose=0;
+        double closest= Math.abs(data[iclose]-searchFor);
+        for ( int i=0; i<labelPositions.length; i++ ) {
+            double c1= Math.abs(data[i]-searchFor);
+            if ( c1<closest ) {
+                iclose= i;
+                closest= c1;
+            }            
+        }                
+        return iclose;
     }
     
     private int findClosestIndex( double[] data, double searchFor ) {
@@ -144,7 +157,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return iclose;
     }    
     
-    public edu.uiowa.physics.pw.das.datum.Datum invTransform( double idata ) {
+    public edu.uiowa.physics.pw.das.datum.Datum invTransform( int idata ) {
         int iclose= findClosestIndex( labelPositions, idata );
         return labels[iclose];        
     }
@@ -161,7 +174,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return tickFormatter(tickv);
     }
     
-    public double getInterItemSpace() { 
+    public int getInterItemSpace() { 
         return Math.abs(transform(labels[1])-transform(labels[0]));
     }
     

@@ -29,7 +29,7 @@ import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.util.DasMath;
 import java.awt.*;
 
-import java.awt.geom.Rectangle2D.Double;
+import java.awt.geom.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
@@ -160,8 +160,8 @@ public class TimeRangeLabel extends DasCanvasComponent {
         
         FontMetrics fm= g.getFontMetrics();
         
-        int y = (int)Math.floor(getRow().getDMinimum() + 0.5);
-        int x = (int)Math.floor(getColumn().getDMinimum() + 0.5);
+        int y = getRow().getDMinimum();
+        int x = getColumn().getDMinimum();
         
         g.translate(-getX(),-getY());
         
@@ -169,14 +169,14 @@ public class TimeRangeLabel extends DasCanvasComponent {
         
         String label= df.format(max);
         g.drawString(label,
-           (int)( x + getColumn().getWidth() - fm.stringWidth(label)),
+           ( x + getColumn().getWidth() - fm.stringWidth(label)),
            y-fm.getHeight()/2);
         
     }
     
     public void resize() {
-        Double bounds= DasDevicePosition.toRectangle(getRow(),getColumn());
-        this.setBounds(new Rectangle((int)bounds.x-30,(int)bounds.y-30,(int)bounds.width+60,(int)bounds.height+30));
+        Rectangle bounds= DasDevicePosition.toRectangle(getRow(),getColumn());
+        this.setBounds(new Rectangle(bounds.x-30,bounds.y-30,bounds.width+60,bounds.height+30));
     }
     
     public PropertyChangeListener createDataRangePropertyListener() {

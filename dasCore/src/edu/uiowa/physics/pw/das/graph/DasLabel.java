@@ -32,8 +32,8 @@ import java.awt.geom.AffineTransform;
 public class DasLabel extends DasCanvasComponent {
 
     String text="";
-    double x=0;
-    double y=0;
+    int x=0;
+    int y=0;
     double angle=0;
     
     Font font= null;
@@ -54,7 +54,7 @@ public class DasLabel extends DasCanvasComponent {
         at= new AffineTransform();
     }
     
-    public DasLabel(String text, double x, double y) {
+    public DasLabel(String text, int x, int y) {
         this();
         this.text= text;
         this.x= x;
@@ -80,7 +80,7 @@ public class DasLabel extends DasCanvasComponent {
         FontMetrics fm= g.getFontMetrics();
         
         bounds= fm.getStringBounds(text,g).getBounds();
-        bounds.translate((int)x,(int)y);
+        bounds.translate(x,y);
         edu.uiowa.physics.pw.das.util.DasDie.println(bounds);
         
         if (font!=null) g.setFont(oldfont);
@@ -98,7 +98,7 @@ public class DasLabel extends DasCanvasComponent {
         setTransform();
     }
     
-    public void setPosition(double x, double y) {
+    public void setPosition( int x, int y) {
         this.x= x;
         this.y= y;
         setTransform();

@@ -32,7 +32,7 @@ public class MouseRangeGestureSelectionEvent extends MouseRangeSelectionEvent {
     private Gesture gesture;
     
     /** Creates a new instance of MouseRangeGestureSelectionEvent */
-    public MouseRangeGestureSelectionEvent(Object source, double min, double max, Gesture g) {
+    public MouseRangeGestureSelectionEvent(Object source, int min, int max, Gesture g) {
         super( source, min, max, false );
         this.gesture= g;
     }

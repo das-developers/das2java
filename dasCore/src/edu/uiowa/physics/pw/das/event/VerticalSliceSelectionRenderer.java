@@ -58,7 +58,7 @@ public class VerticalSliceSelectionRenderer implements DragRenderer {
         
         Dimension d= parent.getSize();
         //g.drawLine((int)0, (int)p.y, (int)d.getWidth(), (int)p.y);
-        g.drawLine((int)p.x, (int)0, (int)p.x, (int)d.getHeight() );
+        g.drawLine( p.x, 0, p.x, d.height );
         
         if (crossHairLocation!=null) {
             if (crossHairLocation.equals(p)) {

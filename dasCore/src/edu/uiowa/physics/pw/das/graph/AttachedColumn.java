@@ -43,31 +43,31 @@ public class AttachedColumn extends DasColumn {
     /** Gets the maximum for the column in the device space.
      * @return the maximum value for the column in the device space.
      */    
-    public double getDMaximum() {
+    public int getDMaximum() {
         if ( column==null ) {
-            return 0.;
+            return 0;
         } else {
-            double delta= column.getWidth();
-            return column.getDMinimum()+delta*getMaximum();
+            int delta= column.getWidth();
+            return column.getDMinimum()+(int)(delta*getMaximum());
         }
     }
     
     /** Gets the minimum for the column in the device space.
      * @return the minimum for the column in the device space.
      */    
-    public double getDMinimum() {
+    public int getDMinimum() {
         if ( column==null ) { // called during construction
-            return 0.;
+            return 0;
         } else {
             double delta= column.getWidth();
-            return column.getDMinimum()+delta*getMinimum();
+            return column.getDMinimum()+(int)(delta*getMinimum());
         }
     }
     
     /** Sets the minimum for the column in the device space.
      * @param minimum the new minimum value for the column.
      */    
-    public void setDMinimum(double minimum) {
+    public void setDMinimum(int minimum) {
         double delta= column.getWidth();
         this.setMinimum((minimum-column.getDMinimum())/delta);
         fireUpdate();
@@ -76,7 +76,7 @@ public class AttachedColumn extends DasColumn {
     /** Sets the maximum for the column in the device space.
      * @param maximum The new maximum value for the column.
      */    
-    public void setDMaximum(double maximum) {
+    public void setDMaximum(int maximum) {
         double delta= column.getWidth();
         this.setMaximum((maximum-column.getDMinimum())/delta);
         fireUpdate();
@@ -87,7 +87,7 @@ public class AttachedColumn extends DasColumn {
      * @param minimum the new minimum for the column.
      * @param maximum the new maximum for the column.
      */    
-    public void setDPosition(double minimum, double maximum) {
+    public void setDPosition(int minimum, int maximum) {
         double delta= column.getWidth();
         this.setMinimum((minimum-column.getDMinimum())/delta);
         this.setMaximum((maximum-column.getDMinimum())/delta);
@@ -97,8 +97,8 @@ public class AttachedColumn extends DasColumn {
     /** Gets the width of the column.
      * @return the width of the column.
      */    
-    public double getWidth() {
-        return column.getWidth()*(getMaximum()-getMinimum());
+    public int getWidth() {
+        return (int)(column.getWidth()*(getMaximum()-getMinimum()));
     }
     
     /** Adds a listener to the column to receive DasUpdateEvents.

@@ -101,8 +101,8 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
     
     public void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
-        int x= (int)xAxis.getColumn().getDMiddle();
-        int y= (int)yAxis.getRow().getDMiddle();
+        int x= xAxis.getColumn().getDMiddle();
+        int y= yAxis.getRow().getDMiddle();
         
         String s= e.toString();
         FontMetrics fm= g.getFontMetrics();
@@ -149,8 +149,8 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             }
             progressPanel.setSize(progressPanel.getPreferredSize());
             
-            int x= (int)xAxis.getColumn().getDMiddle();
-            int y= (int)xAxis.getRow().getDMiddle();
+            int x= xAxis.getColumn().getDMiddle();
+            int y= xAxis.getRow().getDMiddle();
             
             progressPanel.setLocation( x - progressPanel.getWidth()/2,
                                        y - progressPanel.getHeight()/2 );
@@ -205,8 +205,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         
     public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis);
     
-    public void update(DasAxis xAxis, DasAxis yAxis) {
-        edu.uiowa.physics.pw.das.util.DasDie.println("in Render.update()");
+    public void update(DasAxis xAxis, DasAxis yAxis) {    
         loadDataSet(xAxis,yAxis);
     }
     

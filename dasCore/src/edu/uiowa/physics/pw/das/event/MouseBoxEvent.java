@@ -38,19 +38,19 @@ public class MouseBoxEvent extends MouseDragEvent {
         this.releasePoint= releasePoint;
     }
     
-    public double getXMinimum() {
+    public int getXMinimum() {
         return ( pressPoint.x < releasePoint.x ) ?  pressPoint.x : releasePoint.x ;
     }
         
-    public double getXMaximum() {
+    public int getXMaximum() {
         return ( pressPoint.x > releasePoint.x ) ?  pressPoint.x : releasePoint.x ;
     }
     
-    public double getYMinimum() {
+    public int getYMinimum() {
         return ( pressPoint.y < releasePoint.y ) ?  pressPoint.y : releasePoint.y ;
     }
         
-    public double getYMaximum() {
+    public int getYMaximum() {
         return ( pressPoint.y > releasePoint.y ) ?  pressPoint.y : releasePoint.y ;
     }
     

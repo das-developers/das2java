@@ -124,12 +124,12 @@ public class SymbolLineRenderer extends Renderer {
             
             if ( psym.drawsLines() ) {
                 graphics.setStroke(new BasicStroke(lineWidth));
-                int x0 = (int)Math.floor(xAxis.transform(Data.data[ixmin].x,Data.getXUnits()) + 0.5);
-                int y0 = (int)Math.floor(yAxis.transform(Data.data[ixmin].y[iy],Data.getYUnits()) + 0.5);
+                int x0 = xAxis.transform(Data.data[ixmin].x,Data.getXUnits());
+                int y0 = yAxis.transform(Data.data[ixmin].y[iy],Data.getYUnits());
                 Line2D.Double line= new Line2D.Double();
                 for (int i = ixmin+1; i <= ixmax; i++) {
-                    int x = (int)Math.floor(xAxis.transform(Data.data[i].x,Data.getXUnits()) + 0.5);
-                    int y = (int)Math.floor(yAxis.transform(Data.data[i].y[iy],Data.getYUnits()) + 0.5);
+                    int x = xAxis.transform(Data.data[i].x,Data.getXUnits());
+                    int y = yAxis.transform(Data.data[i].y[iy],Data.getYUnits());
                     if ( Data.data[i].y[iy] != Data.y_fill ) {
                         if ( Data.data[i].y[iy] != Data.y_fill && Data.data[i-1].y[iy] != Data.y_fill
                         && Math.abs(Data.data[i].x - Data.data[i-1].x) < xSampleWidth) {
@@ -143,8 +143,8 @@ public class SymbolLineRenderer extends Renderer {
             }
             for (int i = ixmin; i <= ixmax; i++) {
                 if ( Data.data[i].y[iy] != Data.y_fill ) {
-                    int x = (int)Math.floor(xAxis.transform(Data.data[i].x,Data.getXUnits()) + 0.5);
-                    int y = (int)Math.floor(yAxis.transform(Data.data[i].y[iy],Data.getYUnits()) + 0.5);
+                    int x = xAxis.transform(Data.data[i].x,Data.getXUnits());
+                    int y = yAxis.transform(Data.data[i].y[iy],Data.getYUnits());
                     psym.draw(graphics, x, y);
                 }
             }
