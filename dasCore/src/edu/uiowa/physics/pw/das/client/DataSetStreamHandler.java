@@ -95,8 +95,9 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public void streamClosed(StreamDescriptor sd) throws StreamException {
-        ensureNotNullDelegate();
-        delegate.streamClosed(sd);
+        if (delegate != null) {
+            delegate.streamClosed(sd);
+        }
     }
     
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
@@ -107,7 +108,12 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public DataSet getDataSet() {
-        return delegate.getDataSet();
+        if (delegate == null) {
+            return null;
+        }
+        else {
+            return delegate.getDataSet();
+        }
     }
     
     private void ensureNotNullDelegate() {
