@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 
 import javax.swing.event.MouseInputAdapter;
@@ -37,7 +38,7 @@ import java.util.Vector;
  * given time.
  * @author jbf
  */
-public class MouseModule  {
+public class MouseModule implements Editable {
     
     //protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
