@@ -1387,7 +1387,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int maxLabelWidth = getMaxLabelWidth(getFontMetrics(tickLabelFont));
                 bounds.height += tcaHeight;
                 blLabelRect.height += tcaHeight;
-                blTitleRect.y += tcaHeight;
+                if ( blTitleRect != null ) blTitleRect.y += tcaHeight;
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
                 idlt.setString(this, "SCET");
                 int tcaLabelWidth = (int)Math.floor(idlt.getWidth() + 0.5);
