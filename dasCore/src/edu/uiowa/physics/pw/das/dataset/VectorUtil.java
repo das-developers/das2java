@@ -1,6 +1,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -75,7 +76,7 @@ public class VectorUtil {
         pout.print("<y type=\"asciiTab10\" yUnits=\""+vds.getYUnits()+"\" />");
                                 
         NumberFormat xnf= new DecimalFormat("00000.000");
-        NumberFormat ynf= new DecimalFormat("0.000E000");                
+        NumberFormat ynf= new DecimalFormat("0.00E00");                
         
         for (int i=0; i<vds.getXLength(); i++) {
             pout.print(":01:");
@@ -86,7 +87,7 @@ public class VectorUtil {
                 x= vds.getXTagDouble(i,vds.getXUnits());
             }
             pout.print(xnf.format(x)+" ");
-            pout.print(ynf.format(vds.getDouble(i,vds.getYUnits()))+"\n");            
+            pout.print(FixedWidthFormatter.format(ynf.format(vds.getDouble(i,vds.getYUnits())),9)+"\n");    
         }
         
         pout.close();
