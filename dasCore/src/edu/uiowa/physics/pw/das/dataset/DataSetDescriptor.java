@@ -46,19 +46,9 @@ public abstract class DataSetDescriptor {
      * is thrown, the defaultCache is reset.
      */
     protected Map properties = new HashMap();
-    private boolean defaultCaching;
+    private boolean defaultCaching= true;
     private DataSet cacheDataSet;
     private String dataSetID;
-    private class CacheTag {
-        Datum start;
-        Datum end;
-        Datum resolution;
-        CacheTag( Datum start, Datum end, Datum resolution ) {
-            this.start= start;
-            this.end= end;
-            this.resolution= resolution;
-        }
-    }
     private CacheTag cacheTag;
     
     protected DataSetDescriptor(final String dataSetID) {
@@ -84,14 +74,15 @@ public abstract class DataSetDescriptor {
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         if ( cacheTag!=null &&
         defaultCaching &&
-        cacheTag.start.equals(start) &&
-        cacheTag.end.equals(end) &&
-        cacheTag.resolution.equals(resolution) ) {
+        cacheTag.start.le(start) &&
+        cacheTag.end.ge(end) &&
+        cacheTag.resolution.lt(resolution) ) {
             return cacheDataSet;
         } else {
             cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
-            cacheTag= new CacheTag(start,end,resolution);
-            return cacheDataSet;
+            cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
+            if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
+            return cacheDataSet; 
         }
     }
         
