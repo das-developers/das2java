@@ -238,19 +238,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             }
             
             if (progressPanel == null) {
-                progressPanel = new DasProgressPanel("Loading data set");
-                ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
+                progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");                
             } else {
                 progressPanel.setLabel("Loading data set" );
             }
             progressPanel.cancel();
-            progressPanel.setSize(progressPanel.getPreferredSize());
-            
-            int x= xAxis.getColumn().getDMiddle();
-            int y= xAxis.getRow().getDMiddle();
-            
-            progressPanel.setLocation( x - progressPanel.getWidth()/2,
-            y - progressPanel.getHeight()/2 );
             
             DataRequestor requestor = new DataRequestor() {
                 public void exception(Exception exception) {
@@ -280,7 +272,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                         updatePlotImage(xAxis,yAxis, progressPanel);
                         if ( parent!= null) {
                             ((DasCanvas)parent.getParent()).freeDisplay(this);
-                        }
+                        }                        
                     }
                     catch (DasException de) {
                         ds = null;
@@ -309,6 +301,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             }
             catch (DasException de) {
                 //Do nothing, whatever is displayed will be replaced.
+                // TODO: WHY NOT lastException= de?
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
