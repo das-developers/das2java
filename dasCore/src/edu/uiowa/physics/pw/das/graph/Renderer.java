@@ -83,6 +83,25 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     
     public DataSet getDataSet() { return this.ds; }
     
+    private boolean dumpDataSet;
+    /** Getter for property dumpDataSet.
+     * @return Value of property dumpDataSet.
+     *
+     */
+    public boolean isDumpDataSet() {    
+        return this.dumpDataSet;
+    }
+    
+    /** Setter for property dumpDataSet.
+     * @param dumpDataSet New value of property dumpDataSet.
+     *
+     */
+    public void setDumpDataSet(boolean dumpDataSet) {
+        System.out.println("Dumping data set");
+        this.dumpDataSet= dumpDataSet;        
+    }
+
+    
     public void setDataSet(DataSet ds) {
         setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
     }
