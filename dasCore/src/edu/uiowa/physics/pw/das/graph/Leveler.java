@@ -104,10 +104,12 @@ public class Leveler {
     
     void insertAt( double nposition, DasDevicePosition row, double weight ) {
         int i;
-        if (rows.size()==0) {
+        if ( nposition==0 ) {
             i=0;
+        } else if ( nposition==1.0 ) {
+            i=rows.size();
         } else {
-            i= objectIndexAt(nposition);
+            throw new IllegalArgumentException( "nposition must be 0.0 or 1.0" );
         }
         rows.add(i,row);
         weights.add(i,new Double(weight));
@@ -119,11 +121,15 @@ public class Leveler {
         weights.remove(i);
     }
     
+    /*
+     * return the index of the row that contains nPosition 
+     */
     private int objectIndexAt(double nposition) {
         int i=0;
-        while ( i<rows.size() && getMinimum(i)<nposition ) i++;
-        if (i==0) return 0;
-        else return i-1;
+        for ( i=0; i<rows.size(); i++ ) {
+            if ( getMinimum(i)<=nposition && nposition < getMaximum(i) ) break;
+        }  
+        return i;
     }
     
     private double integrateWeight(int nRows) {
@@ -136,6 +142,10 @@ public class Leveler {
             }
             return totalWeight;
         }
+    }
+    
+    public void setInsideMargin( double n ) {        
+        this.interMargin= n;
     }
     
     private double getMinimum(int i) {
@@ -199,6 +209,20 @@ public class Leveler {
         for (int j=0; j<rows.size(); j++) {
             weights.set( j,new Double(totalWeight * ftWeight[j]/ftTotalWeight) );
         }
+    }
+    
+    /*
+     * sets the top margin in canvas-normal units.
+     */
+    public void setTopMargin( double nmargin ) {
+        topMargin= nmargin;        
+    }
+    
+    /*
+     * sets the bottom margin in canvas-normal units.
+     */
+    public void setBottomMargin( double nmargin ) {
+        bottomMargin= nmargin;
     }
     
     void setMaximum(DasDevicePosition row, double nposition ) {
@@ -283,48 +307,5 @@ public class Leveler {
         return result;
     }
     
-    public static void main( String[] args ) {
-        
-        JFrame app= DasApplication.getDefaultApplication().getMainFrame();
-        
-        DasCanvas canvas= new DasCanvas(300,600);
-        app.getContentPane().add(canvas);
-        
-        DasColumn column= new DasColumn( canvas, 0.15, 0.9 );
-        
-        Datum min= Datum.create(0);
-        Datum max= Datum.create(1);
-        
-        Leveler lev= new Leveler( canvas );
-        DasRow row1;
-        row1= lev.getRow();
-        DasPlot plot;
-        plot= DasPlot.createDummyPlot();
-	plot.getXAxis().setTickLabelsVisible(true);        
-        canvas.add( plot, row1, column );        
-        
-        System.out.println(lev);
-        row1= lev.getRow();
-        plot= DasPlot.createDummyPlot();
-	plot.getXAxis().setTickLabelsVisible(false);        
-        canvas.add( plot, row1, column );        
-        
-        System.out.println(lev);
-        row1= lev.getRow();
-        plot= DasPlot.createDummyPlot();
-	plot.getXAxis().setTickLabelsVisible(false);        
-        canvas.add( plot, row1, column );        
-        
-        System.out.println(lev);
-        row1= new LevelRow(canvas,lev,0.);
-        plot= DasPlot.createDummyPlot();
-	plot.getXAxis().setTickLabelsVisible(false);        
-        canvas.add( plot, row1, column );        
-        
-        System.out.println(lev);
-                    
-        app.pack();
-        app.setVisible(true);
-        
-    }
+ 
 }
