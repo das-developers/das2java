@@ -91,6 +91,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
         addMouseListener(currentComponentListener);
+        addKeyListener(mouseAdapter.getKeyAdapter());
+        
         try {
             setDasName("c_" + Integer.toString(this.hashCode()));
         }
@@ -115,7 +117,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     /** Called by the DasCanvas layout manager to request this component
-     * to set it's bounds.
+     * to set its bounds.
      */
     public void resize() {
         if (column == DasColumn.NULL || row == DasRow.NULL ) {
