@@ -16,10 +16,15 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     
     RebinDescriptor ddY;
     
-    NearestNeighborTableDataSet(TableDataSet source, RebinDescriptor ddX, RebinDescriptor ddY) {
+    NearestNeighborTableDataSet( TableDataSet source, RebinDescriptor ddX, RebinDescriptor ddY ) {
         imap= new int[ddX.numberOfBins()];
         jmap= new int[source.tableCount()][ddY.numberOfBins()];
         itableMap= new int[ddX.numberOfBins()];
+        
+        Datum xTagWidth= (Datum)source.getProperty("xTagWidth");
+        Datum yTagWidth= (Datum)source.getProperty("yTagWidth");
+        if ( xTagWidth==null ) xTagWidth= TableUtil.guessXTagWidth(source);
+        if ( yTagWidth==null ) yTagWidth= TableUtil.guessYTagWidth(source);
         
         this.ddX= ddX;
         this.ddY= ddY;
@@ -31,27 +36,59 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         int itable0=-1;
         for ( int i=0; i<imap.length; i++ ) {
             imap[i]= TableUtil.closestColumn(source, xx[i], ddX.getUnits() );
-            int itable= source.tableOfIndex(imap[i]);
-            itableMap[i]= itable;
-            if ( itable0!=itable ) {
-                for ( int j=0; j<jmap[itable].length; j++ ) {
-                    jmap[itable][j]= TableUtil.closestRow(source,itable,yy[j], ddY.getUnits());
+            Datum xclose= source.getXTagDatum(imap[i]);
+            Units xunits= xTagWidth.getUnits();            
+            if ( Math.abs(xclose.subtract(xx[i],ddX.getUnits()).doubleValue(xunits)) > xTagWidth.doubleValue(xunits) ) {
+                imap[i]=-1;
+            } else {
+                int itable= source.tableOfIndex(imap[i]);
+                itableMap[i]= itable;
+                if ( itable0!=itable ) {
+                    for ( int j=0; j<jmap[itable].length; j++ ) {
+                        jmap[itable][j]= TableUtil.closestRow(source,itable,yy[j], ddY.getUnits());                        
+                        Units yunits= yTagWidth.getUnits();
+                        if ( yunits==Units.percent ) {
+                            double yclose= source.getYTagDouble(itable, jmap[itable][j],ddY.getUnits() );
+                            if ( yy[j]>yclose ) {
+                                if ( (yy[j]-yclose)*100/yclose > yTagWidth.doubleValue(Units.percent) ) jmap[itable][j]=-1;
+                            } else {
+                                if ( (yclose-yy[j])*100/yy[j] > yTagWidth.doubleValue(Units.percent) ) jmap[itable][j]=-1;
+                            }
+                        } else {
+                            Datum yclose= source.getYTagDatum( itable, jmap[itable][j] );
+                            if ( Math.abs( yclose.subtract(yy[j],ddY.getUnits()).doubleValue(yunits)) > yTagWidth.doubleValue(yunits) ) {
+                                jmap[itable][j]= -1;
+                            }
+                        }
+                    }
+                    itable0= itable;
                 }
-                itable0= itable;
             }
         }
     }
     
     public Datum getDatum(int i, int j) {
-        return source.getDatum(imap[i], jmap[itableMap[i]][j]);
+        if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
+            return source.getDatum(imap[i], jmap[itableMap[i]][j]);
+        } else {
+            return source.getZUnits().getFill();
+        }
     }
     
     public double getDouble(int i, int j, Units units) {
-        return source.getDouble(imap[i], jmap[itableMap[i]][j], units);
+        if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
+            return source.getDouble(imap[i], jmap[itableMap[i]][j], units);
+        } else {
+            return source.getZUnits().getFill().doubleValue(units);
+        }
     }
     
     public int getInt(int i, int j, Units units) {
-        return source.getInt(imap[i], jmap[itableMap[i]][j],units);
+        if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
+            return source.getInt(imap[i], jmap[itableMap[i]][j],units);
+        } else {
+            return source.getZUnits().getFill().intValue(units);
+        }
     }
     
     public DataSet getPlanarView(String planeID) {
@@ -73,7 +110,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     public VectorDataSet getYSlice(int j, int table) {
         return new YSliceDataSet(this, j, table);
     }
-
+    
     public Datum getXTagDatum(int i) {
         return ddX.getUnits().createDatum(getXTagDouble(i,ddX.getUnits()));
     }
@@ -92,7 +129,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     
     public int getYLength(int table) {
         return ddY.numberOfBins();
-    }    
+    }
     
     public Datum getYTagDatum(int table, int j) {
         return ddY.getUnits().createDatum(getYTagDouble(table,j,ddY.getUnits()));
