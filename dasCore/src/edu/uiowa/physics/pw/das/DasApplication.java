@@ -49,7 +49,7 @@ public class DasApplication {
                 handlers[i].setLevel(level);
             }
             this.logger.setLevel(level);
-            this.logger.log( this.logger.getLevel(), name +" logging at "+this.logger.getLevel() );
+            this.logger.fine( name +" logging at "+this.logger.getLevel() );
         }
         public String toString() {
             return this.name;
@@ -83,10 +83,10 @@ public class DasApplication {
     public static final LoggerId GRAPHICS_LOG= new LoggerId("graphics");
     
     /* rebinning */
-    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId("data operations");
+    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId("dataOperations");
     
     /* internet transactions, file I/O */
-    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId("data transfer");
+    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId("dataTransfer");
     
     static {
         String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans" };
