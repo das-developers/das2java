@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.server.DataSetReader;
 import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.datum.Units;
 
@@ -44,8 +43,6 @@ public abstract class DataSet
     /** This member will only temporarily be public */
     public String dsdfPath;
 
-    /** This member will only temporarily be public */
-    public DataSetReader reader;
     private String name="";
     
     public DataSet(DataSetDescriptor dsd) {
