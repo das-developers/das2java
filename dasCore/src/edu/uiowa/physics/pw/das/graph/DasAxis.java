@@ -903,8 +903,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             minor= tickSize/4;
         }
         
-        datumFormatter = DatumUtil.bestFormatter(getDataMinimum(), getDataMaximum(), nTicks);
-                
+        datumFormatter = DatumUtil.bestFormatter( res.units.createDatum(firstTick), res.units.createDatum(lastTick), nTicks );
+        
         double firstMinor= minor * Math.ceil( ( minimum - axisLengthData ) / minor );
         double lastMinor= minor * Math.floor( ( maximum + axisLengthData ) / minor );
         int nMinor= ( int ) ( ( lastMinor - firstMinor ) / minor + 0.5 );
@@ -1000,7 +1000,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             
             tickSize= absissa * mag_keep;
             
-            double axisLengthData= ( data_maximum - data_minimum );            
+            double axisLengthData= ( data_maximum - data_minimum );
             
             firstTick= tickSize*Math.ceil((data_minimum - axisLengthData)/tickSize);
             lastTick= tickSize*Math.floor((data_maximum + axisLengthData)/tickSize);
@@ -1027,7 +1027,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             
             res.minorTickV= minorTickV;
             
-            datumFormatter = DatumUtil.bestFormatter(getDataMinimum(), getDataMaximum(), nTicks );
+            datumFormatter = DatumUtil.bestFormatter( Units.t2000.createDatum(firstTick), Units.t2000.createDatum(lastTick), nTicks );
             
         } else  { // pick off month boundaries
             double [] result= new double[30];
@@ -1082,18 +1082,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             for ( int ii=0; ii<minorTickV.size(); ii++ )
                 res.minorTickV[ii]= ((Datum)minorTickV.get(ii)).doubleValue(Units.t2000);
             
-            datumFormatter = DatumUtil.bestFormatter( getDataMinimum(), getDataMaximum(), 6 );
+            datumFormatter = DatumUtil.bestFormatter( firstTickDatum, lastTickDatum, 6 );
+            
         }
         
-        UnitsConverter uc= Units.getConverter(Units.t2000,getUnits());
+        res.units= getUnits();
+        UnitsConverter uc= Units.getConverter(Units.t2000, res.units);
         for (int ii=0; ii<res.tickV.length; ii++) {
             res.tickV[ii]= uc.convert(res.tickV[ii]);
         }
         for (int ii=0; ii<res.minorTickV.length; ii++) {
             res.minorTickV[ii]= uc.convert(res.minorTickV[ii]);
-        }
-        res.units= getUnits();
-        
+        }        
+                
         this.tickV = res;
         updateDataSet();
     }
@@ -2115,16 +2116,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
         }
         DasAxis axis = new DasAxis(dataMinimum, dataMaximum, row, column, orientation, log);
-
+        
         axis.setLabel(element.getAttribute("label"));
         axis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
-
+        
         axis.setDasName(name);
         DasApplication app = form.getDasApplication();
         NameContext nc = app.getNameContext();
         nc.put(name, axis);
-
+        
         return axis;
     }
     
