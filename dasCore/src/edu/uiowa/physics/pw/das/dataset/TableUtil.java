@@ -7,7 +7,9 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
+import java.text.*;
 import java.util.*;
 
 /**
@@ -42,7 +44,7 @@ public class TableUtil {
         while ( result>0 && xx[result]>x ) result--;
         if ( result<xx.length-2 ) {
             result= ( ( x-xx[result] ) / ( xx[result+1] - xx[result] ) < 0.5 ? result : result+1 );
-        }        
+        }
         return result;
     }
     
@@ -58,7 +60,7 @@ public class TableUtil {
     public static int closestRow( TableDataSet table, int itable, Datum datum ) {
         return closestRow( table, itable, datum.doubleValue(datum.getUnits()), datum.getUnits() );
     }
-
+    
     public static int closestRow( TableDataSet table, int itable, double x, Units units ) {
         double [] xx= getYTagArrayDouble( table, itable, units );
         return closest( xx, x );
@@ -109,6 +111,66 @@ public class TableUtil {
         return result;
     }
     
+    public static void dumpToAsciiStream( TableDataSet tds, OutputStream out ) {
+        PrintStream pout= new PrintStream(out);
+        
+        Datum base=null;
+        Units offsetUnits= null;
+        
+        pout.print("[00]");
+        pout.println("<stream start=\""+tds.getXTagDatum(0)+"\" end=\""+tds.getXTagDatum(tds.getXLength()-1)+"\" >");
+        pout.println("<comment>Stream creation date: "+TimeUtil.now().toString()+"</comment>");
+        pout.print("</stream>");
+        
+        if ( tds.getXUnits() instanceof LocationUnits ) {
+            base= tds.getXTagDatum(0);
+            offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
+            if ( offsetUnits==Units.microseconds ) {
+                offsetUnits= Units.seconds;
+            }
+        }
+        
+        
+        pout.print("[01]<packet>\n");
+        pout.print("<x type=\"asciiTab10\" ");
+        if ( base!=null ) {
+            pout.print("base=\""+base+"\" ");
+            pout.print(" xUnits=\""+offsetUnits+"\" ");
+        } else {
+            pout.print(" xUnits=\""+tds.getXUnits());
+        }
+        pout.println(" />");
+        
+        pout.println("<yscan type=\"asciiTab10\" zUnits=\""+tds.getZUnits()+"\" />");
+        pout.print("</packet>");
+        
+        NumberFormat xnf= new DecimalFormat("00000.000");
+        NumberFormat ynf= new DecimalFormat("0.00E00");
+        
+        for (int i=0; i<tds.getXLength(); i++) {
+            pout.print(":01:");
+            double x;
+            if ( base!=null ) {
+                x= tds.getXTagDatum(i).subtract(base).doubleValue(offsetUnits);
+            } else {
+                x= tds.getXTagDouble(i,tds.getXUnits());
+            }
+            pout.print(xnf.format(x)+" ");
+            int itable= tds.tableOfIndex(i);
+            for ( int j=0; j<tds.getYLength(itable); j++ ) {
+                String delim;
+                if ( (j+1)==tds.getYLength(itable) ) {
+                    delim= "\n";
+                } else {
+                    delim= " ";
+                }
+                pout.print(FixedWidthFormatter.format(ynf.format(tds.getDouble(i,j,tds.getZUnits())),9)+delim);
+            }
+        }
+        
+        pout.close();
+    }
+    
     public static void dumpToStream( TableDataSet table, OutputStream out ) {
         
         PrintStream pout= new PrintStream(out);
@@ -142,7 +204,7 @@ public class TableUtil {
                 pout.print(""+table.getYTagDouble(itable,j,table.getYUnits())+tab);
             }
             pout.println();
-                        
+            
             for (int i=table.tableStart(itable); i<table.tableEnd(itable); i++) {
                 double x;
                 if ( base!=null ) {
