@@ -72,6 +72,8 @@ public abstract class Units {
         days.registerConverter(seconds, new UnitsConverter.ScaleOffset(8.64e4, 0.0));
     }
     
+    public static final Units hertz= new NumberUnits("Hz");
+    
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
     public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
     public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
@@ -158,7 +160,9 @@ public abstract class Units {
                 }
             }
         }
-        throw new IllegalArgumentException("Inconvertible units: " + fromUnits + " -> " + toUnits);
+        String sfrom= ( fromUnits==Units.dimensionless ) ? "(dimensionless)" : fromUnits.toString();                
+        String sto= ( toUnits==Units.dimensionless ) ? "(dimensionless)" : toUnits.toString();                        
+        throw new IllegalArgumentException("Inconvertible units: " + sfrom + " -> " + sto );
     }
     
     private static UnitsConverter buildConversion(Units fromUnits, Units toUnits, Map parentMap) {
