@@ -48,6 +48,7 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
     public DasCanvasComponent() {
         setOpaque(false);
         rl = new ResizeListener();
+        
         mouseAdapter= new DasMouseInputAdapter(this);
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
@@ -99,7 +100,7 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         if (row == r) {
             return;
         }
-	Object oldValue = row;
+        Object oldValue = row;
         if (row != null) {
             row.removepwUpdateListener(rl);
         }
@@ -109,14 +110,14 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         } /*else {
             throw new IllegalArgumentException("null row is not allowed for the meantime");
         }*/
-	firePropertyChange("row", oldValue, r);
+        firePropertyChange("row", oldValue, r);
     }
     
     public void setColumn(DasColumn c) {
         if (column == c) {
             return;
         }
-	Object oldValue = column;
+        Object oldValue = column;
         if (column != null) {
             column.removepwUpdateListener(rl);
         }
@@ -126,14 +127,14 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         } /*else {
             throw new IllegalArgumentException("null column is not allowed for the meantime");
         }*/
-	firePropertyChange("column", oldValue, c);
+        firePropertyChange("column", oldValue, c);
     }
-
+    
     public void showProperties() {
         PropertyEditor editor = new PropertyEditor(this);
         editor.showDialog(this);
     }
-
+    
     public String toString() {
         return getClass().getName()+"'"+getName()+"'";
     }
@@ -141,7 +142,7 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
     /**
      * This method is called when a DasUpdateEvent is processed.
      * The default implementation does nothing.  If a subclass
-     * needs to do any expensive operations involved in updating, 
+     * needs to do any expensive operations involved in updating,
      * they should be done by overriding this method so that
      * the AWT Event Queue can coalesce update events.
      */
@@ -156,7 +157,7 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         if (devt == null) devt = new edu.uiowa.physics.pw.das.event.DasUpdateEvent(this);
         eventQueue.postEvent(devt);
     }
-
+    
     /** Processes events occurring on this component. By default this
      * method calls the appropriate
      * <code>process&lt;event&nbsp;type&gt;Event</code>

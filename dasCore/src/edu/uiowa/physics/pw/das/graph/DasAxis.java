@@ -189,11 +189,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setOpaque(false);
         setOrientationInternal(orientation);
         installMouseModules();
-        JMenuItem backMenuItem= new JMenuItem("Back");
-        backMenuItem.addActionListener(createActionListener());
-        backMenuItem.setActionCommand("back");
-        backMenuItem.setToolTipText("undo last operation");
-        mouseAdapter.addMenuItem(backMenuItem);
+        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+            JMenuItem backMenuItem= new JMenuItem("Back");
+            backMenuItem.addActionListener(createActionListener());
+            backMenuItem.setActionCommand("back");
+            backMenuItem.setToolTipText("undo last operation");
+            mouseAdapter.addMenuItem(backMenuItem);
+        }
         dataRangePropertyListener = createDataRangePropertyListener();
         setLayout(new AxisLayoutManager());
         maybeInitializeInputPanels();
@@ -215,13 +217,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     private void maybeInitializeScanButtons() {
-        scanPrevious = new DasAxis.ScanButton(SCAN_PREVIOUS_LABEL);
-        scanNext = new DasAxis.ScanButton(SCAN_NEXT_LABEL);
-        ActionListener al = createScanActionListener();
-        scanPrevious.addActionListener(al);
-        scanNext.addActionListener(al);
-        add(scanPrevious);
-        add(scanNext);
+        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+            scanPrevious = new DasAxis.ScanButton(SCAN_PREVIOUS_LABEL);
+            scanNext = new DasAxis.ScanButton(SCAN_NEXT_LABEL);
+            ActionListener al = createScanActionListener();
+            scanPrevious.addActionListener(al);
+            scanNext.addActionListener(al);
+            add(scanPrevious);
+            add(scanNext);
+        }
     }
     
     private ActionListener createActionListener() {
@@ -820,9 +824,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 datumFormatter = factory.defaultFormatter();
             }
         } else {
-            datumFormatter = DatumUtil.bestFormatter( ticks.units.createDatum( DasMath.exp10(minTick) ), 
-              ticks.units.createDatum( DasMath.exp10(maxTick) ), 
-              nTicks-1 ); 
+            datumFormatter = DatumUtil.bestFormatter( ticks.units.createDatum( DasMath.exp10(minTick) ),
+            ticks.units.createDatum( DasMath.exp10(maxTick) ),
+            nTicks-1 );
         }
         
         int firstMinorTick= (int)Math.floor(DasMath.log10(min));
@@ -1095,8 +1099,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         for (int ii=0; ii<res.minorTickV.length; ii++) {
             res.minorTickV[ii]= uc.convert(res.minorTickV[ii]);
-        }        
-                
+        }
+        
         this.tickV = res;
         updateDataSet();
     }
@@ -2237,7 +2241,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         String name = element.getAttribute("name");
         DasAxis ref = (DasAxis)form.checkValue(element.getAttribute("ref"), DasAxis.class, "<attachedaxis>");
         int orientation = (element.getAttribute("orientation").equals("horizontal") ? HORIZONTAL : DasAxis.VERTICAL);
-
+        
         DasAxis axis = ref.createAttachedAxis(orientation);
         
         String rowString = element.getAttribute("row");

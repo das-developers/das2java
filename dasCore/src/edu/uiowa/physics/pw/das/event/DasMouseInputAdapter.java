@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.graph.*;
@@ -120,8 +121,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         primaryActionButtonMap= new HashMap();
         secondaryActionButtonMap= new HashMap();
         
-        primaryPopup= createPopup();
-        secondaryPopup= createPopup();
+        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+            primaryPopup= createPopup();
+            secondaryPopup= createPopup();
+        }
         
         active= null;
         
@@ -144,35 +147,38 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     
     public void addMouseModule(MouseModule module) {
         
-        MouseModule preExisting= getModuleByLabel(module.getLabel());
-        if (preExisting!=null) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.INFORM,"Replacing mouse module "+module.getLabel()+".");
-            replaceMouseModule(preExisting,module);
-            
+        if ( DasApplication.getDefaultApplication().isHeadless() ) {
+            DasApplication.getDefaultApplication().getLogger().info("not adding module since headless is true");
         } else {
-            
-            modules.add(module);
-            
-            String name= module.getLabel();
-            
-            //        popup.setVisible(false);
-            
-            JCheckBoxMenuItem primaryNewItem = new JCheckBoxMenuItem(name);
-            JCheckBoxMenuItem secondaryNewItem = new JCheckBoxMenuItem(name);
-            
-            primaryNewItem.addActionListener(popupListener);
-            primaryNewItem.setActionCommand("primary");
-            secondaryNewItem.addActionListener(popupListener);
-            secondaryNewItem.setActionCommand("secondary");
-            
-            primaryActionButtonMap.put(module,primaryNewItem);
-            secondaryActionButtonMap.put(module,secondaryNewItem);
-            
-            primaryPopup.add( primaryNewItem, primaryActionButtonMap.size()-1 );
-            secondaryPopup.add( secondaryNewItem, secondaryActionButtonMap.size()-1 );
-            
+            MouseModule preExisting= getModuleByLabel(module.getLabel());
+            if (preExisting!=null) {
+                edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.INFORM,"Replacing mouse module "+module.getLabel()+".");
+                replaceMouseModule(preExisting,module);
+                
+            } else {
+                
+                modules.add(module);
+                
+                String name= module.getLabel();
+                
+                //        popup.setVisible(false);
+                
+                JCheckBoxMenuItem primaryNewItem = new JCheckBoxMenuItem(name);
+                JCheckBoxMenuItem secondaryNewItem = new JCheckBoxMenuItem(name);
+                
+                primaryNewItem.addActionListener(popupListener);
+                primaryNewItem.setActionCommand("primary");
+                secondaryNewItem.addActionListener(popupListener);
+                secondaryNewItem.setActionCommand("secondary");
+                
+                primaryActionButtonMap.put(module,primaryNewItem);
+                secondaryActionButtonMap.put(module,secondaryNewItem);
+                
+                primaryPopup.add( primaryNewItem, primaryActionButtonMap.size()-1 );
+                secondaryPopup.add( secondaryNewItem, secondaryActionButtonMap.size()-1 );
+                
+            }
         }
-        
     }
     
     public void setPrimaryModule(MouseModule module) {
@@ -220,7 +226,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
-        popupListener = createPopupMenuListener();               
+        popupListener = createPopupMenuListener();
         
         if (parent instanceof Editable) {
             JMenuItem properties = new JMenuItem("properties");
@@ -444,7 +450,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         }
     }
     
-    public void mousePressed(MouseEvent e) {        
+    public void mousePressed(MouseEvent e) {
         Point l= parent.getLocation();
         xOffset= l.x;
         yOffset= l.y;
