@@ -30,6 +30,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.util.*;
 import java.nio.ByteBuffer;
 
 /**
@@ -41,13 +42,41 @@ public class DataSetStreamHandler implements StreamHandler {
     StreamHandlerDelegate delegate;
     StreamDescriptor sd;
     
+    DasProgressMonitor monitor;
+    static final int ntasks= 100;    
+    boolean [] taskStarted= new boolean[ntasks];
+    Datum start, taskWidth;
+    
     /** Creates a new instance of DataSetStreamHandler */
-    public DataSetStreamHandler() {
+    public DataSetStreamHandler( DasProgressMonitor _monitor, Datum _start, Datum end ) {
+        this.monitor= _monitor;
+        this.start= _start;
+        this.taskWidth= end.subtract(_start).divide(ntasks);
+        monitor.setTaskSize(ntasks);
+        for ( int i=0; i<taskStarted.length; i++ ) taskStarted[i]= false;
     }
     
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         ensureNotNullDelegate();
         delegate.packet(pd, xTag, vectors);
+        Units u= taskWidth.getUnits();
+        int itask= (int)( xTag.subtract(start).doubleValue(u) / taskWidth.doubleValue(u) );
+        if ( itask>=0 && itask<ntasks ) {
+            boolean monitorUpdateNeeded= taskStarted[itask]==false;
+            taskStarted[itask]= true;
+            monitor.setTaskProgress( itask );
+            //if ( monitorUpdateNeeded ) {
+            //    updateMonitor();
+            //}
+        }
+    }
+    
+    private void updateMonitor() {
+        int tasksStarted=0;
+        for ( int i=0; i<ntasks; i++ ) {
+            if ( taskStarted[i] ) tasksStarted++;
+        }
+        monitor.setTaskProgress(tasksStarted);
     }
     
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {

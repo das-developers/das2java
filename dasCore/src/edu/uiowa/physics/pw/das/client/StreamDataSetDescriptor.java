@@ -206,33 +206,40 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         } else {
             in= standardDataStreamSource.getInputStream( this, start, end );
         }
-        if (monitor != null) {
-            monitor.started();
-        }
-        in = new DasProgressMonitorInputStream(in, monitor);
-        result = getDataSet( in, start, end, resolution );
+        
+        result = getDataSetFromStream( in, start, end, resolution, monitor );
         return result;
     }
     
-    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException {
+    protected DataSet getDataSetFromStream(InputStream in, Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         PushbackInputStream pin = new PushbackInputStream(in, 4096);
         try {
             byte[] four = new byte[4];
             pin.read(four);
             if (new String(four).equals("[00]")) {
                 pin.unread(four);
-                ReadableByteChannel channel = Channels.newChannel(pin);
-                DataSetStreamHandler handler = new DataSetStreamHandler();
+                                
+                if (monitor != null) monitor.started(); 
+                InputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
+                
+                ReadableByteChannel channel = Channels.newChannel(mpin);
+                
+                DataSetStreamHandler handler = new DataSetStreamHandler( monitor, start, end );
                 StreamTool.readStream(channel, handler);
                 return handler.getDataSet();
             }
             else {
                 pin.unread(four);
+                
+                if (monitor != null) monitor.started();
+                
+                InputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
+                
                 if (getProperty("form").equals("x_tagged_y_scan")) {
-                    return getLegacyTableDataSet(pin, start);
+                    return getLegacyTableDataSet(mpin, start);
                 }
                 else if (getProperty("form").equals("x_multi_y")) {
-                    return getLegacyVectorDataSet(pin, start);
+                    return getLegacyVectorDataSet(mpin, start);
                 }
                 else {
                     throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
@@ -264,7 +271,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         try {
             PushbackInputStream in = new PushbackInputStream(in0, 50);
             PacketDescriptor sd = getPacketDescriptor(in);
-            VectorDataSetBuilder builder = new VectorDataSetBuilder(start.getUnits(),Units.dimensionless);   // Units will be set when "" is encountered                     
+            VectorDataSetBuilder builder = new VectorDataSetBuilder(start.getUnits(),Units.dimensionless);   // Units will be set when "" is encountered
             for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
                 Object o = i.next();
                 if (o instanceof StreamMultiYDescriptor) {
