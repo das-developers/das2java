@@ -253,21 +253,11 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         return s1.compareTo(startTime) <= 0 && endTime.compareTo(s2) <= 0;
     }
     
-    TimeRangeSelectionEvent lastEventProcessed=null;
-    public void TimeRangeSelected(TimeRangeSelectionEvent e) {
-        if (false) {
-            DasDie.println("received event");
-            Graphics2D g= (Graphics2D)getGraphics();
-            g.setColor(new Color(0,255,255,200));
-            Rectangle dirty= new Rectangle(0,0,getWidth(),getHeight());
-            g.fill(dirty);
-            try { Thread.sleep(600); } catch ( InterruptedException ie ) {};
-            paintImmediately(dirty);
-        }
-        if (!e.equals(lastEventProcessed)) {
-            lastEventProcessed= e;
-            setStartTime( e.getStartTime() );
-            setEndTime( e.getEndTime() );
+    
+    public void timeRangeSelected(TimeRangeSelectionEvent e) {
+        DatumRange range= e.getRange();
+        if ( !range.equals(this.range) ) {            
+            setRange( e.getRange() );
             fireTimeRangeSelected(e);
         }
     }
@@ -292,19 +282,19 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
     protected void fireTimeRangeSelectedPrevious() {
         range= range.previous();
         update();
-        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range.min(),range.max()));
+        fireTimeRangeSelected(new TimeRangeSelectionEvent( this, range ));
     }
     
     protected void fireTimeRangeSelectedNext() {
         range= range.next();
         update();
-        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range.min(),range.max()));
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range));
     }
     
     protected void fireTimeRangeSelected() {
         parseRange();
         update();
-        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range.min(),range.max()));
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range));
     }
     
     /** Notifies all registered listeners about the event.
@@ -325,7 +315,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==TimeRangeSelectionListener.class) {
-                ((TimeRangeSelectionListener)listeners[i+1]).TimeRangeSelected(event);
+                ((TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }
     }
