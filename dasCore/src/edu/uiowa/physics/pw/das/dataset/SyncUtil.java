@@ -44,8 +44,8 @@ public class SyncUtil {
         for ( int i=0; i<imap.length; i++ ) {
             imap[i]= -1;
             Datum tt= target.getXTagDatum(i);
-            Datum s1= source.getXTagDatum(0);
-            for ( int k=0; s1.le(tt) && k<source.getXLength(); k++ ) {
+            Datum s1= null;
+            for ( int k=0; ( s1==null || s1.le(tt) ) && k<source.getXLength(); k++ ) {
                 s1= source.getXTagDatum(k);
                 Datum s2= s1.add( widthsDs.getDatum(k) );                
                 if ( s1.le(tt) && tt.lt(s2) ) {
