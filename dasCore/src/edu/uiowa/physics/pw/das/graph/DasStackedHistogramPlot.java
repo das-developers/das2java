@@ -136,6 +136,15 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis(datums,row,column,DasAxis.VERTICAL), zAxis, row, column );
             }
         }
+        else {
+            double[] y_coordinate = (double[])dsd.getProperty("y_coordinate");
+            Datum[] datums= new Datum[y_coordinate.length];
+            Units units= Units.dimensionless;
+            for ( int i=0; i<y_coordinate.length; i++ ) {
+                datums[i]= Datum.create(y_coordinate[i],units);
+            }
+            return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis(datums,row,column,DasAxis.VERTICAL), zAxis, row, column );
+        }
         return null;
     }
     
