@@ -167,6 +167,10 @@ public class ArgumentList {
         Iterator i= values.keySet().iterator();
         while ( i.hasNext() ) {
             Object key= i.next();
+            if ( key.equals("help") ) {
+                printUsage();
+                System.exit(-1);
+            }
             if ( values.get( key )==this.UNSPECIFIED ) {
                 errorList.add( "Argument needed: --" + reverseNames.get( key ) );
             }
@@ -227,6 +231,7 @@ public class ArgumentList {
                                 value= this.REFERENCEWITHOUTVALUE;
                             }
                         }
+                        values.put( key, value );
                     }
                 }
             } else {
