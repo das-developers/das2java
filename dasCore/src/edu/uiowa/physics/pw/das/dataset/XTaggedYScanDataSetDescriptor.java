@@ -54,9 +54,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
     
     public int ny = -1;
     
-    public int items = -1;
-    
-    private XTaggedYScanDataSetCache dataCache;
+    public int items = -1;    
     
     protected XTaggedYScanDataSetDescriptor() {
         super(Units.us2000);
@@ -103,6 +101,9 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
     }
     
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+        
+        if ( !resolution.isFinite() ) return null;
+        
         Datum res= resolution;
         Datum sbResolution= resolution ;
         
