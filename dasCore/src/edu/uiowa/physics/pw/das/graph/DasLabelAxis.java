@@ -35,7 +35,7 @@ import javax.swing.JFrame;
 
 public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     DecimalFormat nfy= null;
-    Datum[] labels= null;
+    DatumVector labels= null;
     double[] labelValues= null;
     Units labelUnits=null;
     int[] labelPositions= null;
@@ -51,35 +51,28 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
       
   // last label to be displayed
     
-    private void setLabels(Datum[] labels) {
-        if (labels.length==0) {
+    private void setLabels(DatumVector labels) {
+        if (labels.getLength()==0) {
             throw new IllegalArgumentException( "labels can not be a zero-length array!" );
         }
         this.labels= labels;
-        this.labelPositions= new int[labels.length];
+        this.labelPositions= new int[labels.getLength()];
         indexMinimum= 0;
-        indexMaximum= labels.length-1;
-        //this.df= new DecimalFormat();
-        labelValues= new double[ labels.length ];
-        labelUnits= labels[0].getUnits();
-        for ( int i=0; i<labels.length; i++ ) {
-            labelValues[i]= labels[i].doubleValue(labelUnits);
-            if ( labels[i].getUnits() != labelUnits ) {
-                throw new IllegalArgumentException( "Datums must all have same units!" );
-            }
-        }
-        this.df = DatumUtil.bestFormatter( DatumVector.newDatumVector( labelValues, labelUnits ));
+        indexMaximum= labels.getLength()-1;
+        labelUnits= labels.getUnits();        
+        labelValues= labels.toDoubleArray(labelUnits);
+        this.df = DatumUtil.bestFormatter( labels );
     }
     
-    protected DasLabelAxis(Datum[] labels, DataRange dataRange, int orientation) {
+    protected DasLabelAxis(DatumVector labels, DataRange dataRange, int orientation) {
         super( dataRange, orientation );
         setLabels(labels);
         getDataRange().addpwUpdateListener(this);
     }
     
     
-    public DasLabelAxis(Datum[] labels, int orientation) {
-        super( labels[0], labels[labels.length-1], orientation, false );
+    public DasLabelAxis(DatumVector labels, int orientation) {
+        super( labels.get(0), labels.get(labels.getLength()-1), orientation, false );
         setLabels(labels);
         getDataRange().addpwUpdateListener(this);
     }
@@ -135,7 +128,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         int ny= indexMaximum - indexMinimum + 1;
         result.tickV= new double[ny];
         result.minorTickV= new double[0];  // no minor ticks
-        for (int i=0; i<ny; i++) result.tickV[i]= labels[i+indexMinimum].doubleValue(result.units);
+        for (int i=0; i<ny; i++) result.tickV[i]= labels.doubleValue(i+indexMinimum,result.units);
         
         return result;
     }
@@ -176,7 +169,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     
     public Datum invTransform(double d) {
         int iclose= findClosestIndex( labelPositions, (int)d );
-        return labels[iclose];
+        return labels.get(iclose);
     }
     
     public void setDataRange(Datum minimum, Datum maximum) {
@@ -184,7 +177,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     protected String tickFormatter(double tickv) {
-        return df.format(Datum.create(tickv,labels[0].getUnits()));
+        return df.format(Datum.create(tickv,labels.getUnits()));
     }
     
     public String getLabel(double tickv) {
@@ -192,7 +185,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     public int getInterItemSpace() {
-        return (int)Math.abs(transform(labels[1])-transform(labels[0]));
+        return (int)Math.abs(transform(labels.get(1))-transform(labels.get(0)));
     }
     
     public int getItemMin( Datum d ) {        
@@ -222,13 +215,13 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     public static void main( String[] args ) throws Exception {
         EnumerationUnits units= EnumerationUnits.create("");
         Datum x= units.createDatum(new Object());
-        
-        Datum[] labels= new Datum[] { units.createDatum("cat"), units.createDatum("dog"), units.createDatum("fish") };
+                
+        DatumVector labels= units.createDatumVector( new Object[] { "cat", "dog", "fish" } );
         DasCanvas canvas= new DasCanvas(400,400);
         DasRow row= DasRow.create(canvas);
         DasColumn column= DasColumn.create(canvas);
         
-        Datum[] labels2= units.createDatum(new String[] {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"});
+        DatumVector labels2= units.createDatumVector( new String[] {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"} );
         DasPlot p= new DasPlot( new DasLabelAxis( labels, DasAxis.HORIZONTAL ), new DasLabelAxis( labels2, DasAxis.VERTICAL ));
         canvas.add(p, row, column);
         
