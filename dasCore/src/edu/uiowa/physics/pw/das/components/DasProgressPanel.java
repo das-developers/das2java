@@ -38,8 +38,8 @@ import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     private long taskStartedTime;
-    private int currentTaskPosition;
-    private int maximumTaskPosition;
+    private long currentTaskPosition;
+    private long maximumTaskPosition;
     private DecimalFormat transferRateFormat;
     private JLabel messageLabel;
     private JLabel kbLabel;
@@ -150,7 +150,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     }
     
     /* ProgressMonitor interface */
-    public void setTaskProgress(int position) throws IllegalStateException {
+    public void setTaskProgress(long position) throws IllegalStateException {
         if (isCancelled) {
             throw new IllegalStateException("Operation cancelled");
         }
@@ -160,13 +160,13 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
         
         currentTaskPosition = position;
-        int kb = currentTaskPosition / 1024;
+        long kb = currentTaskPosition / 1024;
         
         
         if ( maximumTaskPosition > 0 ) {
-            progressBar.setValue(kb * 100 / (maximumTaskPosition/1024));
+            progressBar.setValue( (int) (kb * 100 / (maximumTaskPosition/1024) ) );
         } else {
-            progressBar.setValue(kb % 100);
+            progressBar.setValue( (int) kb % 100 );
         }
         
         String bytesReadLabel;
@@ -191,11 +191,11 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
     }
     
-    public int getTaskProgress() {
+    public long getTaskProgress() {
         return currentTaskPosition;
     }
     
-    public void setTaskSize(int taskSize) {
+    public void setTaskSize(long taskSize) {
         if (taskSize == -1) {
             progressBar.setIndeterminate(true);
         }
