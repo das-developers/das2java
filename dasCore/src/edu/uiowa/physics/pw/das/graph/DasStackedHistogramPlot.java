@@ -467,14 +467,11 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             if ( rdUnits instanceof LocationUnits ) {
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
-            if ( true ) {
+            
+            if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                 return highResRebinner.rebin( ds, x, y );
             } else {
-                if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                    return highResRebinner.rebin( ds, x, y );
-                } else {
-                    return lowResRebinner.rebin( ds, x, y );
-                }
+                return lowResRebinner.rebin( ds, x, y );
             }
         }
         
