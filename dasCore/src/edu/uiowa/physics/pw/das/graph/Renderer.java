@@ -136,6 +136,25 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         this.dumpDataSet= dumpDataSet;
     }
     
+    // reloadDataSet is a dummy property that is Jeremy's way of telling the thing to 
+    // reload through the property editor.  calling setReloadDataSet(true) causes the
+    // dataset to reload and the image to be redrawn.
+    private boolean reloadDataSet;
+    public void setReloadDataSet( boolean reloadDataSet ) {
+        if ( reloadDataSet ) {            
+            this.ds= null;
+            this.dsd.reset();            
+            parent.markDirty();
+            parent.update();
+           
+        }
+        reloadDataSet= false;
+    }
+    
+    public boolean isReloadDataSet() {
+        return this.reloadDataSet;
+    }
+    
     public void setLastException( Exception e ) {
         this.lastException= e;
     }
@@ -291,10 +310,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     
     public void update() {
         if (parent != null) {
-            java.awt.EventQueue eventQueue =
-            Toolkit.getDefaultToolkit().getSystemEventQueue();
-            DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
-            eventQueue.postEvent(drue);
+            if ( EventQueue.isDispatchThread() ) {
+                updateImmediately();
+            } else {
+                java.awt.EventQueue eventQueue =
+                Toolkit.getDefaultToolkit().getSystemEventQueue();
+                DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
+                eventQueue.postEvent(drue);
+            }
         }
     }
     
