@@ -25,10 +25,8 @@ package edu.uiowa.physics.pw.das.stream;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.UnitsConverter;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScan;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSet;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor;
+import edu.uiowa.physics.pw.das.client.*;
+import edu.uiowa.physics.pw.das.dataset.*;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 

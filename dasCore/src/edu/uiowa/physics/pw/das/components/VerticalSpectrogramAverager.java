@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionListener;
@@ -45,7 +46,7 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
         super((XMultiYDataSet)null, xAxis, yAxis, row, column);
     }
     
-    public static VerticalSpectrogramAverager createAverager(DasPlot plot, XTaggedYScanDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
+    public static VerticalSpectrogramAverager createAverager(DasPlot plot, TableDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
         DasAxis sourceYAxis = plot.getYAxis();
         
         DasAxis xAxis = sourceYAxis.createAttachedAxis(row, column, DasAxis.HORIZONTAL);
@@ -54,7 +55,7 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
         return new VerticalSpectrogramAverager(xAxis, yAxis, row, column);
     }
     
-    public static VerticalSpectrogramAverager createPopupAverager(DasPlot plot, XTaggedYScanDataSetConsumer dataSetConsumer, int width, int height) {
+    public static VerticalSpectrogramAverager createPopupAverager(DasPlot plot, TableDataSetConsumer dataSetConsumer, int width, int height) {
         DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);

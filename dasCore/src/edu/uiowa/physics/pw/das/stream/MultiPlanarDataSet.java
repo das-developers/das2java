@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.NoSuchDataSetException;
 import edu.uiowa.physics.pw.das.client.StandardDataStreamSource;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.StreamTool.DelimeterNotFoundException;
@@ -346,7 +347,7 @@ public class MultiPlanarDataSet {
     
     private static boolean test2() {
         try {
-            XTaggedYScanDataSetDescriptor dsd= (XTaggedYScanDataSetDescriptor)DataSetDescriptor.create("http://www-pw.physics.uiowa.edu/das/dasServerTest1?das2/demo/sa-4s-sd_jbf");
+            XTaggedYScanDataSetDescriptor dsd= (XTaggedYScanDataSetDescriptor)DataSetDescriptorUtil.create("http://www-pw.physics.uiowa.edu/das/dasServerTest1?das2/demo/sa-4s-sd_jbf");
             StandardDataStreamSource sds= dsd.getStandardDataStreamSource();
             InputStream in;
             in= sds.getReducedInputStream(dsd,TimeUtil.createValid("1979-3-1"), TimeUtil.createValid("1979-3-2"), Datum.create(120.,Units.seconds));

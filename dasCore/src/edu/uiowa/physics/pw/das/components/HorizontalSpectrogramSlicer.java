@@ -29,9 +29,7 @@ import edu.uiowa.physics.pw.das.event.DataPointSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.XMultiYDataSet;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSet;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer;
+import edu.uiowa.physics.pw.das.client.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +47,7 @@ extends DasSymbolPlot implements DataPointSelectionListener {
         super((XMultiYDataSet)null, xAxis, yAxis, row, column);
     }
     
-    public static HorizontalSpectrogramSlicer createSlicer(DasPlot plot, XTaggedYScanDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
+    public static HorizontalSpectrogramSlicer createSlicer(DasPlot plot, TableDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
         DasAxis sourceXAxis = plot.getXAxis();
         
         DasAxis xAxis = sourceXAxis.createAttachedAxis(row, column, DasAxis.HORIZONTAL);
@@ -58,7 +56,7 @@ extends DasSymbolPlot implements DataPointSelectionListener {
         return new HorizontalSpectrogramSlicer(xAxis, yAxis, row, column);
     }
     
-    public static HorizontalSpectrogramSlicer createPopupSlicer(DasPlot plot, XTaggedYScanDataSetConsumer dataSetConsumer, int width, int height) {
+    public static HorizontalSpectrogramSlicer createPopupSlicer(DasPlot plot, TableDataSetConsumer dataSetConsumer, int width, int height) {
         DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);
@@ -152,7 +150,7 @@ extends DasSymbolPlot implements DataPointSelectionListener {
     }
     
     public static HorizontalSpectrogramSlicer createPopupSlicer(DasZAxisPlot plot, int width, int height) {
-        return createPopupSlicer( (DasPlot)plot, (XTaggedYScanDataSetConsumer)plot, width, height);
+        return createPopupSlicer( (DasPlot)plot, (TableDataSetConsumer)plot, width, height);
     }
     
 }

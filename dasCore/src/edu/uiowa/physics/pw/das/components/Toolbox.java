@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.dasml.*;
-import edu.uiowa.physics.pw.das.dataset.XMultiYDataSetDescriptor;
+import edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
@@ -223,7 +223,7 @@ public class Toolbox extends JTabbedPane {
             }
             else if (id.equals("line plot renderer")) {
                 return new TransferableRenderer(
-                    new SymbolLineRenderer((edu.uiowa.physics.pw.das.dataset.XMultiYDataSetDescriptor)null));
+                    new SymbolLineRenderer(( XMultiYDataSetDescriptor)null));
             }
             else if (id.equals("spectrogram plot")) {
                 DasPlot plot = DasPlot.createNamedPlot(null);
