@@ -59,7 +59,7 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
     }
     
     private void buildComponents() {
-        this.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        this.setLayout(new FlowLayout());
         
         JButton b= new JButton("<<");
         b.addActionListener(this);
@@ -67,14 +67,12 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         b.setToolTipText("Scan back in time");
         this.add(b);
         
-        idStart= new JTextField("");
-        idStart.setSize(18,1);
+        idStart= new JTextField(18);
         idStart.addActionListener(this);
         idStart.setActionCommand("startTime");
         this.add(idStart);
         
-        idStop= new JTextField("");
-        idStop.setSize(18,1);
+        idStop= new JTextField(18);
         idStop.addActionListener(this);
         idStop.setActionCommand("endTime");
         this.add(idStop);
@@ -234,6 +232,14 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
                 ((TimeRangeSelectionListener)listeners[i+1]).TimeRangeSelected(event);
             }
         }
+    }
+    
+    public Dimension getMaximumSize() {
+        return super.getPreferredSize();
+    }
+    
+    public Dimension getMinimumSize() {
+        return super.getPreferredSize();
     }
     
 }
