@@ -219,7 +219,7 @@ public class DatumRangeUtil {
             return Integer.parseInt(s);
         } catch ( NumberFormatException e ) {
             throw new ParseException( "failed attempt to parse int in "+s, 0 );
-        }            
+        }
     }
     
     /*;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -284,7 +284,7 @@ public class DatumRangeUtil {
         String format="";
         boolean beforeTo= true;   // true if before the "to" delineator
         
-        DateDescriptor dateDescriptor= new DateDescriptor();        
+        DateDescriptor dateDescriptor= new DateDescriptor();
         
         int dateFormat= DATEFORMAT_USA;
         
@@ -441,7 +441,7 @@ public class DatumRangeUtil {
                 format= s[0]+formatCodes[idx]+s[1];
             }
             beforeToUnresolved.removeAll(beforeToUnresolved);
-        }                
+        }
         
         if ( beforeToUnresolved.size()+afterToUnresolved.size() > 0 ) {
             ArrayList unload;
@@ -488,7 +488,7 @@ public class DatumRangeUtil {
             int lsd=idx;
             for ( int i=unload.size()-1; i>=0; i-- ) {
                 while ( ts[lsd]!=-1 && lsd>0 ) lsd--;
-		if ( ts[lsd]!=-1 ) {
+                if ( ts[lsd]!=-1 ) {
                     throw new ParseException( "can't resolve these tokens: "+unload, 0 );
                 }
                 ts[lsd]= parseInt((String)unload.get(i));
@@ -543,8 +543,56 @@ public class DatumRangeUtil {
         Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
         Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
         
-        return new DatumRange( time1, time2 );                    
+        return new DatumRange( time1, time2 );
         
+    }
+    
+    /* formats time, supressing trailing zeros.  Time2 is another time that will be displayed alongside time,
+     * and may be used when deciding how the time should be formatted.  context is used to describe an external
+     * time context that can further make the display of the time more efficient.
+     */
+    private static String efficientTime( Datum time, Datum time2, DatumRange context ) {
+        TimeUtil.TimeStruct ts= TimeUtil.toTimeStruct(time);
+        
+        String timeString;
+        
+        int stopRes= 3;
+        if ( TimeUtil.getSecondsSinceMidnight(time)==0. && time.equals(context.max()) ) {
+             ts.hour=24;
+             ts.day--;  
+        }            
+            
+        timeString= ""+ts.hour;
+        
+        Datum[] times= new Datum[] { time, time2 };
+        for ( int i=0;i<times.length;i++ ) {
+            int[] arr= TimeUtil.toTimeArray(times[i]);
+            int idigit;
+            for ( idigit=7; idigit>3; idigit-- ) {
+                if ( arr[idigit]>0 ) break;
+            }
+            stopRes= Math.max( stopRes, idigit );
+        }
+        
+        int[] arr= TimeUtil.toTimeArray(time);
+        if ( stopRes>3 ) {
+            timeString+=":"+ ( arr[4] < 10 ? "0" : "" ) + arr[4];
+            if ( stopRes>4 ) {
+                int second= arr[5];
+                timeString+=":"+ ( second < 10 ? "0" : "" ) + second;
+                if ( stopRes>5 ) {
+                    int millis= arr[6];
+                    DecimalFormat nf= new DecimalFormat("000");
+                    timeString+="."+nf.format(millis);
+                    if ( stopRes>6 ) {
+                        int micros= arr[7];
+                        timeString+=nf.format(micros);
+                    }
+                }
+            }
+        }
+        
+        return  timeString;
     }
     
     public static String formatTimeRange( DatumRange self ) {
@@ -609,14 +657,14 @@ public class DatumRangeUtil {
             else timeOfDayFormatter= TimeDatumFormatter.MINUTES;
             
             int maxDay= TimeUtil.getJulianDay(self.max());
-            // if ( TimeUtil.getSecondsSinceMidnight(self.max())==0 ) maxDay--;  want to have 24:00, not 00:00
+            if ( TimeUtil.getSecondsSinceMidnight(self.max())==0 ) maxDay--;  //  want to have 24:00, not 00:00
             if ( maxDay== TimeUtil.getJulianDay(self.min()) ) {
                 return TimeDatumFormatter.DAYS.format(self.min())
-                + " " + timeOfDayFormatter.format( self.min() )
-                + " - " + timeOfDayFormatter.format( self.max() );
+                + " " + efficientTime( self.min(), self.max(), self )
+                + " to " +  efficientTime( self.max(), self.min(), self );
             } else {
-                String t1str= timeOfDayFormatter.format( self.min() );
-                String t2str= timeOfDayFormatter.format( self.max() );
+                String t1str= efficientTime( self.min(), self.max(), self );
+                String t2str= efficientTime( self.max(), self.min(), self );
                 return TimeDatumFormatter.DAYS.format( self.min() ) + " " + t1str
                 + " to " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + t2str;
             }
@@ -682,17 +730,35 @@ public class DatumRangeUtil {
     }
     
     static void main2() throws Exception {
+        testParse( "2004-07-01T03:29:40 - 03:30:45" );
+        testParse( "2004-07-01T03:29:40.000Z-03:30:45.000Z" );
+        
         testParse("2004-11-07T06-8");
         testParse( "2-2003 4-5" );
         testParse( "1 2 03 4 5 06" );
         testParse( "2-3-5 6-7" );
+        
+    }
+    
+    static void testEfficientTime() throws Exception {
+        DatumRange context= parseTimeRange("2004-1-1");
+        Datum t1= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 0, 0 );
+        Datum t2= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 23, 0 );
+        Datum t3= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 23, 4000000 );
+        int[] arr= TimeUtil.toTimeArray(t3);
+        Datum t4= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 23,    4000 );
+        Datum t5= TimeUtil.createTimeDatum( 2001, 1, 4, 23, 34, 23,    4000 );
+        System.out.println( efficientTime( t1, t1, context ) );
+        System.out.println( efficientTime( t2, t2, context ) );
+        System.out.println( efficientTime( t3, t3, context ) );
+        System.out.println( efficientTime( t1, t2, context ) );
+        System.out.println( efficientTime( t4, t4, context ) );
+        System.out.println( efficientTime( t5, t5, context ) );
     }
     
     public static void main( String [] args ) throws Exception {
-        String regex="(\\d{4})-((\\d?\\d)|(jan[a-z]*|feb[a-z]*|mar[a-z]*|apr[a-z]*|may|june?|july?|aug[a-z]*|sep[a-z]*|oct[a-z]*|nov[a-z]*|dec[a-z]*))-(\\d?\\d)( |T|-)";
-        String date="2004-11-07T";
-        System.out.println(date.matches(regex));
-        main2();
+        //main2();
+        testEfficientTime();
         
     }
     
