@@ -28,12 +28,13 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import java.util.*;
 
 /**
  *
  * @author  jbf
  */
-public class SineWaveDataSetDescriptor extends XMultiYDataSetDescriptor {
+public class SineWaveDataSetDescriptor extends DataSetDescriptor {
     
     Datum amplitude;    
     Datum period;
@@ -44,29 +45,36 @@ public class SineWaveDataSetDescriptor extends XMultiYDataSetDescriptor {
         super(null);
         this.amplitude= amplitude;        
         this.period= period;
-        this.phase= period.getUnits().createDatum(0); // arbitary by intent        
+        this.phase= null; // arbitary by intent        
     }
     
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
         int nstep= (int)(end.subtract(start).doubleValue(resolution.getUnits()) / resolution.doubleValue(resolution.getUnits()));        
         int stepSize= 5;
         nstep= nstep / stepSize; 
+       
+        if ( phase==null ) phase= start;
         
         double[] yvalues= new double[nstep];
         double[] xtags= new double[nstep];
-        Units xunits= period.getUnits();
+        Units xunits= phase.getUnits();
+        Units offsetUnits= period.getUnits();
         Units yunits= amplitude.getUnits();
-       
+               
         for ( int i=0; i<nstep; i++ ) {
             Datum x= start.add(resolution.multiply(i*stepSize));            
-            double y= amplitude.doubleValue(yunits) * Math.sin( 2 * Math.PI * ( x.subtract(phase).doubleValue(xunits) 
-               / period.doubleValue(xunits))) ;
+            double y= amplitude.doubleValue(yunits) * Math.sin( 2 * Math.PI * ( x.subtract(phase).doubleValue(offsetUnits) 
+               / period.doubleValue(offsetUnits))) ;
             xtags[i]= x.doubleValue(xunits);
             yvalues[i]= y;
         }
-        VectorDataSet result= new DefaultVectorDataSet( xtags, xunits, yvalues, yunits, null );
+        VectorDataSet result= new DefaultVectorDataSet( xtags, xunits, yvalues, yunits, new HashMap() );
         
         return result;
     }    
+    
+    public Units getXUnits() {
+        return period.getUnits();
+    }
     
 }
