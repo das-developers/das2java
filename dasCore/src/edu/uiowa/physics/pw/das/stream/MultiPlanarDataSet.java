@@ -23,28 +23,23 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.DasIOException;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.NoSuchDataSetException;
 import edu.uiowa.physics.pw.das.client.StandardDataStreamSource;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.util.DasDate;
-import edu.uiowa.physics.pw.das.util.StreamTool;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.util.*;
+import edu.uiowa.physics.pw.das.util.StreamTool.DelimeterNotFoundException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
+
+
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -151,7 +146,7 @@ public class MultiPlanarDataSet {
         read(in, null);
     }
     
-    public void read(InputStream in, DataRequestor requestor ) throws DasException {
+    public void read(InputStream in, DasProgressMonitor monitor ) throws DasException {
         
         MultiPlanarDataSet result= this;
         
@@ -171,7 +166,7 @@ public class MultiPlanarDataSet {
             
             try {
                 byte[] x= StreamTool.advanceTo(pin,streamPrefix.getBytes());
-            } catch ( StreamTool.DelimeterNotFoundException v ) {
+            } catch ( DelimeterNotFoundException v ) {
                 throw new DasStreamFormatException("Stream does not appear to be a das2 stream");
             }
             
@@ -179,7 +174,7 @@ public class MultiPlanarDataSet {
             byte[] iheader;
             try {
                 iheader= StreamTool.advanceTo(pin,"\177\177".getBytes());
-            } catch ( StreamTool.DelimeterNotFoundException v ) {
+            } catch ( DelimeterNotFoundException v ) {
                 throw new DasStreamFormatException("Stream does not appear to be a das2 stream");
             }
             
@@ -194,7 +189,7 @@ public class MultiPlanarDataSet {
         
         if ( streamDescriptor.isCompressed() ) {
             try {
-                in= new java.util.zip.GZIPInputStream(in);
+                in= new GZIPInputStream(in);
             } catch ( IOException ex) {
                 throw new DasIOException("Error in gzip input stream");
             }
@@ -209,7 +204,9 @@ public class MultiPlanarDataSet {
         byte[] buf= new byte[bytesPerRecord];
         
         long timer0= System.currentTimeMillis();
-        if ( requestor!=null) requestor.currentByteCount(-1);
+        if ( monitor != null) {
+            monitor.setTaskProgress(-1);
+        }
         
         int irec=0;
         while (notDone) {
@@ -221,7 +218,9 @@ public class MultiPlanarDataSet {
                     if (bytesRead!=-1) {
                         off+= bytesRead;
                         totalBytesRead+= bytesRead;
-                        if ( requestor!=null) requestor.currentByteCount(totalBytesRead);
+                        if ( monitor!=null) {
+                            monitor.setTaskProgress(totalBytesRead);
+                        }
                     }
                 } catch ( IOException e ) {
                     throw new DasIOException(e.getMessage());
