@@ -63,7 +63,7 @@ public class DasServer {
     public static DasServer sarahandjeremy;
     static {
         try {
-            plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/dasServer"));
+            plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
             sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
         } catch ( java.net.MalformedURLException e ) {
             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(e);
@@ -223,7 +223,7 @@ public class DasServer {
         try {
             String dsdf = dataSetID.getQuery().split("&")[0];
             URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,"getting "+url.toString());
+            DasApplication.getDefaultApplication().getLogger().info("getting dataSetDescription from "+url);            
             URLConnection connection = url.openConnection();
             connection.connect();
             String contentType = connection.getContentType();
