@@ -128,6 +128,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private boolean drawTca;
     private DataRequestThread drt;
     
+    /* DEBUGGING INSTANCE MEMBERS */
+    private static final boolean DEBUG_GRAPHICS = false;
+    private static final Color[] DEBUG_COLORS;
+    static {
+        if (DEBUG_GRAPHICS) {
+            DEBUG_COLORS = new Color[] {
+                Color.BLACK, Color.RED, Color.GREEN, Color.BLUE,
+                Color.GRAY, Color.CYAN, Color.MAGENTA, Color.YELLOW,
+            };
+        }
+        else {
+            DEBUG_COLORS = null;
+        }
+    }
+    private int debugColorIndex = 0;
+    
     
     /** TODO
      * @param data
@@ -619,6 +635,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         catch (edu.uiowa.physics.pw.das.DasException de) {
             DasExceptionHandler.handle(de);
         }
+        markDirty();
         update();
         firePropertyChange("dataPath", oldValue, dataset);
     }
@@ -1136,6 +1153,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g.translate(-getX(), -getY());
+        /* Debugging code */
+        /* The compiler will optimize it out if DEBUG_GRAPHICS == false */
+        if (DEBUG_GRAPHICS) {
+            g.setColor(DEBUG_COLORS[debugColorIndex]);
+            debugColorIndex++;
+            if (debugColorIndex >= DEBUG_COLORS.length) { debugColorIndex = 0; };
+        }
+        /* End debugging code */
         if (isHorizontal()) {
             paintHorizontalAxis(g);
         }
