@@ -344,10 +344,13 @@ public final class TimeUtil {
         
         second+= hour*3600.0 + minute*60.0;
         
+        double us2000 = (jd-2451545)*86400000000. + second * 1000000;
+        
         if ( units==Units.us2000 ) {
-            return (jd-2451545)*86400000000. + second * 1000000;
-        } else {
-            throw new IllegalArgumentException("Not implemented for units: "+units.toString());
+            return us2000;
+        }
+        else {
+            return Units.us2000.convertDoubleTo(units, us2000);
         }
     }
     
