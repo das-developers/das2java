@@ -115,6 +115,14 @@ public class DasApplication {
         }
     }
     
+    public JFrame getMainFrame( edu.uiowa.physics.pw.das.graph.DasCanvas canvas ) {
+        JFrame frame= getMainFrame();
+        frame.setContentPane(canvas);
+        frame.pack();
+        frame.setVisible(true);
+        return frame;
+    }
+    
     public JFrame getMainFrame() {
         final JFrame result= new JFrame("Das2");        
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
@@ -133,10 +141,16 @@ public class DasApplication {
         return result;
     }
     
+    /**
+     * logger for messages to end users
+     */    
     public Logger getLogger() {
         return DasProperties.getLogger();
     }
     
+    /**
+     * logger for messages to developers
+     */    
     public synchronized Logger getDebugLogger() {
         return Logger.getLogger("debug");
     }
