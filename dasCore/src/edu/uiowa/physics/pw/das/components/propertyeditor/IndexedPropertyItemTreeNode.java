@@ -20,6 +20,7 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     IndexedPropertyItemTreeNode(PropertyTreeNode parent, IndexedPropertyDescriptor indexedPropertyDescriptor, int index) {
         super(Array.get(parent.value, index));
         this.index = index;
+        this.parent = parent;
         this.propertyDescriptor = indexedPropertyDescriptor;
         this.indexedPropertyDescriptor = indexedPropertyDescriptor;
     }
