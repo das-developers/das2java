@@ -121,19 +121,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public DataSet getData() {
         return Data;
     }
-   
-    public void setRow(DasRow row) {
-        super.setRow(row);
-        if (xAxis!=null) xAxis.setRow(row);
-        if (yAxis!=null) yAxis.setRow(row);
-    }
-    
-    public void setColumn(DasColumn column) {
-        super.setColumn(column);
-        if (xAxis!=null) xAxis.setColumn(column);
-        if (yAxis!=null) yAxis.setColumn(column);
-    }
-    
+     
     public void setXAxis(DasAxis xAxis) {
         Object oldValue = this.xAxis;
         Container parent = getParent();
