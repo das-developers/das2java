@@ -49,7 +49,7 @@ public class TimeDatumFormatter extends DatumFormatter {
     public static final TimeDatumFormatter DAYS;
     public static final TimeDatumFormatter MINUTES;
     public static final TimeDatumFormatter SECONDS;
-    public static final TimeDatumFormatter MILLESECONDS;
+    public static final TimeDatumFormatter MILLISECONDS;
     
     //Initialize final constants
     static {
@@ -58,7 +58,7 @@ public class TimeDatumFormatter extends DatumFormatter {
             DAYS = new TimeDatumFormatter("yyyy-MM-dd");
             MINUTES = new TimeDatumFormatter("HH:mm");
             SECONDS = new TimeDatumFormatter("HH:mm:ss");
-            MILLESECONDS = new TimeDatumFormatter("HH:mm:ss.SSS");
+            MILLISECONDS = new TimeDatumFormatter("HH:mm:ss.SSS");
         }
         catch (ParseException pe) {
             throw new RuntimeException(pe);
