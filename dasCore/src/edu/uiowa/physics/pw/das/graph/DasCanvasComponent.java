@@ -45,6 +45,7 @@ implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
     private String dasName;
     
     public DasCanvasComponent() {
+        setOpaque(false);
         rl = new ResizeListener();
         mouseAdapter= new DasMouseInputAdapter(this);
         addMouseListener(mouseAdapter);
