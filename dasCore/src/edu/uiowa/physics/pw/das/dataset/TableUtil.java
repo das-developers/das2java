@@ -64,10 +64,33 @@ public class TableUtil {
         return closest( xx, x );
     }
     
+    public static Datum closestDatum( TableDataSet table, Datum x, Datum y ) {
+        int i= closestColumn( table, x );
+        int j= closestRow( table, table.tableOfIndex(i), y );
+        return table.getDatum(i,j);
+    }
+    
     public static int tableIndexAt( TableDataSet table, int i ) {
         int itable=0;
         while ( table.tableEnd(itable)<=i ) itable++;
         return itable;
+    }
+    
+    public static Datum guessXTagWidth( TableDataSet table ) {
+        return table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
+    }
+    
+    public static Datum guessYTagWidth( TableDataSet table ) {
+        // cheat and check for logarithmic scale.  If logarithmic, then return YTagWidth as percent.
+        double y0= table.getYTagDouble( 0, 0, table.getYUnits());
+        double y1= table.getYTagDouble( 0, 1, table.getYUnits());
+        int n= table.getYLength(0)-1;
+        double yn= table.getYTagDouble( 0, n, table.getYUnits() );
+        if ( (yn-y0) / ( (y1-y0 ) * n ) > 10. ) {
+            return Units.percent.createDatum( ( (y1/y0) - 1.0 ) * 100 );
+        } else {
+            return table.getYUnits().createDatum(y1-y0);
+        }
     }
     
     public static double tableMax( TableDataSet tds ) {
