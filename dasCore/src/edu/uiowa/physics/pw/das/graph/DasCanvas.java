@@ -383,6 +383,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     protected void paintComponent(Graphics g) {
         if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
             g.setColor(getBackground());
+            g.setColor(Color.PINK);
             g.fillRect(0, 0, getWidth(), getHeight());
         }
         g.setColor(getForeground());
@@ -736,9 +737,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             printingThreads.add(Thread.currentThread());
         }
         try {
+            setOpaque(false);
             super.print(g);
         }
         finally {
+            setOpaque(true);
             synchronized(this) {
                 printingThreads.remove(Thread.currentThread());
             }
@@ -797,10 +800,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             throw new RuntimeException(pce);
         }
         
-        SVGGraphics2D graphics = new SVGGraphics2D(document);
+        Graphics2D graphics = Graphics2DUtil.newSVGGraphics2D(document);
 	print(graphics);
         Writer writer = new OutputStreamWriter(out, "UTF-8");
-        graphics.stream(writer, false);
+        Graphics2DUtil.streamSVGGraphics2D(graphics, writer, false);
         writer.close();
         
     }
