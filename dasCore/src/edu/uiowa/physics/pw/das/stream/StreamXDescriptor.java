@@ -88,6 +88,10 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         return base;
     }
     
+    public void setBase(Datum base) {
+        this.base = base;
+    }
+    
     public int getSizeBytes() {
         return transferType.getSizeBytes();
     }

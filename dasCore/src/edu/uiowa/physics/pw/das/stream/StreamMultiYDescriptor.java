@@ -37,7 +37,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     
     public StreamMultiYDescriptor(Element element) {
         if ( element.getTagName().equals("y") ) {
-            processElement( element );
+            processElement(element);
         }
         else {
             processLegacyElement(element);

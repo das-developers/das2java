@@ -507,6 +507,7 @@ public class StreamTool {
     }
     
     private static ReadableByteChannel getInflaterChannel(ReadableByteChannel channel) throws IOException {
-        return Channels.newChannel(new InflaterInputStream(Channels.newInputStream(channel)));
+        return new InflaterChannel(channel);
+        //return Channels.newChannel(new InflaterInputStream(Channels.newInputStream(channel)));
     }
 }

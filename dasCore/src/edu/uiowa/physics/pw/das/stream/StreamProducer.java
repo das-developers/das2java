@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
+import edu.uiowa.physics.pw.das.util.DeflaterChannel;
 import edu.uiowa.physics.pw.das.util.StreamTool;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class StreamProducer implements StreamHandler {
     private Map descriptors = new IdentityHashMap();
     private WritableByteChannel stream;
     private ByteBuffer bigBuffer = ByteBuffer.allocate(4096);
-    private byte[] four = new byte[4];
+    private byte[] six = new byte[6];
     private int nextAvailable = 1;
     private DocumentBuilder builder;
     
@@ -73,14 +74,25 @@ public class StreamProducer implements StreamHandler {
             if ((pd.getSizeBytes() + 4) > bigBuffer.remaining()) {
                 flush();
             }
-            four[0] = four[3] = (byte)':';
-            four[1] = (byte)header.charAt(0);
-            four[2] = (byte)header.charAt(1);
-            bigBuffer.put(four);
+            six[0] = six[3] = (byte)':';
+            six[1] = (byte)header.charAt(0);
+            six[2] = (byte)header.charAt(1);
+            bigBuffer.put(six, 0, 4);
             pd.getXDescriptor().writeDatum(xTag, bigBuffer);
             for (int i = 0; i < pd.getYCount(); i++) {
                 pd.getYDescriptor(i).write(vectors[i], bigBuffer);
             }
+            //Ascii format hack
+            int lastChar = bigBuffer.position() - 1;
+            SkeletonDescriptor lastY = pd.getYDescriptor(pd.getYCount() - 1);
+            if (((lastY instanceof StreamYScanDescriptor
+                  && ((StreamYScanDescriptor)lastY).getDataTransferType().isAscii())
+                 || (lastY instanceof StreamMultiYDescriptor
+                     && ((StreamMultiYDescriptor)lastY).getDataTransferType().isAscii()))
+                && Character.isWhitespace((char)bigBuffer.get(lastChar))) {
+                bigBuffer.put(lastChar, (byte)'\n');
+            }
+            //End of Ascii format hack
             bigBuffer.flip();
             stream.write(bigBuffer);
             bigBuffer.compact();
@@ -103,16 +115,18 @@ public class StreamProducer implements StreamHandler {
             writer.flush();
             byte[] header = out.toByteArray();
             int length = header.length;
-            four[0] = '[';
-            four[1] = (byte)id.charAt(0);
-            four[2] = (byte)id.charAt(1);
-            four[3] = ']';
-            bigBuffer.put(four);
-            four[0] = (byte)Character.forDigit((length / 1000) % 10, 10);
-            four[1] = (byte)Character.forDigit((length / 100) % 10, 10);
-            four[2] = (byte)Character.forDigit((length / 10) % 10, 10);
-            four[3] = (byte)Character.forDigit(length % 10, 10);
-            bigBuffer.put(four);
+            six[0] = '[';
+            six[1] = (byte)id.charAt(0);
+            six[2] = (byte)id.charAt(1);
+            six[3] = ']';
+            bigBuffer.put(six, 0, 4);
+            six[0] = (byte)Character.forDigit((length / 100000) % 10, 10);
+            six[1] = (byte)Character.forDigit((length / 10000) % 10, 10);
+            six[2] = (byte)Character.forDigit((length / 1000) % 10, 10);
+            six[3] = (byte)Character.forDigit((length / 100) % 10, 10);
+            six[4] = (byte)Character.forDigit((length / 10) % 10, 10);
+            six[5] = (byte)Character.forDigit(length % 10, 10);
+            bigBuffer.put(six);
             bigBuffer.put(header);
             bigBuffer.flip();
             stream.write(bigBuffer);
@@ -125,6 +139,12 @@ public class StreamProducer implements StreamHandler {
     
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         flush();
+        try {
+            stream.close();
+        }
+        catch (IOException ioe) {
+            throw new StreamException(ioe);
+        }
     }
     
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
@@ -138,15 +158,17 @@ public class StreamProducer implements StreamHandler {
             writer.flush();
             byte[] header = out.toByteArray();
             int length = header.length;
-            four[0] = '[';
-            four[1] = four[2] = '0';
-            four[3] = ']';
-            bigBuffer.put(four);
-            four[0] = (byte)Character.forDigit((length / 1000) % 10, 10);
-            four[1] = (byte)Character.forDigit((length / 100) % 10, 10);
-            four[2] = (byte)Character.forDigit((length / 10) % 10, 10);
-            four[3] = (byte)Character.forDigit(length % 10, 10);
-            bigBuffer.put(four);
+            six[0] = '[';
+            six[1] = six[2] = '0';
+            six[3] = ']';
+            bigBuffer.put(six, 0, 4);
+            six[0] = (byte)Character.forDigit((length / 100000) % 10, 10);
+            six[1] = (byte)Character.forDigit((length / 10000) % 10, 10);
+            six[2] = (byte)Character.forDigit((length / 1000) % 10, 10);
+            six[3] = (byte)Character.forDigit((length / 100) % 10, 10);
+            six[4] = (byte)Character.forDigit((length / 10) % 10, 10);
+            six[5] = (byte)Character.forDigit(length % 10, 10);
+            bigBuffer.put(six);
             bigBuffer.put(header);
             flush();
             if ("deflate".equals(sd.getCompression())) {
@@ -205,7 +227,8 @@ public class StreamProducer implements StreamHandler {
     }
     
     private static WritableByteChannel getDeflaterChannel(WritableByteChannel channel) throws IOException {
-        return Channels.newChannel(new DeflaterOutputStream(Channels.newOutputStream(channel)));
+        return new DeflaterChannel(channel);
+        //return Channels.newChannel(new DeflaterOutputStream(Channels.newOutputStream(channel)));
     }
 }
 

@@ -143,7 +143,8 @@ public class DataSetStreamHandler implements StreamHandler {
         
         private VectorDataSetStreamHandler(PacketDescriptor pd) throws StreamException {
             StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(0);
-            Units xUnits = pd.getXDescriptor().getUnits();
+            Datum base = pd.getXDescriptor().getBase();
+            Units xUnits = base == null ? pd.getXDescriptor().getUnits() : base.getUnits();
             Units yUnits = y.getUnits();
             builder = new VectorDataSetBuilder(xUnits,yUnits);
             this.packetDescriptor(pd);
