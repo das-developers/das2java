@@ -418,52 +418,36 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
     }
     
     /**
-     * Queues an event to the AWT Event Queue that will invoke
-     * {@link #writeToPngImmediately(java.lang.String)} when it
-     * is processed
+     * uses getImage to get an image of the canvas and encodes it
+     * as a png.
      *
      * @param filename the specified filename
      * @throws IOException if there is an error opening the file for writing
      */
-    public void writeToPng(String filename) throws IOException {
+    public void writeToPng(String filename) throws IOException {        
         final FileOutputStream out = new FileOutputStream(filename);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                writeToPngImmediately(out);
-            }
-        });
-    }
-    
-    /**
-     * Writes the contents of this canvas to the specified
-     * FileOutputStream.
-     *
-     * @param out the specified FileOutputStream
-     */
-    protected void writeToPngImmediately(FileOutputStream out) {
-        try {
-            synchronized(displayLockObject) {
-                if (displayLockCount != 0) {
-                    displayLockObject.wait();
-                }
-            }
-        }
-        catch (InterruptedException ie) {
-        }
-        BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-        print(image.getGraphics());
+        
+        Image image= getImage( getWidth(), getHeight() );
+        
         DasPNGEncoder encoder = new DasPNGEncoder();
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
         try {
-            encoder.write(image, out);
+            encoder.write((BufferedImage)image, out);
         }
         catch (IOException ioe) {}
         finally {
             try { out.close(); } catch (IOException ioe) {}
         }
+                
     }
     
-    /** TODO
+    
+    /** TODO     
+     * Creates a BufferedImage and 
+     * queues an event to the AWT Event Queue that will invoke
+     * {@link #writeToImageImmediately(Image)} when it
+     * is processed
+     *
      * @param width
      * @param height
      * @return
