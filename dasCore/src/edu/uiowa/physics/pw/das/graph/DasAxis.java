@@ -399,7 +399,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private void createAndFireRangeSelectionEvent() {
         if (getUnits() instanceof TimeLocationUnits) {
-            TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this, this.getDataMinimum(), this.getDataMaximum());
+            TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this, new DatumRange( this.getDataMinimum(), this.getDataMaximum() ) );
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
         }
     }
@@ -487,6 +487,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Datum result= Datum.create( dd, dataRange.getUnits() );
         // We're going to want to add a decimal place or two here
         return result;
+    }
+    
+    /*
+     * 
+     */
+    /**
+     * This is the preferred method for getting the range of the axis.
+     * @return a DatumRange indicating the range of the axis.
+     */    
+    public DatumRange getRange() {
+        return new DatumRange( getDataMinimum(), getDataMaximum() );
     }
     
     /** TODO
@@ -2203,9 +2214,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.removeMouseMotionListener(l);
     }
     
-    public void TimeRangeSelected(TimeRangeSelectionEvent e) {
+    public void timeRangeSelected(TimeRangeSelectionEvent e) {
         if ( e.getSource()!=this && !e.equals(lastProcessedEvent)) {
-            setDataRange(e.getStartTime(),e.getEndTime());
+            setDataRange(e.getRange());
             lastProcessedEvent= e;
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
         }
@@ -2247,7 +2258,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class) {
                 edu.uiowa.physics.pw.das.util.DasDie.println("fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event);
-                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).TimeRangeSelected(event);
+                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }
     }
