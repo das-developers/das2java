@@ -104,7 +104,7 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
             vds= (VectorDataSet)dsd.getDataSet( axis.getDataMinimum(), axis.getDataMaximum(), null, null );
             if ( vds.getPlanarView("xTagWidth")==null ) {
                 throw new IllegalArgumentException("no xTagWidth plane found.");
-            } 
+            }
             VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView("xTagWidth");
             for ( int k=0; k<eventMap.length; k++ ) eventMap[k]= -1;
             if ( vds.getXLength()>0 ) {
@@ -115,31 +115,34 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
                 for ( int i=ivds0; i<ivds1; i++ ) {
                     Datum x= vds.getXTagDatum(i);
                     int ix= (int)axis.transform(x);
-                    int iwidth;
-                    if ( uc!=null ) {
-                        Datum y= widthsDs.getDatum(i);
-                        iwidth= (int)axis.transform( x.add( y ) ) - ix;
-                    } else {
-                        iwidth= 1;
-                    }
-                    if ( iwidth==0 ) iwidth=1;
-                    g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
-                    int im= ix-getX();
-                    int em0= im-1;
-                    int em1= im+iwidth+1;
-                    for ( int k=em0; k<em1; k++ ) {
-                        if ( k>=0 && k<eventMap.length ) eventMap[k]= i;
+                    
+                    if ( getColumn().contains(ix) ) {
+                        int iwidth;
+                        if ( uc!=null ) {
+                            Datum y= widthsDs.getDatum(i);
+                            iwidth= (int)axis.transform( x.add( y ) ) - ix;
+                        } else {
+                            iwidth= 1;
+                        }
+                        if ( iwidth==0 ) iwidth=1;
+                        g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
+                        int im= ix-getX();
+                        int em0= im-1;
+                        int em1= im+iwidth+1;
+                        for ( int k=em0; k<em1; k++ ) {
+                            if ( k>=0 && k<eventMap.length ) eventMap[k]= i;
+                        }
                     }
                 }
                 for ( int k1=1; k1<=2; k1++ ) { /* add fuzziness using Larry's algorithm */
-                    for ( int k2=-1; k2<=1; k2+=2 ) {                     
-			int em0= ( k2==1 ) ? 0 : eventMap.length-1;
+                    for ( int k2=-1; k2<=1; k2+=2 ) {
+                        int em0= ( k2==1 ) ? 0 : eventMap.length-1;
                         int em1= ( k2==1 ) ? eventMap.length-k1 : k1;
                         for ( int k=em0; k!=em1; k+=k2) {
                             if ( eventMap[k]==-1 ) eventMap[k]= eventMap[k+k2];
                         }
                     }
-                }                
+                }
             }
             
         } catch ( DasException e ) {
