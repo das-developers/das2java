@@ -94,21 +94,28 @@ public abstract class Units {
         return conversionTable;
     }
     
-    public static Units dimensionless= new NumberUnits("");
+    public static final Units dimensionless= new NumberUnits("");
     
-    public static Units celcius= new NumberUnits("deg C");
-    public static Units fahrenheit= new NumberUnits("deg F");
+    public static final Units celcius= new NumberUnits("deg C");
+    public static final Units fahrenheit= new NumberUnits("deg F");
     
-    public static Units seconds= new NumberUnits("s");
-    public static Units microseconds= new NumberUnits("microseconds");
-    public static Units days= new NumberUnits("days");
+    public static final Units seconds= new NumberUnits("s");
+    public static final Units microseconds= new NumberUnits("microseconds");
+    public static final Units days= new NumberUnits("days");
     
-    public static TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
-    public static TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
-    public static TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
-    public static TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
+    public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
+    public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
+    public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
+    public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
     
-    public static EnumerationUnits spacecraft= new EnumerationUnits( "spacecraft", "Enumeration of various spacecraft" );
+    public static final EnumerationUnits spacecraft= new EnumerationUnits( "spacecraft", "Enumeration of various spacecraft" );
+    
+    /*
+     * Units.percent might be useful for specifying logarithmic spacing.  Define percent space between two numbers a, b where a<b
+     * as ( b-a )*100. / a.  So { 1,2,4,8 } has a spacing of 100%.  
+     */
+    public static final Units percent= new NumberUnits("%","Special dimensionless number, possibly useful for specifying Tag relevance on logarithmic scale");
+    
     static { 
       Units.spacecraft.createDatum( "Voyager1" );
       Units.spacecraft.createDatum( "Voyager2" );
