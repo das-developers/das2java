@@ -166,7 +166,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
         
         yAxis.setFloppyItemSpacing(true);
         yAxis.setOutsidePadding(1);
-                
+        
         this.zAxisComponent = new ZAxisComponent(this,zAxis);
         this.setZAxis(zAxis);
         this.peaksIndicator= PeaksIndicator.MaxLines;
@@ -222,7 +222,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
     }
     
     
-    protected void updatePlotImage() throws DasException {
+    synchronized protected void updatePlotImage() throws DasException {
         
         Component parent= getParent();
         Cursor cursor0= parent.getCursor();
@@ -266,14 +266,10 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
         
-        Rectangle2D.Double r= new Rectangle2D.Double();
-        Line2D.Double l= new Line2D.Double();
-        Rectangle2D.Double rmax= new Rectangle2D.Double();
-        
         DasLabelAxis yAxis= (DasLabelAxis)getYAxis();
         
-        for (int j = 0; j < data.getYLength(0); j++) {
-            
+        for (int j = 0; j < data.getYLength(0); j++) {                    
+           
             int yBase;
             Line2D.Float lBase;
             
@@ -303,7 +299,9 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
             double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
             
             if ( yBase1 >= getRow().getDMinimum() && yBase <= getRow().getDMaximum() ) {
+                
                 for (int ibin=0; ibin < data.getXLength(); ibin++) {
+                    
                     int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
                     int x1;
                     x1=x0+1; // 1 pixel wide
@@ -319,18 +317,15 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                                 int yMax= zAxisComponent.transform(peakValue, peaks.getZUnits());
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
                                 if (peaksIndicator==PeaksIndicator.MaxLines) {
-                                    l.setLine(x0,yMax,x0,yMax);
                                     g.drawLine(x0,yMax,x0,yMax);
                                 } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                                    rmax.setRect(x0,yMax,(x1-x0),y0-yMax);
                                     g.setColor(Color.lightGray);
-                                    g.fill(rmax);
+                                    g.fillRect(x0,yMax,(x1-x0),y0-yMax);
                                     g.setColor(Color.darkGray);
                                 }
                             }
                         }
-                        r.setRect(x0,yAvg,(x1-x0),yHeight);
-                        g.fill(r);
+                        g.fillRect(x0,yAvg,(x1-x0),yHeight);
                     }
                 }
             }
@@ -345,6 +340,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
         g.dispose();
         parent.setCursor(cursor0);
         repaint();
+        
     }
     
     public void setData(TableDataSet Data) {
