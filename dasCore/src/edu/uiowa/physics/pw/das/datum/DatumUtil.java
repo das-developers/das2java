@@ -63,6 +63,28 @@ public final class DatumUtil {
         return bestFormatter( datums.get(0), datums.get(0).add( resolution ), 1 );
     }
     
+    public static int fractionalDigits( Datum resolution ) {
+        double d= Math.abs( resolution.doubleValue() );
+        double frac= d-(int)d;
+        if ( frac==0. ) { 
+            int e=1;
+            int emax= (int)DasMath.log10(d);
+            while ( e<emax && ( d/DasMath.exp10(e) % 1 == 0. ) ) e++;
+            return -1*(e-1);
+        } else {
+            int e= (int)Math.floor( DasMath.log10(frac) );
+            int emin= -18;
+            boolean notDone= true;
+            while ( e>emin && notDone  ) {
+		double remain= frac/DasMath.exp10(e) % 1;
+                if ( remain>0.5 ) remain= 1.0 - remain;
+                notDone= remain > (1/10000.);
+                e--;
+            }
+            return -1*(e+1);
+        }
+    }
+    
     public static DatumFormatter bestFormatter(Datum minimum, Datum maximum, int nsteps) {
         
         Units units = minimum.getUnits();
@@ -84,9 +106,13 @@ public final class DatumUtil {
             if (!(factory instanceof DefaultDatumFormatterFactory)) {
                 return factory.defaultFormatter();
             }
-            double discernable= Math.abs( maximum.subtract(minimum).doubleValue(units) / nsteps );
-            int expDisc= (int)Math.floor(0.05+DasMath.log10(discernable));
+            
+            int fracDigits= fractionalDigits( maximum.subtract(minimum).divide(nsteps) );   
+            
             int smallestExp=99;
+            
+            double discernable= DasMath.exp10(-1*fracDigits);
+            
             Datum step= maximum.subtract(minimum).divide( nsteps );
             double dstep= step.doubleValue(units);
             for ( int j=0; j<nsteps; j++ ) {
@@ -96,9 +122,8 @@ public final class DatumUtil {
                     if ( ee<smallestExp ) smallestExp=ee;
                 }
             }
-            if ( smallestExp < -3 || smallestExp > 3 ) {
-                int digits= smallestExp - expDisc + 1;
-                return new ExponentialDatumFormatter( digits, smallestExp );
+            if ( smallestExp < -3 || smallestExp > 3 ) {                
+                return new ExponentialDatumFormatter( smallestExp - (-1*fracDigits), smallestExp );
             } else {
                 int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
                 nFraction= nFraction<0 ? 0 : nFraction;
