@@ -131,7 +131,7 @@ public class CrossHairRenderer implements DragRenderer, Editable {
             result= nfz.grannyFormat(zValue);
         }
         if (allPlanesReport) {    
-            if ( debugging ) result+= " "+tds.toString();
+            if ( debugging ) result+= "!c"+tds.toString();
             String [] planeIds= tds.getPlaneIds();
             for ( int iplane=0; iplane<planeIds.length; iplane++ ) {                
                 if ( !planeIds[iplane].equals("") ) {
