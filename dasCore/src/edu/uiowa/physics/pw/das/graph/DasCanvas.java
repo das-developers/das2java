@@ -448,6 +448,220 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
     }
     
+    private static class RowWrapper extends DasRow {
+        private DasRow delegate = DasRow.NULL;
+
+        private static RowWrapper wrap(DasCanvas canvas, DasRow row) {
+            return (row instanceof RowWrapper ? (RowWrapper)row
+                    : new RowWrapper(canvas, row));
+        }
+        
+        private RowWrapper(DasCanvas parent, DasRow delegate) {
+            super(parent, 0.0, 0.0);
+            this.delegate = delegate;
+        }
+        
+        public void setDasName(String name) throws DasNameException {
+            delegate.setDasName(name);
+        }
+
+        public void setDMaximum(int maximum) {
+            delegate.setDMaximum(maximum);
+        }
+
+        public boolean contains(int x) {
+            return delegate.contains(x);
+        }
+
+        public void dTranslate(int delta) {
+            delegate.dTranslate(delta);
+        }
+
+        public void setDMinimum(int minimum) {
+            delegate.setDMinimum(minimum);
+        }
+
+        public void addpwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
+            delegate.addpwUpdateListener(l);
+        }
+
+        public void removepwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
+            delegate.removepwUpdateListener(l);
+        }
+
+        public void translate(double nDelta) {
+            delegate.translate(nDelta);
+        }
+
+        public void setMinimum(double minimum) {
+            delegate.setMinimum(minimum);
+        }
+
+        public void setMaximum(double maximum) {
+            delegate.setMaximum(maximum);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+
+        public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(propertyName, listener);
+        }
+
+        public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+            delegate.removePropertyChangeListener(propertyName, listener);
+        }
+
+        public String toString() {
+            return delegate.toString();
+        }
+
+        public void setPosition(double minimum, double maximum) {
+            delegate.setPosition(minimum, maximum);
+        }
+
+        public int getDMaximum() {
+            return delegate.getDMaximum();
+        }
+
+        public int getHeight() {
+            return delegate.getHeight();
+        }
+
+        public void setDPosition(int minimum, int maximum) {
+            delegate.setDPosition(minimum, maximum);
+        }
+
+        public String getDasName() {
+            return delegate.getDasName();
+        }
+
+        public int getDMiddle() {
+            return delegate.getDMiddle();
+        }
+
+        public double getMaximum() {
+            return delegate.getMaximum();
+        }
+
+        public double getMinimum() {
+            return delegate.getMinimum();
+        }
+
+        public int getDMinimum() {
+            return delegate.getDMinimum();
+        }
+        
+    }
+    
+    private static class ColumnWrapper extends DasColumn {
+        private DasColumn delegate;
+        
+        private static ColumnWrapper wrap(DasCanvas canvas, DasColumn column) {
+            return (column instanceof ColumnWrapper ? (ColumnWrapper)column
+                    : new ColumnWrapper(canvas, column));
+        }
+        
+        private ColumnWrapper(DasCanvas canvas, DasColumn delegate) {
+            super(canvas, 1.0, 1.0);
+            this.delegate = delegate;
+        }
+
+        public void setDasName(String name) throws DasNameException {
+            delegate.setDasName(name);
+        }
+
+        public boolean contains(int x) {
+            return delegate.contains(x);
+        }
+
+        public void setDMaximum(int maximum) {
+            delegate.setDMaximum(maximum);
+        }
+
+        public void dTranslate(int delta) {
+            delegate.dTranslate(delta);
+        }
+
+        public void setDMinimum(int minimum) {
+            delegate.setDMinimum(minimum);
+        }
+
+        public void removepwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
+            delegate.removepwUpdateListener(l);
+        }
+
+        public void addpwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
+            delegate.addpwUpdateListener(l);
+        }
+
+        public void translate(double nDelta) {
+            delegate.translate(nDelta);
+        }
+
+        public void setMinimum(double minimum) {
+            delegate.setMinimum(minimum);
+        }
+
+        public void setMaximum(double maximum) {
+            delegate.setMaximum(maximum);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+            delegate.removePropertyChangeListener(propertyName, listener);
+        }
+
+        public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(propertyName, listener);
+        }
+
+        public String toString() {
+            return delegate.toString();
+        }
+
+        public void setPosition(double minimum, double maximum) {
+            delegate.setPosition(minimum, maximum);
+        }
+
+        public int getDMaximum() {
+            return delegate.getDMaximum();
+        }
+
+        public int getDMinimum() {
+            return delegate.getDMinimum();
+        }
+
+        public void setDPosition(int minimum, int maximum) {
+            delegate.setDPosition(minimum, maximum);
+        }
+
+        public String getDasName() {
+            return delegate.getDasName();
+        }
+
+        public double getMinimum() {
+            return delegate.getMinimum();
+        }
+
+        public int getWidth() {
+            return delegate.getWidth();
+        }
+
+        public double getMaximum() {
+            return delegate.getMaximum();
+        }
+
+        public int getDMiddle() {
+            return delegate.getDMiddle();
+        }
+        
+    }
+    
     /** TODO */
     protected static class RowColumnLayout implements LayoutManager {
         /** TODO
@@ -653,11 +867,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param c the component to be added to this canvas
      */
     public void add(DasCanvasComponent c, DasRow row, DasColumn column) {
-        if (c.getRow() == DasRow.NULL || c.getRow().getParent() != this) {
-            c.setRow(row);
+        if (c.getRow() == DasRow.NULL
+                || c.getRow().getParent() != this
+                || c.getRow() instanceof RowWrapper) {
+            c.setRow(RowWrapper.wrap(this, row));
         }
-        if (c.getColumn() == DasColumn.NULL || c.getColumn().getParent() != this) {
-            c.setColumn(column);
+        if (c.getColumn() == DasColumn.NULL
+                || c.getColumn().getParent() != this
+                || c.getColumn() instanceof ColumnWrapper) {
+            c.setColumn(ColumnWrapper.wrap(this, column));
         }
         add(c);
     }
@@ -1376,6 +1594,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
     
     private void addRow(DasRow row) {
+        if (row instanceof RowWrapper) {
+            //Wrapped rows should be ignored
+            return;
+        }
         HotLine min = new HotLine(row, HotLine.MIN);
         HotLine max = new HotLine(row, HotLine.MAX);
         horizontalLineSet.add(min);
@@ -1391,6 +1613,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
     
     private void addColumn(DasColumn column) {
+        if (column instanceof ColumnWrapper) {
+            //Wrapped columns should be ignored
+            return;
+        }
         HotLine min = new HotLine(column, HotLine.MIN);
         HotLine max = new HotLine(column, HotLine.MAX);
         verticalLineSet.add(min);
@@ -1652,7 +1878,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         HotLine(DasDevicePosition devicePosition, int minOrMax) {
             this.devicePosition = devicePosition;
             this.minOrMax = minOrMax;
-            refresh();
+            if (!(devicePosition instanceof RowWrapper
+                    || devicePosition instanceof ColumnWrapper)) {
+                refresh();
+            }
             devicePosition.addPropertyChangeListener((minOrMax == MIN ? "dMinimum" : "dMaximum"), this);
         }
         void refresh() {
