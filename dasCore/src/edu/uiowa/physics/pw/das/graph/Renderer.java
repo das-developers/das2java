@@ -166,6 +166,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         
         progressPanel.setLocation( x - progressPanel.getWidth()/2,
         y - progressPanel.getHeight()/2 );
+        
         DataRequestor requestor = new DataRequestor() {
             public void exception(Exception exception) {
                 try {
@@ -192,8 +193,13 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
                         ((DasCanvas)parent.getParent()).freeDisplay(this);
                     }
                 }
+                catch (RuntimeException e) {
+                    ds = null;
+                    updatePlotImage(xAxis, yAxis, progressPanel);
+                    throw e;
+                }
                 finally {
-                        progressPanel.setVisible(false);
+                    progressPanel.setVisible(false);
                 }
             }
         };
@@ -202,6 +208,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         }
         try {
             drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
+            updatePlotImage(xAxis, yAxis, null);
         }
         catch (InterruptedException ie) {
             DasExceptionHandler.handle(ie);
