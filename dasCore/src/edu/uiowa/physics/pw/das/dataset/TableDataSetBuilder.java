@@ -91,20 +91,18 @@ public class TableDataSetBuilder {
         }
     }
     
-    public void insertYScan(double x, double[] y, double[] z) {
-        insertYScan(x, y, z, "");
+    public void insertYScan(Datum x, DatumVector y, DatumVector z) {
+        insertYScan(x, y, new DatumVector[]{z}, new String[]{""});
     }
     
-    public void insertYScan(double x, double[] y, double[] z, String planeID) {        
+    public void insertYScan(Datum xTag, DatumVector yTags, DatumVector[] scans, String[] planeIDs) {
+        double x = xTag.doubleValue(xUnits);
+        double[] y = yTags.toDoubleArray(yUnits);
         int insertionIndex = xTags.indexOf(x);
-        if (planeID == null) {
-            planeID = "";
-        }
         if (yTagSet.contains(y)) {
             y = (double[])yTagSet.tailSet(y).iterator().next();
         }
         else {
-            y = (double[])y.clone();
             yTagSet.add(y);
         }
         if (insertionIndex < 0) {
@@ -112,48 +110,56 @@ public class TableDataSetBuilder {
         }
         xTags.add(x);
         MultiYScan scan = new MultiYScan();
-        scan.put(planeID, (double[])z.clone());
-        scan.setYTags(y);
-        zValues.add(insertionIndex, scan);
-        if (DEBUG) {
-            Logger logger = DasApplication.getDefaultApplication().getDebugLogger();
-            logger.log(Level.FINEST, "insertYScan(x, double[" + y.length + "] y, double[" + z.length + "] z, \"" + planeID + "\")");
+        for (int i = 0; i < planeIDs.length; i++) {
+            String planeID = planeIDs[i];
+            Units zUnits = (Units)zUnitsMap.get(planeID);
+            if (zUnits == null) {
+                zUnits = Units.dimensionless;
+                addPlane(planeID, zUnits);
+            }
+            double[] z = scans[i].toDoubleArray(zUnits);
+            scan.put(planeID, z);
+            scan.setYTags(y);
+            zValues.add(insertionIndex, scan);
         }
     }
     
     public void append(TableDataSet tds) {
-        Units zUnits = (Units)zUnitsMap.get("");
-        for (int table = 0; table < tds.tableCount(); table++) {
-            double[] yCoordinates = new double[tds.getYLength(table)];
-            for (int j = 0; j < yCoordinates.length; j++) {
-                yCoordinates[j] = tds.getYTagDouble(table, j, yUnits);
-            }
-            double[] scan = new double[tds.getYLength(table)];
+        String[] planeIDs = (String[])this.planeIDs.toArray(new String[this.planeIDs.size()]);
+        TableDataSet[] planes = new TableDataSet[planeIDs.length];
+        planes[0] = tds;
+        for (int i = 1; i < planeIDs.length; i++) {
+            planes[i] = (TableDataSet)tds.getPlanarView(planeIDs[i]);
         }
-        for (Iterator i = planeIDs.iterator(); i.hasNext();) {
-            String planeID = (String)i.next();
-            TableDataSet ptds = (TableDataSet)tds.getPlanarView(planeID);
-            if (ptds != null) {
-                append(ptds, planeID);
+        DatumVector[] z = new DatumVector[planes.length];
+        for (int table = 0; table < tds.tableCount(); table++) {
+            DatumVector y = getYTagsDatumVector(tds, table);
+            for (int i = tds.tableStart(table); i < tds.tableEnd(table); i++) {
+                for (int p = 0; p < planes.length; p++) {
+                    z[p] = getZScanDatumVector(planes[p], table, i);
+                }
+                insertYScan(tds.getXTagDatum(i), y, z, planeIDs);
             }
         }
     }
     
-    private void append(TableDataSet tds, String planeID) {
-        Units zUnits = (Units)zUnitsMap.get(planeID);
-        for (int table = 0; table < tds.tableCount(); table++) {
-            double[] yCoordinates = new double[tds.getYLength(table)];
-            for (int j = 0; j < yCoordinates.length; j++) {
-                yCoordinates[j] = tds.getYTagDouble(table, j, yUnits);
-            }
-            double[] scan = new double[tds.getYLength(table)];
-            for (int i = tds.tableStart(table); i < tds.tableEnd(table); i++) {
-                for (int j = 0; j < scan.length; j++) {
-                    scan[j] = tds.getDouble(i, j, zUnits);
-                }
-                insertYScan(tds.getXTagDouble(i, xUnits), yCoordinates, scan, planeID);
-            }
+    private DatumVector getYTagsDatumVector(TableDataSet tds, int table) {
+        double[] yTags = new double[tds.getYLength(table)];
+        for (int j = 0; j < tds.getYLength(table); j++) {
+            yTags[j] = tds.getYTagDouble(table, j, yUnits);
         }
+        return DatumVector.newDatumVector(yTags, yUnits);
+    }
+    
+    private DatumVector getZScanDatumVector(TableDataSet tds, int table, int i) {
+        if (tds == null) {
+            return null;
+        }
+        double[] scan = new double[tds.getYLength(table)];
+        for (int j = 0; j < tds.getYLength(table); j++) {
+            scan[j] = tds.getDouble(i, j, yUnits);
+        }
+        return DatumVector.newDatumVector(scan, yUnits);
     }
     
     public void setXUnits(Units units) {
