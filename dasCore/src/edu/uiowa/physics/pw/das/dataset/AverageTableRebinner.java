@@ -87,9 +87,6 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( xTagWidth==null ) {
             xTagWidth= DataSetUtil.guessXTagWidth(tds);
         }
-        else {
-            System.out.println(xTagWidth + " " + xTagWidth.getUnits());
-        }
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
         if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
         if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
