@@ -86,21 +86,19 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         StringBuffer formData = new StringBuffer();
         String form = (String)dsd.getProperty("form");
         
-        if ("true".equals(dsd.getProperty("legacy"))) {
-            if ( "x_tagged_y_scan".equals(form) ) {
-                formData.append("server=compactdataset");
-                StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
-                formData.append("&nitems=").append(y.getNItems() + 1);
-                if (timeResolution != null) {   
-                    formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
-                }
-            } else if ( "x_multi_y".equals(form) && dsd.getProperty("ny") != null) {
-                formData.append("server=dataset");
-            } else if ( "x_multi_y".equals(form) ) {
-                formData.append("server=dataset");
-                if (timeResolution != null) {
-                    formData.append("&interval=").append(timeResolution.doubleValue(Units.seconds));
-                }
+        if ("true".equals(dsd.getProperty("legacy")) && "x_tagged_y_scan".equals(form) ) {
+            formData.append("server=compactdataset");
+            StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
+            formData.append("&nitems=").append(y.getNItems() + 1);
+            if (timeResolution != null) {   
+                formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
+            }
+        } else if ( "x_multi_y".equals(form) && dsd.getProperty("ny") != null) {
+            formData.append("server=dataset");
+        } else if ( "x_multi_y".equals(form) ) {
+            formData.append("server=dataset");
+            if (timeResolution != null) {
+                formData.append("&interval=").append(timeResolution.doubleValue(Units.seconds));
             }
         } else {
             formData.append("server=compactdataset");
