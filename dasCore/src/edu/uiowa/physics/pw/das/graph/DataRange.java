@@ -145,7 +145,7 @@ public class DataRange implements Cloneable {
         edu.uiowa.physics.pw.das.util.DasDie.println("-------------");
     }
     
-    private void clearHistory() {
+    protected void clearHistory() {
         history.removeAllElements();
         forwardHistory.removeAllElements();
     }
@@ -159,7 +159,7 @@ public class DataRange implements Cloneable {
                 h[0] = Datum.create(minimum,units);
                 h[1] = Datum.create(maximum,units);
                 history.push(h);
-                reportHistory();
+//                reportHistory();
             }
             forwardHistory.removeAllElements();
         }
