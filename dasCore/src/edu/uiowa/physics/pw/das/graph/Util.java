@@ -76,8 +76,8 @@ public class Util {
         
         
         double xSampleWidth;
-        if (xds.getProperty("xSampleWidth") != null) {
-            Datum xSampleWidthDatum = (Datum)xds.getProperty("xSampleWidth");
+        if (xds.getProperty("xTagWidth") != null) {
+            Datum xSampleWidthDatum = (Datum)xds.getProperty("xTagWidth");
             xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
         }
         else {
