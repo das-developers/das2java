@@ -104,9 +104,11 @@ public abstract class Datum {
     public Datum subtract( Number a, Units units ) { return getUnits().subtract( getValue(), a, units ); }
     public Datum subtract( double d, Units units ) {  return subtract( new java.lang.Double(d), units ); }    
     
+    public Datum divide( Datum a ) { return getUnits().divide( getValue(), a.getValue(), a.getUnits() ); }
     public Datum divide( Number a, Units units ) { return getUnits().divide( getValue(), a, units ); }
     public Datum divide( double d ) {  return divide( new java.lang.Double(d), Units.dimensionless ); }
     
+    public Datum multiply( Datum a ) { return getUnits().multiply( getValue(), a.getValue(), a.getUnits() ); }
     public Datum multiply( Number a, Units units ) { return getUnits().multiply( getValue(), a, units ); }
     public Datum multiply( double d ) {  return multiply( new java.lang.Double(d), Units.dimensionless ); }
     
