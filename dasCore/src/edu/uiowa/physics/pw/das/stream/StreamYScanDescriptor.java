@@ -201,5 +201,8 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
+    public String toString() {
+        return "<yScan nitems="+nitems+">";
+    }
 }
 
