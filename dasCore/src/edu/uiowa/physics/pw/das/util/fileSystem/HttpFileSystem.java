@@ -48,10 +48,10 @@ public class HttpFileSystem extends FileSystem {
         this.localRoot= localRoot;
     }
     
-    public static HttpFileSystem createHttpFileSystem( URL root ) throws IOException {
-        File x= File.createTempFile("WebFileSystem","~~~");
-        File local= x.getParentFile();  // name of a local, large, writable directory
-        local= new File( local, "das2/WebFileSystem/" );
+    public static HttpFileSystem createHttpFileSystem( URL root ) throws IOException {        
+        File local; 
+        local= new File( System.getProperty("user.home") );
+        local= new File( local, ".das2/fileSystemCache/WebFileSystem/" );
         local= new File( local, root.getHost() );
         local= new File( local, root.getFile() );
         local.mkdirs();
