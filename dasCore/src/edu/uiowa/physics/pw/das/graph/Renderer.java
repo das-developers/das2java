@@ -45,7 +45,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     // avoid get/set methods unless you know what you're doing.
     protected DataSet ds;
     
-    private boolean fullResolution = true;
+    private boolean fullResolution = false;
     
     DasPlot parent;
     
@@ -300,7 +300,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             }
             try {
                 progressPanel.setLabel("Loading Data Set" );
-                if (!fullResolution) {
+                if (fullResolution) {
                     resolution = null;
                 }
                 drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
