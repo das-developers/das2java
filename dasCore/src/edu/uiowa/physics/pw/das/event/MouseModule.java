@@ -89,8 +89,7 @@ public class MouseModule  {
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
-    private void setLabel(java.lang.String label) {
-        // note the label must be set before the module is added to the dmia!!!
+    public void setLabel(java.lang.String label) {        
         this.label= label;
     }
         
