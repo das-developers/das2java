@@ -51,8 +51,10 @@ public class AverageTableRebinner implements DataSetRebinner {
         if (ddXin != null && tds.getXLength() > 0) {
             double start = tds.getXTagDouble(0, ddXin.getUnits());
             double end = tds.getXTagDouble(tds.getXLength() - 1, ddXin.getUnits());
-            if (start > ddXin.end || end < ddXin.start) {
-                throw new NoDataInIntervalException("");
+            if (start > ddXin.end ) {
+                throw new NoDataInIntervalException("data starts after range");
+            } else if ( end < ddXin.start ) {
+                throw new NoDataInIntervalException("data ends before range");
             }
         }
         
@@ -65,7 +67,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         int ix1= DataSetUtil.getNextColumn( tds, xunits.createDatum( ddXin.binStop( ddXin.numberOfBins()-1, xunits ) ) );        
         
         RebinDescriptor ddX= RebinDescriptor.createSubsumingRebinDescriptor( ddXin, tds.getXTagDatum(ix0), tds.getXTagDatum(ix1) );                
-        RebinDescriptor ddY= RebinDescriptor.createSubsumingRebinDescriptor( ddYin, TableUtil.getSmallestYTag(tds), TableUtil.getLargestYTag(tds) );
+        Datum yMin= TableUtil.getSmallestYTag(tds);
+        Datum yMax= TableUtil.getLargestYTag(tds);
+        RebinDescriptor ddY= RebinDescriptor.createSubsumingRebinDescriptor( ddYin, yMin, yMax );
         
         int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
         int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
@@ -115,7 +119,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
          * new dataset. 
          */
-        TableDataSet result= new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        TableDataSet result= new DefaultTableDataSet(xTags, ddX.getUnits(), yTags, ddY.getUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
         
         int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits);
         int xlength= ddXin.numberOfBins();
@@ -159,7 +163,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 else {
                     ibinx = i;
                 }
-                if (ibinx>=0 && ibinx<nx) {
+                if (ibinx>=0 && ibinx<nx) {                    
                     for (int j = 0; j < tds.getYLength(table); j++) {
                             if (ibiny[j] >= 0 && ibiny[j] < ny) {
                             if (weights != null) {
@@ -168,9 +172,10 @@ public class AverageTableRebinner implements DataSetRebinner {
                                 rebinWeights[ibinx][ibiny[j]] += w;
                             }
                             else {
-                                Datum z= tds.getDatum(i,j);
-                                double w= z.isFill() ? 0. : 1. ;
-                                rebinData[ibinx][ibiny[j]] += z.doubleValue(tds.getZUnits()) * w;
+                                Units zUnits= tds.getZUnits();
+                                double z= tds.getDouble(i,j,zUnits);
+                                double w= zUnits.isFill(z) ? 0. : 1. ;
+                                rebinData[ibinx][ibiny[j]] += z * w;
                                 rebinWeights[ibinx][ibiny[j]] += w;
                             }
                         }
