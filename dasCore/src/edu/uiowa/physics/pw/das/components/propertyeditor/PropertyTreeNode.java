@@ -206,6 +206,10 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     }
     
     public boolean isCellEditable(int column) {
+        if (propertyDescriptor instanceof IndexedPropertyDescriptor) {
+            IndexedPropertyDescriptor ipd = (IndexedPropertyDescriptor)propertyDescriptor;
+            return column == 1 && !(Editable.class.isAssignableFrom(ipd.getIndexedPropertyType()));
+        }
         return column == 1 && !(Editable.class.isAssignableFrom(propertyDescriptor.getPropertyType()));
     }
     
