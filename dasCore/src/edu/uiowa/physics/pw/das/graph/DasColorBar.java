@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.datum.*;
 import org.w3c.dom.Document;
@@ -238,7 +239,7 @@ public class DasColorBar extends DasAxis {
         
     }
     
-    public static final class Type implements edu.uiowa.physics.pw.das.components.PropertyEditor.Enumeration {
+    public static final class Type implements Enumeration {
         
         public static final Type COLOR_WEDGE = new Type("color_wedge");
         public static final Type GRAYSCALE = new Type("grayscale");

@@ -33,6 +33,7 @@ import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.client.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.stream.*;
 
@@ -52,7 +53,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     private DasCanvas parent;
     private PeaksIndicator peaksIndicator;
     
-    public static class PeaksIndicator implements edu.uiowa.physics.pw.das.components.PropertyEditor.Enumeration {
+    public static class PeaksIndicator implements Enumeration {
         
         String id;
         

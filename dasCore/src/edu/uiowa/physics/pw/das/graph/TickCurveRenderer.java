@@ -24,6 +24,7 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.*;
@@ -57,7 +58,7 @@ public class TickCurveRenderer extends Renderer {
     /** Holds value of property tickLength. */
     private float tickLength;
     
-    public static class TickStyle implements PropertyEditor.Enumeration {
+    public static class TickStyle implements Enumeration {
         private String name;
         public static TickStyle outer= new TickStyle("Outer");
         public static TickStyle both= new TickStyle("Both");        

@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
@@ -34,7 +34,7 @@ import javax.swing.*;
  *
  * @author  jbf
  */
-public class PsymConnector implements PropertyEditor.Enumeration {
+public class PsymConnector implements Enumeration {
     
     String name;
     Icon imageIcon;

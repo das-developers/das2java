@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
@@ -37,7 +38,7 @@ import java.beans.PropertyChangeSupport;
  *
  * @author  jbf
  */
-public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable, java.io.Serializable {
+public abstract class DasDevicePosition implements Editable, java.io.Serializable {
     
     protected transient DasCanvas parent;
     private double minimum;

@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.datum.*;
@@ -35,7 +35,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.InterruptedIOException;
 
-public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editable, DataSetUpdateListener {
+public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpdateListener {
     
     // dsd reloads ds when plot params change.
     private DataSetDescriptor dsd;

@@ -23,11 +23,13 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
+
 /**
  *
  * @author  eew
  */
-public final class Orientation implements edu.uiowa.physics.pw.das.components.PropertyEditor.Enumeration {
+public final class Orientation implements Enumeration {
     
     public static final Orientation HORIZONTAL = new Orientation("horizontal");
     

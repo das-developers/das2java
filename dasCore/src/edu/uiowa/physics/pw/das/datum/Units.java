@@ -255,6 +255,14 @@ public abstract class Units {
                 
         System.out.println( Units.days.createDatum(1.) );
         System.out.println( Units.days.createDatum(1.).convertTo(Units.seconds) );
+        
+        System.out.println();
+        System.out.println("Test of subtract using TimeLocationUnits");
+        Datum start = TimeUtil.createValid("1983-01-01");
+        Datum end = TimeUtil.createValid("1983-01-11");
+        Datum result = end.subtract(start);
+        System.out.println("(" + end + ") - (" + start + ") = " + result.doubleValue(Units.seconds) + " seconds");
+        System.out.println("or " + result.doubleValue(Units.days) + " days");
                 
     }
     

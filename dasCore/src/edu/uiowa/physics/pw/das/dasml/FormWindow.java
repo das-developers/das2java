@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,7 +37,7 @@ import java.awt.*;
 /**
  * @author  eew
  */
-public class FormWindow extends FormContainer implements PropertyEditor.Editable, FormComponent {
+public class FormWindow extends FormContainer implements Editable, FormComponent {
     
     FormBase form;
     

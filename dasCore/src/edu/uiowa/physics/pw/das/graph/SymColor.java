@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.components.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -33,7 +34,7 @@ import java.awt.image.BufferedImage;
  * @author  jbf
  */
 
-public final class SymColor extends Color implements PropertyEditor.Enumeration {
+public final class SymColor extends Color implements Enumeration {
     
     private String name;
     private ImageIcon imageIcon;

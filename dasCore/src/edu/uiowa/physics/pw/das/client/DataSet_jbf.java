@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.client;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -31,7 +32,7 @@ import edu.uiowa.physics.pw.das.datum.Units;
  *
  * @author  eew
  */
-public abstract class DataSet_jbf implements java.io.Serializable, edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
+public abstract class DataSet_jbf implements java.io.Serializable, Editable {
     
     DataSetDescriptor dataSetDescriptor;
     

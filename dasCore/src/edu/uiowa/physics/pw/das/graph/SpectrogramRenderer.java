@@ -35,6 +35,7 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.components.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.util.*;
 
 import org.w3c.dom.Document;
@@ -61,7 +62,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     /** Holds value of property rebinner. */
     private RebinnerEnum rebinnerEnum;
     
-    public static class RebinnerEnum implements PropertyEditor.Enumeration {
+    public static class RebinnerEnum implements Enumeration {
         DataSetRebinner rebinner;
         String label;
         

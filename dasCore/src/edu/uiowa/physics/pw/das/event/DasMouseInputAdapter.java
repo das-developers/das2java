@@ -23,7 +23,8 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
+import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
@@ -221,7 +222,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         JPopupMenu popup = new JPopupMenu();
         popupListener = createPopupMenuListener();               
         
-        if (parent instanceof PropertyEditor.Editable) {
+        if (parent instanceof Editable) {
             JMenuItem properties = new JMenuItem("properties");
             properties.addActionListener(popupListener);
             properties.setToolTipText("edit object properties");

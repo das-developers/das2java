@@ -67,6 +67,8 @@ public class LocationUnits extends NumberUnits {
             if ( this != bUnits ) {
                 b= bUnits.getConverter(this).convert(b);
             }
+            System.out.println(a);
+            System.out.println(b);
             return getOffsetUnits().createDatum(subtract( a, b ));            
         } else {
             if ( bUnits != getOffsetUnits()) {

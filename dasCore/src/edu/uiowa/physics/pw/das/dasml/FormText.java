@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.*;
 
 import javax.swing.*;
@@ -35,7 +35,7 @@ import java.awt.*;
  *
  * @author  eew
  */
-public class FormText extends JTextArea implements PropertyEditor.Editable, FormComponent {
+public class FormText extends JTextArea implements Editable, FormComponent {
     
     protected edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
     

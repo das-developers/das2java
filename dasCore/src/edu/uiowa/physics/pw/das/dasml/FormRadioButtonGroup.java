@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,7 +33,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 
-public class FormRadioButtonGroup extends FormContainer implements PropertyEditor.Editable, FormComponent {
+public class FormRadioButtonGroup extends FormContainer implements Editable, FormComponent {
     
     /**
      * The button group the radio buttons will be associated with.

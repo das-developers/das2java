@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;
 import org.w3c.dom.Document;
@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author  Edward West
  */
-public abstract class FormContainer extends JPanel implements PropertyEditor.Editable, FormComponent {
+public abstract class FormContainer extends JPanel implements Editable, FormComponent {
     
     float horizontalComponentAlignment = JComponent.LEFT_ALIGNMENT;
     final float verticalComponentAlignment = JComponent.TOP_ALIGNMENT;

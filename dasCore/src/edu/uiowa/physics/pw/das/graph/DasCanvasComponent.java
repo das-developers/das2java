@@ -24,6 +24,8 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
+import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
@@ -35,8 +37,7 @@ import java.awt.*;
  *
  * @author  eew
  */
-public abstract class DasCanvasComponent extends JPanel
-implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
+public abstract class DasCanvasComponent extends JPanel implements Editable {
     
     private DasRow row;
     private DasColumn column;
@@ -135,7 +136,7 @@ implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
     }
 
     public void showProperties() {
-        edu.uiowa.physics.pw.das.components.PropertyEditor editor = new edu.uiowa.physics.pw.das.components.PropertyEditor(this);
+        PropertyEditor editor = new PropertyEditor(this);
         editor.showDialog(this);
     }
 

@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -38,7 +38,7 @@ import javax.swing.*;
  *
  * @author Edward West
  */
-public class FormTextField extends JTextField implements PropertyEditor.Editable, FormComponent {
+public class FormTextField extends JTextField implements Editable, FormComponent {
     
     private String dasName;
     

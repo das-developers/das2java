@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
@@ -60,7 +60,7 @@ import java.util.List;
 /** TODO
  * @author eew
  */
-public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor.Editable, FormComponent {
+public class DasCanvas extends JLayeredPane implements Printable, Editable, FormComponent {
     
     /** TODO */    
     public static final Integer DEFAULT_LAYER = JLayeredPane.DEFAULT_LAYER;

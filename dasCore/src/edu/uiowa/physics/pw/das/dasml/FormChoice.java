@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -35,7 +35,7 @@ import javax.swing.*;
 /**
  * Drop down list for making single selections.
  */
-public class FormChoice extends JComboBox implements PropertyEditor.Editable, FormComponent, OptionList {
+public class FormChoice extends JComboBox implements Editable, FormComponent, OptionList {
     
     protected edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
     
