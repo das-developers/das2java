@@ -35,8 +35,8 @@ import java.awt.event.*;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
-import java.util.HashMap;
-import java.util.Vector;
+import java.util.*;
+
 
 /**
  *
@@ -174,6 +174,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     }
     
     public void setPrimaryModule(MouseModule module) {
+        
+        for ( Iterator i= primaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
+            try {
+                Object ii= ((Map.Entry)i.next()).getValue();
+                ((JCheckBoxMenuItem)ii).setSelected(false);                       
+            } catch ( RuntimeException e ) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
         JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(module);
         if (j!=null) {
             j.setSelected(true);
@@ -184,6 +194,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     }
     
     public void setSecondaryModule(MouseModule module) {
+        for ( Iterator i= secondaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
+            try {
+                Object ii= ((Map.Entry)i.next()).getValue();
+                ((JCheckBoxMenuItem)ii).setSelected(false);                       
+            } catch ( RuntimeException e ) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
         JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(module);
         if (j!=null) {
             j.setSelected(true);
@@ -291,9 +310,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                 }
                 else if (command.equals("close")) {
                 }
-                else if (command.equals("primary")) {
-                    JCheckBoxMenuItem primarySelectedItem0= primarySelectedItem;
-                    primarySelectedItem.setSelected(false);
+                else if (command.equals("primary")) {                    
+                    if (primarySelectedItem!=null) primarySelectedItem.setSelected(false);
                     for (int i=0; i<modules.size(); i++) {
                         JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(modules.get(i));
                         if (j.isSelected()) {
@@ -304,7 +322,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                     primarySelectedItem.setSelected(true); // for case when selection wasn't changed.
                     //primaryPopup.show( parent, l.x, l.y );
                 } else if (command.equals("secondary")) {
-                    secondarySelectedItem.setSelected(false);
+                    if (secondarySelectedItem!=null) secondarySelectedItem.setSelected(false);
                     Point l= secondaryPopupLocation;
                     for (int i=0; i<modules.size(); i++) {
                         JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(modules.get(i));
