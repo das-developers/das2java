@@ -22,13 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.event;
 
-public class Gesture {
-    
-
-//  here is a modification
-
-// second modification
-
+public class Gesture {    
 
     public static final Gesture NONE = new Gesture("GestureNONE");    
     public static final Gesture BACK = new Gesture("GestureBACK");    
