@@ -1,5 +1,5 @@
 /* File: MousePointSelectionEvent.java
- * Copyright (C) 2002-2003 University of Iowa
+ * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
  *             Edward E. West <eew@space.physics.uiowa.edu>
