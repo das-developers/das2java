@@ -41,7 +41,7 @@ import java.awt.geom.Line2D;
  */
 public class SymbolLineRenderer extends Renderer {
     
-    private Psym psym = Psym.DOTS;
+    private Psym psym = Psym.NONE;
     private double symSize = 1.0; // radius in pixels
     private float lineWidth = 1.5f; // width in pixels
     
