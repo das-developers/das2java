@@ -56,15 +56,16 @@ public class DasServer {
     private String path;
     private int port;
     private StandardDataStreamSource standardDataStreamSource;
+    private Key key;
     
-    private static HashMap instanceHashMap= new HashMap(); 
+    private static HashMap instanceHashMap= new HashMap();
     
     public static DasServer plasmaWaveGroup;
     public static DasServer sarahandjeremy;
     static {
-        try {       
-        plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/dasServer"));
-        sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
+        try {
+            plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/dasServer"));
+            sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
         } catch ( java.net.MalformedURLException e ) {
             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(e);
         }
@@ -79,9 +80,10 @@ public class DasServer {
         } else {
             port= -1;
         }
-        this.host= host;        
+        this.host= host;
         this.path= path;
         this.standardDataStreamSource = new WebStandardDataStreamSource(this);
+        this.key= null;
     }
     
     public String getURL() {
@@ -93,7 +95,7 @@ public class DasServer {
     }
     
     public static DasServer create( URL url ) {
-        String host= url.getHost();        
+        String host= url.getHost();
         int port = url.getPort();
         if ( port!=-1 ) {
             host+= ":"+port;
@@ -101,9 +103,9 @@ public class DasServer {
         String key= "http://" + host + url.getPath();
         if ( instanceHashMap.containsKey( key ) ) {
             return (DasServer) instanceHashMap.get( key );
-        } else {            
+        } else {
             String path= url.getPath();
-            DasServer result= new DasServer(host,path);            
+            DasServer result= new DasServer(host,path);
             instanceHashMap.put(key,result);
             return result;
         }
@@ -218,7 +220,7 @@ public class DasServer {
     public StandardDataStreamSource getStandardDataStreamSource() {
         return standardDataStreamSource;
     }
-
+    
     public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
         try {
             String dsdf = dataSetID.getQuery();
@@ -277,17 +279,17 @@ public class DasServer {
     public Key authenticate( String user, String pass) {
         try {
             Key result= null;
-        
+            
             String formData= "server=authenticator";
             formData+= "&user="+URLEncoder.encode(user, "UTF-8");
             String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(pass);
-        
+            
             if (pass.equals("sendPropertyPassword")) {
                 cryptPass= DasProperties.getInstance().getProperty("password");
             }
-        
+            
             formData+= "&passwd="+URLEncoder.encode(cryptPass, "UTF-8");
-
+            
             URL server= new URL("http",host,port,path+"?"+formData);
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
             
@@ -322,7 +324,7 @@ public class DasServer {
             formData+= "&passwd="+URLEncoder.encode(cryptPass, "UTF-8");
             String cryptNewPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(newPass);
             formData+= "&newPasswd="+URLEncoder.encode(cryptNewPass, "UTF-8");
-        
+            
             URL server= new URL("http",host,port,path+"?"+formData);
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
             
@@ -347,9 +349,8 @@ public class DasServer {
             throw new DasServerException("Failed Connection");
         }
         
-
+        
     }
-    
     
     public String readServerResponse( BufferedInputStream in ) {
         // Read <dasResponse>...</dasResponse>, leaving the InputStream immediately after //
@@ -478,29 +479,6 @@ public class DasServer {
         return data;
     }
     
-    /*
-    public static void main(String[] argv) {
-        DasServer dasServer= DasServer.plasmaWaveGroup;
-        
-        JFrame f= new JFrame();
-        JPanel jpanel= new JPanel();
-        jpanel.setLayout(new BorderLayout());
-        jpanel.add(new JLabel(dasServer.getLogo()));
-        
-        f.setContentPane(jpanel);
-        f.pack();
-        f.setVisible(true);
-        
-        edu.uiowa.physics.pw.das.util.DasDie.println(dasServer.getName());
-        try {
-            edu.uiowa.physics.pw.das.util.DasDie.println(dasServer.getDataSetDescriptor("galileo/pws/best-e"));
-        } catch (Exception e ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(e);
-        }
-        
-    }
-     */
-    
     public String getHost() {
         return host;
     }
@@ -518,4 +496,22 @@ public class DasServer {
         return new URL( "http", host, port, path+"?"+formData );
     }
     
+    public Key getKey( String resource ) {
+        /* TODO: resource ignored, we need to provide means for switching credentials */
+        System.out.println(Thread.currentThread().getName()+" server hash:"+this.hashCode());
+        synchronized (this) {
+            if ( key==null ) {
+                System.out.println(Thread.currentThread().getName());
+                Authenticator authenticator;
+                authenticator= new Authenticator(this,resource);
+                Key key= authenticator.authenticate();
+                if ( key!=null ) setKey(key);
+            }
+        }
+        return this.key;
+    }
+    
+    public void setKey( Key key ) {
+        this.key= key;
+    }
 }
