@@ -917,11 +917,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     protected void paintComponent(Graphics graphics) {
         
+        /* This was code was keeping axes from being printed on PC's
         Shape saveClip = null;
         if (getCanvas().isPrintingThread()) {
             saveClip = graphics.getClip();
             graphics.setClip(null);
         }
+         */
         
         Graphics2D g = (Graphics2D)graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -997,9 +999,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
+        /* This was code was keeping axes from being printed on PC's
         if (getCanvas().isPrintingThread()) {
             g.setClip(saveClip);
         }
+         */
     }
     
     /** Paint the axis if it is horizontal  */
