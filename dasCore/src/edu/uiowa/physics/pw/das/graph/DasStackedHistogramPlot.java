@@ -253,6 +253,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
         TableDataSet weights= (TableDataSet)data.getPlanarView("weights");
+        double zzFill= data.getZUnits().getFillDouble();
         
         Rectangle2D.Double r= new Rectangle2D.Double();
         Line2D.Double l= new Line2D.Double();
@@ -286,8 +287,9 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
                 int x1;
                 x1=x0+1; // 1 pixel wide
-                if ( weights.getDouble(ibin, j, Units.dimensionless) > 0.0 ) {
-                    int yAvg= zAxisComponent.transform(data.getDouble(ibin, j, data.getZUnits()), data.getZUnits());
+                double zz= data.getDouble( ibin, j, data.getZUnits() );
+                if ( zz!=zzFill ) {
+                    int yAvg= zAxisComponent.transform( zz, data.getZUnits() );
                     yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
                     int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
                     yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
@@ -425,8 +427,8 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         DataSetRebinner highResRebinner;
         DataSetRebinner lowResRebinner;
         Rebinner() { 
-            //highResRebinner= new NearestNeighborTableRebinner();
-            highResRebinner= new AveragePeakTableRebinner();
+            highResRebinner= new NearestNeighborTableRebinner();
+            //highResRebinner= new AveragePeakTableRebinner();
             lowResRebinner= new AveragePeakTableRebinner();            
         }
             
