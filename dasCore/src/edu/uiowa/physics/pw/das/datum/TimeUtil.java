@@ -23,6 +23,7 @@
 package edu.uiowa.physics.pw.das.datum;
 
 import java.util.*;
+import edu.uiowa.physics.pw.das.util.*;
 
 /**
  *
@@ -32,6 +33,32 @@ public final class TimeUtil {
     
     private TimeUtil() {
     }
+    
+    private final static int[][] daysInMonth = {
+        {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0},
+        {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0}
+    };
+    
+    private final static int[][] dayOffset = {
+        {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365},
+        {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366}
+    };
+    
+    public static int daysInMonth(int month, int year) {
+        return daysInMonth[isLeapYear(year)?1:0][month];
+    }
+    
+    public static int julday( int month, int day, int year ) {
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+        3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+        275 * month / 9 + day + 1721029;
+        return jd;
+    }
+    
+    public static int dayOfYear( int month, int day, int year ) {
+        return (day-1)+ dayOffset[isLeapYear(year)?1:0][month];
+    }
+    
     
     public final static class TimeStruct {
         public int year;
@@ -123,6 +150,84 @@ public final class TimeUtil {
         return result;
     }
     
+    public static boolean isLeapYear( int year ) {
+        return (year % 4)==0;
+    }
+    
+    public static TimeStruct carry(TimeStruct t) {
+        TimeStruct result= t;
+        
+        if (result.seconds>=60) {
+            result.seconds-=60;
+            result.minute++;
+        }
+        if (result.minute>=60) {
+            result.minute-=60;
+            result.hour++;
+        }
+        if (result.hour>=24) {
+            result.hour-=24;
+            result.day++;
+        }
+        
+        int daysThisMonth= daysInMonth(result.year,result.month);
+        if (result.day>daysThisMonth) {
+            result.day-=daysThisMonth;
+            result.month++;
+        }
+        if (result.month>12) {
+            result.month-=12;
+            result.year++;
+        }
+        return result;
+    }
+    
+    public static TimeStruct borrow(TimeStruct t) {
+        TimeStruct result= t;
+        
+        if (result.seconds<0.) {
+            result.seconds+=60.;
+            result.minute--;
+        }
+        if (result.minute<0) {
+            result.minute+=60;
+            result.hour--;
+        }
+        if (result.hour<0) {
+            result.hour+=24;
+            result.day--;
+        }
+        
+        if (result.day<0 || result.month<1) {
+            // we're going to abort here.  The problem is how to decrement the month?
+            // What does MONTH=-1, DAY=31 mean?  The "digits" are not independent as
+            // they are in HOURS,MINUTES,SECONDS...  I don't think we are going to
+            // run into this case anyway. jbf
+            DasDie.die("Borrow operation not defined for months<1 or days<0");
+        }
+        if (result.day==0) {
+            int daysLastMonth;
+            if (result.month>1) {
+                daysLastMonth= daysInMonth(result.year,result.month-1);
+            } else {
+                daysLastMonth= 31;
+            }
+            result.day+=daysLastMonth;
+            result.month--;
+        }
+        
+        if (result.month==0) {
+            result.month+=12;
+            result.year--;
+        }
+        
+        return result;
+    }
+    
+    public static TimeStruct normalize( TimeStruct t ) {
+        return carry(borrow(t));
+    }
+    
     public static Datum next( int step, Datum datum ) {
         TimeStruct array= toTimeStruct(datum);
         switch (step) {
@@ -160,6 +265,36 @@ public final class TimeUtil {
         return next(MONTH,datum);
     }
     
+    public static Datum prev( int step, Datum datum ) {
+        
+        TimeStruct t= toTimeStruct(datum);
+        
+        switch(step) {
+            case YEAR:
+                t.month=1;
+            case QUARTER:
+                t.month= ((t.month-1)/3*3)+1;
+            case MONTH:
+                t.day= 1;
+            case DAY:
+                t.hour= 0;
+            case HOUR:
+                t.minute= 0;
+            case MINUTE:
+                t.seconds= 0.;
+            case SECOND:
+                t.seconds= (int)t.seconds;
+        }
+        
+        Datum result= toDatum(t);
+        if ( result.equals(datum) ) {
+            return prev(step, datum.subtract( 500, Units.microseconds ));
+        } else {
+            return result;
+        }
+        
+    }
+    
     public static Datum now() {
         Calendar cal= new GregorianCalendar();
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -180,15 +315,12 @@ public final class TimeUtil {
         // if month==0, then day is doy (day of year).
         int jd;
         if ( month>0 ) {
-            jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
-            3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
-            275 * month / 9 + day + 1721029;
+            jd = julday(month,day,year);
         } else {
+            // if month==0 then day is doy
             int month1= 1;
             int day1= 1;
-            jd = 367 * year - 7 * (year + (month1 + 9) / 12) / 4 -
-            3 * ((year + (month1 - 9) / 7) / 100 + 1) / 4 +
-            275 * month1 / 9 + day1 + 1721029;
+            jd = julday(month,day,year);
             jd+= ( day - 1 );
         }
         
@@ -225,14 +357,7 @@ public final class TimeUtil {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         };
-        final int[][] day_offset = {
-            {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365},
-            {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366}
-        };
-        int[][] days_in_month = {
-            {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0},
-            {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0}
-        };
+        
         
         String delimiters;
         int end_of_date;
@@ -461,14 +586,14 @@ public final class TimeUtil {
         leap = ((year & 3) > 0 ? 0 : ((year % 100) > 0 ? 1 : ((year % 400) > 0 ? 0 : 1)) );
         
         if ((month > 0) && (day_month > 0) && (day_year == 0)) {
-            if (day_month > days_in_month[leap][month]) throw new java.text.ParseException( "day of month too high in '"+s+"'",0 );
-            day_year = day_offset[leap][month] + day_month;
+            if (day_month > daysInMonth[leap][month]) throw new java.text.ParseException( "day of month too high in '"+s+"'",0 );
+            day_year = dayOffset[leap][month] + day_month;
         } else if ((day_year > 0) && (month == 0) && (day_month == 0)) {
             if (day_year > (365 + leap)) throw new java.text.ParseException( "day of year too high in '"+s+"'",0 );
-            for (i = 2; i < 14 && day_year > day_offset[leap][i]; i++);
+            for (i = 2; i < 14 && day_year > dayOffset[leap][i]; i++);
             i--;
             month = i;
-            day_month = day_year - day_offset[leap][i];
+            day_month = day_year - dayOffset[leap][i];
         } else {
             throw new java.text.ParseException( "Need month/day or doy in '"+s+"'",0 );
         }
@@ -512,11 +637,19 @@ public final class TimeUtil {
     public static void main(String[] args) throws Exception {
         System.out.println( TimeUtil.now() );
         System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 ));
-        Datum x=create( "1972-1-17 13:26" );
+        Datum x=create( "2000-1-1 0:00:33.45" );
         System.out.println( x );
         
         TimeStruct ts= TimeUtil.toTimeStruct(x);
         System.out.println( TimeUtil.toDatum(ts) );
+        
+        DasTimeFormatter tf= new DasTimeFormatter(TimeContext.MILLISECONDS);
+        tf.setAlwaysShowDate(true);
+        
+        for ( int i=0; i<44; i++ ) {
+            System.out.println(tf.format(x)+"\t"+(long)x.doubleValue(Units.us2000));
+            x= TimeUtil.prev(SECOND,x);
+        }
     }
     
     public static Datum prevMidnight(Datum datum) {
