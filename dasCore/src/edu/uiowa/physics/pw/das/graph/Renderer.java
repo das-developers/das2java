@@ -325,22 +325,27 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         if ( getParent()!=null ) {
             getParent().markDirty();
             if ( this instanceof SpectrogramRenderer ) {
-                DasAxis xaxis= getParent().getXAxis();
-                DasAxis yaxis= getParent().getYAxis();
-                update(xaxis,yaxis);
+                update();
             }
             getParent().repaint();
         }
     }
     
-    public void update(DasAxis xAxis, DasAxis yAxis) {
+    public void update() {
+        java.awt.EventQueue eventQueue =
+        Toolkit.getDefaultToolkit().getSystemEventQueue();
+        DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
+        eventQueue.postEvent(drue);
+    }
+    
+    protected void updateImmediately() {
+        DasAxis xAxis = parent.getXAxis();
+        DasAxis yAxis = parent.getYAxis();
         loadDataSet(xAxis,yAxis);
     }
     
     public void dataSetUpdated( DataSetUpdateEvent e ) {
-        DasAxis xAxis= parent.getXAxis();
-        DasAxis yAxis= parent.getYAxis();
-        loadDataSet(xAxis, yAxis);
+        updateImmediately();
     }
     
     public void setDataSetDescriptor(DataSetDescriptor dsd) {
