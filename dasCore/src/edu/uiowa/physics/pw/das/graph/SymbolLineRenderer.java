@@ -110,20 +110,43 @@ public class SymbolLineRenderer extends Renderer {
         
         graphics.setColor(color.toColor());
                 
-        double xSampleWidth= 1e31;
+        double xSampleWidth;
+        if (dataSet.getProperty("xSampleWidth") != null) {
+            Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xSampleWidth");
+            xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
+        }
+        else {
+            //Try to load the legacy sample-width property.
+            String xSampleWidthString = (String)dataSet.getProperty("x_sample_width");
+            if (xSampleWidthString != null) {
+                double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
+                xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
+            }
+            else {
+                xSampleWidth = 1e31;
+            }
+        }
         
         if ( psymConnector != PsymConnector.NONE ) {
-            int x0 = xAxis.transform(dataSet.getXTagDouble(ixmin,xUnits),xUnits);
-            int y0 = yAxis.transform(dataSet.getDouble(ixmin,yUnits),yUnits);
+            double x0 = dataSet.getXTagDouble(ixmin, xUnits);
+            double y0 = dataSet.getDouble(ixmin, yUnits);
+            int ix0 = xAxis.transform(x0, xUnits);
+            int iy0 = yAxis.transform(y0 ,yUnits);
             for (int i = ixmin+1; i <= ixmax; i++) {
-                int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
-                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
-                if ( !yUnits.isFill(dataSet.getDouble(i,yUnits)) ) {
-                    if ( !yUnits.isFill(dataSet.getDouble(i-1,yUnits)) ) {
-                        psymConnector.drawLine(graphics,x0,y0,x,y,lineWidth);
+                double x = dataSet.getXTagDouble(i,xUnits);
+                double y = dataSet.getDouble(i,yUnits);
+                int ix = xAxis.transform(x, xUnits);
+                int iy = yAxis.transform(y, yUnits);
+                if ( !yUnits.isFill(y) ) {
+                    if ( !yUnits.isFill(y0) ) {
+                        if (Math.abs(x - x0) < xSampleWidth) {
+                            psymConnector.drawLine(graphics,ix0,iy0,ix,iy,lineWidth);
+                        }
                     }
                     x0= x;
                     y0= y;
+                    ix0= ix;
+                    iy0= iy;
                 }
             }
             graphics.setStroke(new BasicStroke(1.0f));
