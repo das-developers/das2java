@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 
@@ -33,9 +34,9 @@ import edu.uiowa.physics.pw.das.datum.Units;
 public class RebinDescriptor {
     
     Units units;
-    protected double start = 0.;
-    protected double end = 10.;
-    protected int nBin = 10;
+    protected double start;
+    protected double end;
+    protected int nBin;
     protected boolean isLog = false;
     
     public static final int FIRSTORLAST=-2;  // return the closest valid bin, first or last
@@ -45,7 +46,7 @@ public class RebinDescriptor {
     private int outOfBoundsAction= MINUSONE;
     
     /** Creates a new instance of RebinDescriptor */
-    public RebinDescriptor() {
+    private RebinDescriptor() {
     }
     
     public RebinDescriptor(double start, double end, Units units, int nBin, boolean isLog) {
@@ -65,7 +66,7 @@ public class RebinDescriptor {
         this(start.doubleValue(start.getUnits()),end.doubleValue(end.getUnits()),start.getUnits(),nBin,isLog);
         if (start.getUnits()!=end.getUnits()) throw new IllegalArgumentException("start and end units differ");
     }
-        
+    
     public int numberOfBins() {
         return nBin;
     }
@@ -73,7 +74,7 @@ public class RebinDescriptor {
     public int whichBin( double x, Units units ) {
         if ( units!=this.units ) {
             x= Units.getConverter(units,this.units).convert(x);
-    }
+        }
         int result=0;
         if (isLog) x= Math.log(x);
         if ((x<start || x>=end) && outOfBoundsAction!=EXTRAPOLATE) {
@@ -84,7 +85,7 @@ public class RebinDescriptor {
                     result= -1;
             }
         } else {
-            result= (int)((x-start)*nBin/(end-start));            
+            result= (int)((x-start)*nBin/(end-start));
         }
         return result;
     }
@@ -100,9 +101,29 @@ public class RebinDescriptor {
         return result;
     }
     
-    public double binCenter(int ibin) {  
+    public double binCenter(int ibin) {
         double result= start+((ibin+0.5)/(double)(nBin)*(end-start));
-        if ( isLog ) return Math.exp(result); else return result;        
+        if ( isLog ) return Math.exp(result); else return result;
+    }
+    
+    public double binStart( int ibin, Units units ) {
+        double result= start+((ibin)/(double)(nBin)*(end-start));
+        UnitsConverter uc= this.units.getConverter(units);
+        if ( isLog ) {
+            return uc.convert(Math.exp(result));
+        } else {
+            return uc.convert(result);
+        }
+    }
+    
+    public double binStop( int ibin, Units units ) {
+        double result= start+((ibin+1)/(double)(nBin)*(end-start));
+        UnitsConverter uc= this.units.getConverter(units);
+        if ( isLog ) {
+            return uc.convert(Math.exp(result));
+        } else {
+            return uc.convert(result);
+        }
     }
     
     public double[] binStarts() {
@@ -127,8 +148,41 @@ public class RebinDescriptor {
         return result;
     }
     
-    public void setOutOfBoundsAction(int action) {
+    private void setOutOfBoundsAction(int action) {
         outOfBoundsAction= action;
+    }
+    
+    private Object clone( int outOfBoundsAction ) {
+        RebinDescriptor result= new RebinDescriptor();
+        result.units= this.units;
+        result.start= this.start;
+        result.end= this.end;
+        result.nBin= this.nBin;
+        result.isLog= this.isLog;
+        result.outOfBoundsAction= outOfBoundsAction;
+        return result;
+    }
+    
+    /* create new rebinDescriptor that includes ddY plus additional channels to include ymin to ymax */
+    public static RebinDescriptor createSubsumingRebinDescriptor( RebinDescriptor ddY, Datum ymin, Datum ymax ) {
+        if ( ddY==null ) return null;
+        RebinDescriptor dd= (RebinDescriptor)ddY.clone( RebinDescriptor.EXTRAPOLATE );
+        Units units= ddY.getUnits();
+        int i0= dd.whichBin( ymin.doubleValue(units), units );
+        if ( i0>0 ) {
+            i0= 0;
+            ymin= units.createDatum(ddY.binStart(0, units));
+        }
+        
+        int i1= dd.whichBin( ymax.doubleValue(units), units );
+        if ( i1<ddY.numberOfBins() ) {
+            i1= ddY.numberOfBins();
+            ymax= units.createDatum(ddY.binStop(ddY.numberOfBins()-1,units));
+        }
+            
+        int nbins= i1-i0;                        
+                    
+        return new RebinDescriptor( ymin, ymax, nbins, ddY.isLog() );
     }
     
     public double binWidth() {
