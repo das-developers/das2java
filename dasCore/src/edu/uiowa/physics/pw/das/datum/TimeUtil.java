@@ -103,6 +103,7 @@ public final class TimeUtil {
     public static final int HOUR = 4;
     public static final int MINUTE = 5;
     public static final int SECOND = 6;
+    public static final int NANO = 7;
     public static final int WEEK = 97;
     public static final int QUARTER = 98;
     
@@ -189,6 +190,23 @@ public final class TimeUtil {
         return new int[] { ts.year, ts.month, ts.minute, ts.hour, ts.minute, seconds, millis, micros };
     }
     
+     public static Datum toDatum( int[] timeArray ) {
+        int year = timeArray[0];
+        int month = timeArray[1];
+        int day = timeArray[2];
+        if ( timeArray[MONTH]<1 ) {
+            throw new IllegalArgumentException("");
+        }
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+        3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+        275 * month / 9 + day + 1721029;
+        int hour = (int)timeArray[3];
+        int minute = (int)timeArray[4];
+        double seconds = timeArray[5] + hour*(float)3600.0 + minute*(float)60.0 + timeArray[6]/1e9;
+        double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 ) + seconds / 86400. );
+        return Datum.create( us2000, Units.us2000 );
+    }
+     
     public static boolean isLeapYear( int year ) {
         return (year % 4)==0;
     }
