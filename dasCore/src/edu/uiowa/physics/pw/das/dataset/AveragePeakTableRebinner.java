@@ -77,7 +77,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         
         Datum xTagWidth= (Datum)ds.getProperty("xTagWidth");
         if ( xTagWidth==null ) {
-            xTagWidth= TableUtil.guessXTagWidth(tds);
+            xTagWidth= DataSetUtil.guessXTagWidth(tds);
         }
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
         AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagWidthDouble  );
