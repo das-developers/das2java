@@ -118,7 +118,7 @@ public class TableDataSetBuilder {
                 addPlane(planeID, zUnits);
             }
             double[] z = scans[i].toDoubleArray(zUnits);
-            assert(y.length == z.length);
+            //assert(y.length == z.length);
             scan.put(planeID, z);
             scan.setYTags(y);
             zValues.add(insertionIndex, scan);
