@@ -90,25 +90,31 @@ public abstract class DataSetDescriptor {
     }
     
     EventListenerList listenerList;      
-    
-    
+        
     public void addDataSetUpdateListener( DataSetUpdateListener listener ) {
          if (listenerList == null ) {
             listenerList = new EventListenerList();
         }
-        listenerList.add( DataSetUpdateListener.class, listener);            
+        listenerList.add( DataSetUpdateListener.class, listener);         
     }
      
+    public void removeDataSetUpdateListener( DataSetUpdateListener listener ) {
+         if (listenerList == null ) {
+            listenerList = new EventListenerList();
+        }
+        listenerList.remove( DataSetUpdateListener.class, listener );         
+    }
+
     protected void fireDataSetUpdateEvent( DataSetUpdateEvent event ) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==DataSetUpdateListener.class) {
-                ((DataSetUpdateListener)listeners[i+1]).DataSetUpdated(event);
+                ((DataSetUpdateListener)listeners[i+1]).dataSetUpdated(event);
             }
         }
     }
-
+    
     String dataSetId;
 
     public String getDataSetId() {
