@@ -45,17 +45,20 @@ public class DasMath {
         return result;
     }
     
+    // what does this function do?
     public static double exp10(int x) {
-        double result= Math.pow(10,x);
-        if (result<0.3) {  // round off numerical fuzz
-            result= 1./Math.round(1/result);
-        }
+        double result= Math.pow(10,x);       
         return result;
     }
     
-    public static double roundNDigits(double x,int n) {
-        
-        double exp= exp10((int)log10(x));
+    public static double roundNFractionalDigits(double x,int n) {                
+        double tenToN= exp10(n-1);
+        return Math.round( x * tenToN ) / tenToN;        
+    }
+    
+    public static double roundNSignificantDigits(double x,int n) {
+        double sign= x<0 ? -1 : 1;
+        double exp= exp10(Math.floor(log10(sign*x)));
         double mant= x/exp;
         double tenToN= exp10(n-1);
         mant= Math.round( mant * tenToN ) / tenToN;
@@ -114,7 +117,7 @@ public class DasMath {
     public static void main(String[] args) {
         double x= 1e-18;
         edu.uiowa.physics.pw.das.util.DasDie.println("x:"+x);
-        edu.uiowa.physics.pw.das.util.DasDie.println("roundNDigits:"+roundNDigits(x,3));
+        edu.uiowa.physics.pw.das.util.DasDie.println("roundNDigits:"+roundNSignificantDigits(x,3));
         
         double[] x1= new double[] { 1,2,3,4,5 };
         double[] y1= new double[] { 4,6,7,3,1 };
