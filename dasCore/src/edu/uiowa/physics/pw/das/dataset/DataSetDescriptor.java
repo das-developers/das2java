@@ -80,8 +80,10 @@ public abstract class DataSetDescriptor {
             return cacheDataSet;
         } else {
             cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
-            cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
-            if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
+            if ( cacheDataSet!=null ) {
+                cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
+                if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
+            }
             return cacheDataSet; 
         }
     }
