@@ -44,6 +44,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JLabel messageLabel;
     private JLabel kbLabel;
     private JProgressBar progressBar;
+    private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
     
     /** Creates new form DasProgressPanel */
@@ -53,7 +54,21 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         transferRateFormat= new DecimalFormat();
         transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
+        jframe= null;
     }
+    
+    public static DasProgressPanel createFramed() {
+        DasProgressPanel result;
+        result= new DasProgressPanel();
+        result.jframe= new JFrame("Das Progress Monitor");
+        result.jframe.getContentPane().add( result );
+        result.jframe.pack();
+        result.jframe.setVisible(true);
+        result.jframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        return result;
+    }
+    
+    
     
     private void initComponents() {
         JPanel mainPanel, buttonPanel;
@@ -113,7 +128,11 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     }
     
     public void finished() {
-        setVisible(false);
+        if ( jframe==null ) {
+            setVisible(false);  
+        } else {
+            jframe.dispose();
+        }
     }
     
     /* ProgressMonitor interface */
@@ -144,7 +163,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
         
         if ( elapsedTimeMs > 1000 ) {
-            double transferRate = (double)(position * 1000) / (1024 * elapsedTimeMs);
+            double transferRate = ((double)position * 1000) / (1024 * elapsedTimeMs);
             kbLabel.setText(bytesReadLabel+" ("+transferRateFormat.format(transferRate)+"kb/s)");
         } else {
             kbLabel.setText(bytesReadLabel);
@@ -174,7 +193,6 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void cancel() {
         isCancelled = true;
-        setVisible(false);
     }
     
     public boolean isCancelled() {
