@@ -214,7 +214,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if (ii1 > -1) {
                         i1[i] = -1;
                         i2[i] = -1;
-                        for (int ii = i - 1; ii > ii1; ii--) {
+                        for (int ii = i - 1; ii >= ii1; ii--) {
                             ii2 = i;
                             i1[ii] = ii1;
                             i2[ii] = ii2;
@@ -230,8 +230,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             for (int i = 0; i < nx; i++) {
                 
                 if ((i1[i] != -1) && (xTags[i2[i]] - xTags[i1[i]]) < xSampleWidth * 1.5 ) {
-                    a2 = (float)((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));
-                    //if (nearestNeighbor) a2= (a2<0.5f)?0.f:1.0f;
+                    a2 = (float)((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));                    
                     a1 = 1.f - a2;
                     data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                     weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
