@@ -39,6 +39,7 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.util.*;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -213,7 +214,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             1, 2, 5, 10, 30,
             60, 120, 300, 600, 1200,
             3600, 7200, 10800, 14400, 21600, 28800, 43200, //1hr, 2hr, 3hr, 4hr, 6hr, 8hr, 12hr
-            86400, 172800, 86400*10, 86400*15, 86400*30
+            86400, 172800, 86400*5, 86400*10
         };
         
         int[] nminor= {
@@ -223,7 +224,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             4, 4, 5, 5, 3,
             6, 4, 5, 5, 4,
             4, 4, 3, 4, 3, 4, 6,
-            4, 4, 2, 2, 3 
+            4, 2, 5, 10
         };
         
         double mag_keep=-1;
@@ -232,6 +233,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         
         double tickSize, firstTick, lastTick;
         int nTicks;
+        double minor;
         
         int i=0;
         int ikeep=-1;
@@ -259,8 +261,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         }
         
         if (ikeep!=-1) {
-            mag_keep= mags12[ikeep];
-            res.minor= mags12[ikeep]/nminor[ikeep];
+            mag_keep= mags12[ikeep];            
             absissa= 1.0;
             
             tickSize= absissa * mag_keep;
@@ -281,41 +282,65 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             
             res.tickV= tickV;
             
+            double axisLengthData= ( data_maximum - data_minimum );
+            minor= tickSize / nminor[ikeep];            
+            double firstMinor= minor * Math.ceil( ( data_minimum - axisLengthData*0.3 ) / minor );
+            double lastMinor= minor * Math.floor( ( data_maximum + axisLengthData*0.3 ) / minor );
+            int nMinor= ( int ) ( ( lastMinor - firstMinor ) / minor + 0.5 );
+            double [] minorTickV= new double[ nMinor ];
+            for ( int ii=0; ii<nMinor; ii++ ) minorTickV[ii]= firstMinor + ii*minor;
+        
+            res.minorTickV= minorTickV;
+        
             setFormatter( Datum.getFormatter( getDataMinimum(), getDataMaximum(), nTicks ) );
             
         } else  { // pick off month boundaries
             double [] result= new double[30];
+            ArrayList minorTickV= new ArrayList();
             int ir=0;
-            DasDate current;
-            DasDate min= DasDate.create( (TimeDatum)Datum.create(data_minimum,Units.t2000));
-            DasDate max= DasDate.create( (TimeDatum)Datum.create(data_maximum,Units.t2000));
-            int step;
+            Datum current;
+            Datum min= Datum.create( data_minimum,Units.t2000 );
+            Datum max= Datum.create( data_maximum,Units.t2000 );
+            int step;  
             int nstep=1;
+            int minorStep;  // step size for minor ticks
+            int minorNStep=1;    // multiplier for step size
             if ((data_maximum-data_minimum)<86400*30*6) {  // months
-                step= DasDate.MONTH;
-                res.minor= 86400*10;
+                step= TimeUtil.MONTH;
+                minorStep= TimeUtil.DAY;
+                minorNStep=1;
             } else if ((data_maximum-data_minimum)<86400*30*25) { // seasons
-                step= DasDate.QUARTER;
-                res.minor= 30*86400;
+                step= TimeUtil.QUARTER;
+                minorStep= TimeUtil.MONTH;                
             } else if ((data_maximum-data_minimum)<86400*365*6) { // years
-                step= DasDate.YEAR;
-                res.minor= 365.25/4*86400; 
+                step= TimeUtil.YEAR;
+                minorStep= TimeUtil.MONTH;                
             } else {
-                step= DasDate.YEAR;
-                res.minor= 365*86400;
+                // TODO fall back to decimal years
+                step= TimeUtil.YEAR;
+                minorStep= TimeUtil.YEAR;
                 nstep= 2;
             }
-            current= DasDate.create((TimeDatum)Datum.create(data_minimum,Units.t2000)).next(step);
-            while(max.subtract(current)>0) {
-                result[ir++]= TimeUtil.create(current).doubleValue(Units.t2000);
-                current= current.next(step);
-                for (int ii=nstep; ii>1; ii--) current= current.next(step);
+            current= TimeUtil.next(step,Datum.create(data_minimum,Units.t2000));
+            while(max.gt(current)) {
+                result[ir++]= current.doubleValue(Units.t2000);
+                current= TimeUtil.next(step,current);
+                for (int ii=nstep; ii>1; ii--) current= TimeUtil.next(step,current);
             }
             
-            tickV= new double[ir];
-            for (ir=0; ir<tickV.length; ir++) tickV[ir]= result[ir];
+            res.tickV= new double[ir];
+            for (ir=0; ir<res.tickV.length; ir++) res.tickV[ir]= result[ir];                        
             
-            res.tickV= tickV;
+            current = TimeUtil.next(minorStep,Datum.create(data_minimum,Units.t2000));
+            while(max.gt(current)) {
+                minorTickV.add( current );
+                current= TimeUtil.next(minorStep,current);
+                for (int ii=minorNStep; ii>1; ii--) current= TimeUtil.next(minorStep,current);
+            }
+            
+            res.minorTickV= new double[minorTickV.size()];
+            for ( int ii=0; ii<minorTickV.size(); ii++ ) 
+                res.minorTickV[ii]= ((Datum)minorTickV.get(ii)).doubleValue(Units.t2000);            
             
             setFormatter( Datum.getFormatter( getDataMinimum(), getDataMaximum(), 6 ) );
         }
@@ -324,15 +349,14 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         for (int ii=0; ii<res.tickV.length; ii++) {
             res.tickV[ii]= uc.convert(res.tickV[ii]);
         }
-        Units units= getUnits();
-        Units offsetUnits= ((TimeLocationUnits)getUnits()).getOffsetUnits();
-        uc= Units.getConverter( Units.seconds, ((TimeLocationUnits)getUnits()).getOffsetUnits() );
-        res.minor= Units.getConverter( Units.seconds, ((TimeLocationUnits)getUnits()).getOffsetUnits() ).convert( res.minor );
+        for (int ii=0; ii<res.minorTickV.length; ii++) {
+            res.minorTickV[ii]= uc.convert(res.minorTickV[ii]);
+        }        
         res.units= getUnits();
         
-        context= (tickV.length < 2
+        context= (res.tickV.length < 2
         ? DasDate.context.getContextFromSeconds(1.0)
-        : DasDate.context.getContextFromSeconds(tickV[1]-tickV[0]));
+        : DasDate.context.getContextFromSeconds(res.tickV[1]-res.tickV[0]));
         
         this.tickV = res;
         updateDataSet();
@@ -459,7 +483,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
                 drt.request(dsd, new Double(interval.doubleValue(Units.seconds)),
                                  data_minimum,
                                  data_maximum.add(Datum.create(1.0,Units.seconds)), 
-                                 Datum.create(0.0,Units.seconds), requestor, null);
+                                 Datum.create(0.0,Units.seconds), requestor, null );
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
@@ -790,4 +814,6 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             }
         }
     }
+    
+    
 }

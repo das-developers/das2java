@@ -117,7 +117,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         result.units= getUnits();
         int ny= indexMaximum - indexMinimum + 1;
         result.tickV= new double[ny];
-        result.minor= 0.;  // no minor ticks
+        result.minorTickV= new double[0];  // no minor ticks
         for (int i=0; i<ny; i++) result.tickV[i]= labels[i+indexMinimum].doubleValue(result.units);
         result.nf= df;
         return result;
