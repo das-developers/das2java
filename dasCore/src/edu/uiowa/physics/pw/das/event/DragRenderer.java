@@ -34,16 +34,25 @@ import java.awt.*;
  */
 public interface DragRenderer
 { 
+    /* draws the drag for mousing from p1 to p2 */
     public abstract void renderDrag(Graphics g, Point p1, Point p2);
+    
+    /* clears whatever renderDrag rendered */
     public abstract void clear(Graphics g);
+    
+    /* promotes the drag begin and end into a mouseDragEvent */
     public abstract MouseDragEvent getMouseDragEvent( Object source, Point p1, Point p2, boolean isModified ); 
     
+    /* isXRangeSelection() true indicates that mouse release right or left of the component bounds is allowed */
     public boolean isXRangeSelection();
     
+    /* isYRangeSelection() true indicates that mouse release above of below of the component bounds is allowed */
     public boolean isYRangeSelection();
     
+    /* indicates that MM.mousePointSelected() should called as new mouse events come in */
     public boolean isPointSelection();
     
+    /* range selection events should be fired during drag */
     public boolean isUpdatingDragSelection();
     
 }
