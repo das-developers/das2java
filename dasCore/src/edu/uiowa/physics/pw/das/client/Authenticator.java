@@ -38,7 +38,11 @@ public class Authenticator extends JPanel {
     
     DasServer dasServer;
     
-    public Authenticator(DasServer dasServer) {
+    public Authenticator(DasServer dasServer) { 
+        this( dasServer, "" );
+    }
+    
+    public Authenticator(DasServer dasServer, String restrictedResourceLabel ) {
 
         this.dasServer= dasServer;
         
@@ -46,6 +50,10 @@ public class Authenticator extends JPanel {
         
         add(new JLabel(dasServer.getName(),JLabel.LEFT));
         add(new JLabel(dasServer.getLogo(),JLabel.LEFT));
+        
+        if ( ! "".equals( restrictedResourceLabel ) ) {
+            add( new JLabel( ""+restrictedResourceLabel ) );
+        }
         
         add(new JLabel("Username: ",JLabel.LEFT));
         tfUser= new JTextField();
