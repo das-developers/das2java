@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
@@ -35,14 +36,15 @@ import javax.swing.event.EventListenerList;
  */
 public class BoxRangeSelectorMouseModule extends MouseModule {
     
-    DasAxis xAxis;
-    DasAxis yAxis;
+    private DasAxis xAxis;
+    private DasAxis yAxis;
+    private DataSetConsumer consumer;
     
     /** Utility field used by event firing mechanism. */
-    private EventListenerList listenerList =  null;
+    private EventListenerList listenerList =  new javax.swing.event.EventListenerList();
     
-    public BoxRangeSelectorMouseModule(DasCanvasComponent parent, DasAxis xAxis, DasAxis yAxis) {
-        super( parent, new BoxGesturesRenderer(parent), "Box Zoom" );
+    public BoxRangeSelectorMouseModule(DasCanvasComponent parent, DataSetConsumer consumer, DasAxis xAxis, DasAxis yAxis) {
+        super( parent, new BoxGesturesRenderer(parent), "Box Selection" );
         if (!xAxis.isHorizontal()) {
             throw new IllegalArgumentException("X Axis orientation is not horizontal");
         }
@@ -51,79 +53,41 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
         }
         this.xAxis= xAxis;
         this.yAxis= yAxis;
+        this.consumer = consumer;
     }
     
     public static BoxRangeSelectorMouseModule create(DasPlot parent) {
         BoxRangeSelectorMouseModule result=
-        new BoxRangeSelectorMouseModule(parent,parent.getXAxis(),parent.getYAxis());
+        new BoxRangeSelectorMouseModule(parent, null, parent.getXAxis(),parent.getYAxis());
         return result;
     }
     
     public void mouseRangeSelected(MouseDragEvent e0) {
-
-        if ( !e0.isGesture() ) {
-            MouseBoxEvent e= (MouseBoxEvent)e0;
-                    
-            Datum min;
-            Datum max;
-            DasAxis axis;
-            Datum nnMin;
-            Datum nnMax;
-            
-            axis= xAxis;
-            min= axis.invTransform(e.getXMinimum());
-            max= axis.invTransform(e.getXMaximum());
-            nnMin= axis.findTick(min,0,true);
-            nnMax= axis.findTick(max,0,true);
-            if (nnMin.equals(nnMax)) {
-                min= axis.findTick(min,-1,true);
-                max= axis.findTick(max,1,true);
-            } else {
-                min= nnMin;
-                max= nnMax;
-            }
-            axis.setDataRange(min,max);
-            
-            axis= yAxis;
-            max= axis.invTransform(e.getYMinimum());
-            min= axis.invTransform(e.getYMaximum());
-            nnMin= axis.findTick(min,0,true);
-            nnMax= axis.findTick(max,0,true);
-            if (nnMin.equals(nnMax)) {
-                min= axis.findTick(min,-1,true);
-                max= axis.findTick(max,1,true);
-            } else {
-                min= nnMin;
-                max= nnMax;
-            }
-            axis.setDataRange(min,max);
-        } else if ( e0.getGesture()==Gesture.BACK ) {
-            xAxis.setDataRangePrev();
-            yAxis.setDataRangePrev();
-        } else if ( e0.getGesture()==Gesture.ZOOMOUT ) {
-            xAxis.setDataRangeZoomOut();
-            yAxis.setDataRangeZoomOut();
-        } else if ( e0.getGesture()==Gesture.FORWARD ) {
-            xAxis.setDataRangeForward();
-            yAxis.setDataRangeForward();
+        MouseBoxEvent e= (MouseBoxEvent)e0;
+        
+        Datum xMin = xAxis.invTransform(e.getXMinimum());
+        Datum xMax = xAxis.invTransform(e.getXMaximum());
+        Datum yMin = yAxis.invTransform(e.getYMinimum());
+        Datum yMax = yAxis.invTransform(e.getYMaximum());
+        BoxSelectionEvent evt = new BoxSelectionEvent(this, xMin, xMax, yMin, yMax);
+        if (consumer != null) {
+            evt.setDataSet(consumer.getDataSet());
         }
+        fireBoxSelected(evt);
     }
     
     /** Registers DataRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
-        if (listenerList == null ) {
-            listenerList = new javax.swing.event.EventListenerList();
-        }
-        listenerList.add(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
+    public void addBoxSelectionListener(BoxSelectionListener listener) {
+        listenerList.add(BoxSelectionListener.class, listener);
     }
     
     /** Removes DataRangeSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
-        listenerList.remove(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
+    public void removeBoxSelectionListener(BoxSelectionListener listener) {
+        listenerList.remove(BoxSelectionListener.class, listener);
     }
     
     
@@ -131,12 +95,11 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
      *
      * @param event The event to be fired
      */
-    private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event) {
-        if (listenerList == null) return;
+    protected void fireBoxSelected(BoxSelectionEvent event) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
-            if (listeners[i]==edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.DataRangeSelectionListener)listeners[i+1]).DataRangeSelected(event);
+            if (listeners[i] == BoxSelectionListener.class) {
+                ((BoxSelectionListener)listeners[i+1]).BoxSelected(event);
             }
         }
     }
