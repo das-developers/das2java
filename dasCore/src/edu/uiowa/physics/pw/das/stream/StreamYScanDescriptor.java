@@ -35,7 +35,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
     private Units zUnits = Units.dimensionless;
     private double[] yTags;
     private int nitems;
-    private String name;
+    private String name = "";
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
 
     public StreamYScanDescriptor( Element element ) {
