@@ -33,6 +33,7 @@ import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
+import edu.uiowa.physics.pw.das.system.RequestProcessor;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
@@ -153,7 +154,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         JFileChooser pngFileChooser;
         JPanel pngFileNamePanel;
         JTextField pngFileTextField;
-            
+        
         public void actionPerformed(ActionEvent e) {
             if (pngFileNamePanel == null) {
                 pngFileNamePanel = new JPanel();
@@ -179,24 +180,23 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             pngFileTextField.setText(pngFileChooser.getCurrentDirectory().getPath());
             String[] options = {"Save as PNG", "Cancel"};
             int choice = JOptionPane.showOptionDialog(currentCanvas, pngFileNamePanel,
-                "Write to PNG", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
+                    "Write to PNG", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
             if (choice == 0) {
                 DasCanvas canvas = currentCanvas;
                 try {
                     canvas.writeToPng(pngFileTextField.getText());
-                }
-                catch (java.io.IOException ioe) {
+                } catch (java.io.IOException ioe) {
                     edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                 }
             }
         }
     };
     
-    public static final Action SAVE_AS_SVG_ACTION = new CanvasAction("Save as SVG") {  
+    public static final Action SAVE_AS_SVG_ACTION = new CanvasAction("Save as SVG") {
         JFileChooser svgFileChooser;
         JPanel svgFileNamePanel;
         JTextField svgFileTextField;
-            
+        
         public void actionPerformed(ActionEvent e) {
             if (svgFileNamePanel == null) {
                 svgFileNamePanel = new JPanel();
@@ -222,24 +222,23 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             svgFileTextField.setText(svgFileChooser.getCurrentDirectory().getPath());
             String[] options = {"Save as SVG", "Cancel"};
             int choice = JOptionPane.showOptionDialog(currentCanvas, svgFileNamePanel,
-                "Write to SVG", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
+                    "Write to SVG", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
             if (choice == 0) {
                 DasCanvas canvas = currentCanvas;
                 try {
                     canvas.writeToSVG(svgFileTextField.getText());
-                }
-                catch (java.io.IOException ioe) {
+                } catch (java.io.IOException ioe) {
                     edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                 }
             }
         }
     };
     
-    public static final Action SAVE_AS_PDF_ACTION = new CanvasAction("Save as PDF") {  
+    public static final Action SAVE_AS_PDF_ACTION = new CanvasAction("Save as PDF") {
         JFileChooser pdfFileChooser;
         JPanel pdfFileNamePanel;
         JTextField pdfFileTextField;
-            
+        
         public void actionPerformed(ActionEvent e) {
             if (pdfFileNamePanel == null) {
                 pdfFileNamePanel = new JPanel();
@@ -265,13 +264,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             pdfFileTextField.setText(pdfFileChooser.getCurrentDirectory().getPath());
             String[] options = {"Save as PDF", "Cancel"};
             int choice = JOptionPane.showOptionDialog(currentCanvas, pdfFileNamePanel,
-                "Write to PDF", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
+                    "Write to PDF", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
             if (choice == 0) {
                 DasCanvas canvas = currentCanvas;
                 try {
                     canvas.writeToPDF(pdfFileTextField.getText());
-                }
-                catch (java.io.IOException ioe) {
+                } catch (java.io.IOException ioe) {
                     edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                 }
             }
@@ -292,8 +290,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             if (pj.printDialog()) {
                 try {
                     pj.print();
-                }
-                catch (PrinterException pe) {
+                } catch (PrinterException pe) {
                     Object[] message = {"Error printing", pe.getMessage() };
                     JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
@@ -317,12 +314,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public static Action[] getActions() {
         return new Action[] {
             ABOUT_ACTION,
-            REFRESH_ACTION,
-            EDIT_DAS_PROPERTIES_ACTION,
-            PRINT_ACTION,
-            SAVE_AS_PNG_ACTION,
-            SAVE_AS_SVG_ACTION,
-            SAVE_AS_PDF_ACTION,
+                    REFRESH_ACTION,
+                    EDIT_DAS_PROPERTIES_ACTION,
+                    PRINT_ACTION,
+                    SAVE_AS_PNG_ACTION,
+                    SAVE_AS_SVG_ACTION,
+                    SAVE_AS_PDF_ACTION,
         };
     }
     
@@ -391,9 +388,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             item.setAction(actions[iaction]);
             popup.add(item);
         }
-
-        popup.addSeparator();  
-
+        
+        popup.addSeparator();
+        
         JMenuItem close = new JMenuItem("close");
         close.setToolTipText("close this popup");
         popup.add(close);
@@ -477,7 +474,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             g.fillRect(0, 0, getWidth(), getHeight());
         }
         g.setColor(getForeground());
-
+        
         if (isPrintingThread()) {
             int width, height;
             Date now;
@@ -489,13 +486,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             now = new Date();
             dateFormat = new SimpleDateFormat("'UIOWA 'yyyyMMdd");
             s = dateFormat.format(now);
-
+            
             oldFont = g.getFont();
             font = oldFont.deriveFont((float)oldFont.getSize() / 2);
             metrics = g.getFontMetrics(font);
             width = metrics.stringWidth(s);
             height = metrics.getHeight();
-
+            
             g.setFont(font);
             g.drawString(s, getWidth() - width - 2 * height, getHeight() - 2 * height);
             g.setFont(oldFont);
@@ -543,7 +540,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     public static class RowWrapper extends DasRow {
         private DasRow delegate = DasRow.NULL;
-
+        
         private static RowWrapper wrap(DasCanvas canvas, DasRow row) {
             return (row instanceof RowWrapper ? (RowWrapper)row
                     : new RowWrapper(canvas, row));
@@ -557,91 +554,91 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         public void setDasName(String name) throws DasNameException {
             delegate.setDasName(name);
         }
-
+        
         public void setDMaximum(int maximum) {
             delegate.setDMaximum(maximum);
         }
-
+        
         public boolean contains(int x) {
             return delegate.contains(x);
         }
-
+        
         public void dTranslate(int delta) {
             delegate.dTranslate(delta);
         }
-
+        
         public void setDMinimum(int minimum) {
             delegate.setDMinimum(minimum);
         }
-
+        
         public void addpwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
             delegate.addpwUpdateListener(l);
         }
-
+        
         public void removepwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
             delegate.removepwUpdateListener(l);
         }
-
+        
         public void translate(double nDelta) {
             delegate.translate(nDelta);
         }
-
+        
         public void setMinimum(double minimum) {
             delegate.setMinimum(minimum);
         }
-
+        
         public void setMaximum(double maximum) {
             delegate.setMaximum(maximum);
         }
-
+        
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             delegate.addPropertyChangeListener(listener);
         }
-
+        
         public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
             delegate.addPropertyChangeListener(propertyName, listener);
         }
-
+        
         public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
             delegate.removePropertyChangeListener(propertyName, listener);
         }
-
+        
         public String toString() {
             return delegate.toString();
         }
-
+        
         public void setPosition(double minimum, double maximum) {
             delegate.setPosition(minimum, maximum);
         }
-
+        
         public int getDMaximum() {
             return delegate.getDMaximum();
         }
-
+        
         public int getHeight() {
             return delegate.getHeight();
         }
-
+        
         public void setDPosition(int minimum, int maximum) {
             delegate.setDPosition(minimum, maximum);
         }
-
+        
         public String getDasName() {
             return delegate.getDasName();
         }
-
+        
         public int getDMiddle() {
             return delegate.getDMiddle();
         }
-
+        
         public double getMaximum() {
             return delegate.getMaximum();
         }
-
+        
         public double getMinimum() {
             return delegate.getMinimum();
         }
-
+        
         public int getDMinimum() {
             return delegate.getDMinimum();
         }
@@ -660,95 +657,95 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             super(canvas, 1.0, 1.0);
             this.delegate = delegate;
         }
-
+        
         public void setDasName(String name) throws DasNameException {
             delegate.setDasName(name);
         }
-
+        
         public boolean contains(int x) {
             return delegate.contains(x);
         }
-
+        
         public void setDMaximum(int maximum) {
             delegate.setDMaximum(maximum);
         }
-
+        
         public void dTranslate(int delta) {
             delegate.dTranslate(delta);
         }
-
+        
         public void setDMinimum(int minimum) {
             delegate.setDMinimum(minimum);
         }
-
+        
         public void removepwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
             delegate.removepwUpdateListener(l);
         }
-
+        
         public void addpwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
             delegate.addpwUpdateListener(l);
         }
-
+        
         public void translate(double nDelta) {
             delegate.translate(nDelta);
         }
-
+        
         public void setMinimum(double minimum) {
             delegate.setMinimum(minimum);
         }
-
+        
         public void setMaximum(double maximum) {
             delegate.setMaximum(maximum);
         }
-
+        
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             delegate.addPropertyChangeListener(listener);
         }
-
+        
         public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
             delegate.removePropertyChangeListener(propertyName, listener);
         }
-
+        
         public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
             delegate.addPropertyChangeListener(propertyName, listener);
         }
-
+        
         public String toString() {
             return delegate.toString();
         }
-
+        
         public void setPosition(double minimum, double maximum) {
             delegate.setPosition(minimum, maximum);
         }
-
+        
         public int getDMaximum() {
             return delegate.getDMaximum();
         }
-
+        
         public int getDMinimum() {
             return delegate.getDMinimum();
         }
-
+        
         public void setDPosition(int minimum, int maximum) {
             delegate.setDPosition(minimum, maximum);
         }
-
+        
         public String getDasName() {
             return delegate.getDasName();
         }
-
+        
         public double getMinimum() {
             return delegate.getMinimum();
         }
-
+        
         public int getWidth() {
             return delegate.getWidth();
         }
-
+        
         public double getMaximum() {
             return delegate.getMaximum();
         }
-
+        
         public int getDMiddle() {
             return delegate.getDMiddle();
         }
@@ -767,8 +764,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     Component c = target.getComponent(i);
                     if (c instanceof DasCanvasComponent) {
                         ((DasCanvasComponent)c).update();
-                    }
-                    else if (c == ((DasCanvas)target).glassPane) {
+                    } else if (c == ((DasCanvas)target).glassPane) {
                         Dimension size = target.getSize();
                         c.setBounds(0, 0, size.width, size.height);
                     }
@@ -829,8 +825,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         try {
             setOpaque(false);
             super.print(g);
-        }
-        finally {
+        } finally {
             setOpaque(true);
             synchronized(this) {
                 printingThreads.remove(Thread.currentThread());
@@ -855,7 +850,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param filename the specified filename
      * @throws IOException if there is an error opening the file for writing
      */
-    public void writeToPng(String filename) throws IOException {        
+    public void writeToPng(String filename) throws IOException {
         
         final FileOutputStream out = new FileOutputStream(filename);
         
@@ -865,31 +860,26 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
         try {
             encoder.write((BufferedImage)image, out);
-        }
-        catch (IOException ioe) {}
-        finally {
+        } catch (IOException ioe) {} finally {
             try { out.close(); } catch (IOException ioe) { throw new RuntimeException(ioe); }
         }
         
     }
-
+    
     public void writeToPDF(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "edu.uiowa.physics.pw.das.util.awt.PdfGraphicsOutput");
-        }
-        catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
-        }
-        catch (InstantiationException ie) {
+        } catch (InstantiationException ie) {
             DasExceptionHandler.handleUncaught(ie);
-        }
-        catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             DasExceptionHandler.handleUncaught(iae);
         }
     }
     
     public void writeToGraphicsOutput(String filename, String graphicsOutput)
-            throws IOException, ClassNotFoundException,
+    throws IOException, ClassNotFoundException,
             InstantiationException, IllegalAccessException {
         FileOutputStream out = new FileOutputStream(filename);
         Class goClass = Class.forName(graphicsOutput);
@@ -909,30 +899,80 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public void writeToSVG(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "edu.uiowa.physics.pw.das.util.awt.SvgGraphicsOutput");
-        }
-        catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             DasExceptionHandler.handle(new RuntimeException("SVG output is not available", cnfe));
-        }
-        catch (InstantiationException ie) {
+        } catch (InstantiationException ie) {
             DasExceptionHandler.handleUncaught(ie);
-        }
-        catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             DasExceptionHandler.handleUncaught(iae);
         }
     }
     
+    public void waitUntilIdle() {
+        
+        String msg= "dasCanvas.waitUntilIdle";
+        java.util.logging.Logger logger= DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG);
+        logger.fine(msg);
+        
+        final Object lockObject= new Object();
+        
+        /* wait for all the events on the awt event thread to process */
+        if ( !EventQueue.isDispatchThread() ) {
+            try {
+                synchronized(lockObject) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {                            
+                            synchronized(lockObject) {
+                                lockObject.notifyAll();
+                            }
+                        }
+                    });
+                    lockObject.wait();
+                }
+            }
+            catch ( InterruptedException ex ) {
+                throw new RuntimeException(ex);
+            }
+        }
+        
+        /* wait for all the RequestProcessor to complete */
+        Runnable request= new Runnable() {
+            public void run() {                
+                synchronized( lockObject ) {                    
+                    lockObject.notifyAll();
+                }
+            }
+        };
+                
+        try {
+            synchronized (lockObject) {
+                RequestProcessor.invokeAfter( request, this );                
+                lockObject.wait();
+            }
+        } catch ( InterruptedException ex ) {
+            throw new RuntimeException(ex);
+        }
+        
+        logger.fine("canvas is idle");
+        /* should be in static state */
+        return;
+    }
     
     /** TODO
-     * Creates a BufferedImage and
-     * queues an event to the AWT Event Queue that will invoke
-     * {@link #writeToImageImmediately(Image)} when it
-     * is processed
+     * Creates a BufferedImage by blocking until the image is ready.  This
+     * includes waiting for datasets to load, etc.  Works by submitting 
+     * an invokeAfter request to the RequestProcessor that calls
+     * {@link #writeToImageImmediately(Image)}.
      *
      * @param width
      * @param height
      * @return
      */
     public Image getImage(int width, int height) {
+        String msg= "dasCanvas.getImage("+width+","+height+")";
+        java.util.logging.Logger logger= DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG);
+        logger.fine(msg);
+        
         setPreferredWidth(width);
         setPreferredHeight(height);
         
@@ -941,27 +981,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             this.setSize(getPreferredSize());
             this.validate();
         }
-        final Image image= new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
         
-        if ( EventQueue.isDispatchThread() ) {
-            writeToImageImmediately(image);
-        } else {
-            try {
-                synchronized(image) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            writeToImageImmediately(image);
-                            synchronized(image) {
-                                image.notifyAll();
-                            }
-                        }
-                    });
-                    image.wait();
-                }
-            }
-            catch ( InterruptedException ex ) {
-            }
-        }
+        waitUntilIdle();
+        
+        final Image image= new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);                                
+        writeToImageImmediately(image);
         return image;
     }
     
@@ -1016,8 +1040,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         if (index < 0) index = 0;
         if (comp instanceof DasPlot) {
             ((DasPlot)comp).putClientProperty(LAYER_PROPERTY, PLOT_LAYER);
-        }
-        else if (comp instanceof DasAxis) {
+        } else if (comp instanceof DasAxis) {
             ((DasAxis)comp).putClientProperty(LAYER_PROPERTY, AXIS_LAYER);
         }
         //            else if (comp instanceof DasAnnotation) {
@@ -1073,17 +1096,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 Font f;
                 if (area >= (R_1024_X_768 - R_800_X_600) / 2 + R_800_X_600) {
                     f = getFont().deriveFont(18f); //new Font("Serif", Font.PLAIN, 18);
-                }
-                else if (area >= (R_800_X_600 - R_640_X_480) / 2 + R_640_X_480) {
+                } else if (area >= (R_800_X_600 - R_640_X_480) / 2 + R_640_X_480) {
                     f = getFont().deriveFont(14f); //new Font("Serif", Font.PLAIN, 14);
-                }
-                else if (area >= (R_640_X_480 - R_320_X_240) / 2 + R_320_X_240) {
+                } else if (area >= (R_640_X_480 - R_320_X_240) / 2 + R_320_X_240) {
                     f = getFont().deriveFont(12f); //new Font("Serif", Font.PLAIN, 12);
-                }
-                else if (area >= (R_320_X_240) / 2) {
+                } else if (area >= (R_320_X_240) / 2) {
                     f = getFont().deriveFont(8f); //new Font("Serif", Font.PLAIN, 8);
-                }
-                else {
+                } else {
                     f = getFont().deriveFont(6f); //new Font("Serif", Font.PLAIN, 6);
                 }
                 setFont(f);
@@ -1107,8 +1126,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             if (obj instanceof DasRow) {
                 DasRow row = (DasRow)obj;
                 element.appendChild(row.getDOMElement(document));
-            }
-            else if (obj instanceof DasColumn) {
+            } else if (obj instanceof DasColumn) {
                 DasColumn column = (DasColumn)obj;
                 element.appendChild(column.getDOMElement(document));
             }
@@ -1131,8 +1149,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         for (int index = 0; index < components.length; index++) {
             if (components[index] instanceof DasAxis) {
-                DasAxis axis = (DasAxis)components[index];                
-                elementMap.put(axis.getDasName(), axis.getDOMElement(document));                
+                DasAxis axis = (DasAxis)components[index];
+                elementMap.put(axis.getDasName(), axis.getDOMElement(document));
             }
         }
         for (int index = 0; index < components.length; index++) {
@@ -1148,8 +1166,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 elementMap.remove(plot.getYAxis().getDasName());
                 elementMap.remove(plot.getColorBar().getDasName());
                 elementMap.put(plot.getDasName(), plot.getDOMElement(document));
-            }
-            else if (components[index] instanceof DasPlot) {
+            } else if (components[index] instanceof DasPlot) {
                 DasPlot plot = (DasPlot)components[index];
                 elementMap.remove(plot.getXAxis().getDasName());
                 elementMap.remove(plot.getYAxis().getDasName());
@@ -1203,37 +1220,30 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     String tagName = node.getNodeName();
                     if (tagName.equals("row")) {
                         DasRow row = DasRow.processRowElement((Element)node, canvas, form);
-                    }
-                    else if (tagName.equals("column")) {
+                    } else if (tagName.equals("column")) {
                         DasColumn column
-                        = DasColumn.processColumnElement((Element)node, canvas, form);
-                    }
-                    else if (tagName.equals("axis")) {
+                                = DasColumn.processColumnElement((Element)node, canvas, form);
+                    } else if (tagName.equals("axis")) {
                         DasAxis axis
-                        = DasAxis.processAxisElement((Element)node, form);
+                                = DasAxis.processAxisElement((Element)node, form);
                         canvas.add(axis);
-                    }
-                    else if (tagName.equals("timeaxis")) {
+                    } else if (tagName.equals("timeaxis")) {
                         DasAxis timeaxis
-                        = DasAxis.processTimeaxisElement((Element)node, form);
+                                = DasAxis.processTimeaxisElement((Element)node, form);
                         canvas.add(timeaxis);
-                    }
-                    else if (tagName.equals("attachedaxis")) {
+                    } else if (tagName.equals("attachedaxis")) {
                         DasAxis attachedaxis
-                        = DasAxis.processAttachedaxisElement((Element)node, form);
+                                = DasAxis.processAttachedaxisElement((Element)node, form);
                         canvas.add(attachedaxis);
-                    }
-                    else if (tagName.equals("colorbar")) {
+                    } else if (tagName.equals("colorbar")) {
                         DasColorBar colorbar
-                        = DasColorBar.processColorbarElement((Element)node, form);
+                                = DasColorBar.processColorbarElement((Element)node, form);
                         canvas.add(colorbar);
-                    }
-                    else if (tagName.equals("spectrogram")) {
+                    } else if (tagName.equals("spectrogram")) {
                         DasSpectrogramPlot spectrogram
-                        = DasSpectrogramPlot.processSpectrogramElement((Element)node, form);
+                                = DasSpectrogramPlot.processSpectrogramElement((Element)node, form);
                         canvas.add(spectrogram);
-                    }
-                    else if (tagName.equals("plot")) {
+                    } else if (tagName.equals("plot")) {
                         DasPlot plot = DasPlot.processPlotElement((Element)node, form);
                         canvas.add(plot);
                     }
@@ -1243,8 +1253,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             nc.put(name, canvas);
             
             return canvas;
-        }
-        catch (edu.uiowa.physics.pw.das.DasPropertyException dpe) {
+        } catch (edu.uiowa.physics.pw.das.DasPropertyException dpe) {
             if (!element.getAttribute("name").equals("")) {
                 dpe.setObjectName(element.getAttribute("name"));
             }
@@ -1267,8 +1276,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         try {
             canvas.setDasName(name);
-        }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
+        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
         }
         return canvas;
@@ -1316,8 +1324,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         private List acceptList = Arrays.asList(new DataFlavor[]{
             edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.PLOT_FLAVOR,
-            edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.AXIS_FLAVOR,
-            edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.COLORBAR_FLAVOR
+                    edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.AXIS_FLAVOR,
+                    edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.COLORBAR_FLAVOR
         });
         
         private Rectangle getAxisRectangle(Rectangle rc, Rectangle t, int x, int y) {
@@ -1371,8 +1379,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             Rectangle target = glassPane.target;
             if (flavorList.contains(TransferableCanvasComponent.COLORBAR_FLAVOR)) {
                 return action;
-            }
-            else if (flavorList.contains(TransferableCanvasComponent.AXIS_FLAVOR)) {
+            } else if (flavorList.contains(TransferableCanvasComponent.AXIS_FLAVOR)) {
                 if (target != cellBounds && (target == null || !target.equals(cellBounds))) {
                     if (target != null) {
                         glassPane.repaint(target.x - 1, target.y - 1, target.width + 2, target.height + 2);
@@ -1380,14 +1387,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     if (cellBounds != null) {
                         target = glassPane.target = getAxisRectangle(cellBounds, target, x, y);
                         glassPane.repaint(target.x - 1, target.y - 1, target.width + 2, target.height + 2);
-                    }
-                    else {
+                    } else {
                         glassPane.target = null;
                     }
                 }
                 return action;
-            }
-            else if (flavorList.contains(TransferableCanvasComponent.CANVAS_COMPONENT_FLAVOR)) {
+            } else if (flavorList.contains(TransferableCanvasComponent.CANVAS_COMPONENT_FLAVOR)) {
                 if (target != cellBounds && (target == null || !target.equals(cellBounds))) {
                     if (target != null) {
                         glassPane.repaint(target.x - 1, target.y - 1, target.width + 2, target.height + 2);
@@ -1424,8 +1429,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         revalidate();
                         success = true;
                     }
-                }
-                else if (t.isDataFlavorSupported(TransferableCanvasComponent.AXIS_FLAVOR)) {
+                } else if (t.isDataFlavorSupported(TransferableCanvasComponent.AXIS_FLAVOR)) {
                     Cell c = getCellAt(x, y);
                     if (c != null) {
                         DasAxis axis = (DasAxis)t.getTransferData(TransferableCanvasComponent.AXIS_FLAVOR);
@@ -1438,8 +1442,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         revalidate();
                         success = true;
                     }
-                }
-                else if (t.isDataFlavorSupported(TransferableCanvasComponent.CANVAS_COMPONENT_FLAVOR)) {
+                } else if (t.isDataFlavorSupported(TransferableCanvasComponent.CANVAS_COMPONENT_FLAVOR)) {
                     Cell c = getCellAt(x, y);
                     if (c != null) {
                         DasCanvasComponent comp = (DasCanvasComponent)t.getTransferData(TransferableCanvasComponent.CANVAS_COMPONENT_FLAVOR);
@@ -1450,10 +1453,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         success = true;
                     }
                 }
-            }
-            catch (UnsupportedFlavorException ufe) {
-            }
-            catch (IOException ioe) {
+            } catch (UnsupportedFlavorException ufe) {
+            } catch (IOException ioe) {
             }
             return success;
         }
@@ -1462,14 +1463,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             DasCanvasComponent component = DasCanvas.this.getCanvasComponentAt(x,y);
             if (component instanceof DasColorBar) {
                 return new TransferableCanvasComponent((DasColorBar)component);
-            }
-            else if (component instanceof DasAxis) {
+            } else if (component instanceof DasAxis) {
                 return new TransferableCanvasComponent((DasAxis)component);
-            }
-            else if (component instanceof DasPlot) {
+            } else if (component instanceof DasPlot) {
                 return new TransferableCanvasComponent((DasPlot)component);
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -1500,8 +1498,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 if (b) {
                     addMouseListener(this);
                     addMouseMotionListener(this);
-                }
-                else {
+                } else {
                     removeMouseListener(this);
                     removeMouseMotionListener(this);
                 }
@@ -1531,7 +1528,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         private void paintRowColumn(Graphics2D g2) {
             g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-            RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
             DasCanvas canvas = getCanvas();
             for (Iterator i = canvas.devicePositionList.iterator(); i.hasNext();) {
                 DasDevicePosition d = (DasDevicePosition)i.next();
@@ -1547,8 +1544,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     y = (int)Math.floor(minimum * cHeight + 0.5);
                     height = (int)Math.floor(maximum * cHeight + 0.5) - y;
                     paint = PAINT_ROW;
-                }
-                else {
+                } else {
                     x = (int)Math.floor(minimum * cWidth + 0.5);
                     width = (int)Math.floor(maximum * cWidth + 0.5) - x;
                     y = 0;
@@ -1568,13 +1564,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         private void paintLoading(Graphics2D g2) {
             g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-            RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
             g2.setColor(new Color(0xdcFFFFFF, true));
             Rectangle rect = g2.getClipBounds();
             if (rect == null) {
                 g2.fillRect(0, 0, getWidth(), getHeight());
-            }
-            else {
+            } else {
                 g2.fillRect(rect.x, rect.y, rect.width, rect.height);
             }
         }
@@ -1666,24 +1661,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             if (rc.contains(x, y)) {
                 if (best == null) {
                     best = box;
-                }
-                else {
+                } else {
                     if (bestCenter == null) {
                         bestCenter = new Point();
                         boxCenter = new Point();
                     }
                     if (best.rc.contains(rc)) {
                         best = box;
-                    }
-                    else {
+                    } else {
                         bestCenter.setLocation(best.rc.x + best.rc.width/2, best.rc.y + best.rc.height/2);
                         boxCenter.setLocation(rc.x + rc.width/2, rc.y + rc.height/2);
                         int bestDistance = distanceSquared(x, y, bestCenter.x, bestCenter.y);
                         int boxDistance = distanceSquared(x, y, boxCenter.x, boxCenter.y);
                         if (boxDistance < bestDistance) {
                             best = box;
-                        }
-                        else if (boxDistance == bestDistance) {
+                        } else if (boxDistance == bestDistance) {
                             if (rc.width * rc.height < best.rc.width * best.rc.height) {
                                 best = box;
                             }
@@ -1709,8 +1701,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         devicePositionList.add(position);
         if (position instanceof DasRow) {
             addRow((DasRow)position);
-        }
-        else if (position instanceof DasColumn) {
+        } else if (position instanceof DasColumn) {
             addColumn((DasColumn)position);
         }
     }
@@ -1760,8 +1751,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         devicePositionList.remove(position);
         if (position instanceof DasRow) {
             removeRow((DasRow)position);
-        }
-        else if (position instanceof DasColumn) {
+        } else if (position instanceof DasColumn) {
             removeColumn((DasColumn)position);
         }
     }
@@ -1886,15 +1876,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     if (nc.get(dp.getDasName()) == dp) {
                         nc.remove(dp.getDasName());
                     }
-                }
-                catch (DasPropertyException dpe) {
+                } catch (DasPropertyException dpe) {
                     //This exception would only occur due to some invalid state.
                     //So, wrap it and toss it.
                     IllegalStateException se = new IllegalStateException(dpe.toString());
                     se.initCause(dpe);
                     throw se;
-                }
-                catch (java.lang.reflect.InvocationTargetException ite) {
+                } catch (java.lang.reflect.InvocationTargetException ite) {
                     //This exception would only occur due to some invalid state.
                     //So, wrap it and toss it.
                     IllegalStateException se = new IllegalStateException(ite.toString());
@@ -1910,15 +1898,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         if (nc.get(cc.getDasName()) == cc) {
                             nc.remove(cc.getDasName());
                         }
-                    }
-                    catch (DasPropertyException dpe) {
+                    } catch (DasPropertyException dpe) {
                         //This exception would only occur due to some invalid state.
                         //So, wrap it and toss it.
                         IllegalStateException se = new IllegalStateException(dpe.toString());
                         se.initCause(dpe);
                         throw se;
-                    }
-                    catch (java.lang.reflect.InvocationTargetException ite) {
+                    } catch (java.lang.reflect.InvocationTargetException ite) {
                         //This exception would only occur due to some invalid state.
                         //So, wrap it and toss it.
                         IllegalStateException se = new IllegalStateException(ite.toString());
@@ -1931,15 +1917,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 if (nc.get(getDasName()) == this) {
                     nc.remove(getDasName());
                 }
-            }
-            catch (DasPropertyException dpe) {
+            } catch (DasPropertyException dpe) {
                 //This exception would only occur due to some invalid state.
                 //So, wrap it and toss it.
                 IllegalStateException se = new IllegalStateException(dpe.toString());
                 se.initCause(dpe);
                 throw se;
-            }
-            catch (java.lang.reflect.InvocationTargetException ite) {
+            } catch (java.lang.reflect.InvocationTargetException ite) {
                 //This exception would only occur due to some invalid state.
                 //So, wrap it and toss it.
                 IllegalStateException se = new IllegalStateException(ite.toString());
@@ -1953,8 +1937,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         Container p = getParent();
         if (p instanceof FormComponent) {
             return ((FormComponent)p).getDasApplication();
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -1977,8 +1960,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 }
                 nc.put(getDasName(), this);
             }
-        }
-        catch (DasNameException dne) {
+        } catch (DasNameException dne) {
             deregisterComponent();
             throw dne;
         }
@@ -2008,8 +1990,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         void refresh() {
             position = (minOrMax == MIN
-            ? (int)Math.floor(devicePosition.getDMinimum() + 0.5)
-            : (int)Math.floor(devicePosition.getDMaximum() + 0.5));
+                    ? (int)Math.floor(devicePosition.getDMinimum() + 0.5)
+                    : (int)Math.floor(devicePosition.getDMaximum() + 0.5));
         }
         /** TODO
          * @param e
@@ -2085,8 +2067,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             if (e.getSource() == row) {
                 rc.y = (int)Math.floor(row.getDMinimum() + 0.5);
                 rc.height = (int)Math.floor(row.getDMaximum() + 0.5) - rc.y;
-            }
-            else {
+            } else {
                 rc.x = (int)Math.floor(column.getDMinimum() + 0.5);
                 rc.width = (int)Math.floor(column.getDMaximum() + 0.5) - rc.x;
             }
