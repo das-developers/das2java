@@ -39,15 +39,19 @@ import javax.swing.event.EventListenerList;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.*;
+import java.util.prefs.*;
 import javax.swing.*;
 
 public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionListener {
     
-    private Datum startTime = null;
-    private Datum endTime = null;
+    private DatumRange range= null;
     
     JTextField idStart= null;
     JTextField idStop= null;
+    JPanel startStopPane=null;
+    
+    boolean updateRangeString= false;   // true indicates use formatted range string in start time cell.
     
     /** Utility field used by event firing mechanism. */
     private EventListenerList listenerList =  null;
@@ -81,9 +85,10 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
     /** Creates a new instance of DasTimeRangeSelector */
     public DasTimeRangeSelector() {
         super();
+        updateRangeString= Preferences.userNodeForPackage(this.getClass()).getBoolean("updateRangeString", false);
         buildComponents();
     }
-    
+        
     private void buildComponents() {
         this.setLayout(new FlowLayout());
         
@@ -92,16 +97,20 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         b.setActionCommand("previous");
         b.setToolTipText("Scan back in time");
         this.add(b);
+                
+        startStopPane= new JPanel(new FlowLayout());
         
         idStart= new JTextField(18);
         idStart.setAction(rangeAction);
         idStart.setActionCommand("startTime");
-        this.add(idStart);
+        startStopPane.add(idStart);
         
         idStop= new JTextField(18);
         idStop.addActionListener(rangeAction);
         idStop.setActionCommand("endTime");
-        this.add(idStop);
+        startStopPane.add(idStop);
+        
+        this.add(startStopPane);
         
         b= new JButton();
         b.setAction(nextAction);
@@ -113,59 +122,98 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
     
     public DasTimeRangeSelector(Datum startTime, Datum endTime) {
         this();
-        setStartTime(startTime);
-        update();
-        setEndTime(endTime);
+        range= new DatumRange( startTime, endTime );
         update();
     }
         
-    public Datum getStartTime() {
-        Datum saveDatum= this.startTime;
-        Datum s1;
-        try {
-            s1= TimeUtil.create(idStart.getText());
-        } catch (java.text.ParseException e) {
-            s1= saveDatum;            
-            /* display exception only when we are not in startup state */
-            if ( saveDatum!=null ) DasExceptionHandler.handle(e);
+    private void parseRange() {
+        boolean updateRangeString0= updateRangeString;
+        if ( idStop.getText().equals("") ) {
+            DatumRange dr;
+            try {
+                String rangeString= idStart.getText();
+                dr= DatumRangeUtil.parseTimeRange(rangeString);
+                range= dr; 
+                updateRangeString= true;                    
+            } catch ( ParseException e ) {
+                DasExceptionHandler.handle(e);                
+            }                                               
+        } else {            
+            updateRangeString= false;
+            try {
+                Datum s1= TimeUtil.create(idStart.getText());      
+                Datum s2= TimeUtil.create(idStop.getText());
+                range= new DatumRange(s1,s2);                
+            } catch ( ParseException e ) {
+                DasExceptionHandler.handle(e);               
+            }                            
         }
-        return s1;
+        if ( updateRangeString!=updateRangeString0 ) 
+            Preferences.userNodeForPackage(getClass()).putBoolean("updateRangeString", updateRangeString );
+        
+        return;
+    }
+    
+    public Datum getStartTime() {
+        parseRange();
+        return range.min();
     }
     
     public Datum getEndTime() {
-        Datum saveDatum= this.endTime;
-        Datum s2;
-        try {
-            s2= TimeUtil.create(idStop.getText());
-        } catch (java.text.ParseException e) {
-            s2= saveDatum;
-            /* display exception only when we are not in startup state */
-            if ( saveDatum!=null ) DasExceptionHandler.handle(e);
-        }
-        return s2;
+        parseRange();
+        return range.max();
+    }
+    
+    public DatumRange getRange() {
+        return range;
+    }
+    
+    public void setRange( DatumRange range ) {
+        this.range= range;
+        update();
     }
     
     private void update() {
-        if (startTime!=null) idStart.setText(startTime.toString());
-        if (endTime!=null) idStop.setText(endTime.toString());
+        if ( range!=null ) {
+            if ( updateRangeString ) {
+                String rangeString= DatumRangeUtil.formatTimeRange(range);
+                idStart.setText( rangeString );                
+                idStart.setColumns(28);
+                idStop.setText("");
+                idStop.setColumns(8);
+                startStopPane.revalidate();                
+            } else {
+                idStart.setText(range.min().toString());
+                idStop.setText(range.max().toString());
+                idStart.setColumns(18);
+                idStop.setColumns(18);
+                startStopPane.revalidate();
+            }
+        }
     }
     
     public void setStartTime(Datum s1) {
-        startTime= s1;
-        endTime= getEndTime();
-        if (endTime!=null) {
-            if (startTime.compareTo(endTime)==1)
-                endTime= startTime.add(1,Units.seconds);
+        if ( range==null ) {
+            return;
+        } else {
+            Datum endTime= range.max();
+            if ( endTime.le(s1) ) {
+                endTime= s1.add(1,Units.seconds);
+            }
+            range= new DatumRange( s1, endTime );
         }
         update();
     }
     
     public void setEndTime(Datum s2) {
-        endTime= s2;
-        startTime= getStartTime();
-        if (startTime!=null) {
-            if (startTime.compareTo(endTime)==1)
-                startTime= endTime.subtract(1,Units.seconds);
+        if ( range==null ) {
+            return;
+        } else {
+            Datum startTime= range.min();
+            if ( startTime.ge(s2) ) {
+                startTime= s2.subtract(1, Units.seconds);
+            }
+            range= new DatumRange( startTime, s2 );
         }
         update();
     }
@@ -213,23 +261,20 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
     }
     
     protected void fireTimeRangeSelectedPrevious() {
-        Datum twidth= getEndTime().subtract(getStartTime());
-        setStartTime(getStartTime().subtract(twidth));
-        setEndTime(getEndTime().subtract(twidth));
-        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,startTime,endTime));
+        range= range.rescale(-1,0);
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range.min(),range.max()));
     }
     
     protected void fireTimeRangeSelectedNext() {
-        Datum twidth= getEndTime().subtract(getStartTime());
-        setStartTime(getStartTime().add(twidth));
-        setEndTime(getEndTime().add(twidth));
-        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,startTime,endTime));
+        range= range.rescale(1,2);
+        update();
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range.min(),range.max()));
     }
     
     protected void fireTimeRangeSelected() {
-        setStartTime(getStartTime());
-        setEndTime(getEndTime());
-        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,startTime,endTime));
+        parseRange();
+        update();
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range.min(),range.max()));
     }
     
     /** Notifies all registered listeners about the event.
