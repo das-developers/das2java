@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.system.*;
 import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,12 +45,13 @@ public class SymbolLineRenderer extends Renderer {
     private Psym psym = Psym.NONE;
     private double symSize = 1.0; // radius in pixels
     private float lineWidth = 1.5f; // width in pixels
+    private boolean dashed = false;
+    private float dashLength = 2f;
+    private boolean histogram = false;
+    private Stroke stroke;
     
     /** Holds value of property color. */
     private SymColor color= SymColor.black;
-    
-    /** Holds value of property psymConnector. */
-    private PsymConnector psymConnector= PsymConnector.SOLID;
     
     private long lastUpdateMillis;
     
@@ -68,7 +70,15 @@ public class SymbolLineRenderer extends Renderer {
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        long timer0= System.currentTimeMillis();                
+        long timer0= System.currentTimeMillis();
+        if (stroke == null && lineWidth > 0f) {
+            if (dashed) {
+                stroke = new BasicStroke(lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, lineWidth, new float[]{lineWidth*dashLength, lineWidth*dashLength}, 0f);
+            }
+            else {
+                stroke = new BasicStroke(lineWidth);
+            }
+        }
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         if (dataSet == null || dataSet.getXLength() == 0) {            
@@ -131,37 +141,12 @@ public class SymbolLineRenderer extends Renderer {
             }
         }
         
-        /** Big chunk of code to support one PsymConnector
-         * will have to reevaluate the need to have PsymConnectors and
-         * maybe move Psym10 functionality to renderer as a histogram property.
-         */
-        if ( psymConnector == PsymConnector.PSYM10 ) {
-            double x0 = dataSet.getXTagDouble(ixmin, xUnits);
-            double y0 = dataSet.getDouble(ixmin, yUnits);
-            double i0 = xAxis.transform(x0, xUnits);
-            double j0 = yAxis.transform(y0 ,yUnits);
-            for (int index = ixmin+1; index <= ixmax; index++) {
-                double x = dataSet.getXTagDouble(index, xUnits);
-                double y = dataSet.getDouble(index, yUnits);
-                double i = xAxis.transform(x, xUnits);
-                double j = yAxis.transform(y, yUnits);
-                if ( !yUnits.isFill(y) ) {
-                    if ( !yUnits.isFill(y0) ) {
-                        if (Math.abs(x - x0) < xSampleWidth) {
-                            psymConnector.drawLine(graphics, i0, j0, i, j, lineWidth);
-                        }
-                    }
-                    x0= x;
-                    y0= y;
-                    i0= i;
-                    j0= j;
-                }
-            }
+        if (stroke != null && path != null) {
+            graphics.setStroke(stroke);
+            graphics.draw(path);
             graphics.setStroke(new BasicStroke(1.0f));
         }
-        else {
-            psymConnector.draw(graphics, path, lineWidth);
-        }
+
         for (int index = ixmin; index <= ixmax; index++) {
             if ( ! yUnits.isFill(dataSet.getDouble(index,yUnits)) ) {
                 double i = xAxis.transform(dataSet.getXTagDouble(index,xUnits),xUnits);
@@ -178,6 +163,7 @@ public class SymbolLineRenderer extends Renderer {
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
+        boolean histogram = this.histogram;
         GeneralPath newPath = new GeneralPath();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
@@ -219,35 +205,44 @@ public class SymbolLineRenderer extends Renderer {
             }
         }
         
-        if ( psymConnector != PsymConnector.NONE ) {
-            double x0 = -Double.MAX_VALUE;
-            double y0 = -Double.MAX_VALUE;
-            double i0 = -Double.MAX_VALUE;
-            double j0 = -Double.MAX_VALUE;
-            boolean skippedLast = true;
-            for (int index = ixmin; index <= ixmax; index++) {
-                double x = dataSet.getXTagDouble(index, xUnits);
-                double y = dataSet.getDouble(index, yUnits);
-                double i = xAxis.transform(x, xUnits);
-                double j = yAxis.transform(y, yUnits);
-                if ( yUnits.isFill(y)) {
-                    skippedLast = true;
-                }
-                else if (skippedLast || Math.abs(x - x0) > xSampleWidth) {
-                    newPath.moveTo((float)i, (float)j);
-                    skippedLast = false;
+        double x0 = -Double.MAX_VALUE;
+        double y0 = -Double.MAX_VALUE;
+        double i0 = -Double.MAX_VALUE;
+        double j0 = -Double.MAX_VALUE;
+        boolean skippedLast = true;
+        for (int index = ixmin; index <= ixmax; index++) {
+            double x = dataSet.getXTagDouble(index, xUnits);
+            double y = dataSet.getDouble(index, yUnits);
+            double i = xAxis.transform(x, xUnits);
+            double j = yAxis.transform(y, yUnits);
+            if ( yUnits.isFill(y)) {
+                skippedLast = true;
+            }
+            else if (skippedLast || Math.abs(x - x0) > xSampleWidth) {
+                newPath.moveTo((float)i, (float)j);
+                skippedLast = false;
+            }
+            else {
+                if (histogram) {
+                    double i1 = (i0 + i)/2;
+                    newPath.lineTo((float)i1, (float)j0);
+                    newPath.lineTo((float)i1, (float)j);
+                    newPath.lineTo((float)i, (float)j);
                 }
                 else {
                     newPath.lineTo((float)i, (float)j);
-                    skippedLast = false;
                 }
-                x0= x;
-                y0= y;
-                i0= i;
-                j0= j;
+                skippedLast = false;
             }
+            x0= x;
+            y0= y;
+            i0= i;
+            j0= j;
         }
         path = newPath;
+        if (getParent() != null) {
+            getParent().repaint();
+        }
     }
     
 
@@ -344,23 +339,6 @@ public class SymbolLineRenderer extends Renderer {
         return element;
     }
     
-    /** Getter for property psymConnector.
-     * @return Value of property psymConnector.
-     *
-     */
-    public PsymConnector getPsymConnector() {
-        return this.psymConnector;
-    }
-    
-    /** Setter for property psymConnector.
-     * @param psymConnector New value of property psymConnector.
-     *
-     */
-    public void setPsymConnector(PsymConnector psymConnector) {
-        this.psymConnector = psymConnector;
-        refreshImage();
-    }
-    
     /** Getter for property antiAliased.
      * @return Value of property antiAliased.
      *
@@ -378,4 +356,67 @@ public class SymbolLineRenderer extends Renderer {
         refreshImage();
     }
     
+    /** Indicates that lines drawn by this renderer will be dashed
+     * @see #getDashLength();
+     * @return the value of the dashed property.
+     */
+    public boolean isDashed() {
+        return dashed;
+    }
+    
+    /** Sets the value of the dashed property.
+     * @see #isDashed()
+     * @param b the new value of the dashed property
+     */
+    public void setDashed(boolean b) {
+        if (dashed != b) {
+            dashed = b;
+            stroke = null;
+            if (getParent() != null) {
+                getParent().repaint();
+            }
+        }
+    }
+    
+    /** dashLength is the length of each dash and the spaces
+     * in between them.  The actual length of each dash
+     * will be dashLength * lineWidth.  This property is
+     * ignored if dashed is false.
+     * @return the value of the dashLength property.
+     */
+    public float getDashLength() {
+        return dashLength;
+    }
+    
+    /** sets the values of the dashLength property
+     * @see #getDashLength()
+     * @param f the new value of the dashLength property
+     */
+    public void setDashLength(float f) {
+        if (dashLength != f) {
+            dashLength = f;
+            stroke = null;
+            if (getParent() != null) {
+                getParent().repaint();
+            }
+        }
+    }
+    
+    public boolean isHistogram() {
+        return histogram;
+    }
+    
+    public void setHistogram(final boolean b) {
+        if (b != histogram) {
+            histogram = b;
+            if (getParent() != null && getParent().getCanvas() != null) {
+                new Runnable() {
+                    {RequestProcessor.invokeLater(this, getParent().getCanvas());}
+                    public void run() {
+                        updatePlotImage(getParent().getXAxis(), getParent().getYAxis(), null);
+                    }
+                };
+            }
+        }
+    }
 }

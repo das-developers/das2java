@@ -793,6 +793,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private void updateTickVLog() {
         
+        Datum minute = Datum.create(60.0, Units.seconds);
+        if (getDataMaximum().subtract(getDataMinimum()).lt(minute)) {
+            updateTickVLinear();
+            return;
+        }
+        
         TickVDescriptor ticks= new TickVDescriptor();
         ticks.units= dataRange.getUnits();
         double min= dataRange.getMinimum();
@@ -1148,6 +1154,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /** TODO */
     protected void paintComponent(Graphics graphics) {
+        
+        Shape saveClip = null;
+        if (getCanvas().isPrintingThread()) {
+            saveClip = graphics.getClip();
+            graphics.setClip(null);
+        }
+        
         Graphics2D g = (Graphics2D)graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -1186,6 +1199,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         
         Rectangle clip = g.getClipBounds();
+        if (clip == null) {
+            clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        }
         
         if (drawTca && getOrientation() == BOTTOM && tcaData != null && blLabelRect != null && blLabelRect.intersects(clip)) {
             
@@ -1218,11 +1234,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.draw(g, (float)leftEdge, (float)baseLine);
             }
         }
+        
+        if (getCanvas().isPrintingThread()) {
+            g.setClip(saveClip);
+        }
     }
     
     /** Paint the axis if it is horizontal  */
     protected void paintHorizontalAxis(Graphics2D g) {
         Rectangle clip = g.getClipBounds();
+        if (clip == null) {
+            clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        }
         
         boolean bottomLine = ((orientation == BOTTOM || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
         boolean bottomTicks = ((orientation == BOTTOM || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
@@ -1317,6 +1340,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** Paint the axis if it is vertical  */
     protected void paintVerticalAxis(Graphics2D g) {
         Rectangle clip = g.getClipBounds();
+        if (clip == null) {
+            clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        }
         
         boolean leftLine = ((orientation == LEFT || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
         boolean leftTicks = ((orientation == LEFT || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
