@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 
 /**
@@ -41,7 +41,7 @@ public class TCADataSet extends DataSet {
     public XMultiY[] data;
         
     /** Creates a new instance of TCADataSet */
-    public TCADataSet( XMultiYDataSetDescriptor dsd, DasDate startTime, DasDate endTime)
+    public TCADataSet( XMultiYDataSetDescriptor dsd, Datum startTime, Datum endTime)
     {
         super( dsd, startTime, endTime);
     }

@@ -27,9 +27,7 @@ import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.CachedXTaggedYScanDataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.DataRequestor;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.datum.LocationUnits;
-import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.datum.UnitsConverter;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.client.DataSetDescriptorNotAvailableException;
 import edu.uiowa.physics.pw.das.client.NoSuchDataSetException;
 import edu.uiowa.physics.pw.das.client.StandardDataStreamSource;
@@ -37,7 +35,6 @@ import edu.uiowa.physics.pw.das.event.DasEventMulticaster;
 import edu.uiowa.physics.pw.das.event.DasReaderEvent;
 import edu.uiowa.physics.pw.das.event.DasReaderListener;
 import edu.uiowa.physics.pw.das.event.ProgressIndicator;
-import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.util.IDLParser;
 
 import java.io.*;
@@ -385,12 +382,12 @@ public abstract class DataSetDescriptor implements Serializable {
      * Reads data for the given start and end dates and returns an array of floats
      *
      * @author eew
-     * @param start A DasDate object representing the start time for the interval requested
-     * @param end A DasDate object representing the end time for the interval requested
+     * @param start A Datum object representing the start time for the interval requested
+     * @param end A Datum object representing the end time for the interval requested
      * @return array of floats containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    public float[] readFloats(InputStream in, Object params, DasDate start, DasDate end) throws DasException {
+    public float[] readFloats(InputStream in, Object params, Datum start, Datum end) throws DasException {
         float[] f;
         byte[] data = readBytes(in, params, start, end);
         f = new float[data.length/4];
@@ -405,12 +402,12 @@ public abstract class DataSetDescriptor implements Serializable {
      * Reads data for the given start and end dates and returns an array of doubles
      *
      * @author eew
-     * @param start A DasDate object representing the start time for the interval requested
-     * @param end A DasDate object representing the end time for the interval requested
+     * @param start A Datum object representing the start time for the interval requested
+     * @param end A Datum object representing the end time for the interval requested
      * @return array of doubles containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    public double[] readDoubles(InputStream in, Object params, DasDate start, DasDate end) throws DasException {
+    public double[] readDoubles(InputStream in, Object params, Datum start, Datum end) throws DasException {
         double[] d;
         byte[] data = readBytes(in, params, start, end);
         d = new double[data.length/4];
@@ -424,17 +421,17 @@ public abstract class DataSetDescriptor implements Serializable {
     }
     
     /**
-     * Auxiliary method used by readDoubles(InputStream, Object, DasDate, DasDate);
+     * Auxiliary method used by readDoubles(InputStream, Object, Datum, Datum);
      *
      * /**
      * Read data for the given start and end dates and returns an array of bytes
      *
      * @author eew
-     * @param start A DasDate object representing the start time for the interval requested
-     * @param end A DasDate object representing the end time for the interval requested
+     * @param start A Datum object representing the start time for the interval requested
+     * @param end A Datum object representing the end time for the interval requested
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    public byte[] readBytes(InputStream uin, Object params, DasDate start, DasDate end) throws edu.uiowa.physics.pw.das.DasException {
+    public byte[] readBytes(InputStream uin, Object params, Datum start, Datum end) throws edu.uiowa.physics.pw.das.DasException {
         
         LinkedList list = new LinkedList();
         byte[] data;
@@ -520,7 +517,7 @@ public abstract class DataSetDescriptor implements Serializable {
         return data;
     }
     
-    public DataSet getDataSet(DasDate start, DasDate end) throws DasException {
+    public DataSet getDataSet(Datum start, Datum end) throws DasException {
         return getDataSet("", start, end);
     }
     
@@ -529,9 +526,9 @@ public abstract class DataSetDescriptor implements Serializable {
         return dataSetID;
     }
     
-    public abstract DataSet getDataSet(InputStream in, Object params, DasDate start, DasDate end) throws DasException;
+    public abstract DataSet getDataSet(InputStream in, Object params, Datum start, Datum end) throws DasException;
     
-    public DataSet getDataSet( Object params, DasDate start, DasDate end ) throws DasException {
+    public DataSet getDataSet( Object params, Datum start, Datum end ) throws DasException {
         InputStream in;
         DataSet result;
         try {
@@ -544,7 +541,7 @@ public abstract class DataSetDescriptor implements Serializable {
         return result;
     }
     
-    public DataSet getDataSet( Object params, DasDate start, DasDate end, double resolution ) throws DasException {
+    public DataSet getDataSet( Object params, Datum start, Datum end, Datum resolution ) throws DasException {
         InputStream in;
         
         DataSet result;
@@ -671,6 +668,22 @@ public abstract class DataSetDescriptor implements Serializable {
     
     public ProgressIndicator getProgressIndicator() {
         return progressIndicator;
+    }
+    
+    public Datum getXSampleWidth() {        
+        Units xUnits= getXUnits();
+        if ( xUnits instanceof LocationUnits ) {
+            xUnits= ((LocationUnits)xUnits).getOffsetUnits();
+        }
+        return Datum.create(xSampleWidth,xUnits);
+    }
+    
+    public void setXSampleWidth( Datum datum ) {
+        if ( getXUnits() instanceof LocationUnits ) {
+            xSampleWidth= datum.doubleValue( ((LocationUnits)getXUnits()).getOffsetUnits() );
+        } else {
+            xSampleWidth= datum.doubleValue(getXUnits());
+        }
     }
     
 }

@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.datum.DasFormatter;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.util.DasMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -77,16 +78,16 @@ public class TimeRangeLabel extends DasCanvasComponent {
             edu.uiowa.physics.pw.das.datum.TimeDatum td= (edu.uiowa.physics.pw.das.datum.TimeDatum)tdo;
             
             if (td.getUnits()==edu.uiowa.physics.pw.das.datum.Units.mj1958) {
-                double mj1958= td.getValue();
+                double mj1958= td.doubleValue(Units.mj1958);
                 seconds= mj1958 % 1 * 86400.;
                 jd= (int)Math.floor(mj1958) + 2436205;
             } else if (td.getUnits()==edu.uiowa.physics.pw.das.datum.Units.us2000) {
-                double us2000= td.getValue();
-                seconds= edu.uiowa.physics.pw.das.util.DasMath.modp( us2000, 86400000000. ) / 1000000;
+                double us2000= td.doubleValue(Units.us2000);
+                seconds= DasMath.modp( us2000, 86400000000. ) / 1000000;
                 jd= (int)Math.floor( us2000 / 86400000000. ) + 2451545;
             } else {
-                double us2000= edu.uiowa.physics.pw.das.datum.Units.getConverter(td.getUnits(),edu.uiowa.physics.pw.das.datum.Units.us2000).convert(td.getValue());
-                seconds= edu.uiowa.physics.pw.das.util.DasMath.modp( us2000, 86400000000. ) / 1000000;
+                double us2000= td.doubleValue(Units.us2000);
+                seconds= DasMath.modp( us2000, 86400000000. ) / 1000000;
                 jd= (int)Math.floor( us2000 / 86400000000. ) + 2451545;
             }
             

@@ -114,7 +114,7 @@ extends DasSymbolPlot implements DataPointSelectionListener {
 	double dy = Double.MAX_VALUE;
 	int yIndex = 0;
 	for (int i = 0; i < xtys.y_coordinate.length; i++) {
-	    double delta = Math.abs(yValue.getValue()-xtys.y_coordinate[i]);
+	    double delta = Math.abs(yValue.doubleValue(xtys.getYUnits())-xtys.y_coordinate[i]);
 	    if (delta < dy) {
 		dy = delta;
 		yIndex = i;

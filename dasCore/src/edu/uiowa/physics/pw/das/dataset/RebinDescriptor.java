@@ -62,7 +62,7 @@ public class RebinDescriptor {
     }
     
     public RebinDescriptor( Datum start, Datum end, int nBin, boolean isLog) {
-        this(start.getValue(),end.getValue(),start.getUnits(),nBin,isLog);
+        this(start.doubleValue(start.getUnits()),end.doubleValue(end.getUnits()),start.getUnits(),nBin,isLog);
         if (start.getUnits()!=end.getUnits()) throw new IllegalArgumentException("start and end units differ");
     }
         

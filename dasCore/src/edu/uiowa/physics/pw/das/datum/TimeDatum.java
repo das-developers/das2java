@@ -80,7 +80,7 @@ public class TimeDatum extends Datum {
         }        
     }
     
-    public static TimeDatum now() {
+    public static Datum now() {
         Calendar cal= new GregorianCalendar();
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
         int hour= cal.get(Calendar.HOUR_OF_DAY);

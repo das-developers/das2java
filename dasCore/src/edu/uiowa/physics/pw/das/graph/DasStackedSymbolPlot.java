@@ -148,10 +148,10 @@ public class DasStackedSymbolPlot extends DasPlot {
         
         Dimension d;
         
-        double xmax= getXAxis().getDataMaximum().getValue();
-        double xmin= getXAxis().getDataMinimum().getValue();
-        double ymax= getYAxis().getDataMaximum().getValue();
-        double ymin= getYAxis().getDataMinimum().getValue();
+        double xmax= getXAxis().getDataMaximum().doubleValue(Data.getXUnits());
+        double xmin= getXAxis().getDataMinimum().doubleValue(Data.getXUnits());
+        double ymax= getYAxis().getDataMaximum().doubleValue(Data.getYUnits());
+        double ymin= getYAxis().getDataMinimum().doubleValue(Data.getYUnits());
         int ixmax, ixmin;
         
         ixmin=0;
@@ -207,13 +207,13 @@ public class DasStackedSymbolPlot extends DasPlot {
         if (dsd.getXUnits() instanceof TimeLocationUnits ) {
             xAxis= new DasTimeAxis( new DasDate("2000/1/1"), new DasDate("2000/1/2"), row, column, DasAxis.HORIZONTAL );
         } else {
-            xAxis= new DasAxis( new Datum(0,dsd.getXUnits()), new Datum(10,dsd.getXUnits()), row, column, DasAxis.HORIZONTAL );
+            xAxis= new DasAxis( Datum.create(0,dsd.getXUnits()), Datum.create(10,dsd.getXUnits()), row, column, DasAxis.HORIZONTAL );
         }
         
         if (dsd.getYUnits() instanceof TimeLocationUnits ) {
             yAxis= new DasTimeAxis( new DasDate("2000/1/1"), new DasDate("2000/1/2"), row, column, DasAxis.VERTICAL );
         } else {
-            yAxis= new DasAxis( new Datum(0,dsd.getYUnits()), new Datum(10,dsd.getYUnits()), row, column, DasAxis.VERTICAL );
+            yAxis= new DasAxis( Datum.create(0,dsd.getYUnits()), Datum.create(10,dsd.getYUnits()), row, column, DasAxis.VERTICAL );
         }
         
         DasStackedSymbolPlot result= new DasStackedSymbolPlot(dsd,

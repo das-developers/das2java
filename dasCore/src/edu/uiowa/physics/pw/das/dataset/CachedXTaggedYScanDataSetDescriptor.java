@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.Datum;
 
 import java.util.Hashtable;
 
@@ -47,8 +47,8 @@ public class CachedXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDesc
     
     private XTaggedYScanDataSetCache dataCache;
     
-    public DataSet getDataSet(Object params, DasDate start, DasDate end, double resolution) throws DasException {
-        double res= resolution;
+    public DataSet getDataSet(Object params, Datum start, Datum end, Datum resolution) throws DasException {
+        Datum res= resolution;
         edu.uiowa.physics.pw.das.util.DasDie.println(""+dataCache);
         if ( dataCache.haveStored(this,start,end,res,params) ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("----- Buffer Hit ----");

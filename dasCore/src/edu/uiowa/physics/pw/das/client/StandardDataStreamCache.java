@@ -24,7 +24,8 @@
 package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.*;
+
 /**
  *
  * @author  jbf
@@ -34,9 +35,9 @@ public class StandardDataStreamCache {
     protected class Tag {
         
         edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd;
-        DasDate start;
-        DasDate end;
-        double resolution;
+        Datum start;
+        Datum end;
+        Datum resolution;
         Object params;
         byte[] data;
         int nhits;
@@ -44,10 +45,10 @@ public class StandardDataStreamCache {
         long lastAccess;
         
         Tag() {
-            this( null, null, null, 1e31, null, null );
+            this( null, null, null, null, null, null );
         }
         
-        Tag( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, DasDate start, DasDate end, double resolution, Object params, byte[] data ) {
+        Tag( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params, byte[] data ) {
             this.dsd= dsd;
             this.start= start;
             this.end= end;
@@ -64,7 +65,7 @@ public class StandardDataStreamCache {
             result= result && ( tag.dsd.toString().equals(this.dsd.toString()) );
             result= result && ( tag.start.compareTo( this.start) >= 0 )  &&
             ( tag.end.compareTo(this.end) <= 0 );
-            result= result && ( tag.resolution >= this.resolution );
+            result= result && ( tag.resolution.ge(this.resolution) );
             result= result &&
             ( ( tag.params==this.params ) || ( tag.params.toString().equals(this.params.toString()) ) );
             return result;
@@ -87,7 +88,7 @@ public class StandardDataStreamCache {
         buffer= new Tag[2];
     }
     
-    public void store( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, DasDate start, DasDate end, double resolution, Object params, byte[] data ) {
+    public void store( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params, byte[] data ) {
 
         if (disabled) return;
         
@@ -113,7 +114,7 @@ public class StandardDataStreamCache {
         buffer[iMin]= tag;
     };
     
-    private int findStored( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, DasDate start, DasDate end, double resolution, Object params ) {
+    private int findStored( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
         Tag tag= new Tag( dsd, start, end, resolution, params, null );
         
         int iHit=-1;
@@ -128,7 +129,7 @@ public class StandardDataStreamCache {
         return iHit;
     };
     
-    public boolean haveStored( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, DasDate start, DasDate end, double resolution, Object params ) {
+    public boolean haveStored( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
         Tag tag= new Tag( dsd, start, end, resolution, params, null );
         
         edu.uiowa.physics.pw.das.util.DasDie.println(toString());
@@ -147,7 +148,7 @@ public class StandardDataStreamCache {
         }
     };
     
-    public byte[] retrieve( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, DasDate start, DasDate end, double resolution, Object params ) {
+    public byte[] retrieve( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
         int iHit= findStored( dsd, start, end, resolution, params );
         if (iHit!=-1) {
             edu.uiowa.physics.pw.das.util.DasDie.println(" time offset= "+buffer[iHit].start.subtract(start) );

@@ -28,7 +28,6 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.stream.MultiPlanarDataSet;
-import edu.uiowa.physics.pw.das.util.DasDate;
 
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -105,35 +104,34 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
     }
     
     
-    public DataSet getDataSet(Object params, DasDate start, DasDate end, double resolution) throws DasException {
-        double res= resolution;
-        double sbResolution= resolution ;
+    public DataSet getDataSet(Object params, Datum start, Datum end, Datum resolution) throws DasException {
+        Datum res= resolution;
+        Datum sbResolution= resolution ;
         
-        sbResolution= sbResolution > this.x_sample_width ? sbResolution : this.x_sample_width;
+        sbResolution= sbResolution.gt( this.getXSampleWidth() ) ? sbResolution : this.getXSampleWidth();
         
         InputStream in;
         if (isServerSideReduction()) {
             in= standardDataStreamSource.getReducedInputStream( this, params, start, end, resolution );
-            res= ( resolution > x_sample_width ? resolution : x_sample_width );
+            res= ( resolution.gt( this.getXSampleWidth() ) ? resolution : getXSampleWidth() );
         } else {
             in= standardDataStreamSource.getInputStream( this, params, start, end );
-            res= x_sample_width;
+            res= getXSampleWidth();
         }
         XTaggedYScanDataSet ds= (XTaggedYScanDataSet) getDataSet(in,params,start,end);
-        ds.x_sample_width= res;
-        UnitsConverter uc= UnitsConverter.getConverter( Units.seconds, ((LocationUnits)getXUnits()).getOffsetUnits() );
-        ds.xSampleWidth= uc.convert(ds.x_sample_width);
+        ds.x_sample_width= res.doubleValue(Units.seconds);        
+        ds.setXSampleWidth( res );
         
         return ds;
     }
     
-    public DataSet getDataSet( Object params, DasDate start, DasDate end ) throws DasException {
+    public DataSet getDataSet( Object params, Datum start, Datum end ) throws DasException {
         InputStream in= standardDataStreamSource.getInputStream( this, params, start, end );
         XTaggedYScanDataSet ds= (XTaggedYScanDataSet) getDataSet(in,params,start,end);
         return ds;
     }
     
-    public DataSet getDataSet(InputStream in0, Object params, DasDate start, DasDate end) throws DasException {
+    public DataSet getDataSet(InputStream in0, Object params, Datum start, Datum end) throws DasException {
         
         int elementCount, elementSize;
         
@@ -192,14 +190,13 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         } else {
             
             data = readFloats(in,"", start, end);
-            
-            edu.uiowa.physics.pw.das.util.DasDie.println(TimeDatum.create(start));
-            TimeDatum timeBase= (TimeDatum)TimeDatum.create(start).convertTo(ds.getXUnits());
+                        
+            TimeDatum timeBase= (TimeDatum)start.convertTo(ds.getXUnits());
             
             elementSize = y_coordinate.length + 1;
             elementCount = data.length / elementSize;
             ds.data = new XTaggedYScan[elementCount];
-            double timeBaseValue= timeBase.getValue();
+            double timeBaseValue= timeBase.doubleValue(ds.getXUnits());
             
             for (int i = 0; i < elementCount; i++) {
                 //edu.uiowa.physics.pw.das.util.DasDie.print("\rCreating dataset object..."+((i+1)*100/elementCount)+"%");
@@ -219,7 +216,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
     }
     
     public DasAxis getZAxis(DasRow row, DasColumn column) {
-        return new DasAxis(new Datum(0,getZUnits()), new Datum(10,getZUnits()),row,column,DasAxis.VERTICAL,false);
+        return new DasAxis(Datum.create(0,getZUnits()), Datum.create(10,getZUnits()),row,column,DasAxis.VERTICAL,false);
     }
     
     public Renderer getRenderer(DasPlot plot) {

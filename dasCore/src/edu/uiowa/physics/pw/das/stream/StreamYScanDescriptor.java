@@ -107,14 +107,12 @@ public class StreamYScanDescriptor extends XTaggedYScanDataSetDescriptor impleme
             throw new IllegalArgumentException("Number of xValues doesn't match number of records");
         }        
         XTaggedYScanDataSet ds= XTaggedYScanDataSet.create(this,(XTaggedYScan[])records.toArray(new XTaggedYScan[records.size()]));
-        ds.setStartTime(DasDate.create(startTime));
-        ds.setEndTime(DasDate.create(endTime));
+        ds.setStartTime(startTime);
+        ds.setEndTime(endTime);
         ds.y_coordinate= yCoordinate;
-        
-        UnitsConverter uc=null;
-        if ( xValues.length>0 ) uc= xValues[0].getUnits().getConverter(this.getXUnits());
+                        
         for ( int i=0; i<ds.data.length; i++ ) {
-            ds.data[i].x= uc.convert(xValues[i].getValue());
+            ds.data[i].x= xValues[i].doubleValue(ds.getXUnits());
         }
         ds.setName(name);
         return ds;

@@ -164,7 +164,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     }
     
     public static DasStackedHistogramPlot create( DasCanvas parent, XTaggedYScanDataSetDescriptor dsd,
-    DasDate startTime, DasDate endTime ) throws edu.uiowa.physics.pw.das.DasException {
+    Datum startTime, Datum endTime ) throws edu.uiowa.physics.pw.das.DasException {
         XTaggedYScanDataSet ds= (XTaggedYScanDataSet)dsd.getDataSet("",startTime,endTime);
         DasStackedHistogramPlot result= DasStackedHistogramPlot.create(parent,ds);
         result.setDataSetDescriptor(dsd);
@@ -293,8 +293,8 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             Rectangle2D.Double rmax= new Rectangle2D.Double();
             
             int littleRowHeight= (int)littleRow.getHeight();
-            double zAxisMax= zAxisComponent.getAxis().getDataMaximum().getValue();
-            double dd= TimeDatum.create("2003-7-12").convertTo(getXAxis().getUnits()).doubleValue();
+            double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
+            double dd= TimeDatum.create("2003-7-12").doubleValue((getXAxis().getUnits()));
             int ibinMax= 0;
             for (int ibin=0; ibin<data.length; ibin++) {
                 double x0= (int)getXAxis().transform(binStarts[ibin],xbins.getUnits());

@@ -139,7 +139,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             }
             
             Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-            double dataRange= dataRange1.convertTo(Units.seconds).doubleValue();
+            double dataRange= dataRange1.doubleValue(Units.seconds);
             double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
             double resolution =  dataRange/deviceRange;
             DasTimeAxis taxis = (DasTimeAxis)xAxis;
@@ -193,7 +193,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
                 drt = new DataRequestThread();
             }
             try {
-                drt.request(dsd, "", taxis.getTimeMinimum(), taxis.getTimeMaximum(), resolution, requestor);
+                drt.request(dsd, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor);
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);

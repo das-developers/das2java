@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Units;
 
 /**
@@ -31,19 +31,21 @@ import edu.uiowa.physics.pw.das.datum.Units;
  * @author  eew
  */
 public abstract class DataSet
-    implements java.io.Serializable, edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
-        
+implements java.io.Serializable, edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
+    
     DataSetDescriptor dataSetDescriptor;
     
-    protected DasDate startTime;
-    protected DasDate endTime;
-
+    protected Datum startTime;
+    protected Datum endTime;
+    
     private Units xUnits;
-
+    
     /** This member will only temporarily be public */
     public String dsdfPath;
-
+    
     private String name="";
+    
+    public double xSampleWidth;
     
     public DataSet(DataSetDescriptor dsd) {
         this.dataSetDescriptor= dsd;
@@ -54,17 +56,17 @@ public abstract class DataSet
         }
     }
     
-    public DataSet(DataSetDescriptor dsd, DasDate startTime, DasDate endTime) {
+    public DataSet(DataSetDescriptor dsd, Datum startTime, Datum endTime) {
         this(dsd);
         this.startTime = startTime;
-        this.endTime = endTime;        
+        this.endTime = endTime;
     }
     
     public DataSet(Units xUnits) {
         this.xUnits= xUnits;
     }
-        
-    public DataSet() {        
+    
+    public DataSet() {
         this(Units.dimensionless);
     }
     
@@ -76,19 +78,19 @@ public abstract class DataSet
         xUnits = units;
     }
     
-    public DasDate getStartTime() {
+    public Datum getStartTime() {
         return startTime;
     }
     
-    public DasDate getEndTime() {
+    public Datum getEndTime() {
         return endTime;
     }
     
-    public void setStartTime(DasDate startTime) {
+    public void setStartTime(Datum startTime) {
         this.startTime= startTime;
     }
     
-    public void setEndTime(DasDate endTime) {
+    public void setEndTime(Datum endTime) {
         this.endTime= endTime;
     }
     
@@ -102,8 +104,8 @@ public abstract class DataSet
     
     public String getName() {
         return this.name;
-    }    
-
+    }
+    
     public void setName(java.lang.String name) {
         this.name= name;
     }
@@ -112,4 +114,19 @@ public abstract class DataSet
         return -99999;
     }
     
+    public Datum getXSampleWidth() {
+        Units xUnits= getXUnits();
+        if ( xUnits instanceof LocationUnits ) {
+            xUnits= ((LocationUnits)xUnits).getOffsetUnits();
+        }
+        return Datum.create(xSampleWidth,xUnits);
+    }
+    
+    public void setXSampleWidth( Datum datum ) {
+        if ( getXUnits() instanceof LocationUnits ) {
+            xSampleWidth= datum.doubleValue( ((LocationUnits)getXUnits()).getOffsetUnits() );
+        } else {
+            xSampleWidth= datum.doubleValue(getXUnits());
+        }
+    }
 }

@@ -95,7 +95,7 @@ public class DasAxisSelector extends javax.swing.JPanel implements ActionListene
         update();
         if (command.equals("setMinimum")) {
             try {
-                axis.setDataRange(new edu.uiowa.physics.pw.das.datum.Datum(Double.valueOf(idStart.getText()).doubleValue(),axis.getUnits()),
+                axis.setDataRange(Datum.create(Double.valueOf(idStart.getText()).doubleValue(),axis.getUnits()),
                 axis.getDataMaximum());
             } catch (NumberFormatException e) {
                 edu.uiowa.physics.pw.das.util.DasDie.println(e);
@@ -103,7 +103,7 @@ public class DasAxisSelector extends javax.swing.JPanel implements ActionListene
         } else if (command.equals("setMaximum")) {
             try {
                 axis.setDataRange(axis.getDataMinimum(),
-                new edu.uiowa.physics.pw.das.datum.Datum(Double.valueOf(idStop.getText()).doubleValue(), axis.getUnits() ));
+                 Datum.create(Double.valueOf(idStop.getText()).doubleValue(), axis.getUnits() ));
             } catch (NumberFormatException e) {
                 edu.uiowa.physics.pw.das.util.DasDie.println(e);
             }

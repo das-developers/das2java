@@ -1,3 +1,4 @@
+
 /* File: DataRange.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
@@ -20,10 +21,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
 
@@ -36,7 +37,7 @@ public class DataRange implements Cloneable {
     
     private DasAxis parent;
     
-    private edu.uiowa.physics.pw.das.datum.Units units;
+    private Units units;
     
     private double minimum;
     
@@ -52,15 +53,15 @@ public class DataRange implements Cloneable {
     
     private PropertyChangeSupport propertyChangeDelegate;
     
-    public DataRange( DasAxis parent, edu.uiowa.physics.pw.das.datum.Datum min, edu.uiowa.physics.pw.das.datum.Datum max, boolean log ) {
+    public DataRange( DasAxis parent, Datum min, Datum max, boolean log ) {
         if (min.gt(max)) throw new IllegalArgumentException("data min on axis is greater than data max");
         if (!min.isValid()) throw new IllegalArgumentException("data_minimum on axis is NaN");
         if (!max.isValid()) throw new IllegalArgumentException("data_maximum on axis is NaN");
         if (min.getUnits()!=max.getUnits())  throw new IllegalArgumentException("units don't match on range");
         this.parent= parent;
         units= min.getUnits();
-        minimum = min.getValue();
-        maximum = max.getValue();
+        minimum = min.doubleValue(units);
+        maximum = max.doubleValue(units);
         this.log = log;
         history = new Stack();
         forwardHistory = new Stack();
@@ -92,7 +93,7 @@ public class DataRange implements Cloneable {
     
     public double getMaximum() { return maximum; }
     
-    public edu.uiowa.physics.pw.das.datum.Units getUnits() { return units; }
+    public Units getUnits() { return units; }
     
     public void setMinimum(double min) {
         if (min>maximum) {
@@ -135,10 +136,10 @@ public class DataRange implements Cloneable {
         }
         double oldMin = minimum;
         double oldMax = maximum;
-        edu.uiowa.physics.pw.das.datum.Datum h[] = new edu.uiowa.physics.pw.das.datum.Datum[2];
+        Datum h[] = new Datum[2];
         if (minimum!=maximum) {  //  kludge for create() method
-            h[0] = new edu.uiowa.physics.pw.das.datum.Datum(minimum,units);
-            h[1] = new edu.uiowa.physics.pw.das.datum.Datum(maximum,units);
+            h[0] = Datum.create(minimum,units);
+            h[1] = Datum.create(maximum,units);
             history.push(h);
         }
         forwardHistory.removeAllElements();
@@ -155,15 +156,15 @@ public class DataRange implements Cloneable {
         edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
         edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
         if (!history.isEmpty()) {
-            forwardHistory.push( new edu.uiowa.physics.pw.das.datum.Datum [] {new edu.uiowa.physics.pw.das.datum.Datum(minimum,units), new edu.uiowa.physics.pw.das.datum.Datum(maximum,units)} );
-            edu.uiowa.physics.pw.das.datum.Datum [] h= (edu.uiowa.physics.pw.das.datum.Datum[]) history.pop();
+            forwardHistory.push( new Datum [] {Datum.create(minimum,units), Datum.create(maximum,units)} );
+            Datum [] h= (Datum[]) history.pop();
             
             if (h[0].getUnits()!=units) {
                 h[0]= h[0].convertTo(units);
                 h[1]= h[1].convertTo(units);
             }
-            minimum = h[0].getValue();
-            maximum = h[1].getValue();
+            minimum = h[0].doubleValue(units);
+            maximum = h[1].doubleValue(units);
             
             fireUpdate();
         }
@@ -180,15 +181,15 @@ public class DataRange implements Cloneable {
         edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
         edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
         if (!forwardHistory.isEmpty()) {
-            history.push( new edu.uiowa.physics.pw.das.datum.Datum [] {new edu.uiowa.physics.pw.das.datum.Datum(minimum,units), new edu.uiowa.physics.pw.das.datum.Datum(maximum,units)} );
-            edu.uiowa.physics.pw.das.datum.Datum [] h= (edu.uiowa.physics.pw.das.datum.Datum[]) forwardHistory.pop();
+            history.push( new Datum [] {Datum.create(minimum,units), Datum.create(maximum,units)} );
+            Datum [] h= (Datum[]) forwardHistory.pop();
             
             if (h[0].getUnits()!=units) {
                 h[0]= h[0].convertTo(units);
                 h[1]= h[1].convertTo(units);
             }
-            minimum = h[0].getValue();
-            maximum = h[1].getValue();
+            minimum = h[0].doubleValue(units);
+            maximum = h[1].doubleValue(units);
             
             fireUpdate();
         }

@@ -76,7 +76,7 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
         double [] z= new double[iz];
         for (int i=0; i<iz; i++) z[i]= zl[i];
         
-        DasColorBar colorBar= new DasColorBar(new Datum(0,Data.getZUnits()),new Datum(0,Data.getZUnits()),row,DasColorBar.getColorBarColumn(column),false);
+        DasColorBar colorBar= new DasColorBar(Datum.create(0,Data.getZUnits()),Datum.create(0,Data.getZUnits()),row,DasColorBar.getColorBarColumn(column),false);
         colorBar.setDataRange(z);
         
         DasSpectrogramPlot result= new DasSpectrogramPlot(Data,

@@ -102,7 +102,7 @@ public class DasFormatter implements Cloneable {
 //    }
     
     public Datum parse(String s, Datum d) {
-        return d.create(nf.parse(s,new ParsePosition(0)).doubleValue());
+        return d.create(nf.parse(s,new ParsePosition(0)).doubleValue(),d.getUnits());
     }
         
 }

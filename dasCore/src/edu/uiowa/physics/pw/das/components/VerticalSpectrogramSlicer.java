@@ -151,7 +151,7 @@ extends DasSymbolPlot implements DataPointSelectionListener {
         
         int tagIndex = 0;
         for (int i = 0; i < xtys.data.length; i++) {
-            double delta = Math.abs(xValue.getValue()-xtys.data[i].x);
+            double delta = Math.abs(xValue.doubleValue(xtys.getXUnits())-xtys.data[i].x);
             if (delta < dx) {
                 dx = delta;
                 tagIndex = i;

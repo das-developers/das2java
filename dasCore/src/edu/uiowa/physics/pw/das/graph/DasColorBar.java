@@ -25,8 +25,7 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -44,17 +43,17 @@ public class DasColorBar extends DasAxis {
     private BufferedImage image;
     private DasColorBar.Type type;
     
-    public DasColorBar( edu.uiowa.physics.pw.das.datum.Datum min, edu.uiowa.physics.pw.das.datum.Datum max, DasRow row, DasColumn column, boolean isLog) {
+    public DasColorBar( Datum min, Datum max, DasRow row, DasColumn column, boolean isLog) {
         this(min, max, row, column, RIGHT, isLog);
     }
     
-    public DasColorBar( edu.uiowa.physics.pw.das.datum.Datum min, edu.uiowa.physics.pw.das.datum.Datum max, DasRow row, DasColumn column, int orientation, boolean isLog) {
+    public DasColorBar( Datum min, Datum max, DasRow row, DasColumn column, int orientation, boolean isLog) {
         super(min, max, row, column, orientation, isLog);
         setLayout(new ColorBarLayoutManager());
         setType(DasColorBar.Type.COLOR_WEDGE);
     }
     
-    public int itransform(double x, edu.uiowa.physics.pw.das.datum.Units units) {
+    public int itransform(double x, Units units) {
         int ncolor = type.getColorCount();
         int icolor= (int)transform(x,units,0, ncolor);
         
@@ -139,7 +138,7 @@ public class DasColorBar extends DasAxis {
             column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
         }
         
-        DasColorBar cb = new DasColorBar(new edu.uiowa.physics.pw.das.datum.Datum(dataMinimum), new edu.uiowa.physics.pw.das.datum.Datum(dataMaximum), row, column, orientation, log);
+        DasColorBar cb = new DasColorBar(Datum.create(dataMinimum), Datum.create(dataMaximum), row, column, orientation, log);
         
         cb.setLabel(element.getAttribute("label"));
         cb.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
@@ -177,7 +176,7 @@ public class DasColorBar extends DasAxis {
     }
     
     public static DasColorBar createNamedColorBar(String name) {
-        DasColorBar cb = new DasColorBar(edu.uiowa.physics.pw.das.datum.Datum.create(1.0, edu.uiowa.physics.pw.das.datum.Units.dimensionless), edu.uiowa.physics.pw.das.datum.Datum.create(10.0, edu.uiowa.physics.pw.das.datum.Units.dimensionless), null, null, false);
+        DasColorBar cb = new DasColorBar(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), null, null, false);
         if (name == null) {
             name = "colorbar_" + Integer.toHexString(System.identityHashCode(cb));
         }

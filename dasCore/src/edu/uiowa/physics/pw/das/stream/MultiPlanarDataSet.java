@@ -360,14 +360,14 @@ public class MultiPlanarDataSet {
         try {
             XTaggedYScanDataSetDescriptor dsd= (XTaggedYScanDataSetDescriptor)DataSetDescriptor.create("http://www-pw.physics.uiowa.edu/das/dasServerTest1?das2/demo/sa-4s-sd_jbf");
             StandardDataStreamSource sds= dsd.getStandardDataStreamSource();
-            InputStream in= sds.getReducedInputStream(dsd,null,new DasDate("1979-3-1"), new DasDate("1979-3-2"), 120.);
+            InputStream in= sds.getReducedInputStream(dsd,null,TimeDatum.create("1979-3-1"), TimeDatum.create("1979-3-2"), Datum.create(120.,Units.seconds));
             MultiPlanarDataSet mpds= new MultiPlanarDataSet();
             mpds.read(in);                       
             XTaggedYScanDataSet ds= (XTaggedYScanDataSet)mpds.getPrimaryDataSet();
             ds.visualize();
 
-            RebinDescriptor ddX= new RebinDescriptor( TimeDatum.create(ds.getStartTime()),
-              TimeDatum.create(ds.getEndTime()),100, false );
+            RebinDescriptor ddX= new RebinDescriptor( ds.getStartTime(),
+              ds.getEndTime(),100, false );
             XTaggedYScanDataSet ds2= ds.binAverageX(ddX);
             ds2.visualize();
             try {

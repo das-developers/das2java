@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das;
 
 import edu.uiowa.physics.pw.das.dasml.ParsedExpression;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
+import edu.uiowa.physics.pw.das.datum.*;
 
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
@@ -332,17 +333,17 @@ public class NameContext {
                 throw new ParsedExpressionException(valueString + " cannot be parsed as a date");
             }
         }
-        else if (type == edu.uiowa.physics.pw.das.datum.TimeDatum.class) {
+        else if (type == TimeDatum.class) {
             try {
-                return edu.uiowa.physics.pw.das.datum.TimeDatum.create(valueString);
+                return TimeDatum.create(valueString);
             }
             catch (IllegalArgumentException iae) {
                 throw new ParsedExpressionException(valueString + " cannot be parsed as a TimeDatum");
             }
         }
-        else if (type == edu.uiowa.physics.pw.das.datum.Datum.class ) {
+        else if (type == Datum.class ) {
             try {
-                return new edu.uiowa.physics.pw.das.datum.Datum(Double.parseDouble(valueString));
+                return Datum.create(Double.parseDouble(valueString));
             }
             catch (IllegalArgumentException iae) {
                 throw new ParsedExpressionException(valueString + " cannot be parsed as a Datum");

@@ -26,7 +26,7 @@ package edu.uiowa.physics.pw.das.client;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.*;
 
 import java.io.InputStream;
 
@@ -36,7 +36,7 @@ import java.io.InputStream;
  */
 public interface StandardDataStreamSource {
     
-    public InputStream getInputStream(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, DasDate start, DasDate end) throws DasException;
-    public InputStream getReducedInputStream(edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor dsd, Object params, DasDate start, DasDate end, double timeResolution) throws DasException;
+    public InputStream getInputStream(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, Datum start, Datum end) throws DasException;
+    public InputStream getReducedInputStream(edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor dsd, Object params, Datum start, Datum end, Datum timeResolution) throws DasException;
     public void reset();
 }

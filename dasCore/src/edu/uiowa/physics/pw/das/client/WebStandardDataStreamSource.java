@@ -33,6 +33,7 @@ import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.client.DasServer;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.DasDate;
 
 import javax.swing.*;
@@ -87,7 +88,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         }
     }
     
-    public InputStream getInputStream(DataSetDescriptor dsd, Object params, DasDate start, DasDate end) throws DasException {
+    public InputStream getInputStream(DataSetDescriptor dsd, Object params, Datum start, Datum end) throws DasException {
         String serverType;
         serverType="dataset";
         
@@ -101,13 +102,13 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     }
     
     
-    public InputStream getReducedInputStream(XTaggedYScanDataSetDescriptor dsd, Object params, DasDate start, DasDate end, double timeResolution) throws DasException {
+    public InputStream getReducedInputStream(XTaggedYScanDataSetDescriptor dsd, Object params, Datum start, Datum end, Datum timeResolution) throws DasException {
         // params is either String, or object with toString properly defined.
         
         String serverType= "compactdataset";
         
         String formData= "server="+serverType;
-        formData+= "&resolution="+timeResolution;
+        formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
         formData+= "&nitems="+(dsd.y_coordinate.length+1);
         
         boolean compress=true;
@@ -136,7 +137,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     }
     
     protected synchronized InputStream openURLConnection( DataSetDescriptor dsd,
-    Object params, DasDate start, DasDate end, String additionalFormData )
+    Object params, Datum start, Datum end, String additionalFormData )
     throws DasException {
         
         String dataSetID = dsd.getDataSetID();

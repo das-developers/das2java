@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.DataRequestor;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.Datum;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -59,7 +59,7 @@ public class DataRequestThread extends Thread {
      * @param dsd the <code>DataSetDescriptor</code> used to obtain
      *      the <code>DataSet</code>
      * @param params extra parameters passed to the {@link
-     *      DataSetDescriptor#getDataSet(Object,edu.uiowa.physics.pw.das.util.DasDate,edu.uiowa.physics.pw.das.util.DasDate,double)
+     *      DataSetDescriptor#getDataSet(Object,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,double)
      *      getDataSet()} method.
      * @param start the start of the requested time interval
      * @param end the end of the requested time interval
@@ -68,7 +68,7 @@ public class DataRequestThread extends Thread {
      *      when the data loading operation is complete.
      */
     public void request(DataSetDescriptor dsd, Object params,
-        DasDate start, DasDate end, double resolution, DataRequestor requestor)
+        Datum start, Datum end, Datum resolution, DataRequestor requestor)
         throws InterruptedException {
 
         requestInternal(new DataRequest(dsd, params, start, end, resolution, requestor));
@@ -87,7 +87,7 @@ public class DataRequestThread extends Thread {
      * @param dsd the <code>DataSetDescriptor</code> used to obtain
      *      the <code>DataSet</code>
      * @param params extra parameters passed to the {@link
-     *      DataSetDescriptor#getDataSet(Object,edu.uiowa.physics.pw.das.util.DasDate,edu.uiowa.physics.pw.das.util.DasDate,double)
+     *      DataSetDescriptor#getDataSet(Object,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,double)
      *      getDataSet()} method.
      * @param start the start of the requested time interval
      * @param end the end of the requested time interval
@@ -96,7 +96,7 @@ public class DataRequestThread extends Thread {
      *      when the data loading operation is complete.
      */
     public void requestAndWait(DataSetDescriptor dsd, Object params,
-        DasDate start, DasDate end, double resolution, DataRequestor requestor)
+        Datum start, Datum end, Datum resolution, DataRequestor requestor)
         throws InterruptedException {
 
         DataRequest request = new DataRequest(dsd, params, start, end, resolution, requestor);
@@ -166,13 +166,13 @@ public class DataRequestThread extends Thread {
     }
     private static class DataRequest {
         DataSetDescriptor dsd;
-        DasDate start;
-        DasDate end;
+        Datum start;
+        Datum end;
         Object params;
-        double resolution;
+        Datum resolution;
         DataRequestor requestor;
-        DataRequest(DataSetDescriptor dsd, Object params, DasDate start,
-                    DasDate end, double resolution,
+        DataRequest(DataSetDescriptor dsd, Object params, Datum start,
+                    Datum end, Datum resolution,
                     DataRequestor requestor) {
             this.dsd = dsd;
             this.params = params;

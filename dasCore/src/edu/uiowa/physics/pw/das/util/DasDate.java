@@ -837,9 +837,9 @@ public class DasDate implements java.io.Serializable, Comparable, Cloneable {
     public static DasDate create(edu.uiowa.physics.pw.das.datum.TimeDatum datum) {
         DasDate result= new DasDate();
         edu.uiowa.physics.pw.das.datum.Datum datumT2000= datum.convertTo(edu.uiowa.physics.pw.das.datum.Units.t2000);
-        result.jd= 2451545 + (int)Math.floor( datumT2000.doubleValue() / 86400. );
-        result.seconds= datumT2000.doubleValue() - 
-          86400 * Math.floor( datumT2000.doubleValue() / 86400. );
+        result.jd= 2451545 + (int)Math.floor( datumT2000.doubleValue(datumT2000.getUnits()) / 86400. );
+        result.seconds= datumT2000.doubleValue(datumT2000.getUnits()) - 
+          86400 * Math.floor( datumT2000.doubleValue(datumT2000.getUnits()) / 86400. );
         return result;
     }
     

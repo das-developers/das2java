@@ -55,7 +55,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         labelValues= new double[ labels.length ];
         labelUnits= labels[0].getUnits();
         for ( int i=0; i<labels.length; i++ ) {
-            labelValues[i]= labels[i].getValue();
+            labelValues[i]= labels[i].doubleValue(labelUnits);
             if ( labels[i].getUnits() != labelUnits ) {
                 throw new IllegalArgumentException( "Datums must all have same units!" );
             }
@@ -118,7 +118,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         int ny= indexMaximum - indexMinimum + 1;
         result.tickV= new double[ny];
         result.minor= 0.;  // no minor ticks
-        for (int i=0; i<ny; i++) result.tickV[i]= labels[i+indexMinimum].getValue();
+        for (int i=0; i<ny; i++) result.tickV[i]= labels[i+indexMinimum].doubleValue(result.units);
         result.nf= df;
         return result;
     }

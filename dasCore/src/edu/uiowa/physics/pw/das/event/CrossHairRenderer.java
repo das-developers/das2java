@@ -111,13 +111,10 @@ public class CrossHairRenderer implements DragRenderer {
                 
                 if (y.getUnits()!=xtyds.getYUnits()) {
                     throw new IllegalStateException("y units and dataset y units differ");
-                }
+                }                
                 
-                double xx= x.getValue();
-                double yy= y.getValue();
+                Datum zValue= xtyds.getClosestZValue(x,y);
                 
-                Datum zValue= xtyds.getClosestZValue(new Datum(xx,xtyds.getXUnits()),
-                new Datum(yy,xtyds.getYUnits()));
                 //                if (Math.abs(xtyds.data[ix].x-xx)>5*xtyds.xSampleWidth) {
                 //                    ix= (int)((xx-xtyds.data[0].x)/xtyds.xSampleWidth);
                 //                    ix= ix<0?0:ix;
@@ -144,7 +141,7 @@ public class CrossHairRenderer implements DragRenderer {
                     nfz.setMinimumFractionDigits(2);
                 }
                 
-                zAsString= nfz.format(zValue.getValue(),zValue.getUnits());
+                zAsString= nfz.format(zValue.doubleValue(zValue.getUnits()),zValue.getUnits());
                 report= "x:"+xAsString+" y:"+yAsString+" z:"+zAsString;
             } else {
                 report= "x:"+xAsString+" y:"+yAsString;

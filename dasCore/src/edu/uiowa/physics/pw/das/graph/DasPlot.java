@@ -126,7 +126,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public void setXRange( double x1, double x2 ) {
-        setXRange( new Datum(x1), new Datum(x2) );
+        setXRange( Datum.create(x1), Datum.create(x2) );
     }
     
     public void setXRange(Datum x1, Datum x2) {
@@ -134,7 +134,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public void setYRange( double y1, double y2 ) {
-        setYRange( new Datum(y1), new Datum(y2) );
+        setYRange( Datum.create(y1), Datum.create(y2) );
     }
     
     public void setYRange(Datum y1, Datum y2) {
@@ -286,7 +286,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
             
             Datum dataRange1 = getXAxis().getDataMaximum().subtract(getXAxis().getDataMinimum());
-            double dataRange= dataRange1.convertTo(Units.seconds).doubleValue();
+            double dataRange= dataRange1.doubleValue(Units.seconds);
             double deviceRange = Math.floor(getColumn().getDMaximum() + 0.5) - Math.floor(getColumn().getDMinimum() + 0.5);
             double resolution =  dataRange/deviceRange;
             DasTimeAxis taxis = (DasTimeAxis)getXAxis();
@@ -335,7 +335,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 drt = new DataRequestThread();
             }
             try {
-                drt.request(dataSetDescriptor, "", taxis.getTimeMinimum(), taxis.getTimeMaximum(), resolution, requestor);
+                drt.request(dataSetDescriptor, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor);
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
@@ -543,8 +543,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public static DasPlot createDummyPlot( DasRow row, DasColumn column) {
-        DasAxis xAxis= new DasAxis( new Datum(0), new Datum(10), row, column, DasAxis.HORIZONTAL );
-        DasAxis yAxis= new DasAxis( new Datum(0), new Datum(10), row, column, DasAxis.VERTICAL );
+        DasAxis xAxis= new DasAxis( Datum.create(0), Datum.create(10), row, column, DasAxis.HORIZONTAL );
+        DasAxis yAxis= new DasAxis( Datum.create(0), Datum.create(10), row, column, DasAxis.VERTICAL );
         DasPlot result= new DasPlot(xAxis,yAxis,row,column);
         return result;
     }

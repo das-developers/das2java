@@ -30,7 +30,7 @@ import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.Datum;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -103,7 +103,7 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
-    public DataSet getDataSet(InputStream in, Object params, DasDate start, DasDate end) throws DasException {
+    public DataSet getDataSet(InputStream in, Object params, Datum start, Datum end) throws DasException {
         
         int elementCount, elementSize;
                 
@@ -122,13 +122,13 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
             ds.ny = ny;
             elementSize = ny + 1;
         
-            TimeDatum timeBase= (TimeDatum)TimeDatum.create(start).convertTo(ds.getXUnits());
+            TimeDatum timeBase= (TimeDatum)start.convertTo(ds.getXUnits());
             
             data = readDoubles(in, "", start, end);
             elementCount = data.length / elementSize;
             ds.data = new XMultiY[elementCount];
             
-            double timeBaseValue= timeBase.getValue();
+            double timeBaseValue= timeBase.doubleValue(ds.getXUnits());
             
             for (int i = 0; i < elementCount; i++) {
                 ds.data[i] = new XMultiY();
@@ -176,7 +176,7 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
     }
     
     public DasAxis getDefaultYAxis(DasRow row, DasColumn col) {
-        return new DasAxis(new Datum(0,getYUnits()), new Datum(10,getYUnits()), row, col, DasAxis.VERTICAL);
+        return new DasAxis(Datum.create(0,getYUnits()), Datum.create(10,getYUnits()), row, col, DasAxis.VERTICAL);
     }
     
     public edu.uiowa.physics.pw.das.graph.Renderer getRenderer(edu.uiowa.physics.pw.das.graph.DasPlot plot) {

@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.LocationUnits;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -61,16 +61,14 @@ public class XMultiYDataSet extends DataSet implements java.io.Serializable {
     private Units yUnits=null;
     
     public XMultiY[] data;
-    
-    public double xSampleWidth;
-    
+        
     /** Creates a new instance of XMultiY */
     public XMultiYDataSet(XMultiYDataSetDescriptor dataSetDescriptor) {
         super( dataSetDescriptor );
         yUnits= dataSetDescriptor.getYUnits();
     }
     
-    public XMultiYDataSet(XMultiYDataSetDescriptor dataSetDescriptor, DasDate start, DasDate end ) {
+    public XMultiYDataSet(XMultiYDataSetDescriptor dataSetDescriptor, Datum start, Datum end ) {
         super(dataSetDescriptor,start, end);
         if (dataSetDescriptor!=null) {
             yUnits= dataSetDescriptor.getYUnits();
@@ -101,16 +99,16 @@ public class XMultiYDataSet extends DataSet implements java.io.Serializable {
         return create(new double[0], Units.dimensionless, new double[0], Units.dimensionless);
     }
     
-    public static XMultiYDataSet create(DasDate[] x, double[] y) {
-      	DasDate startTime= x[0];
-	DasDate endTime= x[x.length-1];
+    public static XMultiYDataSet create(Datum[] x, double[] y) {
+      	Datum startTime= x[0];
+	Datum endTime= x[x.length-1];
 
 	XMultiYDataSet result= new XMultiYDataSet(null, startTime,endTime);
 	result.data= new XMultiY[x.length];
 
         for (int i=0; i<x.length; i++) {
             result.data[i]= new XMultiY();
-            result.data[i].x= x[i].subtract(startTime);
+            result.data[i].x= x[i].subtract(startTime).doubleValue(result.getXUnits());
             result.data[i].y= new double[1];
             result.data[i].y[0]= y[i];
         }

@@ -40,11 +40,11 @@ public class Datum {
     static java.util.Hashtable _allocation_source= new java.util.Hashtable();
     
     /** Creates a new instance of Datum */
-    public Datum( double value ) {
+    protected Datum( double value ) {
         this( value, Units.dimensionless );
     }
     
-    public Datum( double value, Units units ) {
+    protected Datum( double value, Units units ) {
         this.value= value;
         this.units= units;
         this.nf= new DasFormatter();
@@ -63,15 +63,19 @@ public class Datum {
         }
     }
     
-    public double doubleValue() {
-        return this.value;
+    public double doubleValue(Units units) {
+        if ( units!=this.units ) { 
+            return getUnits().getConverter(units).convert(this.value);
+        } else {
+            return this.value;
+        }
     }
     
     public Units getUnits() {
         return this.units;
     }
     
-    public double getValue() {
+    protected double getValue() {
         return this.value;
     }
     
@@ -214,8 +218,8 @@ public class Datum {
         }
     }
     
-    public Datum create(double value) {
-        return create(value, this.units);
+    public static Datum create(double value) {                
+        return create( value, Units.dimensionless );
     }
     
     public static Datum create( double value, Units units ) {
@@ -225,6 +229,15 @@ public class Datum {
             return new Datum( value, units );
         }
     }
+   
+// TODO
+//    public static Datum create( String s ) {
+//        try {
+//            return Datum.create(Double.parseDouble(s)); 
+//        } catch ( NumberFormatException e ) {
+//            return TimeDatum.create(s);
+//        }
+//    }
     
     public static void main( String[] args ) {
         Datum temp1= new Datum( 32, Units.fahrenheit );

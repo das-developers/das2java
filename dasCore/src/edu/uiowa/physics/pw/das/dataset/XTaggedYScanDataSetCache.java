@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetCache;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
@@ -55,10 +55,10 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
 //  This method will allow there to be some overlap of the requested start,end interval.  The gaps at
 // the start or end will be filled with two reads.
     
-    public boolean haveStored( DataSetDescriptor dsd, DasDate start, DasDate end, double resolution, Object params ) {
-        double tenpercent= end.subtract(start)/5;
-        DasDate start1= start.add(tenpercent);
-        DasDate end1= end.subtract(tenpercent);
+    public boolean haveStored( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
+        Datum tenpercent= (end.subtract(start)).divide(5);
+        Datum start1= start.add(tenpercent);
+        Datum end1= end.subtract(tenpercent);
         
         DataSetCache.Tag tag= new DataSetCache.Tag( dsd, start, end, resolution, params, null );
         
@@ -77,18 +77,18 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
     };
     
         
-    public DataSet retrieve( DataSetDescriptor dsd, DasDate start, DasDate end, double resolution, Object params ) {
-        double tenpercent= end.subtract(start)/5;
-        DasDate start1= start.add(tenpercent);
-        DasDate end1= end.subtract(tenpercent);
+    public DataSet retrieve( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
+        Datum tenpercent= (end.subtract(start)).divide(5);
+        Datum start1= start.add(tenpercent);
+        Datum end1= end.subtract(tenpercent);
 
         int iHit= findStored( dsd, start1, end1, resolution, params );
         if (iHit!=-1) {
             buffer[iHit].nhits++;
             buffer[iHit].lastAccess= System.currentTimeMillis();
             XTaggedYScanDataSet ds= (XTaggedYScanDataSet)buffer[iHit].data;
-            double res= resolution;
-            DasDate dataSetStartTime= ds.getStartTime();
+            Datum res= resolution;
+            Datum dataSetStartTime= ds.getStartTime();
             if ( start.lt(dataSetStartTime) ) {
                 try {                    
                     XTaggedYScanDataSet appendBefore= (XTaggedYScanDataSet)dsd.getDataSet(params,start,dataSetStartTime,res);
@@ -96,7 +96,7 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
                 } catch ( edu.uiowa.physics.pw.das.DasException e ) {
                 }
             }
-            DasDate dataSetEndTime= ds.getEndTime();
+            Datum dataSetEndTime= ds.getEndTime();
             if ( dataSetEndTime.lt(end) ) {
                 try {
                     XTaggedYScanDataSet appendAfter= (XTaggedYScanDataSet)dsd.getDataSet(params,dataSetEndTime,end,res);

@@ -381,9 +381,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         double minimum0= dataRange.getMinimum();
         double maximum0= dataRange.getMaximum();
-        animateChange( minimum0, maximum0, minimum.getValue(), maximum.getValue() );
+        animateChange( minimum0, maximum0, minimum.doubleValue(getUnits()), maximum.doubleValue(getUnits()) );
         
-        dataRange.setRange( minimum.getValue(), maximum.getValue() );
+        dataRange.setRange( minimum.doubleValue(getUnits()), maximum.doubleValue(getUnits()) );
         update();
     }
     
@@ -617,8 +617,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.removePropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.removePropertyChangeListener("maximum", dataRangePropertyListener);
         DataRange newRange
-            = new DataRange(this,new Datum(dataRange.getMinimum(), dataRange.getUnits()),
-                            new Datum(dataRange.getMaximum(), dataRange.getUnits()),
+            = new DataRange(this,Datum.create(dataRange.getMinimum(), dataRange.getUnits()),
+                            Datum.create(dataRange.getMaximum(), dataRange.getUnits()),
                             dataRange.isLog());
         dataRange = newRange;
         dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
@@ -1427,7 +1427,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */    
     public double transform(Datum datum) {
-        return transform( datum.getValue(), datum.getUnits() );
+        return transform( datum.doubleValue(getUnits()), getUnits() );
     }
     
     double transform( double data, Units units ) {
@@ -1572,21 +1572,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return axisLabel;
     }
     
+
     /** TODO
      * @param max
      */    
-    public void setDataMaximum(Datum max) {
-        max= max.convertTo(dataRange.getUnits());
-        dataRange.setMaximum(max.getValue());
+    public void setDataMaximum(Datum max) {       
+        dataRange.setMaximum(max.doubleValue(getUnits()));
         update();
     }
     
     /** TODO
      * @param min
      */    
-    public void setDataMinimum(Datum min) {
-        min= min.convertTo(dataRange.getUnits());
-        dataRange.setMinimum(min.getValue());
+    public void setDataMinimum(Datum min) {        
+        dataRange.setMinimum(min.doubleValue(getUnits()));
         update();
     }
     
@@ -1598,7 +1597,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     private Datum findTickLog( Datum xDatum, double direction, boolean minor ) {
-        double x= xDatum.getValue();
+        double x= xDatum.doubleValue(tickV.units);
         double result;
         if ( direction>0 ) { //find the smallest tick that is bigger than x.
             result= tickV.tickV[tickV.tickV.length-1] * 10;
@@ -1621,7 +1620,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
         }
-        return new Datum(result,xDatum.getUnits());
+        return Datum.create(result,xDatum.getUnits());
     }
     
     /** TODO
@@ -1640,7 +1639,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         if (isLog()) return findTickLog(xDatum,direction,minor);
         
-        double x= xDatum.getValue();
+        double x= xDatum.doubleValue(tickV.units);
         
         double stepSize;
         if (minor) {
@@ -1721,7 +1720,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @return
      */    
-    public Units getUnits() {
+    public Units getUnits() {    /** TODO
+     * @param min
+     */    
+
         return dataRange.getUnits();
     }
     
@@ -1812,7 +1814,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (!columnString.equals("") || row == null) {
             column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
         }
-        DasAxis axis = new DasAxis(new Datum(dataMinimum), new Datum(dataMaximum),
+        DasAxis axis = new DasAxis(Datum.create(dataMinimum), Datum.create(dataMaximum),
         row, column, orientation, log);
         
         axis.setLabel(element.getAttribute("label"));

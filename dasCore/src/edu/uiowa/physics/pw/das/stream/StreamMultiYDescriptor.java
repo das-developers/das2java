@@ -83,12 +83,11 @@ public class StreamMultiYDescriptor extends XMultiYDataSetDescriptor implements 
     }
     
     public DataSet asDataSet(Datum[] timeTags) {
-        XMultiYDataSet ds= new XMultiYDataSet(this,DasDate.create((TimeDatum)stream.getStartTime()),
-                                                DasDate.create((TimeDatum)stream.getEndTime()));
-        ds.data= (XMultiY[])records.toArray(new XMultiY[records.size()]);
-        UnitsConverter uc= timeTags[0].getUnits().getConverter(getXUnits());
+        XMultiYDataSet ds= new XMultiYDataSet(this,stream.getStartTime(),
+                                                stream.getEndTime());
+        ds.data= (XMultiY[])records.toArray(new XMultiY[records.size()]);        
         for ( int i=0; i<ds.data.length; i++ ) {
-            ds.data[i].x= timeTags[i].convertTo(getXUnits()).getValue();
+            ds.data[i].x= timeTags[i].doubleValue(ds.getXUnits());
         }
         ds.setName(name);
         return ds;

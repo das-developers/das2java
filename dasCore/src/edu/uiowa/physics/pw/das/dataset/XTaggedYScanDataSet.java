@@ -24,7 +24,6 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.ConstantXTaggedYScanDataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
@@ -83,8 +82,6 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
     private DasAxis xAxis = null;
     private DasAxis yAxis = null;
     
-    public double xSampleWidth;
-    
     /** Holds value of property nnRebin. */
     private boolean nnRebin;
     
@@ -102,7 +99,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         auxData= new Hashtable();
     }
     
-    public XTaggedYScanDataSet(XTaggedYScanDataSetDescriptor dataSetDescriptor, DasDate start, DasDate end) {
+    public XTaggedYScanDataSet(XTaggedYScanDataSetDescriptor dataSetDescriptor, Datum start, Datum end) {
         super(dataSetDescriptor,start,end);
         //if (!(dataSetDescriptor instanceof XTaggedYScanDataSetDescriptor))
         //    throw new IllegalArgumentException("dataSetDescriptor is not a XTaggedYScanDataSetDescriptor");
@@ -127,8 +124,8 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         XTaggedYScanDataSet result=
         new XTaggedYScanDataSet( dataSetDescriptor );
         if ( dataSetDescriptor.getXUnits() instanceof TimeLocationUnits ) {
-            result.setStartTime( DasDate.create( new TimeDatum( xMin, dataSetDescriptor.getXUnits() ) ));
-            result.setEndTime( DasDate.create( new TimeDatum( xMax, dataSetDescriptor.getXUnits() ) ));
+            result.setStartTime( Datum.create( xMin, dataSetDescriptor.getXUnits() ) );
+            result.setEndTime( Datum.create( xMax, dataSetDescriptor.getXUnits() ) );
         }
         result.data= data;
         result.y_coordinate= dataSetDescriptor.y_coordinate;
@@ -658,8 +655,8 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         UnitsConverter uc= ((LocationUnits)getXUnits()).getOffsetUnits().getConverter(Units.seconds);
         
         PrintStream pout= new PrintStream(out);
-        pout.println("# Start Time: "+getStartTime());
-        pout.println("# End Time: "+getEndTime());
+        pout.println("# Start: "+getStartTime());
+        pout.println("# End: "+getEndTime());
         pout.println("# xSampleWidth: "+uc.convert(xSampleWidth));
         pout.println("# X is first value, offset in seconds from Start Time.");
         pout.println("#");
@@ -670,8 +667,11 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
             pout.print(""+y_coordinate[i]+tab);
         pout.println();
         
-        TimeDatum timeBaseDatum= TimeDatum.create(getStartTime());
-        double timeBase= timeBaseDatum.convertTo(getXUnits()).doubleValue();
+        if ( ! ( getStartTime().getUnits() instanceof TimeLocationUnits ) ) {
+            throw new IllegalArgumentException("only implemented for time units");
+        }
+        Datum timeBaseDatum=  getStartTime();
+        double timeBase= timeBaseDatum.convertTo(getXUnits()).doubleValue(getXUnits());
         for (int j=0; j<data.length; j++) {
             pout.print(""+uc.convert(data[j].x-timeBase)+tab);
             for (int i=0; i<y_coordinate.length; i++) {
@@ -687,7 +687,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         DasColumn col= DasColumn.create(canvas);
         DasAxis xAxis= createXAxis(row,col);
         DasAxis yAxis= createYAxis(row,col);
-        DasColorBar colorBar= new DasColorBar(new Datum(1e-15),new Datum(1e-13),row,DasColorBar.getColorBarColumn(col),true);
+        DasColorBar colorBar= new DasColorBar(Datum.create(1e-15),Datum.create(1e-13),row,DasColorBar.getColorBarColumn(col),true);
         SpectrogramRenderer rend= new SpectrogramRenderer( new ConstantXTaggedYScanDataSetDescriptor(this), colorBar );
         DasPlot plot= new DasPlot(xAxis,yAxis,row,col);
         plot.addRenderer(rend);
@@ -706,7 +706,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         if (!x.getUnits().equals(getXUnits()) || !y.getUnits().equals(getYUnits())) {
             throw new IllegalArgumentException("x and y units must be the same as the units for this dataset");
         }
-        XTaggedYScan key = new XTaggedYScan(x.getValue(), new float[0]);
+        XTaggedYScan key = new XTaggedYScan(x.doubleValue(getXUnits()), new float[0]);
         int xIndex = Arrays.binarySearch(data, key, new XTagComparator());
         if (xIndex < 0) {
             int gtIndex = -(xIndex + 1);
@@ -720,7 +720,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
                 xIndex = gtIndex;
             }
         }
-        int yIndex = Arrays.binarySearch(y_coordinate, y.getValue());
+        int yIndex = Arrays.binarySearch(y_coordinate, y.doubleValue(getYUnits()));
         if (yIndex < 0) {
             int gtIndex = -(yIndex + 1);
             if (gtIndex == 0) {
@@ -733,7 +733,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
                 yIndex = gtIndex;
             }
         }
-        Datum d=new Datum(data[xIndex].z[yIndex], zUnits);
+        Datum d= Datum.create(data[xIndex].z[yIndex], zUnits);
         
         return d;
     }
@@ -743,7 +743,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         double start= data[0].x;
         Units offsetUnits= ((LocationUnits)getXUnits()).getOffsetUnits();
         UnitsConverter uc= periodDatum.getUnits().getConverter(offsetUnits);
-        double period= periodDatum.convertTo(offsetUnits).doubleValue();
+        double period= periodDatum.convertTo(offsetUnits).doubleValue(offsetUnits);
         LinkedList dataList= new LinkedList();
         LinkedList weightsList= new LinkedList();
         int idx= 0;

@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -56,17 +56,17 @@ public class CachedWebStandardDataStreamSource extends WebStandardDataStreamSour
         compress= false;
     }
     
-    public InputStream getInputStream(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, DasDate start, DasDate end) throws DasException{
+    public InputStream getInputStream(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, Datum start, Datum end) throws DasException{
         
         InputStream result= null;
-        if ( dataCache.haveStored(dsd,start,end,dsd.x_sample_width,params) ) {
+        if ( dataCache.haveStored(dsd,start,end,Datum.create(dsd.x_sample_width,dsd.getXUnits()),params) ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("----- Buffer Hit ----\n");
-            byte [] b= dataCache.retrieve(dsd,start,end,dsd.x_sample_width,params);
+            byte [] b= dataCache.retrieve(dsd,start,end,Datum.create(dsd.x_sample_width,dsd.getXUnits()),params);
             result= new ByteArrayInputStream(b);
         } else {
             edu.uiowa.physics.pw.das.util.DasDie.println("------- Miss --------\n");
             String formData= "server=dataset";
-            double docResolution= dsd.x_sample_width;
+            Datum docResolution= Datum.create(dsd.x_sample_width,dsd.getXUnits());
             try {
                 result= transferURLInputStream( dsd, params, start, end, docResolution, formData );
             } catch ( IOException e ) {
@@ -77,11 +77,11 @@ public class CachedWebStandardDataStreamSource extends WebStandardDataStreamSour
         return result;
     }
     
-    public InputStream getReducedInputStream(edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor dsd, Object params, DasDate start, DasDate end, double resolution) throws DasException {
+    public InputStream getReducedInputStream(edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor dsd, Object params, Datum start, Datum end, Datum resolution) throws DasException {
         
         InputStream result= null;
         
-        double res= ( resolution > dsd.x_sample_width ) ? resolution : dsd.x_sample_width;
+        Datum res= ( resolution.gt(dsd.getXSampleWidth()) ) ? resolution : dsd.getXSampleWidth();
         
         if ( dataCache.haveStored(dsd,start,end,res,params) ) {
             //edu.uiowa.physics.pw.das.util.DasDie.println("----- Buffer Hit ----");
@@ -92,20 +92,20 @@ public class CachedWebStandardDataStreamSource extends WebStandardDataStreamSour
             
             // "dumb" smart buffering--simply get a bit more than they asked for
             // to increase chance of future hit.
-            double sbResolution= resolution ;
-            double delta= end.subtract(start);
-            //DasDate sbStart= start.subtract(delta/10);
-            //DasDate sbEnd= end.add(delta/10);
-            DasDate sbStart= start;
-            DasDate sbEnd= end;
-            sbResolution= sbResolution > dsd.x_sample_width ? sbResolution : dsd.x_sample_width;
+            Datum sbResolution= resolution ;
+            //double delta= end.subtract(start);
+            //Datum sbStart= start.subtract(delta/10);
+            //Datum sbEnd= end.add(delta/10);
+            Datum sbStart= start;
+            Datum sbEnd= end;
+            sbResolution= sbResolution.gt( dsd.getXSampleWidth() ) ? sbResolution : dsd.getXSampleWidth();
             
             String serverType= "compactdataset";
             String formData= "server="+serverType;
             formData+= "&resolution="+sbResolution;
             formData+= "&nitems="+(dsd.y_coordinate.length+1);
             
-            double docResolution= sbResolution;
+            Datum docResolution= sbResolution;
             
             try {
                 result= transferURLInputStream( dsd, params, sbStart, sbEnd, docResolution, formData );
@@ -117,7 +117,7 @@ public class CachedWebStandardDataStreamSource extends WebStandardDataStreamSour
         return result;
     }
     
-    private InputStream transferURLInputStream( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, DasDate start, DasDate end, double docResolution, String additionalFormData )
+    private InputStream transferURLInputStream( edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, Datum start, Datum end, Datum docResolution, String additionalFormData )
     throws IOException, DasException {
         //  docResolution is a kludge to store (document) the resolution in the cache.  It must be consistent with the
         // resolution requested in additionalFormData.

@@ -123,8 +123,8 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
             xValue2.convertTo(xtys.getXUnits());
         }
         
-        double x1= xValue1.getValue();
-        double x2= xValue2.getValue();
+        double x1= xValue1.doubleValue(xtys.getXUnits());
+        double x2= xValue2.doubleValue(xtys.getXUnits());
         
         double dx = Double.MAX_VALUE;
         int tagIndex = 0;

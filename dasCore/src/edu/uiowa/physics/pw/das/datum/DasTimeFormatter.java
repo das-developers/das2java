@@ -168,7 +168,7 @@ public class DasTimeFormatter extends DasFormatter {
     }
     
     public static void main( String[] args ) {
-        TimeDatum d= TimeDatum.create("2001-3-1");
+        TimeDatum d= (TimeDatum)TimeDatum.create("2001-3-1");
         DasTimeFormatter t= new DasTimeFormatter(TimeContext.DAYS);
         DasTimeFormatter t1= new DasTimeFormatter(TimeContext.MILLISECONDS);
         edu.uiowa.physics.pw.das.util.DasDie.println(t.format(d));
@@ -178,7 +178,7 @@ public class DasTimeFormatter extends DasFormatter {
         edu.uiowa.physics.pw.das.util.DasDie.println("---------------------");
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(d));
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(TimeDatum.create("2001-3-1 01:14")));
-        TimeDatum d2= TimeDatum.create("1996-3-1 01:14");
+        TimeDatum d2= (TimeDatum)TimeDatum.create("1996-3-1 01:14");
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(d2));
         edu.uiowa.physics.pw.das.util.DasDie.println(t.format(d2));
     }
