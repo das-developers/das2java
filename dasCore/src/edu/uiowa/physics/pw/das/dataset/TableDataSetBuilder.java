@@ -56,8 +56,6 @@ public class TableDataSetBuilder {
     
     private Map properties = new HashMap();
     
-    private Datum zFill = Units.dimensionless.getFill();
-    
     /** Creates a new instance of TableDataSetBuilder */
     public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits ) {
         setXUnits(xUnits);
@@ -288,7 +286,7 @@ public class TableDataSetBuilder {
                 if (z == null) {
                     z = new double[scan.getYTags().length];
                     Units units = (Units)unitsMap.get(planeIDs.get(plane));
-                    Arrays.fill(z, units.getFill().doubleValue(units));
+                    Arrays.fill(z, units.getFillDouble());
                 }
                 zValues[plane][index] = z;
             }

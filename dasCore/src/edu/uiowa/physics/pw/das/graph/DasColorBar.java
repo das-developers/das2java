@@ -57,7 +57,7 @@ public class DasColorBar extends DasAxis {
         int ncolor = type.getColorCount();
         int icolor= (int)transform(x,units,0, ncolor);
         
-        if ( units.getFill().doubleValue(units)==x ) {
+        if ( units.isFill(x) ) {
             return Color.LIGHT_GRAY.getRGB();
         } else {
             icolor= (icolor<0)?0:icolor;
