@@ -1156,6 +1156,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         /* Debugging code */
         /* The compiler will optimize it out if DEBUG_GRAPHICS == false */
         if (DEBUG_GRAPHICS) {
+            g.setStroke(new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.CAP_BUTT, 1f, new float[]{3f, 3f}, 0f));
+            g.setColor(Color.BLUE);
+            if (blLabelRect != null) g.draw(blLabelRect);
+            g.setColor(Color.RED);
+            if (blLineRect != null) g.draw(blLineRect);
+            g.setColor(Color.GREEN);
+            if (blTickRect != null) g.draw(blTickRect);
+            g.setColor(Color.LIGHT_GRAY);
+            if (blTitleRect != null) g.draw(blTitleRect);
+            g.setColor(Color.BLUE);
+            if (trLabelRect != null) g.draw(trLabelRect);
+            g.setColor(Color.RED);
+            if (trLineRect != null) g.draw(trLineRect);
+            g.setColor(Color.GREEN);
+            if (trTickRect != null) g.draw(trTickRect);
+            g.setColor(Color.LIGHT_GRAY);
+            if (trTitleRect != null) g.draw(trTitleRect);
+            g.setStroke(new BasicStroke(1f));
             g.setColor(DEBUG_COLORS[debugColorIndex]);
             debugColorIndex++;
             if (debugColorIndex >= DEBUG_COLORS.length) { debugColorIndex = 0; };
@@ -1586,7 +1604,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int maxLabelWidth = getMaxLabelWidth(getFontMetrics(tickLabelFont));
                 bounds.height += tcaHeight;
                 blLabelRect.height += tcaHeight;
-                blTickRect.y += tcaHeight;
+                blTitleRect.y += tcaHeight;
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
                 idlt.setString(this, "SCET");
                 int tcaLabelWidth = (int)Math.floor(idlt.getWidth() + 0.5);
