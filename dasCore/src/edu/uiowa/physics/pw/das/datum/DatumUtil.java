@@ -44,6 +44,11 @@ public final class DatumUtil {
     public static DatumFormatter bestFormatter( DatumVector datums ) {
         double[] array;
         Units units;
+        
+        if ( datums.getUnits() instanceof EnumerationUnits ) {
+            return EnumerationDatumFormatterFactory.getInstance().defaultFormatter();
+        }
+        
         if ( datums.getUnits() instanceof LocationUnits ) {
             array= new double[ datums.getLength() ];
             units= ((LocationUnits)datums.get(0).getUnits()).getOffsetUnits();
