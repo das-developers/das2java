@@ -46,7 +46,7 @@ public abstract class Units {
     public static final Units days= new NumberUnits("days");
     static {
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
-        seconds.registerConverter(days, new UnitsConverter(8.64e4, 0.0));
+        days.registerConverter(seconds, new UnitsConverter(8.64e4, 0.0));
     }
     
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
@@ -227,7 +227,12 @@ public abstract class Units {
     }
     
     public static void main( String[] args ) throws java.text.ParseException {
-        Datum time = TimeUtil.createValid("1979-02-26");
-        System.out.println(time);
+        Datum days = Datum.create(1.0, Units.days);
+        Datum seconds = days.convertTo(Units.seconds);
+        System.out.println(seconds);
+        
+        Datum cel = Datum.create(37.0, Units.celcius);
+        Datum fah = cel.convertTo(Units.fahrenheit);
+        System.out.println(fah);
     }
 }
