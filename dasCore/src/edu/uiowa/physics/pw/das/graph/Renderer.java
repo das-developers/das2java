@@ -112,41 +112,46 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      *
      */
     public void setDumpDataSet(boolean dumpDataSet) {
-        try {
-            this.dumpDataSet= dumpDataSet;
-            if ( dumpDataSet ) {
-                System.out.println("Dumping data set");
-                JFileChooser chooser= new JFileChooser();
-                int xx= chooser.showSaveDialog(this.getParent());
-                if ( xx==JFileChooser.APPROVE_OPTION ) {
-                    File file= chooser.getSelectedFile();
-                    if ( ds instanceof TableDataSet ) {
-                        TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
-                    } else if ( ds instanceof VectorDataSet ) {
-                        VectorUtil.dumpToAsciiStream((VectorDataSet)ds, new FileOutputStream(file) );
-                    } else {
-                        throw new DasException("don't know how to serialize data set" );
-                    }
-                }
-                setDumpDataSet( false );
-            }
-        } catch ( Exception e ) {
-            DasExceptionHandler.handle( e );
-        }
         this.dumpDataSet= dumpDataSet;
+        if ( dumpDataSet==true ) {
+            try {
+                if ( ds==null ) {
+                    setDumpDataSet(false);
+                    throw new DasException("data set is null");
+                } else {
+                    System.out.println("Dumping data set");
+                    JFileChooser chooser= new JFileChooser();
+                    int xx= chooser.showSaveDialog(this.getParent());
+                    if ( xx==JFileChooser.APPROVE_OPTION ) {
+                        File file= chooser.getSelectedFile();
+                        if ( ds instanceof TableDataSet ) {
+                            TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
+                        } else if ( ds instanceof VectorDataSet ) {
+                            VectorUtil.dumpToAsciiStream((VectorDataSet)ds, new FileOutputStream(file) );
+                        } else {
+                            throw new DasException("don't know how to serialize data set: "+ds );
+                        }
+                    }
+                    setDumpDataSet( false );
+                }
+            } catch ( Exception e ) {
+                DasExceptionHandler.handle( e );
+            }
+            this.dumpDataSet= dumpDataSet;
+        }
     }
     
-    // reloadDataSet is a dummy property that is Jeremy's way of telling the thing to 
+    // reloadDataSet is a dummy property that is Jeremy's way of telling the thing to
     // reload through the property editor.  calling setReloadDataSet(true) causes the
     // dataset to reload and the image to be redrawn.
     private boolean reloadDataSet;
     public void setReloadDataSet( boolean reloadDataSet ) {
-        if ( reloadDataSet ) {            
+        if ( reloadDataSet ) {
             this.ds= null;
-            this.dsd.reset();            
+            this.dsd.reset();
             parent.markDirty();
             parent.update();
-           
+            
         }
         reloadDataSet= false;
     }
@@ -233,14 +238,19 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     
     protected void loadDataSet(final DasAxis xAxis, final DasAxis yAxis) {
         
-        if (parent == null || !parent.isDisplayable() || dsd == null) return;
+        if (parent == null || !parent.isDisplayable() || dsd == null) {
+            if ( dsd==null ) DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("dsd is null, nothing to do");
+            return;
+        }
         
         if ( dsd instanceof ConstantDataSetDescriptor ) {
             try {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("get data from ConstantDataSetDescriptor");
                 ds= dsd.getDataSet( null, null, null, null );
                 updatePlotImage(xAxis,yAxis, progressPanel);
                 return;
             } catch ( DasException exception ) {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).warning("exception in ConstantDataSetDescriptor.getDataSet");
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                     lastException= exception;
                     ds= null;
@@ -253,14 +263,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         Runnable request = new Runnable() {
             public void run() {
+                
                 Datum resolution;
                 Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
                 
                 double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
                 if (fullResolution) {
                     resolution = null;
-                }
-                else {
+                } else {
                     resolution =  dataRange1.divide(deviceRange);
                 }
                 
@@ -276,7 +286,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 }
                 progressPanel.cancel();
                 
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+xAxis.getDataMinimum()+" "+xAxis.getDataMaximum()+" "+resolution);
                 dsd.requestDataSet(xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel);
+                
+            }
+            public String toString() {
+                return "loadDataSet "+ xAxis.getDatumRange();
             }
         };
         
@@ -284,13 +299,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         //This will scale the current data, or move it off screen
         //as a sort of preview.
         try {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("preview image");
             updatePlotImage(xAxis, yAxis, null);
-        }
-        catch (DasException de) {
+        } catch (DasException de) {
             //We don't care if this throws an exception.
         }
         
         // the request should come back with a DataSetUpdated event
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("submit data request");
         RequestProcessor.invokeLater(request, getParent().getCanvas());
     }
     
@@ -315,14 +331,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     
     public void update() {
         if (parent != null) {
-            if ( EventQueue.isDispatchThread() ) {
-                updateImmediately();
-            } else {
+           // if ( EventQueue.isDispatchThread() ) {
+           //     updateImmediately();
+           // } else {
                 java.awt.EventQueue eventQueue =
-                Toolkit.getDefaultToolkit().getSystemEventQueue();
+                        Toolkit.getDefaultToolkit().getSystemEventQueue();
                 DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
                 eventQueue.postEvent(drue);
-            }
+           // }
         }
     }
     
@@ -332,51 +348,78 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         loadDataSet(xAxis,yAxis);
     }
     
+    /*
+     * If an exception is handled by the Renderer putting the exception in place of the data,
+     * then return true here.  If the exception is more exceptional and we really need to get
+     * user's attention, return false.
+     */
+    private boolean rendererHandlesException( Exception e ) {
+        boolean result=
+                e instanceof InterruptedIOException ||
+                e instanceof NoDataInIntervalException ||
+                e instanceof CancelledOperationException ;
+        return result;
+    }
+    
     public void dataSetUpdated( DataSetUpdateEvent e ) {
         //updateImmediately();
         
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update:"+e);
+        // TODO make sure Exception is cleared--what if data set is non-null but Exception is as well?
+        if ( e.getException()!=null && e.getDataSet()!=null ) {
+            throw new IllegalStateException("both exception and data set");
+        }
         if (e.getException() != null) {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update exception:"+e.getException());
             Exception exception = e.getException();
+            if ( !rendererHandlesException(exception) ) {
+                DasExceptionHandler.handle(exception);
+            }
+            lastException= exception;
+            
+            /*
             if (!(exception instanceof InterruptedIOException) &&
-            !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
+                    !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                     lastException= exception;
                 }
-                if ( ! ( ( exception instanceof NoDataInIntervalException ) )  ){
+                if ( !( exception instanceof NoDataInIntervalException || exception instanceof CancelledOperationException )  ) {
                     DasExceptionHandler.handle(exception);
                 }
-            }
-        }
-        else if ( e.getDataSet()==null ) {
+            }*/
+        } else if ( e.getDataSet()==null ) {
             // this indicates that the DataSetDescriptor has changed, and that the
             // renderer needs to reread the data.  Cause this by invalidating the
             // component.
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update notification (no dataset).");
             parent.markDirty();
             parent.update();
             parent.repaint();
             return;
         }
-            
+        
         try {
             ds= e.getDataSet();
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset");
             if (progressPanel != null) {
                 progressPanel.setLabel("Rebinning data set");
             }
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("update plot image");
             updatePlotImage(parent.getXAxis(), parent.getYAxis(), progressPanel);
             if (parent != null) {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("repaint");
                 parent.repaint();
             }
-        }
-        catch (DasException de) {
+        } catch (DasException de) {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).warning("exception: "+de);
             ds = null;
             lastException = de;
-        }
-        catch (RuntimeException re) {
+        } catch (RuntimeException re) {
             ds = null;
             throw re;
-        }
-        finally {
+        } finally {
             if (progressPanel != null) {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("progressPanel.finished()");
                 progressPanel.finished();
             }
         }
