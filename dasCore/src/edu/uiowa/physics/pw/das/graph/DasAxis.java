@@ -382,7 +382,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (getUnits() instanceof TimeLocationUnits) {
             TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this, this.getDataMinimum(), this.getDataMaximum());
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
-        }        
+        }
     }
     
     /** TODO
@@ -412,7 +412,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.setRangePrev();
         double min1= dataRange.getMinimum();
         double max1= dataRange.getMaximum();
-        animateChange(min0,max0,min1,max1);        
+        animateChange(min0,max0,min1,max1);
         update();
         createAndFireRangeSelectionEvent();
     }
@@ -426,7 +426,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double max1= dataRange.getMaximum();
         animateChange(min0,max0,min1,max1);
         update();
-        createAndFireRangeSelectionEvent();        
+        createAndFireRangeSelectionEvent();
     }
     
     /** TODO */
@@ -1283,7 +1283,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
             if (tick1 >= dataMin && tick1 <= dataMax) {
-            //if ( tick1>=(dataMin-pixelSizeData()/2) && tick1<=(dataMax+pixelSizeData()/2) ) {
+                //if ( tick1>=(dataMin-pixelSizeData()/2) && tick1<=(dataMax+pixelSizeData()/2) ) {
                 int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
                 tickLength= tickLengthMajor;
                 if (bottomTicks) {
@@ -1381,7 +1381,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
             if (tick1 >= dataMin && tick1 <= dataMax) {
-            //if ( tick1>=(dataMin-pixelSizeData()/2) && tick1<=(dataMax+pixelSizeData()/2) ) {
+                //if ( tick1>=(dataMin-pixelSizeData()/2) && tick1<=(dataMax+pixelSizeData()/2) ) {
                 int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
                 tickLength= tickLengthMajor;
                 if (leftTicks) {
@@ -1698,14 +1698,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int y = bottomPosition + 1;
             int width = DMax - DMin;
             int height = tickSize;
-            blTickRect = setRectangleBounds(blTickRect, x, y, width, height);
+            //The last tick is at position (x + width), so add 1 to width
+            blTickRect = setRectangleBounds(blTickRect, x, y, width + 1, height);
         }
         if (topTicks) {
             int x = DMin;
             int y = topPosition - tickSize;
             int width = DMax - DMin;
             int height = tickSize;
-            trTickRect = setRectangleBounds(trTickRect, x, y, width, height);
+            //The last tick is at position (x + width), so add 1 to width
+            trTickRect = setRectangleBounds(trTickRect, x, y, width + 1, height);
         }
         
         int maxLabelWidth = getMaxLabelWidth(getFontMetrics(tickLabelFont));
@@ -1819,14 +1821,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int y = DMin;
             int width = tickSize;
             int height = DMax - DMin;
-            blTickRect = setRectangleBounds(blTickRect, x, y, width, height);
+            //The last tick is at position (y + height), so add 1 to height
+            blTickRect = setRectangleBounds(blTickRect, x, y, width, height + 1);
         }
         if (rightTicks) {
             int x = rightPosition + 1;
             int y = DMin;
             int width = tickSize;
             int height = DMax - DMin;
-            trTickRect = setRectangleBounds(trTickRect, x, y, width, height);
+            //The last tick is at position (y + height), so add 1 to height
+            trTickRect = setRectangleBounds(trTickRect, x, y, width, height + 1);
         }
         
         int maxLabelWidth = getMaxLabelWidth(getFontMetrics(tickLabelFont));
@@ -2108,7 +2112,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             
             DataRange dataRange0= dataRange;
             DataRange tempRange= dataRange.getAnimationDataRange();
-                        
+            
             this.dataRange= tempRange;
             
             double transitionTime= 300; // millis
@@ -2440,8 +2444,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.removeMouseMotionListener(l);
     }
     
-    public void TimeRangeSelected(TimeRangeSelectionEvent e) {       
-        if ( e.getSource()!=this && !e.equals(lastProcessedEvent)) {                        
+    public void TimeRangeSelected(TimeRangeSelectionEvent e) {
+        if ( e.getSource()!=this && !e.equals(lastProcessedEvent)) {
             setDataRange(e.getStartTime(),e.getEndTime());
             lastProcessedEvent= e;
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
