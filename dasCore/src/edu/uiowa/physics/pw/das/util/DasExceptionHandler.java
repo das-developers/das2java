@@ -51,7 +51,7 @@ public final class DasExceptionHandler {
     public static void showExceptionDialog(final Throwable t) {
         final JDialog dialog = new JDialog();
         dialog.setTitle("Error");
-        dialog.setModal(true);
+        dialog.setModal(false);
         dialog.setResizable(false);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         JComponent message;
