@@ -40,9 +40,28 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor {
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
     
     public StreamMultiYDescriptor(Element element) {
-        if ( element.getNodeName() != "YMulti" ) {
-            throw new IllegalArgumentException("xml tree root node is not the right type");
+        if ( element.getTagName().equals("y") ) {
         }
+        else {
+        }
+    }
+    
+    private void processElement(Element element) {
+        String name = element.getAttribute("name");
+        if ( name != null) {
+            this.name = name;
+        }
+        String typeStr = element.getAttribute("type");
+        DataTransferType type = DataTransferType.getByName(typeStr);
+        if (type != null) {
+            transferType = type;
+        }
+        else {
+            throw new RuntimeException("Illegal transfer type: " + typeStr);
+        }
+    }
+    
+    private void processLegacyElement(Element element) {
         if ( element.getAttribute("name") != null ) {
             name= element.getAttribute("name");
         } else {

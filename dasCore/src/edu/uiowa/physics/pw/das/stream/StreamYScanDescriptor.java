@@ -36,12 +36,47 @@ public class StreamYScanDescriptor implements SkeletonDescriptor {
 
     private Units yUnits = Units.dimensionless;
     private Units zUnits = Units.dimensionless;
-    private double[] yCoordinate;
+    private double[] yTags;
     private int nitems;
     private String name;
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
 
     public StreamYScanDescriptor( Element element ) {
+        if ( element.getTagName().equals("yscan") ) {
+            processElement(element);
+        }
+        else {
+            processLegacyElement(element);
+        }
+    }
+    
+    private void processElement(Element element) {
+        nitems = Integer.parseInt(element.getAttribute("nitems"));
+        String yTagsText = element.getAttribute("yTags");
+        if (yTagsText != null) {
+            yTags = new double[nitems];
+            int parseInt = 0;
+            String[] tokens = yTagsText.split("\\s*,\\s*");
+            for (int i = 0; i < nitems; i++) {
+                yTags[i] = Double.parseDouble(tokens[i]);
+            }
+            System.out.println();
+        }
+        String typeStr = element.getAttribute("type");
+        DataTransferType type = DataTransferType.getByName(typeStr);
+        if (type != null) {
+            transferType = type;
+        }
+        else {
+            throw new RuntimeException("Illegal transfer type: " + typeStr);
+        }
+        String name = element.getAttribute("name");
+        if ( name != null ) {
+            this.name = name;
+        }
+    }
+    
+    private void processLegacyElement(Element element) {
         try {
             if ( !element.getTagName().equals("YScan") ) {
                 throw new IllegalArgumentException("xml tree root node is not the right type. "+
@@ -50,14 +85,14 @@ public class StreamYScanDescriptor implements SkeletonDescriptor {
             nitems= Integer.parseInt(element.getAttribute("nitems"));
             if ( element.getAttribute("yCoordinate") != null ) {
                 String yCoordinateString= element.getAttribute("yCoordinate");
-                yCoordinate= new double[nitems];            
+                yTags= new double[nitems];            
                 int parseIdx=0;
                 for (int i=0; i<nitems-1; i++) {                    
                     int toIdx= yCoordinateString.indexOf(",",parseIdx)-1;
-                    yCoordinate[i]= Double.parseDouble(yCoordinateString.substring(parseIdx,toIdx));
+                    yTags[i]= Double.parseDouble(yCoordinateString.substring(parseIdx,toIdx));
                     parseIdx= toIdx+2;
                 }
-                yCoordinate[nitems-1]= Double.parseDouble(yCoordinateString.substring(parseIdx));
+                yTags[nitems-1]= Double.parseDouble(yCoordinateString.substring(parseIdx));
             } 
             String typeStr = element.getAttribute("type");
             DataTransferType type = DataTransferType.getByName(typeStr);
@@ -88,12 +123,12 @@ public class StreamYScanDescriptor implements SkeletonDescriptor {
         this.name = name;
     }
     
-    public double[] getYCoordinates() {
-        return (double[])yCoordinate.clone();
+    public double[] getYTags() {
+        return (double[])yTags.clone();
     }
     
     public void setYCoordinates(double[] yCoordinates) {
-        this.yCoordinate = (double[])yCoordinates.clone();
+        this.yTags = (double[])yCoordinates.clone();
         this.nitems = yCoordinates.length;
     }
     

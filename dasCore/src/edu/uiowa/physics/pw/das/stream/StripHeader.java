@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
+import edu.uiowa.physics.pw.das.util.StreamTool;
 import java.io.*;
 
 /**
@@ -15,7 +16,7 @@ import java.io.*;
 public class StripHeader {
         
     public static void stripHeader( InputStream in, OutputStream out ) throws IOException {
-        byte[] header= StreamDescriptor.readHeader(in);
+        byte[] header= StreamTool.readXML(new PushbackInputStream(in));
         out.write(header);        
     }
         

@@ -51,6 +51,37 @@ public class PacketDescriptor implements SkeletonDescriptor {
     
     /** Creates a new instance of StreamProperties */
     public PacketDescriptor(Element element) {
+        if (element.getTagName().equals("packet")) {
+            processElement(element);
+        }
+        else {
+            processLegacyElement(element);
+        }
+    }
+    
+    private void processElement(Element element) {
+        NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node node = children.item(i);
+            if ( node instanceof Element ) {
+                Element child = (Element)node;
+                String name = child.getTagName();
+                if ( name.equals("x") ) {
+                    xDescriptor = new StreamXDescriptor(child);
+                }
+                else if ( name.equals("y") ) {
+                    StreamMultiYDescriptor d = new StreamMultiYDescriptor(child);
+                    addYDescriptor(d);
+                }
+                else if ( name.equals("yscan") ) {
+                    StreamYScanDescriptor d = new StreamYScanDescriptor(child);
+                    addYDescriptor(d);
+                }
+            }
+        }
+    }
+    
+    private void processLegacyElement(Element element) {
         NodeList children= element.getChildNodes();
         for (int i=0; i<children.getLength(); i++) {
             Node node= children.item(i);
@@ -131,7 +162,11 @@ public class PacketDescriptor implements SkeletonDescriptor {
     }
     
     public int getSizeBytes() {
-        return -1;
+        int sizeBytes = xDescriptor.getSizeBytes();
+        for (int i = 0; i < yCount; i++) {
+            sizeBytes += yDescriptors[i].getSizeBytes();
+        }
+        return sizeBytes;
     }
     
     public void read(java.nio.ByteBuffer input, double[] output, int offset) {
@@ -194,6 +229,7 @@ public class PacketDescriptor implements SkeletonDescriptor {
         return result;
     }
     
+    /*
     // read off the bytes that are the xml header of the stream.  
     protected static byte[] readHeader( InputStream in ) throws IOException {              
         byte[] buffer= new byte[10000];
@@ -204,6 +240,7 @@ public class PacketDescriptor implements SkeletonDescriptor {
         }        
         return StreamTool.readXML( in );
     }
+     */
     
     private static String[] ensureCapacity(String[] array, int capacity) {
         if (array == null) {

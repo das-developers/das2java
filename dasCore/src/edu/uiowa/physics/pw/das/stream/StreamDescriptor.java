@@ -49,9 +49,32 @@ public class StreamDescriptor implements SkeletonDescriptor {
     
     private StreamXDescriptor xDescriptor;
     private ArrayList yDescriptors = new ArrayList();
+    private String compression;
     
     /** Creates a new instance of StreamProperties */
     public StreamDescriptor(Element element) {
+        if (element.getTagName().equals("stream")) {
+            processElement(element);
+        }
+        else {
+            processLegacyElement(element);
+        }
+    }
+    
+    private void processElement(Element element) {
+        compression = element.getAttribute("compression");
+        NodeList list = element.getElementsByTagName("properties");
+        if (list.getLength() != 0) {
+            Element propertiesElement = (Element)list.item(0);
+            NamedNodeMap attributes = propertiesElement.getAttributes();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Node node = attributes.item(i);
+                properties.put(node.getNodeName(), node.getNodeValue());
+            }
+        }
+    }
+    
+    private void processLegacyElement(Element element) {
         NodeList children= element.getChildNodes();
         for (int i=0; i<children.getLength(); i++) {
             Node node= children.item(i);
@@ -108,6 +131,22 @@ public class StreamDescriptor implements SkeletonDescriptor {
 
     public static Document parseHeader(Reader header) throws DasIOException, DasStreamFormatException {
         try {
+            header = new FilterReader(header) {
+                public int read() throws IOException {
+                    int result = super.read();
+                    if (result != -1) {
+                        System.out.print((char)result);
+                    }
+                    return result;
+                }
+                public int read(char[] c, int offset, int length) throws IOException {
+                    int result = super.read(c, offset, length);
+                    if (result != -1) {
+                        System.out.print(new String(c, offset, result));
+                    }
+                    return result;
+                }
+            };
             DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
             InputSource source = new InputSource(header);
             Document document= builder.parse(source);
@@ -292,6 +331,7 @@ public class StreamDescriptor implements SkeletonDescriptor {
         return result;
     }
     
+    /*
     // read off the bytes that are the xml header of the stream.  
     protected static byte[] readHeader( InputStream in ) throws IOException {              
         byte[] buffer= new byte[10000];
@@ -302,6 +342,7 @@ public class StreamDescriptor implements SkeletonDescriptor {
         }        
         return StreamTool.readXML( in );
     }
+     */
     
     private static String[] ensureCapacity(String[] array, int capacity) {
         if (array == null) {
@@ -317,4 +358,20 @@ public class StreamDescriptor implements SkeletonDescriptor {
         }
     }
 
+    /** Getter for property compression.
+     * @return Value of property compression.
+     *
+     */
+    public String getCompression() {
+        return compression;
+    }
+    
+    /** Setter for property compression.
+     * @param compression New value of property compression.
+     *
+     */
+    public void setCompression(String compression) {
+        this.compression = compression;
+    }
+    
 }

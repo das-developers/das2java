@@ -19,8 +19,9 @@ import java.util.*;
  */
 public class GZipStreamProcessor extends StreamProcessor {
     
-    public void process( InputStream in, OutputStream out) throws IOException {
+    public void process( InputStream in0, OutputStream out) throws IOException {
         
+        PushbackInputStream in = new PushbackInputStream(in0);
         byte[] header;
         byte[] tag=new byte[4];
         boolean isCompressed=false;  // true if input stream is already compressed

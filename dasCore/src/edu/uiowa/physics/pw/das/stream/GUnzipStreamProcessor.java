@@ -12,6 +12,7 @@ import org.w3c.dom.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  *
@@ -19,8 +20,9 @@ import java.util.*;
  */
 public class GUnzipStreamProcessor extends StreamProcessor {
     
-    public void process( InputStream in, OutputStream out) throws IOException {
+    public void process( InputStream in0, OutputStream out) throws IOException {
         
+        PushbackInputStream in = new PushbackInputStream(in0);
         byte[] header;
         byte[] tag=new byte[4];
         boolean isCompressed=false;  // true if input stream is already compressed
@@ -58,7 +60,7 @@ public class GUnzipStreamProcessor extends StreamProcessor {
         }
         
         if ( isCompressed ) {
-            in= new java.util.zip.GZIPInputStream(in);            
+            in = new PushbackInputStream(new GZIPInputStream(in));
         }
         
         int ib=0;

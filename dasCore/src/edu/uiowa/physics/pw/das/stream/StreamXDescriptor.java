@@ -33,6 +33,10 @@ import java.util.ArrayList;
 
 public class StreamXDescriptor implements SkeletonDescriptor {
     
+    private Datum base;
+    
+    private Units baseUnits = Units.us2000;
+    
     private Units units = Units.seconds;
     
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
@@ -41,6 +45,32 @@ public class StreamXDescriptor implements SkeletonDescriptor {
     }
     
     public StreamXDescriptor( Element element ) {
+        if ( element.getTagName().equals("x") ) {
+            processElement(element);
+        }
+        else {
+            processLegacyElement(element);
+        }
+    }
+    
+    private void processElement( Element element ) {
+        String typeStr = element.getAttribute("type");
+        DataTransferType type = DataTransferType.getByName(typeStr);
+        if ( type != null ) {
+            transferType = type;
+        }
+        else {
+            throw new RuntimeException("Illegal transfer type: " + typeStr);
+        }
+        String baseString = element.getAttribute("base");
+        if (baseString != null) {
+            if (baseUnits instanceof TimeLocationUnits) {
+                base = TimeUtil.createValid(baseString);
+            }
+        }
+    }
+    
+    private void processLegacyElement( Element element ) {
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
         if (type != null) {
@@ -49,6 +79,10 @@ public class StreamXDescriptor implements SkeletonDescriptor {
         else {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
+    }
+    
+    public Datum getBase() {
+        return base;
     }
     
     public int getSizeBytes() {
