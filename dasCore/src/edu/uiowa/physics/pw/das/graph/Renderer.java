@@ -30,6 +30,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.stream.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -243,11 +244,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             DataRequestor requestor = new DataRequestor() {
                 public void exception(Exception exception) {
                     try {
-                        if (!(exception instanceof InterruptedIOException) && !(exception instanceof CancelledOperationException)) {
+                        if (!(exception instanceof InterruptedIOException) && 
+                        !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
                             if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                                 lastException= exception;
                             }
-                            if ( ! ( exception instanceof NoDataInIntervalException ) ) {
+                            if ( ! ( ( exception instanceof NoDataInIntervalException ) )  ){ 
                                 DasExceptionHandler.handle(exception);
                             }
                             
@@ -278,7 +280,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                         throw e;
                     }
                     finally {
-                        progressPanel.setVisible(false);
+                        progressPanel.finished();
                     }
                 }
             };
