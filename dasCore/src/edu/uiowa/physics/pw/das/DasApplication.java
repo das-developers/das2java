@@ -42,7 +42,13 @@ public class DasApplication {
         LoggerId( String name ) {
             this.name= name;
             this.logger= Logger.getLogger(name);
-            this.logger.setLevel(Level.WARNING);
+            Level level= Level.ALL;
+            Handler[] handlers= this.logger.getHandlers();
+            for ( int i=0; i<handlers.length; i++ ) {
+                handlers[i].setFormatter(getLoggerFormatter());
+                handlers[i].setLevel(level);
+            }
+            this.logger.setLevel(level);
             this.logger.log( this.logger.getLevel(), name +" logging at "+this.logger.getLevel() );
         }
         public String toString() {
@@ -53,8 +59,22 @@ public class DasApplication {
         }
     }
     
+    private static Formatter getLoggerFormatter() {
+        return new Formatter() {
+            public String format( LogRecord rec ) {
+                StackTraceElement[] st= new Throwable().getStackTrace();                
+                return rec.getLoggerName()+"\n"+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n\tat "+st[7]+"\n\tat "+st[8]+"\n";
+            }
+        };
+    }
+    
+    
+    
     /* messages having to do with the application-specific Das 2 Application */
-    public static final LoggerId APPLICATION_LOG= new LoggerId(""); 
+    public static final LoggerId APPLICATION_LOG= new LoggerId("");
+    
+    /* system messages such as RequestProcessor activity */
+    public static final LoggerId SYSTEM_LOG= new LoggerId("system");
     
     /* events, gestures, user feedback */
     public static final LoggerId GUI_LOG= new LoggerId("gui");
@@ -78,7 +98,7 @@ public class DasApplication {
     
     /** Creates a new instance of DasApplication */
     private DasApplication() {
-        nameContext = new NameContext();        
+        nameContext = new NameContext();
     }
     
     public NameContext getNameContext() {
@@ -88,17 +108,17 @@ public class DasApplication {
     public static DasApplication getDefaultApplication() {
         return DEFAULT;
     }
-        
+    
     private boolean headless= false;
     
     private static boolean isApplet() {
         return false;
     }
-        
+    
     private static boolean isX11() {
         String osName= System.getProperty( "os.name" );
-        return "SunOS".equals( osName ) 
-         || "Linux".equals( osName );
+        return "SunOS".equals( osName )
+        || "Linux".equals( osName );
     }
     
     public static boolean isHeadAvailable() {
@@ -106,7 +126,7 @@ public class DasApplication {
         /*
         return ( System.getProperty( "awt.toolkit" ) != null );
         /*
-               //boolean headAvailable= !java.awt.GraphicsEnvironment.isHeadless();       
+               //boolean headAvailable= !java.awt.GraphicsEnvironment.isHeadless();
         boolean result= false;
         if ( isApplet() ) result= true;
         getDefaultApplication().getLogger().fine( System.getProperty( "os.name" ) );
@@ -122,13 +142,13 @@ public class DasApplication {
                 result= false;
             } else {
                 result= true;
-            }                
+            }
         }
         return result;
          */
     }
     
-    public boolean isHeadless() {        
+    public boolean isHeadless() {
 /*        if ( !headAvailable() && !"true".equals(System.getProperty("headless")) ) {
             getLogger().info("setting headless to true");
             setHeadless( true );
@@ -142,7 +162,7 @@ public class DasApplication {
         } else {
             if ( ! isHeadAvailable() ) {
                 throw new IllegalArgumentException( "attempt to unset headless when environment is headless." );
-            }                 
+            }
             System.setProperty("java.awt.headless","false");
         }
     }
@@ -156,9 +176,9 @@ public class DasApplication {
     }
     
     public JFrame getMainFrame() {
-        final JFrame result= new JFrame("Das2");        
+        final JFrame result= new JFrame("Das2");
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
-               
+        
         int xlocation= prefs.getInt( "xlocation", 20 );
         int ylocation= prefs.getInt( "ylocation", 20 );
         result.setLocation(xlocation, ylocation);
@@ -175,7 +195,7 @@ public class DasApplication {
     
     /**
      * logger for messages to end users
-     */    
+     */
     public Logger getLogger() {
         return DasProperties.getLogger();
     }
@@ -186,7 +206,7 @@ public class DasApplication {
     
     /**
      * logger for messages to developers
-     */    
+     */
     public synchronized Logger getDebugLogger() {
         return Logger.getLogger("debug");
     }
