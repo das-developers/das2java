@@ -132,12 +132,19 @@ public class HttpFileObject implements FileObject {
         } else {
             this.isFolder= localFile.isDirectory();
         }
-        
-        
+        // until we can check for file dates on the server, always transfer the file.
+        try {
+            if ( canRead() ) {
+                getLocalFile().delete();
+            }
+            wfs.transferFile( pathname, getLocalFile() );
+        } catch ( Exception e ) {
+            throw new RuntimeException(e);
+        }
     }
     
     public String toString() {
-        return "[wfs]"+getNameExt();    
+        return "[wfs]"+getNameExt();
     }
     
     public String getNameExt() {
