@@ -23,14 +23,19 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import java.util.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author  Edward West
  */
 public class TableDataSetBuilder {
+    
+    private static final boolean DEBUG = true;
     
     private static final double[] EMPTY = new double[0];
     
@@ -61,6 +66,10 @@ public class TableDataSetBuilder {
         setXUnits(xUnits);
         setYUnits(yUnits);
         setZUnits(zUnits);
+        if (DEBUG) {
+            Logger logger = DasApplication.getDefaultApplication().getDebugLogger();
+            logger.log(Level.FINEST, "TableDataSetBuilder( " + xUnits + ", " + yUnits + ", " + zUnits + ")");
+        }
     }
     
     public void setProperty(String name, Object value) {
@@ -103,9 +112,16 @@ public class TableDataSetBuilder {
         }
         xTags.add(x);
         MultiYScan scan = new MultiYScan();
+        if (z.length < y.length) {
+            System.out.println("z length (" + z.length + ") is less that y length(" + y.length + ")");
+        }
         scan.put(planeID, (double[])z.clone());
         scan.setYTags(y);
         zValues.add(insertionIndex, scan);
+        if (DEBUG) {
+            Logger logger = DasApplication.getDefaultApplication().getDebugLogger();
+            logger.log(Level.FINEST, "insertYScan(x, double[" + y.length + "] y, double[" + z.length + "] z, \"" + planeID + "\")");
+        }
     }
     
     public void append(TableDataSet tds) {
@@ -301,7 +317,7 @@ public class TableDataSetBuilder {
         public int compare(Object o1, Object o2) {
             double[] d1 = (double[])o1;
             double[] d2 = (double[])o2;
-            if (d1.length != d1.length) {
+            if (d1.length != d2.length) {
                 return d1.length - d2.length;
             }
             for (int i = 0; i < d1.length; i++) {

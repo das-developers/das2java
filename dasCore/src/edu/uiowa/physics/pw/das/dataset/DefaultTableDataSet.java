@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import java.io.PrintStream;
 
 import java.util.*;
 import java.text.MessageFormat;
@@ -168,6 +169,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return Datum.create(value, zUnits[0]);
         }
         catch (ArrayIndexOutOfBoundsException aioobe) {
+            System.out.println("i=" + i + " table=" + tableOfIndex(i));
             throw aioobe;
         }
     }
@@ -303,6 +305,19 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     public String toString() {
         return "DefaultTableDataSet "+TableUtil.toString(this);        
+    }
+    
+    public void printDebugInfo(PrintStream out) {
+        out.println("xLength: " + getXLength());
+        out.println("tableCount: " + tableCount());
+        for (int table = 0; table < tableCount(); table++) {
+            out.println("tableStart(" + table + "): " + tableStart(table));
+            out.println("yLength: " + getYLength(table));
+            for (int i = tableStart(table); i < tableEnd(table); i++) {
+                out.println(i + ": " + tableData[0][i].length);
+            }
+            out.println("tableEnd(" + table + "): " + tableEnd(table));
+        }
     }
     
     private final class PlanarViewDataSet extends AbstractDataSet.ViewDataSet implements TableDataSet {
