@@ -53,6 +53,9 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     private DasCanvas parent;
     private PeaksIndicator peaksIndicator;
     
+    /** Holds value of property dumpDataSet. */
+    private boolean dumpDataSet;
+    
     public static class PeaksIndicator implements Enumeration {
         
         String id;
@@ -460,10 +463,14 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             if ( rdUnits instanceof LocationUnits ) {
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
+            if ( true ) {
+                return highResRebinner.rebin( ds, x, y );
+            } else {
             if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                 return highResRebinner.rebin( ds, x, y );
             } else {
                 return lowResRebinner.rebin( ds, x, y );
+            }
             }
         }
         
@@ -501,4 +508,21 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         dataSetDescriptor.addDataSetUpdateListener( this );
     }
         
+    /** Getter for property dumpDataSet.
+     * @return Value of property dumpDataSet.
+     *
+     */
+    public boolean isDumpDataSet() {    
+        return this.dumpDataSet;
+    }
+    
+    /** Setter for property dumpDataSet.
+     * @param dumpDataSet New value of property dumpDataSet.
+     *
+     */
+    public void setDumpDataSet(boolean dumpDataSet) {
+        System.out.println("Dumping data set");
+        this.dumpDataSet= dumpDataSet;        
+    }
+    
 }
