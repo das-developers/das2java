@@ -28,19 +28,19 @@ import java.util.*;
  *
  * @author  jbf
  */
-public class TimeUtil {
+public final class TimeUtil {
     
     private TimeUtil() {
     }
     
-    public static class TimeStruct {
-        int year;
-        int month;
-        int day;
-        int doy;
-        int hour;
-        int minute;
-        double seconds; // remaining number of seconds past minute boundary
+    public final static class TimeStruct {
+        public int year;
+        public int month;
+        public int day;
+        public int doy;
+        public int hour;
+        public int minute;
+        public double seconds; // remaining number of seconds past minute boundary
     }
     
     public static final int YEAR = 1;
@@ -496,5 +496,5 @@ public class TimeUtil {
         TimeStruct ts= TimeUtil.toTimeStruct(x);
         System.out.println( TimeUtil.toDatum(ts) );
     }
-    
+
 }
