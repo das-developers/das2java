@@ -201,6 +201,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         } else {
             in= standardDataStreamSource.getInputStream( this, start, end );
         }
+        monitor.started();
         in = new DasProgressMonitorInputStream(in, monitor);
         result = getDataSet( in, start, end, resolution );
         return result;
