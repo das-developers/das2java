@@ -161,7 +161,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             }
             
             URL serverURL= this.server.getURL(formData);
-            DasApplication.getDefaultApplication().getLogger().info(serverURL.toString());
+            DasApplication.getDefaultApplication().getLogger().fine(serverURL.toString());
             
             URLConnection urlConnection = serverURL.openConnection();
             urlConnection.connect();

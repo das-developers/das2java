@@ -419,7 +419,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected class RebinListener implements java.beans.PropertyChangeListener {
         public void propertyChange(java.beans.PropertyChangeEvent e) {
-            //            DasApplication.getDefaultApplication().getLogger().info("rebin listener got property change: "+e.getNewValue());
+            //            DasApplication.getDefaultApplication().getLogger().fine("rebin listener got property change: "+e.getNewValue());
             markDirty();
             DasPlot.this.update();
         }

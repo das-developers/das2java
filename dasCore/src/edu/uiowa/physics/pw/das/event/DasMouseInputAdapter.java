@@ -148,7 +148,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     public void addMouseModule(MouseModule module) {
         
         if ( DasApplication.getDefaultApplication().isHeadless() ) {
-            DasApplication.getDefaultApplication().getLogger().info("not adding module since headless is true");
+            DasApplication.getDefaultApplication().getLogger().fine("not adding module since headless is true");
         } else {
             MouseModule preExisting= getModuleByLabel(module.getLabel());
             if (preExisting!=null) {

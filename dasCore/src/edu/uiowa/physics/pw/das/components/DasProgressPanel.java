@@ -181,7 +181,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
         if (isCancelled) {
-            DasApplication.getDefaultApplication().getLogger().info("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
+            DasApplication.getDefaultApplication().getLogger().fine("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
             throw new IllegalStateException("Operation cancelled: developers: check isCancelled before calling setTaskProgress");
         }
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
@@ -246,7 +246,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         currentTaskPosition = 0;
         isCancelled = false;
         running = true;
-        DasApplication.getDefaultApplication().getLogger().info("lastTaskTime="+lastTaskTime);
+        DasApplication.getDefaultApplication().getLogger().fine("lastTaskTime="+lastTaskTime);
         if ( lastTaskTime>hideInitiallyMilliSeconds*2.0 ) {
             setVisible(true);
         } else {
@@ -257,7 +257,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
                         Thread.sleep(hideInitiallyMilliSeconds);
                     } catch ( InterruptedException e ) { };
                     if (running) {
-                        DasApplication.getDefaultApplication().getLogger().info("hide time="+(System.currentTimeMillis()-taskStartedTime) );
+                        DasApplication.getDefaultApplication().getLogger().fine("hide time="+(System.currentTimeMillis()-taskStartedTime) );
                         setTaskProgress(getTaskProgress());
                     }
                 }

@@ -59,7 +59,7 @@ public class HttpFileSystem extends FileSystem {
     }
     
     protected void transferFile( String filename, File f ) throws IOException {
-        DasApplication.getDefaultApplication().getLogger().info("create file "+filename);
+        DasApplication.getDefaultApplication().getLogger().fine("create file "+filename);
         URL remoteURL= new URL( root.toString()+filename );
         InputStream in= remoteURL.openStream();
         if ( !f.getParentFile().exists() ) {
@@ -69,7 +69,7 @@ public class HttpFileSystem extends FileSystem {
             FileOutputStream out= new FileOutputStream( f );
             byte[] buf= new byte[2048];
             int br= in.read(buf);
-            DasApplication.getDefaultApplication().getLogger().info("transferring file "+filename);
+            DasApplication.getDefaultApplication().getLogger().fine("transferring file "+filename);
             while ( br!=-1 ) {
                 out.write( buf, 0, br );
                 br= in.read(buf);

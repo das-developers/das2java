@@ -74,7 +74,7 @@ public class DasApplication {
                //boolean headAvailable= !java.awt.GraphicsEnvironment.isHeadless();       
         boolean result= false;
         if ( isApplet() ) result= true;
-        getDefaultApplication().getLogger().info( System.getProperty( "os.name" ) );
+        getDefaultApplication().getLogger().fine( System.getProperty( "os.name" ) );
         String osName= System.getProperty( "os.name" );
         if ( "Windows".equals( osName ) ) {
             result= true;
@@ -82,7 +82,7 @@ public class DasApplication {
             result= true;
         } else if ( isX11() ) {
             String DISPLAY= System.getProperty( "DISPLAY" );
-            getDefaultApplication().getLogger().info( System.getProperty( "DISPLAY" ) );
+            getDefaultApplication().getLogger().fine( System.getProperty( "DISPLAY" ) );
             if ( "".equals(DISPLAY) ) {
                 result= false;
             } else {
