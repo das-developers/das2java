@@ -171,18 +171,33 @@ public abstract class Units {
     public abstract Datum createDatum( int value );    
     public abstract Datum createDatum( long value );    
     public abstract Datum createDatum( Number value );
-    public abstract Datum getFill();
-    public boolean isFill( double value ) {
-        return getFill().equals(createDatum(value));
-    }
-    public boolean isFill( long value ) {
-        return getFill().equals(createDatum(value));
-    }
-    public boolean isFill( int value ) {
-        return getFill().equals(createDatum(value));
-    }
+    
+    private static double FILL_DOUBLE= -1e31;
+    private static float FILL_FLOAT= -1e31f;
+    private static int FILL_INT= Integer.MAX_VALUE;
+    private static long FILL_LONG= Long.MAX_VALUE;
+        
+    public double getFillDouble() { return FILL_DOUBLE; }
+    public float getFillFloat() { return FILL_FLOAT; }
+    public int getFillInt() { return FILL_INT; }
+    public long getFillLong() { return FILL_LONG; }
+    
+    public boolean isFill( double value ) {  return (( value-FILL_DOUBLE )/value ) < 0.00001; }
+    public boolean isFill( float value ) { return (( value-FILL_FLOAT )/value ) < 0.00001; }
+    public boolean isFill( long value ) { return value==FILL_LONG; }
+    public boolean isFill( int value ) { return value==FILL_INT; }
     public boolean isFill( Number value ) {
-        return getFill().equals(createDatum(value));
+        if ( value instanceof Double ) {
+            return isFill(value.doubleValue());
+        } else if ( value instanceof Float ) {
+            return isFill(value.floatValue());
+        } else if ( value instanceof Integer ) {
+            return isFill(value.intValue());
+        } else if ( value instanceof Long ) {
+            return isFill(value.longValue());
+        } else {
+            throw new IllegalArgumentException("Unknown Number class: "+value.getClass().toString());
+        }    
     }
     
     public abstract DatumFormatterFactory getDatumFormatterFactory();
@@ -240,9 +255,7 @@ public abstract class Units {
                 
         System.out.println( Units.days.createDatum(1.) );
         System.out.println( Units.days.createDatum(1.).convertTo(Units.seconds) );
-
-        System.out.println( Units.days.getFill() );
-        System.out.println( Units.days.getFill().convertTo(Units.seconds) );
+                
     }
     
     
