@@ -52,26 +52,6 @@ public class PsymConnector implements Enumeration {
     new BasicStroke( 1.0f, BasicStroke.CAP_ROUND,
     BasicStroke.JOIN_ROUND, 1.0f, new float[] {3.0f,2.0f}, 0.f ) );
     
-    public static final PsymConnector PSYM10= new PsymConnector( "Psym10", new BasicStroke( 1.0f ) ) {
-        public void drawLine( Graphics2D g, int x1, int y1, int x2, int y2, float width ) {
-            g.setStroke( getStroke(width) );
-            int xMid= (x1 + x2) / 2;
-            Line2D _line;
-            if (!SwingUtilities.isEventDispatchThread()) {
-                //For thread-safeness
-                _line = new Line2D.Double();
-            }
-            else {
-                //We know there is only one dispatch thread, so just reuse line member.
-                _line = line;
-            }
-            _line.setLine(x1,y1,xMid,y1);  g.draw(_line);
-            _line.setLine(xMid,y1,xMid,y2);  g.draw(_line);
-            _line.setLine(xMid,y2,x2,y2);  g.draw(_line);
-        }
-    };
-    
-    
     private PsymConnector( String name, BasicStroke stroke ) {
         line= new Line2D.Double();
         
