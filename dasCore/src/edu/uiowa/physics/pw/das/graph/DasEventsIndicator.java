@@ -72,16 +72,16 @@ public class DasEventsIndicator extends DasCanvasComponent {
             int ix= e.getX()+parent.getX();
             Datum x= parent.axis.invTransform(ix);
             
-            Datum axisRes= parent.axis.invTransform(ix+2).subtract(x); /* two-pixel resolution */
             int i= eventMap[e.getX()];
-            Datum sx= parent.vds.getXTagDatum(i);
-            Datum sy= parent.vds.getDatum(i);
-            if ( parent.vds.getPlanarView(planeId)==null ) {
-                throw new IllegalArgumentException("planeId is not found in dataset");
-            }
-            Datum sz= ((VectorDataSet)parent.vds.getPlanarView(planeId)).getDatum(i);
-            if ( sx.subtract(axisRes).le(x) && x.le(sx.add(sy).add(axisRes)) ) {
+            if ( i>=0 ) {
+                Datum sx= parent.vds.getXTagDatum(i);
+                Datum sy= parent.vds.getDatum(i);
+                if ( parent.vds.getPlanarView(planeId)==null ) {
+                    throw new IllegalArgumentException("planeId is not found in dataset");
+                }
+                Datum sz= ((VectorDataSet)parent.vds.getPlanarView(planeId)).getDatum(i);
                 parent.setToolTipText(""+sx+" "+sy+" "+sz);
+                
             } else {
                 parent.setToolTipText(null);
             }
@@ -103,8 +103,8 @@ public class DasEventsIndicator extends DasCanvasComponent {
         
         try {
             vds= (VectorDataSet)dsd.getDataSet( axis.getDataMinimum(), axis.getDataMaximum(), null, null );
-            
-            if ( vds.getXLength()>0 ) {                
+            for ( int k=0; k<eventMap.length; k++ ) eventMap[k]= -1;
+            if ( vds.getXLength()>0 ) {
                 UnitsConverter uc=  UnitsConverter.getConverter( vds.getYUnits(), axis.getUnits().getOffsetUnits() );
                 
                 int ivds0= 0;
@@ -120,11 +120,13 @@ public class DasEventsIndicator extends DasCanvasComponent {
                         iwidth= 1;
                     }
                     if ( iwidth==0 ) iwidth=1;
-                    g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) ); {
-                        int em0= ix-getX()-1;
+                    g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
+                    
+                    {
+                        int em0= ix-getX()-3;
                         if (em0<0) em0=0;
                         if (em0>=eventMap.length) em0= eventMap.length-1;
-                        int em1= ix-getX()+iwidth+1;
+                        int em1= ix-getX()+iwidth+3;
                         if (em1<0) em1=0;
                         if (em1>=eventMap.length) em1= eventMap.length-1;
                         for ( int k= em0; k<em1; k++ ) {
@@ -135,7 +137,7 @@ public class DasEventsIndicator extends DasCanvasComponent {
             }
         } catch ( DasException e ) {
             g.drawString( "exception: "+e.getMessage(), getX(), getY()+getHeight() );
-        }        
+        }
     }
     
     public void setDataSetDescriptor( DataSetDescriptor dsd ) {
