@@ -600,11 +600,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
             isLog=false;
         }
         
-        if ( ! (getXUnits() instanceof TimeLocationUnits ) ) {
-            return DasAxis.create(x,getXUnits(),row,column,DasAxis.HORIZONTAL,false);
-        } else {
-            return DasTimeAxis.create( x, getXUnits(),row, column, DasAxis.HORIZONTAL );
-        }
+        return DasAxis.create(x,getXUnits(),row,column,DasAxis.HORIZONTAL,false);
     }
     
     public DasAxis createYAxis( DasRow row, DasColumn column ) {

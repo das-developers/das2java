@@ -123,84 +123,69 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         
         if (parent == null || !parent.isDisplayable() || dsd == null) return;
         
-        if (xAxis instanceof DasTimeAxis) {
+        lastException= null;
 
-            lastException= null;
-            
-            final DasPlot parent= getParent();
-            final Cursor cursor0= null;
-            if (parent != null) {
-                parent.getCursor();
-                parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            }
-        
-            if (parent != null) {
-                ((DasCanvas)parent.getParent()).lockDisplay(this);
-            }
-            
-            Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-            double dataRange= dataRange1.doubleValue(Units.seconds);
-            double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-            double resolution =  dataRange/deviceRange;
-            DasTimeAxis taxis = (DasTimeAxis)xAxis;
-            if (progressPanel == null) {
-                progressPanel = new DasProgressPanel();
-                ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
-            }
-            progressPanel.setSize(progressPanel.getPreferredSize());
-            
-            int x= xAxis.getColumn().getDMiddle();
-            int y= xAxis.getRow().getDMiddle();
-            
-            progressPanel.setLocation( x - progressPanel.getWidth()/2,
-                                       y - progressPanel.getHeight()/2 );
-            DataRequestor requestor = new DataRequestor() {
-                public void exception(Exception exception) {
-                    if (!(exception instanceof InterruptedIOException)) {
-                        if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
-                            lastException= exception; 
-                            finished(null);
-                        } else {
-                            DasExceptionHandler.handle(exception);
-                            finished(null);
-                        }
-                    }
-                }
-                public void finished(DataSet dsFinished) {
-                    progressPanel.setVisible(false);
-                    if ( parent != null) {
-                        parent.setCursor(cursor0);
-                    }                    
-                    ds= dsFinished;
-                    updatePlotImage(xAxis,yAxis);
-                    if ( parent!= null) {
-                        ((DasCanvas)parent.getParent()).freeDisplay(this);
-                    }
-                    edu.uiowa.physics.pw.das.util.DasDie.println("I GOT HERE WITH: " + ds);
-                }
-            };
-            if (drt == null) {
-                drt = new DataRequestThread();
-            }
-            try {
-                drt.request(dsd, taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
-            }
-            catch (InterruptedException ie) {
-                DasExceptionHandler.handle(ie);
-            }
-            
-        } else {
-            if ( ( dsd instanceof ConstantDataSetDescriptor ) ) {
-                try {
-                    ds= dsd.getDataSet( null, null, null, null );
-                    updatePlotImage(xAxis,yAxis);
-                } catch ( edu.uiowa.physics.pw.das.DasException e ) {
-                    DasExceptionHandler.handle(e);
-                }
-            } else {
-                throw new AssertionError( "xAxis not a timeAxis, and DataSetDescriptor is not constant" );
-            }       
+        final DasPlot parent= getParent();
+        final Cursor cursor0= null;
+        if (parent != null) {
+            parent.getCursor();
+            parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         }
+
+        if (parent != null) {
+            ((DasCanvas)parent.getParent()).lockDisplay(this);
+        }
+
+        Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
+        double dataRange= dataRange1.doubleValue(Units.seconds);
+        double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
+        double resolution =  dataRange/deviceRange;
+        if (progressPanel == null) {
+            progressPanel = new DasProgressPanel();
+            ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
+        }
+        progressPanel.setSize(progressPanel.getPreferredSize());
+
+        int x= xAxis.getColumn().getDMiddle();
+        int y= xAxis.getRow().getDMiddle();
+
+        progressPanel.setLocation( x - progressPanel.getWidth()/2,
+                                   y - progressPanel.getHeight()/2 );
+        DataRequestor requestor = new DataRequestor() {
+            public void exception(Exception exception) {
+                if (!(exception instanceof InterruptedIOException)) {
+                    if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
+                        lastException= exception; 
+                        finished(null);
+                    } else {
+                        DasExceptionHandler.handle(exception);
+                        finished(null);
+                    }
+                }
+            }
+            public void finished(DataSet dsFinished) {
+                progressPanel.setVisible(false);
+                if ( parent != null) {
+                    parent.setCursor(cursor0);
+                }                    
+                ds= dsFinished;
+                updatePlotImage(xAxis,yAxis);
+                if ( parent!= null) {
+                    ((DasCanvas)parent.getParent()).freeDisplay(this);
+                }
+                edu.uiowa.physics.pw.das.util.DasDie.println("I GOT HERE WITH: " + ds);
+            }
+        };
+        if (drt == null) {
+            drt = new DataRequestThread();
+        }
+        try {
+            drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
+        }
+        catch (InterruptedException ie) {
+            DasExceptionHandler.handle(ie);
+        }
+
     }
         
     public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis);

@@ -98,12 +98,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         new AttachedRow(row,0.,0.6),new AttachedColumn(column,1.05,1.10),
         DasAxis.RIGHT,true);
         
-        DasAxis XAxis;
-        if (Data.getXUnits() instanceof TimeLocationUnits) {
-            XAxis = DasAxis.create(x,Data.getXUnits(),row,column,DasAxis.HORIZONTAL,false);
-        } else {
-            XAxis = DasTimeAxis.create(x,Data.getXUnits(),row,column,DasAxis.HORIZONTAL);
-        }
+        DasAxis XAxis = DasAxis.create(x,Data.getXUnits(),row,column,DasAxis.HORIZONTAL,false);
         
         DasStackedHistogramPlot plot = DasStackedHistogramPlot.create(parent, Data, XAxis, ZAxis, row, column);
         

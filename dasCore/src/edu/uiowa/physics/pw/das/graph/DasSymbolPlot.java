@@ -104,13 +104,13 @@ public class DasSymbolPlot extends DasPlot {
         edu.uiowa.physics.pw.das.util.DasDie.println("  dsd: "+dsd+" units: "+dsd.getXUnits() );
         
         if (dsd.getXUnits() instanceof TimeLocationUnits ) {
-                xAxis= new DasTimeAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.HORIZONTAL );
+            xAxis= new DasAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.HORIZONTAL );
         } else {
             xAxis= new DasAxis( Datum.create(0,dsd.getXUnits()), Datum.create(10,dsd.getXUnits()), row, column, DasAxis.HORIZONTAL );
         }
         
         if (dsd.getYUnits() instanceof TimeLocationUnits ) {
-            yAxis= new DasTimeAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.VERTICAL );
+            yAxis= new DasAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.VERTICAL );
         } else {
             yAxis= new DasAxis( Datum.create(0,dsd.getYUnits()), Datum.create(10,dsd.getYUnits()), row, column, DasAxis.VERTICAL );
         }

@@ -214,7 +214,7 @@ public class Toolbox extends JTabbedPane {
             }
             else if (id.equals("time axis")) {
                 return new TransferableCanvasComponent(
-                    DasTimeAxis.createNamedTimeAxis(null));
+                    DasAxis.createNamedAxis(null));
             }
             else if (id.equals("spectrogram renderer")) {
                 DasColorBar cb = DasColorBar.createNamedColorBar(null);

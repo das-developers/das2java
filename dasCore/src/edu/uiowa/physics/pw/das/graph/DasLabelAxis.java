@@ -110,8 +110,8 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         updateTickPositions();        
     }
     
-    public tickVDescriptor getTickV() {
-        tickVDescriptor result= new tickVDescriptor();
+    public TickVDescriptor getTickV() {
+        TickVDescriptor result= new TickVDescriptor();
         result.units= getUnits();
         int ny= indexMaximum - indexMinimum + 1;
         result.tickV= new double[ny];

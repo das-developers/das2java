@@ -215,79 +215,62 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     DasProgressPanel progressPanel;
     
     protected void loadDataSet() {
-        if (getXAxis() instanceof DasTimeAxis) {
-            
-            final Component parent= getParent();
-            final Cursor cursor0= null;
-            if (parent != null) {
-                parent.getCursor();
-                parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            }
-            
-            //drawInvalid();
-            
-            if (parent != null) {
-                ((DasCanvas)parent).lockDisplay(this);
-            }
-            
-            Datum dataRange1 = getXAxis().getDataMaximum().subtract(getXAxis().getDataMinimum());
-            double dataRange= dataRange1.doubleValue(Units.seconds);
-            double deviceRange = Math.floor(getColumn().getDMaximum() + 0.5) - Math.floor(getColumn().getDMinimum() + 0.5);
-            double resolution =  dataRange/deviceRange;
-            DasTimeAxis taxis = (DasTimeAxis)getXAxis();
-            if (progressPanel == null) {
-                progressPanel = new DasProgressPanel();
-                ((Container)((DasCanvas)getParent()).getGlassPane()).add(progressPanel);
-            }
-            progressPanel.setSize(progressPanel.getPreferredSize());
-            
-            if (this.getX()==0) {
-                progressPanel.setVisible(false);
-            } else {
-                progressPanel.setLocation(this.getX() + (this.getWidth()-progressPanel.getWidth())/2,
-                this.getY() + (this.getHeight()-progressPanel.getHeight())/2);
-            }
-            DataRequestor requestor = new DataRequestor() {
-                public void exception(Exception exception) {
-                    if (!(exception instanceof InterruptedIOException)) {
-                        DasExceptionHandler.handle(exception);
-                        finished(null);
-                    }
-                }
-                public void finished(DataSet ds) {
-                    progressPanel.setVisible(false);
-                    if (parent != null) {
-                        parent.setCursor(cursor0);
-                    }
-                    Data = ds;
-                    updatePlotImage();
-                    if (parent != null) {
-                        ((DasCanvas)parent).freeDisplay(this);
-                    }
-                }
-            };
-            if (drt == null) {
-                drt = new DataRequestThread();
-            }
-            try {
-                drt.request(dataSetDescriptor, taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
-            }
-            catch (InterruptedException ie) {
-                DasExceptionHandler.handle(ie);
-            }
-            //dataSetDescriptor.getDataSet("", taxis.getTimeMinimum(), taxis.getTimeMaximum(), resolution );
-            
+        final Component parent= getParent();
+        final Cursor cursor0= null;
+        if (parent != null) {
+            parent.getCursor();
+            parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        }
+
+        //drawInvalid();
+
+        if (parent != null) {
+            ((DasCanvas)parent).lockDisplay(this);
+        }
+
+        Datum dataRange1 = getXAxis().getDataMaximum().subtract(getXAxis().getDataMinimum());
+        double dataRange= dataRange1.doubleValue(Units.seconds);
+        double deviceRange = Math.floor(getColumn().getDMaximum() + 0.5) - Math.floor(getColumn().getDMinimum() + 0.5);
+        double resolution =  dataRange/deviceRange;
+        if (progressPanel == null) {
+            progressPanel = new DasProgressPanel();
+            ((Container)((DasCanvas)getParent()).getGlassPane()).add(progressPanel);
+        }
+        progressPanel.setSize(progressPanel.getPreferredSize());
+
+        if (this.getX()==0) {
+            progressPanel.setVisible(false);
         } else {
-            if ( ( dataSetDescriptor instanceof ConstantDataSetDescriptor ) ) {
-                try {
-                    Data= dataSetDescriptor.getDataSet( null, null, null, null );
-                    updatePlotImage();
-                } catch ( DasException e ) {
-                    DasExceptionHandler.handle(e);
+            progressPanel.setLocation(this.getX() + (this.getWidth()-progressPanel.getWidth())/2,
+            this.getY() + (this.getHeight()-progressPanel.getHeight())/2);
+        }
+        DataRequestor requestor = new DataRequestor() {
+            public void exception(Exception exception) {
+                if (!(exception instanceof InterruptedIOException)) {
+                    DasExceptionHandler.handle(exception);
+                    finished(null);
                 }
-            } else {
-                throw new AssertionError( "axis not a timeAxis, and DataSetDescriptor is not constant" );
             }
+            public void finished(DataSet ds) {
+                progressPanel.setVisible(false);
+                if (parent != null) {
+                    parent.setCursor(cursor0);
+                }
+                Data = ds;
+                updatePlotImage();
+                if (parent != null) {
+                    ((DasCanvas)parent).freeDisplay(this);
+                }
+            }
+        };
+        if (drt == null) {
+            drt = new DataRequestThread();
+        }
+        try {
+            drt.request(dataSetDescriptor, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
+        }
+        catch (InterruptedException ie) {
+            DasExceptionHandler.handle(ie);
         }
     }
     
@@ -539,7 +522,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     return axis;
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
-                    DasAxis axis = DasTimeAxis.processTimeaxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processTimeaxisElement(e, row, column, form);
                     if (!axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.HORIZONTAL);
                     }
@@ -571,7 +554,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     return axis;
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
-                    DasAxis axis = DasTimeAxis.processTimeaxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processTimeaxisElement(e, row, column, form);
                     if (axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.VERTICAL);
                     }
@@ -653,7 +636,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public static DasPlot createNamedPlot(String name) {
-        DasAxis xAxis = DasTimeAxis.createNamedTimeAxis(null);
+        DasAxis xAxis = DasAxis.createNamedAxis(null);
         xAxis.setOrientation(DasAxis.BOTTOM);
         DasAxis yAxis = DasAxis.createNamedAxis(null);
         yAxis.setOrientation(DasAxis.LEFT);

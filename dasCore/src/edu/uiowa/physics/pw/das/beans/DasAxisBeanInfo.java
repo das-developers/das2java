@@ -36,11 +36,15 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
     private static final Property[] properties = {
         new Property("dataMinimum", AccessLevel.DASML, "getDataMinimum", "setDataMinimum", null),
         new Property("dataMaximum", AccessLevel.DASML, "getDataMaximum", "setDataMaximum", null),
+        new Property("timeMinimum", AccessLevel.DASML, "getDataMinimum", "setDataMinimum", null),
+        new Property("timeMaximum", AccessLevel.DASML, "getDataMaximum", "setDataMaximum", null),
         new Property("label", AccessLevel.DASML, "getLabel", "setLabel", null),
         new Property("log", AccessLevel.DASML, "isLog", "setLog", null),
         new Property("tickLabelsVisible", AccessLevel.DASML, "areTickLabelsVisible", "setTickLabelsVisible", null),
         new Property("oppositeAxisVisible", AccessLevel.DASML, "isOppositeAxisVisible", "setOppositeAxisVisible", null),
-        new Property("animated", AccessLevel.DASML, "isAnimated", "setAnimated", null)
+        new Property("animated", AccessLevel.DASML, "isAnimated", "setAnimated", null),
+        new Property("dataPath", AccessLevel.DASML, "getDataPath", "setDataPath", null),
+        new Property("showTca", AccessLevel.DASML, "getDrawTca", "setDrawTca", null),
     };
     
     public DasAxisBeanInfo() {

@@ -265,7 +265,7 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
                     e.setAttribute("orientation", "horizontal");
-                    return DasTimeAxis.processTimeaxisElement(e, row, column, form);
+                    return DasAxis.processTimeaxisElement(e, row, column, form);
                 }
                 else if (node.getNodeName().equals("attachedaxis")) {
                     e.setAttribute("orientation", "horizontal");
@@ -288,7 +288,7 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
                     e.setAttribute("orientation", "vertical");
-                    return DasTimeAxis.processTimeaxisElement(e, row, column, form);
+                    return DasAxis.processTimeaxisElement(e, row, column, form);
                 }
                 else if (node.getNodeName().equals("attachedaxis")) {
                     e.setAttribute("orientation", "vertical");

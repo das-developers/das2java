@@ -738,8 +738,8 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
                         canvas.add(axis);
                     }
                     else if (tagName.equals("timeaxis")) {                        
-                        DasTimeAxis timeaxis
-                        = DasTimeAxis.processTimeaxisElement((Element)node, null, null, form);
+                        DasAxis timeaxis
+                        = DasAxis.processTimeaxisElement((Element)node, null, null, form);
                         canvas.add(timeaxis);
                     }
                     else if (tagName.equals("attachedaxis")) {

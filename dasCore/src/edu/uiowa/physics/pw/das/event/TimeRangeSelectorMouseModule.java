@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
-import edu.uiowa.physics.pw.das.graph.DasTimeAxis;
+import edu.uiowa.physics.pw.das.graph.DasAxis;
 
 /**
  *
@@ -35,14 +35,14 @@ import edu.uiowa.physics.pw.das.graph.DasTimeAxis;
  */
 public class TimeRangeSelectorMouseModule extends MouseModule {
     
-    DasTimeAxis timeAxis;
+    DasAxis timeAxis;
     
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
     
     public String getLabel() { return "X Time Zoom"; }
     
-    public TimeRangeSelectorMouseModule(DasCanvasComponent parent, DasTimeAxis timeAxis) {
+    public TimeRangeSelectorMouseModule(DasCanvasComponent parent, DasAxis timeAxis) {
         this.parent= parent;
         this.dragRenderer= new HorizontalRangeGesturesRenderer(parent);
         this.timeAxis= timeAxis;
@@ -51,15 +51,11 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
     public static TimeRangeSelectorMouseModule create(DasPlot parent) {
         DasAxis axis= parent.getXAxis();
         TimeRangeSelectorMouseModule result=null;
-        if (axis instanceof DasTimeAxis) {
-            result= new TimeRangeSelectorMouseModule(parent,(DasTimeAxis)parent.getXAxis());
-        } else {
-            edu.uiowa.physics.pw.das.util.DasDie.die("XAxis is not a DasTimeAxis!!!");
-        }
+        result= new TimeRangeSelectorMouseModule(parent, parent.getXAxis());
         return result;
     }
     
-    public void mouseRangeSelected(MouseRangeSelectionEvent e0) {
+     public void mouseRangeSelected(MouseRangeSelectionEvent e0) {
         MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
         MouseRangeGestureSelectionEvent e1= (MouseRangeGestureSelectionEvent)e;
         edu.uiowa.physics.pw.das.datum.Datum tmin;
