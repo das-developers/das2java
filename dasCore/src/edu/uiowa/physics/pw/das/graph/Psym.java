@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.geom.Line2D;
 import java.awt.image.*;
 
@@ -45,14 +46,6 @@ public class Psym implements Enumeration {
         "cross"      //4        
     };
     
-    private static final boolean[] DRAWS_LINES = {
-        false,
-        false, //1 DOTS
-        false, //2 CIRCLES
-        false, //3 TRIANGLES
-        false, //
-    };
-    
     public static final Psym NONE = new Psym(0);
     
     public static final Psym DOTS = new Psym(1);
@@ -64,7 +57,10 @@ public class Psym implements Enumeration {
     public static final Psym CROSS = new Psym(4);
     
     private int nameIndex;
-    Line2D.Double line;
+    
+    
+    private Line2D line = new Line2D.Double();
+    private Ellipse2D ellipse = new Ellipse2D.Double();
     
     ImageIcon imageIcon;
     
@@ -90,65 +86,92 @@ public class Psym implements Enumeration {
         return imageIcon;
     }
     
-    public boolean drawsLines() {
-        return DRAWS_LINES[nameIndex];
-    }
-    
     /** Draw the psym at the given coordinates.
      * if <code>drawsLines()</code> returns false, then the
      * ix and iy parameters are ignored.
      */
-    public void draw(Graphics g, int x, int y, float size) {      
+    public void draw(Graphics g, double x, double y, float size) {
+        //We are not guaranteed to get a Graphics2D.
+        Graphics2D g2 = (Graphics2D)(g instanceof Graphics2D ? g : null);
+        
         switch (nameIndex) {
             case 0: //LINES
                 break;
             case 1: //DOTS
-                if ( size<=1.f ) {
-                    g.drawLine(x,y,x,y);
+                if ( size < 1f ) {
+                    if (g instanceof Graphics2D) {
+                        ellipse.setFrame(x, y, 1, 1);
+                        g2.fill(ellipse);
+                    }
+                    else {
+                        g.fillOval((int)x, (int)y, 1, 1);
+                    }
                 } else {
-                    g.fillOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
+                    if (g instanceof Graphics2D) {
+                        ellipse.setFrame(x-size, y-size, size*2, size*2);
+                        g2.fill(ellipse);
+                    }
+                    else {
+                        g.fillOval((int)(x - size), (int)(x - size), (int)(size*2), (int)(size*2));
+                    }
                 }
                 break;
             case 2: //CIRCLES
                 Color color0= g.getColor();
+                ellipse.setFrame(x - size, y - size, size * 2, size * 2);
                 g.setColor(Color.lightGray);
-                g.fillOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
+                if (g instanceof Graphics2D) {
+                    g2.fill(ellipse);
+                }
+                else {
+                    g.fillOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
+                }
                 g.setColor(color0);
-                g.drawOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
+                if (g instanceof Graphics2D) {
+                    g2.draw(ellipse);
+                }
+                else {
+                    g.drawOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
+                }
                 break;
             case 3: //TRIANGLES
-                drawTriangle(g, x, y, (int)size);
+                drawTriangle(g, x, y, size);
                 break;
             case 4: //CROSS
-                g.drawLine((int)(x-size), y, (int)(x+size), y);
-                g.drawLine(x, (int)(y-size), x, (int)(y+size));
-                break;
-            case 5:
+                if (g instanceof Graphics2D) {
+                    line.setLine(x-size, y, x+size, y);
+                    g2.draw(line);
+                    line.setLine(x, y-size, x, y+size);
+                    g2.draw(line);
+                }
+                else {
+                    g.drawLine((int)(x-size), (int)y, (int)(x+size), (int)y);
+                    g.drawLine((int)x, (int)(y-size), (int)x, (int)(y+size));
+                }
                 break;
             default: throw new IllegalArgumentException("Invalid nameIndex for psym");
         }
     }
     
-    public void drawLine(Graphics2D graphics, int x0, int y0, int x, int y ) {
-        if ( nameIndex==0 ) {
-            line.setLine(x0,y0,x,y);
-            graphics.draw(line);
-        } else if ( nameIndex==5 ) {
-            int xMid= (x0 + x) / 2;
-            line.setLine(x0,y0,xMid,y0);  graphics.draw(line);
-            line.setLine(xMid,y0,xMid,y);  graphics.draw(line);
-            line.setLine(xMid,y,x,y);  graphics.draw(line);
+    public void drawTriangle(Graphics g, double x, double y, float size ) {
+        if (g instanceof Graphics2D) {
+            Graphics2D g2 = (Graphics2D)g;
+            line.setLine(x, y-size, x+size, y+size);
+            g2.draw(line);
+            line.setLine(x+size, y+size, x-size, y+size);
+            g2.draw(line);
+            line.setLine(x-size, y+size, x, y-size);
+            g2.draw(line);
+        }
+        else {
+            g.drawLine((int)x, (int)(y-size), (int)(x+size), (int)(y+size));
+            g.drawLine((int)(x+size), (int)(y+size), (int)(x-size), (int)(y+size));
+            g.drawLine((int)(x-size), (int)(y+size), (int)x, (int)(y-size));
         }
     }
     
-    public void drawTriangle(Graphics g, int x, int y, int size ) {
-        g.drawLine(x, y-size, x+size, y+size);
-        g.drawLine(x+size, y+size, x-size, y+size);
-        g.drawLine(x-size, y+size, x, y-size);
-    }
-    
     public static Psym parsePsym(String str) {
-        if (str.equals("lines")) {
+        if (str.equals("none")) {
             return NONE;
         }
         else if (str.equals("dots")) {
@@ -167,5 +190,6 @@ public class Psym implements Enumeration {
             throw new IllegalArgumentException(str);
         }
     }
+    
 }
 

@@ -53,10 +53,13 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import javax.xml.parsers.*;
+import org.apache.batik.svggen.*;
 
 /** TODO
  * @author eew
@@ -89,6 +92,146 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         int join = BasicStroke.JOIN_MITER;
         float[] dash = new float[] {thick * 4.0f, thick * 4.0f};
         STROKE_DASHED = new BasicStroke(thick, cap, join, thick, dash, 0.0f);
+    }
+    
+    /* Canvas actions */
+    
+    private static abstract class CanvasAction extends AbstractAction {
+        static DasCanvas currentCanvas;
+        CanvasAction(String label) { super(label); }
+    }
+    
+    public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
+        JFileChooser pngFileChooser;
+        JPanel pngFileNamePanel;
+        JTextField pngFileTextField;
+            
+        public void actionPerformed(ActionEvent e) {
+            if (pngFileNamePanel == null) {
+                pngFileNamePanel = new JPanel();
+                pngFileNamePanel.setLayout(new BoxLayout(pngFileNamePanel, BoxLayout.X_AXIS));
+                pngFileTextField = new JTextField(32);
+                pngFileTextField.setMaximumSize(pngFileTextField.getPreferredSize());
+                pngFileChooser = new JFileChooser();
+                pngFileChooser.setApproveButtonText("Select File");
+                pngFileChooser.setDialogTitle("Write to PNG");
+                JButton b = new JButton("Browse");
+                b.setActionCommand("pngBrowse");
+                b.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        int choice = pngFileChooser.showDialog(currentCanvas, "Select File");
+                        if (choice == JFileChooser.APPROVE_OPTION) {
+                            pngFileTextField.setText(pngFileChooser.getSelectedFile().getPath());
+                        }
+                    }
+                });
+                pngFileNamePanel.add(pngFileTextField);
+                pngFileNamePanel.add(b);
+            }
+            pngFileTextField.setText(pngFileChooser.getCurrentDirectory().getPath());
+            String[] options = {"Save as PNG", "Cancel"};
+            int choice = JOptionPane.showOptionDialog(currentCanvas, pngFileNamePanel,
+                "Write to PNG", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
+            if (choice == 0) {
+                DasCanvas canvas = currentCanvas;
+                try {
+                    canvas.writeToPng(pngFileTextField.getText());
+                }
+                catch (java.io.IOException ioe) {
+                    edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                }
+            }
+        }
+    };
+    
+    public static final Action SAVE_AS_SVG_ACTION = new CanvasAction("Save as SVG") {  
+        JFileChooser svgFileChooser;
+        JPanel svgFileNamePanel;
+        JTextField svgFileTextField;
+            
+        public void actionPerformed(ActionEvent e) {
+            if (svgFileNamePanel == null) {
+                svgFileNamePanel = new JPanel();
+                svgFileNamePanel.setLayout(new BoxLayout(svgFileNamePanel, BoxLayout.X_AXIS));
+                svgFileTextField = new JTextField(32);
+                svgFileTextField.setMaximumSize(svgFileTextField.getPreferredSize());
+                svgFileChooser = new JFileChooser();
+                svgFileChooser.setApproveButtonText("Select File");
+                svgFileChooser.setDialogTitle("Write to PNG");
+                JButton b = new JButton("Browse");
+                b.setActionCommand("pngBrowse");
+                b.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        int choice = svgFileChooser.showDialog(currentCanvas, "Select File");
+                        if (choice == JFileChooser.APPROVE_OPTION) {
+                            svgFileTextField.setText(svgFileChooser.getSelectedFile().getPath());
+                        }
+                    }
+                });
+                svgFileNamePanel.add(svgFileTextField);
+                svgFileNamePanel.add(b);
+            }
+            svgFileTextField.setText(svgFileChooser.getCurrentDirectory().getPath());
+            String[] options = {"Save as SVG", "Cancel"};
+            int choice = JOptionPane.showOptionDialog(currentCanvas, svgFileNamePanel,
+                "Write to SVG", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
+            if (choice == 0) {
+                DasCanvas canvas = currentCanvas;
+                try {
+                    canvas.writeToSVG(svgFileTextField.getText());
+                }
+                catch (java.io.IOException ioe) {
+                    edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                }
+            }
+        }
+    };
+    
+    public static final Action EDIT_DAS_PROPERTIES_ACTION = new AbstractAction("DAS Properties") {
+        public void actionPerformed(ActionEvent e) {
+            edu.uiowa.physics.pw.das.DasProperties.showEditor();
+        }
+    };
+    
+    public static final Action PRINT_ACTION = new CanvasAction("Print...") {
+        public void actionPerformed(ActionEvent e) {
+            Printable p = currentCanvas.getPrintable();
+            PrinterJob pj = PrinterJob.getPrinterJob();
+            pj.setPrintable(p);
+            if (pj.printDialog()) {
+                try {
+                    pj.print();
+                }
+                catch (PrinterException pe) {
+                    Object[] message = {"Error printing", pe.getMessage() };
+                    JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    };
+    
+    public static final Action REFRESH_ACTION = new CanvasAction("Refresh") {
+        public void actionPerformed(ActionEvent e) {
+        }
+    };
+    
+    public static final Action ABOUT_ACTION = new CanvasAction("About") {
+        public void actionPerformed(ActionEvent e) {
+            JOptionPane.showConfirmDialog( currentCanvas, "release version " + Splash.getVersion(), "about das2", JOptionPane.PLAIN_MESSAGE );
+            currentCanvas.setSize(currentCanvas.getWidth()+1, currentCanvas.getHeight()+1);
+            currentCanvas.setSize(currentCanvas.getWidth(), currentCanvas.getHeight());
+        }
+    };
+    
+    public static Action[] getActions() {
+        return new Action[] {
+            ABOUT_ACTION,
+            REFRESH_ACTION,
+            EDIT_DAS_PROPERTIES_ACTION,
+            PRINT_ACTION,
+            SAVE_AS_PNG_ACTION,
+            SAVE_AS_SVG_ACTION,
+        };
     }
     
     private final GlassPane glassPane;
@@ -132,86 +275,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         return new MouseInputAdapter() {
             public void mousePressed(MouseEvent e) {
                 Point primaryPopupLocation= e.getPoint();
+                CanvasAction.currentCanvas = DasCanvas.this;
                 popup.show( DasCanvas.this, e.getX(), e.getY());
-            }
-        };
-    }
-    
-    private ActionListener createPopupMenuListener() {
-        return new ActionListener() {
-            private JFileChooser pngFileChooser;
-            private JPanel pngFileNamePanel;
-            private JTextField pngFileTextField;
-            
-            public void actionPerformed(ActionEvent e) {
-                String command = e.getActionCommand();
-                if (command.equals("Das Properties")) {
-                    edu.uiowa.physics.pw.das.DasProperties.showEditor();
-                }
-                else if (command.equals("print")) {
-                    Printable p = DasCanvas.this.getPrintable();
-                    PrinterJob pj = PrinterJob.getPrinterJob();
-                    pj.setPrintable(p);
-                    if (pj.printDialog()) {
-                        try {
-                            pj.print();
-                        }
-                        catch (PrinterException pe) {
-                            Object[] message = {"Error printing", pe.getMessage() };
-                            JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
-                        }
-                    }
-                }
-                else if (command.equals("toPng")) {
-                    if (pngFileNamePanel == null) {
-                        pngFileNamePanel = new JPanel();
-                        pngFileNamePanel.setLayout(new BoxLayout(pngFileNamePanel, BoxLayout.X_AXIS));
-                        pngFileTextField = new JTextField(32);
-                        pngFileTextField.setMaximumSize(pngFileTextField.getPreferredSize());
-                        pngFileChooser = new JFileChooser();
-                        pngFileChooser.setApproveButtonText("Select File");
-                        pngFileChooser.setDialogTitle("Write to PNG");
-                        JButton b = new JButton("Browse");
-                        b.setActionCommand("pngBrowse");
-                        b.addActionListener(this);
-                        pngFileNamePanel.add(pngFileTextField);
-                        pngFileNamePanel.add(b);
-                    }
-                    pngFileTextField.setText(pngFileChooser.getCurrentDirectory().getPath());
-                    String[] options = {"Save as PNG", "Cancel"};
-                    int choice = JOptionPane.showOptionDialog(DasCanvas.this,
-                    pngFileNamePanel,
-                    "Write to PNG",
-                    0,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    "Ok");
-                    if (choice == 0) {
-                        DasCanvas canvas = DasCanvas.this;
-                        try {
-                            canvas.writeToPng(pngFileTextField.getText());
-                        }
-                        catch (java.io.IOException ioe) {
-                            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
-                        }
-                    }
-                }
-                else if ( command.equals("about")) {
-                    int okay= JOptionPane.showConfirmDialog( DasCanvas.this, "release version " + Splash.getVersion(), "about das2", JOptionPane.PLAIN_MESSAGE );
-                }
-                else if ( command.equals("refresh") ) {
-                    setSize(getWidth()+1, getHeight()+1);
-                    setSize(getWidth(), getHeight());
-                }
-                else if (command.equals("pngBrowse")) {
-                    int choice = pngFileChooser.showDialog(DasCanvas.this, "Select File");
-                    if (choice == JFileChooser.APPROVE_OPTION) {
-                        pngFileTextField.setText(pngFileChooser.getSelectedFile().getPath());
-                    }
-                } else {
-                    edu.uiowa.physics.pw.das.util.DasDie.println(""+command);
-                }
             }
         };
     }
@@ -219,45 +284,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private JPopupMenu createPopupMenu() {
         JPopupMenu popup= new JPopupMenu();
         
-        ActionListener popupListener = createPopupMenuListener();
-        
-        JMenuItem properties = new JMenuItem("Das Properties");
-        properties.addActionListener(popupListener);
-        properties.setToolTipText("edit global properties");
-        popup.add(properties);
-        
-        popup.addSeparator();
-        JMenuItem print = new JMenuItem("print...");
-        print.setActionCommand("print");
-        print.addActionListener(popupListener);
-        print.setToolTipText("print entire canvas");
-        popup.add(print);
-        
-        JMenuItem toPng = new JMenuItem("save as PNG...");
-        toPng.setActionCommand("toPng");
-        toPng.setToolTipText("save canvas to png image file");
-        toPng.addActionListener(popupListener);
-        popup.add(toPng);
-        popup.addSeparator();
-        
-        JMenuItem aboutMenuItem = new JMenuItem("about");
-        aboutMenuItem.setActionCommand("about");
-        aboutMenuItem.setToolTipText("version info, etc");
-        aboutMenuItem.addActionListener(popupListener);
-        popup.add(aboutMenuItem);
+        Action[] actions = getActions();
+        for (int iaction = 0; iaction < actions.length; iaction++) {
+            JMenuItem item =new JMenuItem();
+            item.setAction(actions[iaction]);
+            popup.add(item);
+        }
+
         popup.addSeparator();  
 
-        JMenuItem x = new JMenuItem("refresh");
-        x.setActionCommand("refresh");
-        x.setToolTipText("force redraw");
-        x.addActionListener(popupListener);
-        popup.add(x);
-        popup.addSeparator();  
-
-        x = new JMenuItem("close");
-        x.addActionListener(popupListener);
-        x.setToolTipText("close this popup");
-        popup.add(x);
+        JMenuItem close = new JMenuItem("close");
+        close.setToolTipText("close this popup");
+        popup.add(close);
         
         return popup;
     }
@@ -463,6 +501,31 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         finally {
             try { out.close(); } catch (IOException ioe) {}
         }
+        
+    }
+    
+    /**
+     * @param filename the specified filename
+     * @throws IOException if there is an error opening the file for writing
+     */
+    public void writeToSVG(String filename) throws IOException {
+        final FileOutputStream out = new FileOutputStream(filename);
+        
+        Document document;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            document = builder.newDocument();
+        }
+        catch (ParserConfigurationException pce) {
+            throw new RuntimeException(pce);
+        }
+        
+        SVGGraphics2D graphics = new SVGGraphics2D(document);
+	print(graphics);
+        Writer writer = new OutputStreamWriter(out, "UTF-8");
+        graphics.stream(writer, false);
+        writer.close();
         
     }
     

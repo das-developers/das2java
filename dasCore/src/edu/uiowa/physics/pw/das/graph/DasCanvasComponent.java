@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.logging.*;
 
 /**
@@ -39,6 +40,31 @@ import java.util.logging.*;
  * @author  eew
  */
 public abstract class DasCanvasComponent extends JComponent implements Editable {
+    
+    protected static abstract class CanvasComponentAction extends AbstractAction {
+        private static DasCanvasComponent currentCanvasComponent;
+        public CanvasComponentAction(String label) {
+            super(label);
+        }
+        public static DasCanvasComponent getCurrentComponent() {
+            return currentCanvasComponent;
+        }
+    }
+    
+    private static final MouseListener currentComponentListener = new MouseAdapter() {
+        public void mousePressed(MouseEvent e) {
+            DasCanvasComponent dcc = (DasCanvasComponent)SwingUtilities.getAncestorOfClass(DasCanvasComponent.class, e.getComponent());
+            CanvasComponentAction.currentCanvasComponent = (DasCanvasComponent)e.getSource();
+        }
+    };
+    
+    public static final Action PROPERTIES_ACTION = new CanvasComponentAction("Properties") {
+        public void actionPerformed(ActionEvent e) {
+            if (getCurrentComponent() != null) {
+                getCurrentComponent().showProperties();
+            }
+        }
+    };
     
     private DasRow row;
     private DasColumn column;
@@ -56,6 +82,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         mouseAdapter= new DasMouseInputAdapter(this);
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
+        addMouseListener(currentComponentListener);
         try {
             setDasName("c_" + Integer.toString(this.hashCode()));
         }
@@ -285,6 +312,12 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     public DasMouseInputAdapter getMouseAdapter() {
         return mouseAdapter;
+    }
+    
+    public Action[] getActions() {
+        return new Action[] {
+            PROPERTIES_ACTION,
+        };
     }
     
 }

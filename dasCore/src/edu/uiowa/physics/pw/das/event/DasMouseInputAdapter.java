@@ -227,24 +227,24 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
         popupListener = createPopupMenuListener();
-        
-        if (parent instanceof Editable) {
-            JMenuItem properties = new JMenuItem("properties");
-            properties.addActionListener(popupListener);
-            properties.setToolTipText("edit object properties");
-            popup.add(properties);
-            popup.addSeparator();
+
+        Action[] componentActions = parent.getActions();
+        for (int iaction = 0; iaction < componentActions.length; iaction++) {
+            JMenuItem item = new JMenuItem();
+            item.setAction(componentActions[iaction]);
+            popup.add(item);
         }
-        JMenuItem print = new JMenuItem("print...");
-        print.setActionCommand("print");
-        print.addActionListener(popupListener);
-        print.setToolTipText("print entire canvas");
-        popup.add(print);
-        JMenuItem toPng = new JMenuItem("save as PNG...");
-        toPng.setActionCommand("toPng");
-        toPng.setToolTipText("save canvas to png image file");
-        toPng.addActionListener(popupListener);
-        popup.add(toPng);
+        
+        popup.addSeparator();
+        
+        Action[] canvasActions = DasCanvas.getActions();
+        for (int iaction = 0; iaction < canvasActions.length; iaction++) {
+            JMenuItem item = new JMenuItem();
+            item.setAction(canvasActions[iaction]);
+            popup.add(item);
+        }
+        
+        popup.addSeparator();
         
         return popup;
     }

@@ -32,6 +32,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.geom.Line2D;
 
 /**
@@ -54,6 +55,9 @@ public class SymbolLineRenderer extends Renderer {
     
     /** Holds value of property antiAliased. */
     private boolean antiAliased= ("on".equals(DasProperties.getInstance().get("antiAlias")));
+    
+    /** The 'image' of the data */
+    private GeneralPath path;
     
     public SymbolLineRenderer(DataSet ds) {
         super(ds);
@@ -127,35 +131,42 @@ public class SymbolLineRenderer extends Renderer {
             }
         }
         
-        if ( psymConnector != PsymConnector.NONE ) {
+        /** Big chunk of code to support one PsymConnector
+         * will have to reevaluate the need to have PsymConnectors and
+         * maybe move Psym10 functionality to renderer as a histogram property.
+         */
+        if ( psymConnector == PsymConnector.PSYM10 ) {
             double x0 = dataSet.getXTagDouble(ixmin, xUnits);
             double y0 = dataSet.getDouble(ixmin, yUnits);
-            int ix0 = xAxis.transform(x0, xUnits);
-            int iy0 = yAxis.transform(y0 ,yUnits);
-            for (int i = ixmin+1; i <= ixmax; i++) {
-                double x = dataSet.getXTagDouble(i,xUnits);
-                double y = dataSet.getDouble(i,yUnits);
-                int ix = xAxis.transform(x, xUnits);
-                int iy = yAxis.transform(y, yUnits);
+            double i0 = xAxis.transform(x0, xUnits);
+            double j0 = yAxis.transform(y0 ,yUnits);
+            for (int index = ixmin+1; index <= ixmax; index++) {
+                double x = dataSet.getXTagDouble(index, xUnits);
+                double y = dataSet.getDouble(index, yUnits);
+                double i = xAxis.transform(x, xUnits);
+                double j = yAxis.transform(y, yUnits);
                 if ( !yUnits.isFill(y) ) {
                     if ( !yUnits.isFill(y0) ) {
                         if (Math.abs(x - x0) < xSampleWidth) {
-                            psymConnector.drawLine(graphics,ix0,iy0,ix,iy,lineWidth);
+                            psymConnector.drawLine(graphics, i0, j0, i, j, lineWidth);
                         }
                     }
                     x0= x;
                     y0= y;
-                    ix0= ix;
-                    iy0= iy;
+                    i0= i;
+                    j0= j;
                 }
             }
             graphics.setStroke(new BasicStroke(1.0f));
         }
-        for (int i = ixmin; i <= ixmax; i++) {
-            if ( ! yUnits.isFill(dataSet.getDouble(i,yUnits)) ) {
-                int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
-                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
-                psym.draw( graphics, x, y, (float)symSize );
+        else {
+            psymConnector.draw(graphics, path, lineWidth);
+        }
+        for (int index = ixmin; index <= ixmax; index++) {
+            if ( ! yUnits.isFill(dataSet.getDouble(index,yUnits)) ) {
+                double i = xAxis.transform(dataSet.getXTagDouble(index,xUnits),xUnits);
+                double j = yAxis.transform(dataSet.getDouble(index,yUnits),yUnits);
+                psym.draw( graphics, i, j, (float)symSize );
             }
         }
         
@@ -167,6 +178,75 @@ public class SymbolLineRenderer extends Renderer {
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
+        path = new GeneralPath();
+        
+        VectorDataSet dataSet= (VectorDataSet)getDataSet();
+        if (dataSet == null || dataSet.getXLength() == 0) {            
+            return;
+        }
+        Dimension d;
+        
+        double xmin, xmax, ymin, ymax;
+        int ixmax, ixmin;
+        
+        Units xUnits= xAxis.getUnits();
+        Units yUnits= yAxis.getUnits();
+        
+        xmax= xAxis.getDataMaximum().doubleValue(xUnits);
+        xmin= xAxis.getDataMinimum().doubleValue(xUnits);
+        ymax= yAxis.getDataMaximum().doubleValue(yUnits);
+        ymin= yAxis.getDataMinimum().doubleValue(yUnits);
+        
+        ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
+        if ( ixmin>0 ) ixmin--;
+        ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
+        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
+        
+        double xSampleWidth;
+        if (dataSet.getProperty("xSampleWidth") != null) {
+            Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xSampleWidth");
+            xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
+        }
+        else {
+            //Try to load the legacy sample-width property.
+            String xSampleWidthString = (String)dataSet.getProperty("x_sample_width");
+            if (xSampleWidthString != null) {
+                double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
+                xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
+            }
+            else {
+                xSampleWidth = 1e31;
+            }
+        }
+        
+        if ( psymConnector != PsymConnector.NONE ) {
+            double x0 = -Double.MAX_VALUE;
+            double y0 = -Double.MAX_VALUE;
+            double i0 = -Double.MAX_VALUE;
+            double j0 = -Double.MAX_VALUE;
+            boolean skippedLast = true;
+            for (int index = ixmin; index <= ixmax; index++) {
+                double x = dataSet.getXTagDouble(index, xUnits);
+                double y = dataSet.getDouble(index, yUnits);
+                double i = xAxis.transform(x, xUnits);
+                double j = yAxis.transform(y, yUnits);
+                if ( yUnits.isFill(y)) {
+                    skippedLast = true;
+                }
+                else if (skippedLast || Math.abs(x - x0) > xSampleWidth) {
+                    path.moveTo((float)i, (float)j);
+                    skippedLast = false;
+                }
+                else {
+                    path.lineTo((float)i, (float)j);
+                    skippedLast = false;
+                }
+                x0= x;
+                y0= y;
+                i0= i;
+                j0= j;
+            }
+        }
     }
     
 

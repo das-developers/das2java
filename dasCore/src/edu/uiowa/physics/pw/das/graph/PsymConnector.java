@@ -44,7 +44,7 @@ public class PsymConnector implements Enumeration {
     Line2D line;
     
     public static final PsymConnector NONE= new PsymConnector( "None", null );
-    public static final PsymConnector SOLID= new PsymConnector( "Solid", new BasicStroke( 1.0f ) );
+    public static final PsymConnector SOLID= new PsymConnector( "Solid", new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
     public static final PsymConnector DOTFINE= new PsymConnector( "DotFine",
     new BasicStroke( 1.0f, BasicStroke.CAP_ROUND,
     BasicStroke.JOIN_ROUND, 1.0f, new float[] {1.5f,2.0f}, 0.f ) );
@@ -106,11 +106,22 @@ public class PsymConnector implements Enumeration {
         }
         return cacheStroke;
     }
+
+    public void draw(Graphics2D g, GeneralPath path, float width) {
+        if (stroke != null ) {
+            Stroke s = g.getStroke();
+            g.setStroke(getStroke(width));
+            g.draw(path);
+            g.setStroke(s);
+        }
+    }
     
-    public void drawLine(Graphics2D g, int x1, int y1, int x2, int y2, float width ) {
+    public void drawLine(Graphics2D g, double x1, double y1, double x2, double y2, float width ) {
         // jbf: this thing really wants a state, especially if it is going to
         // keep track of the dash phase between calls.  Perhaps this needs a
         // state object to go with it.
+        // eew: Creating a GeneralPath object for the line removes the need to
+        // keep track of the dash phase.
         if ( stroke==null ) {
             return;
         } else {
@@ -136,7 +147,5 @@ public class PsymConnector implements Enumeration {
     public String toString() {
         return name;
     }
-    
-    
     
 }

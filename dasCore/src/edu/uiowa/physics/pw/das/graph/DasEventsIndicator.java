@@ -114,11 +114,11 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
                 int ivds1= vds.getXLength();
                 for ( int i=ivds0; i<ivds1; i++ ) {
                     Datum x= vds.getXTagDatum(i);
-                    int ix= axis.transform(x);
+                    int ix= (int)axis.transform(x);
                     int iwidth;
                     if ( uc!=null ) {
                         Datum y= widthsDs.getDatum(i);
-                        iwidth= axis.transform( x.add( y ) ) - ix;
+                        iwidth= (int)axis.transform( x.add( y ) ) - ix;
                     } else {
                         iwidth= 1;
                     }

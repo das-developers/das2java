@@ -1905,15 +1905,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return datumFormatter;
     }
     
-    /** TODO
-     * @param datum
-     * @return
+    /** Transforms a Datum in data coordinates to a horizontal or vertical
+     * position on the parent canvas.
+     * @param datum a data value
+     * @return Horizontal or vertical position on the canvas.
      */
-    public int transform(Datum datum) {
+    public double transform(Datum datum) {
         return transform( datum.doubleValue(getUnits()), getUnits() );
     }
     
-    int transform( double data, Units units ) {
+    /** Transforms a double in the given units in data coordinates to a horizontal or vertical
+     * position on the parent canvas.
+     * @param data a data value
+     * @param units the units of the given data value.
+     * @return Horizontal or vertical position on the canvas.
+     */
+    double transform( double data, Units units ) {
         DasDevicePosition range;
         if (isHorizontal()) {
             range= getColumn();
@@ -1924,13 +1931,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
-    int transform( double data, Units units, int dmin, int dmax ) {
+    double transform( double data, Units units, int dmin, int dmax ) {
         if ( units!=dataRange.getUnits() ) {
             data= units.convertDoubleTo(dataRange.getUnits(), data);
         }
         
-        int device_range= (dmax - dmin);
-        int result;
+        double device_range= (dmax - dmin);
+        double result;
         
         if (dataRange.isLog()) {
             
@@ -1939,14 +1946,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             double data_log_max = Math.log(dataRange.getMaximum());
             double data_log_range = data_log_max - data_log_min;
             
-            result= (int)(device_range*(data_log-data_log_min)/data_log_range) + dmin;
+            result= (device_range*(data_log-data_log_min)/data_log_range) + dmin;
         }
         else {
             
             double minimum= dataRange.getMinimum();
             double maximum= dataRange.getMaximum();
             double data_range = maximum-minimum;
-            result= (int)(device_range*(data-minimum)/data_range ) + dmin;
+            result= (device_range*(data-minimum)/data_range ) + dmin;
         }
         
         if ( result > 10000 ) result=10000;
@@ -1954,7 +1961,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
-    public Datum invTransform(int idata) {
+    public Datum invTransform(double idata) {
         double data;
         DasDevicePosition range = (isHorizontal()
         ? (DasDevicePosition) getColumn()

@@ -157,7 +157,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
     
     public void drawContent(Graphics2D g) {
         super.drawContent(g);
-        int ix= this.getXAxis().transform(xValue);
+        int ix= (int)this.getXAxis().transform(xValue);
         DasRow row= this.getRow();
         int iy0= row.getDMinimum();
         int iy1= row.getDMaximum();

@@ -302,19 +302,19 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                 
                 for (int ibin=0; ibin < data.getXLength(); ibin++) {
                     
-                    int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
+                    int x0= (int)getXAxis().transform(binStarts[ibin],xbins.getUnits());
                     int x1;
                     x1=x0+1; // 1 pixel wide
                     double zz= data.getDouble( ibin, j, data.getZUnits() );
                     if ( !data.getZUnits().isFill(zz) ) {
-                        int yAvg= zAxisComponent.transform( zz, data.getZUnits() );
+                        int yAvg= (int)zAxisComponent.transform( zz, data.getZUnits() );
                         yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
                         int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
                         yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
                             double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
                             if (peakValue <= zAxisMax) {
-                                int yMax= zAxisComponent.transform(peakValue, peaks.getZUnits());
+                                int yMax= (int)zAxisComponent.transform(peakValue, peaks.getZUnits());
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
                                 if (peaksIndicator==PeaksIndicator.MaxLines) {
                                     g.drawLine(x0,yMax,x0,yMax);
@@ -406,8 +406,8 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
             repaint();
         }
         
-        public int transform( double x, Units units ) {
-            int result= zAxis.transform(x,units,littleRowMax,littleRowMin);
+        public double transform( double x, Units units ) {
+            double result= zAxis.transform(x,units,littleRowMax,littleRowMin);
             return result;
         }
         

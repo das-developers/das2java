@@ -139,7 +139,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return result;
     }
     
-    public int transform(double value, Units units) {
+    public double transform(double value, Units units) {
         if ( units!=this.labelUnits ) {
             throw new IllegalArgumentException("units don't match");
         }
@@ -191,7 +191,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     public int getInterItemSpace() {
-        return Math.abs(transform(labels[1])-transform(labels[0]));
+        return (int)Math.abs(transform(labels[1])-transform(labels[0]));
     }
     
     public int getItemMin( Datum d ) {        
