@@ -116,7 +116,11 @@ public class HttpFileObject implements FileObject {
     }
     
     protected HttpFileObject( HttpFileSystem wfs, String pathname, Date modifiedDate ) {
-        this.localFile= new File( wfs.getLocalRoot(), pathname );
+        this.localFile= new File( wfs.getLocalRoot(), pathname );   
+        
+        // until we can check for file dates on the server, don't keep cached copies around
+        this.localFile.deleteOnExit();
+        
         this.wfs= wfs;
         this.pathname= pathname;
         if ( !localFile.canRead() ) {
@@ -132,15 +136,7 @@ public class HttpFileObject implements FileObject {
         } else {
             this.isFolder= localFile.isDirectory();
         }
-        // until we can check for file dates on the server, always transfer the file.
-        try {
-            if ( canRead() ) {
-                getLocalFile().delete();
-            }
-            wfs.transferFile( pathname, getLocalFile() );
-        } catch ( Exception e ) {
-            throw new RuntimeException(e);
-        }
+                
     }
     
     public String toString() {
