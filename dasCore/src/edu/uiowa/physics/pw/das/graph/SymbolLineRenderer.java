@@ -151,7 +151,11 @@ public class SymbolLineRenderer extends Renderer {
             if ( ! yUnits.isFill(dataSet.getDouble(index,yUnits)) ) {
                 double i = xAxis.transform(dataSet.getXTagDouble(index,xUnits),xUnits);
                 double j = yAxis.transform(dataSet.getDouble(index,yUnits),yUnits);
-                psym.draw( graphics, i, j, (float)symSize );
+                if ( Double.isNaN(j) ) {
+                    //DasApplication.getDefaultApplication().getDebugLogger().warning("got NaN");
+                } else {
+                    psym.draw( graphics, i, j, (float)symSize );
+                }
             }
         }
         
