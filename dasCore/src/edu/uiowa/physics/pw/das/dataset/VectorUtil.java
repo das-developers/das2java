@@ -141,26 +141,47 @@ public class VectorUtil {
     }
     
     public static void dumpToAsciiStream(VectorDataSet vds, WritableByteChannel out) {
+        dumpToDas2Stream(vds, out, true);
+    }
+
+    public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
+        dumpToAsciiStream(vds, out);
+    }
+    
+    private static void dumpToDas2Stream( VectorDataSet vds, WritableByteChannel out, boolean asciiTransferTypes ) {
+        if (vds.getXLength() == 0) {
+            try {
+                out.close();
+            }
+            catch (IOException ioe) {
+                //Do nothing.
+            }
+            return;
+        }
         try {
-            Units yUnits = vds.getYUnits();
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             sd.setProperty("start", vds.getXTagDatum(0).toString());
             sd.setProperty("end", vds.getXTagDatum(vds.getXLength()-1));
-            /** == This can be removed after 2004-10-19 == */
-            if (TimeUtil.now().lt(TimeUtil.createValid("2004-05-19"))) sd.setProperty("comment", "This *IS* a das2 stream, and it looks like it.");
-            /** == == */
             
-            DataTransferType ascii10 = DataTransferType.getByName("ascii10");
-            DataTransferType ascii24 = DataTransferType.getByName("ascii24");
+            DataTransferType xTransferType;
+            DataTransferType yTransferType;
 
+            if ( asciiTransferTypes ) {
+                xTransferType= DataTransferType.getByName("ascii24");
+                yTransferType= DataTransferType.getByName("ascii10");
+            } else {
+                xTransferType= DataTransferType.getByName("sun_real8");
+                yTransferType= DataTransferType.getByName("sun_real4");
+            }
+            
             producer.streamDescriptor(sd);
             DatumVector[] yValues = new DatumVector[1];
-            StreamXDescriptor xDescriptor = new StreamXDescriptor();
-            xDescriptor.setDataTransferType(ascii24);
+            StreamXDescriptor xDescriptor = new StreamXDescriptor();                
+            xDescriptor.setDataTransferType(xTransferType);
             xDescriptor.setUnits(vds.getXUnits());
             StreamMultiYDescriptor yDescriptor = new StreamMultiYDescriptor();
-            yDescriptor.setDataTransferType(ascii10);
+            yDescriptor.setDataTransferType(yTransferType);
             yDescriptor.setUnits(vds.getYUnits());
             PacketDescriptor pd = new PacketDescriptor();
             pd.setXDescriptor(xDescriptor);
@@ -168,8 +189,7 @@ public class VectorUtil {
             producer.packetDescriptor(pd);
             for (int i = 0; i < vds.getXLength(); i++) {
                 Datum xTag = vds.getXTagDatum(i);
-                yValues[0] = DatumVector.newDatumVector
-                    (new double[]{vds.getDouble(i, yUnits)}, yUnits);
+                yValues[0] = toDatumVector(vds.getDatum(i));
                 producer.packet(pd, xTag, yValues);
             }
             producer.streamClosed(sd);
@@ -179,42 +199,9 @@ public class VectorUtil {
         }
     }
     
-    public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
-        PrintStream pout= new PrintStream(out);
-        
-        Datum base=null;
-        Units offsetUnits= null;
-        
-        if ( vds.getXUnits() instanceof LocationUnits ) {
-            base= vds.getXTagDatum(0);
-            offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
-            if ( offsetUnits==Units.microseconds ) {
-                offsetUnits= Units.seconds;
-            }
-            pout.println("# X is first value, offset in "+offsetUnits+" from "+base);
-        } else {
-            pout.println("# X is first value, in "+vds.getXUnits());
-        }
-        
-        pout.println("# Y values follow, in "+vds.getYUnits());
-        
-        pout.println("#");
-        pout.println("# File created on: "+TimeUtil.now().toString()+" UT");
-        String tab= "\011";
-        
-        for (int i=0; i<vds.getXLength(); i++) {
-            double x;
-            if ( base!=null ) {
-                x= vds.getXTagDatum(i).subtract(base).doubleValue(offsetUnits);
-            } else {
-                x= vds.getXTagDouble(i,vds.getXUnits());
-            }
-            pout.print(""+x+tab);
-            pout.print(""+vds.getDouble(i,vds.getYUnits()));
-            pout.println();
-        }
-        
-        pout.close();
+    private static DatumVector toDatumVector(Datum d) {
+        double[] array = { d.doubleValue(d.getUnits()) };
+        return DatumVector.newDatumVector(array, d.getUnits());
     }
     
 }
