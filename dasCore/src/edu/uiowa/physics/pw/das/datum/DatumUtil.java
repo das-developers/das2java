@@ -86,7 +86,7 @@ public final class DatumUtil {
     }
     
     public static int fractionalDigits( Datum resolution ) {
-        int DOUBLE_DIGITS= 12;  // this is <15 because math operations introduce noise in more significant digits
+        int DOUBLE_DIGITS= 10;  // this is <15 because math operations introduce noise in more significant digits
         double d= Math.abs( resolution.doubleValue() );
         int e= (int)Math.floor( DasMath.log10(d)+0.0001 );
         long i= (long)(d/(DasMath.exp10(e-(DOUBLE_DIGITS-1)))+0.5);
