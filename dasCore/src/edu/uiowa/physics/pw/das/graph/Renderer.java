@@ -58,6 +58,10 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         this((ds == null ? (DataSetDescriptor)null : new ConstantDataSetDescriptor(ds)));
     }
     
+    protected Renderer() {
+        this((DataSetDescriptor)null);
+    }
+    
     /** Creates a new instance of Renderer
      * @deprecated use {@line #Renderer(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor)}
      */

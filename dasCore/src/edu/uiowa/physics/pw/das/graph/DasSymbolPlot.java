@@ -51,7 +51,7 @@ public class DasSymbolPlot extends DasPlot {
     
     protected DasSymbolPlot(DataSetDescriptor dsd, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
         super(xAxis,yAxis,row,column);
-        renderer= new SymbolLineRenderer(this,dsd);
+        renderer= new SymbolLineRenderer(dsd);
         addRenderer(renderer);
     }
 
