@@ -48,7 +48,7 @@ public interface DasProgressMonitor {
      * <code>ProgressMonitor</code>.
      * @param taskSize maximum value for the task progress.
      */
-    void setTaskSize(int taskSize);    
+    void setTaskSize(long taskSize);    
     
     /** Notifies the ProgressMonitor of a change in the progress
      * of the task.
@@ -57,12 +57,12 @@ public interface DasProgressMonitor {
      * possibly if started() has not been called or
      * finished() has been called.
      */    
-    void setTaskProgress(int position) throws IllegalArgumentException;
+    void setTaskProgress(long position) throws IllegalArgumentException;
 
     /** Returns the current progress of the monitored task.
      * @return the current progress of the monitored task.
      */    
-    int getTaskProgress();
+    long getTaskProgress();
 
     /** Notifies the <code>ProgressMonitor</code> that the task
      * being monitored has started.  If the <code>ProgressMonitor</code>
