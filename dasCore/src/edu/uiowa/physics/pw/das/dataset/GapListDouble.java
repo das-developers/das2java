@@ -62,6 +62,7 @@ class GapListDouble {
         }
     }
     
+    /* TODO: document output: what is ~? */
     public int indexOf(double d) {
         if (gapStart != 0 && array[gapStart - 1] >= d) {
             return binarySearch(d, array, 0, gapStart);
