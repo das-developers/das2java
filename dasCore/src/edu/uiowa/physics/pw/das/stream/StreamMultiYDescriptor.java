@@ -51,7 +51,11 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         }
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
-        if (type != null) {
+    	String unitsString = element.getAttribute("units");
+	if (unitsString != null) {
+            units = Units.getByName(unitsString);
+        }
+    if (type != null) {
             transferType = type;
         }
         else {
