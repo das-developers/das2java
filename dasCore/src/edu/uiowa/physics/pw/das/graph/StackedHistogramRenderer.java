@@ -115,27 +115,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         
         setDataSetDescriptor( dsd );
     }
-    
-    public static DasStackedHistogramPlot create( DataSetDescriptor dsd, DasAxis xAxis, DasAxis zAxis) {
-        if (dsd instanceof StreamDataSetDescriptor) {
-            StreamDataSetDescriptor sdsd = (StreamDataSetDescriptor)dsd;
-            if (sdsd.getProperty("form").equals("x_tagged_y_scan")) {
-                PacketDescriptor pd = sdsd.getDefaultPacketDescriptor();
-                StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptors().get(0);
-                Units units= yscan.getYUnits();
-                double[] y_coordinate = yscan.getYTags();
-                return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis( DatumVector.newDatumVector(y_coordinate,units),DasAxis.VERTICAL), zAxis);
-            }
-        }
-        else {
-            double[] y_coordinate = (double[])dsd.getProperty("y_coordinate");
-            Units units= Units.dimensionless;
-            DatumVector datums= DatumVector.newDatumVector(y_coordinate,units);
-            return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis(datums,DasAxis.VERTICAL), zAxis);
-        }
-        return null;
-    }
-    
+       
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         if (getDataSet()==null && lastException!=null ) {
@@ -259,8 +239,10 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         }
         
         DataSetRebinner rebinner = new Rebinner();
+        
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
+        TableDataSet weights= (TableDataSet)data.getPlanarView("weights");
         
         DasLabelAxis yAxis= (DasLabelAxis)yAxis_1;
         
@@ -313,8 +295,8 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                         //yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
                             double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
-                            if (peakValue <= zAxisMax) {
-                                int yMax= (int)zAxis.transform( zz, data.getZUnits(), yBase, yBase1 );
+                            if (peakValue <= zAxisMax) {                                
+                                int yMax= (int)zAxis.transform( peakValue, data.getZUnits(), yBase, yBase1 );
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
                                 if (peaksIndicator==PeaksIndicator.MaxLines) {
                                     g.drawLine(x0,yMax,x0,yMax);
@@ -344,6 +326,8 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         parent.setCursor(cursor0);
         getParent().repaint();
         
+        if ( sliceRebinnedData ) super.ds= data;
+        
     }
     
     public DasAxis getZAxis() {
@@ -367,15 +351,17 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
             if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
             Units rdUnits= x.getUnits();
-            if ( rdUnits instanceof LocationUnits ) {
+            if ( rdUnits instanceof LocationUnits ) {                
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
             
             try {
                 DataSet result;
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                    DasApplication.getDefaultApplication().getLogger().fine("using rebinner "+highResRebinner);
                     result= highResRebinner.rebin( ds, x, y );
                 } else {
+                    DasApplication.getDefaultApplication().getLogger().fine("using rebinner "+lowResRebinner);
                     result= lowResRebinner.rebin( ds, x, y );
                 }
                 return result;
@@ -465,15 +451,15 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     public Element getDOMElement(Document document) {
         
-        Element element = document.createElement("stackedHistogram");                
+        Element element = document.createElement("stackedHistogram");
         element.setAttribute("zAxis", zAxis.getDasName() );
-        element.setAttribute("dataSetID", getDataSetID() );      
+        element.setAttribute("dataSetID", getDataSetID() );
         return element;
     }
     
     public static Renderer processStackedHistogramElement(Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
-        String dataSetID = element.getAttribute("dataSetID");       
-                
+        String dataSetID = element.getAttribute("dataSetID");
+        
         Renderer renderer = new StackedHistogramRenderer( parent, (DataSetDescriptor)null, (DasAxis)null, (DasLabelAxis)parent.getYAxis() );
         try {
             renderer.setDataSetID(dataSetID);
