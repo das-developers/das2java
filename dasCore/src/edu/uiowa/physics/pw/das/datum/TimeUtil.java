@@ -73,6 +73,7 @@ public final class TimeUtil {
         public String toString() {
             return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
         }
+        public boolean[] want;
     }
     
     public static final int YEAR = 1;
@@ -627,6 +628,8 @@ public final class TimeUtil {
         result.hour = hour;
         result.minute = minute;
         result.seconds = second;
+        
+        result.want= want;
         
         return result;
     }
