@@ -1879,7 +1879,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     int transform( double data, Units units, int dmin, int dmax ) {
         if ( units!=dataRange.getUnits() ) {
-            data= Units.getConverter(dataRange.getUnits(),units).convert(data);
+            data= units.convertDoubleTo(dataRange.getUnits(), data);
         }
         
         int device_range= (dmax - dmin);
