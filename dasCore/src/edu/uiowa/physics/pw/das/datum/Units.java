@@ -75,6 +75,10 @@ public abstract class Units {
     }
     
     public static final Units hertz= new NumberUnits("Hz");
+    public static final Units kiloHertz = new NumberUnits("kHz");
+    static {
+        hertz.registerConverter(kiloHertz, UnitsConverter.KILO);
+    }
     
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
     public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
