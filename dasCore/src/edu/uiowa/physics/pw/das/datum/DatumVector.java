@@ -99,4 +99,15 @@ public final class DatumVector {
     public int getLength() {
         return length;
     }
+        
+    public String toString() {
+        StringBuffer result= new StringBuffer();
+        result.append("[");
+        for ( int i=0; i<getLength(); i++ ) {
+            if ( i>0 ) result.append(", ");
+            result.append(get(i).toString());
+        }
+        result.append("]");
+        return result.toString();
+    }
 }
