@@ -21,7 +21,7 @@ public class DatumRangeUtil {
     private static final int DATEFORMAT_EUROPE= 0;
     private static final int DATEFORMAT_YYYY_DDD= 2;
     
-    private static final boolean DEBUG=true;
+    private static final boolean DEBUG=false;
     // this pattern is always a year
     private static boolean isYear( String string ) {
         return string.length()==4 && Pattern.matches("\\d{4}",string);
@@ -549,6 +549,14 @@ public class DatumRangeUtil {
         }
         
     }
+    
+    public static DatumRange parseTimeRangeValid( String s ) {
+        try {
+            return parseTimeRange(s);
+        } catch ( ParseException e ) {
+            throw new RuntimeException(e);
+        }
+    }    
     
     /* formats time, supressing trailing zeros.  Time2 is another time that will be displayed alongside time,
      * and may be used when deciding how the time should be formatted.  context is used to describe an external
