@@ -266,7 +266,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             drt = new DataRequestThread();
         }
         try {
-            drt.request(dataSetDescriptor, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
+            drt.request(dataSetDescriptor, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);            
         }
         catch (InterruptedException ie) {
             DasExceptionHandler.handle(ie);
