@@ -368,7 +368,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         boolean yTopSide = false;
         boolean yBottomSide = false;
         
-        if (parent.getRow() != null && parent.getColumn() != null) {
+        if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL ) {
             int xLeft= parent.getColumn().getDMinimum()-xOffset;
             int xRight= parent.getColumn().getDMaximum()-xOffset;
             int yTop= parent.getRow().getDMinimum()-yOffset;
