@@ -32,18 +32,17 @@ import edu.uiowa.physics.pw.das.datum.Datum;
  */
 public class DataRangeSelectionEvent extends DasEvent {
     
-    private edu.uiowa.physics.pw.das.dataset.DataSet ds=null;
+    private DataSet ds=null;
        
-    edu.uiowa.physics.pw.das.datum.Datum min;
-    edu.uiowa.physics.pw.das.datum.Datum max;
+    Datum min;
+    Datum max;
     
-    edu.uiowa.physics.pw.das.datum.Datum reference;  // this is where the selection was made at (perpendicular axis)
-    
-    /** Creates a new instance of TimeRangeSelectionEvent */
-    public DataRangeSelectionEvent(Object source, edu.uiowa.physics.pw.das.datum.Datum min, edu.uiowa.physics.pw.das.datum.Datum max) {
+    Datum reference;  // this is where the selection was made at (perpendicular axis)
+        
+    public DataRangeSelectionEvent(Object source, Datum min, Datum max) {
         super(source);
         if (min.gt(max)) {
-            edu.uiowa.physics.pw.das.datum.Datum t=min;
+            Datum t=min;
             min=max;
             max=t;
         }        
@@ -52,27 +51,27 @@ public class DataRangeSelectionEvent extends DasEvent {
         reference= null;
     }
     
-    public edu.uiowa.physics.pw.das.datum.Datum getMinimum() {
+    public Datum getMinimum() {
         return min;
     }
     
-    public edu.uiowa.physics.pw.das.datum.Datum getMaximum() {
+    public Datum getMaximum() {
         return max; 
     }
     
-    public void setDataSet(edu.uiowa.physics.pw.das.dataset.DataSet ds) {
+    public void setDataSet(DataSet ds) {
         this.ds= ds;
     }
     
-    public edu.uiowa.physics.pw.das.dataset.DataSet getDataSet() {
+    public DataSet getDataSet() {
         return this.ds;
     }
     
-    public void setReference(edu.uiowa.physics.pw.das.datum.Datum reference) {
+    public void setReference(Datum reference) {
         this.reference= reference;
     }
         
-    public edu.uiowa.physics.pw.das.datum.Datum getReference() {
+    public Datum getReference() {
         return this.reference;
     }
     
