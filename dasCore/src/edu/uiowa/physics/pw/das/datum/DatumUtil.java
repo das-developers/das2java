@@ -86,38 +86,20 @@ public final class DatumUtil {
     }
     
     public static int fractionalDigits( Datum resolution ) {
-        /* returns the number of digits after the decimal place.  This is negative when
-         * the resolution is a integer multiple of 10,100, etc...
-         */
+        int DOUBLE_DIGITS= 12;  // this is <15 because math operations introduce noise in more significant digits
         double d= Math.abs( resolution.doubleValue() );
-        double frac= d-Math.floor(d);
-        final int DOUBLE_DIGITS= 13;
-        if ( frac==0. ) {            
-            int e= (int)Math.ceil( DasMath.log10(d) );
-            int emin=0;
-            if ( e<0 ) e=0;
-            boolean notDone= true;            
-            while ( e>emin && notDone ) {                
-                double remain= d/DasMath.exp10(e) % 1;
-                if ( remain>0.5 ) remain= 1.0 - remain;
-                notDone= remain > (1/10000.);
-                e--;
+        int e= (int)Math.floor( DasMath.log10(d)+0.0001 );
+        long i= (long)(d/(DasMath.exp10(e-(DOUBLE_DIGITS-1)))+0.5);
+        int nzero;
+        for ( nzero=1; nzero<16; nzero++ ) {
+            if ( i % DasMath.exp10(nzero) != 0. ) {                
+                break;
             }
-            return -1*(e+1);
-        } else {
-            int e= (int)Math.floor( DasMath.log10(frac)+0.0001 );
-            int emin= (int)DasMath.log10(d) - DOUBLE_DIGITS;
-            boolean notDone= true;
-            while ( e>emin && notDone  ) {
-                double remain= frac/DasMath.exp10(e) % 1;
-                if ( remain>0.5 ) remain= 1.0 - remain;
-                notDone= remain > (1/10000.);
-                e--;
-            }
-            return -1*(e+1);
         }
+        nzero= nzero-1;        
+        return (DOUBLE_DIGITS-1-nzero)-e;
     }
-    
+        
     public static DatumFormatter limitLogResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {
         Units units = minimum.getUnits();
         
