@@ -111,7 +111,8 @@ public final class TimeUtil {
         int hour = (int)d.hour;
         int minute = (int)d.minute;
         double seconds = d.seconds + hour*(float)3600.0 + minute*(float)60.0;
-        return Datum.create( ( jd - 2436205 ) + seconds / 86400., Units.mj1958 );
+        double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 ) + seconds / 86400. );
+        return Datum.create( us2000, Units.us2000 );
     }
     
     public static TimeStruct toTimeStruct(Datum datum) {
