@@ -77,4 +77,12 @@ public class LocalFileObject implements FileObject {
         return localFile.exists();
     }
     
+    public String getNameExt() {
+        return FileSystem.toCanonicalFilename( localFile.toString().substring( localRoot.toString().length() ) );
+    }
+    
+    public String toString() {
+        return "[lfs]"+getNameExt();
+    }
+    
 }

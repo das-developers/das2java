@@ -35,9 +35,14 @@ public abstract class FileSystem  {
         DasExceptionHandler.handle(e);
     }
 
-    protected String toCanonicalFilename( String filename ) {
+    /**
+     * returns the canonical name /a/b/c.dat of a string that
+     * contains backslashes and might not have the leading /
+     * and trailing slashes.
+     */    
+    protected static String toCanonicalFilename( String filename ) {
         filename= filename.replaceAll( "\\\\", "/" );
-        if ( filename.charAt(0)!='/' ) {
+        if ( filename.length()==0 || filename.charAt(0)!='/' ) {
             filename= "/"+filename;
         }
         return filename;
