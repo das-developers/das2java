@@ -102,6 +102,30 @@ public final class DatumUtil {
             return -1*(e+1);
         }
     }
+ 
+    public static DatumFormatter limitLogResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {        
+        Units units = minimum.getUnits();
+        
+        if ( units instanceof TimeLocationUnits ) {
+            return bestTimeFormatter(minimum, maximum, nsteps);
+        }
+
+        double logmin= DasMath.log10( minimum.doubleValue( units ) );
+        double logmax= DasMath.log10( maximum.doubleValue( units ) );        
+                
+        double percent= ( DasMath.exp10( ( logmax - logmin ) / nsteps ) - 1. ) * 100;
+                       
+        int nFraction= 2 - (int)Math.floor( 0.05 + DasMath.log10( percent ) );
+        
+        nFraction= nFraction<0 ? 0 : nFraction;
+        String formatString = exp(nFraction);
+        DatumFormatterFactory factory = units.getDatumFormatterFactory();
+        try {
+            return factory.newFormatter(formatString);
+        } catch ( java.text.ParseException e ) {
+            throw new RuntimeException(e);
+        }
+    }
     
     public static DatumFormatter limitResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {        
         Units units = minimum.getUnits();
@@ -113,6 +137,7 @@ public final class DatumUtil {
         Datum resolution= maximum.subtract(minimum).divide(nsteps);
         double discernable= resolution.doubleValue(units);        
         int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
+        
         nFraction= nFraction<0 ? 0 : nFraction;
         String formatString = zeros(nFraction);
         DatumFormatterFactory factory = units.getDatumFormatterFactory();
