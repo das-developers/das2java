@@ -49,8 +49,12 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     protected EventListenerList listenerList = new EventListenerList();
     
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum) {
-        if ( minimum > maximum ) { 
+        if ( minimum > maximum ) {
             throw new IllegalArgumentException( "minimum>maximum" );
+        }
+        boolean isNull= ( this instanceof DasColumn.NullDasColumn ) || ( this instanceof DasRow.NullDasRow );
+        if ( parent==null & ( ! isNull ) ) {
+            throw new IllegalArgumentException("parent cannot be null");
         }
         this.parent = parent;
         this.minimum = minimum;
