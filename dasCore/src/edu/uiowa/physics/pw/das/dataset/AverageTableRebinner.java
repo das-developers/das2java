@@ -34,16 +34,25 @@ public class AverageTableRebinner implements DataSetRebinner {
     
     /** Creates a new instance of TableAverageRebinner */
     public AverageTableRebinner() {
-    }
+    }    
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+    public DataSet rebin(DataSet ds, RebinDescriptor ddXin, RebinDescriptor ddYin) throws IllegalArgumentException {
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException();
         }
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
         
-        long timer= System.currentTimeMillis();
+        long timer= System.currentTimeMillis();                
+        
+        Units xunits= ddXin.getUnits();
+        Units yunits= ddYin.getUnits();
+                      
+        int ix0= DataSetUtil.getPreceedingColumn( tds, xunits.createDatum( ddXin.binStart(0,xunits) ) );
+        int ix1= DataSetUtil.getNextColumn( tds, xunits.createDatum( ddXin.binStop( ddXin.numberOfBins()-1, xunits ) ) );        
+        
+        RebinDescriptor ddX= RebinDescriptor.createSubsumingRebinDescriptor( ddXin, tds.getXTagDatum(ix0), tds.getXTagDatum(ix1) );                
+        RebinDescriptor ddY= RebinDescriptor.createSubsumingRebinDescriptor( ddYin, TableUtil.getSmallestYTag(tds), TableUtil.getLargestYTag(tds) );
         
         int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
         int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
@@ -76,21 +85,26 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         Datum xTagWidth= (Datum)ds.getProperty("xTagWidth");
         if ( xTagWidth==null ) {
-            xTagWidth= TableUtil.guessXTagWidth(tds);
+            xTagWidth= DataSetUtil.guessXTagWidth(tds);
         }
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
         if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
         if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
-        
+
         double[][][] zValues = {rebinData,rebinWeights};
+
         int[] tableOffsets = {0};
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", "weights"};
-        
+
         /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
          * new dataset. 
          */
-        return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        TableDataSet result= new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        
+        return new ClippedTableDataSet( result, 
+            xunits.createDatum(ddXin.binCenter(0)), xunits.createDatum(ddXin.binCenter(ddXin.numberOfBins()-1)),
+            yunits.createDatum(ddYin.binCenter(0)), yunits.createDatum(ddYin.binCenter(ddYin.numberOfBins()-1)) );
     }
     
     static void average(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
@@ -196,7 +210,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             
             for (int i = 0; i < nx; i++) {
                 
-                if ((i1[i] != -1) && (xTags[i2[i]] - xTags[i1[i]]) < xSampleWidth * 2. ) {
+                if ((i1[i] != -1) && (xTags[i2[i]] - xTags[i1[i]]) < xSampleWidth * 1.5 ) {
                     a2 = (float)((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));
                     //if (nearestNeighbor) a2= (a2<0.5f)?0.f:1.0f;
                     a1 = 1.f - a2;
