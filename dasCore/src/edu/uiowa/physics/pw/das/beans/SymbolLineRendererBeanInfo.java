@@ -29,11 +29,13 @@ public class SymbolLineRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
         new Property("psym", AccessLevel.DASML, "getPsym", "setPsym", null),
-        new Property("connector", AccessLevel.DASML, "getPsymConnector", "setPsymConnector", null ),
+        new Property("dashed", AccessLevel.DASML, "isDashed", "setDashed", null),
+        new Property("dashLength", AccessLevel.DASML, "getDashLength", "setDashLength", null),
+        new Property("histogram", AccessLevel.DASML, "isHistogram", "setHistogram", null),
         new Property("color", AccessLevel.DASML, "getColor", "setColor", null),
         new Property("lineWidth", AccessLevel.DASML, "getLineWidth", "setLineWidth", null),
         new Property("symSize", AccessLevel.DASML, "getSymSize", "setSymSize", null),
-        new Property("antiAliased", AccessLevel.DASML, "isAntiAliased", "setAntiAliased", null)
+        new Property("antiAliased", AccessLevel.DASML, "isAntiAliased", "setAntiAliased", null),
     };
     
     public SymbolLineRendererBeanInfo() {
