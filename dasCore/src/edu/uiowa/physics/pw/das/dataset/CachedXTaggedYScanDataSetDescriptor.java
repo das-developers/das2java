@@ -33,11 +33,7 @@ import java.util.Map;
  *
  * @author  jbf
  */
-public class CachedXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDescriptor {
-    
-    /** Creates a new instance of CachedXTaggedYScanDataSetDescriptor */
-    protected CachedXTaggedYScanDataSetDescriptor() {
-    }
+public class CachedXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDescriptor {    
     
     protected CachedXTaggedYScanDataSetDescriptor(Map properties) {
         super(properties);
@@ -46,12 +42,12 @@ public class CachedXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDesc
     
     private XTaggedYScanDataSetCache dataCache;
     
-    public DataSet getDataSet(Datum start, Datum end, Object params, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
         Datum res= resolution;
         edu.uiowa.physics.pw.das.util.DasDie.println(""+dataCache);
-        if ( dataCache.haveStored(this,start,end,res,params) ) {
+        if ( dataCache.haveStored(this,start,end,res) ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("----- Buffer Hit ----");
-            return dataCache.retrieve(this,start,end,res,params);
+            return dataCache.retrieve(this,start,end,res);
             
         } else {
             edu.uiowa.physics.pw.das.util.DasDie.println("------- Miss --------");
