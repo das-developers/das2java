@@ -44,8 +44,24 @@ import javax.swing.JPanel;
  */
 public class TimeRangeLabel extends DasCanvasComponent {
     
-    DataRange dataRange;
-    DatumFormatter df;
+    private static final DatumFormatter MINUTES;
+    private static final DatumFormatter SECONDS;
+    private static final DatumFormatter MILLESECONDS;
+    static {
+        try {
+            MINUTES = new TimeDatumFormatter("yyyy-MM-dd '('DDD')' HH:mm");
+            SECONDS = new TimeDatumFormatter("yyyy-MM-dd '('DDD')' HH:mm:ss");
+            MILLESECONDS = new TimeDatumFormatter("yyyy-MM-dd '('DDD')' HH:mm:ss.SSS");
+        }
+        catch (java.text.ParseException pe) {
+            //If this is happening, then there is a major problem.
+            throw new RuntimeException(pe);
+        }
+    }
+    
+    private DataRange dataRange;
+    
+    private DatumFormatter df;
     
     /** Creates a new instance of TimeRangeLabel */
     public TimeRangeLabel(DataRange dataRange, DasRow row, DasColumn column ) {
@@ -57,13 +73,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
         MouseModule mm= new mouseModule();
         mouseAdapter.addMouseModule(mm);
         mouseAdapter.setPrimaryModule(mm); // THIS SHOULD BE AUTOMATIC!!!
-        try {
-            df = TimeDatumFormatterFactory.getInstance().newFormatter(
-                "yyyy'-'MM'-'dd' ('DDD') 'HH':'mm':'ss.sss");
-        }
-        catch (java.text.ParseException pe) {
-            df = TimeDatumFormatterFactory.getInstance().defaultFormatter();
-        }
+        updateFormatter();
     }
     
     private class mouseModule extends MouseModule {
@@ -97,6 +107,38 @@ public class TimeRangeLabel extends DasCanvasComponent {
         this.setBounds(new Rectangle(bounds.x-30,bounds.y-30,bounds.width+60,bounds.height+30));
     }
     
+    private void updateFormatter() {
+        UnitsConverter converter = Units.getConverter(dataRange.getUnits(), Units.t2000);
+        double min = converter.convert(dataRange.getMinimum());
+        double max = converter.convert(dataRange.getMinimum());
+        min = secondsSinceMidnight(min);
+        max = secondsSinceMidnight(max);
+        int minMS = (int)(min * 1000.);
+        int maxMS = (int)(max * 1000.);
+        if ((minMS % 1000) != 0 || (maxMS % 1000) != 0) {
+            df = MILLESECONDS;
+        }
+        else if ((minMS % 60000) != 0 || (maxMS % 60000) != 0) {
+            df = SECONDS;
+        }
+        else {
+            df = MINUTES;
+        }
+    }
+    
+    private double secondsSinceMidnight(double t2000) {
+        if (t2000 < 0) {
+            t2000 = t2000 % 86400;
+            if (t2000 == 0) {
+                return 0;
+            } else {
+                return 86400 + t2000;
+            }
+        } else {
+            return t2000 % 86400;
+        }
+    }
+    
     public PropertyChangeListener createDataRangePropertyListener() {
         return new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
@@ -109,10 +151,12 @@ public class TimeRangeLabel extends DasCanvasComponent {
                 }
                 else if (propertyName.equals("minimum")) {
                     update();
+                    updateFormatter();
                     firePropertyChange("dataMinimum", oldValue, newValue);
                 }
                 else if (propertyName.equals("maximum")) {
                     update();
+                    updateFormatter();
                     firePropertyChange("dataMaximum", oldValue, newValue);
                 }
                 markDirty();
@@ -126,12 +170,19 @@ public class TimeRangeLabel extends DasCanvasComponent {
         JPanel panel= new JPanel();
         DasCanvas canvas= new DasCanvas(300,300);
         
-        DasRow row= new DasRow(canvas,0.1,0.9);
+        DasRow row1= new DasRow(canvas,0.1,0.2);
+        DasRow row2 = new DasRow(canvas, 0.3, 0.4);
+        DasRow row3 = new DasRow(canvas, 0.5, 0.6);
+        DasRow row4 = new DasRow(canvas, 0.7, 0.8);
         DasColumn column= new DasColumn(canvas,0.1,0.9);
         
-        canvas.addCanvasComponent(DasPlot.createDummyPlot(row,column));
-        DataRange dataRange= new DataRange(null,TimeUtil.createValid("1998-01-01"),TimeUtil.createValid("1999-01-01"),false);
-        canvas.addCanvasComponent(new TimeRangeLabel(dataRange,row,column));
+        DataRange dataRange1= new DataRange(null,TimeUtil.createValid("1998-01-01 12:20"),TimeUtil.createValid("1999-01-01"),false);
+        DataRange dataRange2 = new DataRange(null, TimeUtil.createValid("1998-01-02 12:30:02"), TimeUtil.createValid("1999-01-01"),false);
+        DataRange dataRange3 = new DataRange(null, TimeUtil.createValid("1998-01-03 12:40:02.244"), TimeUtil.createValid("1999-01-01"),false);
+
+        canvas.addCanvasComponent(new TimeRangeLabel(dataRange1,row1,column));
+        canvas.addCanvasComponent(new TimeRangeLabel(dataRange2,row2,column));
+        canvas.addCanvasComponent(new TimeRangeLabel(dataRange3,row3,column));
         
         panel.setLayout(new BorderLayout());
         panel.add(canvas,BorderLayout.CENTER);
