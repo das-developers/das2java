@@ -27,7 +27,9 @@ import java.beans.BeanInfo;
 
 public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
     
-    private static final Property[] properties = {};
+    private static final Property[] properties = {
+        new Property("rebinner", AccessLevel.DASML, "getRebinner", "setRebinner", null)    
+    };
     
     public SpectrogramRendererBeanInfo() {
         super(properties, edu.uiowa.physics.pw.das.graph.SpectrogramRenderer.class);
