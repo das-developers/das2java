@@ -23,7 +23,7 @@
 package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.DasProperties;
-import edu.uiowa.physics.pw.das.server.DasServer;
+import edu.uiowa.physics.pw.das.client.DasServer;
 
 import javax.swing.*;
 import java.awt.*;

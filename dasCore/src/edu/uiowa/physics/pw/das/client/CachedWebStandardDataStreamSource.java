@@ -48,7 +48,7 @@ public class CachedWebStandardDataStreamSource extends WebStandardDataStreamSour
     private long sessionBirthTime;
     private boolean compress;
     
-    public CachedWebStandardDataStreamSource(edu.uiowa.physics.pw.das.server.DasServer server) {
+    public CachedWebStandardDataStreamSource(edu.uiowa.physics.pw.das.client.DasServer server) {
         super(server);
         dataCache= new StandardDataStreamCache();
         dataCache.setDisabled(true);

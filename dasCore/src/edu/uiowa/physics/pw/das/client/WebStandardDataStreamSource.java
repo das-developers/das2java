@@ -32,7 +32,7 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.server.DasServer;
+import edu.uiowa.physics.pw.das.client.DasServer;
 import edu.uiowa.physics.pw.das.util.DasDate;
 
 import javax.swing.*;

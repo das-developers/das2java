@@ -640,7 +640,7 @@ public abstract class DataSetDescriptor implements Serializable {
     }
     
     public static DataSetDescriptor create( URL url ) throws DasException {
-        edu.uiowa.physics.pw.das.server.DasServer dasServer= edu.uiowa.physics.pw.das.server.DasServer.create(url);
+        edu.uiowa.physics.pw.das.client.DasServer dasServer= edu.uiowa.physics.pw.das.client.DasServer.create(url);
         try {
             String dsdfString= dasServer.getDataSetDescriptor(url.getQuery());
             DataSetDescriptor dsd = create(new StringReader(dsdfString));
