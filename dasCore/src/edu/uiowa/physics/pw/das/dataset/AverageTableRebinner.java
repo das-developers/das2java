@@ -50,14 +50,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         double[][] rebinData= new double[nx][ny];
         double[][] rebinWeights= new double[nx][ny];
-
+        
         average(tds, weights, rebinData, rebinWeights, ddX, ddY);
         
-        Datum xTagWidth= (Datum)ds.getProperty("xTagWidth");
-        if ( xTagWidth==null ) {
-            xTagWidth= TableUtil.guessXTagWidth(tds);
-        }
-
         double[] xTags;
         if (ddX != null) {
             xTags = ddX.binCenters();
@@ -78,15 +73,20 @@ public class AverageTableRebinner implements DataSetRebinner {
                 yTags[0][j] = tds.getYTagDouble(0, j, tds.getYUnits());
             }
         }
-
-        if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits()));
+        
+        Datum xTagWidth= (Datum)ds.getProperty("xTagWidth");
+        if ( xTagWidth==null ) {
+            xTagWidth= TableUtil.guessXTagWidth(tds);
+        }
+        double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
+        if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
         if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
-
+        
         double[][][] zValues = {rebinData,rebinWeights};
         int[] tableOffsets = {0};
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", "weights"};
-
+        
         return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
     }
     
@@ -101,11 +101,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                 ycoordinate[j] = tds.getDouble(0, j, tds.getYUnits());
             }
         }
-
+        
         int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
         int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
         
-
+        
         int [] ibiny= new int[tds.getYLength(0)];
         for (int j=0; j < ibiny.length; j++) {
             if (ddY != null) {
@@ -115,7 +115,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 ibiny[j] = j;
             }
         }
-
+        
         for (int i=0; i < tds.getXLength(); i++) {
             int ibinx;
             if (ddX != null) {
@@ -134,7 +134,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                         }
                         else {
                             Datum z= tds.getDatum(i,j);
-			    double w= z.isFill() ? 0. : 1. ;
+                            double w= z.isFill() ? 0. : 1. ;
                             rebinData[ibinx][ibiny[j]] += z.doubleValue(tds.getZUnits()) * w;
                             rebinWeights[ibinx][ibiny[j]] += w;
                         }
@@ -142,7 +142,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
         }
-            
+        
         for (int i = 0; i < rebinData.length; i++) {
             for (int j = 0; j < rebinData[i].length; j++) {
                 if (rebinWeights[i][j] > 0.0) {
@@ -162,7 +162,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         final int[] i2= new int[nx];
         double a1;
         double a2;
-
+        
         for (int j = 0; j < ny; j++) {
             int ii1 = -1;
             int ii2 = -1;
@@ -203,7 +203,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
     }
-
+    
     static void fillInterpolateY(final double[][] data, final double[][] weights, final double[] yTags, final double ySampleWidth, final boolean log) {
         
         //boolean nearestNeighbor=isNnRebin();
@@ -215,7 +215,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         final double [] y_temp= new double[yTags.length];
         float a1;
         float a2;
-
+        
         if (log) {
             for (int j=0; j<ny; j++) y_temp[j]= Math.log(yTags[j]);
         } else {
