@@ -1650,7 +1650,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     tempRange.setRange(min0*a0+min1*a1,
                     max0*a0+max1*a1);
                 }
-                updateTickV();
+                //updateTickV();
                 this.paintImmediately(0,0,this.getWidth(),this.getHeight());
             }
             
