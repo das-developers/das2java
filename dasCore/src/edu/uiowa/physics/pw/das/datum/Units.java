@@ -66,9 +66,11 @@ public abstract class Units {
     
     public static final Units seconds= new NumberUnits("s");
     public static final Units microseconds= new NumberUnits("microseconds");
+    public static final Units nanoseconds= new NumberUnits("nanoseconds");
     public static final Units days= new NumberUnits("days");
     static {
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
+        seconds.registerConverter(nanoseconds,UnitsConverter.NANO);
         days.registerConverter(seconds, new UnitsConverter.ScaleOffset(8.64e4, 0.0));
     }
     
