@@ -259,7 +259,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     protected void installRenderer() {
         if (parent != null && parent.getCanvas() != null) {
             if (colorBar != null) {
-                if (colorBar.getColumn() == null) {
+                if (colorBar.getColumn() == DasColumn.NULL ) {
                     DasColumn column = parent.getColumn();
                     double columnWidth = column.getMaximum() - column.getMinimum();
                     double cbMin = column.getMaximum() + columnWidth/5.0;
