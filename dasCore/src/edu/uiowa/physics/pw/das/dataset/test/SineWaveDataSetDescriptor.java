@@ -43,6 +43,10 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
     /** Creates a new instance of SineWaveDataSetDescriptor */
     public SineWaveDataSetDescriptor( Datum amplitude, Datum period ) {
         super(null);
+        if ( 0. == period.doubleValue(period.getUnits() ) ) {
+            throw new IllegalArgumentException( "period is zero" );
+        }
+            
         this.amplitude= amplitude;        
         this.period= period;
         this.phase= null; // arbitary by intent        
@@ -50,7 +54,7 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
     
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
         int nstep= (int)(end.subtract(start).doubleValue(resolution.getUnits()) / resolution.doubleValue(resolution.getUnits()));        
-        int stepSize= 5;
+        int stepSize= 1; /* not sure what this is useful for jbf */
         nstep= nstep / stepSize; 
        
         if ( phase==null ) phase= start;
