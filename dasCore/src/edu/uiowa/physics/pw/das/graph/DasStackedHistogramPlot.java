@@ -541,8 +541,8 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                         throw new DasException("don't know how to serialize data set" );
                     }
                 }
+                setDumpDataSet( false );
             }
-            setDumpDataSet( false );
         } catch ( Exception e ) {
             DasExceptionHandler.handle( e );
         }
