@@ -44,6 +44,8 @@ public class MouseModule  {
     private String label;
     
     protected MouseModule() {
+        label= "unlabelled MM";
+        dragRenderer= EmptyDragRenderer.renderer;
     }
     
     public MouseModule(DasCanvasComponent parent) {
