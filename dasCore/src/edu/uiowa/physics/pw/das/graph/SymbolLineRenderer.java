@@ -198,7 +198,7 @@ public class SymbolLineRenderer extends Renderer {
      */
     public void setColor(SymColor color) {
         this.color= color;
-        getParent().repaint();
+        if ( getParent()!=null ) getParent().repaint();
     }
     
     public float getLineWidth() {
