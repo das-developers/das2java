@@ -13,8 +13,7 @@ import java.util.*;
  * @author  Owner
  */
 public class VectorUtil {
-    
-    //  maybe a cache to keep track of last finds
+
     
     public static double[] getXTagArrayDouble( DataSet vds, Units units ) {
         
