@@ -450,6 +450,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public void addRenderer(Renderer rend) {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("addRenderer("+rend+")");
         if (rend.parent != null) {
             rend.parent.removeRenderer(rend);
         }
@@ -458,6 +459,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (getCanvas() != null) {
             rend.installRenderer();
         }
+        rend.update();
         markDirty();
         repaint();
     }
@@ -793,7 +795,4 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
     
-    public void repaint() {
-        super.repaint();
-    }
 }
