@@ -219,7 +219,7 @@ public class SymbolLineRenderer extends Renderer {
             double y = dataSet.getDouble(index, yUnits);
             double i = xAxis.transform(x, xUnits);
             double j = yAxis.transform(y, yUnits);
-            if ( yUnits.isFill(y)) {
+            if ( yUnits.isFill(y) || Double.isNaN(y)) {
                 skippedLast = true;
             }
             else if (skippedLast || Math.abs(x - x0) > xSampleWidth) {
