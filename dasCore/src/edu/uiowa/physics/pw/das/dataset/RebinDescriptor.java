@@ -107,6 +107,11 @@ public class RebinDescriptor {
     }
     
     public double binStart( int ibin, Units units ) {
+        if ( this.outOfBoundsAction!=RebinDescriptor.EXTRAPOLATE ) {
+            if ( ibin<0 || ibin >= numberOfBins() ) {
+                throw new IllegalArgumentException("bin "+ibin+" is out of bounds");
+            }
+        }
         double result= start+((ibin)/(double)(nBin)*(end-start));
         UnitsConverter uc= this.units.getConverter(units);
         if ( isLog ) {
@@ -117,6 +122,11 @@ public class RebinDescriptor {
     }
     
     public double binStop( int ibin, Units units ) {
+        if ( this.outOfBoundsAction!=RebinDescriptor.EXTRAPOLATE ) {
+            if ( ibin<0 || ibin >= numberOfBins() ) {
+                throw new IllegalArgumentException("bin "+ibin+" is out of bounds");
+            }
+        }
         double result= start+((ibin+1)/(double)(nBin)*(end-start));
         UnitsConverter uc= this.units.getConverter(units);
         if ( isLog ) {
@@ -175,14 +185,14 @@ public class RebinDescriptor {
         }
         
         int i1= dd.whichBin( ymax.doubleValue(units), units );
-        if ( i1<ddY.numberOfBins() ) {
-            i1= ddY.numberOfBins();
-            ymax= units.createDatum(ddY.binStop(ddY.numberOfBins()-1,units));
+        if ( i1<dd.numberOfBins() ) {
+            i1= dd.numberOfBins();
+            ymax= units.createDatum(dd.binStop(dd.numberOfBins()-1,units));
         }
             
-        int nbins= i1-i0;                        
+        int nbins= i1-i0+1;                        
                     
-        return new RebinDescriptor( ymin, ymax, nbins, ddY.isLog() );
+        return new RebinDescriptor( units.createDatum(dd.binStart(i0,units)), units.createDatum(dd.binStop(i1,units)), nbins, dd.isLog() );
     }
     
     public double binWidth() {
