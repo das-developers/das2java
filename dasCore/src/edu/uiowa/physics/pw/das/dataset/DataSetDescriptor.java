@@ -76,15 +76,45 @@ public abstract class DataSetDescriptor {
             if (ds == null) {
                 dsue = new DataSetUpdateEvent(DataSetDescriptor.this,
                         new NoDataInIntervalException(start + " to " + end));
-            }
-            else {
+            } else {
                 dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
             }
-        }
-        catch (DasException de) {
+        } catch (DasException de) {
             dsue = new DataSetUpdateEvent(DataSetDescriptor.this, de);
         }
         fireDataSetUpdateEvent(dsue);
+    }
+    
+    public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
+            final DasProgressMonitor monitor, final DataSetUpdateListener listener ) {
+        if ( this instanceof ConstantDataSetDescriptor ) {
+            try {
+                DataSet ds= getDataSet(null,null,null,null);
+                DataSetUpdateEvent dsue= new DataSetUpdateEvent( this, ds );
+            } catch ( DasException e ) {
+                DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+                listener.dataSetUpdated(dsue);
+            }
+        } else {
+            Runnable request = new Runnable() {
+                public void run() {
+                    DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+start+" "+end+" "+resolution);
+                    try {
+                        DataSet ds= getDataSet( start, end, resolution, monitor );
+                        DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
+                        listener.dataSetUpdated(dsue);
+                    } catch ( DasException e ) {
+                        DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+                        listener.dataSetUpdated(dsue);
+                    }
+                }
+                public String toString() {
+                    return "loadDataSet "+ start+" - "+ end;
+                }
+            };
+            RequestProcessor.invokeLater( request, listener );
+        }
+        
     }
     
     /* Retrieve the dataset for this interval and resolution.  The contract for this function is that
@@ -99,10 +129,10 @@ public abstract class DataSetDescriptor {
             monitor.started();
         }
         if ( cacheTag!=null &&
-        defaultCaching &&
-        cacheTag.start.le(start) &&
-        cacheTag.end.ge(end) &&
-        ( cacheTag.resolution==null || (resolution != null && cacheTag.resolution.le(resolution)) ) ) {
+                defaultCaching &&
+                cacheTag.start.le(start) &&
+                cacheTag.end.ge(end) &&
+                ( cacheTag.resolution==null || (resolution != null && cacheTag.resolution.le(resolution)) ) ) {
             if (monitor != null) {
                 monitor.finished();
             }
@@ -126,10 +156,10 @@ public abstract class DataSetDescriptor {
     }
     
     /*
-     * clear any state that's developed, in particular any data caches 
+     * clear any state that's developed, in particular any data caches
      */
     public void reset() {
-       cacheTag= null;        
+        cacheTag= null;
     }
     
     protected void setDefaultCaching( boolean value ) {
@@ -157,7 +187,7 @@ public abstract class DataSetDescriptor {
             if (listeners[i]==DataSetUpdateListener.class) {
                 ((DataSetUpdateListener)listeners[i+1]).dataSetUpdated(event);
             }
-        }        
+        }
     }
     
     public String getDataSetID() {
@@ -172,13 +202,11 @@ public abstract class DataSetDescriptor {
         DataSetDescriptor result;
         if (classMatcher.matches()) {
             result = createFromClassName(dataSetID, classMatcher);
-        }
-        else {
+        } else {
             try {
                 result = createFromServerAddress(new URL(dataSetID));
                 //result = DasServer.createDataSetDescriptor(new URL(dataSetID));
-            }
-            catch (MalformedURLException mue) {
+            } catch (MalformedURLException mue) {
                 throw new DasIOException(mue.getMessage());
             }
         }
@@ -203,28 +231,24 @@ public abstract class DataSetDescriptor {
                 throw new NoSuchDataSetException("newDataSetDescriptor must be static");
             }
             return (DataSetDescriptor)method.invoke(null, new Object[]{argMap});
-        }
-        catch (ClassNotFoundException cnfe) {
+        } catch (ClassNotFoundException cnfe) {
             DataSetDescriptorNotAvailableException dsdnae =
-            new DataSetDescriptorNotAvailableException(cnfe.getMessage());
+                    new DataSetDescriptorNotAvailableException(cnfe.getMessage());
             dsdnae.initCause(cnfe);
             throw dsdnae;
-        }
-        catch (NoSuchMethodException nsme) {
+        } catch (NoSuchMethodException nsme) {
             DataSetDescriptorNotAvailableException dsdnae =
-            new DataSetDescriptorNotAvailableException(nsme.getMessage());
+                    new DataSetDescriptorNotAvailableException(nsme.getMessage());
             dsdnae.initCause(nsme);
             throw dsdnae;
-        }
-        catch (InvocationTargetException ite) {
+        } catch (InvocationTargetException ite) {
             DataSetDescriptorNotAvailableException dsdnae =
-            new DataSetDescriptorNotAvailableException(ite.getTargetException().getMessage());
+                    new DataSetDescriptorNotAvailableException(ite.getTargetException().getMessage());
             dsdnae.initCause(ite.getTargetException());
             throw dsdnae;
-        }
-        catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             DataSetDescriptorNotAvailableException dsdnae =
-            new DataSetDescriptorNotAvailableException(iae.getMessage());
+                    new DataSetDescriptorNotAvailableException(iae.getMessage());
             dsdnae.initCause(iae);
             throw dsdnae;
         }
