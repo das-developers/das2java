@@ -89,7 +89,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * @return Value of property dumpDataSet.
      *
      */
-    public boolean isDumpDataSet() {    
+    public boolean isDumpDataSet() {
         return this.dumpDataSet;
     }
     
@@ -99,25 +99,25 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      */
     public void setDumpDataSet(boolean dumpDataSet) {
         try {
-        System.out.println("Dumping data set");
-        JFileChooser chooser= new JFileChooser();        
-        int xx= chooser.showSaveDialog(this.getParent());
-        if ( xx==JFileChooser.APPROVE_OPTION ) {
-            File file= chooser.getSelectedFile();
-            if ( ds instanceof TableDataSet ) {
-                TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
-            } else if ( ds instanceof VectorDataSet ) {
-                VectorUtil.dumpToAsciiStream((VectorDataSet)ds, new FileOutputStream(file) );
-            } else {
-                throw new DasException("don't know how to serialize data set" );
+            System.out.println("Dumping data set");
+            JFileChooser chooser= new JFileChooser();
+            int xx= chooser.showSaveDialog(this.getParent());
+            if ( xx==JFileChooser.APPROVE_OPTION ) {
+                File file= chooser.getSelectedFile();
+                if ( ds instanceof TableDataSet ) {
+                    TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
+                } else if ( ds instanceof VectorDataSet ) {
+                    VectorUtil.dumpToAsciiStream((VectorDataSet)ds, new FileOutputStream(file) );
+                } else {
+                    throw new DasException("don't know how to serialize data set" );
+                }
             }
-        }
         } catch ( Exception e ) {
             DasExceptionHandler.handle( e );
         }
-        this.dumpDataSet= dumpDataSet;        
+        this.dumpDataSet= dumpDataSet;
     }
-
+    
     
     public void setDataSet(DataSet ds) {
         setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
@@ -169,6 +169,21 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     protected void loadDataSet(final DasAxis xAxis, final DasAxis yAxis) {
         
         if (parent == null || !parent.isDisplayable() || dsd == null) return;
+        
+        if ( dsd instanceof ConstantDataSetDescriptor ) {
+            try {
+                ds= dsd.getDataSet( null, null, null, null );
+            } catch ( DasException exception ) {
+                if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
+                    lastException= exception;
+                }
+                DasExceptionHandler.handle(exception);
+            } finally {
+                // bug: no rebinning message is displayed
+                updatePlotImage(xAxis,yAxis, progressPanel);
+            }
+            return;
+        }
         
         lastException= null;
         
