@@ -105,8 +105,8 @@ public class DasEventsIndicator extends DasCanvasComponent {
                 
                 UnitsConverter uc=  UnitsConverter.getConverter( vds.getYUnits(), axis.getUnits().getOffsetUnits() );
                 
-                int ivds0= DataSetUtil.getPreviousColumn(vds,axis.getDataMinimum());
-                int ivds1= DataSetUtil.getNextColumn(vds,axis.getDataMaximum());
+                int ivds0= 0;
+                int ivds1= vds.getXLength();
                 for ( int i=ivds0; i<ivds1; i++ ) {
                     Datum x= vds.getXTagDatum(i);
                     int ix= axis.transform(x);
@@ -116,7 +116,7 @@ public class DasEventsIndicator extends DasCanvasComponent {
                         iwidth= axis.transform( x.add( y ) ) - ix;
                     } else {
                         iwidth= 1;
-                    }
+                    }                    
                     if ( iwidth==0 ) iwidth=1;
                     g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
                 }
