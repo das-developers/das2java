@@ -128,8 +128,9 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         xxx[0] = System.currentTimeMillis()-e.birthMilli;
         
         DataSet ds = e.getDataSet();
-        if (ds==null || !(ds instanceof TableDataSet))
+        if (ds==null || !(ds instanceof TableDataSet)) {
             return;
+        }
         
         Datum yValue = e.getY();
         xValue = e.getX();
