@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasStackedHistogramPlot;
-import edu.uiowa.physics.pw.das.datum.DasFormatter;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
@@ -56,9 +56,9 @@ public class CrossHairRenderer implements DragRenderer {
     
     private int context;
     
-    private DasFormatter nfx;
-    private DasFormatter nfy;
-    private DasFormatter nfz;
+    private DatumFormatter nfx;
+    private DatumFormatter nfy;
+    private DatumFormatter nfz;
     
     private FontMetrics fm;
     private int dxMax=-999999;
@@ -93,7 +93,7 @@ public class CrossHairRenderer implements DragRenderer {
             nfy= y.getFormatter();
             
             String xAsString;
-            nfx= (DasFormatter)x.getFormatter();
+            nfx = x.getFormatter();
             xAsString= nfx.format(x);
             
             
@@ -129,19 +129,24 @@ public class CrossHairRenderer implements DragRenderer {
                 //                while (iy>(-1) && xtyds.y_coordinate[iy]>yy) iy--;
                 //                iy= iy<0?0:iy;
                 //
-                if ( dataSetConsumer instanceof XTaggedYScanDataSetConsumer ) {
-                    nfz= (DasFormatter)((XTaggedYScanDataSetConsumer)dataSetConsumer).getZAxis().getFormatter().clone();
-                    nfz.setMinimumFractionDigits(nfz.getMinimumFractionDigits()+1);
-                } else if ( parent instanceof DasStackedHistogramPlot ) {
-                    nfz= (DasFormatter)((DasStackedHistogramPlot) parent).getZAxis().getFormatter().clone();
-                    nfz.setMinimumFractionDigits(nfz.getMinimumFractionDigits()+1);
-                } else  {
-                    nfz= new DasFormatter((DecimalFormat)DecimalFormat.getInstance());
-                    nfz.setMaximumFractionDigits(2);
-                    nfz.setMinimumFractionDigits(2);
+                try {
+                    if ( dataSetConsumer instanceof XTaggedYScanDataSetConsumer ) {
+                        nfz= ((XTaggedYScanDataSetConsumer)dataSetConsumer).getZAxis().getDatumFormatter();
+                        nfz = DefaultDatumFormatterFactory.getInstance().newFormatter(nfz.toString() + "0");
+                    } else if ( parent instanceof DasStackedHistogramPlot ) {
+                        nfz = ((DasStackedHistogramPlot) parent).getZAxis().getDatumFormatter();
+                        nfz = DefaultDatumFormatterFactory.getInstance().newFormatter(nfz.toString() + "0");
+                    } else  {
+                        nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.00");
+                    }
+                }
+                catch (java.text.ParseException pe) {
+                    //This should be logged.
+                    DasAxis axis = ((XTaggedYScanDataSetConsumer)dataSetConsumer).getZAxis();
+                    axis.getUnits().getDatumFormatterFactory().defaultFormatter();
                 }
                 
-                zAsString= nfz.format(zValue.doubleValue(zValue.getUnits()),zValue.getUnits());
+                zAsString= nfz.format(zValue);
                 report= "x:"+xAsString+" y:"+yAsString+" z:"+zAsString;
             } else {
                 report= "x:"+xAsString+" y:"+yAsString;
