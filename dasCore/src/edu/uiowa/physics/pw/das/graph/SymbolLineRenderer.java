@@ -181,6 +181,9 @@ public class SymbolLineRenderer extends Renderer {
             }
         }
         
+        /* fuzz the xSampleWidth */
+        xSampleWidth = xSampleWidth * 1.5;
+        
         double x0 = -Double.MAX_VALUE;
         double y0 = -Double.MAX_VALUE;
         double i0 = -Double.MAX_VALUE;
