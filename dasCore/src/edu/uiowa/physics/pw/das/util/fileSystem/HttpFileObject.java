@@ -108,6 +108,8 @@ public class HttpFileObject implements FileObject {
             try {
                 wfs.transferFile(pathname,localFile);
                 return localFile.exists();
+            } catch ( FileNotFoundException e ) {                
+                return false;
             } catch ( IOException e ) {
                 wfs.handleException(e);
                 return false;
