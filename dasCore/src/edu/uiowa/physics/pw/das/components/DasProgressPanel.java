@@ -86,14 +86,14 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private void initComponents() {
         JPanel mainPanel, buttonPanel;
         JButton cancelButton;
-
+        
         messageLabel = new JLabel();
         messageLabel.setOpaque(false);
         messageLabel.setFont(new Font("Dialog", 1, 18));
         messageLabel.setHorizontalAlignment(JLabel.CENTER);
         messageLabel.setText(label);
         messageLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-
+        
         progressBar = new JProgressBar();
         System.out.println(progressBar.getMaximum());
         progressBar.setOpaque(false);
@@ -110,7 +110,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         kbLabel.setMinimumSize(progressBar.getPreferredSize());
         kbLabel.setPreferredSize(progressBar.getPreferredSize());
         kbLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-
+        
         mainPanel = new JPanel();
         mainPanel.setOpaque(false);
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -135,7 +135,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setOpaque(false);
         buttonPanel.add(cancelButton);
-
+        
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -143,7 +143,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void finished() {
         if ( jframe==null ) {
-            setVisible(false);  
+            setVisible(false);
         } else {
             jframe.dispose();
         }
@@ -219,6 +219,23 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public boolean isCancelled() {
         return isCancelled;
+    }
+    
+    protected void paintComponent(Graphics g1) {
+        Graphics2D g2= ( Graphics2D) g1;
+        
+        g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+        RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+        g2.setColor(new Color(0xdcFFFFFF, true));
+        Rectangle rect = g2.getClipBounds();
+        if (rect == null) {
+            g2.fillRect(0, 0, getWidth(), getHeight());
+        }
+        else {
+            g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+        }
+        
+        super.paintComponent(g1);
     }
     
 }
