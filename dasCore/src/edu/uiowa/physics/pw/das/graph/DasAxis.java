@@ -353,6 +353,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    public void setDataRange( DatumRange dr ) {
+        this.setDataRange( dr.min(), dr.max() );
+    }
+    
     /** TODO
      * @param minimum
      * @param maximum
@@ -1738,7 +1742,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( dataRange.isLog() ) {
             formatter = new ExponentialDatumFormatter( 3,(int)Math.floor(DasMath.log10(data)) );
         } else {
-            formatter = DatumUtil.bestFormatter(getDataMinimum(), getDataMaximum(), getDLength());
+            formatter = DatumUtil.limitResolutionFormatter( getDataMinimum(), getDataMaximum(), getDLength() );
         }
         
         if ( dataRange.isLog() ) {
