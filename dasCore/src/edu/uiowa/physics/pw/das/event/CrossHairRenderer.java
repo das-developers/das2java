@@ -60,6 +60,8 @@ public class CrossHairRenderer implements DragRenderer {
     private FontMetrics fm;
     private int dxMax=-999999;
     private Rectangle dirtyBounds;
+    private Rectangle hDirtyBounds;
+    private Rectangle vDirtyBounds;
     private Point crossHairLocation=null;
     
     private DataSetConsumer dataSetConsumer;
@@ -70,6 +72,8 @@ public class CrossHairRenderer implements DragRenderer {
         this.parent= parent;
         this.dataSetConsumer= dataSetConsumer;
         dirtyBounds= new Rectangle();
+        hDirtyBounds = new Rectangle();
+        vDirtyBounds = new Rectangle();
     }
     
     public void renderDrag(Graphics g1, Point p1, Point p2) {
@@ -78,9 +82,11 @@ public class CrossHairRenderer implements DragRenderer {
         g.setRenderingHints((RenderingHints)edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
         ds= dataSetConsumer.getDataSet();
         
+        /*
         if (crossHairLocation!=null) { //make sure the crosshair is erased
             drawCrossHair(g,crossHairLocation);
         }
+         */
         
         if (crossHairLocation==null) {
             
@@ -172,19 +178,24 @@ public class CrossHairRenderer implements DragRenderer {
         
         Graphics g= g0.create();
         
-        g.setColor(new Color(0,0,0));
-        g.setXORMode(Color.white);
+        g.setColor(Color.black);
+        //g.setXORMode(Color.white);
         
+        /*
         if (crossHairLocation!=null) {
             if (!crossHairLocation.equals(p)) {
                 drawCrossHair(g,crossHairLocation);
             }
         }
+         */
         
         Dimension d= parent.getSize();
+        hDirtyBounds.setBounds(0, p.y, d.width, 1);
         g.drawLine( 0,  p.y,  d.width,  p.y);
+        vDirtyBounds.setBounds(p.x, 0, 1, d.height);
         g.drawLine( p.x,  0,  p.x,  d.height );
         
+        /*
         if (crossHairLocation!=null) {
             if (crossHairLocation.equals(p)) {
                 crossHairLocation=null;
@@ -196,6 +207,7 @@ public class CrossHairRenderer implements DragRenderer {
         } else {
             crossHairLocation= p;
         }
+         */
         
         g.dispose();
         
@@ -206,6 +218,12 @@ public class CrossHairRenderer implements DragRenderer {
             drawCrossHair(g,crossHairLocation);
         }
         parent.paintImmediately(dirtyBounds);
+        parent.paintImmediately(hDirtyBounds);
+        parent.paintImmediately(vDirtyBounds);
+        //If you stick a meaningless statement in a method just so you can
+        //have a breakpoint where one isn't normally allowed, the least you
+        //can do is leave a comment so that someone (like me) doesn't spend
+        //12 seconds staring at it trying to figure out what it was for.
         int x=1;
     }
     
