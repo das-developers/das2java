@@ -46,7 +46,7 @@ public interface DasProgressMonitor {
     
     /** Sets the maximum value for the task progress of this
      * <code>ProgressMonitor</code>.
-     * @param taskSize maximum value for the task progress.
+     * @param taskSize maximum value for the task progress.  A taskSize of -1 indicates the taskSize is indeterminate.
      */
     void setTaskSize(long taskSize);    
     
