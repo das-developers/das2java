@@ -318,6 +318,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
         g.dispose();
         parent.setCursor(cursor0);
+        repaint();
     }
     
     public void setData(TableDataSet Data) {
