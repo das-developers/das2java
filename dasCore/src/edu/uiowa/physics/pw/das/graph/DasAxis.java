@@ -2358,17 +2358,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.removeMouseMotionListener(l);
     }
     
-    public void TimeRangeSelected(TimeRangeSelectionEvent e) {
-        if (false) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("received event");
-            Graphics2D g= (Graphics2D)getGraphics();
-            g.setColor(new Color(0,255,255,200));
-            Rectangle dirty= new Rectangle(0,0,getWidth(),getHeight());
-            g.fill(dirty);
-            try { Thread.sleep(600); } catch ( InterruptedException ie ) {};
-            paintImmediately(dirty);
-        }
-        if (!e.equals(lastProcessedEvent)) {
+    public void TimeRangeSelected(TimeRangeSelectionEvent e) {       
+        if ( e.getSource()!=this && !e.equals(lastProcessedEvent)) {                        
             setDataRange(e.getStartTime(),e.getEndTime());
             lastProcessedEvent= e;
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
