@@ -236,13 +236,20 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                 
                 monitor.started();
                 
-                InputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
+                final DasProgressMonitorInputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
                 //InputStream mpin = pin;
                 
                 DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finer("creating Channel");
                 ReadableByteChannel channel = Channels.newChannel(mpin);
                 
-                DataSetStreamHandler handler = new DataSetStreamHandler( properties, monitor, start, end );
+                DataSetStreamHandler handler = new DataSetStreamHandler( properties, monitor ) {
+                    public void streamDescriptor(StreamDescriptor sd) throws StreamException {
+                        super.streamDescriptor( sd );
+                        if ( super.taskSize!=-1 ) {
+                            mpin.setEnableProgressPosition(false);
+                        }
+                    }
+                };
                 
                 DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finer("using StreamTool to read the stream");                
                 StreamTool.readStream(channel, handler);
