@@ -26,9 +26,10 @@ package edu.uiowa.physics.pw.das.client;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- *
- * @author  jbf
+/** MeteredInputStream monitors the rate at which data is read from the
+ * stream, and can also limit the maximum data rate.  (Limit is useful
+ * for simulating slow links.)
+ * @author jbf
  */
 public class MeteredInputStream extends InputStream {
     
