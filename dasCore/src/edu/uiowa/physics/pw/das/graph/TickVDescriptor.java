@@ -134,6 +134,7 @@ public class TickVDescriptor {
         DatumFormatter formatter;
         DatumFormatterFactory factory = ticks.units.getDatumFormatterFactory();
         
+        
         try {
             if ( nTicks<2 ) {
                 if ( min >= DasMath.exp10(maxTick) ||  DasMath.exp10(maxTick) >= max ) {
@@ -145,15 +146,15 @@ public class TickVDescriptor {
                 mantissas= new double[] { 2,3,4,5,6,7,8,9 };
             } else  if ( nTicks<3 ) {                
                 double[] mant;
-                if ( nTicksMax>5 ) {
-                    mant= new double[] { 2,3,4,6,8 };
-                    mantissas= new double[] { 5,7,9 };
-                } else if ( nTicksMax>3 ) {
-                    mant= new double[] { 2, 5 };
-                    mantissas= new double[] { 3,4,6,7,8,9 };
+                if ( nTicksMax>15 ) {
+                    mant= new double[] { 2,3,4,5,6,7,8,9 };
+                    mantissas= new double[] { };
+                } else if ( nTicksMax>5 ) {
+                    mant= new double[] { 2,4,6,8 };
+                    mantissas= new double[] { 3,5,7,9 };
                 } else {
-                    mant= new double[] { 3 };
-                    mantissas= new double[] { 2,4,5,6,7,8,9 };
+                    mant= new double[] { 5 };
+                    mantissas= new double[] { 2,3,4,6,7,8,9 };
                 }
                 minTick= minTick-1;
                 nTicks++;
