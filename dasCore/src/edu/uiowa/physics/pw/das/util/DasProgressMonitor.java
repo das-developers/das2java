@@ -92,4 +92,7 @@ public interface DasProgressMonitor {
      */    
     boolean isCancelled();
     
+    /** additional information to be displayed alongside the progress. */
+    public void setAdditionalInfo(String s); 
+
 }
