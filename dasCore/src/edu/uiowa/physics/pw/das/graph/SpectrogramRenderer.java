@@ -23,36 +23,42 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.DasException;
+import edu.uiowa.physics.pw.das.DasNameException;
+import edu.uiowa.physics.pw.das.DasPropertyException;
+import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
+import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
+import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
+import edu.uiowa.physics.pw.das.dasml.FormBase;
+import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.event.*;
+import edu.uiowa.physics.pw.das.util.DasDie;
+import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.MemoryImageSource;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collections;
+import javax.swing.Icon;
+import org.w3c.dom.*;
+
 /**
  *
  * @author  jbf
  */
-
-import edu.uiowa.physics.pw.das.client.DataSetDescriptorNotAvailableException;
-import edu.uiowa.physics.pw.das.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.client.*;
-import edu.uiowa.physics.pw.das.event.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.components.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
-import edu.uiowa.physics.pw.das.util.*;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import java.awt.*;
-import java.awt.image.MemoryImageSource;
-
 public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer {
     
     private DasColorBar colorBar;
     Image plotImage;
     
-    protected class RebinListener implements java.beans.PropertyChangeListener {
-        public void propertyChange(java.beans.PropertyChangeEvent e) {
+    protected class RebinListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent e) {
             update(getParent().getXAxis(),getParent().getYAxis());
         }
     }
@@ -72,7 +78,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
         public static RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
         public static RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");        
-        public javax.swing.Icon getListIcon() {
+        public Icon getListIcon() {
             return null;
         }
         public String toString() {
@@ -170,12 +176,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
         
         if (getParent()==null  || w<=1 || h<=1 ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("canvas not useable!!!");
+            DasDie.println("canvas not useable!!!");
             return;
         }
         
         int[] pix= new int[ w * h ];
-        java.util.Arrays.fill(pix, 0x00000000);
+        Arrays.fill(pix, 0x00000000);
         
         if ( getDataSet() == null) {
             Units xUnits = getParent().getXAxis().getUnits();
@@ -184,7 +190,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             double[] xTags, yTags;
             xTags = yTags = new double[0];
             double[][] zValues = {yTags};
-            rebinData = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, java.util.Collections.EMPTY_MAP);
+            rebinData = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, Collections.EMPTY_MAP);
         } else {
             RebinDescriptor xRebinDescriptor;
             xRebinDescriptor = new RebinDescriptor(
@@ -232,8 +238,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     protected void installRenderer() {
         if (parent != null && parent.getCanvas() != null) {
             if (colorBar != null) {
-                if (colorBar.getRow() == null || colorBar.getColumn() == null) {
-                    colorBar.setRow(parent.getRow());
+                if (colorBar.getColumn() == null) {
                     DasColumn column = parent.getColumn();
                     double columnWidth = column.getMaximum() - column.getMinimum();
                     double cbMin = column.getMaximum() + columnWidth/5.0;
@@ -245,7 +250,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                     colorBar.setColumn(new DasColumn(parent.getCanvas(), cbMin, cbMax));
                 }
-                parent.getCanvas().add(colorBar);
+                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
                 if (!"true".equals(System.getProperty("java.awt.headless"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer=
@@ -278,7 +283,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
     
-    public static SpectrogramRenderer processSpectrogramElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    public static SpectrogramRenderer processSpectrogramElement(Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
         String dataSetID = element.getAttribute("dataSetID");
         DasColorBar colorbar = null;
         
@@ -294,7 +299,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             try {
                 colorbar = (DasColorBar)form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
             }
-            catch (edu.uiowa.physics.pw.das.DasPropertyException dpe) {
+            catch (DasPropertyException dpe) {
                 dpe.setPropertyName("colorbar");
                 throw dpe;
             }
@@ -304,13 +309,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         try {
             renderer.setDataSetID(dataSetID);
         }
-        catch (edu.uiowa.physics.pw.das.DasException de) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(de);
+        catch (DasException de) {
+            DasExceptionHandler.handle(de);
         }
         return renderer;
     }
     
-    private static DasColorBar processZAxisElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static DasColorBar processZAxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException, ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
