@@ -31,10 +31,7 @@ import java.awt.*;
  *
  * @author  eew
  */
-public class HorizontalDragRangeRenderer implements DragRenderer {
-    
-    protected int xInitial;
-    protected int yInitial;
+public class HorizontalDragRangeRenderer implements DragRenderer {   
     
     private Rectangle dirtyBounds;
     DasCanvasComponent parent;
