@@ -8,4 +8,5 @@ jbf> Suggested Properties for DataSets:
   xRange             DataRange object suggestion
   yRange             DataRange object suggestion
   dataType           String identifier for data type
-  DefaultRenderer    Renderer Object
+  defaultRenderer    Renderer Object
+  rebinner           Rebinner Object
