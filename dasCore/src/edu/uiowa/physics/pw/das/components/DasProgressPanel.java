@@ -69,9 +69,11 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         setOpaque(false);
         initComponents();
         transferRateFormat= new DecimalFormat();
-        transferRateFormat.setMaximumFractionDigits(2);
+        transferRateFormat.setMaximumFractionDigits(2);        
         maximumTaskPosition = -1;
         lastTaskTime= Integer.MAX_VALUE;
+        lastRefreshTime= Integer.MIN_VALUE;
+        showProgressRate= true;
     }
     
     public static DasProgressPanel createComponentPanel( DasCanvasComponent component, String initialMessage ) {
@@ -187,6 +189,12 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finest( "progressPosition="+position );
+        
+        if ( position!=0 && position<currentTaskPosition ) {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finest( "progress position goes backwards" );
+        }
+        
         if (isCancelled) {
             DasApplication.getDefaultApplication().getLogger().fine("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
             throw new IllegalStateException("Operation cancelled: developers: check isCancelled before calling setTaskProgress");
@@ -213,9 +221,9 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
             bytesReadLabel= "" + kb + "";
         }
         
-        if ( showProgressRate && elapsedTimeMs > 1000 ) {
+        if ( showProgressRate && elapsedTimeMs > 1000 && transferRateString!=null ) {
             double transferRate = ((double)position * 1000) / ( elapsedTimeMs );
-            kbLabel.setText(bytesReadLabel+" ("+transferRateFormat.format(transferRate)+"/s)");
+            kbLabel.setText(bytesReadLabel+" "+transferRateString );
         } else {
             kbLabel.setText(bytesReadLabel);
         }        
@@ -253,10 +261,10 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void started() {
         taskStartedTime= System.currentTimeMillis();
-        currentTaskPosition = 0;
         isCancelled = false;
         running = true;
-        DasApplication.getDefaultApplication().getLogger().fine("lastTaskTime="+lastTaskTime);
+        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("lastTaskTime="+lastTaskTime);
+        setTaskProgress(0);
         if ( lastTaskTime>hideInitiallyMilliSeconds*2.0 ) {
             setVisible(true);
         } else {
@@ -267,7 +275,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
                         Thread.sleep(hideInitiallyMilliSeconds);
                     } catch ( InterruptedException e ) { };
                     if (running) {
-                        DasApplication.getDefaultApplication().getLogger().fine("hide time="+(System.currentTimeMillis()-taskStartedTime) );
+                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("hide time="+(System.currentTimeMillis()-taskStartedTime) );
                         setTaskProgress(getTaskProgress());
                     }
                 }
