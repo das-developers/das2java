@@ -277,10 +277,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     }
     
     public void update() {
-        java.awt.EventQueue eventQueue =
-        Toolkit.getDefaultToolkit().getSystemEventQueue();
-        DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
-        eventQueue.postEvent(drue);
+        if (parent != null) {
+            java.awt.EventQueue eventQueue =
+            Toolkit.getDefaultToolkit().getSystemEventQueue();
+            DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
+            eventQueue.postEvent(drue);
+        }
     }
     
     protected void updateImmediately() {
