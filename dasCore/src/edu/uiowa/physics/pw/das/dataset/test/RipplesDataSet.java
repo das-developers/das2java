@@ -54,13 +54,13 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public Datum getDatum(int i, int j) {
-        return null;
+        return zUnits.createDatum(getDouble(i,j,zUnits));
     }
     
     public double getDouble(int i, int j, Units units) {
         double x= getXTagDouble(i,xUnits);
         double y= getYTagDouble(0,j,yUnits);
-        if (22.<x && x<24.) {
+        if (12.<x && x<14.) {
             return units.getFill().doubleValue(units);
         } else {
             double rad1= Math.sqrt((x-x1)*(x-x1)+(y-y1)*(y-y1));
@@ -78,11 +78,7 @@ public class RipplesDataSet implements TableDataSet {
     
     public DataSet getPlanarView(String planeID) {
         if ( "weights".equals(planeID) ) {
-            return new RipplesDataSet() {
-                public double getDouble(int i, int j, Units units ) {
-                    return 1.0;
-                }
-            };
+            return null;
         } else {
             return null;
         }
@@ -93,7 +89,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public int getXLength() {
-        return 100;
+        return 20;
     }
     
     public VectorDataSet getXSlice(int i) {
@@ -117,7 +113,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public int getYLength(int table) {
-        return 100;
+        return 20;
     }
     
     public VectorDataSet getYSlice(int j, int table) {
@@ -149,7 +145,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public int tableEnd(int table) {
-        return 100;
+        return 20;
     }
     
     public int tableOfIndex(int i) {
