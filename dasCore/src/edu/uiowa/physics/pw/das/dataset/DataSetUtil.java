@@ -26,7 +26,7 @@ public class DataSetUtil {
     public static DasAxis guessYAxis( DataSet ds ) {
         Units yunits= ds.getYUnits();
         return new DasAxis( yunits.createDatum(-20),
-        yunits.createDatum(20), DasAxis.LEFT );
+                yunits.createDatum(20), DasAxis.LEFT );
     }
     
     public static DasAxis guessXAxis( DataSet ds ) {
@@ -76,7 +76,7 @@ public class DataSetUtil {
     public static DatumRange yRange( DataSet ds ) {
         if ( ds instanceof VectorDataSet ) {
             VectorDataSet vds= ( VectorDataSet ) ds;
-            DatumRange result= null;            
+            DatumRange result= null;
             for ( int i=1; i<ds.getXLength(); i++ ) {
                 if ( !vds.getDatum(i).isFill() ) {
                     if ( result==null ) {
@@ -96,7 +96,7 @@ public class DataSetUtil {
     }
     
     
-    public static DasPlot visualize( DataSet ds, boolean ylog ) {        
+    public static DasPlot visualize( DataSet ds, boolean ylog ) {
         DatumRange xRange= xRange( ds );
         DatumRange yRange= yRange( ds );
         JFrame jframe= new JFrame("DataSetUtil.visualize");
@@ -105,13 +105,13 @@ public class DataSetUtil {
         DasPlot result= guessPlot( ds );
         canvas.add( result, DasRow.create(canvas), DasColumn.create( canvas ) );
         Units xunits= result.getXAxis().getUnits();
-        result.getXAxis().setDataRange(xRange.zoomOut(1.1));
+        result.getXAxis().setDatumRange(xRange.zoomOut(1.1));
         Units yunits= result.getYAxis().getUnits();
         if ( ylog ) {
-            result.getYAxis().setDataRange(yRange);
+            result.getYAxis().setDatumRange(yRange);
             result.getYAxis().setLog(true);
         } else {
-            result.getYAxis().setDataRange(yRange.zoomOut(1.1));
+            result.getYAxis().setDatumRange(yRange.zoomOut(1.1));
         }
         jframe.pack();
         jframe.setVisible(true);
@@ -173,7 +173,7 @@ public class DataSetUtil {
         }
     }
     
-    public static double[] getXTagArrayDouble( DataSet vds, Units units ) {        
+    public static double[] getXTagArrayDouble( DataSet vds, Units units ) {
         int ixmax= vds.getXLength();
         double[] xx= new double[ixmax];
         for ( int i=0; i<ixmax; i++ ) {
@@ -184,8 +184,39 @@ public class DataSetUtil {
     
     
     public static DatumVector getXTags( DataSet ds ) {
-        double[] data= VectorUtil.getXTagArrayDouble(ds,ds.getXUnits());        
+        double[] data= VectorUtil.getXTagArrayDouble(ds,ds.getXUnits());
         return DatumVector.newDatumVector(data,ds.getXUnits());
     }
     
+    public static DatumRange zRange( DataSet ds ) {
+        if ( !( ds instanceof TableDataSet ) ) {
+            throw new UnsupportedOperationException("only TableDataSets supported");
+        }
+        TableDataSet tds= (TableDataSet)ds;
+        
+        double max= Double.NEGATIVE_INFINITY;
+        double min= Double.POSITIVE_INFINITY;
+        
+        double fill= tds.getZUnits().getFillDouble();
+        Units zunits= tds.getZUnits();
+        
+        for ( int itable=0; itable<tds.tableCount(); itable++ ) {
+            int ny= tds.getYLength(itable);
+            for (int i=tds.tableStart(itable); i<tds.tableEnd(itable); i++) {
+                for (int j=0; j<ny; j++) {
+                    double d= tds.getDouble(i,j,zunits);
+                    if ( d!=fill ) {
+                        max= Math.max( d, max );
+                        min= Math.min( d, min );
+                    }
+                }
+            }
+        }
+        if ( max==Double.NEGATIVE_INFINITY ) {
+            max= fill;
+            min= fill;
+        }
+        return DatumRange.newDatumRange( min, max, zunits );
+        
+    }
 }
