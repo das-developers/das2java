@@ -45,6 +45,24 @@ public class VectorUtil {
         return closest( xx, x );
     }
     
+    public static Datum median( VectorDataSet ds ) {
+        double[] data= new double[ds.getXLength()];
+        int idata=0;
+        Units units= ds.getYUnits();
+        for ( int i=0; i<ds.getXLength(); i++ ) {
+            double zz= ds.getDouble(i,units);
+            if ( !units.isFill(zz) ) {
+                data[idata++]= zz;
+            }
+        }
+        if ( idata==0 ) return Datum.create( units.getFillDouble(), units );        
+        Arrays.sort(data,0, idata);
+        
+        int n= idata/2;
+        
+        return Datum.create( data[n], units );
+    }
+    
     public static void dumpToAsciiStream( VectorDataSet vds, Datum xmin, Datum xmax, OutputStream out ) {
         PrintStream pout= new PrintStream(out);
         
