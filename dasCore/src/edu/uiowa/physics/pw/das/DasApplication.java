@@ -36,6 +36,38 @@ public class DasApplication {
     
     private static final DasApplication DEFAULT = new DasApplication();
     
+    private static class LoggerId {
+        String name;
+        Logger logger;
+        LoggerId( String name ) {
+            this.name= name;
+            this.logger= Logger.getLogger(name);
+            this.logger.setLevel(Level.ALL);
+            this.logger.log( this.logger.getLevel(), name +" logging at "+this.logger.getLevel() );
+        }
+        public String toString() {
+            return this.name;
+        }
+        public Logger getLogger() {
+            return this.logger;
+        }
+    }
+    
+    /* messages having to do with the application-specific Das 2 Application */
+    public static final LoggerId APPLICATION_LOG= new LoggerId(""); 
+    
+    /* events, gestures, user feedback */
+    public static final LoggerId GUI_LOG= new LoggerId("gui");
+    
+    /* renders, drawing */
+    public static final LoggerId GRAPHICS_LOG= new LoggerId("graphics");
+    
+    /* rebinning */
+    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId("data operations");
+    
+    /* internet transactions, file I/O */
+    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId("data transfer");
+    
     static {
         String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans" };
         java.beans.Introspector.setBeanInfoSearchPath(beanInfoSearchPath);
@@ -115,7 +147,7 @@ public class DasApplication {
         }
     }
     
-    public JFrame getMainFrame( edu.uiowa.physics.pw.das.graph.DasCanvas canvas ) {
+    public JFrame getMainFrame( java.awt.Container canvas ) {
         JFrame frame= getMainFrame();
         frame.setContentPane(canvas);
         frame.pack();
@@ -146,6 +178,10 @@ public class DasApplication {
      */    
     public Logger getLogger() {
         return DasProperties.getLogger();
+    }
+    
+    public Logger getLogger( LoggerId loggerId ) {
+        return loggerId.getLogger();
     }
     
     /**
