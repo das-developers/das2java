@@ -84,8 +84,24 @@ public final class DatumVector {
         if (array == null || array.length < length) {
             array = new double[length];
         }
-        System.arraycopy(store, offset, array, 0, length);
+        if (units == this.units) {
+            System.arraycopy(store, offset, array, 0, length);
+        }
+        else {
+            double[] store = (double[])this.store;
+            for (int i = 0; i < length; i++) {
+                array[i] = this.units.convertDoubleTo(units, store[i]);
+            }
+        }
         return array;
+    }
+    
+    public static DatumVector newDatumVector(Datum[] array, Units units) {
+        double[] dArray = new double[array.length];
+        for (int i = 0; i < array.length; i++) {
+            dArray[i] = array[i].doubleValue(units);
+        }
+        return newDatumVector(dArray, units);
     }
     
     public static DatumVector newDatumVector(double[] array, Units units) {
