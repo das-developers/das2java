@@ -23,6 +23,7 @@
 package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -206,11 +207,13 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         InputStream in;
         DataSet result;
         if ( isServerSideReduction() ) {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getting stream from standard data stream source");
             in= standardDataStreamSource.getReducedInputStream( this, start, end, resolution);
         } else {
             in= standardDataStreamSource.getInputStream( this, start, end );
         }
         
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("reading stream");                    
         result = getDataSetFromStream( in, start, end, monitor );
         return result;
     }
@@ -220,18 +223,28 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         try {
             byte[] four = new byte[4];
             int bytesRead= pin.read(four);
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finer("read first four bytes bytesRead="+bytesRead);
             if ( bytesRead!=4 ) {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("no data returned from server");
                 throw new DasIOException( "No data returned from server" );
             }
             if (new String(four).equals("[00]")) {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finer("got stream header [00]");
                 pin.unread(four);
                 
-                if (monitor != null) monitor.started();
-                InputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
+                if ( monitor==null ) monitor= DasProgressMonitor.NULL;
                 
+                monitor.started();
+                
+                InputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
+                //InputStream mpin = pin;
+                
+                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finer("creating Channel");
                 ReadableByteChannel channel = Channels.newChannel(mpin);
                 
                 DataSetStreamHandler handler = new DataSetStreamHandler( properties, monitor, start, end );
+                
+                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finer("using StreamTool to read the stream");                
                 StreamTool.readStream(channel, handler);
                 return handler.getDataSet();
             }
