@@ -75,11 +75,9 @@ public class DasEventsIndicator extends DasCanvasComponent {
             int i= eventMap[e.getX()];
             if ( i>=0 ) {
                 Datum sx= parent.vds.getXTagDatum(i);
-                Datum sy= parent.vds.getDatum(i);
-                if ( parent.vds.getPlanarView(planeId)==null ) {
-                    throw new IllegalArgumentException("planeId is not found in dataset");
-                }
-                Datum sz= ((VectorDataSet)parent.vds.getPlanarView(planeId)).getDatum(i);
+                Datum sz= parent.vds.getDatum(i);
+                VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView("xTagWidth");
+                Datum sy= widthsDs.getDatum(i);
                 parent.setToolTipText(""+sx+" "+sy+" "+sz);
                 
             } else {
@@ -103,9 +101,13 @@ public class DasEventsIndicator extends DasCanvasComponent {
         
         try {
             vds= (VectorDataSet)dsd.getDataSet( axis.getDataMinimum(), axis.getDataMaximum(), null, null );
+            if ( vds.getPlanarView("xTagWidth")==null ) {
+                throw new IllegalArgumentException("no xTagWidth plane found.");
+            } 
+            VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView("xTagWidth");
             for ( int k=0; k<eventMap.length; k++ ) eventMap[k]= -1;
             if ( vds.getXLength()>0 ) {
-                UnitsConverter uc=  UnitsConverter.getConverter( vds.getYUnits(), axis.getUnits().getOffsetUnits() );
+                UnitsConverter uc=  UnitsConverter.getConverter( widthsDs.getYUnits(), axis.getUnits().getOffsetUnits() );
                 
                 int ivds0= 0;
                 int ivds1= vds.getXLength();
@@ -114,7 +116,7 @@ public class DasEventsIndicator extends DasCanvasComponent {
                     int ix= axis.transform(x);
                     int iwidth;
                     if ( uc!=null ) {
-                        Datum y= vds.getDatum(i);
+                        Datum y= widthsDs.getDatum(i);
                         iwidth= axis.transform( x.add( y ) ) - ix;
                     } else {
                         iwidth= 1;
