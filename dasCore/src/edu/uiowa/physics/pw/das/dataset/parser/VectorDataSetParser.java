@@ -27,6 +27,9 @@ public class VectorDataSetParser {
     int recordCountLimit;
     int fieldCount;
     
+    public final static Pattern NAME_COLON_VALUE_PATTERN= Pattern.compile("\\s*(.+?)\\s*\\:\\s*(.+)\\s*");
+    public final static Pattern NAME_EQUAL_VALUE_PATTERN= Pattern.compile("\\s*(.+?)\\s*\\=\\s*(.+)\\s*");
+    
     private VectorDataSetParser( String[] fieldNames ) {
         this.fieldCount= fieldNames.length;
         this.fieldNames= fieldNames;
