@@ -229,6 +229,10 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         }
     }
     
+    protected DataSetDescriptor getDataSetDescriptor() {
+        return this.dsd;
+    }
+    
     protected abstract void installRenderer();
     
     protected abstract void uninstallRenderer();
