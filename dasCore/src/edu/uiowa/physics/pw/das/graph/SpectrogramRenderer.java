@@ -80,10 +80,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
         public static final RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");
         public static final RebinnerEnum binAverageNoInterpolate;
+        public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
         static {
             AverageTableRebinner rebinner= new AverageTableRebinner();
             rebinner.setInterpolate(false);
             binAverageNoInterpolate= new RebinnerEnum(rebinner,"noInterpolate");
+            
+            rebinner = new AverageTableRebinner();
+            rebinner.setInterpolate(false);
+            rebinner.setEnlargePixels(false);
+            binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
         }
         public Icon getListIcon() {
             return null;
