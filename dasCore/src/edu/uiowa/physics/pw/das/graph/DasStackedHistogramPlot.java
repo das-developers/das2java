@@ -272,19 +272,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             double canvasHeight= parent.getHeight();
             DasRow littleRow= new DasRow(getCanvas(),yBase1/canvasHeight,yBase/canvasHeight);
             
-            zAxisComponent.setLittleRow(littleRow);
-            
-            //            for (int i=0; i<xtysData.data.length; i++) {
-            //                int ibin= xbins.whichBin(xtysData.data[i].x,Data.getXUnits());
-            //                if (ibin!=-1) {
-            //                    double z= xtysData.data[i].z[j];
-            //                    if (!Double.isNaN(z) && z!=xtysData.getZFill()){
-            //                        zAvgS[ibin]+= z;
-            //                        zAvgN[ibin]++;
-            //                        zMax[ibin]= zMax[ibin]>z ? zMax[ibin] : z;
-            //                    }
-            //                }
-            //            }
+            zAxisComponent.setLittleRow(littleRow);           
             
             double [] binStarts= xbins.binStarts();
             double [] binStops= xbins.binStops();
