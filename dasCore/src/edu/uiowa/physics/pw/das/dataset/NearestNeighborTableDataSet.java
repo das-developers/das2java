@@ -50,7 +50,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
             imap[i]= DataSetUtil.closestColumn(source, xx[i], ddX.getUnits() );
             Datum xclose= source.getXTagDatum(imap[i]);
             Units xunits= xTagWidth.getUnits();
-            if ( Math.abs(xclose.subtract(xx[i],ddX.getUnits()).doubleValue(xunits)) > xTagWidth.doubleValue(xunits) ) {
+            if ( Math.abs(xclose.subtract(xx[i],ddX.getUnits()).doubleValue(xunits)) > xTagWidth.doubleValue(xunits)/2. ) {
                 imap[i]=-1;
             } else {
                 int itable= source.tableOfIndex(imap[i]);
@@ -206,6 +206,9 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     public int tableStart(int table) {
         return 0;
     }
-    
+ 
+    public String toString() {
+        return "NearestNeighborTableDataSet " + TableUtil.toString(this);
+    }
 }
 
