@@ -61,7 +61,7 @@ public class DatumRange implements Comparable {
      * @return the DatumRange as a String.
      */    
     public String toString() {
-        return ""+this.s1+" - "+this.s2;
+        return ""+this.s1+" to "+this.s2;
     }
     
     
@@ -140,6 +140,10 @@ public class DatumRange implements Comparable {
         Datum min= ( this.min().le(d) ? this.min() : d );
         Datum max= ( this.max().ge(d) ? this.max() : d );
         return new DatumRange( min, max );
+    }
+    
+    public Units getUnits() {
+        return this.s1.getUnits();
     }
     
     public static DatumRange newDatumRange(double min, double max, Units units) {
