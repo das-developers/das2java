@@ -45,4 +45,5 @@ public class StreamComment {
     public String getType() { return element.getAttribute("type"); }
     public String getValue() { return element.getAttribute("value"); }
     
+    public String toString() { return "stream comment: "+getType()+"="+getValue(); }
 }
