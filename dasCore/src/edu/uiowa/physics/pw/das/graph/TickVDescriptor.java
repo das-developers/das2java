@@ -30,6 +30,13 @@ public class TickVDescriptor {
         this.datumFormatter= DefaultDatumFormatterFactory.getInstance().defaultFormatter();
     }
     
+    public static TickVDescriptor newTickVDescriptor( DatumVector majorTicks, DatumVector minorTicks ) {
+        Units units= majorTicks.getUnits();
+        double[] minor= minorTicks.toDoubleArray(units);
+        double[] major= majorTicks.toDoubleArray(units);
+        return new TickVDescriptor( minor, major, units );
+    }
+    
     public DatumVector getMajorTicks() {
         return DatumVector.newDatumVector( tickV, units );
     }
@@ -219,7 +226,17 @@ public class TickVDescriptor {
         
         Datum minute = Datum.create(60.0, Units.seconds);
         if (maxD.subtract(minD).lt(minute)) {
-            return bestTickVLinear( minD, maxD, nTicksMax );
+            Datum base= TimeUtil.prevMidnight( minD );            
+            
+            Units offUnits= Units.seconds;
+            Datum offMin= minD.subtract(base).convertTo(offUnits);
+            Datum offMax= maxD.subtract(base).convertTo(offUnits);
+            TickVDescriptor offTicks= bestTickVLinear( offMin, offMax, nTicksMax );
+            
+            DatumVector minorTicks= offTicks.getMinorTicks().add(base);
+            DatumVector majorTicks= offTicks.getMajorTicks().add(base);
+                        
+            TickVDescriptor result= TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks );
         }
         
         TickVDescriptor res= new TickVDescriptor();
