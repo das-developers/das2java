@@ -54,7 +54,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     private static final MouseListener currentComponentListener = new MouseAdapter() {
         public void mousePressed(MouseEvent e) {
             DasCanvasComponent dcc = (DasCanvasComponent)SwingUtilities.getAncestorOfClass(DasCanvasComponent.class, e.getComponent());
-            CanvasComponentAction.currentCanvasComponent = (DasCanvasComponent)e.getSource();
+            CanvasComponentAction.currentCanvasComponent = dcc;
             DasCanvas canvas = dcc.getCanvas();
             DasCanvas.CanvasAction.currentCanvas = canvas;
         }
