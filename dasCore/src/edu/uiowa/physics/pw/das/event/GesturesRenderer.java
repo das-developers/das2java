@@ -65,8 +65,7 @@ public class GesturesRenderer implements DragRenderer {
         } else {
             g= Gesture.UNDEFINED;
         }
-        
-        return new MouseRangeGestureSelectionEvent(source,0,0,g);
+        return new MouseDragEvent(source,g);
     }
     
     public void renderDrag(Graphics g1, Point p1, Point p2) {
@@ -93,17 +92,7 @@ public class GesturesRenderer implements DragRenderer {
                     g.setStroke(new BasicStroke());
                 }
                 
-                if ( (p1.x-xOffset<10) && (p1.x-xOffset)>=0 && (p2.x-xOffset)<0 ) {
-                    g.drawLine(p1.x,p1.y-5,p1.x-5,p1.y);
-                    g.drawLine(p1.x-5,p1.y,p1.x,p1.y+5);
-                    g.drawLine(p1.x, p1.y+5, p1.x, p1.y-5);
-                    edu.uiowa.physics.pw.das.util.DasDie.println("zoomprev");
-                } else if ((p1.x-xOffset)>(width-10) && (p1.x-xOffset)<width && (p2.x-xOffset)>=width ) {
-                    g.drawLine(p1.x,p1.y-5,p1.x+5,p1.y);
-                    g.drawLine(p1.x+5,p1.y,p1.x,p1.y+5);
-                    g.drawLine(p1.x, p1.y+5, p1.x, p1.y-5);                    
-                    edu.uiowa.physics.pw.das.util.DasDie.println("zoomnext");
-                } else if (Math.abs(angle)>160) {
+                if (Math.abs(angle)>160) {
                     g.drawLine(p1.x,p1.y,p1.x-5,p1.y);
                     g.drawLine(p1.x-5,p1.y,p1.x-3,p1.y-2);
                     g.drawLine(p1.x-5,p1.y,p1.x-3,p1.y+2);
@@ -144,6 +133,13 @@ public class GesturesRenderer implements DragRenderer {
     
     public boolean isUpdatingDragSelection() {
         return false;
-    }    
+    }
+    
+    public boolean isGesture( Point p1, Point p2 ) {
+        double dx= p2.x-p1.x;
+        double dy= -1* ( p2.y-p1.y );
+        double radius= Math.sqrt(dy*dy+dx*dx);
+        return radius < 20;
+    }
     
 }

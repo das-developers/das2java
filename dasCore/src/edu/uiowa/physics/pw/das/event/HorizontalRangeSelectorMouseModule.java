@@ -28,9 +28,8 @@ import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasSpectrogramPlot;
+import javax.swing.event.EventListenerList;
 
-import java.awt.*;
-import java.util.Vector;
 
 /**
  *
@@ -41,7 +40,7 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
     DasAxis axis;   
     
     /** Utility field used by event firing mechanism. */
-    private javax.swing.event.EventListenerList listenerList =  null;
+    private EventListenerList listenerList =  null;
     
     public HorizontalRangeSelectorMouseModule(DasCanvasComponent parent, DasAxis axis) {
         super(parent,new HorizontalRangeGesturesRenderer(parent),"Zoom X");
@@ -58,17 +57,15 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
         return result;
     }
     
-    public void mouseRangeSelected(MouseDragEvent e0) {        
-        MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+getHotSpots());
-        MouseRangeGestureSelectionEvent e1= (MouseRangeGestureSelectionEvent)e;
-        edu.uiowa.physics.pw.das.datum.Datum min;
-        edu.uiowa.physics.pw.das.datum.Datum max;
-        if (!e1.isGesture()) {
+    public void mouseRangeSelected(MouseDragEvent e0) {                        
+        if (!e0.isGesture()) {
+            Datum min;
+            Datum max;
+            MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
             min= axis.invTransform(e.getMinimum());
             max= axis.invTransform(e.getMaximum());
-            edu.uiowa.physics.pw.das.datum.Datum nnMin= axis.findTick(min,0,true);
-            edu.uiowa.physics.pw.das.datum.Datum nnMax= axis.findTick(max,0,true);
+            Datum nnMin= axis.findTick(min,0,true);
+            Datum nnMax= axis.findTick(max,0,true);
             if (nnMin.equals(nnMax)) {
                 min= axis.findTick(min,-1,true);
                 max= axis.findTick(max,1,true);
@@ -79,15 +76,15 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
             DataRangeSelectionEvent te=
             new DataRangeSelectionEvent(e0.getSource(),min,max);
             fireDataRangeSelectionListenerDataRangeSelected(te);
-        } else if (e1.isBack()) {
+        } else if ( e0.getGesture()==Gesture.BACK ) {
             axis.setDataRangePrev();
-        } else if (e1.isZoomOut()) {
+        } else if ( e0.getGesture()==Gesture.ZOOMOUT ) {
             axis.setDataRangeZoomOut();
-        } else if (e1.isForward()) {
+        } else if ( e0.getGesture()==Gesture.FORWARD ) {
             axis.setDataRangeForward();
-        } else if (e1.getGesture()==Gesture.SCANPREV) {
+        } else if ( e0.getGesture()==Gesture.SCANPREV) {
             axis.scanPrevious();
-        } else if (e1.getGesture()==Gesture.SCANNEXT) {
+        } else if ( e0.getGesture()==Gesture.SCANNEXT) {
             axis.scanNext();
         }
     }
@@ -97,7 +94,7 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
      */
     public synchronized void addDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
         if (listenerList == null ) {
-            listenerList = new javax.swing.event.EventListenerList();
+            listenerList = new EventListenerList();
         }
         listenerList.add(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
     }

@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
+import javax.swing.event.EventListenerList;
 
 /**
  *
@@ -38,10 +39,10 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
     DasAxis yAxis;
     
     /** Utility field used by event firing mechanism. */
-    private javax.swing.event.EventListenerList listenerList =  null;
+    private EventListenerList listenerList =  null;
     
     public BoxRangeSelectorMouseModule(DasCanvasComponent parent, DasAxis xAxis, DasAxis yAxis) {
-        super( parent, new BoxRenderer(parent), "Box Zoom" );
+        super( parent, new BoxGesturesRenderer(parent), "Box Zoom" );
         if (!xAxis.isHorizontal()) {
             throw new IllegalArgumentException("X Axis orientation is not horizontal");
         }
@@ -59,41 +60,53 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
     }
     
     public void mouseRangeSelected(MouseDragEvent e0) {
-        MouseBoxEvent e= (MouseBoxEvent)e0;
-        edu.uiowa.physics.pw.das.datum.Datum min;
-        edu.uiowa.physics.pw.das.datum.Datum max;
-        DasAxis axis;
-        edu.uiowa.physics.pw.das.datum.Datum nnMin;
-        edu.uiowa.physics.pw.das.datum.Datum nnMax;
-        
-        axis= xAxis;
-        min= axis.invTransform(e.getXMinimum());
-        max= axis.invTransform(e.getXMaximum());
-        nnMin= axis.findTick(min,0,true);
-        nnMax= axis.findTick(max,0,true);
-        if (nnMin.equals(nnMax)) {
-            min= axis.findTick(min,-1,true);
-            max= axis.findTick(max,1,true);
-        } else {
-            min= nnMin;
-            max= nnMax;
-        }
-        axis.setDataRange(min,max);
 
-        axis= yAxis;
-        max= axis.invTransform(e.getYMinimum());
-        min= axis.invTransform(e.getYMaximum());
-        nnMin= axis.findTick(min,0,true);
-        nnMax= axis.findTick(max,0,true);
-        if (nnMin.equals(nnMax)) {
-            min= axis.findTick(min,-1,true);
-            max= axis.findTick(max,1,true);
-        } else {
-            min= nnMin;
-            max= nnMax;
+        if ( !e0.isGesture() ) {
+            MouseBoxEvent e= (MouseBoxEvent)e0;
+                    
+            Datum min;
+            Datum max;
+            DasAxis axis;
+            Datum nnMin;
+            Datum nnMax;
+            
+            axis= xAxis;
+            min= axis.invTransform(e.getXMinimum());
+            max= axis.invTransform(e.getXMaximum());
+            nnMin= axis.findTick(min,0,true);
+            nnMax= axis.findTick(max,0,true);
+            if (nnMin.equals(nnMax)) {
+                min= axis.findTick(min,-1,true);
+                max= axis.findTick(max,1,true);
+            } else {
+                min= nnMin;
+                max= nnMax;
+            }
+            axis.setDataRange(min,max);
+            
+            axis= yAxis;
+            max= axis.invTransform(e.getYMinimum());
+            min= axis.invTransform(e.getYMaximum());
+            nnMin= axis.findTick(min,0,true);
+            nnMax= axis.findTick(max,0,true);
+            if (nnMin.equals(nnMax)) {
+                min= axis.findTick(min,-1,true);
+                max= axis.findTick(max,1,true);
+            } else {
+                min= nnMin;
+                max= nnMax;
+            }
+            axis.setDataRange(min,max);
+        } else if ( e0.getGesture()==Gesture.BACK ) {
+            xAxis.setDataRangePrev();
+            yAxis.setDataRangePrev();
+        } else if ( e0.getGesture()==Gesture.ZOOMOUT ) {
+            xAxis.setDataRangeZoomOut();
+            yAxis.setDataRangeZoomOut();
+        } else if ( e0.getGesture()==Gesture.FORWARD ) {
+            xAxis.setDataRangeForward();
+            yAxis.setDataRangeForward();
         }
-        axis.setDataRange(min,max);
-
     }
     
     /** Registers DataRangeSelectionListener to receive events.

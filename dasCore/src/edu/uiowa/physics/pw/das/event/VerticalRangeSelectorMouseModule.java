@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
+import javax.swing.event.EventListenerList;
 
 /**
  *
@@ -37,7 +38,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
     DasAxis axis;
     
     /** Utility field used by event firing mechanism. */
-    private javax.swing.event.EventListenerList listenerList =  null;
+    private EventListenerList listenerList =  null;
     
     public String getLabel() { return "Zoom Y"; };
     
@@ -58,14 +59,13 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         return result;
     }
     
-    public void mouseRangeSelected(MouseDragEvent e0) {
-        MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
-        MouseRangeGestureSelectionEvent e1= (MouseRangeGestureSelectionEvent)e;
-        edu.uiowa.physics.pw.das.datum.Datum min;
-        edu.uiowa.physics.pw.das.datum.Datum max;
-        edu.uiowa.physics.pw.das.datum.Datum nnMin;
-        edu.uiowa.physics.pw.das.datum.Datum nnMax;
-        if (!e1.isGesture()) {
+    public void mouseRangeSelected(MouseDragEvent e0) {                
+        if (!e0.isGesture()) {
+            Datum min;
+            Datum max;
+            Datum nnMin;
+            Datum nnMax;
+            MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
             min= axis.invTransform(e.getMaximum());
             max= axis.invTransform(e.getMinimum());
             nnMin= axis.findTick(min,0,true);
@@ -80,11 +80,11 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
             DataRangeSelectionEvent te=
             new DataRangeSelectionEvent(parent,min,max);
             fireDataRangeSelectionListenerDataRangeSelected(te);
-        } else if (e1.isBack()) {
+        } else if (e0.getGesture()==Gesture.BACK) {
             axis.setDataRangePrev();
-        } else if (e1.isZoomOut()) {
+        } else if (e0.getGesture()==Gesture.ZOOMOUT) {
             axis.setDataRangeZoomOut();
-        } else if (e1.isForward()) {
+        } else if (e0.getGesture()==Gesture.FORWARD) {
             axis.setDataRangeForward();
         } else {
         }
@@ -95,7 +95,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
      */
     public synchronized void addDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
         if (listenerList == null ) {
-            listenerList = new javax.swing.event.EventListenerList();
+            listenerList = new EventListenerList();
         }
         listenerList.add(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
     }

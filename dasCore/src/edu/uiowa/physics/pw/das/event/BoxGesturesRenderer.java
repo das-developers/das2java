@@ -30,64 +30,52 @@ import java.awt.*;
  *
  * @author  eew
  */
-public class BoxRenderer implements DragRenderer {
+public class BoxGesturesRenderer extends BoxRenderer {
     
-    boolean xRangeSelection;
-    boolean yRangeSelection;
+    GesturesRenderer gr;
     
-    Rectangle dirtyBounds;
-    DasCanvasComponent parent;
-    
-    public BoxRenderer(DasCanvasComponent parent) {
-        this.parent= parent;
-        dirtyBounds= new Rectangle();
-        xRangeSelection= true;
-        yRangeSelection= true;
+    public BoxGesturesRenderer(DasCanvasComponent parent) {
+        super(parent);
+        gr= new GesturesRenderer(parent);
     }
     
     public void clear(Graphics g) {
         parent.paintImmediately(dirtyBounds);
     }
+        
     public void renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g= (Graphics2D) g1;
-        
-        Rectangle r = new Rectangle(p1);
-        r.add(p2);
-        
-        Color color0= g.getColor();
-        g.setColor(new Color(255,255,255,100));
-        g.setStroke(new BasicStroke( 3.0f,
-        BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
-        
-        g.drawRect(r.x, r.y, r.width, r.height);
-        
-        g.setStroke(new BasicStroke());
-        g.setColor(color0);
-        
-        g.drawRect(r.x, r.y, r.width, r.height);
-        
-        dirtyBounds.setLocation(r.x-2,r.y-3);
-        dirtyBounds.add(r.x+r.width+2,r.y+r.height+3);
+                
+        if ( gr.isGesture( p1, p2 ) ) {
+            gr.renderDrag( g, p1, p2 );
+            dirtyBounds= gr.getDirtyBounds();
+        } else {
+            Rectangle r = new Rectangle(p1);
+            r.add(p2);
+            
+            Color color0= g.getColor();
+            g.setColor(new Color(255,255,255,100));
+            g.setStroke(new BasicStroke( 3.0f,
+            BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+            
+            g.drawRect(r.x, r.y, r.width, r.height);
+            
+            g.setStroke(new BasicStroke());
+            g.setColor(color0);
+            
+            g.drawRect(r.x, r.y, r.width, r.height);
+            
+            dirtyBounds.setLocation(r.x-2,r.y-3);
+            dirtyBounds.add(r.x+r.width+2,r.y+r.height+3);
+        }
     }
     
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
-        return new MouseBoxEvent(source,p1,p2,isModified);
-    }
-    
-    public boolean isPointSelection() {
-        return false;
-    }
-    
-    public boolean isXRangeSelection() {
-        return xRangeSelection;
-    }
-    
-    public boolean isYRangeSelection() {
-        return yRangeSelection;
-    }
-    
-    public boolean isUpdatingDragSelection() {
-        return false;
+        if ( gr.isGesture(p1,p2) ) {
+            return gr.getMouseDragEvent( source, p1, p2, isModified );
+        } else {
+            return super.getMouseDragEvent( source, p1, p2, isModified );
+        }
     }
     
 }

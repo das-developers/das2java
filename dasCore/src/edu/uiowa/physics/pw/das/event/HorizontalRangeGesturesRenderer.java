@@ -102,10 +102,9 @@ public class HorizontalRangeGesturesRenderer implements DragRenderer {
         double dy= -1* ( p2.y-p1.y );
         double radius= Math.sqrt(dy*dy+dx*dx);
         if ( radius<20 ) {
-            return gr.getMouseDragEvent(source,p1,p2,isModified);
-            
+            return gr.getMouseDragEvent(source,p1,p2,isModified);            
         } else {
-            return new MouseRangeGestureSelectionEvent(source,p1.x,p2.x, Gesture.NONE);
+            return new MouseRangeSelectionEvent( source,p1.x,p2.x, isModified );
         }
         
     }

@@ -29,9 +29,27 @@ package edu.uiowa.physics.pw.das.event;
  */
 public class MouseDragEvent extends DasMouseEvent {
     
-    /** Creates a new instance of MouseDragEvent */
+    Gesture gesture;
+    
     public MouseDragEvent(Object source) {
         super(source);
+        gesture= Gesture.NONE;
     }
     
+    public MouseDragEvent(Object source, Gesture gesture ) {
+        super(source);
+        this.gesture= gesture;
+    }
+    
+    public boolean isGesture() {
+        return gesture!=Gesture.NONE;
+    }
+    
+    public Gesture getGesture() {
+        return gesture;
+    }
+    
+    public String toString() {
+        return isGesture() ? gesture.toString() : "MouseDragEvent source: "+source;
+    }
 }
