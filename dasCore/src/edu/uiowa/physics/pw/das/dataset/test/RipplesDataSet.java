@@ -61,7 +61,7 @@ public class RipplesDataSet implements TableDataSet {
         double x= getXTagDouble(i,xUnits);
         double y= getYTagDouble(0,j,yUnits);
         if (12.<x && x<14.) {
-            return units.getFill().doubleValue(units);
+            return units.getFillDouble();
         } else {
             double rad1= Math.sqrt((x-x1)*(x-x1)+(y-y1)*(y-y1));
             double exp1= Math.exp(-rad1/p1)*Math.cos(Math.PI*rad1/p1);

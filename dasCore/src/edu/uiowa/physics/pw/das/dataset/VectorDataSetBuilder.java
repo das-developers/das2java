@@ -175,7 +175,7 @@ public class VectorDataSetBuilder {
                 double y = my.get((String)planeIDs.get(plane));
                 if (Double.isNaN(y)) {
                     Units units = (Units)unitsMap.get(planeIDs.get(plane));
-                    y = units.getFill().doubleValue(units);
+                    y = units.getFillDouble();
                 }
                 yValues[plane][index] = y;
             }

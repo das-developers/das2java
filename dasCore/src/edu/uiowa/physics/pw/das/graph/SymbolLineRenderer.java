@@ -99,7 +99,7 @@ public class SymbolLineRenderer extends Renderer {
         
         graphics.setColor(color.toColor());
         
-        double fill= yUnits.getFill().doubleValue(yUnits);
+        double fill= yUnits.getFillDouble();
         double xSampleWidth= 1e31;
         
         if ( psymConnector != PsymConnector.NONE ) {
