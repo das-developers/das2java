@@ -307,7 +307,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
             if (rebinWeights[nx - 1][j] == 0.0 && vInterpWeights[1][j] != 0.0) {
                 int i0 = nx - 1;
-                while (i0 >= 0 & rebinWeights[i0][j] == 0.0) i0--;
+                while (i0 >= 0 && rebinWeights[i0][j] == 0.0) i0--;
                 if (i0 >= 0) {
                     rebinData[nx - 1][j] = linearlyInterpolate
                         (i0, rebinData[i0][j], vInterpIndex[1][j], vInterpData[1][j], nx - 1);
