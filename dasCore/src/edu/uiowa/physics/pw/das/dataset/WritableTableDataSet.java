@@ -77,12 +77,16 @@ public class WritableTableDataSet implements TableDataSet {
         return Datum.create( z[i][j], zunits );
     }
     
+    public void setDatum( int i, int j, Datum datum ) {        
+        z[i][j]= datum.doubleValue( zunits );
+    }
+    
     public double getDouble(int i, int j, Units units) {
         return zunits.convertDoubleTo(units,z[i][j]);
     }
     
-    public void setDouble( int i, int j, double zvalue, Units zunits ) {
-        z[i][j]= zunits.convertDoubleTo(zunits,zvalue);
+    public void setDouble( int i, int j, double zvalue, Units units ) {
+        z[i][j]= units.convertDoubleTo(zunits,zvalue);
     }
     
     public double[] getDoubleScan(int i, Units units) {
