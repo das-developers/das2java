@@ -34,7 +34,7 @@ public class Datum {
     
     private double value;
     private Units units;
-    private DasFormatter nf;
+    private DasFormatter formatter;
     
     static int _allocations= 0;
     static java.util.Hashtable _allocation_source= new java.util.Hashtable();
@@ -47,7 +47,7 @@ public class Datum {
     protected Datum( double value, Units units ) {
         this.value= value;
         this.units= units;
-        this.nf= new DasFormatter();
+        this.formatter= DasFormatter.create(units);
         _allocations++;
         //        if (_allocation_source.contains(DasDie.calledBy())) {
         //            _allocation_source.put(DasDie.calledBy(),(Integer)((Integer)_allocation_source.get(DasDie.calledBy())).intValue()+1);
@@ -211,10 +211,10 @@ public class Datum {
     }
     
     public String toString() {
-        if (nf==null) {
+        if (formatter==null) {
             return ""+value+" "+units;
         } else {
-            return nf.format(this);
+            return formatter.format(this);
         }
     }
     
@@ -261,20 +261,20 @@ public class Datum {
         edu.uiowa.physics.pw.das.util.DasDie.println(""+temp3.subtract(temp1));
         
         edu.uiowa.physics.pw.das.util.DasDate x= new edu.uiowa.physics.pw.das.util.DasDate("09/15/1997 17:27:32");
-        TimeDatum y= TimeDatum.create(x);
+        TimeDatum y= (TimeDatum)TimeUtil.create(x);
         edu.uiowa.physics.pw.das.util.DasDie.println(x.toString());
         edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDate.create(y));
     }
     
     public DasFormatter getFormatter() {
-        if (this.nf==null) {
-            nf= new DasFormatter();
+        if (this.formatter==null) {
+            formatter= DasFormatter.create(getUnits());
         }
-        return this.nf;
+        return this.formatter;
     }
     
-    public void setFormatter(DasFormatter nf) {
-        this.nf= nf;
+    public void setFormatter(DasFormatter formatter) {
+        this.formatter= formatter;
     }
     
     public static DasFormatter getFormatter( Datum[] datums, int nsteps ) {
@@ -289,10 +289,10 @@ public class Datum {
            double discernable= Math.abs( datum1.subtract(datum2).getValue() / nsteps );
            int nFraction= -1 * (int)Math.floor( edu.uiowa.physics.pw.das.util.DasMath.log10( discernable ) );
            nFraction= nFraction<0 ? 0 : nFraction;
-           DasFormatter nf= new DasFormatter();
-           nf.setMaximumFractionDigits(nFraction);
-           nf.setMinimumFractionDigits(nFraction);
-           return nf;
+           DasFormatter formatter= DasFormatter.create(getUnits());
+           formatter.setMaximumFractionDigits(nFraction);
+           formatter.setMinimumFractionDigits(nFraction);
+           return formatter;
         }
     }
     
@@ -301,11 +301,11 @@ public class Datum {
     }
     
     public String format() {
-        return nf.format(this);
+        return formatter.format(this);
     }
     
     public Datum parse(String s) {
-        return nf.parse(s,this);
+        return formatter.parse(s,this);
     }
     
 }
