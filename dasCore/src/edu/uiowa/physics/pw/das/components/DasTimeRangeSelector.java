@@ -101,8 +101,9 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         try {
             s1= TimeUtil.create(idStart.getText());
         } catch (java.text.ParseException e) {
-            s1= saveDatum;
-            DasExceptionHandler.handle(e);
+            s1= saveDatum;            
+            /* display exception only when we are not in startup state */
+            if ( saveDatum!=null ) DasExceptionHandler.handle(e);
         }
         return s1;
     }
@@ -114,7 +115,8 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
             s2= TimeUtil.create(idStop.getText());
         } catch (java.text.ParseException e) {
             s2= saveDatum;
-            DasExceptionHandler.handle(e);
+            /* display exception only when we are not in startup state */
+            if ( saveDatum!=null ) DasExceptionHandler.handle(e);
         }
         return s2;
     }
