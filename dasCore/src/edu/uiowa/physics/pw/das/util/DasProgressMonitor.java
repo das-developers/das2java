@@ -65,12 +65,14 @@ public interface DasProgressMonitor {
     int getTaskProgress();
 
     /** Notifies the <code>ProgressMonitor</code> that the task
-     * being monitored has starteded.
+     * being monitored has started.  If the <code>ProgressMonitor</code>
+     * is in a cancelled state when this method is called, that <code>
+     * ProgressMonitor</code> should be 'uncancelled'.
      */    
     void started();
     
     /** Notifies the <code>ProgressMonitor</code> that the task
-     * being monitored has finisheded.
+     * being monitored has finished.
      */    
     void finished();
 
