@@ -49,16 +49,16 @@ public class TimeDatumFormatter extends DatumFormatter {
     public static final TimeDatumFormatter DAYS;
     public static final TimeDatumFormatter MINUTES;
     public static final TimeDatumFormatter SECONDS;
-    public static final TimeDatumFormatter MICROSECONDS;
+    public static final TimeDatumFormatter MILLESECONDS;
     
     //Initialize final constants
     static {
         try {
-            DEFAULT = new TimeDatumFormatter("yyyy'-'MM'-'dd'T'HH':'mm':'ss.sss'Z'");
-            DAYS = new TimeDatumFormatter("yyyy'-'MM'-'dd");
-            MINUTES = new TimeDatumFormatter("HH':'mm");
-            SECONDS = new TimeDatumFormatter("HH':'mm':'ss");
-            MICROSECONDS = new TimeDatumFormatter("HH':'mm':'ss.sss");
+            DEFAULT = new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            DAYS = new TimeDatumFormatter("yyyy-MM-dd");
+            MINUTES = new TimeDatumFormatter("HH:mm");
+            SECONDS = new TimeDatumFormatter("HH:mm:ss");
+            MILLESECONDS = new TimeDatumFormatter("HH:mm:ss.SSS");
         }
         catch (ParseException pe) {
             throw new RuntimeException(pe);
@@ -68,6 +68,8 @@ public class TimeDatumFormatter extends DatumFormatter {
     private String formatString;
     
     private MessageFormat format;
+    
+    private double[] scaleSeconds;
     
     /** Creates a new instance of TimeDatumFormatter */
     public TimeDatumFormatter(String formatString) throws ParseException {
@@ -85,12 +87,12 @@ public class TimeDatumFormatter extends DatumFormatter {
         return format.format(array);
     }
     
-    private static String parseTimeFormatString(String input) throws ParseException {
-        final String formatPattern = "(([yMDdHm])\\2*)";
-        final String secondsPattern = "(s+(?:\\.s+)?)";
+    private String parseTimeFormatString(String input) throws ParseException {
+        final String formatPattern = "(([yMDdHmsS])\\2*)";
+        final String delimiterPattern = "([-/:.,_ \t]+)";
         final String literalPattern = "('(?:[^']|'')*')";
         Pattern token = Pattern.compile(
-            formatPattern + "|" + secondsPattern + "|" + literalPattern
+            formatPattern + "|" + delimiterPattern + "|" + literalPattern
         );
         int from = 0;
         StringBuffer formatString = new StringBuffer();
@@ -108,45 +110,42 @@ public class TimeDatumFormatter extends DatumFormatter {
                 throw new ParseException(errorString.toString(), from);
             }
             String format = matcher.group(1);
-            String seconds = matcher.group(3);
+            String delimiter = matcher.group(3);
             String literal = matcher.group(4);
             if (format != null) {
                 switch (format.charAt(0)) {
                     case 'y': {
-                        formatString.append("{").append(YEAR_FIELD_INDEX)
-                            .append(",number,0000}");
+                        appendSubFormat(formatString, YEAR_FIELD_INDEX, format.length());
                     } break;
                     case 'M': {
-                        formatString.append("{").append(MONTH_FIELD_INDEX)
-                            .append(",number,").append(format.replace('M', '0'))
-                            .append("}");
+                        appendSubFormat(formatString, MONTH_FIELD_INDEX, format.length());
                     } break;
                     case 'D': {
-                        formatString.append("{").append(DOY_FIELD_INDEX)
-                            .append(",number,000}");
+                        appendSubFormat(formatString, DOY_FIELD_INDEX, format.length());
                     } break;
                     case 'd': {
-                        formatString.append("{").append(DAY_FIELD_INDEX)
-                            .append(",number,").append(format.replace('d', '0'))
-                            .append("}");
+                        appendSubFormat(formatString, DAY_FIELD_INDEX, format.length());
                     } break;
                     case 'H': {
-                        formatString.append("{").append(HOUR_FIELD_INDEX)
-                            .append(",number,").append(format.replace('H', '0'))
-                            .append("}");
+                        appendSubFormat(formatString, HOUR_FIELD_INDEX, format.length());
                     } break;
                     case 'm': {
-                        formatString.append("{").append(MINUTE_FIELD_INDEX)
-                            .append(",number,").append(format.replace('m', '0'))
-                            .append("}");
+                        appendSubFormat(formatString, MINUTE_FIELD_INDEX, format.length());
                     } break;
+                    case 's': {
+                        appendSubFormat(formatString, SECONDS_FIELD_INDEX, format.length());
+                    }break;
+                    case 'S': {
+                        int digitCount = format.length();
+                        int fieldIndex = addScaleFactor(Math.pow(10.0, (double)digitCount));
+                        appendSubFormat(formatString, fieldIndex, digitCount);
+                    }
+                    break;
                     default: break;
                 }
             }
-            else if (seconds != null) {
-                formatString.append("{").append(SECONDS_FIELD_INDEX)
-                    .append(",number,").append(seconds.replace('s', '0'))
-                    .append("}");
+            else if (delimiter != null) {
+                formatString.append(delimiter);
             }
             else if (literal != null) {
                 literal = literal.substring(1, literal.length() - 1);
@@ -158,15 +157,44 @@ public class TimeDatumFormatter extends DatumFormatter {
         return formatString.toString();
     }
     
-    private static Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
-        Number[] array = new Number[TIMESTAMP_FIELD_COUNT];
+    private static void appendSubFormat(StringBuffer buffer, int fieldIndex,int count) {
+        buffer.append("{").append(fieldIndex).append(",number,");
+        for (int i = 0; i < count; i++) {
+            buffer.append('0');
+        }
+        buffer.append("}");
+    }
+
+    private int addScaleFactor(double scale) {
+        if (scaleSeconds == null) {
+            scaleSeconds = new double[1];
+        }
+        else {
+            double[] temp = new double[scaleSeconds.length + 1];
+            System.arraycopy(scaleSeconds, 0, temp, 0, scaleSeconds.length);
+            scaleSeconds = temp;
+        }
+        scaleSeconds[scaleSeconds.length - 1] = scale;
+        return TIMESTAMP_FIELD_COUNT + scaleSeconds.length - 1;
+    }
+    
+    private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
+        int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
+        int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
+        Number[] array = new Number[fieldCount];
+        int seconds = (int)Math.floor(ts.seconds);
+        double fracSeconds = ts.seconds - seconds;
         array[YEAR_FIELD_INDEX] = new Integer(ts.year);
         array[MONTH_FIELD_INDEX] = new Integer(ts.month);
         array[DAY_FIELD_INDEX] = new Integer(ts.day);
         array[DOY_FIELD_INDEX] = new Integer(ts.doy);
         array[HOUR_FIELD_INDEX] = new Integer(ts.hour);
         array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
-        array[SECONDS_FIELD_INDEX] = new Double(ts.seconds);
+        array[SECONDS_FIELD_INDEX] = new Integer(seconds);
+        for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
+            int value = (int)Math.round(fracSeconds * scaleSeconds[i - TIMESTAMP_FIELD_COUNT]);
+            array[i] = new Integer(value);
+        }
         return array;
     }
 
