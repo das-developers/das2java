@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -36,10 +37,13 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.io.*;
+import javax.swing.*;
 
 /**
  *
@@ -222,7 +226,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
         int w= getColumn().getWidth();
         int h= getRow().getHeight();
-             
+        
         if ( w==0 ) return;
         
         plotImage = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
@@ -412,9 +416,9 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         protected void paintComponent(Graphics g1) {
             
             if ( rowLittleDoc==null ) {
-                return;                
+                return;
             }
-                        
+            
             Graphics2D g= (Graphics2D)g1;
             g.translate(-getX(), -getY());
             
@@ -466,11 +470,11 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             if ( true ) {
                 return highResRebinner.rebin( ds, x, y );
             } else {
-            if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                return highResRebinner.rebin( ds, x, y );
-            } else {
-                return lowResRebinner.rebin( ds, x, y );
-            }
+                if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                    return highResRebinner.rebin( ds, x, y );
+                } else {
+                    return lowResRebinner.rebin( ds, x, y );
+                }
             }
         }
         
@@ -507,12 +511,12 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         super.setDataSetDescriptor(dataSetDescriptor);
         dataSetDescriptor.addDataSetUpdateListener( this );
     }
-        
+    
     /** Getter for property dumpDataSet.
      * @return Value of property dumpDataSet.
      *
      */
-    public boolean isDumpDataSet() {    
+    public boolean isDumpDataSet() {
         return this.dumpDataSet;
     }
     
@@ -521,8 +525,23 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
      *
      */
     public void setDumpDataSet(boolean dumpDataSet) {
-        System.out.println("Dumping data set");
-        this.dumpDataSet= dumpDataSet;        
+        try {
+            System.out.println("Dumping data set");
+            JFileChooser chooser= new JFileChooser();
+            int xx= chooser.showSaveDialog(this.getParent());
+            if ( xx==JFileChooser.APPROVE_OPTION ) {
+                File file= chooser.getSelectedFile();
+                DataSet ds= getDataSet();
+                if ( ds instanceof TableDataSet ) {
+                    TableUtil.dumpToAsciiStream((TableDataSet)ds, new FileOutputStream(file) );
+                } else {
+                    throw new DasException("don't know how to serialize data set" );
+                }
+            }
+        } catch ( Exception e ) {
+            DasExceptionHandler.handle( e );
+        }
+        this.dumpDataSet= dumpDataSet;
     }
     
 }
