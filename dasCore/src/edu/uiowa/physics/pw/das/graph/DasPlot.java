@@ -63,7 +63,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected String offsetTime = "";
     protected String plotTitle = "";
-        
+    
     protected double [] psym_x;
     protected double [] psym_y;
     
@@ -146,7 +146,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public DataSet getData() {
         return Data;
     }
-     
+    
     public void setXAxis(DasAxis xAxis) {
         Object oldValue = this.xAxis;
         Container parent = getParent();
@@ -212,7 +212,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     protected void updateImmediately() {
-        if (dataSetDescriptor==null) {            
+        if (dataSetDescriptor==null) {
         } else {
             loadDataSet();
         }
@@ -233,13 +233,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             parent.getCursor();
             parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         }
-
+        
         //drawInvalid();
-
+        
         if (parent != null) {
             ((DasCanvas)parent).lockDisplay(this);
         }
-
+        
         Datum dataRange1 = getXAxis().getDataMaximum().subtract(getXAxis().getDataMinimum());
         double dataRange= dataRange1.doubleValue(Units.seconds);
         double deviceRange = Math.floor(getColumn().getDMaximum() + 0.5) - Math.floor(getColumn().getDMinimum() + 0.5);
@@ -249,7 +249,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             ((Container)((DasCanvas)getParent()).getGlassPane()).add(progressPanel);
         }
         progressPanel.setSize(progressPanel.getPreferredSize());
-
+        
         int x= xAxis.getColumn().getDMiddle();
         int y= xAxis.getRow().getDMiddle();
         
@@ -284,7 +284,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             drt = new DataRequestThread();
         }
         try {
-            drt.request(dataSetDescriptor, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);            
+            drt.request(dataSetDescriptor, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
         }
         catch (InterruptedException ie) {
             DasExceptionHandler.handle(ie);
@@ -295,14 +295,18 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected void paintComponent(Graphics graphics1) {
         
-        Graphics2D graphics= (Graphics2D)graphics1;
-        graphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
-
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         int xSize= getColumn().getDMaximum() - x;
         int ySize= getRow().getDMaximum() - y;
         
+        Rectangle clip= (Rectangle)graphics1.getClip();
+        if ( clip.y > ySize ) {            
+            return;
+        }
+        Graphics2D graphics= (Graphics2D)graphics1;
+        
+        graphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
         graphics.translate(-getX(), -getY());
         
         Graphics2D plotGraphics = (Graphics2D)graphics.create(x-1, y-1, xSize+2, ySize+2);
@@ -317,7 +321,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         graphics.setColor(Color.black);
         graphics.drawRect(x-1, y-1, xSize + 1, ySize + 1);
-
+        
         if (plotTitle != null && plotTitle.length() != 0) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
@@ -343,9 +347,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (isDisplayable()) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setString(this, getTitle());
-
+            
             int titleHeight = (int)gtr.getHeight() + (int)gtr.getAscent() / 2;
-
+            
             Rectangle bounds = new Rectangle();
             bounds.x = getColumn().getDMinimum() - 1;
             bounds.y = getRow().getDMinimum() - 1;
@@ -415,6 +419,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected class RebinListener implements java.beans.PropertyChangeListener {
         public void propertyChange(java.beans.PropertyChangeEvent e) {
+            DasApplication.getDefaultApplication().getLogger().info("rebin listener got property change");
             markDirty();
             DasPlot.this.update();
         }
@@ -487,7 +492,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         DasAxis xAxis = null;
         DasAxis yAxis = null;
-
+        
         //Get the axes
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -508,7 +513,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (yAxis == null) {
             yAxis = (DasAxis)form.checkValue(element.getAttribute("yAxis"), DasAxis.class, "<axis> or <timeaxis>");
         }
-
+        
         DasPlot plot = new DasPlot(xAxis, yAxis);
         plot.setTitle(element.getAttribute("title"));
         plot.setDasName(name);
@@ -640,7 +645,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         yAxisChild.appendChild(yAxisElement);
         element.appendChild(yAxisChild);
-
+        
         Renderer[] renderers = getRenderers();
         if (renderers.length > 0) {
             Element renderersChild = document.createElement("renderers");
