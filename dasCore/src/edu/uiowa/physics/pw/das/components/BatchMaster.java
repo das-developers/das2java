@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.*;
@@ -16,7 +17,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.List;
-import javax.swing.*;
+
 
 /**
  *
@@ -33,6 +34,7 @@ public class BatchMaster {
     int itask;
     DasCanvas canvas;
     TaskOutputDescriptor tod;
+    boolean exit= true;
     
     public static class Timer {
         long t0= System.currentTimeMillis();;
@@ -47,15 +49,17 @@ public class BatchMaster {
     public static Timer timer= new Timer();
     
     public interface TaskOutputDescriptor {
-        public void completeTask( Image i, Datum begin, Datum end );
+        public void completeTask( DatumRange range );
     }
     
-    public static TaskOutputDescriptor createPngsTaskOutputDescriptor( final String pngFilenameTemplate ) {
+    public TaskOutputDescriptor createPngsTaskOutputDescriptor( final String pngFilenameTemplate ) {
         return new TaskOutputDescriptor() {
-            public void completeTask( Image image, Datum begin, Datum end ) {
+            public void completeTask( DatumRange range ) {
+                Image image= BatchMaster.this.canvas.getImage( canvas.getWidth(), canvas.getHeight() );
                 String s= pngFilenameTemplate
-                        .replaceAll( "BEGIN", begin.toString().replaceAll(":","-") )
-                        .replaceAll( "END", end.toString().replaceAll(":","-") );
+                        .replaceAll( "BEGIN", range.min().toString().replaceAll(":","-") )
+                        .replaceAll( "END", range.max().toString().replaceAll(":","-") )
+                        .replaceAll( "RANGE", range.toString().replaceAll(":","-") );
                 try {
                     OutputStream out= new FileOutputStream( s );
                     try {
@@ -72,30 +76,34 @@ public class BatchMaster {
         };
     }
     
-    public static BatchMaster create( DasCanvas canvas, File specFile, String pngFilenameTemplate ) throws ParseException, IOException {
-        List taskList= new ArrayList();
+    private void readStartEndSpecFile( File specFile ) throws ParseException, IOException {
         BufferedReader r= new BufferedReader( new FileReader( specFile ) );
         String s= r.readLine();
-        BatchMaster result= new BatchMaster(canvas, createPngsTaskOutputDescriptor(pngFilenameTemplate) );
         while ( s!=null ) {
             s= s.trim();
-            if ( !s.equals("") && !s.startsWith("#") ) {
+            if ( !( s.equals("") || s.startsWith("#" ) ) ) {
                 String[] s1= s.split(" ");
                 Datum begin= TimeUtil.create(s1[0]);
                 Datum end= TimeUtil.create(s1[1]);
-                result.addTask( begin, end );
+                addTask( begin, end );
             }
             s= r.readLine();
         }
-        return result;
     }
     
+    public static BatchMaster createPngs( DasCanvas canvas, File specFile, String pngFilenameTemplate ) throws ParseException, IOException {
+        List taskList= new ArrayList();
+        BatchMaster result= new BatchMaster(canvas );
+        result.setTaskOutputDescriptor( result.createPngsTaskOutputDescriptor( pngFilenameTemplate ) );
+        result.readStartEndSpecFile( specFile );
+        return result;
+    }
+        
     /** Creates a new instance of BatchMaster */
-    public BatchMaster( DasCanvas canvas, TaskOutputDescriptor tod ) {
+    public BatchMaster( DasCanvas canvas ) {
         this.canvas= canvas;
         taskList= new ArrayList();
-        itask= 0;
-        this.tod= tod;
+        itask= 0;        
     }
     
     public void start() {
@@ -106,17 +114,25 @@ public class BatchMaster {
         taskList.add( new DataRangeSelectionEvent( this, begin, end ) );
     }
     
+    void setTaskOutputDescriptor( TaskOutputDescriptor tod ) {
+        this.tod= tod;
+    }
+    
+    void setExitAfterCompletion( boolean val ) {
+        this.exit= val;
+    }
+    
     void submitNextTask() {
         Thread thread= new Thread( new Runnable() {
             public void run() {
                 if ( itask>=taskList.size() ) {
-                    DasExceptionHandler.handle( new RuntimeException( "done!" ) );
+                    if ( exit ) System.exit(0);
                 } else {
-                    System.out.println( "itask="+taskList.get(itask) );
+                    DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info( "itask="+taskList.get(itask) );
                     DataRangeSelectionEvent ev=  (DataRangeSelectionEvent) taskList.get(itask++);
                     fireDataRangeSelectionListenerDataRangeSelected( ev );
-                    Image image= canvas.getImage(canvas.getWidth(),canvas.getHeight());
-                    tod.completeTask( image, ev.getMinimum(), ev.getMaximum() );
+                    canvas.waitUntilIdle();                    
+                    tod.completeTask( ev.getDatumRange() );
                     submitNextTask();
                 }
             }
