@@ -238,12 +238,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         progressPanel.setSize(progressPanel.getPreferredSize());
 
-        if (this.getX()==0) {
-            progressPanel.setVisible(false);
-        } else {
-            progressPanel.setLocation(this.getX() + (this.getWidth()-progressPanel.getWidth())/2,
-            this.getY() + (this.getHeight()-progressPanel.getHeight())/2);
-        }
+        int x= xAxis.getColumn().getDMiddle();
+        int y= xAxis.getRow().getDMiddle();
+        
+        progressPanel.setLocation( x - progressPanel.getWidth()/2,
+        y - progressPanel.getHeight()/2 );
+        
         DataRequestor requestor = new DataRequestor() {
             public void exception(Exception exception) {
                 if (!(exception instanceof InterruptedIOException)) {
