@@ -122,7 +122,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         this.dumpDataSet= dumpDataSet;
     }
     
+    public void setLastException( Exception e ) {
+        this.lastException= e;
+    }
     
+    public Exception getLastException() {
+        return this.lastException;
+    }
+
     public void setDataSet(DataSet ds) {
         setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
     }
@@ -155,11 +162,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         int x= xAxis.getColumn().getDMiddle();
         int y= yAxis.getRow().getDMiddle();
         
-        String s= e.toString();
+        String s;
         FontMetrics fm= g.getFontMetrics();
         
         if ( e instanceof NoDataInIntervalException ) {
             s= "no data in interval";
+        } else { 
+            s= e.getMessage();
+            if ( "".equals(s) ) {
+                s= e.toString();
+            }
         }
         
         int width= fm.stringWidth(s);
