@@ -137,8 +137,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param isLog
      * @return
      */
-    public static DasAxis create( double [] data, Units units, DasRow row, DasColumn column, int orientation, boolean isLog ) {
-        DasAxis result= new DasAxis(Datum.create(0,units),Datum.create(0,units),row,column,orientation,isLog);
+    public static DasAxis create( double [] data, Units units, int orientation, boolean isLog ) {
+        DasAxis result= new DasAxis(Datum.create(0,units),Datum.create(0,units),orientation,isLog);
         result.setDataRange(data);
         return result;
     }
@@ -150,8 +150,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param column
      * @param orientation
      */
-    public DasAxis( Datum min, Datum max, DasRow row, DasColumn column, int orientation ) {
-        this(min, max, row, column, orientation, false);
+    public DasAxis( Datum min, Datum max, int orientation ) {
+        this(min, max, orientation, false);
     }
     
     /** TODO
@@ -162,8 +162,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param orientation
      * @param log
      */
-    public DasAxis( Datum min, Datum max, DasRow row, DasColumn column, int orientation, boolean log) {
-        this(row, column, orientation);
+    public DasAxis( Datum min, Datum max, int orientation, boolean log) {
+        this(orientation);
         dataRange = new DataRange(this,min,max,log);
         dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
@@ -176,16 +176,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param column
      * @param orientation
      */
-    protected DasAxis(DataRange range, DasRow row, DasColumn column, int orientation) {
-        this(row, column, orientation);
+    protected DasAxis(DataRange range, int orientation) {
+        this(orientation);
         dataRange = range;
         dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
     }
     
-    private DasAxis(DasRow row, DasColumn column, int orientation) {
-        super(row, column);
+    private DasAxis(int orientation) {
+        super();
         setOpaque(false);
         setOrientationInternal(orientation);
         installMouseModules();
@@ -2091,7 +2091,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      *
      * @param element The DOM tree node that represents the element
      */
-    static DasAxis processAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException, ParseException {
+    static DasAxis processAxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException, ParseException {
         String name = element.getAttribute("name");
         boolean log = element.getAttribute("log").equals("true");
         Datum dataMinimum;
@@ -2109,15 +2109,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dataMaximum = (max == null || max.equals("") ? Datum.create(10.0) : Datum.create(Double.parseDouble(max)));
         }
         int orientation = parseOrientationString(element.getAttribute("orientation"));
+        DasAxis axis = new DasAxis(dataMinimum, dataMaximum, orientation, log);
         String rowString = element.getAttribute("row");
-        if (!rowString.equals("") || row == null) {
-            row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+        if (!rowString.equals("")) {
+            DasRow row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+            axis.setRow(row);
         }
         String columnString = element.getAttribute("column");
-        if (!columnString.equals("") || row == null) {
-            column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+        if (!columnString.equals("")) {
+            DasColumn column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+            axis.setColumn(column);
         }
-        DasAxis axis = new DasAxis(dataMinimum, dataMaximum, row, column, orientation, log);
         
         axis.setLabel(element.getAttribute("label"));
         axis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
@@ -2213,8 +2215,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return element;
     }
     
-    public DasAxis createAttachedAxis(DasRow row, DasColumn column) {
-        return new DasAxis(this.dataRange, row, column, this.getOrientation());
+    public DasAxis createAttachedAxis() {
+        return new DasAxis(this.dataRange, this.getOrientation());
     }
     
     /** TODO
@@ -2223,29 +2225,31 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param orientation
      * @return
      */
-    public DasAxis createAttachedAxis(DasRow row, DasColumn column, int orientation) {
-        return new DasAxis(this.dataRange, row, column, orientation);
+    public DasAxis createAttachedAxis(int orientation) {
+        return new DasAxis(this.dataRange, orientation);
     }
     
     /** Process a <code>&lt;attachedaxis&gt;</code> element.
      *
      * @param element The DOM tree node that represents the element
      */
-    static DasAxis processAttachedaxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException {
+    static DasAxis processAttachedaxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException {
         String name = element.getAttribute("name");
         DasAxis ref = (DasAxis)form.checkValue(element.getAttribute("ref"), DasAxis.class, "<attachedaxis>");
         int orientation = (element.getAttribute("orientation").equals("horizontal") ? HORIZONTAL : DasAxis.VERTICAL);
+
+        DasAxis axis = ref.createAttachedAxis(orientation);
         
         String rowString = element.getAttribute("row");
-        if (!rowString.equals("") || row == null) {
-            row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+        if (!rowString.equals("")) {
+            DasRow row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+            axis.setRow(row);
         }
         String columnString = element.getAttribute("column");
-        if (!columnString.equals("") || column == null) {
-            column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+        if (!columnString.equals("")) {
+            DasColumn column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+            axis.setColumn(column);
         }
-        
-        DasAxis axis = ref.createAttachedAxis(row, column, orientation);
         
         axis.setDataPath(element.getAttribute("dataPath"));
         axis.setDrawTca(element.getAttribute("showTca").equals("true"));
@@ -2266,7 +2270,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */
     public static DasAxis createNamedAxis(String name) {
-        DasAxis axis = new DasAxis(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), null, null, DasAxis.HORIZONTAL);
+        DasAxis axis = new DasAxis(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), DasAxis.HORIZONTAL);
         if (name == null) {
             name = "axis_" + Integer.toHexString(System.identityHashCode(axis));
         }
@@ -2408,22 +2412,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
-    static DasAxis processTimeaxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    static DasAxis processTimeaxisElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         String name = element.getAttribute("name");
         Datum timeMinimum = TimeUtil.create(element.getAttribute("timeMinimum"));
         Datum timeMaximum = TimeUtil.create(element.getAttribute("timeMaximum"));
         int orientation = parseOrientationString(element.getAttribute("orientation"));
         
+        DasAxis timeaxis = new DasAxis(timeMinimum, timeMaximum, orientation);
+        
         String rowString = element.getAttribute("row");
-        if (!rowString.equals("") || row == null) {
-            row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+        if (!rowString.equals("")) {
+            DasRow row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+            timeaxis.setRow(row);
         }
         String columnString = element.getAttribute("column");
-        if (!columnString.equals("") || column == null) {
-            column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+        if (!columnString.equals("")) {
+            DasColumn column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+            timeaxis.setColumn(column);
         }
-        
-        DasAxis timeaxis = new DasAxis(timeMinimum, timeMaximum, row, column, orientation);
         
         timeaxis.setDataPath(element.getAttribute("dataPath"));
         timeaxis.setDrawTca(element.getAttribute("showTca").equals("true"));

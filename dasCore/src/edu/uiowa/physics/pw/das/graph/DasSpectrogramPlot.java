@@ -78,11 +78,12 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
         double [] z= new double[iz];
         System.arraycopy(zl, 0, z, 0, iz);
         
-        DasColorBar colorBar= new DasColorBar(Datum.create(0,Data.getZUnits()),Datum.create(0,Data.getZUnits()),row,DasColorBar.getColorBarColumn(column),false);
+        DasColorBar colorBar= new DasColorBar(Datum.create(0,Data.getZUnits()),Datum.create(0,Data.getZUnits()),false);
+        colorBar.setColumn(DasColorBar.getColorBarColumn(column));
         colorBar.setDataRange(z);
-        DasAxis xAxis = new DasAxis(Datum.create(0,Data.getXUnits()),Datum.create(0,Data.getXUnits()),row,column,DasAxis.HORIZONTAL,false);
+        DasAxis xAxis = new DasAxis(Datum.create(0,Data.getXUnits()),Datum.create(0,Data.getXUnits()),DasAxis.HORIZONTAL,false);
         xAxis.setDataRange(x);
-        DasAxis yAxis = new DasAxis(Datum.create(0,Data.getYUnits()),Datum.create(0,Data.getYUnits()),row,column,DasAxis.VERTICAL,false);
+        DasAxis yAxis = new DasAxis(Datum.create(0,Data.getYUnits()),Datum.create(0,Data.getYUnits()),DasAxis.VERTICAL,false);
         xAxis.setDataRange(x);
         
         DasSpectrogramPlot result= new DasSpectrogramPlot(Data, xAxis, yAxis, row, column, colorBar );
@@ -105,16 +106,16 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
      * @see #setColorBar(DasColorBar)
      */
     public DasSpectrogramPlot() {
-        this((DataSetDescriptor)null, null, null, null, null, null);
+        this((DataSetDescriptor)null, null, null, null);
     }
     
     public DasSpectrogramPlot(TableDataSet data, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column, DasColorBar colorBar) {
         this((data==null ? null : new ConstantDataSetDescriptor(data)),
-        xAxis, yAxis, row, column, colorBar);
+        xAxis, yAxis, colorBar);
     }
     
-    public DasSpectrogramPlot(DataSetDescriptor dataSetDescriptor, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column, DasColorBar colorBar) {
-        super(xAxis,yAxis,row,column);
+    public DasSpectrogramPlot(DataSetDescriptor dataSetDescriptor, DasAxis xAxis, DasAxis yAxis, DasColorBar colorBar) {
+        super(xAxis,yAxis);
         renderer= new SpectrogramRenderer( this, dataSetDescriptor, colorBar );
         this.addRenderer(renderer); 
     }    
@@ -203,13 +204,13 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
             Node node = children.item(i);
             if (node instanceof Element) {
                 if (node.getNodeName().equals("xAxis")) {
-                    xAxis = processXAxisElement((Element)node, row, column, form);
+                    xAxis = processXAxisElement((Element)node, form);
                 }
                 else if (node.getNodeName().equals("yAxis")) {
-                    yAxis = processYAxisElement((Element)node, row, column, form);
+                    yAxis = processYAxisElement((Element)node, form);
                 }
                 else if (node.getNodeName().equals("zAxis")) {
-                    colorbar = processZAxisElement((Element)node, row, column, form);
+                    colorbar = processZAxisElement((Element)node, form);
                 }
             }
         }
@@ -224,7 +225,7 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
             colorbar = (DasColorBar)form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
         }
         
-        DasSpectrogramPlot plot = new DasSpectrogramPlot((DataSetDescriptor)null, xAxis, yAxis, row, column, colorbar);
+        DasSpectrogramPlot plot = new DasSpectrogramPlot((DataSetDescriptor)null, xAxis, yAxis, colorbar);
         
         plot.setTitle(element.getAttribute("title"));
         try {
@@ -244,7 +245,7 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
         return plot;
     }    
     
-    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static DasAxis processXAxisElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -252,22 +253,22 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
                 Element e = (Element)node;
                 if (node.getNodeName().equals("axis")) {
                     e.setAttribute("orientation", "horizontal");
-                    return DasAxis.processAxisElement(e, row, column, form);
+                    return DasAxis.processAxisElement(e, form);
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
                     e.setAttribute("orientation", "horizontal");
-                    return DasAxis.processTimeaxisElement(e, row, column, form);
+                    return DasAxis.processTimeaxisElement(e, form);
                 }
                 else if (node.getNodeName().equals("attachedaxis")) {
                     e.setAttribute("orientation", "horizontal");
-                    return DasAxis.processAttachedaxisElement(e, row, column, form);
+                    return DasAxis.processAttachedaxisElement(e, form);
                 }
             }
         }
         return null;
     }
     
-    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static DasAxis processYAxisElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -275,28 +276,28 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
                 Element e = (Element)node;
                 if (node.getNodeName().equals("axis")) {
                     e.setAttribute("orientation", "vertical");
-                    return DasAxis.processAxisElement(e, row, column, form);
+                    return DasAxis.processAxisElement(e, form);
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
                     e.setAttribute("orientation", "vertical");
-                    return DasAxis.processTimeaxisElement(e, row, column, form);
+                    return DasAxis.processTimeaxisElement(e, form);
                 }
                 else if (node.getNodeName().equals("attachedaxis")) {
                     e.setAttribute("orientation", "vertical");
-                    return DasAxis.processAttachedaxisElement(e, row, column, form);
+                    return DasAxis.processAttachedaxisElement(e, form);
                 }
             }
         }
         return null;
     }
     
-    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static DasColorBar processZAxisElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
             if (node instanceof Element) {
                 if (node.getNodeName().equals("colorbar")) {
-                    return DasColorBar.processColorbarElement((Element)node, row, column, form);
+                    return DasColorBar.processColorbarElement((Element)node, form);
                 }
             }
         }

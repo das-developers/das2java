@@ -249,19 +249,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 if (!"true".equals(System.getProperty("java.awt.headless"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer=
-                    VerticalSpectrogramSlicer.createPopupSlicer(parent, this, 640, 480);
+                    VerticalSpectrogramSlicer.createSlicer(parent, this);
                     VerticalSlicerMouseModule vsl = VerticalSlicerMouseModule.create(this);
                     vsl.addDataPointSelectionListener(vSlicer);
                     mouseAdapter.addMouseModule(vsl);
                     
-                    HorizontalSpectrogramSlicer hSlicer
-                    = HorizontalSpectrogramSlicer.createPopupSlicer(parent, this, 640, 480);
+                    HorizontalSpectrogramSlicer hSlicer = HorizontalSpectrogramSlicer.createSlicer(parent, this);
                     HorizontalSlicerMouseModule hsl = HorizontalSlicerMouseModule.create(this);
                     hsl.addDataPointSelectionListener(hSlicer);
                     mouseAdapter.addMouseModule(hsl);
                     
-                    VerticalSpectrogramAverager vAverager
-                    = VerticalSpectrogramAverager.createPopupAverager(parent, this, 640, 480);
+                    VerticalSpectrogramAverager vAverager = VerticalSpectrogramAverager.createAverager(parent, this);
                     HorizontalDragRangeSelectorMouseModule vrl = new HorizontalDragRangeSelectorMouseModule(parent,this,parent.getXAxis());
                     vrl.setLabel("Vertical Averager");
                     vrl.addDataRangeSelectionListener(vAverager);
@@ -288,7 +286,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         for (int index = 0; index < children.getLength(); index++) {
             Node node = children.item(index);
             if (node instanceof Element && node.getNodeName().equals("zAxis")) {
-                colorbar = processZAxisElement((Element)node, parent.getRow(), parent.getColumn(), form);
+                colorbar = processZAxisElement((Element)node, form);
             }
         }
         
@@ -312,13 +310,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return renderer;
     }
     
-    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static DasColorBar processZAxisElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
             if (node instanceof Element) {
                 if (node.getNodeName().equals("colorbar")) {
-                    return DasColorBar.processColorbarElement((Element)node, row, column, form);
+                    return DasColorBar.processColorbarElement((Element)node, form);
                 }
             }
         }

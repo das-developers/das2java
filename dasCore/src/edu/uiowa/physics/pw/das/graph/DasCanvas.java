@@ -504,7 +504,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** This methods adds the specified <code>DasCanvasComponent</code> to this canvas.
      * @param c the component to be added to this canvas
      */
-    public void addCanvasComponent(DasCanvasComponent c) {
+    public void add(DasCanvasComponent c, DasRow row, DasColumn column) {
+        if (c.getRow() == null || c.getRow().getParent() != this) {
+            c.setRow(row);
+        }
+        if (c.getColumn() == null || c.getColumn().getParent() != this) {
+            c.setColumn(column);
+        }
         add(c);
     }
     
@@ -718,23 +724,22 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     }
                     else if (tagName.equals("axis")) {
                         DasAxis axis
-                        = DasAxis.processAxisElement((Element)node, null, null, form);
+                        = DasAxis.processAxisElement((Element)node, form);
                         canvas.add(axis);
                     }
                     else if (tagName.equals("timeaxis")) {                        
                         DasAxis timeaxis
-                        = DasAxis.processTimeaxisElement((Element)node, null, null, form);
+                        = DasAxis.processTimeaxisElement((Element)node, form);
                         canvas.add(timeaxis);
                     }
                     else if (tagName.equals("attachedaxis")) {
                         DasAxis attachedaxis
-                        = DasAxis.processAttachedaxisElement((Element)node,
-                        null, null, form);
+                        = DasAxis.processAttachedaxisElement((Element)node, form);
                         canvas.add(attachedaxis);
                     }
                     else if (tagName.equals("colorbar")) {
                         DasColorBar colorbar
-                        = DasColorBar.processColorbarElement((Element)node, null, null, form);
+                        = DasColorBar.processColorbarElement((Element)node, form);
                         canvas.add(colorbar);
                     }
                     else if (tagName.equals("spectrogram")) {

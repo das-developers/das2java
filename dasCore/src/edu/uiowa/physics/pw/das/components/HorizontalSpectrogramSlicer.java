@@ -24,48 +24,66 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.client.*;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
 
-public class HorizontalSpectrogramSlicer
-extends DasPlot implements DataPointSelectionListener {
+
+public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSelectionListener {
     
-    private JFrame popupWindow;
+    private JDialog popupWindow;
     private Datum xValue;
-    private edu.uiowa.physics.pw.das.graph.Renderer renderer;
+    private SymbolLineRenderer renderer;
+    private DasPlot parentPlot;
     
-    private HorizontalSpectrogramSlicer(DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        super(xAxis, yAxis, row, column);
+    private HorizontalSpectrogramSlicer(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
+        super(xAxis, yAxis);
+        parentPlot = plot;
         renderer= new SymbolLineRenderer((DataSetDescriptor)null);
         addRenderer(renderer);
     }
     
-    public static HorizontalSpectrogramSlicer createSlicer(DasPlot plot, TableDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
+    public static HorizontalSpectrogramSlicer createSlicer(DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceXAxis = plot.getXAxis();
-        
-        DasAxis xAxis = sourceXAxis.createAttachedAxis(row, column, DasAxis.HORIZONTAL);
-        DasAxis yAxis = dataSetConsumer.getZAxis().createAttachedAxis(row, column, DasAxis.VERTICAL);
-        
-        return new HorizontalSpectrogramSlicer(xAxis, yAxis, row, column);
+        DasAxis xAxis = sourceXAxis.createAttachedAxis(DasAxis.HORIZONTAL);
+        DasAxis yAxis = dataSetConsumer.getZAxis().createAttachedAxis(DasAxis.VERTICAL);
+        return new HorizontalSpectrogramSlicer(plot, xAxis, yAxis);
     }
     
-    public static HorizontalSpectrogramSlicer createPopupSlicer(DasPlot plot, TableDataSetConsumer dataSetConsumer, int width, int height) {
+    public void showPopup() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            showPopupImpl();
+        }
+        else {
+            Runnable r = new Runnable() {
+                public void run() {
+                    showPopupImpl();
+                }
+            };
+        }
+    }
+    
+    /** This method should ONLY be called by the AWT event thread */
+    private void showPopupImpl() {
+        if (popupWindow == null) {
+            createPopup();
+        }
+        popupWindow.setVisible(true);
+    }
+    
+    /** This method should ONLY be called by the AWT event thread */
+    private void createPopup() {
+        int width = parentPlot.getCanvas().getWidth() / 2;
+        int height = parentPlot.getCanvas().getHeight() / 2;
         DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);
-        final HorizontalSpectrogramSlicer slicer = createSlicer(plot, dataSetConsumer, row, column);
-        canvas.add(slicer);
-        canvas.add(slicer.getXAxis());
-        canvas.add(slicer.getYAxis());
+        canvas.add(this, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
         
@@ -74,7 +92,7 @@ extends DasPlot implements DataPointSelectionListener {
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                slicer.popupWindow.setVisible(false);
+                popupWindow.setVisible(false);
             }
         });
         buttonPanel.setLayout(buttonLayout);
@@ -84,14 +102,24 @@ extends DasPlot implements DataPointSelectionListener {
         content.add(canvas, BorderLayout.CENTER);
         content.add(buttonPanel, BorderLayout.SOUTH);
         
-        slicer.popupWindow = new JFrame("Horizontal Slicer");
-        slicer.popupWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        slicer.popupWindow.setContentPane(content);
-        slicer.popupWindow.pack();
-        
-        slicer.popupWindow.setLocation( 0,  600 );
-        
-        return slicer;
+        Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
+        if (parentWindow instanceof Frame) {
+            popupWindow = new JDialog((Frame)parentWindow);
+        }
+        else if (parentWindow instanceof Dialog) {
+            popupWindow = new JDialog((Dialog)parentWindow);
+        }
+        else {
+            popupWindow = new JDialog();
+        }
+        popupWindow.setTitle("Vertical Slicer");
+        popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        popupWindow.setContentPane(content);
+        popupWindow.pack();
+                
+        Point parentLocation = new Point();
+        SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
+        popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y + height);
     }
     
     public void DataPointSelected(DataPointSelectionEvent e) {
@@ -118,8 +146,8 @@ extends DasPlot implements DataPointSelectionListener {
         renderer.setDataSet(sliceDataSet);
         
         setTitle("x: "+xAsString);
-        if (popupWindow != null && !popupWindow.isVisible()) {
-            popupWindow.setVisible(true);
+        if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
+            showPopup();
         }
         else {
             repaint();
@@ -138,17 +166,12 @@ extends DasPlot implements DataPointSelectionListener {
         g.drawLine(ix-3,iy1,ix,iy1-3);
     }
     
-    public static HorizontalSpectrogramSlicer createPopupSlicer(DasZAxisPlot plot, int width, int height) {
-        return createPopupSlicer( (DasPlot)plot, (TableDataSetConsumer)plot, width, height);
-    }
-    
     protected void uninstallComponent() {
         super.uninstallComponent();
     }
     
     protected void installComponent() {
         super.installComponent();
-        getCanvas().getGlassPane().setVisible(false);
     }
     
 }

@@ -44,12 +44,12 @@ public class DasColorBar extends DasAxis {
     private BufferedImage image;
     private DasColorBar.Type type;
     
-    public DasColorBar( Datum min, Datum max, DasRow row, DasColumn column, boolean isLog) {
-        this(min, max, row, column, RIGHT, isLog);
+    public DasColorBar( Datum min, Datum max, boolean isLog) {
+        this(min, max, RIGHT, isLog);
     }
     
-    public DasColorBar( Datum min, Datum max, DasRow row, DasColumn column, int orientation, boolean isLog) {
-        super(min, max, row, column, orientation, isLog);
+    public DasColorBar( Datum min, Datum max, int orientation, boolean isLog) {
+        super(min, max, orientation, isLog);
         setLayout(new ColorBarLayoutManager());
         setType(DasColorBar.Type.COLOR_WEDGE);
     }
@@ -128,7 +128,7 @@ public class DasColorBar extends DasAxis {
      *
      * @param element The DOM tree node that represents the element
      */
-    static DasColorBar processColorbarElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    static DasColorBar processColorbarElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         String name = element.getAttribute("name");
         boolean log = element.getAttribute("log").equals("true");
         Datum dataMinimum;
@@ -146,16 +146,19 @@ public class DasColorBar extends DasAxis {
             dataMaximum = (max == null || max.equals("") ? Datum.create(10.0) : Datum.create(Double.parseDouble(max)));
         }
         int orientation = parseOrientationString(element.getAttribute("orientation"));
+
+        DasColorBar cb = new DasColorBar(dataMinimum, dataMaximum, orientation, log);
+        
         String rowString = element.getAttribute("row");
-        if (!rowString.equals("") || row == null) {
-            row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+        if (!rowString.equals("")) {
+            DasRow row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
+            cb.setRow(row);
         }
         String columnString = element.getAttribute("column");
-        if (!columnString.equals("") || row == null) {
-            column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+        if (!columnString.equals("")) {
+            DasColumn column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
+            cb.setColumn(column);
         }
-        
-        DasColorBar cb = new DasColorBar(dataMinimum, dataMaximum, row, column, orientation, log);
         
         cb.setLabel(element.getAttribute("label"));
         cb.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
@@ -193,7 +196,7 @@ public class DasColorBar extends DasAxis {
     }
     
     public static DasColorBar createNamedColorBar(String name) {
-        DasColorBar cb = new DasColorBar(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), null, null, false);
+        DasColorBar cb = new DasColorBar(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), false);
         if (name == null) {
             name = "colorbar_" + Integer.toHexString(System.identityHashCode(cb));
         }

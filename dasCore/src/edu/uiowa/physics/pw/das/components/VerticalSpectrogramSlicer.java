@@ -23,63 +23,71 @@
 
 package edu.uiowa.physics.pw.das.components;
 
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
+
 
 public class VerticalSpectrogramSlicer
 extends DasPlot implements DataPointSelectionListener {
     
-    private JFrame popupWindow;
-    
+    private JDialog popupWindow;
+    private DasPlot parentPlot;
     private Datum yValue;
-    
     private int lastTagIndex=1;
-    
     private long eventBirthMilli;
-    private edu.uiowa.physics.pw.das.graph.Renderer renderer;
+    private SymbolLineRenderer renderer;
     
-    private VerticalSpectrogramSlicer(DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        super( xAxis, yAxis, row, column );
+    private VerticalSpectrogramSlicer(DasPlot parent, DasAxis xAxis, DasAxis yAxis) {
+        super( xAxis, yAxis);
+        this.parentPlot = parent;
         renderer= new SymbolLineRenderer((DataSetDescriptor)null);
         addRenderer(renderer);                
     }
     
-    public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer,
-    DasRow row, DasColumn column) {
+    public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceYAxis = plot.getYAxis();
         DasAxis sourceZAxis = dataSetConsumer.getZAxis();
-        
-        DasAxis xAxis = sourceYAxis.createAttachedAxis(row, column, DasAxis.HORIZONTAL);
-        DasAxis yAxis = sourceZAxis.createAttachedAxis(row, column, DasAxis.VERTICAL);
-        
-        return new VerticalSpectrogramSlicer(xAxis, yAxis, row, column);
+        DasAxis xAxis = sourceYAxis.createAttachedAxis(DasAxis.HORIZONTAL);
+        DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
+        return new VerticalSpectrogramSlicer(plot, xAxis, yAxis);
     }
     
-    
-    public static VerticalSpectrogramSlicer createPopupSlicer( DasZAxisPlot plot,
-    int width, int height) {
-        return createPopupSlicer( (DasPlot)plot, (TableDataSetConsumer)plot, width, height);
+    public void showPopup() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            showPopupImpl();
+        }
+        else {
+            Runnable r = new Runnable() {
+                public void run() {
+                    showPopupImpl();
+                }
+            };
+        }
     }
     
-    public static VerticalSpectrogramSlicer createPopupSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer,
-    int width, int height) {
+    /** This method should ONLY be called by the AWT event thread */
+    private void showPopupImpl() {
+        if (popupWindow == null) {
+            createPopup();
+        }
+        popupWindow.setVisible(true);
+    }
+    
+    /** This method should ONLY be called by the AWT event thread */
+    private void createPopup() {
+        int width = parentPlot.getCanvas().getWidth() / 2;
+        int height = parentPlot.getCanvas().getHeight() / 2;
         DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);
-        final VerticalSpectrogramSlicer slicer = createSlicer(plot, dataSetConsumer, row, column);
-        canvas.add(slicer);
-        canvas.add(slicer.getXAxis());
-        canvas.add(slicer.getYAxis());
+        canvas.add(this, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
         
@@ -88,7 +96,7 @@ extends DasPlot implements DataPointSelectionListener {
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                slicer.popupWindow.setVisible(false);
+                popupWindow.setVisible(false);
             }
         });
         buttonPanel.setLayout(buttonLayout);
@@ -98,20 +106,29 @@ extends DasPlot implements DataPointSelectionListener {
         content.add(canvas, BorderLayout.CENTER);
         content.add(buttonPanel, BorderLayout.SOUTH);
         
-        slicer.popupWindow = new JFrame("Vertical Slicer");
-        slicer.popupWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        slicer.popupWindow.setContentPane(content);
-        slicer.popupWindow.pack();
+        Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
+        if (parentWindow instanceof Frame) {
+            popupWindow = new JDialog((Frame)parentWindow);
+        }
+        else if (parentWindow instanceof Dialog) {
+            popupWindow = new JDialog((Dialog)parentWindow);
+        }
+        else {
+            popupWindow = new JDialog();
+        }
+        popupWindow.setTitle("Vertical Slicer");
+        popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        popupWindow.setContentPane(content);
+        popupWindow.pack();
                 
-        slicer.popupWindow.setLocation(600,0);
-        
-        return slicer;
+        Point parentLocation = new Point();
+        SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
+        popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
     
     protected void drawContent(Graphics2D g) {
         long x;
         x= System.currentTimeMillis()-eventBirthMilli;
-        //edu.uiowa.physics.pw.das.util.DasDie.println("event handled in "+x+" milliseconds");
         
         int ix= (int)this.getXAxis().transform(yValue);
         DasRow row= this.getRow();
@@ -146,8 +163,8 @@ extends DasPlot implements DataPointSelectionListener {
         
         renderer.setDataSet(sliceDataSet);
         
-        if (popupWindow != null && !popupWindow.isVisible()) {
-            popupWindow.setVisible(true);
+        if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
+            showPopup();
         }
         else {
             repaint();

@@ -64,15 +64,8 @@ public class TimeRangeLabel extends DasCanvasComponent {
     private DatumFormatter df;
     
     /** Creates a new instance of TimeRangeLabel */
-    public TimeRangeLabel(DataRange dataRange, DasRow row, DasColumn column ) {
-        //setRow(new AttachedRow(row,-0.05,-0.00));
-        setRow(row);
-        setColumn(column);
+    public TimeRangeLabel(DataRange dataRange) {
         this.dataRange= dataRange;
-        
-        /* MouseModule mm= new mouseModule();
-        mouseAdapter.addMouseModule(mm);
-        mouseAdapter.setPrimaryModule(mm); // THIS SHOULD BE AUTOMATIC!!! */
         updateFormatter();
     }
     
@@ -180,9 +173,9 @@ public class TimeRangeLabel extends DasCanvasComponent {
         DataRange dataRange2 = new DataRange(null, TimeUtil.createValid("1998-01-02 12:30:02"), TimeUtil.createValid("1999-01-01"),false);
         DataRange dataRange3 = new DataRange(null, TimeUtil.createValid("1998-01-03 12:40:02.244"), TimeUtil.createValid("1999-01-01"),false);
 
-        canvas.addCanvasComponent(new TimeRangeLabel(dataRange1,row1,column));
-        canvas.addCanvasComponent(new TimeRangeLabel(dataRange2,row2,column));
-        canvas.addCanvasComponent(new TimeRangeLabel(dataRange3,row3,column));
+        canvas.add(new TimeRangeLabel(dataRange1),row1,column);
+        canvas.add(new TimeRangeLabel(dataRange2),row2,column);
+        canvas.add(new TimeRangeLabel(dataRange3),row3,column);
         
         panel.setLayout(new BorderLayout());
         panel.add(canvas,BorderLayout.CENTER);

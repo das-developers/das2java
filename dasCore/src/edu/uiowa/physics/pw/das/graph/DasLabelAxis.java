@@ -71,15 +71,15 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         this.df = DatumUtil.bestFormatter(labels[0], labels[1],1);
     }
     
-    protected DasLabelAxis(Datum[] labels, DataRange dataRange, DasRow row, DasColumn column, int orientation) {
-        super( dataRange, row, column, orientation );
+    protected DasLabelAxis(Datum[] labels, DataRange dataRange, int orientation) {
+        super( dataRange, orientation );
         setLabels(labels);
         getDataRange().addpwUpdateListener(this);
     }
     
     
-    public DasLabelAxis(Datum[] labels, DasRow row, DasColumn column, int orientation) {
-        super( labels[0], labels[labels.length-1], row, column, orientation, false );
+    public DasLabelAxis(Datum[] labels, int orientation) {
+        super( labels[0], labels[labels.length-1], orientation, false );
         setLabels(labels);
         getDataRange().addpwUpdateListener(this);
     }
@@ -90,30 +90,32 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     private void updateTickPositions() {
-        int nlabel= indexMaximum - indexMinimum + 1;
+        if (isDisplayable()) {
+            int nlabel= indexMaximum - indexMinimum + 1;
         
-        int size;
-        int min;
+            int size;
+            int min;
         
-        double interItemSpacing;
+            double interItemSpacing;
         
-        if ( this.getOrientation()==DasAxis.HORIZONTAL ) {
-            size= getColumn().getWidth()-outsidePadding*2;
-            interItemSpacing= ((float)size) / nlabel;
-            if ( !floppyItemSpacing ) interItemSpacing= (int) interItemSpacing;
-            min= (getColumn().getDMinimum()+outsidePadding+(int)(interItemSpacing/2));
-        } else {
-            size= getRow().getHeight()-outsidePadding*2;
-            interItemSpacing= -1 * ((float)size) / nlabel ;
-            if ( !floppyItemSpacing ) interItemSpacing= (int)interItemSpacing;
-            min= getRow().getDMaximum()-outsidePadding+(int)(interItemSpacing/2);
+            if ( this.getOrientation()==DasAxis.HORIZONTAL ) {
+                size= getColumn().getWidth()-outsidePadding*2;
+                interItemSpacing= ((float)size) / nlabel;
+                if ( !floppyItemSpacing ) interItemSpacing= (int) interItemSpacing;
+                min= (getColumn().getDMinimum()+outsidePadding+(int)(interItemSpacing/2));
+            } else {
+                size= getRow().getHeight()-outsidePadding*2;
+                interItemSpacing= -1 * ((float)size) / nlabel ;
+                if ( !floppyItemSpacing ) interItemSpacing= (int)interItemSpacing;
+                min= getRow().getDMaximum()-outsidePadding+(int)(interItemSpacing/2);
+            }
+        
+            for ( int i=0; i<labelPositions.length; i++ ) {
+                labelPositions[i]= min + (int)(interItemSpacing * ( (i-indexMinimum)+0 ));
+            }
+        
+            firePropertyChange("labelPositions", null, labelPositions );
         }
-        
-        for ( int i=0; i<labelPositions.length; i++ ) {
-            labelPositions[i]= min + (int)(interItemSpacing * ( (i-indexMinimum)+0 ));
-        }
-        
-        firePropertyChange("labelPositions", null, labelPositions );
     }
     
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
@@ -208,12 +210,12 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     public DasAxis createAttachedAxis(DasRow row, DasColumn column) {
-        DasLabelAxis result= new DasLabelAxis(labels, getDataRange(), row, column, this.getOrientation());
+        DasLabelAxis result= new DasLabelAxis(labels, getDataRange(), this.getOrientation());
         return result;
     }
     
-    public DasAxis createAttachedAxis(DasRow row, DasColumn column, int orientation) {
-        return new DasLabelAxis(labels, getDataRange(), row, column, orientation);
+    public DasAxis createAttachedAxis(int orientation) {
+        return new DasLabelAxis(labels, getDataRange(), orientation);
     }
     
     public static void main( String[] args ) throws Exception {
@@ -226,9 +228,8 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         DasColumn column= DasColumn.create(canvas);
         
         Datum[] labels2= units.createDatum(new String[] {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"});
-        DasPlot p= new DasPlot( new DasLabelAxis( labels, row, column, DasAxis.HORIZONTAL ),
-        new DasLabelAxis( labels2, row, column, DasAxis.VERTICAL ), row, column );
-        canvas.add(p);
+        DasPlot p= new DasPlot( new DasLabelAxis( labels, DasAxis.HORIZONTAL ), new DasLabelAxis( labels2, DasAxis.VERTICAL ));
+        canvas.add(p, row, column);
         
         JFrame jframe= new JFrame();
         jframe.setContentPane(canvas);

@@ -39,12 +39,12 @@ public class DasSymbolPlot extends DasPlot {
        
     private SymbolLineRenderer renderer;
     
-    public DasSymbolPlot(VectorDataSet data, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        this((data==null ? null : new ConstantDataSetDescriptor(data)),xAxis,yAxis,row,column);
+    public DasSymbolPlot(VectorDataSet data, DasAxis xAxis, DasAxis yAxis) {
+        this((data==null ? null : new ConstantDataSetDescriptor(data)),xAxis,yAxis);
     }
     
-    public DasSymbolPlot(DataSetDescriptor dsd, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        super(xAxis,yAxis,row,column);
+    public DasSymbolPlot(DataSetDescriptor dsd, DasAxis xAxis, DasAxis yAxis) {
+        super(xAxis,yAxis);
         renderer= new SymbolLineRenderer(dsd);
         addRenderer(renderer);
     }
@@ -99,20 +99,16 @@ public class DasSymbolPlot extends DasPlot {
         edu.uiowa.physics.pw.das.util.DasDie.println("  dsd: "+dsd+" units: "+dsd.getXUnits() );
         
         if (dsd.getXUnits() instanceof TimeLocationUnits ) {
-            xAxis= new DasAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.HORIZONTAL );
+            xAxis= new DasAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), DasAxis.HORIZONTAL );
         } else {
-            xAxis= new DasAxis( Datum.create(0,dsd.getXUnits()), Datum.create(10,dsd.getXUnits()), row, column, DasAxis.HORIZONTAL );
+            xAxis= new DasAxis( Datum.create(0,dsd.getXUnits()), Datum.create(10,dsd.getXUnits()), DasAxis.HORIZONTAL );
         }
         
-        yAxis= new DasAxis( Datum.create(0, Units.dimensionless), Datum.create(10, Units.dimensionless), row, column, DasAxis.VERTICAL );
+        yAxis= new DasAxis( Datum.create(0, Units.dimensionless), Datum.create(10, Units.dimensionless), DasAxis.VERTICAL );
         
-        DasSymbolPlot result= new DasSymbolPlot(dsd,
-        xAxis, yAxis,
-        row, column );
+        DasSymbolPlot result= new DasSymbolPlot(dsd,xAxis, yAxis);
         
-        parent.addCanvasComponent(result);
-        parent.addCanvasComponent(result.getXAxis());
-        parent.addCanvasComponent(result.getYAxis());
+        parent.add(result, row, column);
         return result;
     }
     
@@ -142,11 +138,10 @@ public class DasSymbolPlot extends DasPlot {
         }
         
         DasSymbolPlot result= new DasSymbolPlot(Data,
-        DasAxis.create(x,Data.getXUnits(),row,column,DasAxis.HORIZONTAL,false),
-        DasAxis.create(y,Data.getYUnits(),row,column,DasAxis.VERTICAL,false),
-        row, column );
+            DasAxis.create(x,Data.getXUnits(),DasAxis.HORIZONTAL,false),
+            DasAxis.create(y,Data.getYUnits(),DasAxis.VERTICAL,false));
         
-        parent.addCanvasComponent(result);
+        parent.add(result, row, column);
         return result;
     }
     

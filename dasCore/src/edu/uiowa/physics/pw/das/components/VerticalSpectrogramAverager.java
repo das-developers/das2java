@@ -23,46 +23,69 @@
 
 package edu.uiowa.physics.pw.das.components;
 
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dataset.*;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
 
-public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRangeSelectionListener {
+
+public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSelectionListener {
     
-    private JFrame popupWindow;
+    private JDialog popupWindow;
     
     private Datum yValue;
     
-    private VerticalSpectrogramAverager(DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        super((VectorDataSet)null, xAxis, yAxis, row, column);
+    private DasPlot parentPlot;
+    private SymbolLineRenderer renderer;
+
+    private VerticalSpectrogramAverager(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
+        super(xAxis, yAxis);
+        parentPlot = plot;
+        renderer= new SymbolLineRenderer((DataSetDescriptor)null);
+        addRenderer(renderer);
     }
     
-    public static VerticalSpectrogramAverager createAverager(DasPlot plot, TableDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
+    public static VerticalSpectrogramAverager createAverager(DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceYAxis = plot.getYAxis();
-        
-        DasAxis xAxis = sourceYAxis.createAttachedAxis(row, column, DasAxis.HORIZONTAL);
-        DasAxis yAxis = dataSetConsumer.getZAxis().createAttachedAxis(row, column, DasAxis.VERTICAL);
-        
-        return new VerticalSpectrogramAverager(xAxis, yAxis, row, column);
+        DasAxis xAxis = sourceYAxis.createAttachedAxis(DasAxis.HORIZONTAL);
+        DasAxis yAxis = dataSetConsumer.getZAxis().createAttachedAxis(DasAxis.VERTICAL);
+        return new VerticalSpectrogramAverager(plot, xAxis, yAxis);
     }
     
-    public static VerticalSpectrogramAverager createPopupAverager(DasPlot plot, TableDataSetConsumer dataSetConsumer, int width, int height) {
+    public void showPopup() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            showPopupImpl();
+        }
+        else {
+            Runnable r = new Runnable() {
+                public void run() {
+                    showPopupImpl();
+                }
+            };
+        }
+    }
+    
+    /** This method should ONLY be called by the AWT event thread */
+    private void showPopupImpl() {
+        if (popupWindow == null) {
+            createPopup();
+        }
+        popupWindow.setVisible(true);
+    }
+    
+    /** This method should ONLY be called by the AWT event thread */
+    private void createPopup() {
+        int width = parentPlot.getCanvas().getWidth() / 2;
+        int height = parentPlot.getCanvas().getHeight() / 2;
         DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);
-        final VerticalSpectrogramAverager averager = createAverager(plot, dataSetConsumer, row, column);
-        canvas.add(averager);
-        canvas.add(averager.getXAxis());
-        canvas.add(averager.getYAxis());
+        canvas.add(this, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
         
@@ -71,7 +94,7 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                averager.popupWindow.setVisible(false);
+                popupWindow.setVisible(false);
             }
         });
         buttonPanel.setLayout(buttonLayout);
@@ -81,14 +104,24 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
         content.add(canvas, BorderLayout.CENTER);
         content.add(buttonPanel, BorderLayout.SOUTH);
         
-        averager.popupWindow = new JFrame("Vertical Averager");
-        averager.popupWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        averager.popupWindow.setContentPane(content);
-        averager.popupWindow.pack();
-        
-        averager.popupWindow.setLocation(600, 20);
-        
-        return averager;
+        Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
+        if (parentWindow instanceof Frame) {
+            popupWindow = new JDialog((Frame)parentWindow);
+        }
+        else if (parentWindow instanceof Dialog) {
+            popupWindow = new JDialog((Dialog)parentWindow);
+        }
+        else {
+            popupWindow = new JDialog();
+        }
+        popupWindow.setTitle("Vertical Slicer");
+        popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        popupWindow.setContentPane(content);
+        popupWindow.pack();
+                
+        Point parentLocation = new Point();
+        SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
+        popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
     
     protected void drawContent(Graphics2D g) {
@@ -108,65 +141,20 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
         if (ds==null || !(ds instanceof TableDataSet))
             return;
         TableDataSet xtys = (TableDataSet)ds;
-        /*
-        double[] x = new double[xtys.y_coordinate.length];
-        System.arraycopy(xtys.y_coordinate, 0, x, 0, xtys.y_coordinate.length);
-        double[] y = new double[xtys.y_coordinate.length];
-        double[] w = new double[xtys.y_coordinate.length];
-         */
         Datum xValue1 = e.getMinimum();
         Datum xValue2 = e.getMaximum();
     
         this.setTitle( ""+xValue1+" - "+xValue2 );
-        
-        /*
-        if (xtys.getXUnits()!=xValue1.getUnits()) {
-            xValue1.convertTo(xtys.getXUnits());
-        }
-        if (xtys.getXUnits()!=xValue2.getUnits()) {
-            xValue2.convertTo(xtys.getXUnits());
-        }
-        
-        double x1= xValue1.doubleValue(xtys.getXUnits());
-        double x2= xValue2.doubleValue(xtys.getXUnits());
-        
-        double dx = Double.MAX_VALUE;
-        int tagIndex = 0;
-        XTaggedYScan[] weights= xtys.getWeights();
-        for (int i = 0; i < xtys.data.length; i++) {
-            if ( x1 < xtys.data[i].x && xtys.data[i].x < x2 ) {
-                for (int j = 0; j < y.length; j++) {
-                    y[j] += xtys.data[i].z[j] * weights[i].z[j];
-                    w[j] += weights[i].z[j];
-                }
-            }
-        }
-        
-        for (int j = 0; j < y.length; j++) {
-            if ( w[j] > 0. ) {
-                y[j]/= w[j];
-            } else {
-                y[j]= -1e31;
-            }
-        }
-        
-        //yValue= e.getY();
-        */
         
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
         AverageTableRebinner rebinner = new AverageTableRebinner();
         TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
         VectorDataSet ds1 = rebinned.getXSlice(0);
         
-        /*
-        XMultiYDataSet ds1= XMultiYDataSet.create(x,xtys.getYUnits(),y,xtys.getZUnits());
-        ds1.y_fill= -1e31;
-         */
- 
-        addData(ds1);
+        renderer.setDataSet(ds1);
         
-        if (popupWindow != null && !popupWindow.isVisible()) {
-            popupWindow.setVisible(true);
+        if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
+            showPopup();
         }
         else {
             repaint();

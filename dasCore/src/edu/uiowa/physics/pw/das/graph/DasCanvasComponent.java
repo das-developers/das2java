@@ -58,12 +58,6 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         }
     }
     
-    public DasCanvasComponent(DasRow row, DasColumn column) {
-        this();
-        setRow(row);
-        setColumn(column);
-    }
-    
     public void addMouseModule(MouseModule module) {
         mouseAdapter.addMouseModule(module);
     }

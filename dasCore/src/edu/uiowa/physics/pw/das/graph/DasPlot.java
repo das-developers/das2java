@@ -75,8 +75,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         setOpaque(true);
     }
     
-    public DasPlot(DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column ) {
-        super(row,column);
+    public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         setOpaque(false);
         this.renderers= new ArrayList();
         this.xAxis = xAxis;
@@ -323,21 +322,23 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public void resize() {
-        GrannyTextRenderer gtr = new GrannyTextRenderer();
-        gtr.setString(this, getTitle());
-        
-        int titleHeight = (int)gtr.getHeight() + (int)gtr.getAscent() / 2;
-        
-        Rectangle bounds = new Rectangle();
-        bounds.x = getColumn().getDMinimum() - 1;
-        bounds.y = getRow().getDMinimum() - 1;
-        bounds.width = getColumn().getDMaximum() - bounds.x + 1;
-        bounds.height = getRow().getDMaximum() - bounds.y + 1;
-        if (!getTitle().equals("")) {
-            bounds.y -= titleHeight;
-            bounds.height += titleHeight;
+        if (isDisplayable()) {
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(this, getTitle());
+
+            int titleHeight = (int)gtr.getHeight() + (int)gtr.getAscent() / 2;
+
+            Rectangle bounds = new Rectangle();
+            bounds.x = getColumn().getDMinimum() - 1;
+            bounds.y = getRow().getDMinimum() - 1;
+            bounds.width = getColumn().getDMaximum() - bounds.x + 1;
+            bounds.height = getRow().getDMaximum() - bounds.y + 1;
+            if (!getTitle().equals("")) {
+                bounds.y -= titleHeight;
+                bounds.height += titleHeight;
+            }
+            setBounds(bounds);
         }
-        setBounds(bounds);
     }
     
     /** Sets the title which will be displayed above this plot.
@@ -403,8 +404,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected void installComponent() {
         super.installComponent();
-        if (xAxis != null) getParent().add(xAxis);
-        if (yAxis != null) getParent().add(yAxis);
+        if (xAxis != null) getCanvas().add(xAxis, getRow(), getColumn());
+        if (yAxis != null) getCanvas().add(yAxis, getRow(), getColumn());
         Renderer[] r = getRenderers();
         for (int index = 0; index < r.length; index++) {
             r[index].installRenderer();
@@ -445,10 +446,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         rend.parent = null;
     }
     
-    public static DasPlot createDummyPlot( DasRow row, DasColumn column) {
-        DasAxis xAxis= new DasAxis( Datum.create(-10), Datum.create(10), row, column, DasAxis.HORIZONTAL );
-        DasAxis yAxis= new DasAxis( Datum.create(-10), Datum.create(10), row, column, DasAxis.VERTICAL );
-        DasPlot result= new DasPlot(xAxis,yAxis,row,column);
+    public static DasPlot createDummyPlot() {
+        DasAxis xAxis= new DasAxis( Datum.create(-10), Datum.create(10), DasAxis.HORIZONTAL );
+        DasAxis yAxis= new DasAxis( Datum.create(-10), Datum.create(10), DasAxis.VERTICAL );
+        DasPlot result= new DasPlot(xAxis,yAxis);
         return result;
     }
     
@@ -490,10 +491,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             yAxis = (DasAxis)form.checkValue(element.getAttribute("yAxis"), DasAxis.class, "<axis> or <timeaxis>");
         }
 
-        DasPlot plot = new DasPlot(xAxis, yAxis, row, column);
+        DasPlot plot = new DasPlot(xAxis, yAxis);
         plot.setTitle(element.getAttribute("title"));
-
         plot.setDasName(name);
+        plot.setRow(row);
+        plot.setColumn(column);
         DasApplication app = form.getDasApplication();
         NameContext nc = app.getNameContext();
         nc.put(name, plot);
@@ -517,21 +519,21 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (node instanceof Element) {
                 Element e = (Element)node;
                 if (node.getNodeName().equals("axis")) {
-                    DasAxis axis = DasAxis.processAxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processAxisElement(e, form);
                     if (!axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.HORIZONTAL);
                     }
                     return axis;
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
-                    DasAxis axis = DasAxis.processTimeaxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processTimeaxisElement(e, form);
                     if (!axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.HORIZONTAL);
                     }
                     return axis;
                 }
                 else if (node.getNodeName().equals("attachedaxis")) {
-                    DasAxis axis = DasAxis.processAttachedaxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processAttachedaxisElement(e, form);
                     if (!axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.HORIZONTAL);
                     }
@@ -549,21 +551,21 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (node instanceof Element) {
                 Element e = (Element)node;
                 if (node.getNodeName().equals("axis")) {
-                    DasAxis axis = DasAxis.processAxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processAxisElement(e, form);
                     if (axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.VERTICAL);
                     }
                     return axis;
                 }
                 else if (node.getNodeName().equals("timeaxis")) {
-                    DasAxis axis = DasAxis.processTimeaxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processTimeaxisElement(e, form);
                     if (axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.VERTICAL);
                     }
                     return axis;
                 }
                 else if (node.getNodeName().equals("attachedaxis")) {
-                    DasAxis axis = DasAxis.processAttachedaxisElement(e, row, column, form);
+                    DasAxis axis = DasAxis.processAttachedaxisElement(e, form);
                     if (axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.VERTICAL);
                     }
@@ -642,7 +644,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         xAxis.setOrientation(DasAxis.BOTTOM);
         DasAxis yAxis = DasAxis.createNamedAxis(null);
         yAxis.setOrientation(DasAxis.LEFT);
-        DasPlot plot = new DasPlot(xAxis, yAxis, null, null);
+        DasPlot plot = new DasPlot(xAxis, yAxis);
         if (name == null) {
             name = "plot_" + Integer.toHexString(System.identityHashCode(plot));
         }
