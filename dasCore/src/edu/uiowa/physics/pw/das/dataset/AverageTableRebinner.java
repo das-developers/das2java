@@ -48,7 +48,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units xunits= ddXin.getUnits();
         Units yunits= ddYin.getUnits();
                       
-        int ix0= DataSetUtil.getPreceedingColumn( tds, xunits.createDatum( ddXin.binStart(0,xunits) ) );
+        int ix0= DataSetUtil.getPreviousColumn( tds, xunits.createDatum( ddXin.binStart(0,xunits) ) );
         int ix1= DataSetUtil.getNextColumn( tds, xunits.createDatum( ddXin.binStop( ddXin.numberOfBins()-1, xunits ) ) );        
         
         RebinDescriptor ddX= RebinDescriptor.createSubsumingRebinDescriptor( ddXin, tds.getXTagDatum(ix0), tds.getXTagDatum(ix1) );                
@@ -102,9 +102,12 @@ public class AverageTableRebinner implements DataSetRebinner {
          */
         TableDataSet result= new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
         
-        return new ClippedTableDataSet( result, 
-            xunits.createDatum(ddXin.binCenter(0)), xunits.createDatum(ddXin.binCenter(ddXin.numberOfBins()-1)),
-            yunits.createDatum(ddYin.binCenter(0)), yunits.createDatum(ddYin.binCenter(ddYin.numberOfBins()-1)) );
+        int xoffset= ddX.whichBin( ddXin.binCenter(0),xunits);
+        int xlength= ddXin.numberOfBins();
+        int yoffset= ddY.whichBin( ddYin.binCenter(0),yunits);
+        int ylength= ddYin.numberOfBins();
+        
+        return new ClippedTableDataSet( result, xoffset, xlength, yoffset, ylength );
     }
     
     static void average(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
