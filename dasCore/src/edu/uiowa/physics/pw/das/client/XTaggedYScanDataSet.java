@@ -820,7 +820,7 @@ public class XTaggedYScanDataSet extends DataSet_jbf implements TableDataSet, ja
     }
     
     public int tableEnd(int table) {
-        return data.length;
+        return ( data==null ) ? 0 : data.length;
     }
     
     public VectorDataSet getXSlice(int tagIndex) {
@@ -838,7 +838,7 @@ public class XTaggedYScanDataSet extends DataSet_jbf implements TableDataSet, ja
     }
     
     public int getXLength() {
-        return data.length;
+        return ( data==null ) ? 0 : data.length;
     }
     
     public int getInt(int i, int j, Units units) {
