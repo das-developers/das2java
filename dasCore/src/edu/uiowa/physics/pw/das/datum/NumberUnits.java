@@ -124,7 +124,7 @@ public class NumberUnits extends Units {
     }
     
     public Datum multiply( Number a, Number b, Units bUnits ) {
-        if ( bUnits!=Units.dimensionless ) {
+        if ( bUnits==Units.dimensionless ) {
             return createDatum( multiply( a, b ) );
         } else {
             throw new IllegalArgumentException("Only multiplication by dimensionless numbers is supported");
@@ -132,7 +132,7 @@ public class NumberUnits extends Units {
     }
     
     public Datum divide( Number a, Number b, Units bUnits ) {
-        if ( bUnits!=Units.dimensionless ) {
+        if ( bUnits==Units.dimensionless ) {
             return createDatum( divide( a, b ) );
         } else {
             throw new IllegalArgumentException("Only multiplication by dimensionless numbers is supported");
