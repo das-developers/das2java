@@ -41,7 +41,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 
-public class DasTimeRangeSelector extends JPanel implements ActionListener, TimeRangeSelectionListener {
+public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionListener {
     
     private Datum startTime = null;
     private Datum endTime = null;
@@ -52,6 +52,32 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
     /** Utility field used by event firing mechanism. */
     private EventListenerList listenerList =  null;
     
+    /** Action that is associated with the previous button.
+     * Access is given to subclasses so that other widgets can be associated
+     * with this action (Popup menu, etc).
+     */
+    protected final Action previousAction = new AbstractAction("<<") {
+        public void actionPerformed(ActionEvent e) {
+            fireTimeRangeSelectedPrevious();
+        }
+    };
+    
+    /** Action that is associated with the next button.
+     * Access is given to subclasses so that other widgets can be associated
+     * with this action (Popup menu, etc).
+     */
+    protected final Action nextAction = new AbstractAction(">>") {
+        public void actionPerformed(ActionEvent e) {
+            fireTimeRangeSelectedNext();
+        }
+    };
+    
+    protected final Action rangeAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            fireTimeRangeSelected();
+        }
+    };
+    
     /** Creates a new instance of DasTimeRangeSelector */
     public DasTimeRangeSelector() {
         super();
@@ -61,24 +87,24 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
     private void buildComponents() {
         this.setLayout(new FlowLayout());
         
-        JButton b= new JButton("<<");
-        b.addActionListener(this);
+        JButton b= new JButton();
+        b.setAction(previousAction);
         b.setActionCommand("previous");
         b.setToolTipText("Scan back in time");
         this.add(b);
         
         idStart= new JTextField(18);
-        idStart.addActionListener(this);
+        idStart.setAction(rangeAction);
         idStart.setActionCommand("startTime");
         this.add(idStart);
         
         idStop= new JTextField(18);
-        idStop.addActionListener(this);
+        idStop.addActionListener(rangeAction);
         idStop.setActionCommand("endTime");
         this.add(idStop);
         
-        b= new JButton(">>");
-        b.addActionListener(this);
+        b= new JButton();
+        b.setAction(nextAction);
         b.setActionCommand("next");
         b.setToolTipText("Scan forward in time");
         this.add(b);
@@ -150,31 +176,6 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         return s1.compareTo(startTime) <= 0 && endTime.compareTo(s2) <= 0;
     }
     
-    public void actionPerformed(ActionEvent actionEvent) {
-        String command= actionEvent.getActionCommand();
-        if (command.equals("previous")) {
-            Datum twidth= getEndTime().subtract(getStartTime());
-            setStartTime(getStartTime().subtract(twidth));
-            setEndTime(getEndTime().subtract(twidth));
-            fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,startTime,endTime));
-        } else if (command.equals("next")) {
-            Datum twidth= getEndTime().subtract(getStartTime());
-            setStartTime(getStartTime().add(twidth));
-            setEndTime(getEndTime().add(twidth));
-            fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,startTime,endTime));
-        } else if (command.equals("startTime")) {
-            setStartTime(getStartTime());
-            fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,startTime,endTime));
-        } else if (command.equals("endTime")) {
-            setEndTime(getEndTime());
-            fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,startTime,endTime));
-        }
-    }
-    
     TimeRangeSelectionEvent lastEventProcessed=null;
     public void TimeRangeSelected(TimeRangeSelectionEvent e) {
         if (false) {
@@ -190,7 +191,7 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
             lastEventProcessed= e;
             setStartTime( e.getStartTime() );
             setEndTime( e.getEndTime() );
-            fireTimeRangeSelectionListenerTimeRangeSelected(e);
+            fireTimeRangeSelected(e);
         }
     }
     
@@ -211,11 +212,31 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         listenerList.remove(TimeRangeSelectionListener.class, listener);
     }
     
+    protected void fireTimeRangeSelectedPrevious() {
+        Datum twidth= getEndTime().subtract(getStartTime());
+        setStartTime(getStartTime().subtract(twidth));
+        setEndTime(getEndTime().subtract(twidth));
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,startTime,endTime));
+    }
+    
+    protected void fireTimeRangeSelectedNext() {
+        Datum twidth= getEndTime().subtract(getStartTime());
+        setStartTime(getStartTime().add(twidth));
+        setEndTime(getEndTime().add(twidth));
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,startTime,endTime));
+    }
+    
+    protected void fireTimeRangeSelected() {
+        setStartTime(getStartTime());
+        setEndTime(getEndTime());
+        fireTimeRangeSelected(new TimeRangeSelectionEvent(this,startTime,endTime));
+    }
+    
     /** Notifies all registered listeners about the event.
      *
      * @param event The event to be fired
      */
-    private void fireTimeRangeSelectionListenerTimeRangeSelected(TimeRangeSelectionEvent event) {
+    protected void fireTimeRangeSelected(TimeRangeSelectionEvent event) {
         if (false) {
             DasDie.println("firing event");
             Graphics2D g= (Graphics2D)getGraphics();
