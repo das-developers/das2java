@@ -95,7 +95,7 @@ public class DasDie {
     public static final void println(int verbosity, java.lang.String message) {
         if (verbosity>=DasDie.verbosity) {
             //System.out.print(calledBy()+": ");
-            System.out.println(message);
+            System.err.println(message);
         }
     }
     
