@@ -199,6 +199,11 @@ public class Das1ToDas2 {
         byte[] buffer= new byte[bytesPerPacket];
         
         int b= in.read(buffer);
+        
+        if ( b==-1 ) {
+            out.write("[xx]<exception message=\"No data in interval\" source=\"Das1ToDas2\"/>".getBytes());
+        }
+        
         int offset= b;
         
         while ( b!=-1 ) {
@@ -215,6 +220,7 @@ public class Das1ToDas2 {
             b= in.read(buffer);
             offset= b;
         }
+        
     }
     
     public static InputStream das1ToDas2( final InputStream in, final String dsdf, final Datum start, final Datum end ) throws IOException {
