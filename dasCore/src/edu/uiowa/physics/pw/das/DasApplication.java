@@ -66,6 +66,8 @@ public class DasApplication {
     }
     
     public static boolean isHeadAvailable() {
+        return true;
+        /*
         return ( System.getProperty( "awt.toolkit" ) != null );
         /*
                //boolean headAvailable= !java.awt.GraphicsEnvironment.isHeadless();       
