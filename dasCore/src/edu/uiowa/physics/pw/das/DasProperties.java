@@ -44,6 +44,7 @@ public class DasProperties extends Properties {
     
     private RenderingHints hints;
     private boolean antiAlias;
+    private boolean visualCues;
     private Logger logger;
     private static ArrayList propertyOrder;
     private static Editor editor;
@@ -66,6 +67,7 @@ public class DasProperties extends Properties {
         propertyOrder.add(1,"password");
         propertyOrder.add(2,"debugLevel");
         propertyOrder.add(3,"antiAlias");
+        propertyOrder.add(4,"visualCues");
         for (Iterator i= this.keySet().iterator(); i.hasNext(); ) {
             String s= (String)i.next();
             if (!propertyOrder.contains(s)) {
@@ -79,6 +81,7 @@ public class DasProperties extends Properties {
         setProperty("password","");
         setProperty("debugLevel","endUser");
         setProperty("antiAlias","off");
+        setProperty("visualCues","off");
         setProperty("defaultServer","http://www-pw.physics.uiowa.edu/das/dasServer");
     }
     
@@ -154,6 +157,9 @@ public class DasProperties extends Properties {
                      String[] data= {"endUser","dasDeveloper"};
                      return new DefaultCellEditor(new JComboBox(data));
                  } else if (propertyName.equals("antiAlias")) {
+                     String[] data= {"on","off"};
+                     return new DefaultCellEditor(new JComboBox(data));                     
+                 } else if (propertyName.equals("visualCues")) {
                      String[] data= {"on","off"};
                      return new DefaultCellEditor(new JComboBox(data));                     
                  } else {
