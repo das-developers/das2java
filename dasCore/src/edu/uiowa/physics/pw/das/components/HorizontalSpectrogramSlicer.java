@@ -112,7 +112,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         else {
             popupWindow = new JDialog();
         }
-        popupWindow.setTitle("Vertical Slicer");
+        popupWindow.setTitle("Horizontal Slicer");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
         popupWindow.pack();
