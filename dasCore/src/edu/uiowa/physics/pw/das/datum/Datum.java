@@ -49,7 +49,7 @@ public class Datum {
         this.units= units;
         this.formatter= DasFormatter.create(units);
         _allocations++;
-        //        if (_allocation_source.contains(DasDie.calledBy())) {
+        //        if (_allocation_source.containsKey(DasDie.calledBy())) {
         //            _allocation_source.put(DasDie.calledBy(),(Integer)((Integer)_allocation_source.get(DasDie.calledBy())).intValue()+1);
         //        } else {
         //           _allocation_source.put(DasDie.calledBy().put(1));
