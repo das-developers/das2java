@@ -299,6 +299,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     
                     MouseModule ch= new CrossHairMouseModule(parent,this,parent.getXAxis(), parent.getYAxis());
                     mouseAdapter.addMouseModule(ch);
+                    
+                    ch= new DumpToFileMouseModule( parent, this, parent.getXAxis(), parent.getYAxis() );
+                    mouseAdapter.addMouseModule(ch);
                 }
             }
         }
