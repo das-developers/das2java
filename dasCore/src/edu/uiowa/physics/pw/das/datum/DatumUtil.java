@@ -98,5 +98,8 @@ public final class DatumUtil {
         }
     }
     
+    public static Datum createValid(java.lang.String s) {
+        return Datum.create( Double.parseDouble(s), Units.dimensionless );
+    }    
     
 }
