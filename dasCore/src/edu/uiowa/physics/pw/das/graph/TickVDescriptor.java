@@ -26,6 +26,14 @@ public class TickVDescriptor {
         this.units= units;
     }
     
+    public DatumVector getMajorTicks() {
+        return DatumVector.newDatumVector( tickV, units );
+    }
+    
+    public DatumVector getMinorTicks() {
+        return DatumVector.newDatumVector( minorTickV, units );
+    }
+    
     /** Returns a String representation of the TickVDescriptor.
      * @return a String representation of the TickVDescriptor.
      *
