@@ -37,7 +37,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.stream.*;
 
 import java.awt.*;
-import java.awt.geom.Line2D; 
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -168,13 +168,13 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
         setDataSetDescriptor( dsd );
     }
-        
+    
     public static DasStackedHistogramPlot create( DasCanvas parent, DataSetDescriptor dsd, Datum startTime, Datum endTime ) throws edu.uiowa.physics.pw.das.DasException {
         TableDataSet ds= (TableDataSet)dsd.getDataSet(startTime,endTime, null, null);
         DasStackedHistogramPlot result= DasStackedHistogramPlot.create(parent,ds);
-        result.setDataSetDescriptor(dsd);        
+        result.setDataSetDescriptor(dsd);
         return result;
-    }   
+    }
     
     public void setZAxis(DasAxis zAxis) {
         if (zAxis.isHorizontal())
@@ -252,8 +252,6 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         DataSetRebinner rebinner = new Rebinner();
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
-        TableDataSet weights= (TableDataSet)data.getPlanarView("weights");
-        double zzFill= data.getZUnits().getFillDouble();
         
         Rectangle2D.Double r= new Rectangle2D.Double();
         Line2D.Double l= new Line2D.Double();
@@ -288,23 +286,25 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 int x1;
                 x1=x0+1; // 1 pixel wide
                 double zz= data.getDouble( ibin, j, data.getZUnits() );
-                if ( zz!=zzFill ) {
+                if ( !data.getZUnits().isFill(zz) ) {
                     int yAvg= zAxisComponent.transform( zz, data.getZUnits() );
                     yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
                     int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
                     yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
-                    double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
-                    if (peakValue <= zAxisMax) {
-                        int yMax= zAxisComponent.transform(peakValue, peaks.getZUnits());
-                        yMax= (y0-yMax)>(0) ? yMax : (y0);
-                        if (peaksIndicator==PeaksIndicator.MaxLines) {
-                            l.setLine(x0,yMax,x0,yMax);
-                            g.drawLine(x0,yMax,x0,yMax);
-                        } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                            rmax.setRect(x0,yMax,(x1-x0),y0-yMax);
-                            g.setColor(Color.lightGray);
-                            g.fill(rmax);
-                            g.setColor(Color.darkGray);
+                    if ( peaks!=null ) {
+                        double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
+                        if (peakValue <= zAxisMax) {
+                            int yMax= zAxisComponent.transform(peakValue, peaks.getZUnits());
+                            yMax= (y0-yMax)>(0) ? yMax : (y0);
+                            if (peaksIndicator==PeaksIndicator.MaxLines) {
+                                l.setLine(x0,yMax,x0,yMax);
+                                g.drawLine(x0,yMax,x0,yMax);
+                            } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
+                                rmax.setRect(x0,yMax,(x1-x0),y0-yMax);
+                                g.setColor(Color.lightGray);
+                                g.fill(rmax);
+                                g.setColor(Color.darkGray);
+                            }
                         }
                     }
                     r.setRect(x0,yAvg,(x1-x0),yHeight);
@@ -426,12 +426,12 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     public class Rebinner implements DataSetRebinner {
         DataSetRebinner highResRebinner;
         DataSetRebinner lowResRebinner;
-        Rebinner() { 
+        Rebinner() {
             highResRebinner= new NearestNeighborTableRebinner();
             //highResRebinner= new AveragePeakTableRebinner();
-            lowResRebinner= new AveragePeakTableRebinner();            
+            lowResRebinner= new AveragePeakTableRebinner();
         }
-            
+        
         public DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException {
             Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
             if ( xwidth==null ) xwidth= TableUtil.guessXTagWidth((TableDataSet)ds);
@@ -471,13 +471,13 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     
     public void dataSetUpdated(DataSetUpdateEvent e) {
         this.markDirty();
-        update();       
+        update();
         repaint();
     }
     
     public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
         super.setDataSetDescriptor(dataSetDescriptor);
-        dataSetDescriptor.addDataSetUpdateListener( this );        
+        dataSetDescriptor.addDataSetUpdateListener( this );
     }
     
 }
