@@ -209,7 +209,7 @@ public class HttpFileSystem extends FileSystem {
     }
     
     public String toString() {
-        return "wfs: "+root;
+        return "wfs "+root;
     }
     
 }
