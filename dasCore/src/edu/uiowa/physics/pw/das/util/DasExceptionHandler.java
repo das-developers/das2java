@@ -45,7 +45,6 @@ public final class DasExceptionHandler {
         }
         else {
             showExceptionDialog(t);
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.CRITICAL, t.toString());
         }
     }
     
