@@ -164,7 +164,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     }
     
     public void setDataSet(DataSet ds) {
-        setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
+        if (ds == null) {
+            setDataSetDescriptor(null);
+        }
+        else {
+            setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
+        }
     }
     
     public void setDataSetID(String id) throws edu.uiowa.physics.pw.das.DasException {
