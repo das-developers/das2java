@@ -63,12 +63,33 @@ public final class TimeUtil {
     
     
     public final static class TimeStruct {
+        /**
+         * year containing the time datum
+         */        
         public int year;
+        /**
+         * month containing the time datum
+         */        
         public int month;
+        /**
+         * day of month containing the time datum
+         */        
         public int day;
+        /**
+         * day of year containing the time datum
+         */        
         public int doy;
+        /**
+         * hour containing the time datum
+         */        
         public int hour;
+        /**
+         * minute containing the time datum
+         */        
         public int minute;
+        /**
+         * seconds since the last minute boundary of the time datum
+         */        
         public double seconds; // remaining number of seconds past minute boundary
         public String toString() {
             return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
@@ -688,6 +709,17 @@ public final class TimeUtil {
     
     public static Datum prevMidnight(Datum datum) {
         return datum.subtract(getSecondsSinceMidnight(datum), Units.seconds);
+    }
+    
+    public static Datum createTimeDatum( int year, int month, int day, int hour, int minute, int second, int nano ) {
+        if ( year<1960 ) throw new IllegalArgumentException("year must be > 1960, and no 2 digit years (year="+year+")");
+        
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+        3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+        275 * month / 9 + day + 1721029;
+        double microseconds = second*1e6 + hour*3600e6 + minute*60e6 + nano/1e3;
+        double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 )) + microseconds;
+        return Datum.create( us2000, Units.us2000 );
     }
     
 }
