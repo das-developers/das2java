@@ -2020,13 +2020,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             
             this.dataRange= tempRange;
             
-            double transitionTime= 700; // millis
+            double transitionTime= 300; // millis
             double alpha= ( System.currentTimeMillis() - t0 ) / transitionTime;
             
             while ( alpha < 1.0 ) {
                 alpha= ( System.currentTimeMillis() - t0 ) / transitionTime;
                 
-                double t= -4 + 8 * alpha;
+                double t= -3 + 6 * alpha;
                 double a1= (DasMath.tanh(t)+1)/2;
                 double a0= 1-a1;
                 
