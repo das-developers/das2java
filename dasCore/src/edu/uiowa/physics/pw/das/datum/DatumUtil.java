@@ -118,4 +118,13 @@ public final class DatumUtil {
         return result;
     }
     
+    /* convert to human-friendly units.  Right now this will just convert us2000 to seconds. */
+    public static Datum asOrderOneUnits(Datum d) {
+        if ( d.getUnits()==Units.microseconds ) {
+            return d.convertTo(Units.seconds);
+        } else {
+            return d;
+        }
+    }
+    
 }
