@@ -115,17 +115,17 @@ public class TableUtil {
     }
     
     protected static void checkForNaN( double[][] t ) {
-       for ( int i=0; i<t.length; i++ ) {
+        for ( int i=0; i<t.length; i++ ) {
             for ( int j=0; j<t[0].length; j++ ) {
                 double zz= t[i][j];
                 if ( Double.isNaN( zz ) ) {
-                    System.out.println("found NaN at "+i+","+j );                    
+                    System.out.println("found NaN at "+i+","+j );
                 } else {
                     // System.out.println("zz="+zz );
                 }
             }
-        } 
-    }    
+        }
+    }
     
     public static String toString(TableDataSet tds) {
         StringBuffer buffer= new StringBuffer();
@@ -239,6 +239,12 @@ public class TableUtil {
             sd.setProperty("start", tds.getXTagDatum(0).toString());
             sd.setProperty("end", tds.getXTagDatum(tds.getXLength()-1));
             
+            Map properties= tds.getProperties();
+            for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
+                String key= (String)i.next();
+                sd.setProperty(key, properties.get(key));
+            }
+            
             DataTransferType zTransferType;
             DataTransferType xTransferType;
             
@@ -271,8 +277,7 @@ public class TableUtil {
                 }
             }
             producer.streamClosed(sd);
-        }
-        catch (StreamException se) {
+        } catch (StreamException se) {
             throw new RuntimeException(se);
         }
     }
