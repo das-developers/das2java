@@ -48,7 +48,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
     private String label;
-    private static final int hideInitiallyMilliSeconds= 400;
+    private static final int hideInitiallyMilliSeconds= 600;
     
     /** Creates new form DasProgressPanel */
     
