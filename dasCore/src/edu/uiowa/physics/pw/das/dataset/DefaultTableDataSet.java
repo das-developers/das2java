@@ -395,6 +395,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         private final int index;
         
         private PlanarViewDataSet(int index) {
+            DefaultTableDataSet.this.super();
             this.index = index;
         }
         

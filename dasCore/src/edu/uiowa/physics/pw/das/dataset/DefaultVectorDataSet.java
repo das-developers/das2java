@@ -175,6 +175,7 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
         private final int index;
         
         private PlanarViewDataSet(int index) {
+            DefaultVectorDataSet.this.super();
             this.index = index;
         }
         
