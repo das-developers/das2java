@@ -175,4 +175,10 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         super.installComponent();
     }
     
+    protected void processDasUpdateEvent(edu.uiowa.physics.pw.das.event.DasUpdateEvent e) {
+        if (isDisplayable()) {
+            updateImmediately();
+            resize();
+        }
+    }
 }

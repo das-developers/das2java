@@ -191,4 +191,10 @@ extends DasPlot implements DataPointSelectionListener {
         getCanvas().getGlassPane().setVisible(false);
     }
     
+    protected void processDasUpdateEvent(edu.uiowa.physics.pw.das.event.DasUpdateEvent e) {
+        if (isDisplayable()) {
+            updateImmediately();
+            resize();
+        }
+    }
 }
