@@ -198,6 +198,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     protected void loadDataSet(final DasAxis xAxis, final DasAxis yAxis) {
         
         if (parent == null || !parent.isDisplayable() || dsd == null) return;
+        
+        try {
+            updatePlotImage(xAxis, yAxis, null);
+        }
+        catch (DasException de) {
+            DasExceptionHandler.handle(de);
+        }
 
         if ( dsd instanceof ConstantDataSetDescriptor ) {
             try {
@@ -295,7 +302,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         }
         try {
             ds= e.getDataSet();
-            progressPanel.setLabel("Rebinning data set");
+            if (progressPanel != null) {
+                progressPanel.setLabel("Rebinning data set");
+            }
             updatePlotImage(parent.getXAxis(), parent.getYAxis(), progressPanel);
             if (parent != null) {
                 parent.repaint();
@@ -310,7 +319,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             throw re;
         }
         finally {
-            progressPanel.finished();
+            if (progressPanel != null) {
+                progressPanel.finished();
+            }
         }
     }
     
