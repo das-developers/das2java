@@ -105,9 +105,7 @@ public class DataSetStreamHandler implements StreamHandler {
             StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(0);
             Units xUnits = pd.getXDescriptor().getUnits();
             Units yUnits = y.getUnits();
-            builder = new VectorDataSetBuilder();
-            builder.setXUnits(xUnits);
-            builder.setYUnits(yUnits);
+            builder = new VectorDataSetBuilder(xUnits,yUnits);                        
             this.packetDescriptor(pd);
         }
         
@@ -131,8 +129,7 @@ public class DataSetStreamHandler implements StreamHandler {
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
-                builder.addPlane(y.getName());
-                builder.setYUnits(y.getUnits(), y.getName());
+                builder.addPlane(y.getName(),y.getUnits());                
             }
         }
         
