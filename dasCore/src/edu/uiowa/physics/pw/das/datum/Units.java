@@ -129,13 +129,17 @@ public abstract class Units {
     };
     
     private void registerConverter(Units toUnits, UnitsConverter converter) {
-        conversionMap.put(toUnits, converter);
+        conversionMap.put(toUnits, converter);        
         UnitsConverter inverse = (UnitsConverter)toUnits.conversionMap.get(this);
         if (inverse == null || inverse.getInverse() != converter) {
             toUnits.registerConverter(this, converter.getInverse());
         }
     }
-      
+     
+    public Units[] getUnitConversions() {
+        return new Units[0];
+    }
+    
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
         if (fromUnits == toUnits) {
             return UnitsConverter.IDENTITY;
