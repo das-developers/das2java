@@ -26,6 +26,7 @@ public class DasEventsIndicator extends DasCanvasComponent {
     DataSetDescriptor dsd;
     VectorDataSet vds;
     String planeId; /* name of the plane to get the event type */
+    int[] eventMap;
     
     /** Creates a new instance of DasEventsIndicator */
     public DasEventsIndicator( DataSetDescriptor dsd, DasAxis axis, String planeId ) {
@@ -72,7 +73,7 @@ public class DasEventsIndicator extends DasCanvasComponent {
             Datum x= parent.axis.invTransform(ix);
             
             Datum axisRes= parent.axis.invTransform(ix+2).subtract(x); /* two-pixel resolution */
-            int i= DataSetUtil.closestColumn(parent.vds,x);
+            int i= eventMap[e.getX()];
             Datum sx= parent.vds.getXTagDatum(i);
             Datum sy= parent.vds.getDatum(i);
             if ( parent.vds.getPlanarView(planeId)==null ) {
@@ -98,11 +99,12 @@ public class DasEventsIndicator extends DasCanvasComponent {
         
         g.setColor(new Color(100,100,100,180));
         
+        eventMap= new int[getWidth()];
+        
         try {
             vds= (VectorDataSet)dsd.getDataSet( axis.getDataMinimum(), axis.getDataMaximum(), null, null );
             
-            if ( vds.getXLength()>0 ) {
-                
+            if ( vds.getXLength()>0 ) {                
                 UnitsConverter uc=  UnitsConverter.getConverter( vds.getYUnits(), axis.getUnits().getOffsetUnits() );
                 
                 int ivds0= 0;
@@ -116,15 +118,24 @@ public class DasEventsIndicator extends DasCanvasComponent {
                         iwidth= axis.transform( x.add( y ) ) - ix;
                     } else {
                         iwidth= 1;
-                    }                    
+                    }
                     if ( iwidth==0 ) iwidth=1;
-                    g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
+                    g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) ); {
+                        int em0= ix-getX()-1;
+                        if (em0<0) em0=0;
+                        if (em0>=eventMap.length) em0= eventMap.length-1;
+                        int em1= ix-getX()+iwidth+1;
+                        if (em1<0) em1=0;
+                        if (em1>=eventMap.length) em1= eventMap.length-1;
+                        for ( int k= em0; k<em1; k++ ) {
+                            eventMap[k]= i;
+                        }
+                    }
                 }
             }
         } catch ( DasException e ) {
             g.drawString( "exception: "+e.getMessage(), getX(), getY()+getHeight() );
-        }
-        
+        }        
     }
     
     public void setDataSetDescriptor( DataSetDescriptor dsd ) {
