@@ -869,6 +869,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public void writeToPDF(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "edu.uiowa.physics.pw.das.util.awt.PdfGraphicsOutput");
+        } catch (NoClassDefFoundError cnfe) {
+            DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
         } catch (ClassNotFoundException cnfe) {
             DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
         } catch (InstantiationException ie) {
@@ -921,7 +923,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             try {
                 synchronized(lockObject) {
                     SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {                            
+                        public void run() {
                             synchronized(lockObject) {
                                 lockObject.notifyAll();
                             }
@@ -929,24 +931,23 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     });
                     lockObject.wait();
                 }
-            }
-            catch ( InterruptedException ex ) {
+            } catch ( InterruptedException ex ) {
                 throw new RuntimeException(ex);
             }
         }
         
         /* wait for all the RequestProcessor to complete */
         Runnable request= new Runnable() {
-            public void run() {                
-                synchronized( lockObject ) {                    
+            public void run() {
+                synchronized( lockObject ) {
                     lockObject.notifyAll();
                 }
             }
         };
-                
+        
         try {
             synchronized (lockObject) {
-                RequestProcessor.invokeAfter( request, this );                
+                RequestProcessor.invokeAfter( request, this );
                 lockObject.wait();
             }
         } catch ( InterruptedException ex ) {
@@ -960,7 +961,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     /** TODO
      * Creates a BufferedImage by blocking until the image is ready.  This
-     * includes waiting for datasets to load, etc.  Works by submitting 
+     * includes waiting for datasets to load, etc.  Works by submitting
      * an invokeAfter request to the RequestProcessor that calls
      * {@link #writeToImageImmediately(Image)}.
      *
@@ -984,7 +985,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         waitUntilIdle();
         
-        final Image image= new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);                                
+        final Image image= new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
         writeToImageImmediately(image);
         return image;
     }
@@ -2127,4 +2128,4 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
     }
     
-}
+    }
