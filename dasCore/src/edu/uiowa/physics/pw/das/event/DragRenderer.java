@@ -36,8 +36,7 @@ public interface DragRenderer
 { 
     public abstract void renderDrag(Graphics g, Point p1, Point p2);
     public abstract void clear(Graphics g);
-    public abstract MouseDragEvent 
-       getMouseDragEvent( Object source, Point p1, Point p2, boolean isModified ); 
+    public abstract MouseDragEvent getMouseDragEvent( Object source, Point p1, Point p2, boolean isModified ); 
     
     public boolean isXRangeSelection();
     
