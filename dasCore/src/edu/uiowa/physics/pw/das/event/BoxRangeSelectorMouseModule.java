@@ -63,17 +63,19 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
     }
     
     public void mouseRangeSelected(MouseDragEvent e0) {
-        MouseBoxEvent e= (MouseBoxEvent)e0;
-        
-        Datum xMin = xAxis.invTransform(e.getXMinimum());
-        Datum xMax = xAxis.invTransform(e.getXMaximum());
-        Datum yMin = yAxis.invTransform(e.getYMinimum());
-        Datum yMax = yAxis.invTransform(e.getYMaximum());
-        BoxSelectionEvent evt = new BoxSelectionEvent(this, xMin, xMax, yMin, yMax);
-        if (consumer != null) {
-            evt.setDataSet(consumer.getDataSet());
+        if (e0 instanceof MouseBoxEvent) {
+            MouseBoxEvent e= (MouseBoxEvent)e0;
+
+            Datum xMin = xAxis.invTransform(e.getXMinimum());
+            Datum xMax = xAxis.invTransform(e.getXMaximum());
+            Datum yMin = yAxis.invTransform(e.getYMinimum());
+            Datum yMax = yAxis.invTransform(e.getYMaximum());
+            BoxSelectionEvent evt = new BoxSelectionEvent(this, xMin, xMax, yMin, yMax);
+            if (consumer != null) {
+                evt.setDataSet(consumer.getDataSet());
+            }
+            fireBoxSelected(evt);
         }
-        fireBoxSelected(evt);
     }
     
     /** Registers DataRangeSelectionListener to receive events.
