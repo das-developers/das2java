@@ -297,7 +297,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         int xSize= getColumn().getDMaximum() - x;
         int ySize= getRow().getDMaximum() - y;
         
-        Rectangle clip= (Rectangle)graphics1.getClip();
+        Rectangle clip= graphics1.getClipBounds();
         if ( ( clip.y + getY() ) >= ( y + ySize ) ) {
             return;
         }
