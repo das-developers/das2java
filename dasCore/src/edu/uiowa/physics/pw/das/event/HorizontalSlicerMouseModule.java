@@ -52,7 +52,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     }
     
     protected HorizontalSlicerMouseModule(DasPlot parent, DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
-        this.parent= parent;
+        super( parent, new HorizontalSliceSelectionRenderer(parent), "Horizontal Slice" );
         
         if (!(dataSetConsumer instanceof TableDataSetConsumer)) {
             throw new IllegalArgumentException("dataSetConsumer must be an XTaggedYScanDataSetConsumer");
@@ -60,9 +60,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
         this.dataSetConsumer= ( TableDataSetConsumer)dataSetConsumer;
         this.xaxis= xaxis;
         this.yaxis= yaxis;
-        this.dragRenderer= new HorizontalSliceSelectionRenderer(parent);
-        this.de= new DataPointSelectionEvent(this,null,null);        
-        setLabel("Horizontal Slice");
+        this.de= new DataPointSelectionEvent(this,null,null);                
     }
     
     public static HorizontalSlicerMouseModule create(DasPlot parent) {

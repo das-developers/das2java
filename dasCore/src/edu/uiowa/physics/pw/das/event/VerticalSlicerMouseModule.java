@@ -49,14 +49,12 @@ public class VerticalSlicerMouseModule extends MouseModule {
     private javax.swing.event.EventListenerList listenerList =  null;
     
     public VerticalSlicerMouseModule( DasCanvasComponent parent,
-        DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis ) {
-        this.parent= parent;
+    DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis ) {
+        super( parent, new VerticalSliceSelectionRenderer(parent), "Vertical Slice" );
         this.dataSetConsumer= dataSetConsumer;
         this.xaxis= xaxis;
         this.yaxis= yaxis;
-        this.dragRenderer= new VerticalSliceSelectionRenderer(parent);
         this.de= new DataPointSelectionEvent(this,null,null);
-        setLabel("Vertical Slice");
     }
     
     public static VerticalSlicerMouseModule create(DasPlot parent) {
@@ -74,9 +72,9 @@ public class VerticalSlicerMouseModule extends MouseModule {
         de.birthMilli= System.currentTimeMillis();
         ds= dataSetConsumer.getDataSet();
         de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
-
+        
         de.setDataSet(ds);
-
+        
         fireDataPointSelectionListenerDataPointSelected(de);
     }
     

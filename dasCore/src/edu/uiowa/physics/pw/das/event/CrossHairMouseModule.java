@@ -52,13 +52,11 @@ public class CrossHairMouseModule extends MouseModule {
     }    
     
     public CrossHairMouseModule( DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
-        super(parent);
+        super(parent,new CrossHairRenderer(parent,dataSetConsumer,xAxis,yAxis),"Crosshair Digitizer");
         this.dataSetConsumer= dataSetConsumer;
         this.xaxis= xAxis;
-        this.yaxis= yAxis;      
-        this.dragRenderer= new CrossHairRenderer(parent,dataSetConsumer,xAxis,yAxis);
+        this.yaxis= yAxis;              
         this.de= new DataPointSelectionEvent(this,null,null);
-        setLabel("Crosshair Digitizer");
     }
     
     public static CrossHairMouseModule create( DasPlot parent ) {

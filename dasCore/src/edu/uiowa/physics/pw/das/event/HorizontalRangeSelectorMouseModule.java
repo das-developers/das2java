@@ -30,7 +30,6 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasSpectrogramPlot;
 
 import java.awt.*;
-import java.util.Hashtable;
 import java.util.Vector;
 
 /**
@@ -39,54 +38,19 @@ import java.util.Vector;
  */
 public class HorizontalRangeSelectorMouseModule extends MouseModule {
     
-    DasAxis axis;
-    private Hashtable hotSpotsMap;
+    DasAxis axis;   
     
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
     
     public HorizontalRangeSelectorMouseModule(DasCanvasComponent parent, DasAxis axis) {
+        super(parent,new HorizontalRangeGesturesRenderer(parent),"Zoom X");
         if (!axis.isHorizontal()) {
             throw new IllegalArgumentException("Axis orientation is not horizontal");
-        }
-        this.parent= parent;
-        this.dragRenderer= new HorizontalRangeGesturesRenderer(parent);
+        }        
         this.axis= axis;
-        setLabel("Zoom X");
-        hotSpotsMap= new Hashtable();
-        
     }
-    
-    public Vector getHotSpots() {
-        return null;
-        /*
-        if (!(axis instanceof DasTimeAxis)) {
-            return null;
-        } else {
-            Enumeration e= hotSpotsMap.elements();
-            while (e.hasMoreElements()) hotSpotsMap.remove(e.nextElement());
-            Vector hotSpots= new Vector();
-            int w= parent.getWidth();
-            int h= parent.getHeight();
-            Point l= parent.getLocation();
-            DasColumn col= parent.getColumn();
-            DasRow row= parent.getRow();
-            Rectangle prev= new Rectangle(0,0,(int)col.getDMinimum()-l.x,h);
-            Rectangle next= new Rectangle((int)col.getDMaximum()-l.x,0,w-((int)col.getDMaximum()-l.x),h);
-            hotSpotsMap.put(prev,new MouseRangeGestureSelectionEvent(this,0,0,Gesture.SCANPREV));
-            hotSpotsMap.put(next,new MouseRangeGestureSelectionEvent(this,0,0,Gesture.SCANNEXT));
-            hotSpots.add(prev);
-            hotSpots.add(next);
-            return hotSpots;
-        }
-         */
-    }
-    
-    public void hotSpotPressed(Shape hotSpot) {
-        MouseRangeGestureSelectionEvent e= (MouseRangeGestureSelectionEvent)hotSpotsMap.get(hotSpot);
-        mouseRangeSelected(e);
-    }
-    
+   
     public static HorizontalRangeSelectorMouseModule create(DasPlot parent) {
         DasAxis axis= parent.getXAxis();
         HorizontalRangeSelectorMouseModule result=
@@ -94,7 +58,7 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
         return result;
     }
     
-    public void mouseRangeSelected(MouseDragEvent e0) {
+    public void mouseRangeSelected(MouseDragEvent e0) {        
         MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
         edu.uiowa.physics.pw.das.util.DasDie.println(""+getHotSpots());
         MouseRangeGestureSelectionEvent e1= (MouseRangeGestureSelectionEvent)e;
@@ -113,7 +77,7 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
                 max= nnMax;
             }
             DataRangeSelectionEvent te=
-            new DataRangeSelectionEvent(parent,min,max);
+            new DataRangeSelectionEvent(e0.getSource(),min,max);
             fireDataRangeSelectionListenerDataRangeSelected(te);
         } else if (e1.isBack()) {
             axis.setDataRangePrev();
@@ -122,24 +86,8 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
         } else if (e1.isForward()) {
             axis.setDataRangeForward();
         } else if (e1.getGesture()==Gesture.SCANPREV) {
-            /*
-            Datum delta= ( axis.getDataMaximum().subtract(axis.getDataMinimum()) ).multiply(1.0);
-            Datum tmin= axis.getDataMinimum().subtract(delta);
-            Datum tmax= axis.getDataMaximum().subtract(delta);
-            DataRangeSelectionEvent te=
-            new DataRangeSelectionEvent(parent,tmin,tmax);
-            fireDataRangeSelectionListenerDataRangeSelected(te);
-             */
             axis.scanPrevious();
         } else if (e1.getGesture()==Gesture.SCANNEXT) {
-            /*
-            Datum delta= ( axis.getDataMaximum().subtract(axis.getDataMinimum()) ).multiply(1.0);
-            Datum tmin= axis.getDataMinimum().add(delta);
-            Datum tmax= axis.getDataMaximum().add(delta);
-            DataRangeSelectionEvent te=
-            new DataRangeSelectionEvent(parent,tmin,tmax);
-            fireDataRangeSelectionListenerDataRangeSelected(te);
-             */
             axis.scanNext();
         }
     }

@@ -46,15 +46,13 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
     private edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer;
     
     public HorizontalDragRangeSelectorMouseModule(DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis axis) {
+        super( parent, new HorizontalDragRangeRenderer(parent), "Horizontal Drag Range" );
         if (!axis.isHorizontal()) {
             throw new IllegalArgumentException("Axis orientation is not horizontal");
         }
-        this.parent= parent;
-        this.dataSetConsumer= dataSetConsumer;
-        
-        this.dragRenderer= new HorizontalDragRangeRenderer(parent);
+        this.dataSetConsumer= dataSetConsumer;        
         this.axis= axis;
-        setLabel("Horizontal Drag Range");
+        
     }
     
     public static HorizontalDragRangeSelectorMouseModule create(DasPlot parent) {

@@ -41,17 +41,15 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
     private javax.swing.event.EventListenerList listenerList =  null;
     
     public BoxRangeSelectorMouseModule(DasCanvasComponent parent, DasAxis xAxis, DasAxis yAxis) {
+        super( parent, new BoxRenderer(parent), "Box Zoom" );
         if (!xAxis.isHorizontal()) {
             throw new IllegalArgumentException("X Axis orientation is not horizontal");
         }
         if (yAxis.isHorizontal()) {
             throw new IllegalArgumentException("Y Axis orientation is not vertical");
         }
-        this.parent= parent;
-        this.dragRenderer= new BoxRenderer(parent);
         this.xAxis= xAxis;
         this.yAxis= yAxis;
-        setLabel("Box Zoom");   
     }
     
     public static BoxRangeSelectorMouseModule create(DasPlot parent) {
