@@ -172,6 +172,7 @@ public abstract class Units {
     public static void main( String[] args ) {
         dumpConversionTable();
         
+        System.out.println( Datum.create(1,Units.days).convertTo(Units.microseconds) );
         System.out.println( Datum.create(1,Units.days).convertTo(Units.seconds) );
         System.out.println("Test of uc.convert vs manual convesion:");
         UnitsConverter uc= Units.t2000.getConverter(Units.us2000);
@@ -199,6 +200,12 @@ public abstract class Units {
         
         System.out.println( Units.spacecraft.createDatum(1) );
         System.out.println( Units.spacecraft.createDatum(5) );
+    
+        Datum location= TimeUtil.createValid("2010-10-31");
+        Datum number= Datum.create(1,Units.days);
+        
+        System.out.println( location.add(number) );
+        System.out.println( number.add(location) );
         
     }
     
