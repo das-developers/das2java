@@ -51,6 +51,9 @@ public class SymbolLineRenderer extends Renderer {
     
     private long lastUpdateMillis;
     
+    /** Holds value of property antiAliased. */
+    private boolean antiAliased;
+    
     public SymbolLineRenderer(DataSet ds) {
         super(ds);
     }
@@ -66,6 +69,13 @@ public class SymbolLineRenderer extends Renderer {
         if (dataSet == null || dataSet.getXLength() == 0) return;
         
         Graphics2D graphics= (Graphics2D) g;
+        
+        RenderingHints hints0= graphics.getRenderingHints();
+        if ( antiAliased ) {
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        } else {
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        }
         
         if (xAxis.getUnits()!=dataSet.getXUnits()) throw new IllegalArgumentException("dataSet x units and xAxis units differ");
         if (yAxis.getUnits()!=dataSet.getYUnits()) throw new IllegalArgumentException("dataSet y units and yAxis units differ");
@@ -129,6 +139,8 @@ public class SymbolLineRenderer extends Renderer {
         long milli= System.currentTimeMillis();
         edu.uiowa.physics.pw.das.DasProperties.getLogger().finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
         lastUpdateMillis= milli;
+        
+        graphics.setRenderingHints(hints0);
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
@@ -249,6 +261,22 @@ public class SymbolLineRenderer extends Renderer {
     public void setPsymConnector(PsymConnector psymConnector) {
         this.psymConnector = psymConnector;
         refreshImage();
+    }
+    
+    /** Getter for property antiAliased.
+     * @return Value of property antiAliased.
+     *
+     */
+    public boolean isAntiAliased() {
+        return this.antiAliased;
+    }
+    
+    /** Setter for property antiAliased.
+     * @param antiAliased New value of property antiAliased.
+     *
+     */
+    public void setAntiAliased(boolean antiAliased) {
+        this.antiAliased = antiAliased;
     }
     
 }
