@@ -702,4 +702,21 @@ public class DatumRangeUtil {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
     }
     
+    public static DatumRange parseDatumRange( String str, DatumRange orig ) {
+        // consider Patterns
+        String[] ss= str.split("to");
+        if ( ss.length != 2 ) {
+            if ( ss.length==3 ) {
+                ss[0]= "-"+ss[1];
+                ss[1]= ss[2];
+            } else {
+                throw new IllegalArgumentException("failed to parse: "+str);
+            }
+        }
+            
+        double d1= Double.parseDouble(ss[0]);
+        double d2= Double.parseDouble(ss[1]);
+        return DatumRange.newDatumRange( d1, d2, orig.getUnits() );
+    }
+    
 }
