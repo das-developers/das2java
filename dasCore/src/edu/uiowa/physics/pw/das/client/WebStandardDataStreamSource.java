@@ -141,7 +141,8 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     
     protected synchronized InputStream openURLConnection( StreamDataSetDescriptor dsd, Datum start, Datum end, StringBuffer additionalFormData ) throws DasException {
         
-        String dataSetID = dsd.getDataSetID().split("\\?", 2)[1];
+        String[] tokens = dsd.getDataSetID().split("\\?|\\&");
+        String dataSetID = tokens[1];
         
         try {
             String formData = createFormDataString(dataSetID, start, end, additionalFormData);

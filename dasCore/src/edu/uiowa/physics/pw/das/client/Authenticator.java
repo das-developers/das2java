@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.client.DasServer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.*;
 import java.util.Properties;
 
 public class Authenticator extends JPanel {
@@ -115,8 +116,13 @@ public class Authenticator extends JPanel {
     }
     
     public static void main( String[] args ) {
-        Authenticator a= new Authenticator(DasServer.sarahandjeremy);
-        edu.uiowa.physics.pw.das.util.DasDie.println(a.authenticate());
+        try {
+            Authenticator a= new Authenticator(DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das-test/das2ServerEEW")));
+            edu.uiowa.physics.pw.das.util.DasDie.println(a.authenticate());
+        }
+        catch (MalformedURLException mue) {
+            mue.printStackTrace();
+        }
         
     }
 }
