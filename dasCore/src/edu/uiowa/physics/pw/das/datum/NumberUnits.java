@@ -46,11 +46,11 @@ public class NumberUnits extends Units {
     }
     
     public Datum createDatum( int value ) {
-        return new Datum.Double( new Double(value), this );
+        return new Datum.Double( new Long(value), this );
     }
     
     public Datum createDatum( long value ) {
-        return new Datum.Double( new Double(value), this );
+        return new Datum.Double( new Long(value), this );
     }
     
     public Datum createDatum( Number value ) {
