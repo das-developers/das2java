@@ -46,6 +46,10 @@ public final class DatumVector {
         return Datum.create(((double[])store)[index], units);
     }
     
+    public Units getUnits() {
+        return this.units;
+    }
+    
     public double doubleValue(int index, Units toUnits) {
         return units.convertDoubleTo(toUnits, ((double[])store)[index]);
     }
