@@ -66,6 +66,13 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         lastTaskTime= Integer.MAX_VALUE;
     }
     
+    /** Returning true here keeps the progress bar from forcing the whole canvas
+     * to repaint when the label of the progress bar changes.
+     */
+    public boolean isValidateRoot() {
+        return true;
+    }
+    
     public static DasProgressPanel createFramed( String label ) {
         DasProgressPanel result;
         result= new DasProgressPanel( label );
@@ -160,7 +167,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
             throw new IllegalStateException("Operation cancelled");
         }
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
-        if ( elapsedTimeMs > hideInitiallyMilliSeconds ) {
+        if ( elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
             setVisible(true);
         }
         
