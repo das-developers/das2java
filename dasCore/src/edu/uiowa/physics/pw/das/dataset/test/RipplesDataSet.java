@@ -34,22 +34,26 @@ public class RipplesDataSet implements TableDataSet {
     
     double x1,y1,p1;
     double x2,y2,p2;
+    int ytags;
+    int xtags;
     Units zUnits= Units.dimensionless;
     Units xUnits= Units.dimensionless;
     Units yUnits= Units.dimensionless;
     
     public RipplesDataSet( ) {
-        this( 14, 17, 10, 20, 60, 10 );
+        this( 2, 3, 1, 13, 15, 2, 30, 30 );
     }
     
     /** Creates a new instance of RipplesDataSetDescriptor */
-    public RipplesDataSet( double x1, double y1, double p1, double x2, double y2, double p2 ) {
+    public RipplesDataSet( double x1, double y1, double p1, double x2, double y2, double p2, int xlength, int ylength ) {
         this.x1= x1;
         this.y1= y1;
         this.p1= p1;
         this.x2= x2;
         this.y2= y2;
         this.p2= p2;
+        this.xtags= xlength;
+        this.ytags= ylength;
         /** Creates a new instance of RipplesDataSet */
     }
     
@@ -89,7 +93,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public int getXLength() {
-        return 20;
+        return xtags;
     }
     
     public VectorDataSet getXSlice(int i) {
@@ -101,7 +105,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public double getXTagDouble(int i, Units units) {
-        return xUnits.convertDoubleTo(units, (double)i);
+        return xUnits.convertDoubleTo(units, ((double)i*20)/xtags);
     }
     
     public int getXTagInt(int i, Units units) {
@@ -113,7 +117,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public int getYLength(int table) {
-        return 20;
+        return ytags;
     }
     
     public VectorDataSet getYSlice(int j, int table) {
@@ -125,7 +129,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public double getYTagDouble(int table, int j, Units units) {
-        return yUnits.convertDoubleTo(units, (double)j);
+        return yUnits.convertDoubleTo(units, ((double)j*20)/ytags);
     }
     
     public int getYTagInt(int table, int j, Units units) {
@@ -145,7 +149,7 @@ public class RipplesDataSet implements TableDataSet {
     }
     
     public int tableEnd(int table) {
-        return 20;
+        return ytags;
     }
     
     public int tableOfIndex(int i) {
