@@ -140,8 +140,7 @@ public final class DatumUtil {
                     if ( ee<smallestExp ) smallestExp=ee;
                 }
             }
-            
-            System.out.println("smallest Exp: "+ smallestExp);
+                        
             if ( smallestExp < -3 || smallestExp > 3 ) {
                 return new ExponentialDatumFormatter( smallestExp - (-1*fracDigits), smallestExp );
             } else {
