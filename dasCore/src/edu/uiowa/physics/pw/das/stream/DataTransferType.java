@@ -48,6 +48,8 @@ public final class DataTransferType {
     public static final DataTransferType SUN_REAL8 = new DataTransferType("sun_real8", I_SUN_REAL8, 8, false);
     
     private static final Pattern ASCII_PATTERN = Pattern.compile("ascii([1-9][0-9]?)");
+        
+    //TODO: handle time([1-9][0-9]?)
     
     private final String name;
     
