@@ -1193,15 +1193,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 tickLength= tickLengthMajor;
                 if (bottomTicks) {
                     g.drawLine( tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
-                    if (bottomTickLabels) {
-                        drawLabel(g, tick1, i, tickPosition, bottomPosition + tickLength);
-                    }
+                }
+                if (bottomTickLabels) {
+                    drawLabel(g, tick1, i, tickPosition, bottomPosition + tickLength);
                 }
                 if (topTicks) {
                     g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
-                    if (topTickLabels) {
-                        drawLabel(g, tick1, i, tickPosition, topPosition - tickLength);
-                    }
+                }
+                if (topTickLabels) {
+                    drawLabel(g, tick1, i, tickPosition, topPosition - tickLength);
                 }
             }
         }
@@ -1287,15 +1287,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 tickLength= tickLengthMajor;
                 if (leftTicks) {
                     g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition );
-                    if (leftTickLabels) {
-                        drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition);
-                    }
+                }
+                if (leftTickLabels) {
+                    drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition);
                 }
                 if (rightTicks) {
                     g.drawLine( rightPosition, tickPosition, rightPosition + tickLength, tickPosition );
-                    if (rightTickLabels) {
-                        drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition);
-                    }
+                }
+                if (rightTickLabels) {
+                    drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition);
                 }
             }
         }
