@@ -473,7 +473,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
             try {
                 DataSet result;
                 Datum start= DasStackedHistogramPlot.this.getXAxis().getDataMinimum();
-                Datum stop= DasStackedHistogramPlot.this.getXAxis().getDataMaximum();
+                Datum stop= DasStackedHistogramPlot.this.getXAxis().getDataMaximum();                
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                     result= highResRebinner.rebin( ds, x, y );
                 } else {
