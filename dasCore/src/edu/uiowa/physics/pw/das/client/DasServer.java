@@ -161,8 +161,7 @@ public class DasServer {
         String formData= "server=list";
         
         try {
-            URL server= new URL("http",host,port,path+"?"+formData);
-            //edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
+            URL server= new URL("http",host,port,path+"?"+formData);            
             
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
@@ -185,7 +184,7 @@ public class DasServer {
         BufferedReader in = new BufferedReader( new InputStreamReader(uin) );
         
         DefaultMutableTreeNode root =
-        new DefaultMutableTreeNode(host, true);
+        new DefaultMutableTreeNode( getURL(), true );
         DefaultTreeModel model = new DefaultTreeModel(root, true);
         String line = in.readLine();
         
