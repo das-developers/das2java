@@ -220,11 +220,7 @@ public class CrossHairRenderer implements DragRenderer {
         parent.paintImmediately(dirtyBounds);
         parent.paintImmediately(hDirtyBounds);
         parent.paintImmediately(vDirtyBounds);
-        //If you stick a meaningless statement in a method just so you can
-        //have a breakpoint where one isn't normally allowed, the least you
-        //can do is leave a comment so that someone (like me) doesn't spend
-        //12 seconds staring at it trying to figure out what it was for.
-        int x=1;
+        //sorry about that...
     }
     
     public boolean isXRangeSelection() {
