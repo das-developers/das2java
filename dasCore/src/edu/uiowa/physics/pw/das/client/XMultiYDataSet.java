@@ -45,7 +45,7 @@ public class XMultiYDataSet extends VectorDataSet implements java.io.Serializabl
     
     public double x_sample_width = Double.MAX_VALUE;
     
-    public double y_fill;
+    public double y_fill= Double.NaN;
     
     public String description = "";
     
