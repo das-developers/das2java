@@ -110,7 +110,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * to set it's bounds.
      */
     public void resize() {
-        if (column == null || row == null) {
+        if (column == DasColumn.NULL || row == DasRow.NULL ) {
             Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.warning("Null row and/or column in resize: row=" + row
             + " column=" + column);
@@ -135,11 +135,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
             return;
         }
         Object oldValue = row;
-        if (row != null) {
+        if (row != DasRow.NULL ) {
             row.removepwUpdateListener(rl);
         }
         row = r;
-        if (row != null) {
+        if (row != DasRow.NULL ) {
             row.addpwUpdateListener(rl);
         } /*else {
             throw new IllegalArgumentException("null row is not allowed for the meantime");
@@ -152,11 +152,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
             return;
         }
         Object oldValue = column;
-        if (column != null) {
+        if (column != DasColumn.NULL ) {
             column.removepwUpdateListener(rl);
         }
         column = c;
-        if (column != null) {
+        if (column != DasColumn.NULL ) {
             column.addpwUpdateListener(rl);
         } /*else {
             throw new IllegalArgumentException("null column is not allowed for the meantime");

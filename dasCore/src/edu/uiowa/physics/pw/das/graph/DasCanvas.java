@@ -593,10 +593,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param c the component to be added to this canvas
      */
     public void add(DasCanvasComponent c, DasRow row, DasColumn column) {
-        if (c.getRow() == null || c.getRow().getParent() != this) {
+        if (c.getRow() == DasRow.NULL || c.getRow().getParent() != this) {
             c.setRow(row);
         }
-        if (c.getColumn() == null || c.getColumn().getParent() != this) {
+        if (c.getColumn() == DasColumn.NULL || c.getColumn().getParent() != this) {
             c.setColumn(column);
         }
         add(c);

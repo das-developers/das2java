@@ -48,10 +48,31 @@ public class DasRow extends DasDevicePosition {
         public int getDMaximum() {
             throw new RuntimeException("null row, row was not set before layout");
         }
+        
+        public void addPropertyChangeListener(String propertyName, java.beans.PropertyChangeListener listener) {
+            throw new RuntimeException( "NULL.addPropertyChangeListener" );
+        }
+        
+        public void removePropertyChangeListener(String propertyName, java.beans.PropertyChangeListener listener) {
+            throw new RuntimeException( "NULL.removePropertyChangeListener" );
+        }
+        
+        public void addpwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
+            throw new RuntimeException( "NULL.addpwUpdateListener" );
+        }
+        
+        public void removepwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
+            throw new RuntimeException( "NULL.removepwUpdateListener" );
+        }
+        
+        protected void fireUpdate() {
+            throw new RuntimeException( "NULL.fireUpdate" );
+        }
+        
     }
     
     public static final DasRow NULL= new NullDasRow();
-     
+    
     protected int getDeviceSize() {
         return parent.getHeight();
     }

@@ -42,38 +42,36 @@ public class AttachedRow extends DasRow {
     
     /** Gets the maximum for the row in the device space.
      * @return the maximum value for the row in the device space.
-     */    
+     */
     public int getDMaximum() {
-        if (row==null) {
+        if ( row==null ) { // this happens during super() call
             return 0;
-        } else {
-            int delta= row.getHeight();
-            return row.getDMinimum()+(int)(delta*getMaximum());
         }
+        int delta= row.getHeight();
+        return row.getDMinimum()+(int)(delta*getMaximum());
     }
     
     /** Gets the minimum for the row in the device space.
      * @return the minimum value for the row in the device space.
-     */    
+     */
     public int getDMinimum() {
-        if (row==null) { // during construction, this is called.
+        if ( row==null ) { // this happens during super() call
             return 0;
-        } else {
-            double delta= row.getHeight();
-            return row.getDMinimum()+(int)(delta*getMinimum());
         }
+        double delta= row.getHeight();
+        return row.getDMinimum()+(int)(delta*getMinimum());
     }
     
     /** Gets the height of the row in the device space.
      * @return the height of the row in the device space.
-     */    
+     */
     public int getHeight() {
         return (int)(row.getHeight()*(getMaximum()-getMinimum()));
     }
     
     /** Adds a listener to the row to receive DasUpdateEvents.
      * @param l he new listener.
-     */    
+     */
     public void addpwUpdateListener(DasUpdateListener l) {
         super.addpwUpdateListener(l);
         row.addpwUpdateListener(l);
@@ -81,7 +79,7 @@ public class AttachedRow extends DasRow {
     
     /** Removes a listener from the row to stop receving DasUpdateEvents.
      * @param l the listener to be removed.
-     */    
+     */
     public void removepwUpdateListener(DasUpdateListener l) {
         super.removepwUpdateListener(l);
         row.removepwUpdateListener(l);
@@ -89,7 +87,7 @@ public class AttachedRow extends DasRow {
     
     /** Sets the minimum value for the row in the device space.
      * @param value the new minimum value of the row in the device space.
-     */    
+     */
     public void setDMinimum(int value) {
         double delta= row.getHeight();
         setMinimum((value-row.getDMinimum())/delta);
@@ -97,7 +95,7 @@ public class AttachedRow extends DasRow {
     
     /** Sets the maximum value of the row in the device space.
      * @param value the new maximum value of the row in the device space.
-     */    
+     */
     public void setDMaximum(int value) {
         double delta= row.getHeight();
         setMaximum((value-row.getDMinimum())/delta);
