@@ -137,7 +137,24 @@ public abstract class Units {
     }
     
     public Units[] getConvertableUnits() {
-        return new Units[] { this };
+        ArrayList result= new ArrayList();
+        Map visited = new HashMap();
+        visited.put( this, UnitsConverter.IDENTITY );
+        LinkedList queue = new LinkedList();
+        queue.add(this);
+        while (!queue.isEmpty()) {
+            Units current = (Units)queue.removeFirst();
+            for (Iterator i = current.conversionMap.entrySet().iterator(); i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                Units next = (Units)entry.getKey();
+                if (!visited.containsKey(next)) {
+                    visited.put(next, current);
+                    queue.add(next);
+                    result.add(next);
+                }
+            }
+        }
+        return (Units[])result.toArray( new Units[result.size()] );
     }
     
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
