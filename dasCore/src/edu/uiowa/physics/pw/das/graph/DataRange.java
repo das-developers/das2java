@@ -78,6 +78,16 @@ public class DataRange implements Cloneable {
         return log;
     }
     
+    /*
+     * need some method for changing the axis units...
+     */
+    public void resetRange( DatumRange range ) {
+        this.units= range.getUnits();
+        this.minimum= range.min().doubleValue(this.units); 
+        this.maximum= range.max().doubleValue(this.units); 
+        fireUpdate();
+    }
+    
     public void setLog(boolean log) {
         /*
          * propose new logic for going between lin/log axes:
