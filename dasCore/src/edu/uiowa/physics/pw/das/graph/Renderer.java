@@ -154,29 +154,19 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             
             progressPanel.setLocation( x - progressPanel.getWidth()/2,
                                        y - progressPanel.getHeight()/2 );
-            dsd.addDasReaderListener(progressPanel);
             DataRequestor requestor = new DataRequestor() {
-                
-                public void currentByteCount(int byteCount) {
-                }
-                public void totalByteCount(int byteCount) {
-                }
                 public void exception(Exception exception) {
                     if (!(exception instanceof InterruptedIOException)) {
                         if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                             lastException= exception; 
                             finished(null);
                         } else {
-                            Object[] message = {"Error reading data set", new JEditorPane("text/html", exception.getMessage())};
-                            ((JEditorPane)message[1]).setEditable(false);
-                            //JOptionPane.showMessageDialog(DasPlot.this, message);
                             DasExceptionHandler.handle(exception);
                             finished(null);
                         }
                     }
                 }
                 public void finished(DataSet dsFinished) {
-                    if (dsd != null) dsd.removeDasReaderListener(progressPanel);
                     progressPanel.setVisible(false);
                     if ( parent != null) {
                         parent.setCursor(cursor0);
@@ -193,7 +183,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
                 drt = new DataRequestThread();
             }
             try {
-                drt.request(dsd, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor);
+                drt.request(dsd, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);

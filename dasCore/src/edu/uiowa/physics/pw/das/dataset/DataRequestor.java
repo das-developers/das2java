@@ -25,15 +25,11 @@ package edu.uiowa.physics.pw.das.dataset;
 
 /**
  *
- * @author  eew
+ * @author  Edward West
  */
 public interface DataRequestor extends java.util.EventListener  {
-
-    void totalByteCount(int byteCount);
     
-    void currentByteCount(int byteCount);
-    
-    void finished(edu.uiowa.physics.pw.das.dataset.DataSet ds);
+    void finished(DataSet ds);
     
     void exception(Exception e);
 

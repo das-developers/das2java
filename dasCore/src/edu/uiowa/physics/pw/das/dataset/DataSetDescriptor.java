@@ -32,9 +32,7 @@ import edu.uiowa.physics.pw.das.client.DataSetDescriptorNotAvailableException;
 import edu.uiowa.physics.pw.das.client.NoSuchDataSetException;
 import edu.uiowa.physics.pw.das.client.StandardDataStreamSource;
 import edu.uiowa.physics.pw.das.event.DasEventMulticaster;
-import edu.uiowa.physics.pw.das.event.DasReaderEvent;
-import edu.uiowa.physics.pw.das.event.DasReaderListener;
-import edu.uiowa.physics.pw.das.event.ProgressIndicator;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.IDLParser;
 
 import java.io.*;
@@ -69,11 +67,8 @@ public abstract class DataSetDescriptor implements Serializable {
     
     protected StandardDataStreamSource standardDataStreamSource;
     
-    // the requestor is receives updates about the load, and the DataSet once the load is complete.
-    protected transient DataRequestor requestor;
-    
-    // the progressIndicator simply reports via the UI the progress of the load data task.
-    protected transient ProgressIndicator progressIndicator;
+    // the progressMonitor simply reports via the UI the progress of the load data task.
+    protected transient DasProgressMonitor progressMonitor;
     
     /**
      * Creates a new instance of <code>DataSetDescription</code>
@@ -175,20 +170,6 @@ public abstract class DataSetDescriptor implements Serializable {
         String xxx= (String)properties.get("stream");
         return ( xxx!=null) && xxx.equals("1");
     }
-    
-    /**
-     * Set the requestor that is querying this DataSetDescriptor for
-     * data sets.
-     *
-     * @param requestor the requestor the that is querying for  data sets
-     *      Can be null.  The requestor can be given the loaded DataSet once the
-     *      load is complete.
-     *
-     */
-    public void setRequestor(DataRequestor requestor) {
-        this.requestor = requestor;
-    }
-    
     
     public static DataSetDescriptor create(File file) throws IOException, FileNotFoundException {
         return create( new FileInputStream(file) );
@@ -442,8 +423,6 @@ public abstract class DataSetDescriptor implements Serializable {
         InputStream in= uin;
         
         long time = System.currentTimeMillis();
-        fireReaderStarted();
-        
         //FileOutputStream out= new FileOutputStream("x."+time+".dat");
         
         data = new byte[4096];
@@ -454,66 +433,64 @@ public abstract class DataSetDescriptor implements Serializable {
         
         int offset=0;
         
-        if (progressIndicator != null) {
-            progressIndicator.started();
-        }
-        
         try {
+            if (progressMonitor != null) {
+                progressMonitor.started();
+            }
+        
+            try {
             
-            bytesRead= in.read(data,offset,4096-offset);
-            
-            while (bytesRead != -1) {
-                
-                int bytesSoFar = totalBytesRead;
-                fireReaderUpdate(bytesSoFar);
-                if (progressIndicator != null) {
-                    progressIndicator.setTaskProgress(bytesSoFar);
-                }
-                
-                offset+=bytesRead;
-                lastBytesRead= offset;
-                
-                if (offset==4096) {
-                    list.addLast(data);
-                    data = new byte[4096];
-                    offset=0;
-                }
-                
-                totalBytesRead+= bytesRead;
-                
                 bytesRead= in.read(data,offset,4096-offset);
                 
+                while (bytesRead != -1) {
+                
+                    int bytesSoFar = totalBytesRead;
+                    if (progressMonitor != null) {
+                        progressMonitor.setTaskProgress(bytesSoFar);
+                    }
+                    
+                    offset+=bytesRead;
+                    lastBytesRead= offset;
+                
+                    if (offset==4096) {
+                        list.addLast(data);
+                        data = new byte[4096];
+                        offset=0;
+                    }
+                
+                    totalBytesRead+= bytesRead;
+                
+                    bytesRead= in.read(data,offset,4096-offset);
+                
+                }
+            } catch ( IOException e ) {
+                throw new DasIOException(e);
             }
+        
+            if (lastBytesRead>=0 && lastBytesRead<4096) {
+                list.addLast(data);
+            }
+        
+            if (list.size()== 0) {
+                throw new DasIOException("Error reading data for '"+description+"', no data available");
+            }
+        
+            int dataLength = (list.size()-1)*4096 + lastBytesRead;
+        
+            data = new byte[dataLength];
             
-        } catch ( IOException e ) {
-            throw new DasIOException(e.getMessage());
+            Iterator iterator = list.iterator();
+            int i;
+            for (i = 0; i < list.size()-1; i++) {
+                System.arraycopy(iterator.next(), 0, data, i*4096, 4096);
+            }
+            System.arraycopy(iterator.next(), 0, data, i*4096, lastBytesRead);
         }
-        
-        if (lastBytesRead>=0 && lastBytesRead<4096) {
-            list.addLast(data);
+        finally {
+            if (progressMonitor != null) {
+                progressMonitor.finished();
+            }
         }
-        
-        if (list.size()== 0) {
-            throw new DasIOException("Error reading data for '"+description+"', no data available");
-        }
-        
-        int dataLength = (list.size()-1)*4096 + lastBytesRead;
-        
-        //        edu.uiowa.physics.pw.das.util.DasDie.print("\nRead in "+dataLength+" bytes");
-        
-        data = new byte[dataLength];
-        
-        Iterator iterator = list.iterator();
-        int i;
-        for (i = 0; i < list.size()-1; i++) {
-            //            edu.uiowa.physics.pw.das.util.DasDie.print("\rCreating big byte array..."+i+"Kb");
-            System.arraycopy(iterator.next(), 0, data, i*4096, 4096);
-        }
-        System.arraycopy(iterator.next(), 0, data, i*4096, lastBytesRead);
-        
-        //        edu.uiowa.physics.pw.das.util.DasDie.println("");
-        
-        
         return data;
     }
     
@@ -557,34 +534,6 @@ public abstract class DataSetDescriptor implements Serializable {
     
     public String getDataSetID() {
         return dataSetID;
-    }
-    
-    protected transient DasReaderListener readerListener;
-    
-    public void addDasReaderListener( DasReaderListener l ) {
-        readerListener= DasEventMulticaster.add(readerListener,l);
-    }
-    
-    public void removeDasReaderListener( DasReaderListener l ) {
-        readerListener= DasEventMulticaster.remove(readerListener,l);
-    }
-    
-    protected void fireReaderStarted() {
-        if (readerListener != null) {
-            readerListener.readerStarted(new DasReaderEvent(this, 0));
-        }
-    }
-    
-    protected void fireReaderUpdate(int byteCount) {
-        if (readerListener != null) {
-            readerListener.readerUpdate(new DasReaderEvent(this, byteCount));
-        }
-    }
-    
-    protected void fireReaderFinished(int byteCount) {
-        if (readerListener != null) {
-            readerListener.readerUpdate(new DasReaderEvent(this, byteCount));
-        }
     }
     
     public void setProperties(Hashtable properties) {
@@ -662,12 +611,12 @@ public abstract class DataSetDescriptor implements Serializable {
         }
     }
     
-    public void setProgressIndicator(edu.uiowa.physics.pw.das.event.ProgressIndicator progressIndicator) {
-        this.progressIndicator= progressIndicator;
+    public void setDasProgressMonitor(DasProgressMonitor progressMonitor) {
+        this.progressMonitor= progressMonitor;
     }
     
-    public ProgressIndicator getProgressIndicator() {
-        return progressIndicator;
+    public DasProgressMonitor getDasProgressMonitor() {
+        return progressMonitor;
     }
     
     public Datum getXSampleWidth() {        

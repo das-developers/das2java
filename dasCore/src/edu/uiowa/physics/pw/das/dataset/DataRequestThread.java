@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.DataRequestor;
 import edu.uiowa.physics.pw.das.datum.Datum;
@@ -68,10 +69,10 @@ public class DataRequestThread extends Thread {
      *      when the data loading operation is complete.
      */
     public void request(DataSetDescriptor dsd, Object params,
-        Datum start, Datum end, Datum resolution, DataRequestor requestor)
+        Datum start, Datum end, Datum resolution, DataRequestor requestor, DasProgressMonitor monitor)
         throws InterruptedException {
 
-        requestInternal(new DataRequest(dsd, params, start, end, resolution, requestor));
+        requestInternal(new DataRequest(dsd, params, start, end, resolution, requestor, monitor));
         
     }
     /**
@@ -96,10 +97,10 @@ public class DataRequestThread extends Thread {
      *      when the data loading operation is complete.
      */
     public void requestAndWait(DataSetDescriptor dsd, Object params,
-        Datum start, Datum end, Datum resolution, DataRequestor requestor)
+        Datum start, Datum end, Datum resolution, DataRequestor requestor, DasProgressMonitor monitor)
         throws InterruptedException {
 
-        DataRequest request = new DataRequest(dsd, params, start, end, resolution, requestor);
+        DataRequest request = new DataRequest(dsd, params, start, end, resolution, requestor, monitor);
 
         //Wait till thread is done loading
         synchronized (request) {
@@ -136,7 +137,7 @@ public class DataRequestThread extends Thread {
             while (!queue.isEmpty()) {
                 currentRequest = (DataRequest)queue.remove(0);
                 try {
-                    currentRequest.dsd.setRequestor(currentRequest.requestor);
+                    currentRequest.dsd.setDasProgressMonitor(currentRequest.monitor);
                     DataSet ds = currentRequest.dsd.getDataSet(
                         currentRequest.params,
                         currentRequest.start,
@@ -148,7 +149,7 @@ public class DataRequestThread extends Thread {
                     currentRequest.requestor.exception(e);
                 }
                 finally {
-                    currentRequest.dsd.setRequestor(null);
+                    currentRequest.dsd.setDasProgressMonitor(null);
                     synchronized (currentRequest) {
                         currentRequest.notifyAll();
                     }
@@ -164,6 +165,7 @@ public class DataRequestThread extends Thread {
             }
         }
     }
+
     private static class DataRequest {
         DataSetDescriptor dsd;
         Datum start;
@@ -171,15 +173,17 @@ public class DataRequestThread extends Thread {
         Object params;
         Datum resolution;
         DataRequestor requestor;
+        DasProgressMonitor monitor;
         DataRequest(DataSetDescriptor dsd, Object params, Datum start,
                     Datum end, Datum resolution,
-                    DataRequestor requestor) {
+                    DataRequestor requestor, DasProgressMonitor monitor) {
             this.dsd = dsd;
             this.params = params;
             this.start = start;
             this.end = end;
             this.resolution = resolution;
             this.requestor = requestor;
+            this.monitor = monitor;
         }
     }
     

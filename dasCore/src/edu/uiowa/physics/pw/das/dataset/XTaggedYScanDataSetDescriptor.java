@@ -171,13 +171,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
             try {
                 System.out.println(mpds.getDataSetNames());
                 try {
-                    DataRequestor dr;
-                    if ( ! ( readerListener instanceof DataRequestor )) {
-                        dr=null;
-                    } else {
-                        dr= (DataRequestor)readerListener;
-                    }
-                    mpds.read(in, dr );
+                    mpds.read(in, progressMonitor );
                 } catch ( ClassCastException ex ) {
                     System.out.println(ex);
                 }

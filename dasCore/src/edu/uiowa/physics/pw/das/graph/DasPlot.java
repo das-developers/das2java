@@ -32,9 +32,7 @@ import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import edu.uiowa.physics.pw.das.util.DnDSupport;
-import edu.uiowa.physics.pw.das.util.GrannyTextRenderer;
+import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -124,66 +122,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public DataSet getData() {
         return Data;
     }
-    
-    public void setXRange( double x1, double x2 ) {
-        setXRange( Datum.create(x1), Datum.create(x2) );
-    }
-    
-    public void setXRange(Datum x1, Datum x2) {
-        xAxis.setDataRange(x1,x2);
-    }
-    
-    public void setYRange( double y1, double y2 ) {
-        setYRange( Datum.create(y1), Datum.create(y2) );
-    }
-    
-    public void setYRange(Datum y1, Datum y2) {
-        yAxis.setDataRange(y1,y2);
-    }
-    
-    public void setDPosition(double xStart, double yStart, double xSize, double ySize) {
-        if (getRow()==null) setRow(new DasRow((DasCanvas)this.getParent(),0.0, 0.0));
-        if (getColumn()==null) setColumn(new DasColumn((DasCanvas)this.getParent(),0.0, 0.0));
-        getRow().setDPosition(yStart,yStart+ySize);
-        getColumn().setDPosition(xStart,xStart+xSize);
-    }
-    
-    public void setPosition(double xStartN, double yStartN, double xSizeN, double ySizeN) {
-        if (getRow()==null) setRow(new DasRow((DasCanvas)this.getParent(),0.0, 0.0));
-        if (getColumn()==null) setColumn(new DasColumn((DasCanvas)this.getParent(),0.0, 0.0));
-        getRow().setPosition(yStartN,yStartN+ySizeN);
-        getColumn().setPosition(xStartN,xStartN+xSizeN);
-    }
-    
-    public void setPosition( DasRow row, DasColumn column ) {
-        setRow(row);
-        setColumn(column);
-    }
-    
+   
     public void setRow(DasRow row) {
-        /*
-        if (getRow() != null)
-            getRow().removepwUpdateListener(rebinListener);
-         */
         super.setRow(row);
-        /*
-        if (row != null)
-            row.addpwUpdateListener(rebinListener);
-         */
         if (xAxis!=null) xAxis.setRow(row);
         if (yAxis!=null) yAxis.setRow(row);
     }
     
     public void setColumn(DasColumn column) {
-        /*
-        if (getColumn() != null)
-            getColumn().removepwUpdateListener(rebinListener);
-         */
         super.setColumn(column);
-        /*
-        if (column != null)
-            column.addpwUpdateListener(rebinListener);
-         */
         if (xAxis!=null) xAxis.setColumn(column);
         if (yAxis!=null) yAxis.setColumn(column);
     }
@@ -246,7 +193,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         r.width= r.width-1;
         r.height= r.height-1;
         r.y= r.y+1;
-        Color c0= g.getColor();
         g.setColor(new Color(245,245,245,220)); // mostly opaque
         
         g.fill(r);
@@ -302,24 +248,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 progressPanel.setLocation(this.getX() + (this.getWidth()-progressPanel.getWidth())/2,
                 this.getY() + (this.getHeight()-progressPanel.getHeight())/2);
             }
-            dataSetDescriptor.addDasReaderListener(progressPanel);
-            dataSetDescriptor.setProgressIndicator(progressPanel);
             DataRequestor requestor = new DataRequestor() {
-                public void currentByteCount(int byteCount) {
-                }
-                public void totalByteCount(int byteCount) {
-                }
                 public void exception(Exception exception) {
                     if (!(exception instanceof InterruptedIOException)) {
-                        Object[] message = {"Error reading data set", new JEditorPane("text/html", exception.getMessage())};
-                        ((JEditorPane)message[1]).setEditable(false);
-                        //JOptionPane.showMessageDialog(DasPlot.this, message);
                         DasExceptionHandler.handle(exception);
                         finished(null);
                     }
                 }
                 public void finished(DataSet ds) {
-                    if (dataSetDescriptor != null) dataSetDescriptor.removeDasReaderListener(progressPanel);
                     progressPanel.setVisible(false);
                     if (parent != null) {
                         parent.setCursor(cursor0);
@@ -335,7 +271,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 drt = new DataRequestThread();
             }
             try {
-                drt.request(dataSetDescriptor, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor);
+                drt.request(dataSetDescriptor, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
@@ -362,8 +298,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         Graphics2D graphics= (Graphics2D)graphics1;
         graphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
-        Dimension d;
-        
+
         int x = (int)Math.floor(getColumn().getDMinimum() + 0.5);
         int y = (int)Math.floor(getRow().getDMinimum() + 0.5);
         int xSize= (int)Math.floor(getColumn().getDMaximum() + 0.5) - x;
@@ -374,11 +309,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         Graphics2D plotGraphics = (Graphics2D)graphics.create(x-1, y-1, xSize+2, ySize+2);
         plotGraphics.translate(-x + 1, -y + 1);
         
-        //Color color0= plotGraphics.getColor();
-        //plotGraphics.setColor(Color.lightGray);
-        //plotGraphics.fill(DasRow.toRectangle(getRow(),getColumn()));
-        //plotGraphics.setColor(color0);
-        
         drawContent(plotGraphics);
         
         for ( int i=0; i<renderers.size(); i++ ) {
@@ -388,16 +318,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         graphics.setColor(Color.black);
         graphics.drawRect(x-1, y-1, xSize + 1, ySize + 1);
-        //graphics.drawLine(x, y, x+xSize, y);
-        //graphics.drawLine(x + xSize-1, y, x + xSize-1, y+ySize);
-        
+
         if (plotTitle != null && plotTitle.length() != 0) {
-            Font font = getFont();
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
             gtr.setString(this, plotTitle);
             int titleWidth = (int)gtr.getWidth();
-            DasColumn column = getColumn();
             int titleX = x + (xSize-titleWidth)/2;
             int titleY = y - (int)gtr.getDescent() - (int)gtr.getAscent() / 2;
             gtr.draw(graphics, (float)titleX, (float)titleY);
@@ -415,8 +341,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public void resize() {
-        Font f = getFont();
-        
         GrannyTextRenderer gtr = new GrannyTextRenderer();
         gtr.setString(this, getTitle());
         
@@ -436,7 +360,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     /** Sets the title which will be displayed above this plot.
      *
-     * @param plotTitle The new title for this plot.
+     * @param t The new title for this plot.
      */
     public void setTitle(String t) {
         Object oldValue = plotTitle;
@@ -457,11 +381,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public String getTitle() {
         return plotTitle;
     }
-    
-    private int button = 0;
-    private Point zoomStart;
-    private Point zoomEnd;
-    private boolean isShiftDown;
     
     private List renderers = null;
     
@@ -797,7 +716,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
     }
     
-    public ProgressIndicator getProgressIndicator() {
+    public DasProgressMonitor getDasProgressMonitor() {
         return progressPanel;
     }
     

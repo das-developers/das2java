@@ -459,7 +459,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
                 drt.request(dsd, new Double(interval.doubleValue(Units.seconds)),
                                  data_minimum,
                                  data_maximum.add(Datum.create(1.0,Units.seconds)), 
-                                 Datum.create(0.0,Units.seconds), requestor);
+                                 Datum.create(0.0,Units.seconds), requestor, null);
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
