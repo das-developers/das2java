@@ -33,7 +33,7 @@ public class ClippedTableDataSet implements TableDataSet {
     int tableCount;
     
     void calculateXOffset( Datum xmin, Datum xmax ) {
-        xoffset= DataSetUtil.getPreceedingColumn(source, xmin);
+        xoffset= DataSetUtil.getPreviousColumn(source, xmin);
         int ix1= DataSetUtil.getNextColumn(source, xmax );
         xlength= ix1- xoffset;
     }
@@ -56,7 +56,7 @@ public class ClippedTableDataSet implements TableDataSet {
         yoffsets= new int[tableCount];
         ylengths= new int[tableCount];
         for ( int itable=tableOffset; itable<tableOffset+tableCount; itable++ ) {
-            yoffsets[itable-tableOffset]= TableUtil.getPreceedingRow(source, itable, ymin);
+            yoffsets[itable-tableOffset]= TableUtil.getPreviousRow(source, itable, ymin);
             int ix1= TableUtil.getNextRow(source, itable, ymax );
             ylengths[itable-tableOffset]= ix1- yoffsets[itable];
         }
@@ -69,7 +69,30 @@ public class ClippedTableDataSet implements TableDataSet {
         calculateTableOffset();
         calculateYOffsets( ymin, ymax );
     }
-        
+    
+    public ClippedTableDataSet( TableDataSet source, int xoffset, int xlength, 
+    int yoffset, int ylength ) {
+        if ( source.tableCount() > 1 ) {
+            throw new IllegalArgumentException( "this ClippedTableDataSet constructor requires that there be only one table" );
+        }
+        if ( source.getXLength() < xoffset+xlength ) {
+            throw new IllegalArgumentException( "xoffset + xlength greater than the number of XTags in source" );
+        }
+        if ( source.getYLength(0) < yoffset+ylength ) {
+            throw new IllegalArgumentException( "yoffset + ylength greater than the number of YTags in source" );
+        }
+        if ( yoffset<0 || xoffset<0 ) {
+            throw new IllegalArgumentException( "yoffset("+yoffset+") or xoffset("+xoffset+") is negative" );
+        }
+        this.source= source;
+        this.xoffset= xoffset;
+        this.xlength= xlength;
+        this.tableOffset= 0;
+        this.tableCount= 1;
+        this.yoffsets= new int[] { yoffset };
+        this.ylengths= new int[] { ylength };
+    }
+    
     private ClippedTableDataSet( TableDataSet source, int xoffset, int xlength, 
     int [] yoffsets, int [] ylengths, int tableOffset, int tableCount ) {
         this.source= source;
@@ -159,7 +182,12 @@ public class ClippedTableDataSet implements TableDataSet {
     }
     
     public int tableEnd(int table) {
-        return source.tableEnd(table+tableOffset) - xoffset;
+        int i= source.tableEnd(table+tableOffset) - xoffset;
+        if ( i>getXLength() ) {
+            return getXLength();
+        } else {
+            return i;
+        }        
     }
     
     public int tableOfIndex(int i) {
@@ -167,7 +195,16 @@ public class ClippedTableDataSet implements TableDataSet {
     }
     
     public int tableStart(int table) {
-        return source.tableStart(table+tableOffset) - xoffset;
+        int i= source.tableStart(table+tableOffset) - xoffset;
+        if ( i<0 ) {
+            return 0;
+        } else {
+            return i;
+        }        
+    }
+    
+    public String toString() {
+        return "ClippedTableDataSet " + TableUtil.toString(this);
     }
     
 }
