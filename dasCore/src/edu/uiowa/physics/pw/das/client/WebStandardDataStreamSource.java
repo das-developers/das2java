@@ -53,6 +53,16 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     private MeteredInputStream min;
     private boolean legacyStream = true;
     private String extraParameters;
+
+    /**
+     * Holds value of property transferRate.
+     */
+    private double transferRate;
+
+    /**
+     * Holds value of property compress.
+     */
+    private boolean compress;
     
     public WebStandardDataStreamSource(DasServer server, URL url) {
         this.server = server;
@@ -108,17 +118,17 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         if (extraParameters != null) {
             formData.append("&params=").append(extraParameters);  //Should already be url encoded.
         }
-        
-        boolean compress=false;
+                
         if ( min!=null ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "last transfer speed (byte/sec)= "+min.calcTransmitSpeed());
+            transferRate= min.calcTransmitSpeed();
+            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "last transfer speed (byte/sec)= "+transferRate);
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "   time to transfer (sec)= "+min.calcTransmitTime());
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "   total kbytes transferred= "+min.totalBytesTransmitted()/1024);
+            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "   total kbytes transferred= "+min.totalBytesTransmitted()/1024);            
         }
         
-        if ( min!=null && min.calcTransmitSpeed()>30000 ) {
-            compress= false;
-        }
+        //if ( min!=null && min.calcTransmitSpeed()>30000 ) {
+        //    compress= false;
+        //}
         
         //compress= true;
         if (compress) {
@@ -159,14 +169,14 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             }
             
             URL serverURL= this.server.getURL(formData);
-            DasApplication.getDefaultApplication().getLogger().info(serverURL.toString());
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("opening "+serverURL.toString());
             
             URLConnection urlConnection = serverURL.openConnection();
             urlConnection.connect();
             
             String contentType = urlConnection.getContentType();
             
-            if (!contentType.equalsIgnoreCase("application/octet-stream")) {
+            if (!contentType.equalsIgnoreCase("application/octet-stream")) {                
                 BufferedReader bin = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String line = bin.readLine();
                 String message = "";
@@ -177,7 +187,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 throw new DasIOException(message);
             }
             
-            InputStream in= serverURL.openStream();
+            InputStream in= urlConnection.getInputStream();
             
             if (isLegacyStream()) {
                 return processLegacyStream(in);
@@ -306,6 +316,33 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         authenticator= new Authenticator(server,restrictedResourceLabel);
         Key key= authenticator.authenticate();
         if ( key!=null ) server.setKey(key);
+    }
+
+    /**
+     * Getter for property transferRate.
+     * @return Value of property transferRate.
+     */
+    public double getTransferRate() {
+
+        return this.transferRate;
+    }
+
+    /**
+     * Getter for property compress.
+     * @return Value of property compress.
+     */
+    public boolean isCompress() {
+
+        return this.compress;
+    }
+
+    /**
+     * Setter for property compress.
+     * @param compress New value of property compress.
+     */
+    public void setCompress(boolean compress) {
+
+        this.compress = compress;
     }
     
 }
