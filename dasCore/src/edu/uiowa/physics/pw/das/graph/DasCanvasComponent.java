@@ -279,4 +279,8 @@ implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
         return new Rectangle(x, y, width, height);
     }
     
+    public DasMouseInputAdapter getMouseAdapter() {
+        return mouseAdapter;
+    }
+    
 }
