@@ -32,6 +32,7 @@ import java.text.DecimalFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import java.util.*;
 
 /**
  *
@@ -53,6 +54,13 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private static final int hideInitiallyMilliSeconds= 1500;
     private long lastTaskTime;
     private boolean running = false;
+    private long lastRefreshTime;
+    private ArrayList refreshTimeQueue;
+    
+    /**
+     * Holds value of property showProgressRate.
+     */
+    private boolean showProgressRate;
     
     /** Creates new form DasProgressPanel */
     
@@ -63,7 +71,6 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         transferRateFormat= new DecimalFormat();
         transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
-        transferRateString= "";
         lastTaskTime= Integer.MAX_VALUE;
     }
     
@@ -71,7 +78,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         DasProgressPanel progressPanel= new DasProgressPanel( initialMessage );
         
         progressPanel.setSize(progressPanel.getPreferredSize());
-                
+        
         int x= component.getColumn().getDMiddle();
         int y= component.getRow().getDMiddle();
         
@@ -206,19 +213,22 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
             bytesReadLabel= "" + kb + "";
         }
         
-        /*if ( elapsedTimeMs > 1000 ) {
+        if ( showProgressRate && elapsedTimeMs > 1000 ) {
             double transferRate = ((double)position * 1000) / ( elapsedTimeMs );
             kbLabel.setText(bytesReadLabel+" ("+transferRateFormat.format(transferRate)+"/s)");
         } else {
             kbLabel.setText(bytesReadLabel);
-        }*/
-        kbLabel.setText( bytesReadLabel+" "+transferRateString );
+        }        
         
-        if (Toolkit.getDefaultToolkit().getSystemEventQueue().isDispatchThread()) {
-            paintImmediately(0, 0, getWidth(), getHeight());
-        }
-        else {
-            repaint();
+        long tnow;
+        if ( (tnow=System.currentTimeMillis()) - lastRefreshTime > 100 ) {            
+            if (Toolkit.getDefaultToolkit().getSystemEventQueue().isDispatchThread()) {
+                paintImmediately(0, 0, getWidth(), getHeight());
+            }
+            else {
+                repaint();
+            }
+            lastRefreshTime= tnow;
         }
     }
     
@@ -289,6 +299,14 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
         
         super.paintComponent(g1);
+    }
+    
+    /**
+     * Setter for property showProgressRate.
+     * @param showProgressRate New value of property showProgressRate.
+     */
+    public void setShowProgressRate(boolean showProgressRate) {
+        this.showProgressRate = showProgressRate;
     }
     
 }
