@@ -122,13 +122,9 @@ public abstract class Units {
         unitsMap.put("", Units.dimensionless);
         unitsMap.put("dB", Units.dB);
         
-      // temporary fix to support Bob Johnson's yTagWidth specification        
-        //unitsMap.put("Hz", Units.hertz);
-        //unitsMap.put("kHz", Units.kiloHertz);
-        //unitsMap.put("MHz", Units.megaHertz);
-        unitsMap.put("Hz", Units.dimensionless);
-        unitsMap.put("kHz", Units.dimensionless);
-        unitsMap.put("MHz", Units.dimensionless);
+        unitsMap.put("Hz", Units.hertz);
+        unitsMap.put("kHz", Units.kiloHertz);
+        unitsMap.put("MHz", Units.megaHertz);
     }
     
     private String id;
