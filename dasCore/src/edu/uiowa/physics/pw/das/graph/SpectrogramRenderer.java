@@ -36,6 +36,7 @@ import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.event.*;
+import edu.uiowa.physics.pw.das.components.*;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,6 +59,30 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     RebinListener rebinListener= new RebinListener();
     
+    /** Holds value of property rebinner. */
+    private RebinnerEnum rebinnerEnum;
+    
+    public static class RebinnerEnum implements PropertyEditor.Enumeration {
+        DataSetRebinner rebinner;
+        String label;
+        
+        private RebinnerEnum(DataSetRebinner rebinner, String label) {
+            this.rebinner= rebinner;
+            this.label= label;
+        }
+        public static RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
+        public static RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");        
+        public javax.swing.Icon getListIcon() {
+            return null;
+        }
+        public String toString() {
+            return this.label;
+        }
+        DataSetRebinner getRebinner() {
+            return this.rebinner;
+        }
+    }
+    
     public SpectrogramRenderer(DataSetDescriptor dsd, DasColorBar colorBar ) {
         super( dsd );
         this.colorBar= colorBar;
@@ -67,6 +92,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("log", rebinListener);
             colorBar.addPropertyChangeListener("type", rebinListener);
         }
+        setRebinner(SpectrogramRenderer.RebinnerEnum.binAverage);
     }
     
     
@@ -153,14 +179,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             h,
             yAxis.isLog());
             
-            DataSetRebinner rebinner= new AverageTableRebinner();
+            DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
             
             rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
             
+            
         }
-        
-        DataSet ds= getDataSet();
-        
+                
         //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
         int itable=0;
         int ny= rebinData.getYLength(itable);
@@ -305,4 +330,21 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         return element;
     }
+    
+    /** Getter for property rebinner.
+     * @return Value of property rebinner.
+     *
+     */
+    public RebinnerEnum getRebinner() {
+        return this.rebinnerEnum;
+    }
+    
+    /** Setter for property rebinner.
+     * @param rebinner New value of property rebinner.
+     *
+     */
+    public void setRebinner( RebinnerEnum rebinnerEnum) {
+        this.rebinnerEnum = rebinnerEnum;
+    }
+    
 }
