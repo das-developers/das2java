@@ -63,8 +63,8 @@ public class DataSetUtil {
 
     
     public static Datum guessXTagWidth( TableDataSet table ) {
-        if ( table.getXLength()>1 ) {
-            return table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
+        if ( table.getXLength()>2 ) {
+            return table.getXTagDatum(2).subtract( table.getXTagDatum(0) ).divide(2.);
         } else {
             return table.getXUnits().getOffsetUnits().createDatum(0);
         }
