@@ -161,7 +161,7 @@ public class CurveRenderer extends Renderer {
          */
     }
     
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis) {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         
         if (dataSet == null || dataSet.getXLength() == 0) {
@@ -203,8 +203,6 @@ public class CurveRenderer extends Renderer {
         }
     }
     
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
-    }
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
         throw new UnsupportedOperationException();
