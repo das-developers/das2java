@@ -121,20 +121,20 @@ public class DasEventsIndicator extends DasCanvasComponent {
                     }
                     if ( iwidth==0 ) iwidth=1;
                     g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
-                    
-                    {
-                        int em0= ix-getX()-3;
-                        if (em0<0) em0=0;
-                        if (em0>=eventMap.length) em0= eventMap.length-1;
-                        int em1= ix-getX()+iwidth+3;
-                        if (em1<0) em1=0;
-                        if (em1>=eventMap.length) em1= eventMap.length-1;
-                        for ( int k= em0; k<em1; k++ ) {
-                            eventMap[k]= i;
+                    int im= ix-getX();
+                    if ( im>=0 && im<eventMap.length ) eventMap[im]= i;
+                }
+                for ( int k1=1; k1<=3; k1++ ) {
+                    for ( int k2=-1; k2<=1; k2+=2 ) {                     
+			int em0= ( k2==1 ) ? 0 : eventMap.length-1;
+                        int em1= ( k2==1 ) ? eventMap.length-k1 : k1;
+                        for ( int k=em0; k!=em1; k+=k2) {
+                            if ( eventMap[k]==-1 ) eventMap[k]= eventMap[k+k2];
                         }
                     }
-                }
+                }                
             }
+            
         } catch ( DasException e ) {
             g.drawString( "exception: "+e.getMessage(), getX(), getY()+getHeight() );
         }
