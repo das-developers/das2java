@@ -82,12 +82,19 @@ public abstract class DataSetDescriptor {
         ( cacheTag.resolution==null || (resolution != null && cacheTag.resolution.le(resolution)) ) ) {
             return cacheDataSet;
         } else {
+            try {
             cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
             if ( cacheDataSet!=null ) {
                 cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
                 if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
             }
             return cacheDataSet; 
+            } catch ( DasException e ) {
+                throw e;
+            } catch ( Exception e ) {
+                DasExceptionHandler.handle(e);
+                return null;
+            }
         } 
     }
         
