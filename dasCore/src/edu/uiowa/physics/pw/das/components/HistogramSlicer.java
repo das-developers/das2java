@@ -194,7 +194,7 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
                 double yLog = DasMath.log10(y);
                 if (yLog < minLog) {
                     double newMinLog = Math.floor(yLog);
-                    int binCountDelta = (int)(minLog - newMinLog) * BINS_PER_DECADE;
+                    int binCountDelta = ((int)Math.floor(minLog - newMinLog)) * BINS_PER_DECADE;
                     binCount += binCountDelta;
                     double[] newBins = new double[binCount];
                     System.arraycopy(bins, 0, newBins, binCountDelta, bins.length);
@@ -210,7 +210,7 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
                     maxLog = newMaxLog;
                     bins = newBins;
                 }
-                int index = (int)((yLog - minLog) * (double)BINS_PER_DECADE);
+                int index = (int)Math.floor((yLog - minLog) * (double)BINS_PER_DECADE);
                 if (index >= 0 && index < bins.length) {
                     bins[index] += 1.0;
                 }
@@ -252,7 +252,7 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
                     max = newMax;
                     bins = newBins;
                 }
-                int index = (int)(y - min);
+                int index = (int)Math.floor(y - min);
                 if (index >= 0 && index < bins.length) {
                     bins[index] += 1.0;
                 }
