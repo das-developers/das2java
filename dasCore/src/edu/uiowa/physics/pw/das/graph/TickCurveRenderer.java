@@ -22,6 +22,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
@@ -35,15 +36,17 @@ import java.awt.geom.*;
  */
 public class TickCurveRenderer extends Renderer {
     
-    double[][] data;
-    private double[][] idata; // pixel space
-    
-    Units xunits;
-    Units yunits;
-    Units zunits;
     private Stroke stroke;
     
-    DasAxis.TickVDescriptor tickv;
+    TickVDescriptor tickv;
+    private String xplane;
+    private String yplane;
+    
+    private VectorDataSet xds;
+    private VectorDataSet yds;
+    private Units xunits; // xUnits of the axis
+    private Units yunits; // yUnits of the axis
+    private double[][] idata;  // data transformed to pixel space
     
     /** Holds value of property tickStyle. */
     private TickStyle tickStyle;
@@ -70,27 +73,18 @@ public class TickCurveRenderer extends Renderer {
         
     }
     
-    /** Creates a new instance of TickCurveRenderer */
-    public TickCurveRenderer(DataSetDescriptor dsd) {
-        super(dsd);
-        data= new double[3][40];
-        idata= new double[3][40];
-        for ( int i=0; i<data[0].length; i++ ) {
-            data[0][i]= 5*Math.sin(i*1*2*Math.PI/40);
-            data[1][i]= 5*Math.cos(i*1.55*2*Math.PI/40);
-            data[2][i]= i;
-        }
-        xunits= yunits= zunits= Units.dimensionless;
-        
-        tickv= new DasAxis.TickVDescriptor();
-        tickv.minorTickV= new double[] { 0.0, 0.5, 1.0, 1.5, 2.3, 7.0, 7.8, 8.5, 5.6, 14.5, 19.7, 23.5, 34.5, 37.0, 38.5, 39. };
-        tickv.tickV= new double[] { 0., 4.5, 8.3, 12, 18.8, 22, 27, 32, 35, 37.8, 39 };
-        tickv.units= zunits;
+    /** The dataset descriptor should return a Vector data set with planes identified
+     *  by xplane and yplane.
+     */
+    public TickCurveRenderer(DataSetDescriptor dsd, String xplane, String yplane, TickVDescriptor tickv) {
+        super(dsd);        
     
         setTickStyle( TickCurveRenderer.TickStyle.outer );
         setLineWidth( 1.0f );
         setTickLength( 8.0f );
-                
+        this.xplane= xplane;
+        this.yplane= yplane;
+        this.tickv= tickv;                
     }
     
     protected void uninstallRenderer() {
@@ -128,7 +122,7 @@ public class TickCurveRenderer extends Renderer {
     }
     
     private double turnDirAt( double findex ) {
-        int nvert= data[0].length;
+        int nvert= xds.getXLength();
         int index0, index1, index2;
         if ( findex<1 ) {
             index0= 0;
@@ -139,14 +133,14 @@ public class TickCurveRenderer extends Renderer {
         }
         index1= index0+1;
         index2= index1+1;            
-            
-        return turnDir( data[0][index0], data[1][index0],
-                        data[0][index1], data[1][index1],
-                        data[0][index2], data[1][index2] );                        
+                    
+        return turnDir( xds.getDouble(index0,xunits), yds.getDouble(index0,yunits),
+                        xds.getDouble(index1,xunits), yds.getDouble(index1,yunits),
+                        xds.getDouble(index2,xunits), yds.getDouble(index2,yunits) ); 
     }
     
     private Line2D outsideNormalAt( double findex ) {
-        int nvert= data[0].length;
+        int nvert= xds.getXLength();
         int index0= (int)Math.floor(findex);
         if ( index0==nvert-1 ) index0--;            
         double x1= idata[0][index0];
@@ -241,27 +235,30 @@ public class TickCurveRenderer extends Renderer {
         Graphics2D g= (Graphics2D)g1;
         g.setStroke( stroke );
         
-        for ( int i=0; i<data[0].length; i++ ) {
-            idata[0][i]= xAxis.transform(data[0][i],xunits);
-            idata[1][i]= yAxis.transform(data[1][i],yunits);
+        DataSet ds= getDataSet();
+        xds= (VectorDataSet) ds.getPlanarView(xplane);
+        yds= (VectorDataSet) ds.getPlanarView(yplane);
+        xunits= xds.getYUnits();
+        yunits= yds.getYUnits();
+        
+        idata= new double[2][xds.getXLength()];
+        for ( int i=0; i<xds.getXLength(); i++ ) {
+            idata[0][i]= xAxis.transform(xds.getDouble(i,xunits),xunits);
+            idata[1][i]= yAxis.transform(yds.getDouble(i,yunits),yunits);
         }
         
-        for ( int i=1; i<data[0].length; i++ ) {            
+        for ( int i=1; i<xds.getXLength(); i++ ) {            
             g.drawLine((int)idata[0][i-1],(int)idata[1][i-1],(int)idata[0][i],(int)idata[1][i]);            
         }
         
-//        for ( int i=0; i<data[0].length; i++ ) {
-//            Psym.DOTS.draw(g,(int)idata[0][i], (int)idata[1][i], 3.0f );            
-//        }
-//        
         double[] findex;
-        findex= DasMath.findex( data[2], tickv.minorTickV );
+        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.minorTickV );
 
         for ( int i=0; i<tickv.minorTickV.length; i++ ) {
             drawTick( g, findex[i] );
         }
 
-        findex= DasMath.findex( data[2], tickv.tickV );
+        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.tickV );
         for ( int i=0; i<tickv.tickV.length; i++ ) {
             String label= tickv.units.createDatum(tickv.tickV[i]).toString();
             drawLabelTick( g, findex[i], label );            
@@ -327,6 +324,19 @@ public class TickCurveRenderer extends Renderer {
      */
     public void setTickLength(float tickLength) {
         this.tickLength = tickLength;
+    }
+    
+    public DataSet getDataSet() {
+        DataSetDescriptor dsd= getDataSetDescriptor();
+	if ( ! ( dsd instanceof ConstantDataSetDescriptor )) {
+            throw new IllegalStateException( "only ConstantDataSetDescriptors for now!" );
+        } else {
+            try {
+                return dsd.getDataSet(null, null, null, null );
+            } catch ( DasException e ) {
+                throw new RuntimeException(e);
+            }
+        }        
     }
     
 }
