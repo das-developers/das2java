@@ -100,12 +100,12 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         if ( this.getOrientation()==DasAxis.HORIZONTAL ) {
             size= getColumn().getWidth()-outsidePadding*2;
             interItemSpacing= ((float)size) / nlabel;
-            if ( !floppyItemSpacing ) interItemSpacing= Math.floor( interItemSpacing );
+            if ( !floppyItemSpacing ) interItemSpacing= (int) interItemSpacing;
             min= (getColumn().getDMinimum()+outsidePadding+(int)(interItemSpacing/2));
         } else {
             size= getRow().getHeight()-outsidePadding*2;
             interItemSpacing= -1 * ((float)size) / nlabel ;
-            if ( !floppyItemSpacing ) interItemSpacing= Math.floor( interItemSpacing );
+            if ( !floppyItemSpacing ) interItemSpacing= (int)interItemSpacing;
             min= getRow().getDMaximum()-outsidePadding+(int)(interItemSpacing/2);
         }
         
