@@ -51,7 +51,7 @@ public class DasProperties extends Properties {
     private DasProperties() {
         super();
         hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
-        RenderingHints.VALUE_ANTIALIAS_OFF);
+        RenderingHints.VALUE_ANTIALIAS_ON);
         hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         setDefaults();
         propertyOrder= new ArrayList();
@@ -85,18 +85,6 @@ public class DasProperties extends Properties {
     
     public static Logger getLogger() {
         return instance.logger;
-    }
-    
-    public static boolean isHeadless() {
-        return "true".equals(System.getProperty("java.awt.headless"));
-    }
-    
-    public static void setHeadless(boolean headless) {
-        if ( headless ) {
-            System.setProperty("java.awt.headless", "true");
-        } else {
-            System.setProperty("java.awt.headless", "false");
-        }
     }
     
     public static DasProperties getInstance() {
