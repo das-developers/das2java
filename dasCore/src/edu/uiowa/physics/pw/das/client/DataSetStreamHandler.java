@@ -200,7 +200,7 @@ public class DataSetStreamHandler implements StreamHandler {
         public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
-            Datum x = base.add(xTag);
+            Datum x = base == null ? xTag : base.add(xTag);
             DatumVector y = DatumVector.newDatumVector(yscan.getYTags(), yscan.getYUnits());
             String[] planeIDs = new String[pd.getYCount()];
             for (int i = 0; i < pd.getYCount(); i++) {
