@@ -45,8 +45,11 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.event.*;
+import java.io.*;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,11 +72,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected RebinListener rebinListener = new RebinListener();
     
     DnDSupport dndSupport;
-    
-    private DasPlot() {
-        super();
-        setOpaque(true);
-    }
     
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         setOpaque(false);
@@ -111,6 +109,33 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             MouseModule x= new CrossHairMouseModule(this,xAxis,yAxis);
             mouseAdapter.addMouseModule(x);
             mouseAdapter.setSecondaryModule(x);
+            
+            JMenuItem dumpMenuItem= new JMenuItem("Dump Data Set To File");
+            dumpMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (renderers.isEmpty()) return;
+                    Renderer renderer = (Renderer)renderers.get(0);
+                    JFileChooser chooser = new JFileChooser();
+                    int result = chooser.showSaveDialog(DasPlot.this);
+                    if (result == JFileChooser.APPROVE_OPTION) {
+                        File selected = chooser.getSelectedFile();
+                        try {
+                            FileChannel out = new FileOutputStream(selected).getChannel();
+                            DataSet ds = renderer.getDataSet();
+                            if (ds instanceof TableDataSet) {
+                                TableUtil.dumpToAsciiStream((TableDataSet)ds, out);
+                            }
+                            else if (ds instanceof VectorDataSet) {
+                                VectorUtil.dumpToAsciiStream((VectorDataSet)ds, out);
+                            }
+                        }
+                        catch (IOException ioe) {
+                            DasExceptionHandler.handle(ioe);
+                        }
+                    }
+                }
+            });
+            mouseAdapter.addMenuItem(dumpMenuItem);
         }
     }
     
