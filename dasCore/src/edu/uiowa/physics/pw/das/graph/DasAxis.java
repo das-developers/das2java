@@ -847,11 +847,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             // two passes to avoid clashes -- not guarenteed
             tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 6 );
             Datum atick= tickV.getMajorTicks().get(0);
-            String granny= tickV.getFormatter().grannyFormat(atick);
+            String granny= tickV.getFormatter().grannyFormat(atick);                        
             
             GrannyTextRenderer idlt= new GrannyTextRenderer();
             idlt.setString(this, granny );
             int tickSizePixels= (int) idlt.getWidth();
+            
+            if ( drawTca ) {
+                FontMetrics fm = getFontMetrics(getTickLabelFont());                
+                String item = format( 99999.99, "(f8.2)");
+                int width = fm.stringWidth(item);
+                if ( width>tickSizePixels ) tickSizePixels= width;
+            }
+                        
             int axisSize= getColumn().getWidth();
             nTicksMax= axisSize / tickSizePixels;                        
             
@@ -861,7 +869,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             granny= tickV.getFormatter().grannyFormat(atick); 
             
             idlt.setString(this, granny );
-            tickSizePixels= (int) idlt.getWidth();            
+            tickSizePixels= (int) idlt.getWidth();
+            if ( drawTca ) {
+                FontMetrics fm = getFontMetrics(getTickLabelFont());                
+                String item = format( 99999.99, "(f8.2)");
+                int width = fm.stringWidth(item);
+                if ( width>tickSizePixels ) tickSizePixels= width;
+            }
             nTicksMax= axisSize / tickSizePixels;  
                         
         } else {
@@ -870,7 +884,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             nTicksMax= axisSize / tickSizePixels;
         }
         nTicksMax= ( nTicksMax>1 ? nTicksMax : 2 ) ;
-        nTicksMax= ( nTicksMax<14 ? nTicksMax : 14 ) ;
+        nTicksMax= ( nTicksMax<10 ? nTicksMax : 10 ) ;
         
         tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), nTicksMax );        
         
