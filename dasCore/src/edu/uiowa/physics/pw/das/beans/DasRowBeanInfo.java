@@ -33,7 +33,9 @@ public class DasRowBeanInfo extends AccessLevelBeanInfo {
     private static Property[] properties = {
         new Property("name", AccessLevel.DASML, "getDasName", "setDasName", null),
         new Property("minimum", AccessLevel.DASML, "getMinimum", "setMinimum", null),
-        new Property("maximum", AccessLevel.DASML, "getMaximum", "setMaximum", null)
+        new Property("maximum", AccessLevel.DASML, "getMaximum", "setMaximum", null),
+        new Property("Dminimum", AccessLevel.DASML, "getDMinimum", "setDMinimum", null),
+        new Property("Dmaximum", AccessLevel.DASML, "getDMaximum", "setDMaximum", null),
     };
     
     public DasRowBeanInfo() {
