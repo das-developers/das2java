@@ -47,15 +47,21 @@ public class TimeDatumFormatter extends DatumFormatter {
 
     public static final TimeDatumFormatter DEFAULT;
     public static final TimeDatumFormatter DAYS;
+    public static final TimeDatumFormatter YEARS;
+    public static final TimeDatumFormatter MONTHS;
+    public static final TimeDatumFormatter HOURS;
     public static final TimeDatumFormatter MINUTES;
     public static final TimeDatumFormatter SECONDS;
-    public static final TimeDatumFormatter MILLISECONDS;
+    public static final TimeDatumFormatter MILLISECONDS;      
     
     //Initialize final constants
     static {
         try {
             DEFAULT = new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            YEARS= new TimeDatumFormatter("yyyy");
+            MONTHS= new TimeDatumFormatter("yyyy-MM");
             DAYS = new TimeDatumFormatter("yyyy-MM-dd");
+            HOURS = new TimeDatumFormatter("yyyy-MM-dd HH:mm");
             MINUTES = new TimeDatumFormatter("HH:mm");
             SECONDS = new TimeDatumFormatter("HH:mm:ss");
             MILLISECONDS = new TimeDatumFormatter("HH:mm:ss.SSS");
