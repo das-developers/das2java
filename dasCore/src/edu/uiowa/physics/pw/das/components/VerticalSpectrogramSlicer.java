@@ -24,7 +24,9 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
@@ -158,9 +160,7 @@ extends DasPlot implements DataPointSelectionListener {
         TableDataSet tds = (TableDataSet)ds;
         
         VectorDataSet sliceDataSet= tds.getXSlice( DataSetUtil.closestColumn( tds, e.getX() ) );
-               
-        xxx[1]= System.currentTimeMillis()-e.birthMilli;                
-        
+                      
         renderer.setDataSet(sliceDataSet);
         
         if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
@@ -170,14 +170,17 @@ extends DasPlot implements DataPointSelectionListener {
             repaint();
         }
         
-        xxx[3]=  System.currentTimeMillis()-e.birthMilli;
-        
-        //edu.uiowa.physics.pw.das.util.DasDie.println(""+xxx[0]+" "+xxx[1]+" "+xxx[2]+" "+xxx[3]+" ");
-        
         yValue= e.getY();
         Datum xValue = e.getX();
         
-        setTitle("x: "+xValue);
+        DatumFormatter formatter;
+        if ( xValue.getUnits() instanceof TimeLocationUnits ) {
+            formatter= TimeDatumFormatter.DEFAULT;
+        } else {
+            formatter= xValue.getFormatter();
+        }
+            
+        setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
         
         eventBirthMilli= e.birthMilli;
     }

@@ -24,7 +24,9 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
@@ -123,10 +125,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
     }
     
     public void DataPointSelected(DataPointSelectionEvent e) {
-        
-        long xxx[]= { 0,0,0,0 };
-        xxx[0] = System.currentTimeMillis()-e.birthMilli;
-        
+                
         DataSet ds = e.getDataSet();
         if (ds==null || !(ds instanceof TableDataSet)) {
             return;
@@ -140,13 +139,17 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         int itable= TableUtil.tableIndexAt( tds, DataSetUtil.closestColumn( tds, e.getX() ) );
         VectorDataSet sliceDataSet= tds.getYSlice( TableUtil.closestRow( tds, itable, e.getY() ), itable );
         
-        xxx[1]= System.currentTimeMillis()-e.birthMilli;
-        
-        String xAsString;
-        xAsString= ""+xValue;
         renderer.setDataSet(sliceDataSet);
+
+        DatumFormatter formatter;
+        if ( xValue.getUnits() instanceof TimeLocationUnits ) {
+            formatter= TimeDatumFormatter.DEFAULT;
+        } else {
+            formatter= xValue.getFormatter();
+        }
+            
+        setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
         
-        setTitle("x: "+xAsString);
         if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
             showPopup();
         }
