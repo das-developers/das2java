@@ -106,10 +106,10 @@ public class StreamDescriptor implements SkeletonDescriptor {
         properties.put(name, value);
     }
 
-    public static Document parseHeader(String header) throws DasIOException, DasStreamFormatException {
+    public static Document parseHeader(Reader header) throws DasIOException, DasStreamFormatException {
         try {
             DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            InputSource source = new InputSource(new StringReader(header));
+            InputSource source = new InputSource(header);
             Document document= builder.parse(source);
             return document;
         }
@@ -273,6 +273,7 @@ public class StreamDescriptor implements SkeletonDescriptor {
         if (planeList != null) {
             result.properties.put("plane-list", Collections.unmodifiableList(Arrays.asList(planeList)));
         }
+        result.properties.put("legacy", "true");
         return result;
     }
     

@@ -168,6 +168,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
                 if (!(exception instanceof InterruptedIOException)) {
                     if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                         lastException= exception;
+                        exception.printStackTrace();
                         finished(null);
                     } else {
                         DasExceptionHandler.handle(exception);
@@ -227,6 +228,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             parent.markDirty();
             parent.update();
         }
+        ds = null;
     }
     
     protected DataSetDescriptor getDataSetDescriptor() {

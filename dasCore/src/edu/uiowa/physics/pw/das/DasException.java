@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das;
  *
  * @author  jbf
  */
-public abstract class DasException extends java.lang.Exception {
+public class DasException extends java.lang.Exception {
     
     /** Creates a new instance of DasException */
     public DasException() {

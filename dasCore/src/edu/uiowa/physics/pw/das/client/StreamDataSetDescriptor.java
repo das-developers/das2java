@@ -33,6 +33,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 import java.nio.*;
+import java.nio.channels.*;
 import java.util.*;
 import java.util.regex.*;
 import javax.xml.parsers.*;
@@ -43,10 +44,11 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     protected StandardDataStreamSource standardDataStreamSource;
     private boolean serverSideReduction = true;
-    private StreamDescriptor defaultStreamDescriptor;
+    private PacketDescriptor defaultPacketDescriptor;
+    
 
     public Units getXUnits() {
-        return defaultStreamDescriptor.getXDescriptor().getUnits();
+        return defaultPacketDescriptor.getXDescriptor().getUnits();
     }
     
     /**
@@ -57,8 +59,12 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         setProperties(properties);
     }
     
+    protected StreamDataSetDescriptor(Map properties, boolean legacy) {
+        setProperties(properties, legacy);
+    }
+    
     public StreamDataSetDescriptor(StreamDescriptor sd, StandardDataStreamSource sdss) {
-        this(sd.getProperties());
+        this(sd.getProperties(), "true".equals(sd.getProperty("legacy")));
         this.standardDataStreamSource = sdss;
     }
     
@@ -70,15 +76,17 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return this.standardDataStreamSource;
     }
     
-    protected void setProperties( Map properties ) {
+    protected void setProperties(Map properties, boolean legacy) {
         super.setProperties(properties);
-        defaultStreamDescriptor = dsdfToStreamDescriptor(properties);
-    }
-
-    public StreamDescriptor getDefaultStreamDescriptor() {
-        return defaultStreamDescriptor;
+        if (legacy) {
+            defaultPacketDescriptor = PacketDescriptor.createLegacyPacketDescriptor(properties);
+        }
     }
     
+    protected void setProperties( Map properties ) {
+        setProperties(properties, false);
+    }
+
     /**
      * Reads data for the given start and end dates and returns an array of floats
      *
@@ -199,21 +207,29 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     }
     
     protected DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException {
-        if (getProperty("form").equals("x_tagged_y_scan")) {
-            return getTableDataSet(in, start);
-        }
-        else if (getProperty("form").equals("x_multi_y")) {
-            return getVectorDataSet(in, start);
-        }
-        else {
-            throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
-        }
+        PushbackInputStream pin = new PushbackInputStream(in, 4);
+        //byte[] four = new byte[4];
+        //pin.read(four);
+        //if (new String(four).equals("[00]")) {
+        //}
+        //else {
+            //pin.unread(four);
+            if (getProperty("form").equals("x_tagged_y_scan")) {
+                return getLegacyTableDataSet(pin, start);
+            }
+            else if (getProperty("form").equals("x_multi_y")) {
+                return getLegacyVectorDataSet(pin, start);
+            }
+            else {
+                throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
+            }
+        //}
     }
     
-    private DataSet getVectorDataSet(InputStream in0, Datum start) throws DasException {
+    private DataSet getLegacyVectorDataSet(InputStream in0, Datum start) throws DasException {
         try {
             PushbackInputStream in = new PushbackInputStream(in0, 50);
-            StreamDescriptor sd = getStreamDescriptor(in);
+            PacketDescriptor sd = getPacketDescriptor(in);
             VectorDataSetBuilder builder = new VectorDataSetBuilder();
             builder.setXUnits(start.getUnits());
             builder.setYUnits(Units.dimensionless);
@@ -265,10 +281,13 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
-    private DataSet getTableDataSet(InputStream in0, Datum start) throws DasException {
+    private DataSet getLegacyTableDataSet(InputStream in0, Datum start) throws DasException {
         PushbackInputStream in= new PushbackInputStream(in0,50);
-        StreamDescriptor sd = getStreamDescriptor(in);
+        PacketDescriptor sd = getPacketDescriptor(in);
         TableDataSetBuilder builder = new TableDataSetBuilder(start.getUnits(),Units.dimensionless,Units.dimensionless);
+        builder.setXUnits(start.getUnits());
+        builder.setYUnits(Units.dimensionless);
+        builder.setZUnits(Units.dimensionless);
         for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
             Object o = i.next();
             if (o instanceof StreamYScanDescriptor) {
@@ -315,7 +334,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     private static final byte[] HEADER = { (byte)'d', (byte)'a', (byte)'s', (byte)'2', (byte)0177, (byte)0177 };
     
-    private StreamDescriptor getStreamDescriptor(PushbackInputStream in) throws DasIOException {
+    private PacketDescriptor getPacketDescriptor(PushbackInputStream in) throws DasIOException {
         try {
             byte[] tip = new byte[HEADER.length];
             
@@ -331,12 +350,12 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                 DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 Document document = builder.parse(source);
                 Element docNode= document.getDocumentElement();
-                StreamDescriptor streamDescriptor= new StreamDescriptor(docNode);
-                return streamDescriptor;
+                PacketDescriptor packetDescriptor= new PacketDescriptor(docNode);
+                return packetDescriptor;
             }
             else {
                 in.unread(tip, 0, totalBytesRead);
-                return defaultStreamDescriptor;
+                return defaultPacketDescriptor;
             }
         }
         catch ( ParserConfigurationException ex ) {
@@ -355,31 +374,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         catch ( IOException ex) {
             throw new DasIOException(ex);
         }
-    }
-    
-    private StreamDescriptor dsdfToStreamDescriptor(Map dsdf) {
-        StreamDescriptor streamDescriptor = new StreamDescriptor();
-        streamDescriptor.setXDescriptor(new StreamXDescriptor());
-        if (dsdf.get("form").equals("x_tagged_y_scan")) {
-            StreamYScanDescriptor yscan = new StreamYScanDescriptor();
-            yscan.setYCoordinates((double[])dsdf.get("y_coordinate"));
-            streamDescriptor.addYScan(yscan);
-        }
-        else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("ny") != null) {
-            StreamMultiYDescriptor y = new StreamMultiYDescriptor();
-            streamDescriptor.addYMulti(y);
-        }
-        else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("items") != null) {
-            List planeList = (List)dsdf.get("plane-list");
-            streamDescriptor.addYMulti(new StreamMultiYDescriptor());
-            for (int index = 0; index < planeList.size(); index++) {
-                StreamMultiYDescriptor y = new StreamMultiYDescriptor();
-                y.setName((String)planeList.get(index));
-                streamDescriptor.addYMulti(y);
-            }
-        }
-    
-        return streamDescriptor;
     }
     
     public boolean isRestrictedAccess() {
@@ -406,6 +400,10 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     public boolean isServerSideReduction() {
         return serverSideReduction;
+    }
+    
+    public PacketDescriptor getDefaultPacketDescriptor() {
+        return defaultPacketDescriptor;
     }
         
 }

@@ -115,7 +115,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         
         if ( dsd.getProperty("form").equals("x_tagged_y_scan") ) {            
             formData= "server=compactdataset";
-            StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultStreamDescriptor().getYDescriptors().get(0);
+            StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
             formData+= "&nitems=" + (y.getNItems() + 1);
             formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
         } else if ( dsd.getProperty("form").equals("x_multi_y") && dsd.getProperty("ny") != null) {            

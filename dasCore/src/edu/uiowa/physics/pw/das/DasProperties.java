@@ -252,7 +252,7 @@ public class DasProperties extends Properties {
         jframe.setVisible(true);
     }
     
-    public static DasProperties instance = new DasProperties();
+    public static final DasProperties instance = new DasProperties();
     
     public void readPersistentProperties() {
         

@@ -148,58 +148,7 @@ public class StreamTool {
      * what's wrong.
      */    
     public static byte[] readXML(InputStream in) throws IOException {
-        int gtCount= 0;
-        int tagCount= 0;
-        int bufidx= 0;
-        int lastChar;
-        boolean inQuotes=false;
-        boolean tagContainsSlash;
-        
-        byte[] buffer= new byte[10000];
-        int b;
-        b= in.read();
-        
-        if ( b!=(int)'<' ) {
-            throw new IOException("found \""+(char)b+"\", expected \"<\"." );
-        } else {
-            gtCount++;
-            tagContainsSlash=false;
-        }
-        while ( b!=-1 && ( gtCount > 0 || tagCount>0 ) ) {
-            buffer[bufidx++]= (byte)b;
-            lastChar= b;
-            b= in.read();
-            if ( ! inQuotes ) {
-                if ( b==(int)'<' ) {
-                    gtCount++;
-                    tagContainsSlash= false; // until proven otherwise
-                }
-                else if ( b==(int)'>' ) {
-                    gtCount--;
-                    if ( lastChar!=(int)'/' ) {
-                        if ( tagContainsSlash ) {
-                            tagCount--;
-                        } else {
-                            tagCount++;
-                        }
-                    }
-                } else if ( b==(int)'/' ) {
-                    if ( lastChar==(int)'<' ) {
-                        tagContainsSlash= true;
-                    }
-                } else if ( b==(int)'"' ) inQuotes= true;
-            } else {
-                if ( b==(int)'"' ) inQuotes= false;
-            }
-        }
-        
-        if ( b==-1 ) throw new IOException("unexpected end of file before xml termination");
-        buffer[bufidx++]= (byte)b;
-        
-        byte[] result= new byte[bufidx];
-        System.arraycopy( buffer, 0, result, 0, bufidx );
-        
-        return result;
+        return null;
     }
     
 }

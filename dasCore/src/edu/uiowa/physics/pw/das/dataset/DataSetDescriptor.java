@@ -130,7 +130,7 @@ public abstract class DataSetDescriptor {
     }
     
     private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z\\.]+)(?:\\?(.*))?");
-    private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.]+)=([_0-9a-zA-Z%+./]+)");
+    private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.-]+)=([_0-9a-zA-Z%+.-]+)");
             
     public static DataSetDescriptor create( final String dataSetID ) throws DasException {
         java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);
@@ -154,11 +154,6 @@ public abstract class DataSetDescriptor {
     private static DataSetDescriptor createFromServerAddress(final URL url) throws DasException {
         DasServer server = DasServer.create(url);
         StreamDescriptor sd = server.getStreamDescriptor(url);
-        /*
-        if ( sd.getProperty("form").equals("x_multi_y") && sd.getProperty("ny") == null) {
-            return new XMultiYDataSetDescriptor(sd.getProperties(), server.getStandardDataStreamSource());
-        }
-         */
         return new StreamDataSetDescriptor(sd, server.getStandardDataStreamSource());
     }
     

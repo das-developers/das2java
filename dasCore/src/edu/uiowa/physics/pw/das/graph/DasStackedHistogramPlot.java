@@ -122,16 +122,19 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     }
     
     public static DasStackedHistogramPlot create( DataSetDescriptor dsd, DasAxis xAxis, DasAxis zAxis, DasRow row, DasColumn column) {
-        String x= (String)dsd.getProperty("form");
-        if ( "x_tagged_y_scan".equals(dsd.getProperty("form")) ) {
-            double[] y_coordinate = (double[])dsd.getProperty("y_coordinate");
-            Datum[] datums= new Datum[y_coordinate.length];
-            Units units= Units.dimensionless;
-            
-            for ( int i=0; i<y_coordinate.length; i++ ) {
-                datums[i]= Datum.create(y_coordinate[i],units);
+        if (dsd instanceof StreamDataSetDescriptor) {
+            StreamDataSetDescriptor sdsd = (StreamDataSetDescriptor)dsd;
+            if (sdsd.getProperty("form").equals("x_tagged_y_scan")) {
+                PacketDescriptor pd = sdsd.getDefaultPacketDescriptor();
+                StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptors().get(0);
+                Datum[] datums= new Datum[yscan.getNItems()];
+                Units units= yscan.getYUnits();
+                double[] y_coordinate = yscan.getYCoordinates();
+                for ( int i=0; i<y_coordinate.length; i++ ) {
+                    datums[i]= Datum.create(y_coordinate[i],units);
+                }
+                return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis(datums,row,column,DasAxis.VERTICAL), zAxis, row, column );
             }
-            return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis(datums,row,column,DasAxis.VERTICAL), zAxis, row, column );
         }
         return null;
     }

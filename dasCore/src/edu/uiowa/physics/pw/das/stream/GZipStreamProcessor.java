@@ -38,7 +38,8 @@ public class GZipStreamProcessor extends StreamProcessor {
         header= StreamTool.readXML(in);
         
         try {
-            Document document= StreamDescriptor.parseHeader(new String(header));
+            Reader reader = new InputStreamReader(new ByteArrayInputStream(header));
+            Document document= StreamDescriptor.parseHeader(reader);
             Element docNode= document.getDocumentElement();
             if ( ! docNode.getAttribute("compression").equals("") ) {
                 String compression= docNode.getAttribute("compression");

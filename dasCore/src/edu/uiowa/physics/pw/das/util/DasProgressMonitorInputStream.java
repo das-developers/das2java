@@ -24,6 +24,8 @@
 package edu.uiowa.physics.pw.das.util;
 
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 
 /**
  *
@@ -114,5 +116,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             monitor.finished();
         }
     }
+    
+    
     
 }

@@ -36,15 +36,12 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.StringTokenizer;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  *
  * @author  jbf
@@ -218,22 +215,6 @@ public class DasServer {
         return standardDataStreamSource;
     }
 
-    private static StreamDataSetDescriptor createDataSetDescriptor( Properties properties, StandardDataStreamSource sdss ) throws DasException {
-        StreamDataSetDescriptor result;
-        String form= (String)properties.get("form");
-        if (form.equals("x_tagged_y_scan")) {
-            result= new StreamDataSetDescriptor(properties);
-        } else if ( form.equals("x_multi_y") && properties.get("ny") != null) {
-            result= new StreamDataSetDescriptor(properties);
-        } else if ( form.equals("x_multi_y")) {
-            result= null;//new XMultiYDataSetDescriptor(properties);
-        } else {
-            throw new IllegalArgumentException("dsdf file is invalid, 'form' keyword is not valid.");
-        }        
-        result.setStandardDataStreamSource(sdss);
-        return result;
-    }
-
     public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
         try {
             String dsdf = dataSetID.getQuery();
@@ -246,9 +227,28 @@ public class DasServer {
             contentType= s1[0];
             
             if (contentType.equalsIgnoreCase("text/plain")) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StreamDescriptor result = StreamDescriptor.createLegacyDescriptor(in);
-                return result;
+                PushbackReader reader = new PushbackReader(new InputStreamReader(connection.getInputStream()), 4);
+                char[] four = new char[4];
+                reader.read(four);
+                if (new String(four).equals("[00]")) {
+                    Document header = StreamDescriptor.parseHeader(reader);
+                    Element root = header.getDocumentElement();
+                    if (root.getTagName().equals("stream")) {
+                        return new StreamDescriptor(root);
+                    }
+                    else if (root.getTagName().equals("exception")) {
+                        throw new DasStreamFormatException();
+                    }
+                    else {
+                        throw new DasStreamFormatException();
+                    }
+                }
+                else {
+                    reader.unread(four);
+                    BufferedReader in = new BufferedReader(reader);
+                    StreamDescriptor result = StreamDescriptor.createLegacyDescriptor(in);
+                    return result;
+                }
             }
             else {
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
