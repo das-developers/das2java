@@ -103,17 +103,17 @@ public class CrossHairRenderer implements DragRenderer {
             String zAsString="";
             String report;
             
-            if (ds instanceof XTaggedYScanDataSet) {
-                XTaggedYScanDataSet xtyds= (XTaggedYScanDataSet)ds;
-                if (x.getUnits()!=xtyds.getXUnits()) {
+            if (ds instanceof TableDataSet) {
+                TableDataSet tds= (TableDataSet)ds;
+                if (x.getUnits()!=tds.getXUnits()) {
                     throw new IllegalStateException("x units and dataset x units differ");
                 }
                 
-                if (y.getUnits()!=xtyds.getYUnits()) {
+                if (y.getUnits()!=tds.getYUnits()) {
                     throw new IllegalStateException("y units and dataset y units differ");
                 }                
                 
-                Datum zValue= xtyds.getClosestZValue(x,y);
+                Datum zValue= TableUtil.closestDatum(tds,x,y);
                 
                 try {
                     if ( dataSetConsumer instanceof TableDataSetConsumer ) {
@@ -127,7 +127,7 @@ public class CrossHairRenderer implements DragRenderer {
                     }
                 }
                 catch (java.text.ParseException pe) {
-                    //This should be logged.
+                    edu.uiowa.physics.pw.das.DasProperties.getLogger().severe("failure to create formatter");
                     DasAxis axis = ((XTaggedYScanDataSetConsumer)dataSetConsumer).getZAxis();
                     axis.getUnits().getDatumFormatterFactory().defaultFormatter();
                 }
