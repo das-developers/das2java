@@ -23,40 +23,113 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import java.io.*;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.*;
+import java.util.regex.*;
 
 /**
- *
- * @author  jbf
+ * known bug: *.java matches ".java". The unix glob behavior is to
+ * require that a leading . must be explicitly matched.
+ * @author jbf
  */
 public class Glob {
     
-    /** Creates a new instance of Glob */
-    private Glob() {
-    }
-    
-    public static File[] unGlob( String pattern ) {
-        String[] s= pattern.split(File.separator);
-        String filePattern= s[s.length-1];        
-        File dir= new File(pattern.substring(0,pattern.length()-filePattern.length()-File.separator.length()));
-        final String regex= filePattern.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");        
-        FilenameFilter filter= new FilenameFilter() {
-            public boolean accept( File dir, String filename ) {
-                return filename.matches(regex);
+    /**
+     *
+     * @param regex
+     * @return
+     */    
+    public static String getParentDirectory( String regex ) {
+        String[] s= regex.split( "/" );
+        String dirRegex;
+        if ( s.length>1 ) {
+            dirRegex= s[0];
+            for ( int i=1; i<s.length-1; i++ ) {
+                dirRegex+= "/"+s[i];
             }
-        };
-        return dir.listFiles(filter);
+        } else {
+            dirRegex= null;
+        }
+        String fileRegex= s[s.length-1];
+        return dirRegex;
     }
     
     /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        File[] files= unGlob("/home/jbf/*.dat");
-        for ( int i=0; i<files.length; i++ ) System.out.println(files[i]);
-        files= unGlob("/home/jbf/?.???");
-        for ( int i=0; i<files.length; i++ ) System.out.println(files[i]);
+     *
+     * @param glob
+     * @return
+     */    
+    public static boolean isRoot( String glob ) {        
+        File root= new File(glob);
+        if ( root.getParentFile()==null ) {
+            return true;
+        } else {
+            return false;
+        }
     }
+    
+    /**
+     *
+     * @param glob
+     * @return
+     */    
+    public static Pattern getPattern( String glob ) {
+        final String regex= glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
+        final Pattern absPattern= Pattern.compile(regex);        
+        return absPattern;
+    }
+    
+    /**
+     *
+     * @param glob
+     * @return
+     */    
+    public static File[] unGlob( String glob ) {
+        return unGlob( glob, false );
+    }
+    
+    private static File[] unGlob( String glob, final boolean directoriesOnly ) {       
+        if ( File.separatorChar=='\\' ) glob= glob.replaceAll( "\\\\", "/" );
+        String parentGlob= getParentDirectory( glob );
+        File[] files;
+        if ( parentGlob!=null ) {
+            if ( isRoot( parentGlob ) ) {                
+                File rootFile= new File(parentGlob);
+                if ( rootFile.exists() ) {
+                    files= new File[] { rootFile };
+                } else {
+                    throw new IllegalArgumentException("root does not exist: "+glob);
+                }
+            } else {
+                files= unGlob( parentGlob, true );
+            }
+            
+            
+        } else {
+            files= new File[] { new File(".") };
+        }                
+                
+        final String regex= glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
+        final Pattern absPattern= Pattern.compile(regex);
+        List list= new ArrayList();
+        for ( int i=0; i<files.length; i++ ) {            
+            File[] files1= files[i].listFiles( new FileFilter() {
+                public boolean accept( File file ) {
+                    String s= file.toString();
+                    if ( File.separatorChar=='\\' ) s= s.replaceAll("\\\\", "/");
+                    return absPattern.matcher(s).matches() && ( !directoriesOnly || file.isDirectory() ) ;
+                }
+            } );
+            if ( files1==null ) {
+                throw new RuntimeException(""); /* files[i] is not a directory */
+            }
+            list.addAll( Arrays.asList(files1) );
+        }        
+        return (File[])list.toArray(new File[list.size()]);
+        
+    }    
+    
     
 }
