@@ -204,7 +204,9 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
     }
     
     void setDataSetDescriptor(DataSetDescriptor dsd) {
+        this.dsd.removeDataSetUpdateListener(this);
         this.dsd = dsd;
+        if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
         if (parent != null) {
             parent.markDirty();
             parent.update();
