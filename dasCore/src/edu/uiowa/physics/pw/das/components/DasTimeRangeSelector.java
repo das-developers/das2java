@@ -31,6 +31,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
+import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.DasDie;
 import java.awt.*;
 
@@ -93,23 +94,27 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         setEndTime(endTime);
         update();
     }
-    
+        
     public Datum getStartTime() {
+        Datum saveDatum= this.startTime;
         Datum s1;
         try {
             s1= TimeUtil.create(idStart.getText());
         } catch (java.text.ParseException e) {
-            s1= null;
+            s1= saveDatum;
+            DasExceptionHandler.handle(e);
         }
         return s1;
     }
     
     public Datum getEndTime() {
+        Datum saveDatum= this.endTime;
         Datum s2;
         try {
             s2= TimeUtil.create(idStop.getText());
         } catch (java.text.ParseException e) {
-            s2= null;
+            s2= saveDatum;
+            DasExceptionHandler.handle(e);
         }
         return s2;
     }
