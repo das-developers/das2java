@@ -42,11 +42,15 @@ public class GrannyTextRenderer {
     private ArrayList lineBounds;
     private String str;
     private String[] tokens;
-    private int alignment = LEFT_ALIGNMENT;
+    private int alignment = LEFT_ALIGNMENT;        
+    
+    public GrannyTextRenderer() {
+        
+    }
     
     public Rectangle getBounds() {
         maybeInitBounds();
-        return bounds;
+        return new Rectangle(bounds); // defensive copy
     }
     
     private void maybeInitBounds() {
@@ -327,7 +331,7 @@ public class GrannyTextRenderer {
                 else {
                     FontMetrics fm= c.getFontMetrics(font);
                     bounds.add(current.x, y+fm.getDescent());
-                    bounds.add(current.x+fm.stringWidth(tokens[i]),y-fm.getAscent() - 5.0);
+                    bounds.add(current.x+fm.stringWidth(tokens[i]),y-fm.getAscent() ); // removed -5.0 pixels 
                     current.x += c.getFontMetrics(font).stringWidth(tokens[i]);
                 }
             }
@@ -378,5 +382,5 @@ public class GrannyTextRenderer {
             g.drawRect(rc.x + ix, rc.y + iy, rc.width, rc.height);
         }
     }
-    
+        
 }
