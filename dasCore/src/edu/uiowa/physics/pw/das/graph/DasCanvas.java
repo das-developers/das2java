@@ -200,6 +200,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 else if ( command.equals("about")) {
                     int okay= JOptionPane.showConfirmDialog( DasCanvas.this, "release version " + Splash.getVersion(), "about das2", JOptionPane.PLAIN_MESSAGE );
                 }
+                else if ( command.equals("refresh") ) {
+                    setSize(getWidth()+1, getHeight()+1);
+                    setSize(getWidth(), getHeight());
+                }
                 else if (command.equals("pngBrowse")) {
                     int choice = pngFileChooser.showDialog(DasCanvas.this, "Select File");
                     if (choice == JFileChooser.APPROVE_OPTION) {
@@ -242,8 +246,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         aboutMenuItem.addActionListener(popupListener);
         popup.add(aboutMenuItem);
         popup.addSeparator();  
-        
-        JMenuItem x = new JMenuItem("close");
+
+        JMenuItem x = new JMenuItem("refresh");
+        x.setActionCommand("refresh");
+        x.setToolTipText("force redraw");
+        x.addActionListener(popupListener);
+        popup.add(x);
+        popup.addSeparator();  
+
+        x = new JMenuItem("close");
         x.addActionListener(popupListener);
         x.setToolTipText("close this popup");
         popup.add(x);
