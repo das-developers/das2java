@@ -46,9 +46,9 @@ public class NameContext {
     private static final String SIMPLE_NAME_STRING = "[A-Za-z][A-Za-z0-9_]*";
     private static final String INDEX_STRING = "0|[1-9][0-9]*";
     private static final String INDEXED_NAME_STRING
-        = "(" + SIMPLE_NAME_STRING + ")" + "\\[(" + INDEX_STRING + ")\\]";
+    = "(" + SIMPLE_NAME_STRING + ")" + "\\[(" + INDEX_STRING + ")\\]";
     private static final String QUALIFIED_NAME_STRING
-        = SIMPLE_NAME_STRING + "(\\." + SIMPLE_NAME_STRING + "|\\." + INDEXED_NAME_STRING + ")*";
+    = SIMPLE_NAME_STRING + "(\\." + SIMPLE_NAME_STRING + "|\\." + INDEXED_NAME_STRING + ")*";
     
     public static final Pattern SIMPLE_NAME = Pattern.compile(SIMPLE_NAME_STRING);
     public static final Pattern INDEXED_NAME = Pattern.compile(INDEXED_NAME_STRING);
@@ -129,7 +129,7 @@ public class NameContext {
     
     public Object getPropertyValue(Object obj, String property) throws DasPropertyException, InvocationTargetException {
         try {
-           Class type = obj.getClass();
+            Class type = obj.getClass();
             maybeLoadPropertiesForClass(type);
             Map map = (Map)propertyMap.get(type);
             PropertyDescriptor pd = (PropertyDescriptor)map.get(property);
@@ -183,14 +183,14 @@ public class NameContext {
                 value = parseValue((String)value, propertyType);
             }
             if (!propertyType.isInstance(value)
-                && !(propertyType == boolean.class && value instanceof Boolean)
-                && !(propertyType == char.class && value instanceof Character)
-                && !(propertyType == double.class && value instanceof Double)
-                && !(propertyType == short.class && value instanceof Short)
-                && !(propertyType == int.class && value instanceof Integer)
-                && !(propertyType == float.class && value instanceof Float)
-                && !(propertyType == byte.class && value instanceof Byte)
-                && !(propertyType == long.class && value instanceof Long)) {
+            && !(propertyType == boolean.class && value instanceof Boolean)
+            && !(propertyType == char.class && value instanceof Character)
+            && !(propertyType == double.class && value instanceof Double)
+            && !(propertyType == short.class && value instanceof Short)
+            && !(propertyType == int.class && value instanceof Integer)
+            && !(propertyType == float.class && value instanceof Float)
+            && !(propertyType == byte.class && value instanceof Byte)
+            && !(propertyType == long.class && value instanceof Long)) {
                 throw new DasPropertyException(DasPropertyException.TYPE_MISMATCH, null, property);
             }
             writeMethod.invoke(obj, new Object[] { value } );
@@ -222,14 +222,14 @@ public class NameContext {
                 value = parseValue((String)value, propertyType);
             }
             if (!propertyType.isInstance(value)
-                && !(propertyType == boolean.class && value instanceof Boolean)
-                && !(propertyType == char.class && value instanceof Character)
-                && !(propertyType == double.class && value instanceof Double)
-                && !(propertyType == short.class && value instanceof Short)
-                && !(propertyType == int.class && value instanceof Integer)
-                && !(propertyType == float.class && value instanceof Float)
-                && !(propertyType == byte.class && value instanceof Byte)
-                && !(propertyType == long.class && value instanceof Long)) {
+            && !(propertyType == boolean.class && value instanceof Boolean)
+            && !(propertyType == char.class && value instanceof Character)
+            && !(propertyType == double.class && value instanceof Double)
+            && !(propertyType == short.class && value instanceof Short)
+            && !(propertyType == int.class && value instanceof Integer)
+            && !(propertyType == float.class && value instanceof Float)
+            && !(propertyType == byte.class && value instanceof Byte)
+            && !(propertyType == long.class && value instanceof Long)) {
                 throw new DasPropertyException(DasPropertyException.TYPE_MISMATCH, null, property);
             }
             writeMethod.invoke(obj, new Object[] { new Integer(index), value });
@@ -325,29 +325,19 @@ public class NameContext {
             if (!(o instanceof Number)) throw new ParsedExpressionException("'" + valueString  + "' does not evaluate to a numeric value");
             return (o instanceof Double ? (Double)o : new Double(((Number)o).doubleValue()));
         }
-        else if (type == edu.uiowa.physics.pw.das.util.DasDate.class) {
-            try {
-                return new edu.uiowa.physics.pw.das.util.DasDate(valueString);
-            }
-            catch (IllegalArgumentException iae) {
-                throw new ParsedExpressionException(valueString + " cannot be parsed as a date");
-            }
-        }
-        else if (type == TimeDatum.class) {
+        else if (type == Datum.class) {
             try {
                 return TimeUtil.create(valueString);
             }
-            catch (IllegalArgumentException iae) {
-                throw new ParsedExpressionException(valueString + " cannot be parsed as a TimeDatum");
+            catch ( java.text.ParseException ex ) {
+                try {
+                    return Datum.create(Double.parseDouble(valueString));
+                }
+                catch (NumberFormatException iae) {
+                    throw new ParsedExpressionException(valueString + " cannot be parsed as a Datum");
+                }
             }
-        }
-        else if (type == Datum.class ) {
-            try {
-                return Datum.create(Double.parseDouble(valueString));
-            }
-            catch (IllegalArgumentException iae) {
-                throw new ParsedExpressionException(valueString + " cannot be parsed as a Datum");
-            }
+            
         }
         else {
             throw new IllegalStateException(type.getName() + " is not a recognized type");
