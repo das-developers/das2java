@@ -92,6 +92,10 @@ public class DasRow extends DasDevicePosition {
         return new DasRow(parent,0.1,0.9);
     }
     
+    public DasRow createAttachedRow(double ptop, double pbottom) {
+        return new AttachedRow(this,ptop,pbottom);
+    }
+        
     /** Process a <code>&lt;row&gt;</code> element.
      *
      * @param element The DOM tree node that represents the element
