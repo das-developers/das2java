@@ -37,9 +37,14 @@ public final class PropertyType {
     public static final PropertyType DOUBLE = new PropertyType("double");
     public static final PropertyType DOUBLE_ARRAY = new PropertyType("doubleArray");
     public static final PropertyType DATUM = new PropertyType("Datum");
+    public static final PropertyType INTEGER = new PropertyType("int");
     
     public static PropertyType getByName(String name) {
-        return (PropertyType)map.get(name);
+        PropertyType result= (PropertyType)map.get(name);
+        if ( result==null ) {
+            throw new IllegalArgumentException( "Unrecognized property type: "+name );
+        }
+        return result;
     }
     
     private final String name;
@@ -54,6 +59,14 @@ public final class PropertyType {
         if (name.equals("double")) {
             try {
                 return new Double(s);
+            }
+            catch (NumberFormatException nfe) {
+                throw new java.text.ParseException(nfe.getMessage(), 0);
+            }
+        }
+        else if (name.equals("int")) {
+            try {
+                return new Integer(s);
             }
             catch (NumberFormatException nfe) {
                 throw new java.text.ParseException(nfe.getMessage(), 0);
