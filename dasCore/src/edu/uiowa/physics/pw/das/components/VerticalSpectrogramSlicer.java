@@ -157,7 +157,7 @@ extends DasPlot implements DataPointSelectionListener {
         
         TableDataSet tds = (TableDataSet)ds;
         
-        VectorDataSet sliceDataSet= tds.getXSlice( TableUtil.closestColumn( tds, e.getX() ) );
+        VectorDataSet sliceDataSet= tds.getXSlice( DataSetUtil.closestColumn( tds, e.getX() ) );
                
         xxx[1]= System.currentTimeMillis()-e.birthMilli;                
         

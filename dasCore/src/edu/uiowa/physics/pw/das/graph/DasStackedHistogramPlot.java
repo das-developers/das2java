@@ -462,7 +462,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
         public DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException {
             Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
-            if ( xwidth==null ) xwidth= TableUtil.guessXTagWidth((TableDataSet)ds);
+            if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
             Units rdUnits= x.getUnits();
             if ( rdUnits instanceof LocationUnits ) {
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();

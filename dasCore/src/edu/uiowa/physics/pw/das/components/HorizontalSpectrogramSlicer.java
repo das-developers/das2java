@@ -136,7 +136,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         
         TableDataSet tds = (TableDataSet)ds;
         
-        int itable= TableUtil.tableIndexAt( tds, TableUtil.closestColumn( tds, e.getX() ) );
+        int itable= TableUtil.tableIndexAt( tds, DataSetUtil.closestColumn( tds, e.getX() ) );
         VectorDataSet sliceDataSet= tds.getYSlice( TableUtil.closestRow( tds, itable, e.getY() ), itable );
         
         xxx[1]= System.currentTimeMillis()-e.birthMilli;
