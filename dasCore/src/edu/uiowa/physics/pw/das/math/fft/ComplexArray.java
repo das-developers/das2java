@@ -210,9 +210,16 @@ public class ComplexArray {
     public static double[] magnitude( ComplexArray.Double array ) {
         double[] result= new double[array.length()];
         for ( int i=0; i<array.length(); i++ ) {
-            result[i]= Math.sqrt( Math.pow( array.getReal(i),2 ) + Math.pow( array.getImag(i), 2 ) );
+            result[i]= magnitude( array, i );
         }
         return result;
     }
-    
+
+   /**
+     * returns the magnitude of ah element in an array
+     */    
+    final public static double magnitude( ComplexArray.Double array, int i ) {
+        return Math.sqrt( Math.pow( array.getReal(i),2 ) + Math.pow( array.getImag(i), 2 ) );        
+    }
+
 }
