@@ -32,14 +32,14 @@ import edu.uiowa.physics.pw.das.datum.Units;
 public class UnitsConverter {
     
     public static final UnitsConverter IDENTITY = new UnitsConverter(1.0, 0.0);
-    public static final UnitsConverter TERA = new UnitsConverter(1e12, 0.0);
-    public static final UnitsConverter GIGA = new UnitsConverter(1e9, 0.0);
-    public static final UnitsConverter MEGA = new UnitsConverter(1e6, 0.0);
-    public static final UnitsConverter KILO = new UnitsConverter(1e3, 0.0);
-    public static final UnitsConverter MILLI = new UnitsConverter(1e-3, 0.0);
-    public static final UnitsConverter MICRO = new UnitsConverter(1e-6, 0.0);
-    public static final UnitsConverter NANO = new UnitsConverter(1e-9, 0.0);
-    public static final UnitsConverter PICO = new UnitsConverter(1e-12, 0.0);
+    public static final UnitsConverter TERA = new UnitsConverter(1e-12, 0.0);
+    public static final UnitsConverter GIGA = new UnitsConverter(1e-9, 0.0);
+    public static final UnitsConverter MEGA = new UnitsConverter(1e-6, 0.0);
+    public static final UnitsConverter KILO = new UnitsConverter(1e-3, 0.0);
+    public static final UnitsConverter MILLI = new UnitsConverter(1e3, 0.0);
+    public static final UnitsConverter MICRO = new UnitsConverter(1e6, 0.0);
+    public static final UnitsConverter NANO = new UnitsConverter(1e9, 0.0);
+    public static final UnitsConverter PICO = new UnitsConverter(1e12, 0.0);
     
     private final double offset;
     private final double scale;
