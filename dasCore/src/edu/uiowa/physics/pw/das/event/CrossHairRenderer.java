@@ -108,7 +108,7 @@ public class CrossHairRenderer implements DragRenderer {
                 
                 if (y.getUnits()!=tds.getYUnits()) {
                     throw new IllegalStateException("y units and dataset y units differ");
-                }                
+                }
                 
                 Datum zValue= TableUtil.closestDatum(tds,x,y);
                 
@@ -128,8 +128,12 @@ public class CrossHairRenderer implements DragRenderer {
                     DasAxis axis = ((TableDataSetConsumer)dataSetConsumer).getZAxis();
                     axis.getUnits().getDatumFormatterFactory().defaultFormatter();
                 }
-                
-                zAsString= nfz.format(zValue);
+                /* TODO: zValue.toString() should work fine */
+                if ( zValue.isFill() ) {
+                    zAsString= "fill";
+                } else {
+                    zAsString= nfz.format(zValue);
+                }
                 report= "x:"+xAsString+" y:"+yAsString+" z:"+zAsString;
             } else {
                 report= "x:"+xAsString+" y:"+yAsString;
