@@ -34,6 +34,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.client.DasServer;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.format.TimeDatumFormatter;
 import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.*;
@@ -157,18 +158,15 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         }
         
         try {
-            DasTimeFormatter formatter=null;
-            if ( start.getUnits() instanceof TimeLocationUnits ) {
-                formatter= new DasTimeFormatter(TimeContext.HOURS);
-                formatter.setAlwaysShowDate(true);
-            } else {
+            TimeDatumFormatter formatter = TimeDatumFormatter.DEFAULT;
+            if ( !(start.getUnits() instanceof TimeLocationUnits) ) {
                 throw new IllegalStateException( "start,end units are not TimeLocationUnits -- not supported" );
             }
             
             String formData= "dataset="+URLEncoder.encode(dataSetID,"UTF-8");
-            String startStr= formatter.format(start).replace(' ','T');            
+            String startStr= formatter.format(start);
             formData+= "&start_time="+URLEncoder.encode(startStr,"UTF-8");
-            String endStr= formatter.format(end).replace(' ','T');                        
+            String endStr= formatter.format(end);
             formData+= "&end_time="+URLEncoder.encode(endStr,"UTF-8");
             
             if (dsd.isRestrictedAccess() || key!=null ) {
