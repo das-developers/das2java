@@ -69,7 +69,7 @@ public class VectorUtil {
             pout.print("base=\""+base+"\" ");
             pout.print(" xUnits=\""+offsetUnits+"\" ");            
         } else {
-            pout.print(" xUnits=\""+vds.getXUnits());
+            pout.print(" xUnits=\""+vds.getXUnits()+"\"");
         }
         pout.println(" />");
         
