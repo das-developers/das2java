@@ -37,6 +37,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.io.InterruptedIOException;
+import org.w3c.dom.*;
 
 public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpdateListener {
     
@@ -359,4 +360,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     protected abstract void installRenderer();
     
     protected abstract void uninstallRenderer();
+    
+    protected abstract Element getDOMElement( Document document );
+    
 }
