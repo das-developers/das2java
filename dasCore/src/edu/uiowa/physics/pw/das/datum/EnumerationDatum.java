@@ -249,7 +249,7 @@ public class EnumerationDatum extends Datum {
             return datum.object.toString();
         }
         public String format( double d, Units units ) {
-            return format(create(d,units));
+            return format(Datum.create(d,units));
         }
     }
     
