@@ -31,6 +31,7 @@ import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.graph.*;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -171,7 +172,7 @@ public class XMultiYDataSetDescriptor extends StreamDataSetDescriptor {
                 System.arraycopy(data, i*elementSize + 1, ds.data[i].y, 0, elementSize - 1);
             }
             
-            return ds;
+            return null;
         }
     }
     
@@ -183,8 +184,10 @@ public class XMultiYDataSetDescriptor extends StreamDataSetDescriptor {
         return new DasAxis(Datum.create(0,getYUnits()), Datum.create(10,getYUnits()), row, col, DasAxis.VERTICAL);
     }
     
-    public edu.uiowa.physics.pw.das.graph.Renderer getRenderer(edu.uiowa.physics.pw.das.graph.DasPlot plot) {
-        return new edu.uiowa.physics.pw.das.graph.SymbolLineRenderer(plot,this);
+    public Renderer getRenderer(edu.uiowa.physics.pw.das.graph.DasPlot plot) {
+        Renderer result= new SymbolLineRenderer(this);
+        plot.addRenderer(result);
+        return result;
     }
  
     public edu.uiowa.physics.pw.das.graph.DasPlot getPlot( DasRow row, DasColumn col ) {
