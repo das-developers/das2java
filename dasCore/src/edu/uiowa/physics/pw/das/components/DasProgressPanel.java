@@ -95,7 +95,6 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         messageLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         
         progressBar = new JProgressBar();
-        System.out.println("$"+(progressBar.getMaximum()/100.0)+"0");
         progressBar.setOpaque(false);
         progressBar.setMaximumSize(progressBar.getPreferredSize());
         progressBar.setMinimumSize(progressBar.getPreferredSize());
