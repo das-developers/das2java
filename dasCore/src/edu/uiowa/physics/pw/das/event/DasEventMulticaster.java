@@ -31,7 +31,7 @@ import java.util.EventListener;
  */
 public class DasEventMulticaster extends java.awt.AWTEventMulticaster
     implements DataPointSelectionListener, DataRangeSelectionListener,
-    DasReaderListener, TimeRangeSelectionListener {
+    TimeRangeSelectionListener {
 
     /** Creates a new instance of DasEventMultiCaster */
     protected DasEventMulticaster(EventListener a, EventListener b) {
@@ -52,21 +52,6 @@ public class DasEventMulticaster extends java.awt.AWTEventMulticaster
         ((TimeRangeSelectionListener)a).TimeRangeSelected(e);
         ((TimeRangeSelectionListener)b).TimeRangeSelected(e);
     }
-    
-    public void readerStarted(DasReaderEvent e) {
-        ((DasReaderListener)a).readerStarted(e);
-        ((DasReaderListener)b).readerStarted(e);
-    }
-
-    public void readerUpdate(DasReaderEvent e) {
-        ((DasReaderListener)a).readerUpdate(e);
-        ((DasReaderListener)b).readerUpdate(e);
-    }
-    
-    public void readerFinished(DasReaderEvent e) {
-        ((DasReaderListener)a).readerUpdate(e);
-        ((DasReaderListener)b).readerUpdate(e);
-    }
 
     public static DataPointSelectionListener add(DataPointSelectionListener a, DataPointSelectionListener b) {
         if (a == null) return b;
@@ -81,12 +66,6 @@ public class DasEventMulticaster extends java.awt.AWTEventMulticaster
     }
     
     public static TimeRangeSelectionListener add(TimeRangeSelectionListener a, TimeRangeSelectionListener b) {
-        if (a == null) return b;
-        if (b == null) return a;
-        return new DasEventMulticaster(a, b);
-    }
-    
-    public static DasReaderListener add(DasReaderListener a, DasReaderListener b) {
         if (a == null) return b;
         if (b == null) return a;
         return new DasEventMulticaster(a, b);
@@ -109,13 +88,6 @@ public class DasEventMulticaster extends java.awt.AWTEventMulticaster
     public static TimeRangeSelectionListener remove(TimeRangeSelectionListener a, TimeRangeSelectionListener b) {
         if (a instanceof DasEventMulticaster) {
             return (TimeRangeSelectionListener)((DasEventMulticaster)a).remove(b);
-        }
-        return (a == b ? null : a);
-    }
-    
-    public static DasReaderListener remove(DasReaderListener a, DasReaderListener b) {
-        if (a instanceof DasEventMulticaster) {
-            return (DasReaderListener)((DasEventMulticaster)a).remove(b);
         }
         return (a == b ? null : a);
     }
