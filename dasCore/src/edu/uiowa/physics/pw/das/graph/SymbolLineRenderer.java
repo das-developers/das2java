@@ -113,24 +113,7 @@ public class SymbolLineRenderer extends Renderer {
         ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
         if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
         
-        graphics.setColor(color.toColor());
-                
-        double xSampleWidth;
-        if (dataSet.getProperty("xSampleWidth") != null) {
-            Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xSampleWidth");
-            xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
-        }
-        else {
-            //Try to load the legacy sample-width property.
-            String xSampleWidthString = (String)dataSet.getProperty("x_sample_width");
-            if (xSampleWidthString != null) {
-                double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
-                xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
-            }
-            else {
-                xSampleWidth = 1e31;
-            }
-        }
+        graphics.setColor(color.toColor());                        
         
         if (path != null) {
             psymConnector.draw(graphics, path, lineWidth);
