@@ -65,7 +65,7 @@ public class DasApplication {
          || "Linux".equals( osName );
     }
     
-    private static boolean headAvailable() {
+    public static boolean isHeadAvailable() {
         return ( System.getProperty( "awt.toolkit" ) != null );
         /*
                //boolean headAvailable= !java.awt.GraphicsEnvironment.isHeadless();       
@@ -91,21 +91,21 @@ public class DasApplication {
     }
     
     public boolean isHeadless() {        
-        if ( !headAvailable() && !"true".equals(System.getProperty("headless")) ) {
+/*        if ( !headAvailable() && !"true".equals(System.getProperty("headless")) ) {
             getLogger().info("setting headless to true");
             setHeadless( true );
-        }
-        return "true".equals(System.getProperty("headless"));
+        } */
+        return "true".equals(System.getProperty("java.awt.headless"));
     }
     
     public void setHeadless( boolean headless ) {
         if ( headless ) {
-            System.setProperty("headless","true");
+            System.setProperty("java.awt.headless","true");
         } else {
-            if ( ! headAvailable() ) {
+            if ( ! isHeadAvailable() ) {
                 throw new IllegalArgumentException( "attempt to unset headless when environment is headless." );
             }                 
-            System.setProperty("headless","false");
+            System.setProperty("java.awt.headless","false");
         }
     }
     
