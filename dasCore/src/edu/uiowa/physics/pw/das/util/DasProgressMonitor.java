@@ -30,7 +30,7 @@ package edu.uiowa.physics.pw.das.util;
  * {@link #isCancelled()} prior to calling {@link #setTaskProgress(int)}.
  * Implementations of this interface should throw an
  * <code>IllegalArgumentException</code> when <code>setTaskProgress(int)</code>
- * is called after the operation has been cancelled. 
+ * is called after the operation has been cancelled.
  * <p>
  * Code using the <code>ProgressMonitor</code> should call {@link started()}
  * before <code>setTaskProgress()</code> is called for the first time.
@@ -39,16 +39,31 @@ package edu.uiowa.physics.pw.das.util;
  * implementation may throw an <code>IllegalArgumentException</code> if
  * <code>setTaskProgress(int)</code> is called before <code>started()</code> or
  * after <code>finished()</code> is called.
- * 
+ *
  * @author  jbf
  */
 public interface DasProgressMonitor {
+    
+    /**
+     * Use NULL when you do not need or wish to use a progressMonitor.  It simply
+     * ignores the progress messages.
+     */    
+    public static final DasProgressMonitor NULL= new DasProgressMonitor() {
+        public void setTaskSize(long taskSize) {} ;
+        public void setTaskProgress(long position) throws IllegalArgumentException {};
+        public long getTaskProgress() { return 0; };
+        public void started() {};
+        public void finished() {};
+        public void cancel() {};
+        public boolean isCancelled() { return false; };        
+        public void setAdditionalInfo(String s) { };        
+    };
     
     /** Sets the maximum value for the task progress of this
      * <code>ProgressMonitor</code>.
      * @param taskSize maximum value for the task progress.  A taskSize of -1 indicates the taskSize is indeterminate.
      */
-    void setTaskSize(long taskSize);    
+    void setTaskSize(long taskSize);
     
     /** Notifies the ProgressMonitor of a change in the progress
      * of the task.
@@ -56,43 +71,43 @@ public interface DasProgressMonitor {
      * @throws IllegalArgumentException if {@link isCancelled()} returns true or,
      * possibly if started() has not been called or
      * finished() has been called.
-     */    
+     */
     void setTaskProgress(long position) throws IllegalArgumentException;
-
+    
     /** Returns the current progress of the monitored task.
      * @return the current progress of the monitored task.
-     */    
+     */
     long getTaskProgress();
-
+    
     /** Notifies the <code>ProgressMonitor</code> that the task
      * being monitored has started.  If the <code>ProgressMonitor</code>
      * is in a cancelled state when this method is called, that <code>
      * ProgressMonitor</code> should be 'uncancelled'.
-     */    
+     */
     void started();
     
     /** Notifies the <code>ProgressMonitor</code> that the task
      * being monitored has finished.
-     */    
+     */
     void finished();
-
+    
     /** Notifies the <code>ProgressMonitor</code> that the task
      * being monitored should be canceled.  After this method is
      * called, implementations should return <code>true</code> on
      * any subsequent calls to {@link #isCancelled()} and should
      * throw an IllegalStateException on any subsequent calls to
      * {@link #setTaskProgress(int)}.
-     */    
+     */
     void cancel();
     
     /** Returns <code>true</code> if the operation being tracked
      * should be cancelled.
      * @return <code>true</code> if the operation being tracked
      * should be cancelled.
-     */    
+     */
     boolean isCancelled();
     
     /** additional information to be displayed alongside the progress. */
-    public void setAdditionalInfo(String s); 
-
+    public void setAdditionalInfo(String s);
+    
 }
