@@ -153,9 +153,6 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
             showPopup();
         }
-        else {
-            repaint();
-        }
     }
     
     public void drawContent(Graphics2D g) {

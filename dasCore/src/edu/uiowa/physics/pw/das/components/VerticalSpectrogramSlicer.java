@@ -166,9 +166,6 @@ extends DasPlot implements DataPointSelectionListener {
         if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
             showPopup();
         }
-        else {
-            repaint();
-        }
         
         yValue= e.getY();
         Datum xValue = e.getX();
