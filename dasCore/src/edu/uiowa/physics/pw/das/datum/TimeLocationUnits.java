@@ -23,9 +23,7 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-import edu.uiowa.physics.pw.das.datum.DasTimeFormatter;
-import edu.uiowa.physics.pw.das.datum.LocationUnits;
-
+import edu.uiowa.physics.pw.das.datum.format.*;
 
 /**
  *
@@ -41,17 +39,13 @@ public class TimeLocationUnits extends LocationUnits {
     public TimeLocationUnits( String id, String description, Units offsetUnits ) {
         super(id,description,offsetUnits);
     }
-    
-    public String format(double d) {
-        DasTimeFormatter dtf= new DasTimeFormatter(TimeContext.HOURS);
-        dtf.setAlwaysShowDate(true);
-        String result= dtf.format(d,this);
-        return result;
+
+    public DatumFormatterFactory getDatumFormatterFactory() {
+        return TimeDatumFormatterFactory.getInstance();
     }
     
-    public double parse(String s) throws java.text.ParseException {
-        Datum datum= TimeUtil.create(s);
-        return datum.doubleValue(this);        
+    public Datum parse(String s) throws java.text.ParseException {
+        return TimeUtil.toDatum(TimeUtil.parseTime(s));
     }
     
 }

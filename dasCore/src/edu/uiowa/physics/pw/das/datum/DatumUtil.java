@@ -23,8 +23,10 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-//import edu.uiowa.physics.pw.das.datum.format.*;
+import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.util.DasMath;
+
+import java.util.regex.*;
 
 /**
  *
@@ -36,7 +38,6 @@ public final class DatumUtil {
     private DatumUtil() {
     }
     
-/*
     public static DatumFormatter bestFormatter(Datum minimum, Datum maximum, int nsteps) {
         if ( minimum.getUnits() != minimum.getUnits() ) {
             throw new IllegalArgumentException( "Units don't match!" );
@@ -86,13 +87,13 @@ public final class DatumUtil {
         else if (secondsPerStep < 60.) {
             return TimeDatumFormatter.SECONDS;
         }
-        else if (secondsPerStep < 3600.) {
+        else if (secondsPerStep < 86400.) {
             return TimeDatumFormatter.MINUTES;
         }
         else {
             return TimeDatumFormatter.DAYS;
         }
     }
- */
+    
     
 }

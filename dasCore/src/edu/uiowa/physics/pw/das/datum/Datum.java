@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-import edu.uiowa.physics.pw.das.datum.DasFormatter;
+import edu.uiowa.physics.pw.das.datum.format.*;
 
 
 /**
@@ -34,10 +34,7 @@ public class Datum {
     
     private double value;
     private Units units;
-    private DasFormatter formatter;
-    
-    static int _allocations= 0;
-    static java.util.Hashtable _allocation_source= new java.util.Hashtable();
+    private DatumFormatter formatter;
     
     /** Creates a new instance of Datum */
     protected Datum( double value ) {
@@ -45,22 +42,13 @@ public class Datum {
     }
     
     protected Datum( double value, Units units ) {
-        this.value= value;
-        this.units= units;
-        this.formatter= DasFormatter.create(units);
-        _allocations++;
-        //        if (_allocation_source.containsKey(DasDie.calledBy())) {
-        //            _allocation_source.put(DasDie.calledBy(),(Integer)((Integer)_allocation_source.get(DasDie.calledBy())).intValue()+1);
-        //        } else {
-        //           _allocation_source.put(DasDie.calledBy().put(1));
-        //        }
-        if ((_allocations % 5000)==0) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("  total Datums allocated: "+_allocations);
-            //            edu.uiowa.physics.pw.das.util.DasDie.println("  _allocation_source: "+_allocation_source);
-            //            if (_allocations>100000) {
-            //                Thread.dumpStack();
-            //            }
-        }
+        this(value, units, units.getDatumFormatterFactory().defaultFormatter());
+    }
+    
+    protected Datum (double value, Units units, DatumFormatter formatter) {
+        this.value = value;
+        this.units = units;
+        this.formatter = formatter;
     }
     
     public double doubleValue(Units units) {
@@ -225,15 +213,10 @@ public class Datum {
     public static Datum create( double value, Units units ) {
             return new Datum( value, units );
     }
-   
-// TODO
-//    public static Datum create( String s ) {
-//        try {
-//            return Datum.create(Double.parseDouble(s)); 
-//        } catch ( NumberFormatException e ) {
-//            return Datum.create(s);
-//        }
-//    }
+    
+    public static Datum create(double value, Units units, DatumFormatter formatter) {
+        return new Datum(value, units, formatter);
+    }
     
     public static void main( String[] args ) throws Exception {
         Datum temp1= new Datum( 32, Units.fahrenheit );
@@ -260,46 +243,8 @@ public class Datum {
         edu.uiowa.physics.pw.das.util.DasDie.println(y.toString());
     }
     
-    public DasFormatter getFormatter() {
-        if (this.formatter==null) {
-            formatter= DasFormatter.create(getUnits());
-        }
+    public DatumFormatter getFormatter() {
         return this.formatter;
-    }
-    
-    public void setFormatter(DasFormatter formatter) {
-        this.formatter= formatter;
-    }
-    
-    public static DasFormatter getFormatter( Datum[] datums, int nsteps ) {
-        throw new IllegalArgumentException("not ready yet");
-    }
-    
-    public DasFormatter getFormatter( Datum datum2, int nsteps ) {
-        Datum datum1= this;
-        if ( datum1.units != datum2.units ) {
-           throw new IllegalArgumentException( "Units don't match!" );
-        } else {
-           double discernable= Math.abs( datum1.subtract(datum2).getValue() / nsteps );
-           int nFraction= -1 * (int)Math.floor( edu.uiowa.physics.pw.das.util.DasMath.log10( discernable ) );
-           nFraction= nFraction<0 ? 0 : nFraction;
-           DasFormatter formatter= DasFormatter.create(getUnits());
-           formatter.setMaximumFractionDigits(nFraction);
-           formatter.setMinimumFractionDigits(nFraction);
-           return formatter;
-        }
-    }
-    
-    public static DasFormatter getFormatter( Datum datum1, Datum datum2, int nsteps ) {
-        return datum1.getFormatter( datum2, nsteps );
-    }
-    
-    public String format() {
-        return formatter.format(this);
-    }
-    
-    public Datum parse(String s) throws java.text.ParseException {
-        return formatter.parse(s,this);
     }
     
 }

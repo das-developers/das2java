@@ -23,9 +23,6 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-import edu.uiowa.physics.pw.das.datum.DasFormatter;
-import edu.uiowa.physics.pw.das.datum.Datum;
-
 import java.util.HashMap;
 
 /**
@@ -34,8 +31,8 @@ import java.util.HashMap;
  */
 public class EnumerationDatum extends Datum {
     
-    Object object;
-    public static DasFormatter nf1;
+    private Object object;
+    //public static DasFormatter nf1;
     public static HashMap instances;
     public static HashMap highestOrdinal;
     public static HashMap objects;
@@ -239,7 +236,8 @@ public class EnumerationDatum extends Datum {
         }
         return result;
     }
-    
+
+    /*
     public class EnumerationFormatter extends DasFormatter {
         public String format(Object o) {
             if ( !( o instanceof EnumerationDatum ) ) {
@@ -252,15 +250,6 @@ public class EnumerationDatum extends Datum {
             return format(Datum.create(d,units));
         }
     }
-    
-    
-    public DasFormatter getFormatter( Datum datum2, int nsteps ) {
-        return getFormatter();
-    }
-    
-    public DasFormatter getFormatter() {
-        if (nf1==null) nf1=new EnumerationFormatter();
-        return nf1;
-    }
-    
+     */
+
 }

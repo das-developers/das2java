@@ -23,11 +23,10 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
-import java.util.*;
+import edu.uiowa.physics.pw.das.datum.format.*;
 
-import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.*;
+import java.text.ParseException;
 /**
  *
  * @author  jbf
@@ -141,14 +140,6 @@ public class Units {
         return id;
     }
     
-    public double parse(String s) throws java.text.ParseException {
-        throw new IllegalArgumentException("not implemented for Units besides TimeLocationUnits.");
-    }
-    
-    public String format(double d) {
-        throw new IllegalArgumentException("not implemented for Units besides TimeLocationUnits.");
-    }
-    
     public static void main( String[] args ) {
         dumpConversionTable();
         
@@ -177,6 +168,21 @@ public class Units {
         x= System.currentTimeMillis()-t1;
         System.out.println("Time(ms) of scale, offset calculation: "+x);                
         
+    }
+    
+    public DatumFormatterFactory getDatumFormatterFactory() {
+        return DefaultDatumFormatterFactory.getInstance();
+    }
+    
+    public Datum parse(String s) throws ParseException {
+        try {
+            return Datum.create(Double.parseDouble(s), this);
+        }
+        catch (NumberFormatException nfe) {
+            ParseException pe = new ParseException(nfe.getMessage(), 0);
+            pe.initCause(nfe);
+            throw pe;
+        }
     }
     
 }

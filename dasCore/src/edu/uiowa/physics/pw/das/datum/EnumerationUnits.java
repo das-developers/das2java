@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.datum;
 
 import java.util.HashMap;
+import edu.uiowa.physics.pw.das.datum.format.*;
 
 /**
  *
@@ -54,4 +55,9 @@ public class EnumerationUnits extends Units {
         }
         
     }
+    
+    public DatumFormatterFactory getDatumFormatterFactory() {
+        return EnumerationDatumFormatterFactory.getInstance();
+    }
+    
 }
