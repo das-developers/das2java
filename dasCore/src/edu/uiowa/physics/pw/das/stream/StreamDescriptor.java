@@ -131,6 +131,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
 
     public static Document parseHeader(Reader header) throws DasIOException, DasStreamFormatException {
         try {
+            /*
             header = new FilterReader(header) {
                 public int read() throws IOException {
                     int result = super.read();
@@ -147,6 +148,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
                     return result;
                 }
             };
+             */
             DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
             InputSource source = new InputSource(header);
             Document document= builder.parse(source);
