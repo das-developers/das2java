@@ -24,7 +24,6 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
@@ -78,7 +77,7 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
                 max= nnMax;
             }
             TimeRangeSelectionEvent te=
-            new TimeRangeSelectionEvent(parent,(edu.uiowa.physics.pw.das.datum.TimeDatum)min,(edu.uiowa.physics.pw.das.datum.TimeDatum)max);
+            new TimeRangeSelectionEvent(parent,(edu.uiowa.physics.pw.das.datum.Datum)min,(edu.uiowa.physics.pw.das.datum.Datum)max);
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else if (e1.isBack()) {
             timeAxis.setDataRangePrev();
@@ -91,14 +90,14 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
             tmin= timeAxis.getDataMinimum().subtract(delta);
             tmax= timeAxis.getDataMaximum().subtract(delta);            
             TimeRangeSelectionEvent te=
-            new TimeRangeSelectionEvent(parent,(edu.uiowa.physics.pw.das.datum.TimeDatum)tmin,(edu.uiowa.physics.pw.das.datum.TimeDatum)tmax);
+            new TimeRangeSelectionEvent(parent,(edu.uiowa.physics.pw.das.datum.Datum)tmin,(edu.uiowa.physics.pw.das.datum.Datum)tmax);
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else if (e1.getGesture()==Gesture.SCANNEXT) {
             edu.uiowa.physics.pw.das.datum.Datum delta= ( timeAxis.getDataMaximum().subtract(timeAxis.getDataMinimum()) ).multiply(0.9);
             tmin= timeAxis.getDataMinimum().add(delta);
             tmax= timeAxis.getDataMaximum().add(delta);            
             TimeRangeSelectionEvent te=
-            new TimeRangeSelectionEvent(parent,(edu.uiowa.physics.pw.das.datum.TimeDatum)tmin,(edu.uiowa.physics.pw.das.datum.TimeDatum)tmax);
+            new TimeRangeSelectionEvent(parent,(edu.uiowa.physics.pw.das.datum.Datum)tmin,(edu.uiowa.physics.pw.das.datum.Datum)tmax);
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else {
             edu.uiowa.physics.pw.das.util.DasDie.println(e1.getGesture());

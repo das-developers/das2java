@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.datum.Units;
 
 /**
@@ -62,7 +61,7 @@ public class TimeContext {
         return s;
     }
     
-    public static TimeContext getContext(TimeDatum t1, TimeDatum t2) {
+    public static TimeContext getContext( Datum t1, Datum t2) {
         TimeContext context;
         double seconds= t2.subtract(t1).convertTo(Units.seconds).getValue();
         if (seconds<1) { context=MILLISECONDS; }

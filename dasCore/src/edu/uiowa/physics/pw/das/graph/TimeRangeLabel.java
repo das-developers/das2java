@@ -75,7 +75,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
             double seconds;
             int jd;  // julianDay
             
-            TimeDatum td= (TimeDatum)tdo;
+            Datum td= (Datum)tdo;
             
             if (td.getUnits()==Units.mj1958) {
                 double mj1958= td.doubleValue(Units.mj1958);

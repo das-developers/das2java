@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.stream;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.datum.UnitsConverter;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.XMultiY;

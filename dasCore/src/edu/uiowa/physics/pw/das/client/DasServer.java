@@ -262,7 +262,7 @@ public class DasServer {
         
             String formData= "server=authenticator";
             formData+= "&user="+URLEncoder.encode(user, "UTF-8");
-            String cryptPass= edu.uiowa.physics.pw.das.util.crypt.crypt(pass);
+            String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(pass);
         
             if (pass.equals("sendPropertyPassword")) {
                 cryptPass= DasProperties.getInstance().getProperty("password");
@@ -300,9 +300,9 @@ public class DasServer {
         try {
             String formData= "server=changePassword";
             formData+= "&user="+URLEncoder.encode(user, "UTF-8");
-            String cryptPass= edu.uiowa.physics.pw.das.util.crypt.crypt(oldPass);
+            String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(oldPass);
             formData+= "&passwd="+URLEncoder.encode(cryptPass, "UTF-8");
-            String cryptNewPass= edu.uiowa.physics.pw.das.util.crypt.crypt(newPass);
+            String cryptNewPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(newPass);
             formData+= "&newPasswd="+URLEncoder.encode(cryptNewPass, "UTF-8");
         
             URL server= new URL("http",host,port,path+"?"+formData);

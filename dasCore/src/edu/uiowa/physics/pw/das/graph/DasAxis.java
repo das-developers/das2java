@@ -136,7 +136,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static DasAxis create( double [] data, Units units, DasRow row, DasColumn column, int orientation, boolean isLog ) {
         DasAxis result;
         if ( units instanceof TimeLocationUnits ) {
-            result= new DasTimeAxis((TimeDatum)Datum.create(0,units),(TimeDatum)Datum.create(0,units),row,column,orientation);
+            result= new DasTimeAxis(Datum.create(0,units),Datum.create(0,units),row,column,orientation);
         } else {
             result= new DasAxis(Datum.create(0,units),Datum.create(0,units),row,column,orientation,isLog);
         }

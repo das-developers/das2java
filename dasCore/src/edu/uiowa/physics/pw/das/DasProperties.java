@@ -117,7 +117,7 @@ public class DasProperties extends Properties {
             String propertyName= (String)propertyOrder.get(row);
             if (propertyName.equals("password")) {
                 if (!value.toString().equals("")) {
-                    value= edu.uiowa.physics.pw.das.util.crypt.crypt(value.toString());
+                    value= edu.uiowa.physics.pw.das.util.Crypt.crypt(value.toString());
                 }
             } else if ( propertyName.equals("debugLevel") ) {
                 edu.uiowa.physics.pw.das.util.DasDie.setDebugVerbosityLevel(value.toString());

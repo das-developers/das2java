@@ -223,11 +223,7 @@ public class Datum {
     }
     
     public static Datum create( double value, Units units ) {
-        if ( units instanceof TimeLocationUnits ) {
-            return new TimeDatum( value, units );
-        } else {
             return new Datum( value, units );
-        }
     }
    
 // TODO
@@ -235,7 +231,7 @@ public class Datum {
 //        try {
 //            return Datum.create(Double.parseDouble(s)); 
 //        } catch ( NumberFormatException e ) {
-//            return TimeDatum.create(s);
+//            return Datum.create(s);
 //        }
 //    }
     
@@ -261,7 +257,7 @@ public class Datum {
         edu.uiowa.physics.pw.das.util.DasDie.println(""+temp3.subtract(temp1));
         
         edu.uiowa.physics.pw.das.util.DasDate x= new edu.uiowa.physics.pw.das.util.DasDate("09/15/1997 17:27:32");
-        TimeDatum y= (TimeDatum)TimeUtil.create(x);
+        Datum y= TimeUtil.create(x);
         edu.uiowa.physics.pw.das.util.DasDie.println(x.toString());
         edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDate.create(y));
     }

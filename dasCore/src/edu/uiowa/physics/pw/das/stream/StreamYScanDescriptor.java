@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.stream;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.datum.UnitsConverter;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.XTaggedYScan;
@@ -42,7 +41,7 @@ public class StreamYScanDescriptor extends XTaggedYScanDataSetDescriptor impleme
     
     int nitems=-999;
     double[] yCoordinate;
-    TimeDatum startTime, endTime;
+    Datum startTime, endTime;
     
     ArrayList records;
     String name;
@@ -55,8 +54,8 @@ public class StreamYScanDescriptor extends XTaggedYScanDataSetDescriptor impleme
         }
         NamedNodeMap attr= node.getAttributes();
         Node attrNode;
-        this.startTime= (TimeDatum)stream.getStartTime();
-        this.endTime= (TimeDatum)stream.getEndTime();
+        this.startTime= (Datum)stream.getStartTime();
+        this.endTime= (Datum)stream.getEndTime();
         
         if ( ( attrNode=attr.getNamedItem("nitems") ) != null ) {
             nitems= Integer.parseInt(attrNode.getNodeValue());

@@ -56,7 +56,7 @@ public class DasFormatter implements Cloneable {
             throw new IllegalArgumentException( "Units don't match!" );
         }
         if ( datum1.getUnits() instanceof TimeLocationUnits ) {
-            return new DasTimeFormatter( TimeContext.getContext((TimeDatum)datum1,(TimeDatum)datum2) );
+            return new DasTimeFormatter( TimeContext.getContext(datum1,datum2) );
         } else {
             double discernable= Math.abs( datum1.subtract(datum2).getValue() / nsteps );
             int nFraction= -1 * (int)Math.floor( edu.uiowa.physics.pw.das.util.DasMath.log10( discernable ) );

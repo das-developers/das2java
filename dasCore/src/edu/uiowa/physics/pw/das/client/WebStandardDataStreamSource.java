@@ -147,9 +147,20 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         }
         
         try {
+            DasTimeFormatter formatter=null;
+            if ( start.getUnits() instanceof TimeLocationUnits ) {
+                formatter= new DasTimeFormatter(TimeContext.HOURS);
+                formatter.setAlwaysShowDate(true);
+            } else {
+                throw new IllegalStateException( "start,end units are not TimeLocationUnits -- not supported" );
+            }
+            
             String formData= "dataset="+URLEncoder.encode(dataSetID,"UTF-8");
-            formData+= "&start_time="+URLEncoder.encode((params==null?"":params+" ")+start.toString(),"UTF-8");
-            formData+= "&end_time="+URLEncoder.encode(end.toString(),"UTF-8");
+            String startStr= formatter.format(start).replace(' ','T');            
+            formData+= "&start_time="+URLEncoder.encode(startStr,"UTF-8");
+            String endStr= formatter.format(end).replace(' ','T');                        
+            formData+= "&end_time="+URLEncoder.encode(endStr,"UTF-8");
+            formData+= URLEncoder.encode((params==null?"":params+" "),"UTF-8");
             
             if (dsd.isRestrictedAccess() || key!=null ) {
                 if (key==null) {

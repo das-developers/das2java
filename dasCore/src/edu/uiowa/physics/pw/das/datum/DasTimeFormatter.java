@@ -48,7 +48,7 @@ public class DasTimeFormatter extends DasFormatter {
         return jd;
     }
             
-    public String format(TimeDatum td) {
+    public String format( Datum td) {
         
         double seconds;
         int jd;  // julianDay
@@ -140,10 +140,10 @@ public class DasTimeFormatter extends DasFormatter {
     
     public String format(Object o) {
         // Ed, does my code do anything?
-        if ( !( o instanceof TimeDatum ) ) {
-            throw new IllegalArgumentException("Argument is not a TimeDatum! ("+o.getClass().getName()+")" );
+        if ( !( o instanceof Datum ) ) {
+            throw new IllegalArgumentException("Argument is not a Datum! ("+o.getClass().getName()+")" );
         }
-        TimeDatum d= (TimeDatum)o;
+        Datum d= (Datum)o;
         return format(d);
     }
     
@@ -168,7 +168,7 @@ public class DasTimeFormatter extends DasFormatter {
     }
     
     public static void main( String[] args ) {
-        TimeDatum d= (TimeDatum)TimeUtil.create("2001-3-1");
+        Datum d= TimeUtil.create("2001-3-1");
         DasTimeFormatter t= new DasTimeFormatter(TimeContext.DAYS);
         DasTimeFormatter t1= new DasTimeFormatter(TimeContext.MILLISECONDS);
         edu.uiowa.physics.pw.das.util.DasDie.println(t.format(d));
@@ -178,7 +178,7 @@ public class DasTimeFormatter extends DasFormatter {
         edu.uiowa.physics.pw.das.util.DasDie.println("---------------------");
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(d));
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(TimeUtil.create("2001-3-1 01:14")));
-        TimeDatum d2= (TimeDatum)TimeUtil.create("1996-3-1 01:14");
+        Datum d2= TimeUtil.create("1996-3-1 01:14");
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(d2));
         edu.uiowa.physics.pw.das.util.DasDie.println(t.format(d2));
     }

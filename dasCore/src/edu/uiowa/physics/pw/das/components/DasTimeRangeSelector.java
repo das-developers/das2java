@@ -27,7 +27,6 @@ package edu.uiowa.physics.pw.das.components;
  *
  * @author  jbf
  */
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
@@ -153,21 +152,21 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
             setStartTime(getStartTime().subtract(twidth));
             setEndTime(getEndTime().subtract(twidth));
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
         } else if (command.equals("next")) {
             double twidth= getEndTime().subtract(getStartTime());
             setStartTime(getStartTime().add(twidth));
             setEndTime(getEndTime().add(twidth));
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
         } else if (command.equals("startTime")) {
             setStartTime(getStartTime());
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
         } else if (command.equals("endTime")) {
             setEndTime(getEndTime());
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,(TimeDatum)TimeUtil.create(startTime),(TimeDatum)TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
         }
     }
     

@@ -30,7 +30,6 @@ import edu.uiowa.physics.pw.das.event.HorizontalSlicerMouseModule;
 import edu.uiowa.physics.pw.das.event.VerticalSlicerMouseModule;
 import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -201,8 +200,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         else
             edu.uiowa.physics.pw.das.util.DasDie.die("You can't call setYAxis for stackedHistogramPlot");
     }
-    
-    
+        
     protected void updatePlotImage() {
         
         Component parent= getParent();
@@ -256,6 +254,10 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         XTaggedYScan[] data= rebinDs.data;
         XTaggedYScan[] peaks= rebinDs.getPeaks();
         XTaggedYScan[] weights= rebinDs.getWeights();
+                
+        Rectangle2D.Double r= new Rectangle2D.Double();
+        Line2D.Double l= new Line2D.Double();
+        Rectangle2D.Double rmax= new Rectangle2D.Double();
         
         for (int j=0; j<xtysData.y_coordinate.length; j++) {
             DasLabelAxis yAxis= (DasLabelAxis)getYAxis();
@@ -289,13 +291,10 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             double [] binStops= xbins.binStops();
             
             int y0= yBase;
-            Rectangle2D.Double r= new Rectangle2D.Double();
-            Line2D.Double l= new Line2D.Double();
-            Rectangle2D.Double rmax= new Rectangle2D.Double();
             
             int littleRowHeight= littleRow.getHeight();
             double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
-                        
+            
             for (int ibin=0; ibin<data.length; ibin++) {
                 int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
                 int x1;
@@ -322,7 +321,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                         }
                     }
                     r.setRect(x0,yAvg,(x1-x0),yHeight);
-                    g.fill(r);                    
+                    g.fill(r);
                 }
             }
             

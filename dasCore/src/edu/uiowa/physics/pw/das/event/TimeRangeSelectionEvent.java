@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.datum.TimeDatum;
+import edu.uiowa.physics.pw.das.datum.Datum;
 
 /**
  *
@@ -31,22 +31,22 @@ import edu.uiowa.physics.pw.das.datum.TimeDatum;
  */
 public class TimeRangeSelectionEvent extends DasEvent {
     
-    private edu.uiowa.physics.pw.das.datum.TimeDatum startTime = null;
+    private edu.uiowa.physics.pw.das.datum.Datum startTime = null;
     
-    private edu.uiowa.physics.pw.das.datum.TimeDatum endTime = null;
+    private edu.uiowa.physics.pw.das.datum.Datum endTime = null;
     
     /** Creates a new instance of TimeRangeSelectionEvent */
-    public TimeRangeSelectionEvent( Object source, edu.uiowa.physics.pw.das.datum.TimeDatum startTime, edu.uiowa.physics.pw.das.datum.TimeDatum endTime ) {
+    public TimeRangeSelectionEvent( Object source, edu.uiowa.physics.pw.das.datum.Datum startTime, edu.uiowa.physics.pw.das.datum.Datum endTime ) {
         super(source);
         this.startTime= startTime;
         this.endTime= endTime;        
     }
     
-    public edu.uiowa.physics.pw.das.datum.TimeDatum getStartTime() {
+    public edu.uiowa.physics.pw.das.datum.Datum getStartTime() {
         return startTime;
     }
     
-    public edu.uiowa.physics.pw.das.datum.TimeDatum getEndTime() {
+    public edu.uiowa.physics.pw.das.datum.Datum getEndTime() {
         return endTime; 
     }
     

@@ -181,7 +181,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
             
             data = readFloats(in,"", start, end);
                         
-            TimeDatum timeBase= (TimeDatum)start.convertTo(ds.getXUnits());
+            Datum timeBase= start.convertTo(ds.getXUnits());
             
             elementSize = y_coordinate.length + 1;
             elementCount = data.length / elementSize;

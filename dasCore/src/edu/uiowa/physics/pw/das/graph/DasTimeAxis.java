@@ -81,10 +81,10 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     }
     
     public DasTimeAxis( DasDate timeBase, DasDate timeMax, DasRow row, DasColumn column, int orientation) {
-        this((TimeDatum)TimeUtil.create(timeBase), (TimeDatum)TimeUtil.create(timeMax), row, column, orientation);
+        this(TimeUtil.create(timeBase), TimeUtil.create(timeMax), row, column, orientation);
     }
     
-    public DasTimeAxis( TimeDatum startt, TimeDatum endt, DasRow row, DasColumn column, int orientation) {
+    public DasTimeAxis( Datum startt, Datum endt, DasRow row, DasColumn column, int orientation) {
         super(startt, endt, row, column, orientation, false);
         maybeInitializeScanButtons();
         setAnimated(true);
@@ -164,16 +164,16 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     
     public void setDataRange( DasDate timeMin, DasDate timeMax ) {
         super.setDataRange( TimeUtil.create(timeMin), TimeUtil.create(timeMax) );
-        TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this,(TimeDatum)this.getDataMinimum(),(TimeDatum)this.getDataMaximum());
+        TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this,(Datum)this.getDataMinimum(),(Datum)this.getDataMaximum());
         fireTimeRangeSelectionListenerTimeRangeSelected(e);
     }
     
     public DasDate getTimeMaximum() {
-        return DasDate.create((TimeDatum)getDataMaximum());
+        return DasDate.create(getDataMaximum());
     }
     
     public DasDate getTimeMinimum() {
-        return DasDate.create((TimeDatum)getDataMinimum());
+        return DasDate.create(getDataMinimum());
     }
     
     public void setTimeMaximum(DasDate d) {
@@ -493,7 +493,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             DataSet x= dsd.getDataSet(
                 new Double(interval.convertTo(Units.seconds).getValue()),
                 DasDate.create(data_minimum),
-                DasDate.create((TimeDatum)data_maximum.add(new Datum(1.0,Units.seconds)))
+                DasDate.create((Datum)data_maximum.add(new Datum(1.0,Units.seconds)))
             );
             tcaData = (TCADataSet)x;
         }
@@ -584,7 +584,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
                 leftEdge = rightEdge - width;
                 g.drawString(item, leftEdge, baseLine);
             }
-            TimeDatum date = (TimeDatum)Datum.create(value,getUnits());
+            Datum date = Datum.create(value,getUnits());
             DasTimeFormatter nf= (DasTimeFormatter)getFormatter();
             if (TimeUtil.getSecondsSinceMidnight(date) == 0 &&
             nf.getContext() == TimeContext.HOURS ) {
@@ -597,7 +597,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             }
         }
         else if (getOrientation() == BOTTOM && areTickLabelsVisible()) {
-            TimeDatum date = (TimeDatum)Datum.create(value,getUnits());
+            Datum date = Datum.create(value,getUnits());
             DasTimeFormatter nf= (DasTimeFormatter)getFormatter();
             if (TimeUtil.getSecondsSinceMidnight(date) == 0 &&
             nf.getContext() == TimeContext.HOURS ) {
@@ -790,7 +790,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     }
 
     public static DasTimeAxis createNamedTimeAxis(String name) {
-        DasTimeAxis axis = new DasTimeAxis((TimeDatum)TimeUtil.create("2000-1-1"), (TimeDatum)TimeUtil.create("2000-1-2"), null, null, DasAxis.HORIZONTAL);
+        DasTimeAxis axis = new DasTimeAxis((Datum)TimeUtil.create("2000-1-1"), (Datum)TimeUtil.create("2000-1-2"), null, null, DasAxis.HORIZONTAL);
         if (name == null) {
             name = "timeaxis_" + Integer.toHexString(System.identityHashCode(axis));
         }

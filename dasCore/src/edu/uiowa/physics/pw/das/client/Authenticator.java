@@ -96,7 +96,7 @@ public class Authenticator extends JPanel {
                 }
                 DasProperties.getInstance().setProperty("username",username);
                 if (!pass.equals("sendPropertyPassword")) {
-                    String cryptPass= edu.uiowa.physics.pw.das.util.crypt.crypt(pass);
+                    String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(pass);
                     DasProperties.getInstance().setProperty("password",cryptPass);
                 }
                 DasProperties.getInstance().writePersistentProperties();

@@ -122,7 +122,7 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
             ds.ny = ny;
             elementSize = ny + 1;
         
-            TimeDatum timeBase= (TimeDatum)start.convertTo(ds.getXUnits());
+            Datum timeBase= start.convertTo(ds.getXUnits());
             
             data = readDoubles(in, "", start, end);
             elementCount = data.length / elementSize;
