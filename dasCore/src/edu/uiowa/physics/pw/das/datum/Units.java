@@ -33,80 +33,31 @@ import java.text.ParseException;
  */
 public abstract class Units {
     
-    private String id;
-    private String description;
-    
-    protected Units( String id ) {
-        this( id, "" );
-    };
-    
-    protected Units( String id, String description ) {
-        this.id= id;
-        this.description= description;
-    };
-    
-    private static HashMap conversionTable;
-    
-    private static HashMap getConversionTable() {
-        if ( conversionTable==null ) {
-            conversionTable= buildConversionTable();
-        }
-        return conversionTable;
-    }
-    
-    public static void dumpConversionTable() {
-        HashMap conversionTable= getConversionTable();
-        
-        for ( Iterator i= conversionTable.values().iterator(); i.hasNext(); ) {
-            for ( Iterator j= ((HashMap)i.next()).values().iterator(); j.hasNext(); ) {
-                edu.uiowa.physics.pw.das.util.DasDie.println(j.next());
-            }
-        }
-    }
-    
-    private static HashMap buildConversionTable() {
-        HashMap conversionTable= new HashMap();
-        
-        HashMap t2000= new HashMap();
-        t2000.put(Units.us2000,new UnitsConverter(1e6,0.0));
-        t2000.put(Units.mj1958,new UnitsConverter(1./86400.,15340.));
-        conversionTable.put(Units.t2000,t2000);
-        
-        HashMap us2000= new HashMap();
-        us2000.put(Units.mj1958,new UnitsConverter(1./86400000000.,15340.,"us2000->mj1958"));
-        us2000.put(Units.t2000,new UnitsConverter(1e-6,0.0,"us2000->t2000"));
-        conversionTable.put(Units.us2000,us2000);
-        
-        HashMap seconds= new HashMap();
-        seconds.put(Units.microseconds, new UnitsConverter(1e6,0.0,"seconds->microseconds"));
-        seconds.put(Units.days, new UnitsConverter(1./86400,0.0));
-        conversionTable.put(Units.seconds,seconds);
-        
-        HashMap days= new HashMap();
-        days.put(Units.microseconds, new UnitsConverter(1e6*86400,0.0,"days->microseconds"));
-        days.put(Units.seconds, new UnitsConverter(86400,0.0,"days->seconds"));
-        conversionTable.put(Units.days,days);
-        
-        HashMap celcius= new HashMap();
-        celcius.put(Units.fahrenheit, (new UnitsConverter(9./5,32)));
-        conversionTable.put(Units.celcius,celcius);
-        
-        return conversionTable;
-    }
-    
     public static final Units dimensionless= new NumberUnits("");
     
     public static final Units celcius= new NumberUnits("deg C");
     public static final Units fahrenheit= new NumberUnits("deg F");
+    static {
+        celcius.registerConverter(fahrenheit, new UnitsConverter(1.8, 32));
+    }
     
     public static final Units seconds= new NumberUnits("s");
     public static final Units microseconds= new NumberUnits("microseconds");
     public static final Units days= new NumberUnits("days");
+    static {
+        seconds.registerConverter(microseconds, UnitsConverter.MICRO);
+        seconds.registerConverter(days, new UnitsConverter(8.64e4, 0.0));
+    }
     
-    public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
+    public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
     public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
     public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
+    static {
+        ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
+        ((Units)t2000).registerConverter(t1970, new UnitsConverter(1.0, 9.466848e8));
+        ((Units)t2000).registerConverter(mj1958, new UnitsConverter(1.0/8.64e4, 1.534e4));
+    }
     
     public static final EnumerationUnits spacecraft= new EnumerationUnits( "spacecraft", "Enumeration of various spacecraft" );
     
@@ -124,27 +75,72 @@ public abstract class Units {
       Units.spacecraft.createDatum( "Cluster Samba" );
       Units.spacecraft.createDatum( "Cluster Tango" );
     }
-      
-    public static UnitsConverter getConverter( Units fromUnits, Units toUnits ) {
-        if ( toUnits==fromUnits ) return UnitsConverter.identity;
-        HashMap conversionTable= getConversionTable();
-        HashMap conversionsFrom1= (HashMap)conversionTable.get(toUnits);
-        HashMap conversionsTo1= (HashMap)conversionTable.get(fromUnits);
-        if ( conversionTable.containsKey(fromUnits) &&
-        ((HashMap)conversionTable.get(fromUnits)).containsKey(toUnits) ) {
-            HashMap conversionsTo= (HashMap)conversionTable.get(fromUnits);
-            return (UnitsConverter)conversionsTo.get(toUnits);
-        } else if ( conversionTable.containsKey(toUnits) &&
-        ((HashMap)conversionTable.get(toUnits)).containsKey(fromUnits) ) {
-            HashMap conversionsFrom= (HashMap)conversionTable.get(toUnits);
-            if ( !conversionsFrom.containsKey(fromUnits) ) {
-                throw new IllegalArgumentException("Can't convert from "+fromUnits.toString()+" to "+toUnits.toString());
-            } else {
-                return ((UnitsConverter)conversionsFrom.get(fromUnits)).getInversion();
-            }
-        } else {
-            throw new IllegalArgumentException("Can't convert from "+fromUnits.toString()+" to "+toUnits.toString());
+    
+    private String id;
+    private String description;
+    private Map conversionMap = new IdentityHashMap();
+    
+    protected Units( String id ) {
+        this( id, "" );
+    };
+    
+    protected Units( String id, String description ) {
+        this.id= id;
+        this.description= description;
+    };
+    
+    private void registerConverter(Units toUnits, UnitsConverter converter) {
+        conversionMap.put(toUnits, converter);
+        UnitsConverter inverse = (UnitsConverter)toUnits.conversionMap.get(this);
+        if (inverse == null || inverse.getInverse() != converter) {
+            toUnits.registerConverter(this, converter.getInverse());
         }
+    }
+      
+    public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
+        if (fromUnits == toUnits) {
+            return UnitsConverter.IDENTITY;
+        }
+        if (fromUnits.conversionMap.get(toUnits) != null) {
+            return (UnitsConverter)fromUnits.conversionMap.get(toUnits);
+        }
+        Map visited = new HashMap();
+        visited.put(fromUnits, null);
+        LinkedList queue = new LinkedList();
+        queue.add(fromUnits);
+        while (!queue.isEmpty()) {
+            Units current = (Units)queue.removeFirst();
+            for (Iterator i = current.conversionMap.entrySet().iterator(); i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                Units next = (Units)entry.getKey();
+                if (!visited.containsKey(next)) {
+                    visited.put(next, current);
+                    queue.add(next);
+                    if (next == toUnits) {
+                        return buildConversion(fromUnits, toUnits, visited);
+                    }
+                }
+            }
+        }
+        throw new IllegalArgumentException("Inconvertible units: " + fromUnits + " -> " + toUnits);
+    }
+    
+    private static UnitsConverter buildConversion(Units fromUnits, Units toUnits, Map parentMap) {
+        ArrayList list = new ArrayList();
+        Units current = toUnits;
+        while (current != null) {
+            list.add(current);
+            current = (Units)parentMap.get(current);
+        }
+        UnitsConverter converter = UnitsConverter.IDENTITY;
+        for (int i = list.size() - 1; i > 0; i--) {
+            Units a = (Units)list.get(i);
+            Units b = (Units)list.get(i - 1);
+            UnitsConverter c = (UnitsConverter)a.conversionMap.get(b);
+            converter = converter.append(c);
+        }
+        fromUnits.registerConverter(toUnits, converter);
+        return converter;
     }
     
     public UnitsConverter getConverter( Units toUnits ) {
@@ -230,56 +226,8 @@ public abstract class Units {
         }
     }
     
-    public static void main( String[] args ) {
-        dumpConversionTable();
-        
-        System.out.println( Datum.create(1,Units.days).convertTo(Units.microseconds) );
-        System.out.println( Datum.create(1,Units.days).convertTo(Units.seconds) );
-        System.out.println("Test of uc.convert vs manual convesion:");
-        UnitsConverter uc= Units.t2000.getConverter(Units.us2000);
-        int nn=500000;
-        
-        double varient=0.;
-        
-        long t1= System.currentTimeMillis();
-        for (int i=0; i<nn; i++) {
-            varient+= uc.convert(i);
-        }
-        long x= System.currentTimeMillis()-t1;
-        System.out.println("Time(ms) of uc.convert: "+x);
-        varient=0;
-        
-        t1= System.currentTimeMillis();
-        
-        double scale= uc.scale;
-        double offset= uc.offset;
-        for (int i=0; i<nn; i++) {
-            varient+= scale * i + offset;
-        }
-        x= System.currentTimeMillis()-t1;
-        System.out.println("Time(ms) of scale, offset calculation: "+x);
-        
-        System.out.println( Units.spacecraft.createDatum(1) );
-        System.out.println( Units.spacecraft.createDatum(5) );
-    
-        Datum location= TimeUtil.createValid("2010-10-31");
-        Datum number= Datum.create(1,Units.days);
-        
-        System.out.println( location.add(number) );
-        // System.out.println( number.add(location) );  // throws Exception 2003-11-19
-                
-        System.out.println( Units.days.createDatum(1.) );
-        System.out.println( Units.days.createDatum(1.).convertTo(Units.seconds) );
-        
-        System.out.println();
-        System.out.println("Test of subtract using TimeLocationUnits");
-        Datum start = TimeUtil.createValid("1983-01-01");
-        Datum end = TimeUtil.createValid("1983-01-11");
-        Datum result = end.subtract(start);
-        System.out.println("(" + end + ") - (" + start + ") = " + result.doubleValue(Units.seconds) + " seconds");
-        System.out.println("or " + result.doubleValue(Units.days) + " days");
-                
+    public static void main( String[] args ) throws java.text.ParseException {
+        Datum time = TimeUtil.createValid("1979-02-26");
+        System.out.println(time);
     }
-    
-    
 }

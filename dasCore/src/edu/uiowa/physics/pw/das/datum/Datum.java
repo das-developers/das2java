@@ -207,31 +207,6 @@ public abstract class Datum {
         return units.createDatum( value );
     }
     
-    public static void main( String[] args ) throws Exception {
-        Datum temp1= Datum.create( 32, Units.fahrenheit );
-        Datum temp2= Datum.create( 212, Units.fahrenheit );
-        Datum temp3= Datum.create( 100, Units.celcius );
-        
-        System.out.println( Datum.create( 1 ).hashCode() );
-        System.out.println( Datum.create( 1 ).hashCode() );
-        
-        Units.dumpConversionTable();
-        
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+temp1);
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+temp2);
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+temp3);
-        
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+temp2.convertTo(Units.celcius));
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+temp1.convertTo(Units.celcius));
-        
-        edu.uiowa.physics.pw.das.util.DasDie.println("=======");
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+temp2.subtract(temp1));
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+temp3.subtract(temp1));
-        
-        Datum y= TimeUtil.create("09/15/1997 17:27:32");
-        edu.uiowa.physics.pw.das.util.DasDie.println(y.toString());
-    }
-    
     public DatumFormatter getFormatter() {
         return this.formatter;
     }

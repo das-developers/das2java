@@ -31,84 +31,99 @@ import edu.uiowa.physics.pw.das.datum.Units;
  */
 public class UnitsConverter {
     
-    public double offset;
+    public static final UnitsConverter IDENTITY = new UnitsConverter(1.0, 0.0);
+    public static final UnitsConverter TERA = new UnitsConverter(1e12, 0.0);
+    public static final UnitsConverter GIGA = new UnitsConverter(1e9, 0.0);
+    public static final UnitsConverter MEGA = new UnitsConverter(1e6, 0.0);
+    public static final UnitsConverter KILO = new UnitsConverter(1e3, 0.0);
+    public static final UnitsConverter MILLI = new UnitsConverter(1e-3, 0.0);
+    public static final UnitsConverter MICRO = new UnitsConverter(1e-6, 0.0);
+    public static final UnitsConverter NANO = new UnitsConverter(1e-9, 0.0);
+    public static final UnitsConverter PICO = new UnitsConverter(1e-12, 0.0);
     
-    public double scale;
-    
-    private int numServed;
-    
+    private final double offset;
+    private final double scale;
+    private final int hashCode;
     private UnitsConverter inverse;
-    
-    private String id;
-    
-    public static UnitsConverter identity= new UnitsConverter( 0.0, 0.0) {
-        public double convert( double value ) {
-            return value;
-        }       
-        public Number convert( Number value ) {
-            return value;
-        }
-        public UnitsConverter getInversion() {
-            return this;       
-        }        
-    };
-    
-    /** Creates a new instance of MeaureUnitConverter */
+
+    /** Creates a new instance of UnitsConverter.ScaleOffset */
     public UnitsConverter(double scale, double offset) {
-        this( scale, offset, "" );
+        this(scale, offset, null);
+    }
+
+    private UnitsConverter(double scale, double offset, UnitsConverter inverse) {
+        this.scale = scale;
+        this.offset = offset;
+        this.inverse = inverse;
+        hashCode = computeHashCode();
     }
     
-    public UnitsConverter(double scale, double offset, String id) {
-        this.scale= scale;
-        this.offset= offset;
-        this.id= id;
-        numServed= 0;
-        inverse= null;
+    private int computeHashCode() {
+        long scaleBits = Double.doubleToLongBits(scale);
+        long offsetBits = Double.doubleToLongBits(offset);
+        long code = (11 * 13 * 13) + (13 * scaleBits) + offsetBits;
+        int a = (int)(code >> 32);
+        int b = (int)(0xFFFFFFFFL & code);
+        return a + b;
     }
-    
-    public UnitsConverter getInversion() {
-        if ( inverse==null ) {
-            inverse= new UnitsConverter( 1/scale, (-1*offset)/scale );
+
+    public UnitsConverter getInverse() {
+        if (inverse == null) {
+            inverse = new UnitsConverter(1.0 / scale, -(offset / scale), this);
         }
         return inverse;
     }
-    
+
     public double convert( double value ) {
         return scale * value + offset;
     }
     
-    public Number convert( Number value ) {
-        double doubleValue= convert(value.doubleValue());
-        if ( value instanceof Integer ) {
-            return new Integer((int)doubleValue);
-        } else if ( value instanceof Float ) {
-            return new Float(doubleValue);
-        } else {
-            return new Double(doubleValue);
+    public Number convert( Number number ) {
+        double value = number.doubleValue();
+        value = convert(value);
+        if (number instanceof Integer) {
+            return new Integer((int)value);
+        }
+        else if (number instanceof Long) {
+            return new Long((long)value);
+        }
+        else {
+            return new Double(value);
         }
     }
-    
-    public String toString() {
-        if ( id.equals("") ) {
-            return "" + scale + " * old + " + offset;
-        } else {
-            return id;
+
+    public UnitsConverter append(UnitsConverter that) {
+        if (this.equals(IDENTITY)) {
+            return that;
         }
+        else if (that.equals(IDENTITY)) {
+            return this;
+        }
+        else {
+            double aScale = this.scale * that.scale;
+            double aOffset = this.offset * that.scale + that.offset;
+            return new UnitsConverter(aScale, aOffset);
+        }
+    }
+
+    public String toString() {
+        return getClass().getName() + "[scale=" + scale + ",offset=" + offset + "]";
+    }
+    
+    public int hashCode() {
+        return hashCode;
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof UnitsConverter)) {
+            return false;
+        }
+        UnitsConverter that = (UnitsConverter)o;
+        return this.scale == that.scale && this.offset == that.offset;
     }
     
     public static UnitsConverter getConverter(Units fromUnits, Units toUnits) {
         return Units.getConverter(fromUnits,toUnits);
     }
 
-    public static void main( String[] args ) {
-        UnitsConverter x= new UnitsConverter(9./5,32);
-        UnitsConverter invx= x.getInversion();
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+9.7);
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+x.convert(9.7));
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+x.convert(invx.convert(9.7)));
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+invx.convert(9.7));
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+invx.convert(x.convert(9.7)));
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+UnitsConverter.identity.convert(1.9));
-        edu.uiowa.physics.pw.das.util.DasDie.println(""+UnitsConverter.identity.getInversion().convert(1.9));
-    }
 }
