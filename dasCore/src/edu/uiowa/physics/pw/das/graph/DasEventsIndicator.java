@@ -21,7 +21,7 @@ import javax.swing.event.*;
  *
  * @author  Jeremy
  */
-public class DasEventsIndicator extends DasCanvasComponent {
+public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpdateListener {
     DasAxis axis;
     DataSetDescriptor dsd;
     VectorDataSet vds;
@@ -35,6 +35,7 @@ public class DasEventsIndicator extends DasCanvasComponent {
         }
         this.axis= axis;
         this.dsd= dsd;
+        dsd.addDataSetUpdateListener(this);
         axis.addPropertyChangeListener("dataMinimum", getPropertyChangeListener());
         axis.addPropertyChangeListener("dataMaximum", getPropertyChangeListener());
         axis.addPropertyChangeListener("log", getPropertyChangeListener());
@@ -148,6 +149,11 @@ public class DasEventsIndicator extends DasCanvasComponent {
     
     public void setDataSetDescriptor( DataSetDescriptor dsd ) {
         this.dsd= dsd;
+        markDirty();
+        update();
+    }
+    
+    public void dataSetUpdated(DataSetUpdateEvent e) {
         markDirty();
         update();
     }
