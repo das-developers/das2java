@@ -650,12 +650,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (renderers.length > 0) {
             Element renderersChild = document.createElement("renderers");
             for (int index = 0; index < renderers.length; index++) {
-                if (renderers[index] instanceof SpectrogramRenderer) {
-                    renderersChild.appendChild(((SpectrogramRenderer)renderers[index]).getDOMElement(document));
-                }
-                else if (renderers[index] instanceof SymbolLineRenderer) {
-                    renderersChild.appendChild(((SymbolLineRenderer)renderers[index]).getDOMElement(document));
-                }
+                renderersChild.appendChild(renderers[index].getDOMElement(document));
             }
             element.appendChild(renderersChild);
         }
