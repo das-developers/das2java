@@ -34,6 +34,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -148,8 +149,8 @@ public class StreamProducer implements StreamHandler {
             bigBuffer.put(four);
             bigBuffer.put(header);
             flush();
-            if ("gzip".equals(sd.getCompression())) {
-                stream = getGZIPChannel(stream);
+            if ("deflate".equals(sd.getCompression())) {
+                stream = getDeflaterChannel(stream);
             }
         }
         catch (IOException ioe) {
@@ -203,8 +204,8 @@ public class StreamProducer implements StreamHandler {
         }
     }
     
-    private static WritableByteChannel getGZIPChannel(WritableByteChannel channel) throws IOException {
-        return Channels.newChannel(new GZIPOutputStream(Channels.newOutputStream(channel)));
+    private static WritableByteChannel getDeflaterChannel(WritableByteChannel channel) throws IOException {
+        return Channels.newChannel(new DeflaterOutputStream(Channels.newOutputStream(channel)));
     }
 }
 
