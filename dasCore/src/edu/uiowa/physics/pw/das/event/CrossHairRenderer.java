@@ -220,7 +220,7 @@ public class CrossHairRenderer implements DragRenderer {
         parent.paintImmediately(dirtyBounds);
         parent.paintImmediately(hDirtyBounds);
         parent.paintImmediately(vDirtyBounds);
-        //sorry about that...
+        //sorry about that...        
     }
     
     public boolean isXRangeSelection() {
