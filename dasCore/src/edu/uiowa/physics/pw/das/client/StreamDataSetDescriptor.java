@@ -215,7 +215,10 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         PushbackInputStream pin = new PushbackInputStream(in, 4096);
         try {
             byte[] four = new byte[4];
-            pin.read(four);
+            int bytesRead= pin.read(four);
+            if ( bytesRead!=4 ) {
+                throw new DasIOException( "No data returned from server" );
+            }
             if (new String(four).equals("[00]")) {
                 pin.unread(four);
                                 
