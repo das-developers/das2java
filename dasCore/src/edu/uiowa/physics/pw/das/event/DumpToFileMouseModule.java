@@ -52,8 +52,11 @@ public class DumpToFileMouseModule extends MouseModule {
         yrange= new DatumRange( yAxis.invTransform(e.getYMaximum()), yAxis.invTransform(e.getYMinimum()) );
         
         DataSet ds= dsConsumer.getDataSet();
+        DataSet outds;
         if ( ds instanceof TableDataSet ) {
-            throw new IllegalArgumentException("not implemented");
+            TableDataSet tds= (TableDataSet)ds;
+            outds= new ClippedTableDataSet( tds, xrange, yrange );
+            
         } else {
             VectorDataSet vds= (VectorDataSet)ds;
             VectorDataSetBuilder builder= new VectorDataSetBuilder(vds.getXUnits(),vds.getYUnits());
@@ -62,29 +65,31 @@ public class DumpToFileMouseModule extends MouseModule {
                     builder.insertY(vds.getXTagDouble(i,vds.getXUnits()),vds.getDouble(i,vds.getYUnits()));
                 }
             }
-            VectorDataSet outds= builder.toVectorDataSet();
-            JFileChooser chooser = new JFileChooser();
-            chooser.setFileFilter( new javax.swing.filechooser.FileFilter() {
-                public boolean accept(File f ) { return f.toString().matches(".*\\.das2Stream"); }
-                public String getDescription() { return "*.das2Stream"; }
-            });
-            int result = chooser.showSaveDialog(parent);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selected = chooser.getSelectedFile();
-                try {
-                    FileChannel out = new FileOutputStream(selected).getChannel();
-                    if (outds instanceof TableDataSet) {
-                        TableUtil.dumpToAsciiStream((TableDataSet)outds, out);
-                    }
-                    else if (outds instanceof VectorDataSet) {
-                        VectorUtil.dumpToAsciiStream((VectorDataSet)outds, out);
-                    }
+            outds= builder.toVectorDataSet();
+        }
+        
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter( new javax.swing.filechooser.FileFilter() {
+            public boolean accept(File f ) { return f.toString().matches(".*\\.das2Stream"); }
+            public String getDescription() { return "*.das2Stream"; }
+        });
+        int result = chooser.showSaveDialog(parent);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selected = chooser.getSelectedFile();
+            try {
+                FileChannel out = new FileOutputStream(selected).getChannel();
+                if (outds instanceof TableDataSet) {
+                    TableUtil.dumpToAsciiStream((TableDataSet)outds, out);
                 }
-                catch (IOException ioe) {
-                    DasExceptionHandler.handle(ioe);
+                else if (outds instanceof VectorDataSet) {
+                    VectorUtil.dumpToAsciiStream((VectorDataSet)outds, out);
                 }
             }
+            catch (IOException ioe) {
+                DasExceptionHandler.handle(ioe);
+            }
         }
+        
     }
     
     /** Creates a new instance of DumpToFileMouseModule */
