@@ -23,29 +23,50 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.DasApplication;
+import edu.uiowa.physics.pw.das.DasException;
+import edu.uiowa.physics.pw.das.DasNameException;
+import edu.uiowa.physics.pw.das.DasPropertyException;
+import edu.uiowa.physics.pw.das.NameContext;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
-import edu.uiowa.physics.pw.das.util.*;
+import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.event.MouseInputListener;
-import java.awt.*;
+import edu.uiowa.physics.pw.das.util.Splash;
+import edu.uiowa.physics.pw.das.util.awt.GraphicsOutput;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.LayoutManager;
+import java.awt.Paint;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -53,14 +74,40 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import javax.xml.parsers.*;
-import org.apache.batik.svggen.*;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLayeredPane;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.MouseInputListener;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 
 /** TODO
  * @author eew
@@ -158,7 +205,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 svgFileTextField.setMaximumSize(svgFileTextField.getPreferredSize());
                 svgFileChooser = new JFileChooser();
                 svgFileChooser.setApproveButtonText("Select File");
-                svgFileChooser.setDialogTitle("Write to PNG");
+                svgFileChooser.setDialogTitle("Write to SVG");
                 JButton b = new JButton("Browse");
                 b.setActionCommand("pngBrowse");
                 b.addActionListener(new ActionListener() {
@@ -180,6 +227,49 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 DasCanvas canvas = currentCanvas;
                 try {
                     canvas.writeToSVG(svgFileTextField.getText());
+                }
+                catch (java.io.IOException ioe) {
+                    edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                }
+            }
+        }
+    };
+    
+    public static final Action SAVE_AS_PDF_ACTION = new CanvasAction("Save as PDF") {  
+        JFileChooser pdfFileChooser;
+        JPanel pdfFileNamePanel;
+        JTextField pdfFileTextField;
+            
+        public void actionPerformed(ActionEvent e) {
+            if (pdfFileNamePanel == null) {
+                pdfFileNamePanel = new JPanel();
+                pdfFileNamePanel.setLayout(new BoxLayout(pdfFileNamePanel, BoxLayout.X_AXIS));
+                pdfFileTextField = new JTextField(32);
+                pdfFileTextField.setMaximumSize(pdfFileTextField.getPreferredSize());
+                pdfFileChooser = new JFileChooser();
+                pdfFileChooser.setApproveButtonText("Select File");
+                pdfFileChooser.setDialogTitle("Write to PDF");
+                JButton b = new JButton("Browse");
+                b.setActionCommand("pngBrowse");
+                b.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        int choice = pdfFileChooser.showDialog(currentCanvas, "Select File");
+                        if (choice == JFileChooser.APPROVE_OPTION) {
+                            pdfFileTextField.setText(pdfFileChooser.getSelectedFile().getPath());
+                        }
+                    }
+                });
+                pdfFileNamePanel.add(pdfFileTextField);
+                pdfFileNamePanel.add(b);
+            }
+            pdfFileTextField.setText(pdfFileChooser.getCurrentDirectory().getPath());
+            String[] options = {"Save as PDF", "Cancel"};
+            int choice = JOptionPane.showOptionDialog(currentCanvas, pdfFileNamePanel,
+                "Write to PDF", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
+            if (choice == 0) {
+                DasCanvas canvas = currentCanvas;
+                try {
+                    canvas.writeToPDF(pdfFileTextField.getText());
                 }
                 catch (java.io.IOException ioe) {
                     edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
@@ -232,6 +322,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             PRINT_ACTION,
             SAVE_AS_PNG_ACTION,
             SAVE_AS_SVG_ACTION,
+            SAVE_AS_PDF_ACTION,
         };
     }
     
@@ -383,7 +474,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     protected void paintComponent(Graphics g) {
         if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
             g.setColor(getBackground());
-            g.setColor(Color.PINK);
             g.fillRect(0, 0, getWidth(), getHeight());
         }
         g.setColor(getForeground());
@@ -782,30 +872,53 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         
     }
+
+    public void writeToPDF(String filename) throws IOException {
+        try {
+            writeToGraphicsOutput(filename, "edu.uiowa.physics.pw.das.util.awt.PDFGraphicsOutput");
+        }
+        catch (ClassNotFoundException cnfe) {
+            DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
+        }
+        catch (InstantiationException ie) {
+            DasExceptionHandler.handleUncaught(ie);
+        }
+        catch (IllegalAccessException iae) {
+            DasExceptionHandler.handleUncaught(iae);
+        }
+    }
+    
+    public void writeToGraphicsOutput(String filename, String graphicsOutput)
+            throws IOException, ClassNotFoundException,
+            InstantiationException, IllegalAccessException {
+        FileOutputStream out = new FileOutputStream(filename);
+        Class goClass = Class.forName(graphicsOutput);
+        GraphicsOutput go = (GraphicsOutput)goClass.newInstance();
         
+        go.setOutputStream(out);
+        go.setSize(getWidth(), getHeight());
+        go.start();
+        print(go.getGraphics());
+        go.finish();
+    }
+    
     /**
      * @param filename the specified filename
      * @throws IOException if there is an error opening the file for writing
      */
     public void writeToSVG(String filename) throws IOException {
-        final FileOutputStream out = new FileOutputStream(filename);
-        
-        Document document;
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.newDocument();
+            writeToGraphicsOutput(filename, "edu.uiowa.physics.pw.das.util.awt.SVGGraphicsOutput");
         }
-        catch (ParserConfigurationException pce) {
-            throw new RuntimeException(pce);
+        catch (ClassNotFoundException cnfe) {
+            DasExceptionHandler.handle(new RuntimeException("SVG output is not available", cnfe));
         }
-        
-        Graphics2D graphics = Graphics2DUtil.newSVGGraphics2D(document);
-	print(graphics);
-        Writer writer = new OutputStreamWriter(out, "UTF-8");
-        Graphics2DUtil.streamSVGGraphics2D(graphics, writer, false);
-        writer.close();
-        
+        catch (InstantiationException ie) {
+            DasExceptionHandler.handleUncaught(ie);
+        }
+        catch (IllegalAccessException iae) {
+            DasExceptionHandler.handleUncaught(iae);
+        }
     }
     
     
@@ -856,6 +969,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param image
      */
     protected void writeToImageImmediately(Image image) {
+        Graphics graphics;
         try {
             synchronized(displayLockObject) {
                 if (displayLockCount != 0) {
@@ -864,7 +978,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         } catch ( InterruptedException ex ) {
         }
-        print(image.getGraphics());
+        graphics = image.getGraphics();
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, image.getWidth(this), image.getHeight(this));
+        print(graphics);
         
     }
     
