@@ -50,6 +50,9 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         setOpaque(false);
         rl = new ResizeListener();
         
+        row= DasRow.NULL;
+        column= DasColumn.NULL;
+        
         mouseAdapter= new DasMouseInputAdapter(this);
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
@@ -83,7 +86,7 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         if (column == null || row == null) {
             Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.warning("Null row and/or column in resize: row=" + row
-                + " column=" + column);
+            + " column=" + column);
         } else {
             setBounds(column.getDMinimum(),row.getDMinimum(),
             (column.getDMaximum()-column.getDMinimum()),

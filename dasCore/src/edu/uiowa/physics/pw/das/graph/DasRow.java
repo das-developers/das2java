@@ -37,12 +37,25 @@ public class DasRow extends DasDevicePosition {
     public DasRow(DasCanvas parent, double top, double bottom) {
         super(parent,top,bottom);
     }
-       
-    protected int getDeviceSize()
-    {
+    
+    static class NullDasRow extends DasRow {
+        public NullDasRow() {
+            super(null, 0,0);
+        }
+        public int getDMinimum() {
+            throw new RuntimeException("null row, row was not set before layout");
+        }
+        public int getDMaximum() {
+            throw new RuntimeException("null row, row was not set before layout");
+        }
+    }
+    
+    public static final DasRow NULL= new NullDasRow();
+     
+    protected int getDeviceSize() {
         return parent.getHeight();
     }
-
+    
     public DasRow createSubRow(double ptop, double pbottom) {
         double top= getMinimum();
         double bottom= getMaximum();

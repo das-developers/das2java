@@ -38,6 +38,20 @@ public class DasColumn extends DasDevicePosition {
         super(parent,left,right);
     }
     
+    static final class NullDasColumn extends DasColumn {
+        private NullDasColumn() {
+            super( null,0,0);
+        }
+        public int getDMinimum() {
+            throw new RuntimeException("null column, column was not set before layout");
+        }
+        public int getDMaximum() {
+            throw new RuntimeException("null column, column was not set before layout");
+        }        
+    }    
+    
+    public static final DasColumn NULL= new NullDasColumn();
+    
     public DasColumn createSubColumn( double pleft, double pright ) {
         double left= getMinimum();
         double right= getMaximum();

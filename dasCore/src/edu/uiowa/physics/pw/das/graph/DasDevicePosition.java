@@ -49,7 +49,12 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     protected EventListenerList listenerList = new EventListenerList();
     
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum) {
-        if (parent == null) throw new IllegalArgumentException("parent cannot be null, absolute rows and columns are no longer allowed. Jun 26, 03");
+        if ( parent == null ) {
+            boolean isNull= ( this instanceof DasColumn.NullDasColumn ) || ( this instanceof DasRow.NullDasRow );
+            if ( ! isNull ) {
+                throw new IllegalArgumentException("parent cannot be null, absolute rows and columns are no longer allowed. Jun 26, 03");
+            }
+        }
         this.parent = parent;
         this.minimum = minimum;
         this.maximum = maximum;
