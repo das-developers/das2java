@@ -108,6 +108,13 @@ public class DatumRange implements Comparable {
      */
     public DatumRange rescale( double min, double max ) {
         Datum w= width();
+        if ( !w.isFinite() ) {
+            throw new RuntimeException("width is not finite");
+        }
+        if ( w.doubleValue( w.getUnits() )==0. ) {
+            // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
+            throw new RuntimeException("width is zero!");
+        }
         return new DatumRange( s1.add( w.multiply(min) ), s1.add( w.multiply(max) ) );
     }
     
@@ -125,6 +132,18 @@ public class DatumRange implements Comparable {
     
     public DatumRange previous() {
         return rescale(-1,0);
+    }
+    
+    public DatumRange include(Datum d) {   
+        if ( d.isFill() ) return this;
+        if ( this.contains(d) ) return this;
+        Datum min= ( this.min().le(d) ? this.min() : d );
+        Datum max= ( this.max().ge(d) ? this.max() : d );
+        return new DatumRange( min, max );
+    }
+    
+    public static DatumRange newDatumRange(double min, double max, Units units) {
+        return new DatumRange( Datum.create(min,units), Datum.create(max,units) );
     }
     
 }
