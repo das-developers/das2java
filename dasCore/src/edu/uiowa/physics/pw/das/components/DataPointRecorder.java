@@ -230,13 +230,13 @@ public class DataPointRecorder extends JPanel implements edu.uiowa.physics.pw.da
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        DataPointRecorder p= DataPointRecorder.createFramed();
+        //DataPointRecorder p= DataPointRecorder.createFramed();
         //p.DataPointSelected(new DataPointSelectionEvent(p, Datum.create(2), Datum.create(6)));
         //p.DataPointSelected(new DataPointSelectionEvent(p, Datum.create(4), Datum.create(7)));
         //p.DataPointSelected(new DataPointSelectionEvent(p, Datum.create(1), Datum.create(72)));
-        edu.uiowa.physics.pw.das.graph.DasPlot plot= testNew.demoSpectrogram.createFramed();
-        CrossHairMouseModule ch= (CrossHairMouseModule)plot.getMouseAdapter().getModuleByLabel("Crosshair Digitizer");
-        ch.addDataPointSelectionListener(p);
+        //edu.uiowa.physics.pw.das.graph.DasPlot plot= testNew.demoSpectrogram.createFramed();
+        //CrossHairMouseModule ch= (CrossHairMouseModule)plot.getMouseAdapter().getModuleByLabel("Crosshair Digitizer");
+        //ch.addDataPointSelectionListener(p);
     }
     
     private void update() {
