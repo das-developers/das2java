@@ -49,8 +49,7 @@ public class HttpFileSystem extends FileSystem {
     }
     
     public static HttpFileSystem createHttpFileSystem( URL root ) throws IOException {        
-        File local; 
-        System.out.println(System.getProperty("user.name" ));
+        File local;         
         if ( System.getProperty("user.name").equals("Web") ) {
             local= new File("/tmp");
         } else {
