@@ -291,7 +291,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
             double canvasHeight= parent.getHeight();
             
-            zAxisComponent.setLittleRow(yBase,yBase1);
+            zAxisComponent.setLittleRow(yBase1,yBase);
             
             double [] binStarts= xbins.binStarts(); 
             double [] binStops= xbins.binStops();
@@ -410,7 +410,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         }
         
         public int transform( double x, Units units ) {
-            int result= zAxis.transform(x,units,littleRowMin,littleRowMax);
+            int result= zAxis.transform(x,units,littleRowMax,littleRowMin);
             return result;
         }
         
