@@ -524,11 +524,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @return
      */
-    public Units getUnits() {    /** TODO
-     * @param min
-     */
-        
+    public Units getUnits() {
         return dataRange.getUnits();
+    }
+    
+    public void setUnits(Units newUnits) {
+        dataRange.setUnits(newUnits);
     }
     
     /** TODO

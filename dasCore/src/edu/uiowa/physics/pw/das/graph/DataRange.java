@@ -95,6 +95,24 @@ public class DataRange implements Cloneable {
     
     public Units getUnits() { return units; }
     
+    public void setUnits(Units newUnits) {
+        if (units.equals(newUnits)) {
+            return;
+        }
+        try {
+            minimum = units.convertDoubleTo(newUnits, minimum);
+            maximum = units.convertDoubleTo(newUnits, maximum);
+            units = newUnits;
+        }
+        catch (Exception e) {
+            units = newUnits;
+            minimum = 1.0;
+            maximum = 10.0;
+        }
+        forwardHistory.clear();
+        history.clear();
+    }
+    
     public void setMinimum(double min) {
         if (min>maximum) {
             if (isLog()) {
