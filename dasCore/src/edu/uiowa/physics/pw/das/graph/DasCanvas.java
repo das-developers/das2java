@@ -29,6 +29,7 @@ import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
+import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
 import org.w3c.dom.Document;
@@ -196,6 +197,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         }
                     }
                 }
+                else if ( command.equals("about")) {
+                    int okay= JOptionPane.showConfirmDialog( DasCanvas.this, "release version " + Splash.getVersion(), "about das2", JOptionPane.PLAIN_MESSAGE );
+                }
                 else if (command.equals("pngBrowse")) {
                     int choice = pngFileChooser.showDialog(DasCanvas.this, "Select File");
                     if (choice == JFileChooser.APPROVE_OPTION) {
@@ -217,18 +221,28 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         properties.addActionListener(popupListener);
         properties.setToolTipText("edit global properties");
         popup.add(properties);
+        
         popup.addSeparator();
         JMenuItem print = new JMenuItem("print...");
         print.setActionCommand("print");
         print.addActionListener(popupListener);
         print.setToolTipText("print entire canvas");
         popup.add(print);
+        
         JMenuItem toPng = new JMenuItem("save as PNG...");
         toPng.setActionCommand("toPng");
         toPng.setToolTipText("save canvas to png image file");
         toPng.addActionListener(popupListener);
         popup.add(toPng);
         popup.addSeparator();
+        
+        JMenuItem aboutMenuItem = new JMenuItem("about");
+        aboutMenuItem.setActionCommand("about");
+        aboutMenuItem.setToolTipText("version info, etc");
+        aboutMenuItem.addActionListener(popupListener);
+        popup.add(aboutMenuItem);
+        popup.addSeparator();  
+        
         JMenuItem x = new JMenuItem("close");
         x.addActionListener(popupListener);
         x.setToolTipText("close this popup");
