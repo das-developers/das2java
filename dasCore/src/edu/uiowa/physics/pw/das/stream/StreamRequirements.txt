@@ -4,7 +4,7 @@ Requirements for das2 Streams
   1. the stream must contain all information needed to be "useful."
   2. dataset interface in das2 defines useful.
 2. extensible 
-  1. meta data ( e.g. xml header )
+  1. metadata, annotating data ( e.g. via xml headers )
   2. introduction of new data types ( yscan, multiy, ... )
 3. mode changes, table geometry
 4. multiple data "planes"
@@ -46,6 +46,7 @@ core vocabulary when talking about these things.
      For efficiency, tags are generally required to be monotonically increasing.  
    worker: server that satisfies requests of a master server
    scalability: ability to handle exponentially increasing demands.
-   meta data: data useful for documentation but not required for normal operations
+   metadata: data about data
+   annotating data: data useful for documentation but not required for normal operations
    extensibility: ability to expand functionality 
    streamable: not requiring temporary local storage of data.  
