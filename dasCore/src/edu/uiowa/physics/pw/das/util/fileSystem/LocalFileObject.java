@@ -73,4 +73,8 @@ public class LocalFileObject implements FileObject {
         return new java.util.Date(localFile.lastModified());
     }
     
+    public boolean exists() {
+        return localFile.exists();
+    }
+    
 }

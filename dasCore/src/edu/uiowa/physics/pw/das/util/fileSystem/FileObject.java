@@ -36,6 +36,8 @@ public interface FileObject {
     
     public boolean isRoot();        
     
+    public boolean exists();
+    
     public java.util.Date lastModified();        
         
 }

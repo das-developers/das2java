@@ -20,7 +20,7 @@ public class HttpFileObject implements FileObject {
     File localFile;
     
     boolean isRoot;
-    boolean isFolder;    
+    boolean isFolder;
     
     public boolean canRead() {
         return true;
@@ -54,18 +54,18 @@ public class HttpFileObject implements FileObject {
     public InputStream getInputStream() throws FileNotFoundException {
         if ( isFolder ) {
             throw new IllegalArgumentException( "is a folder" );
-        }        
-        return new FileInputStream( localFile );        
+        }
+        return new FileInputStream( localFile );
     }
     
     public FileObject getParent() {
-        return new HttpFileObject( wfs, wfs.getLocalName( localFile.getParent() ) );
+        return new HttpFileObject( wfs, wfs.getLocalName( localFile.getParentFile() ) );
     }
     
     public long getSize() {
-        if ( isFolder ) { 
+        if ( isFolder ) {
             throw new IllegalArgumentException("is a folder");
-        } 
+        }
         return localFile.length();
     }
     
@@ -86,6 +86,15 @@ public class HttpFileObject implements FileObject {
     }
     
     public java.util.Date lastModified() {
+        return new java.util.Date(localFile.lastModified());
+    }
+    
+    protected File getLocalFile() {
+        return this.localFile;
+    }
+    
+    public boolean exists() {
+        return localFile.exists();
     }
     
     protected HttpFileObject( HttpFileSystem wfs, String pathname ) {

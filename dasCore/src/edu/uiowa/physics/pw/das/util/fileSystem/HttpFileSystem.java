@@ -194,13 +194,13 @@ public class HttpFileSystem extends FileSystem {
         return filename;
     }
     
-    public File getFile( String filename ) {
-        File f= new FileObject( this, filename );
+    public FileObject getFile( String filename ) {
+        HttpFileObject f= new HttpFileObject( this, filename );        
         if ( f.canRead() ) {
             return f;
         } else {
             try {
-                transferFile( filename, f );
+                transferFile( filename, f.getLocalFile() );
                 return f;
             } catch ( Exception e ) {
                 throw new RuntimeException(e);

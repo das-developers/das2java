@@ -17,8 +17,7 @@ import java.util.regex.*;
 public class LocalFileSystem extends FileSystem {
     
     File localRoot;
-    
-    /** Creates a new instance of FileWebFileSystem */
+        
     protected LocalFileSystem(URL root) {
         if ( !("file".equals(root.getProtocol()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
@@ -29,12 +28,21 @@ public class LocalFileSystem extends FileSystem {
         }
     }
     
-    public java.io.File getFile(String filename) {
-        return new File( localRoot, filename );
+    public FileObject getFile(String filename) {
+        return new LocalFileObject( this, localRoot, filename );
     }
     
     public boolean isDirectory(String filename) {
         return new File( localRoot, filename ).isDirectory();
+    }
+    
+    String getLocalName( File file ) {
+        if ( !file.toString().startsWith(localRoot.toString() ) ) {
+            throw new IllegalArgumentException( "file \""+file+"\"is not of this web file system" );
+        }
+        String filename= file.toString().substring(localRoot.toString().length() );
+        filename= filename.replaceAll( "\\\\", "/" );
+        return filename;
     }
     
     public String[] listDirectory(String directory) {

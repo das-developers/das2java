@@ -14,13 +14,13 @@ import java.net.*;
  *
  * @author  Jeremy
  */
-public abstract class FileSystem {   
+public abstract class FileSystem  {   
     
     public static FileSystem create( URL root ) throws IOException {        
         if ( "file".equals(root.getProtocol()) ) {
             return new LocalFileSystem( root );
         } else if ( "http".equals( root.getProtocol() ) ) {
-            return HttpFileSystem.create( root );
+            return HttpFileSystem.createHttpFileSystem( root );
         } else {
             throw new IllegalArgumentException( "unsupported protocol: "+root );
         }
@@ -43,7 +43,7 @@ public abstract class FileSystem {
         return filename;
     }
     
-    abstract public File getFile( String filename );
+    abstract public FileObject getFile( String filename );
     abstract public boolean isDirectory( String filename );
     abstract public String[] listDirectory( String directory );
     abstract public String[] listDirectory( String directory, String pattern );
