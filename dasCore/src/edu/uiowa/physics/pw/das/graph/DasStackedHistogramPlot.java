@@ -300,9 +300,6 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
                 x1=x0+1; // 1 pixel wide
                 if ( weights[ibin].z[j]>0 ) {
                     int yAvg= zAxisComponent.transform(data[ibin].z[j],xtysData.getZUnits());
-                    if ( yAvg<0 ) {
-                        System.out.println("yAvg < 0 " );
-                    }
                     yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
                     int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
                     yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
