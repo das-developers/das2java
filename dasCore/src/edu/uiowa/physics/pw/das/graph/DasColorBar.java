@@ -131,19 +131,24 @@ public class DasColorBar extends DasAxis {
     static DasColorBar processColorbarElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         String name = element.getAttribute("name");
         boolean log = element.getAttribute("log").equals("true");
+        String unitStr = element.getAttribute("units");
+        if (unitStr == null) {
+            unitStr = "";
+        }
         Datum dataMinimum;
         Datum dataMaximum;
-        if ("TIME".equals(element.getAttribute("units"))) {
+        if (unitStr.equals("TIME")) {
             String min = element.getAttribute("dataMinimum");
             String max = element.getAttribute("dataMaximum");
             dataMinimum = (min == null || min.equals("") ? TimeUtil.create("1979-02-26") : TimeUtil.create(min));
             dataMaximum = (max == null || max.equals("") ? TimeUtil.create("1979-02-27") : TimeUtil.create(max));
         }
         else {
+            Units units = Units.getByName(unitStr);
             String min = element.getAttribute("dataMinimum");
             String max = element.getAttribute("dataMaximum");
-            dataMinimum = (min == null || min.equals("") ? Datum.create(1.0) : Datum.create(Double.parseDouble(min)));
-            dataMaximum = (max == null || max.equals("") ? Datum.create(10.0) : Datum.create(Double.parseDouble(max)));
+            dataMinimum = (min == null || min.equals("") ? Datum.create(1.0, units) : Datum.create(Double.parseDouble(min), units));
+            dataMaximum = (max == null || max.equals("") ? Datum.create(10.0, units) : Datum.create(Double.parseDouble(max), units));
         }
         int orientation = parseOrientationString(element.getAttribute("orientation"));
 
@@ -345,6 +350,7 @@ public class DasColorBar extends DasAxis {
                 double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
                 colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
             }
+            colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
         }
         
         
