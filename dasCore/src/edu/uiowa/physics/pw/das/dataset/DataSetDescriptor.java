@@ -83,41 +83,41 @@ public abstract class DataSetDescriptor {
             return cacheDataSet;
         } else {
             try {
-            cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
-            if ( cacheDataSet!=null ) {
-                cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
-                if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
-            }
-            return cacheDataSet; 
+                cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
+                if ( cacheDataSet!=null ) {
+                    cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
+                    if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
+                }
+                return cacheDataSet;
             } catch ( DasException e ) {
                 throw e;
             } catch ( Exception e ) {
                 DasExceptionHandler.handle(e);
                 return null;
             }
-        } 
+        }
     }
-        
+    
     protected void setDefaultCaching( boolean value ) {
         defaultCaching= value;
     }
     
-    EventListenerList listenerList;      
-        
+    EventListenerList listenerList;
+    
     public void addDataSetUpdateListener( DataSetUpdateListener listener ) {
-         if (listenerList == null ) {
+        if (listenerList == null ) {
             listenerList = new EventListenerList();
         }
-        listenerList.add( DataSetUpdateListener.class, listener);         
+        listenerList.add( DataSetUpdateListener.class, listener);
     }
-     
+    
     public void removeDataSetUpdateListener( DataSetUpdateListener listener ) {
-         if (listenerList == null ) {
+        if (listenerList == null ) {
             listenerList = new EventListenerList();
         }
-        listenerList.remove( DataSetUpdateListener.class, listener );         
+        listenerList.remove( DataSetUpdateListener.class, listener );
     }
-
+    
     protected void fireDataSetUpdateEvent( DataSetUpdateEvent event ) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
@@ -134,7 +134,7 @@ public abstract class DataSetDescriptor {
     
     private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z0-9_\\.]+)(?:\\?(.*))?");
     private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.-]+)=([_0-9a-zA-Z%+.-]+)");
-            
+    
     public static DataSetDescriptor create( final String dataSetID ) throws DasException {
         java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);
         DataSetDescriptor result;
@@ -197,11 +197,11 @@ public abstract class DataSetDescriptor {
             throw dsdnae;
         }
     }
-
+    
     protected void setProperties( Map properties ) {
         this.properties.putAll(properties);
     }
-
+    
     /**
      * Returns the value of the property with the specified name
      *
@@ -211,6 +211,6 @@ public abstract class DataSetDescriptor {
     public Object getProperty(String name) {
         return properties.get(name);
     }
-
+    
     
 }
