@@ -165,7 +165,6 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         if ( isMultiPlanarDataSetStream ) {
             MultiPlanarDataSet mpds= new MultiPlanarDataSet();
             try {
-                System.out.println(mpds.getDataSetNames());
                 try {
                     mpds.read(in, null );
                 } catch ( ClassCastException ex ) {
