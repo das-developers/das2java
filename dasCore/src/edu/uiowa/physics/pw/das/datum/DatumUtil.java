@@ -42,6 +42,7 @@ public final class DatumUtil {
         if ( minimum.getUnits() != minimum.getUnits() ) {
             throw new IllegalArgumentException( "Units don't match!" );
         }
+        
         //Swap them if they are in the wrong order.
         if (maximum.lt(minimum)) {
             Datum tmp = maximum;
@@ -60,7 +61,7 @@ public final class DatumUtil {
             double discernable= Math.abs( maximum.subtract(minimum).getValue() / nsteps );
             int nFraction= -1 * (int)Math.floor(DasMath.log10(discernable));
             nFraction= nFraction<0 ? 0 : nFraction;
-            String formatString = "0." + zeros(nFraction);
+            String formatString = zeros(nFraction);
             try {
                 return factory.newFormatter(formatString);
             }
@@ -72,7 +73,8 @@ public final class DatumUtil {
     }
     
     private static String zeros(int count) {
-        StringBuffer buff = new StringBuffer(count);
+        if (count <= 0) return "0";
+        StringBuffer buff = new StringBuffer(count+2).append("0.");
         for (int index = 0; index < count; index++) {
             buff.setCharAt(index, '0');
         }
