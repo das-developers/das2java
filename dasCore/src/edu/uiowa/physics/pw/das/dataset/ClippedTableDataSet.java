@@ -62,15 +62,19 @@ public class ClippedTableDataSet implements TableDataSet {
             ylengths[itable-tableOffset]= ix1- yoffsets[itable];
         }
     }
-    
-    /** Creates a new instance of ClippedTableDataSet */
+        
     public ClippedTableDataSet( TableDataSet source, Datum xmin, Datum xmax, Datum ymin, Datum ymax ) {
-        this.source= source;
-        calculateXOffset( xmin, xmax );
-        calculateTableOffset();
-        calculateYOffsets( ymin, ymax );
+        this( source, new DatumRange( xmin, xmax ), new DatumRange( ymin, ymax ) );
     }
     
+    public ClippedTableDataSet ( TableDataSet source, DatumRange xrange, DatumRange yrange ) {
+        this.source= source;
+        calculateXOffset( xrange.min(), xrange.max() );
+        calculateTableOffset();
+        calculateYOffsets( yrange.min(), yrange.max() );
+    }
+    
+    // TODO: why is this public?
     public ClippedTableDataSet( TableDataSet source, int xoffset, int xlength, 
     int yoffset, int ylength ) {
         if ( source.tableCount() > 1 ) {
