@@ -109,6 +109,10 @@ public class Psym implements PropertyEditor.Enumeration {
                 }
                 break;
             case 2: //CIRCLES
+                Color color0= g.getColor();
+                g.setColor(Color.lightGray);
+                g.fillOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
+                g.setColor(color0);
                 g.drawOval((int)(x-size), (int)(y-size), (int)(size*2), (int)(size*2));
                 break;
             case 3: //TRIANGLES
