@@ -182,7 +182,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             s= "no data in interval";
         } else {
             s= e.getMessage();
-            if ( "".equals(s) ) {
+            if ( s == null || s.equals("") ) {
                 s= e.toString();
             }
         }
