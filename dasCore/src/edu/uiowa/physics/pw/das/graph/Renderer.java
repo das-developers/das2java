@@ -27,8 +27,7 @@ import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 
 import javax.swing.*;
@@ -136,10 +135,16 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             ((DasCanvas)parent.getParent()).lockDisplay(this);
         }
 
-        Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-        double dataRange= dataRange1.doubleValue(Units.seconds);
-        double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-        double resolution =  dataRange/deviceRange;
+        double resolution;
+        if (xAxis.getUnits() instanceof TimeLocationUnits) {
+            Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
+            double dataRange= dataRange1.doubleValue(Units.seconds);
+            double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
+            resolution =  dataRange/deviceRange;
+        }
+        else {
+            resolution = 0.0;
+        }
         if (progressPanel == null) {
             progressPanel = new DasProgressPanel();
             ((Container)(((DasCanvas)parent.getParent()).getGlassPane())).add(progressPanel);
