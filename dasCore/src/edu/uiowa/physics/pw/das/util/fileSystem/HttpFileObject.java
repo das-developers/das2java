@@ -57,6 +57,8 @@ public class HttpFileObject implements FileObject {
         if ( !localFile.exists() ) {
             try {
                 wfs.transferFile(pathname,localFile);
+            } catch ( FileNotFoundException e ) {
+                throw e;
             } catch ( IOException e ) {
                 wfs.handleException(e);
             }
@@ -140,6 +142,10 @@ public class HttpFileObject implements FileObject {
     
     public String getNameExt() {
         return pathname;
+    }
+    
+    public java.nio.channels.Channel getChannel() throws FileNotFoundException {
+        return ((FileInputStream)getInputStream()).getChannel();
     }
     
 }

@@ -11,6 +11,7 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.*;
 
 /**
  *
@@ -37,7 +38,15 @@ public interface FileObject {
      * @return
      */    
     public InputStream getInputStream() throws FileNotFoundException ;        
-    
+
+   /**
+     * opens an inputStream, perhaps transferring the file to a
+     *  cache first.
+     * @throws FileNotFoundException
+     * @return
+     */    
+    public Channel getChannel() throws FileNotFoundException ;        
+
     /**
      * returns the parent folder of this object.
      * @return

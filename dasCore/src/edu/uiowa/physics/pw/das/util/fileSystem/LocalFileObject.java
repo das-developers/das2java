@@ -85,4 +85,8 @@ public class LocalFileObject implements FileObject {
         return "[lfs]"+getNameExt();
     }
     
+    public java.nio.channels.Channel getChannel() throws FileNotFoundException {
+        return ((FileInputStream)getInputStream()).getChannel();
+    }
+    
 }
