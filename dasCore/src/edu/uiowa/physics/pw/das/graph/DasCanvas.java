@@ -791,10 +791,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         for (int index = 0; index < components.length; index++) {
             if (components[index] instanceof DasAxis) {
-                DasAxis axis = (DasAxis)components[index];
-                //if (!axis.isOppositeAxis()) {
-                //    elementMap.put(axis.getDasName(), axis.getDOMElement(document));
-                //}
+                DasAxis axis = (DasAxis)components[index];                
+                elementMap.put(axis.getDasName(), axis.getDOMElement(document));                
             }
         }
         for (int index = 0; index < components.length; index++) {
