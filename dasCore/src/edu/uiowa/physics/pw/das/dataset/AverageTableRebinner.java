@@ -43,6 +43,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      * Holds value of property interpolate.
      */
     private boolean interpolate= true;
+    private boolean enlargePixels = true;
     
     /** Creates a new instance of TableAverageRebinner */
     public AverageTableRebinner() {
@@ -116,7 +117,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( this.interpolate ) {
             if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
             if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], yTagWidthDouble, ddY.isLog());
-        } else {
+        } else if (enlargePixels) {
             enlargePixels( rebinData, rebinWeights );
         }
         double[][][] zValues = {rebinData,rebinWeights};
@@ -499,4 +500,11 @@ public class AverageTableRebinner implements DataSetRebinner {
         this.interpolate = interpolate;
     }
     
+    public void setEnlargePixels(boolean enlargePixels) {
+        this.enlargePixels = enlargePixels;
+    }
+    
+    public boolean isEnlargePixels() {
+        return enlargePixels;
+    }
 }
