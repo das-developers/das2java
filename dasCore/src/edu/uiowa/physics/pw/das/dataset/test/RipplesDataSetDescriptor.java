@@ -64,15 +64,15 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
     }
     
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
-        int nx=100;
-        int ny=100;
-               
+        int nx=300;
+        int ny=300;
+        
         double[] x= new double[nx];
         double[] y= new double[ny];
         double[][] z= new double[nx][ny];
         
         monitor.setTaskSize(x.length);
-        monitor.started();        
+        monitor.started();
         
         for (int i=0; i<x.length; i++) {
             x[i]= (float)i;
@@ -83,7 +83,8 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
                 double exp2= Math.exp(-rad2/p2)*Math.cos(Math.PI*p2*rad2);
                 z[i][j]= (exp1+exp2);
                 if (22<i && i<24) z[i][j]=-1e31f;
-            }            
+            }
+            if ( monitor.isCancelled() ) break;
             monitor.setTaskProgress(i);
         }
         for (int j=0; j<y.length; j++) {
@@ -93,8 +94,8 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
         z[50][50]=-1.0f;
         z[0][0]= 1.0f;
         z[25][25]= -.5f;
-                
+        
         return DefaultTableDataSet.createSimple( x, y, z );
     }
-        
+    
 }
