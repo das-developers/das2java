@@ -40,7 +40,6 @@ public class TransferableCanvasComponent implements Transferable {
     
     public static final DataFlavor CANVAS_COMPONENT_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasCanvasComponent");
     public static final DataFlavor AXIS_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasAxis");
-    public static final DataFlavor TIME_AXIS_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasAxis");
     public static final DataFlavor PLOT_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasPlot");
     public static final DataFlavor COLORBAR_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasColorBar");
     
@@ -60,11 +59,6 @@ public class TransferableCanvasComponent implements Transferable {
     public TransferableCanvasComponent(DasAxis axis) {
         flavorList = Arrays.asList(new DataFlavor[]{AXIS_FLAVOR, CANVAS_COMPONENT_FLAVOR, DataFlavor.stringFlavor});
         component = axis;
-    }
-    
-    public TransferableCanvasComponent(DasTimeAxis taxis) {
-        flavorList = Arrays.asList(new DataFlavor[]{TIME_AXIS_FLAVOR, AXIS_FLAVOR, CANVAS_COMPONENT_FLAVOR, DataFlavor.stringFlavor});
-        component = taxis;
     }
     
     public TransferableCanvasComponent(DasPlot plot) {
