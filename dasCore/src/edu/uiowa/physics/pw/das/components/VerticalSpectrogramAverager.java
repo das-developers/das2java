@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionListener;
@@ -43,7 +44,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
     
     private DasPlot parentPlot;
     private SymbolLineRenderer renderer;
-
+    
     private VerticalSpectrogramAverager(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
         super(xAxis, yAxis);
         parentPlot = plot;
@@ -61,8 +62,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
     public void showPopup() {
         if (SwingUtilities.isEventDispatchThread()) {
             showPopupImpl();
-        }
-        else {
+        } else {
             Runnable r = new Runnable() {
                 public void run() {
                     showPopupImpl();
@@ -108,18 +108,16 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
         if (parentWindow instanceof Frame) {
             popupWindow = new JDialog((Frame)parentWindow);
-        }
-        else if (parentWindow instanceof Dialog) {
+        } else if (parentWindow instanceof Dialog) {
             popupWindow = new JDialog((Dialog)parentWindow);
-        }
-        else {
+        } else {
             popupWindow = new JDialog();
         }
         popupWindow.setTitle("Vertical Slicer");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
         popupWindow.pack();
-                
+        
         Point parentLocation = new Point();
         SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
@@ -144,27 +142,26 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         TableDataSet xtys = (TableDataSet)ds;
         Datum xValue1 = e.getMinimum();
         Datum xValue2 = e.getMaximum();
-    
-        this.setTitle( ""+xValue1+" - "+xValue2 );
+        
         if ( xValue2.equals(xValue1) ) {
             return;
         }
-                
+        
+        this.setTitle( new DatumRange( xValue1, xValue2 ).toString() );
+        
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
         AverageTableRebinner rebinner = new AverageTableRebinner();
-        try {            
+        try {
             TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
             VectorDataSet ds1 = rebinned.getXSlice(0);
             renderer.setDataSet(ds1);
-        }
-        catch (DasException de) {
+        } catch (DasException de) {
             //Do nothing.
         }
         
         if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
             showPopup();
-        }
-        else {
+        } else {
             repaint();
         }
     }
