@@ -70,13 +70,16 @@ public abstract class DataSetDescriptor {
     /* Retrieve the dataset for this interval and resolution.  The contract for this function is that
      * identical start,end,resolution parameters will yield an identical dataSet, except for when an
      * DataSetUpdate has been fired in the meantime.
+     *
+     * null for the data resolution indicates that the data should be returned at its "intrinsic resolution"
+     * if such a resolution exists.
      */
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         if ( cacheTag!=null &&
         defaultCaching &&
         cacheTag.start.le(start) &&
         cacheTag.end.ge(end) &&
-        cacheTag.resolution.le(resolution) ) {
+        ( cacheTag.resolution==null ||cacheTag.resolution.le(resolution) ) ) {
             return cacheDataSet;
         } else {
             cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
@@ -85,7 +88,7 @@ public abstract class DataSetDescriptor {
                 if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
             }
             return cacheDataSet; 
-        }
+        } 
     }
         
     protected void setDefaultCaching( boolean value ) {
@@ -122,7 +125,7 @@ public abstract class DataSetDescriptor {
         return this.dataSetID;
     }
     
-    private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z\\.]+)(?:\\?(.*))?");
+    private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z0-9_\\.]+)(?:\\?(.*))?");
     private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.-]+)=([_0-9a-zA-Z%+.-]+)");
             
     public static DataSetDescriptor create( final String dataSetID ) throws DasException {
@@ -222,5 +225,6 @@ public abstract class DataSetDescriptor {
     public Object getProperty(String name) {
         return properties.get(name);
     }
+
     
 }
