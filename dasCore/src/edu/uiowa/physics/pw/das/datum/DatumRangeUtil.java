@@ -540,10 +540,13 @@ public class DatumRangeUtil {
         if ( ts1[0]<1900 ) ts1[0]= y2k(""+ts1[0]);
         if ( ts2[0]<1900 ) ts2[0]= y2k(""+ts2[0]);
         
-        Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
-        Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
-        
-        return new DatumRange( time1, time2 );
+        if ( ts1lsd < DAY ) {
+            return new MonthDatumRange( ts1, ts2 );
+        } else {
+            Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
+            Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );        
+            return new DatumRange( time1, time2 );
+        }
         
     }
     
@@ -671,96 +674,21 @@ public class DatumRangeUtil {
         }
     }
     
-    private static void testParse( String s ) throws ParseException {
-        System.out.println( "in:" + s );
-        DatumRange t1= parseTimeRange( s );
-        String formatString= formatTimeRange( t1 );
-        System.out.println( "out: " + formatString );
-        DatumRange parseTR= parseTimeRange( formatString );
-        if ( !t1.equals(parseTR) ) {
-            System.out.println( "*** fails: "+s );
+    public static List generateList( DatumRange bounds, DatumRange element ) {
+        ArrayList result= new ArrayList();      
+        DatumRange dr= element;
+        while ( dr.max().gt(bounds.min()) ) {
+            result.add(0,dr);
+            dr= dr.previous();            
         }
-    }
-    
-    private static void testParse( String s, String sokay ) throws ParseException {
-        System.out.println( "in:" + s );
-        DatumRange t1= parseTimeRange( s );
-        String formatString= formatTimeRange( t1 );
-        System.out.println( "2out: " + formatString );
-        DatumRange parseTR= parseTimeRange( sokay );
-        if ( !t1.equals(parseTR) ) {
-            System.out.println( "*** fails: "+s );
+        dr= element.next();
+        while( dr.min().lt(bounds.max() ) ) {
+            result.add(dr);
+            dr= dr.next();
         }
+        return result;
     }
     
-    static void main1() throws Exception {
-        testParse( "5 may 04 6 to 7" );
-        testParse( "5-6 2004", "may-june 2004" );
-        testParse( "5-6 may 2004", "may-5-2004 -may-6-2004" );
-        testParse( "5 may 2004 5-7", "2004-5-5 5:00-7:00");
-        testParse( "2004-05-06 5:00-6:00");
-        testParse( "5.6.2004 5:00-6:00");
-        testParse( "5 june 2004 5:00-6:00");
-        testParse( "june 5 2004 5:00-6:00");
-        testParse( "1-2-02-1-5-02" );
-        testParse( "1.2.02-1.5.02" );
-        testParse( "2001");
-        testParse( "jan-2-2003 23:00-24:00" );
-        testParse( "2.10.2003" );
-        testParse( "2.oct.2003" );
-        testParse( "10/2/2003" );
-        testParse( "oct/2/2003" );
-        testParse( "2001/360");
-        testParse( "2001", "2001-1-1 - 2001-12-31");
-        testParse( "2001/12-2002/1", "2001-12-1 - 2002-1-31");
-        testParse( "2001/dec-2002/jan");
-        testParse( "2001/2-2001/5");
-        testParse( "2001/360-2002/001");
-        testParse( "2001/360-362");
-        testParse( "2001-360");
-        testParse( "2001/360 20:00-22:00");
-        testParse( "2001/360 20:00 to 22:00");
-        testParse( "2001/360 20:00 through 22:00");
-        testParse( "2002 010-015");
-        testParse( "010-2002-020-2002");
-        testParse( "2000-001T09:00-9:10");
-        testParse( "5-6 2004", "may-june 2004" );
-        testParse( "5-6 may 2004", "may-5-2004 -may-6-2004" );
-        testParse( "may-june 2004");
-    }
-    
-    static void main2() throws Exception {
-        testParse( "2004-07-01T03:29:40 - 03:30:45" );
-        testParse( "2004-07-01T03:29:40.000Z-03:30:45.000Z" );
-        
-        testParse("2004-11-07T06-8");
-        testParse( "2-2003 4-5" );
-        testParse( "1 2 03 4 5 06" );
-        testParse( "2-3-5 6-7" );
-        
-    }
-    
-    static void testEfficientTime() throws Exception {
-        DatumRange context= parseTimeRange("2004-1-1");
-        Datum t1= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 0, 0 );
-        Datum t2= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 23, 0 );
-        Datum t3= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 23, 4000000 );
-        int[] arr= TimeUtil.toTimeArray(t3);
-        Datum t4= TimeUtil.createTimeDatum( 2001, 1, 1, 23, 34, 23,    4000 );
-        Datum t5= TimeUtil.createTimeDatum( 2001, 1, 4, 23, 34, 23,    4000 );
-        System.out.println( efficientTime( t1, t1, context ) );
-        System.out.println( efficientTime( t2, t2, context ) );
-        System.out.println( efficientTime( t3, t3, context ) );
-        System.out.println( efficientTime( t1, t2, context ) );
-        System.out.println( efficientTime( t4, t4, context ) );
-        System.out.println( efficientTime( t5, t5, context ) );
-    }
-    
-    public static void main( String [] args ) throws Exception {
-        //main2();
-        testEfficientTime();
-        
-    }
     
     public static DatumRange newDimensionless(double lower, double upper) {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
