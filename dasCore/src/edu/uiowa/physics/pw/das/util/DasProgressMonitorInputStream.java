@@ -48,10 +48,12 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();
         this.deathTimeMilli= -1;
-        transferRateFormat= new DecimalFormat();        
-        transferRateFormat.setMaximumFractionDigits(2);        
-        transferRateFormat.setMinimumFractionDigits(2);        
-        monitor.setTaskSize(1000);
+        if ( monitor!=null ) {
+            transferRateFormat= new DecimalFormat();
+            transferRateFormat.setMaximumFractionDigits(2);
+            transferRateFormat.setMinimumFractionDigits(2);
+            monitor.setTaskSize(1000);
+        }
     }
     
     public void reportTransmitSpeed() {
@@ -68,7 +70,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             timeElapsed= deathTimeMilli-birthTimeMilli;
         } else {
             timeElapsed= System.currentTimeMillis()-birthTimeMilli;
-        }        
+        }
         if ( timeElapsed==0 ) return Double.POSITIVE_INFINITY;
         return 1000 * totalBytesRead / timeElapsed;
     }
@@ -79,14 +81,14 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         if (monitor != null) {
             if (!started) {
                 started = true;
-                monitor.started();                
+                monitor.started();
             }
             if (bytesRead == -1) {
                 monitor.finished();
             }
             else {
                 bytesRead++;
-                checkCancelled();                
+                checkCancelled();
                 reportTransmitSpeed();
             }
         }
@@ -107,7 +109,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             else {
                 bytesRead += result;
                 checkCancelled();
-                reportTransmitSpeed();                
+                reportTransmitSpeed();
             }
         }
         return result;
@@ -126,7 +128,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             }
             else {
                 bytesRead += result;
-                checkCancelled();                
+                checkCancelled();
                 reportTransmitSpeed();
             }
         }
