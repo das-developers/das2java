@@ -31,12 +31,12 @@ import java.util.Vector;
  */
 public class IDLParser {
     
-    static int EXPR=1;
-    static int EXPR_LIST=2;
-    static int FACTOR=3;
-    static int TERM=4;
-    static int NUMBER=5;
-    static int NOPARSER=6;
+    public static int EXPR=1;
+    public static int EXPR_LIST=2;
+    public static int FACTOR=3;
+    public static int TERM=4;
+    public static int NUMBER=5;
+    public static int NOPARSER=6;
 
     /** Creates a new instance of idlParser */
     public IDLParser() {
