@@ -26,6 +26,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.util.ByteBufferInputStream;
@@ -292,16 +293,16 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             double timeBaseValue = start.doubleValue(start.getUnits());
             Units offsetUnits = start.getUnits().getOffsetUnits();
             UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
-            double[] xTag = new double[1];
-            double[] yValue = new double[1];
             while (data.remaining() > recordSize) {
-                sd.getXDescriptor().read(data, xTag, 0);
-                xTag[0] = timeBaseValue + uc.convert(xTag[0]);
-                yDescriptors[0].read(data, yValue, 0);
-                builder.insertY(xTag[0], yValue[0]);
+                DatumVector vector = sd.getXDescriptor().read(data);
+                double xTag = timeBaseValue + vector.doubleValue(0, offsetUnits);
+                vector = yDescriptors[0].read(data);
+                double yValue = vector.doubleValue(0, yDescriptors[0].getUnits());
+                builder.insertY(xTag, yValue);
                 for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
-                    yDescriptors[planeIndex + 1].read(data, yValue, 0);
-                    builder.insertY(xTag[0], yValue[0], yDescriptors[planeIndex + 1].getName());
+                    vector = yDescriptors[planeIndex + 1].read(data);
+                    yValue = vector.doubleValue(0, yDescriptors[planeIndex + 1].getUnits());
+                    builder.insertY(xTag, yValue, yDescriptors[planeIndex + 1].getName());
                 }
             }
             builder.addProperties(properties);
@@ -349,7 +350,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         double timeBaseValue= start.doubleValue(start.getUnits());
         Units offsetUnits = start.getUnits().getOffsetUnits();
         UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
-        double[] xTag = new double[1];
         double[] yCoordinates = yScans[0].getYTags();
         double[] scan = new double[yScans[0].getNItems()];
         
@@ -361,23 +361,25 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         }
         
         while (data.remaining() > recordSize) {
-            sd.getXDescriptor().read(data, xTag, 0);
-            xTag[0] = timeBaseValue + uc.convert(xTag[0]);
-            yScans[0].read(data, scan, 0);
+            DatumVector vector = sd.getXDescriptor().read(data);
+            double xTag = timeBaseValue + uc.convert(vector.doubleValue(0, sd.getXDescriptor().getUnits()));
+            vector = yScans[0].read(data);
+            scan = vector.toDoubleArray(scan, yScans[0].getZUnits());
             if (zfill!=zUnits.getFillDouble()) {
                 for ( int i=0; i<scan.length; i++ ) {
                     if ( scan[i]==zfill ) scan[i]= zUnits.getFillDouble();
                 }
             }
-            builder.insertYScan(xTag[0], yCoordinates, scan);
+            builder.insertYScan(xTag, yCoordinates, scan);
             for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
-                yScans[planeIndex + 1].read(data, scan, 0);
+                vector = yScans[planeIndex + 1].read(data);
+                scan = vector.toDoubleArray(scan, yScans[planeIndex + 1].getZUnits());
                 if (zfill!=zUnits.getFillDouble()) {
                     for ( int i=0; i<scan.length; i++ ) {
                         if ( scan[i]==zfill ) scan[i]= zUnits.getFillDouble();
                     }
                 }
-                builder.insertYScan(xTag[0], yCoordinates, scan, yScans[planeIndex + 1].getName());
+                builder.insertYScan(xTag, yCoordinates, scan, yScans[planeIndex + 1].getName());
             }
         }
         builder.addProperties(properties);

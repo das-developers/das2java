@@ -23,6 +23,9 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
+import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.stream.PacketDescriptor;
 import edu.uiowa.physics.pw.das.stream.StreamDescriptor;
 import edu.uiowa.physics.pw.das.stream.StreamException;
@@ -52,7 +55,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.serialize.Method;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.w3c.dom.*;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -240,20 +247,30 @@ public class StreamTool {
         return result;
     }
     
+    private static class ReadStreamStructure {
+        private ReadableByteChannel stream;
+        private ByteBuffer bigBuffer = ByteBuffer.allocate(4096);
+        private byte[] four = new byte[4];
+        private StreamHandler handler;
+        private Map descriptors = new HashMap();
+        private ReadStreamStructure(ReadableByteChannel stream, StreamHandler handler) {
+            this.stream = stream;
+            this.handler = handler;
+        }
+    }
+    
     public static void readStream(ReadableByteChannel stream, StreamHandler handler) throws StreamException {
-        Map descriptors = new HashMap();
-        ByteBuffer bigBuffer = ByteBuffer.allocate(4096);
-        byte[] four = new byte[4];
+        ReadStreamStructure struct = new ReadStreamStructure(stream, handler);
         try {
-            StreamDescriptor sd = getStreamDescriptor(stream, bigBuffer, four);
+            StreamDescriptor sd = getStreamDescriptor(struct);
             if ("gzip".equals(sd.getCompression())) {
                 stream = getGZIPChannel(stream);
             }
             handler.streamDescriptor(sd);
-            while (stream.read(bigBuffer) != -1) {
-                bigBuffer.flip();
-                while (getChunk(bigBuffer, four, handler, descriptors));
-                bigBuffer.compact();
+            while (stream.read(struct.bigBuffer) != -1) {
+                struct.bigBuffer.flip();
+                while (getChunk(struct));
+                struct.bigBuffer.compact();
             }
             handler.streamClosed(sd);
         }
@@ -268,67 +285,79 @@ public class StreamTool {
         }
     }
     
-    private static StreamDescriptor getStreamDescriptor(ReadableByteChannel stream, ByteBuffer bigBuffer, byte[] four) throws StreamException, IOException {
-        bigBuffer.clear().limit(8);
-        while (bigBuffer.hasRemaining() && stream.read(bigBuffer) != -1);
-        if (bigBuffer.hasRemaining()) {
+    private static StreamDescriptor getStreamDescriptor(ReadStreamStructure struct) throws StreamException, IOException {
+        struct.bigBuffer.clear().limit(10);
+        while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1);
+        if (struct.bigBuffer.hasRemaining()) {
             throw new StreamException("Reached end of stream before encountering stream descriptor");
         }
-        bigBuffer.flip();
-        bigBuffer.get(four);
-        if (isStreamDescriptorHeader(four)) {
-            int contentLength = getContentLength(bigBuffer);
-            bigBuffer.clear().limit(contentLength);
-            while (bigBuffer.hasRemaining() && stream.read(bigBuffer) != -1);
-            if (bigBuffer.hasRemaining()) {
+        struct.bigBuffer.flip();
+        struct.bigBuffer.get(struct.four);
+        if (isStreamDescriptorHeader(struct.four)) {
+            int contentLength = getContentLength(struct.bigBuffer);
+            struct.bigBuffer.clear().limit(contentLength);
+            while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1);
+            if (struct.bigBuffer.hasRemaining()) {
                 throw new StreamException("Reached end of stream before encountering stream descriptor");
             }
-            bigBuffer.flip();
-            Document doc = getXMLDocument(bigBuffer, contentLength);
+            struct.bigBuffer.flip();
+            Document doc = getXMLDocument(struct.bigBuffer, contentLength);
             StreamDescriptor sd = new StreamDescriptor(doc.getDocumentElement());
-            bigBuffer.clear();
+            struct.bigBuffer.clear();
             return sd;
         }
         else {
-            throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(four, 0, 4) + "'");
+            throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(struct.four, 0, 4) + "'");
         }
     }
     
-    private static boolean getChunk(ByteBuffer bigBuffer, byte[] four, StreamHandler handler, Map descriptors) throws StreamException, IOException {
-        bigBuffer.mark();
-        if (bigBuffer.remaining() < 4) {
+    private static boolean getChunk(ReadStreamStructure struct) throws StreamException, IOException {
+        struct.bigBuffer.mark();
+        if (struct.bigBuffer.remaining() < 4) {
             return false;
         }
-        bigBuffer.get(four);
-        if (isPacketDescriptorHeader(four)) {
-            if (bigBuffer.remaining() < 4) {
-                bigBuffer.reset();
+        struct.bigBuffer.get(struct.four);
+        if (isPacketDescriptorHeader(struct.four)) {
+            if (struct.bigBuffer.remaining() < 6) {
+                struct.bigBuffer.reset();
                 return false;
             }
-            int contentLength = getContentLength(bigBuffer);
-            if (bigBuffer.remaining() < contentLength) {
-                bigBuffer.reset();
+            int contentLength = getContentLength(struct.bigBuffer);
+            if (struct.bigBuffer.capacity() < contentLength) {
+                struct.bigBuffer.reset();
+                ByteBuffer temp = ByteBuffer.allocate(8 + contentLength + contentLength / 10);
+                temp.put(struct.bigBuffer);
+                temp.flip();
+                struct.bigBuffer = temp;
                 return false;
             }
-            Document doc = getXMLDocument(bigBuffer, contentLength);
+            else if (struct.bigBuffer.remaining() < contentLength) {
+                struct.bigBuffer.reset();
+                return false;
+            }
+            Document doc = getXMLDocument(struct.bigBuffer, contentLength);
             PacketDescriptor pd = new PacketDescriptor(doc.getDocumentElement());
-            handler.packetDescriptor(pd);
-            descriptors.put(asciiBytesToString(four, 1, 2), pd);
+            struct.handler.packetDescriptor(pd);
+            struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
         }
-        else if (isPacketHeader(four)) {
-            String key = asciiBytesToString(four, 1, 2);
-            PacketDescriptor pd = (PacketDescriptor)descriptors.get(key);
+        else if (isPacketHeader(struct.four)) {
+            String key = asciiBytesToString(struct.four, 1, 2);
+            PacketDescriptor pd = (PacketDescriptor)struct.descriptors.get(key);
             int contentLength = pd.getSizeBytes();
-            if (bigBuffer.remaining() < contentLength) {
-                bigBuffer.reset();
+            if (struct.bigBuffer.remaining() < contentLength) {
+                struct.bigBuffer.reset();
                 return false;
             }
-            ByteBuffer slice = sliceBuffer(bigBuffer, contentLength);
-            bigBuffer.position(bigBuffer.position() + contentLength);
-            handler.packet(pd, slice);
+            int yCount = pd.getYCount();
+            Datum xTag = pd.getXDescriptor().readDatum(struct.bigBuffer);
+            DatumVector[] vectors = new DatumVector[yCount];
+            for (int i = 0; i < yCount; i++) {
+                vectors[i] = pd.getYDescriptor(i).read(struct.bigBuffer);
+            }
+            struct.handler.packet(pd, xTag, vectors);
         }
         else {
-            throw new StreamException("Expected four byte header, found '" + new String(four) + "'");
+            throw new StreamException("Expected four byte header, found '" + new String(struct.four) + "'");
         }
         return true;
     }
@@ -377,7 +406,7 @@ public class StreamTool {
     
     private static int getContentLength(ByteBuffer buffer) throws StreamException {
         int contentLength = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 6; i++) {
             char c = (char)(0xFF & buffer.get());
             if (c == ' ') {
                 continue;
@@ -417,6 +446,38 @@ public class StreamTool {
         }
         catch (IOException ioe) {
             throw new StreamException(ioe);
+        }
+    }
+    
+    public static Map processPropertiesElement(Element element) throws StreamException {
+        try {
+            if (!element.getTagName().equals("properties")) {
+                throw new StreamException("expecting 'properties' element, encountered '" + element.getTagName() + "'");
+            }
+            HashMap map = new HashMap();
+            NamedNodeMap attributes = element.getAttributes();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Attr attr = (Attr)attributes.item(i);
+                String name = attr.getName();
+                String[] split = name.split(":");
+                if (split.length == 1) {
+                    map.put(name, attr.getValue());
+                }
+                else if (split.length == 2) {
+                    PropertyType type = PropertyType.getByName(split[0]);
+                    Object value = type.parse(attr.getValue());
+                    map.put(split[1], value);
+                }
+                else {
+                    throw new IllegalArgumentException("Invalid typed name: " + name);
+                }
+            }
+            return map;
+        }
+        catch (java.text.ParseException pe) {
+            StreamException se = new StreamException(pe.getMessage());
+            se.initCause(pe);
+            throw se;
         }
     }
     

@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetBuilder;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.stream.*;
 import java.nio.ByteBuffer;
@@ -44,9 +45,9 @@ public class DataSetStreamHandler implements StreamHandler {
     public DataSetStreamHandler() {
     }
     
-    public void packet(PacketDescriptor pd, ByteBuffer buffer) throws StreamException {
+    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         ensureNotNullDelegate();
-        delegate.packet(pd, buffer);
+        delegate.packet(pd, xTag, vectors);
     }
     
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
@@ -81,14 +82,16 @@ public class DataSetStreamHandler implements StreamHandler {
         }
     }
     
-    private static double getXWithBase(double x, Units xUnits, Datum base) {
+    private static double getXWithBase(Datum base, Datum x) {
         if (base == null) {
-            return x;
+            return x.doubleValue(x.getUnits());
         }
         else {
-            x = xUnits.convertDoubleTo(base.getUnits().getOffsetUnits(), x);
-            return base.doubleValue(base.getUnits()) + x;
+            return base.doubleValue(base.getUnits()) + x.doubleValue(base.getUnits().getOffsetUnits());
         }
+    }
+    
+    public void packet(PacketDescriptor pd, DatumVector vector) throws StreamException {
     }
     
     private static interface StreamHandlerDelegate extends StreamHandler {
@@ -109,16 +112,19 @@ public class DataSetStreamHandler implements StreamHandler {
             this.packetDescriptor(pd);
         }
         
-        public void packet(PacketDescriptor pd, ByteBuffer buffer) throws StreamException {
+        public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             Datum base = pd.getXDescriptor().getBase();
+            double x = getXWithBase(base, xTag);
             for (int i = 0; i < pd.getYCount(); i++) {
                 if (pd.getYDescriptor(i) instanceof StreamMultiYDescriptor) {
                     StreamMultiYDescriptor my = (StreamMultiYDescriptor)pd.getYDescriptor(i);
-                    pd.getXDescriptor().read(buffer, doubles, 0);
-                    double x = getXWithBase(doubles[0], pd.getXDescriptor().getUnits(), base);
-                    my.read(buffer, doubles, 0);
-                    double y = doubles[0];
-                    builder.insertY(x, y);
+                    double y = vectors[i].doubleValue(0, my.getUnits());
+                    if (i != 0) {
+                        builder.insertY(x, y, my.getName());
+                    }
+                    else {
+                        builder.insertY(x, y);
+                    }
                 }
                 else {
                     throw new StreamException("Mixed data sets are not currently supported");
@@ -140,7 +146,11 @@ public class DataSetStreamHandler implements StreamHandler {
         public void streamException(StreamException se) throws StreamException {}
         
         public DataSet getDataSet() {
+            builder.addProperties(sd.getProperties());
             return builder.toVectorDataSet();
+        }
+        
+        public void packet(PacketDescriptor pd, DatumVector vector) throws StreamException {
         }
         
     }
@@ -161,19 +171,21 @@ public class DataSetStreamHandler implements StreamHandler {
             this.packetDescriptor(pd);
         }
 
-        public void packet(PacketDescriptor pd, ByteBuffer buffer) throws StreamException {
+        public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
+            double x = getXWithBase(base, xTag);
+            double[] doubles = null;
             for (int i = 0; i < pd.getYCount(); i++) {
                 if (pd.getYDescriptor(i) instanceof StreamYScanDescriptor) {
                     yscan = (StreamYScanDescriptor)pd.getYDescriptor(i);
+                    doubles = vectors[i].toDoubleArray(doubles, yscan.getZUnits());
                     if (i != 0) {
-                        builder.addPlane(yscan.getName(), yscan.getZUnits());
+                        builder.insertYScan(x, yscan.getYTags(), doubles, yscan.getName());
                     }
-                    pd.getXDescriptor().read(buffer, doubles, 0);
-                    double x = getXWithBase(doubles[0], pd.getXDescriptor().getUnits(), base);
-                    yscan.read(buffer, doubles, 0);
-                    builder.insertYScan(x, yscan.getYTags(), doubles);
+                    else {
+                        builder.insertYScan(x, yscan.getYTags(), doubles);
+                    }
                 }
                 else {
                     throw new StreamException("Mixed data sets are not currently supported");
@@ -200,7 +212,11 @@ public class DataSetStreamHandler implements StreamHandler {
         public void streamException(StreamException se) throws StreamException {}
         
         public DataSet getDataSet() {
+            builder.addProperties(sd.getProperties());
             return builder.toTableDataSet();
+        }
+        
+        public void packet(PacketDescriptor pd, DatumVector vector) throws StreamException {
         }
         
     }

@@ -40,15 +40,16 @@ class GapListDouble {
     public int add(double d) {
         int index = indexOf(d);
         if (index < 0) {
-            if (isFull()) {
-                resizeArray();
-            }
-            if (~index != gapStart) {
-                moveGap(~index);
-            }
-            array[gapStart] = d;
-            gapStart++;
+            index = ~index;
         }
+        if (isFull()) {
+            resizeArray();
+        }
+        if (index != gapStart) {
+            moveGap(index);
+        }
+        array[gapStart] = d;
+        gapStart++;
         return index;
     }
     

@@ -24,6 +24,8 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.DasIOException;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
+import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.IDLParser;
 import java.io.*;
 import org.xml.sax.InputSource;
@@ -53,7 +55,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
     private String compression;
     
     /** Creates a new instance of StreamProperties */
-    public StreamDescriptor(Element element) {
+    public StreamDescriptor(Element element) throws StreamException {
         if (element.getTagName().equals("stream")) {
             processElement(element);
         }
@@ -62,16 +64,13 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
-    private void processElement(Element element) {
+    private void processElement(Element element) throws StreamException {
         compression = element.getAttribute("compression");
         NodeList list = element.getElementsByTagName("properties");
         if (list.getLength() != 0) {
             Element propertiesElement = (Element)list.item(0);
-            NamedNodeMap attributes = propertiesElement.getAttributes();
-            for (int i = 0; i < attributes.getLength(); i++) {
-                Node node = attributes.item(i);
-                properties.put(node.getNodeName(), node.getNodeValue());
-            }
+            Map m = StreamTool.processPropertiesElement(propertiesElement);
+            properties.putAll(m);
         }
     }
     
@@ -168,10 +167,11 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         return -1;
     }
     
-    public void read(ByteBuffer input, double[] output, int offset) {
+    public DatumVector read(ByteBuffer input) {
+        return null;
     }
     
-    public void write(double[] output, int offset, ByteBuffer input) {
+    public void write(DatumVector input, ByteBuffer output) {
     }
 
     public static StreamDescriptor createLegacyDescriptor(BufferedReader in) throws IOException {

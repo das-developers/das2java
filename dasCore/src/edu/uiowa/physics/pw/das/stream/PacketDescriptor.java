@@ -23,6 +23,8 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,7 +41,7 @@ import org.w3c.dom.NodeList;
  * datasets within.
  * @author jbf
  */
-public class PacketDescriptor implements SkeletonDescriptor, Cloneable {
+public class PacketDescriptor implements Cloneable {
     
     private StreamXDescriptor xDescriptor;
     private SkeletonDescriptor[] yDescriptors = new SkeletonDescriptor[6];
@@ -147,10 +149,31 @@ public class PacketDescriptor implements SkeletonDescriptor, Cloneable {
         return sizeBytes;
     }
     
-    public void read(ByteBuffer input, double[] output, int offset) {
+    public DatumVector[] read(ByteBuffer input) {
+        DatumVector[] vectors = new DatumVector[yCount + 1];
+        vectors[0] = xDescriptor.read(input);
+        for (int i = 0; i < yCount; i++) {
+            vectors[i + 1] = yDescriptors[i].read(input);
+        }
+        return vectors;
     }
     
-    public void write(double[] output, int offset, ByteBuffer input) {
+    public void write(Datum xTag, DatumVector[] vectors, ByteBuffer output) {
+        xDescriptor.writeDatum(xTag, output);
+        for (int i = 0; i < yCount; i++) {
+             yDescriptors[i].write(vectors[i], output);
+        }
+        //ASCII KLUDGE!!!!
+        if (yDescriptors[yCount - 1] instanceof StreamYScanDescriptor
+            && ((StreamYScanDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
+            && Character.isWhitespace((char)output.get(output.position() - 1))) {
+            output.put(output.position() - 1, (byte)'\n');
+        }
+        else if (yDescriptors[yCount - 1] instanceof StreamMultiYDescriptor
+                 && ((StreamMultiYDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
+                 && Character.isWhitespace((char)output.get(output.position() - 1))) {
+            output.put(output.position() - 1, (byte)'\n');
+        }
     }
     
     private static String trimComment(String line) {

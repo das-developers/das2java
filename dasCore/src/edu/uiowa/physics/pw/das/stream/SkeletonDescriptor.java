@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import java.nio.ByteBuffer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,9 +32,9 @@ public interface SkeletonDescriptor {
     
     int getSizeBytes();
     
-    void read(ByteBuffer input, double[] output, int offset);
+    DatumVector read(ByteBuffer input);
     
-    void write(double[] input, int offset, ByteBuffer output);
+    void write(DatumVector input, ByteBuffer output);
     
     Element getDOMElement(Document document);
     

@@ -79,9 +79,6 @@ public class SymbolLineRenderer extends Renderer {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
         
-        if (xAxis.getUnits()!=dataSet.getXUnits()) throw new IllegalArgumentException("dataSet x units and xAxis units differ");
-        if (yAxis.getUnits()!=dataSet.getYUnits()) throw new IllegalArgumentException("dataSet y units and yAxis units differ");
-        
         Dimension d;
         
         double xmin, xmax, ymin, ymax;

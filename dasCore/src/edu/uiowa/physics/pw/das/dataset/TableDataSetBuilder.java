@@ -100,19 +100,12 @@ public class TableDataSetBuilder {
         }
         if (insertionIndex < 0) {
             insertionIndex = ~insertionIndex;
-            xTags.add(x);
-            MultiYScan scan = new MultiYScan();
-            scan.put(planeID, (double[])z.clone());
-            scan.setYTags(y);
-            zValues.add(insertionIndex, scan);
         }
-        else {
-            MultiYScan scan = (MultiYScan)zValues.get(insertionIndex);
-            if (!Arrays.equals(y, scan.getYTags())) {
-                throw new IllegalArgumentException();
-            }
-            scan.put(planeID, (double[])z.clone());
-        }
+        xTags.add(x);
+        MultiYScan scan = new MultiYScan();
+        scan.put(planeID, (double[])z.clone());
+        scan.setYTags(y);
+        zValues.add(insertionIndex, scan);
     }
     
     public void append(TableDataSet tds) {

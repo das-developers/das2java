@@ -22,6 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.stream;
 
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import java.nio.ByteBuffer;
 
@@ -103,12 +104,12 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         return transferType;
     }
     
-    public void read(ByteBuffer input, double[] output, int offset) {
-        output[offset] = transferType.read(input);
+    public DatumVector read(ByteBuffer input) {
+        return DatumVector.newDatumVector(new double[]{transferType.read(input)}, units);
     }
     
-    public void write(double[] input, int offset, ByteBuffer output) {
-        transferType.write(input[offset], output);
+    public void write(DatumVector input, ByteBuffer output) {
+        transferType.write(input.doubleValue(0, units), output);
     }
     
     public Element getDOMElement(Document document) {
@@ -125,7 +126,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         catch (CloneNotSupportedException cnse) {
             throw new RuntimeException(cnse);
         }
-    }
+   }
     
 }
 

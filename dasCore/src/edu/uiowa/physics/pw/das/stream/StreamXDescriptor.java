@@ -23,6 +23,7 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -62,8 +63,10 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         else {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
+        String unitsString = element.getAttribute("units");
+        units = Units.getByName(unitsString);
         String baseString = element.getAttribute("base");
-        if (baseString != null) {
+        if (baseString != null && !baseString.equals("")) {
             if (baseUnits instanceof TimeLocationUnits) {
                 base = TimeUtil.createValid(baseString);
             }
@@ -105,12 +108,21 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         return transferType;
     }
     
-    public void read(ByteBuffer input, double[] output, int offset) {
-        output[offset] = transferType.read(input);
+    
+    public Datum readDatum(ByteBuffer input) {
+        return Datum.create(transferType.read(input), units);
     }
     
-    public void write(double[] input, int offset, ByteBuffer output) {
-        transferType.write(input[offset], output);
+    public DatumVector read(ByteBuffer input) {
+        return DatumVector.newDatumVector(new double[]{transferType.read(input)}, units);
+    }
+    
+    public void writeDatum(Datum datum, ByteBuffer output) {
+        transferType.write(datum.doubleValue(units), output);
+    }
+    
+    public void write(DatumVector input, ByteBuffer output) {
+        transferType.write(input.doubleValue(0, units), output);
     }
     
     public Element getDOMElement(Document document) {

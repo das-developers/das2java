@@ -43,7 +43,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
         
-        long timer= System.currentTimeMillis();                
+        long timer= System.currentTimeMillis();
         
         Units xunits= ddXin.getUnits();
         Units yunits= ddYin.getUnits();

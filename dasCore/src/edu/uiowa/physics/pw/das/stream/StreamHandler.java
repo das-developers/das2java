@@ -23,7 +23,8 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import java.nio.ByteBuffer;
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 
 /**
  *
@@ -32,7 +33,7 @@ import java.nio.ByteBuffer;
 public interface StreamHandler {
     void streamDescriptor(StreamDescriptor sd) throws StreamException;
     void packetDescriptor(PacketDescriptor pd) throws StreamException;
-    void packet(PacketDescriptor pd, ByteBuffer buffer) throws StreamException;
+    void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException;
     void streamClosed(StreamDescriptor sd) throws StreamException;
     void streamException(StreamException se) throws StreamException;
 }

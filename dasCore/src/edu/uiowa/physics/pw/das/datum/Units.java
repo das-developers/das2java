@@ -76,6 +76,18 @@ public abstract class Units {
       Units.spacecraft.createDatum( "Cluster Tango" );
     }
     
+    private static Map unitsMap = new HashMap();
+    static {
+        unitsMap.put("mj1958", Units.mj1958);
+        unitsMap.put("t1970", Units.t1970);
+        unitsMap.put("t2000", Units.t2000);
+        unitsMap.put("us2000", Units.us2000);
+        unitsMap.put("seconds", Units.seconds);
+        unitsMap.put("days", Units.days);
+        unitsMap.put("microseconds", Units.microseconds);
+        unitsMap.put("", Units.dimensionless);
+    }
+    
     private String id;
     private String description;
     private Map conversionMap = new IdentityHashMap();
@@ -212,18 +224,11 @@ public abstract class Units {
     public abstract Datum divide( Number a, Number b, Units bUnits );
     
     public static Units getByName(String s) {
-        if (s.equals("")) {
-            return Units.dimensionless;
-        }
-        else if (s.equals("TIME")) {
-            return Units.us2000;
-        }
-        else if (s.equals("seconds") || s.equals("s")) {
-            return Units.seconds;
-        }
-        else {
+        Units units = (Units)unitsMap.get(s);
+        if (s == null) {
             throw new IllegalArgumentException("Unrecognized units");
         }
+        else return units;
     }
     
     public static void main( String[] args ) throws java.text.ParseException {

@@ -231,6 +231,7 @@ public class DasServer {
                 char[] four = new char[4];
                 reader.read(four);
                 if (new String(four).equals("[00]")) {
+                    reader.skip(6);
                     Document header = StreamDescriptor.parseHeader(reader);
                     Element root = header.getDocumentElement();
                     if (root.getTagName().equals("stream")) {
