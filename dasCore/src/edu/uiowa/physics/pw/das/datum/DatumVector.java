@@ -31,19 +31,41 @@ public final class DatumVector {
 
     private final Units units;
     private final Object store;
+    private final int offset;
     private final int length;
     
+    /** T0DO: check offset and length for out of bounds condition */
     private DatumVector(double[] array, int offset, int length, Units units) {
-        this.store = new double[length];
-        for (int i = 0; i < length; i++) {
-            ((double[])store)[i] = array[offset + i];
+        this(array, offset, length, units, true);
+    }
+    
+    /** T0DO: check offset and length for out of bounds condition */
+    private DatumVector(double[] array, int offset, int length, Units units, boolean copy) {
+        if (copy) {
+            this.store = new double[length];
+            for (int i = 0; i < length; i++) {
+                ((double[])store)[i] = array[offset + i];
+            }
+            offset = 0;
         }
+        else {
+            this.store = array;
+        }
+        this.offset = offset;
         this.units = units;
         this.length = length;
     }
     
+    /** T0DO: check start and end for out of bounds condition */
+    public DatumVector getSubVector(int start, int end) {
+        if (start == 0 && end == length) {
+            return this;
+        }
+        else return new DatumVector((double[])store, offset + start, end - start, units, false);
+    }
+    
     public Datum get(int index) {
-        return Datum.create(((double[])store)[index], units);
+        return Datum.create(((double[])store)[index + offset], units);
     }
     
     public Units getUnits() {
@@ -51,7 +73,7 @@ public final class DatumVector {
     }
     
     public double doubleValue(int index, Units toUnits) {
-        return units.convertDoubleTo(toUnits, ((double[])store)[index]);
+        return units.convertDoubleTo(toUnits, ((double[])store)[index + offset]);
     }
     
     public double[] toDoubleArray(Units units) {
@@ -62,7 +84,7 @@ public final class DatumVector {
         if (array == null || array.length < length) {
             array = new double[length];
         }
-        System.arraycopy(store, 0, array, 0, length);
+        System.arraycopy(store, offset, array, 0, length);
         return array;
     }
     
