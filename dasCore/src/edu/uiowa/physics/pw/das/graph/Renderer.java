@@ -370,7 +370,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             throw new IllegalStateException("both exception and data set");
         }
         if (e.getException() != null) {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update exception:"+e.getException());
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update exception: "+e.getException());
             Exception exception = e.getException();
             if ( !rendererHandlesException(exception) ) {
                 DasExceptionHandler.handle(exception);
@@ -400,7 +400,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         try {
             ds= e.getDataSet();
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset");
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset: "+ds);
             if (progressPanel != null) {
                 progressPanel.setLabel("Rebinning data set");
             }
