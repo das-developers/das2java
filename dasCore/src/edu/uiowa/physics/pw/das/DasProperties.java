@@ -51,7 +51,7 @@ public class DasProperties extends Properties {
     private DasProperties() {
         super();
         hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
-        RenderingHints.VALUE_ANTIALIAS_ON);
+        RenderingHints.VALUE_ANTIALIAS_OFF);
         hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         setDefaults();
         propertyOrder= new ArrayList();
