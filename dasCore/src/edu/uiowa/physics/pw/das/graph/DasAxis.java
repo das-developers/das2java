@@ -1122,7 +1122,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
             int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
-            if ( DMin <= tickPosition && tickPosition <= DMax ) {
+            if ( DMin <= tickPosition && tickPosition <= DMax ) { 
                 
                 tickLength= tickLengthMajor;
                 if (leftTicks) {
