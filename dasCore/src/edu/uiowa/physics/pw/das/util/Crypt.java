@@ -30,32 +30,41 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author  jbf
  */
-public class crypt {
+public class Crypt {        
     
     /** Creates a new instance of crypt */
-    public crypt() {
+    private Crypt() {       
     }
     
     public static String crypt(java.lang.String s) {
-        return JCrypt.crypt("do",s);
+        return JCrypt.crypt("do", s);
+//        try {            
+//            return new String(MessageDigest.getInstance("MD5").digest(s.getBytes()));
+//        } catch ( NoSuchAlgorithmException ex ) {
+//            RuntimeException e= new IllegalStateException( "MD5 algorythm not available" );
+//            e.initCause(ex);
+//            throw e;
+//        }
     }
     
-    public static void main(String args[]) {
+    public static void main(String args[]) throws Exception {
+        String arg;
         if(args.length >= 1) {
-            edu.uiowa.physics.pw.das.util.DasDie.println
-            (
-             "[" + args[0] + "] => [" +
-            crypt.crypt(args[0]) + "]"
-            );
+            arg= args[0];
         } else {
+            arg= "ask1st";
             edu.uiowa.physics.pw.das.util.DasDie.println("java crypt <clear_password>");
+            edu.uiowa.physics.pw.das.util.DasDie.println("  using "+arg );
         }
+        edu.uiowa.physics.pw.das.util.DasDie.println(
+        "[" + arg + "] => [" +
+        Crypt.crypt(arg) + "]"
+        );
         
-        try {
-            MessageDigest g= MessageDigest.getInstance("MD5");
-            edu.uiowa.physics.pw.das.util.DasDie.println(g.digest(args[0].getBytes()).toString());
-        } catch ( NoSuchAlgorithmException e ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(e);
+        byte[] bytes= MessageDigest.getInstance("MD5").digest(arg.getBytes());
+        String[] hex= new String[] { "0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f" };
+        for ( int i=0; i<bytes.length; i++ ) {
+            System.out.println("" + hex[( bytes[i]&0xF0 )>>4] + hex[( (bytes[i]&0x0F) )] + " ");
         }
         
     }
