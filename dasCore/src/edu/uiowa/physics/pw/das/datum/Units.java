@@ -83,6 +83,7 @@ public abstract class Units {
         unitsMap.put("t2000", Units.t2000);
         unitsMap.put("us2000", Units.us2000);
         unitsMap.put("seconds", Units.seconds);
+        unitsMap.put("s", Units.seconds);
         unitsMap.put("days", Units.days);
         unitsMap.put("microseconds", Units.microseconds);
         unitsMap.put("", Units.dimensionless);

@@ -87,6 +87,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( xTagWidth==null ) {
             xTagWidth= DataSetUtil.guessXTagWidth(tds);
         }
+        else {
+            System.out.println(xTagWidth + " " + xTagWidth.getUnits());
+        }
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
         if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
         if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
@@ -126,37 +129,38 @@ public class AverageTableRebinner implements DataSetRebinner {
         int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
         
         
-        int [] ibiny= new int[tds.getYLength(0)];
-        for (int j=0; j < ibiny.length; j++) {
-            if (ddY != null) {
-                ibiny[j]= ddY.whichBin(tds.getYTagDouble(0, j, tds.getYUnits()), tds.getYUnits());
+        for (int table = 0; table < tds.tableCount(); table++) {
+            int [] ibiny= new int[tds.getYLength(table)];
+            for (int j=0; j < ibiny.length; j++) {
+                if (ddY != null) {
+                    ibiny[j]= ddY.whichBin(tds.getYTagDouble(table, j, tds.getYUnits()), tds.getYUnits());
+                }
+                else {
+                    ibiny[j] = j;
+                }
             }
-            else {
-                ibiny[j] = j;
-            }
-        }
-        
-        for (int i=0; i < tds.getXLength(); i++) {
-            int ibinx;
-            if (ddX != null) {
-                ibinx= ddX.whichBin(tds.getXTagDouble(i, tds.getXUnits()), tds.getXUnits());
-            }
-            else {
-                ibinx = i;
-            }
-            if (ibinx>=0 && ibinx<nx) {
-                for (int j = 0; j < ibiny.length; j++) {
-                    if (ibiny[j] >= 0 && ibiny[j] < ny) {
-                        if (weights != null) {
-                            double w = weights.getDouble(i, j, Units.dimensionless);
-                            rebinData[ibinx][ibiny[j]] += tds.getDouble(i, j, tds.getZUnits()) * w;
-                            rebinWeights[ibinx][ibiny[j]] += w;
-                        }
-                        else {
-                            Datum z= tds.getDatum(i,j);
-                            double w= z.isFill() ? 0. : 1. ;
-                            rebinData[ibinx][ibiny[j]] += z.doubleValue(tds.getZUnits()) * w;
-                            rebinWeights[ibinx][ibiny[j]] += w;
+            for (int i=tds.tableStart(table); i < tds.tableEnd(table); i++) {
+                int ibinx;
+                if (ddX != null) {
+                    ibinx= ddX.whichBin(tds.getXTagDouble(i, tds.getXUnits()), tds.getXUnits());
+                }
+                else {
+                    ibinx = i;
+                }
+                if (ibinx>=0 && ibinx<nx) {
+                    for (int j = 0; j < tds.getYLength(table); j++) {
+                            if (ibiny[j] >= 0 && ibiny[j] < ny) {
+                            if (weights != null) {
+                                double w = weights.getDouble(i, j, Units.dimensionless);
+                                rebinData[ibinx][ibiny[j]] += tds.getDouble(i, j, tds.getZUnits()) * w;
+                                rebinWeights[ibinx][ibiny[j]] += w;
+                            }
+                            else {
+                                Datum z= tds.getDatum(i,j);
+                                double w= z.isFill() ? 0. : 1. ;
+                                rebinData[ibinx][ibiny[j]] += z.doubleValue(tds.getZUnits()) * w;
+                                rebinWeights[ibinx][ibiny[j]] += w;
+                            }
                         }
                     }
                 }

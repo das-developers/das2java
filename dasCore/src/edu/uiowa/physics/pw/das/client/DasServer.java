@@ -237,7 +237,7 @@ public class DasServer {
                     if (root.getTagName().equals("stream")) {
                         return new StreamDescriptor(root);
                     }
-                    else if (root.getTagName().equals("exception")) {
+                    else if (root.getTagName().equals("")) {
                         throw new DasStreamFormatException();
                     }
                     else {

@@ -30,6 +30,7 @@ import edu.uiowa.physics.pw.das.stream.PacketDescriptor;
 import edu.uiowa.physics.pw.das.stream.StreamDescriptor;
 import edu.uiowa.physics.pw.das.stream.StreamException;
 import edu.uiowa.physics.pw.das.stream.StreamHandler;
+import java.io.*;
 /**
  *
  * @author  jbf
@@ -60,6 +61,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.xml.sax.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -422,6 +424,22 @@ public class StreamTool {
 
     public static Document parseHeader(Reader header) throws StreamException {
         try {
+            header = new FilterReader(header) {
+                public int read() throws IOException {
+                    int result = super.read();
+                    if (result != -1) {
+                        System.out.print((char)result);
+                    }
+                    return result;
+                }
+                public int read(char[] buff, int offset, int length) throws IOException {
+                    int result = super.read(buff, offset, length);
+                    if (result != -1) {
+                        System.out.print(new String(buff, offset, length));
+                    }
+                    return result;
+                }
+            };
             DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
             InputSource source = new InputSource(header);
             Document document= builder.parse(source);

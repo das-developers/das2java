@@ -51,12 +51,17 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-        SkeletonDescriptor descriptor = pd.getYDescriptor(0);
-        if (descriptor instanceof StreamMultiYDescriptor) {
-            delegate = new VectorDataSetStreamHandler(pd);
+        if (delegate == null) {
+            SkeletonDescriptor descriptor = pd.getYDescriptor(0);
+            if (descriptor instanceof StreamMultiYDescriptor) {
+                delegate = new VectorDataSetStreamHandler(pd);
+            }
+            else if (descriptor instanceof StreamYScanDescriptor) {
+                delegate = new TableDataSetStreamHandler(pd);
+            }
         }
-        else if (descriptor instanceof StreamYScanDescriptor) {
-            delegate = new TableDataSetStreamHandler(pd);
+        else {
+            delegate.packetDescriptor(pd);
         }
     }
     
@@ -89,9 +94,6 @@ public class DataSetStreamHandler implements StreamHandler {
         else {
             return base.doubleValue(base.getUnits()) + x.doubleValue(base.getUnits().getOffsetUnits());
         }
-    }
-    
-    public void packet(PacketDescriptor pd, DatumVector vector) throws StreamException {
     }
     
     private static interface StreamHandlerDelegate extends StreamHandler {
@@ -148,9 +150,6 @@ public class DataSetStreamHandler implements StreamHandler {
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
             return builder.toVectorDataSet();
-        }
-        
-        public void packet(PacketDescriptor pd, DatumVector vector) throws StreamException {
         }
         
     }
@@ -214,9 +213,6 @@ public class DataSetStreamHandler implements StreamHandler {
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
             return builder.toTableDataSet();
-        }
-        
-        public void packet(PacketDescriptor pd, DatumVector vector) throws StreamException {
         }
         
     }

@@ -163,8 +163,13 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         int table = tableOfIndex(i);
         int iTable = i - tableOffsets[table];
         int yLength = yTags[table].length;
-        double value = tableData[0][i][j];
-        return Datum.create(value, zUnits[0]);
+        try {
+            double value = tableData[0][i][j];
+            return Datum.create(value, zUnits[0]);
+        }
+        catch (ArrayIndexOutOfBoundsException aioobe) {
+            throw aioobe;
+        }
     }
     
     public double getDouble(int i, int j, Units units) {

@@ -102,14 +102,6 @@ public class CrossHairRenderer implements DragRenderer {
             
             if (ds instanceof TableDataSet) {
                 TableDataSet tds= (TableDataSet)ds;
-                if (x.getUnits()!=tds.getXUnits()) {
-                    throw new IllegalStateException("x units and dataset x units differ");
-                }
-                
-                if (y.getUnits()!=tds.getYUnits()) {
-                    throw new IllegalStateException("y units and dataset y units differ");
-                }
-                
                 Datum zValue= TableUtil.closestDatum(tds,x,y);
                 
                 try {

@@ -112,18 +112,22 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         // params is either String, or object with toString properly defined.
                 
         String formData;
+        String form = (String)dsd.getProperty("form");
         
-        if ( dsd.getProperty("form").equals("x_tagged_y_scan") ) {            
+        if ( "x_tagged_y_scan".equals(form) ) {            
             formData= "server=compactdataset";
             StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
             formData+= "&nitems=" + (y.getNItems() + 1);
             formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
-        } else if ( dsd.getProperty("form").equals("x_multi_y") && dsd.getProperty("ny") != null) {            
+        } else if ( "x_multi_y".equals(form) && dsd.getProperty("ny") != null) {            
             formData= "server=dataset";
         }
-        else {
+        else if ( "x_multi_y".equals(form) ) {
             formData= "server=dataset";
             formData+= "&interval="+timeResolution.doubleValue(Units.seconds);
+        }
+        else {
+            formData = "server=compactdataset&resolution="+timeResolution.doubleValue(Units.seconds);
         }
         
         boolean compress=false;
