@@ -27,7 +27,6 @@ import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
-import edu.uiowa.physics.pw.das.server.DataSetReader;
 import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.GrannyTextRenderer;
@@ -102,11 +101,9 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
      * (Either DasAxis.HORIZONTAL or DasAxis.VERTICAL)
      * @deprecated use DasTimeAxis(String, DasDate, DasDate, DasRow, DasColumn, int)
      */
-    public DasTimeAxis(DataSetReader reader, String dataPath,
-    DasDate timeBase, DasDate timeMax, DasRow row, DasColumn column,
-    int orientation) {
+    public DasTimeAxis(String dataPath, DasDate timeBase, DasDate timeMax,
+    DasRow row, DasColumn column, int orientation) {
         this(timeBase, timeMax, row, column, orientation );
-        //setReader(reader);
         setDataPath(dataPath);
         setDrawTca(true);
         setAnimated(true);
@@ -142,21 +139,6 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         markDirty();
         update();
         firePropertyChange("showTca", oldValue, b);
-    }
-
-    /**
-     * @return null
-     * @deprecated time axis no longer support the old DataSetReaders
-     */
-    public DataSetReader getReader() {
-        return null;
-    }
-    
-    /**
-     * This method does nothing.
-     * @deprecated time axes no longer support the old DataSetReaders
-     */
-    public void setReader(DataSetReader reader) {
     }
     
     public String getDataPath() {
