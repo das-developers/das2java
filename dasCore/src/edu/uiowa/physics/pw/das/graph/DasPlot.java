@@ -256,7 +256,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     parent.setCursor(cursor0);
                 }
                 Data = ds;
-                updatePlotImage();
+                try {
+                    updatePlotImage();
+                }
+                catch (DasException de) {
+                    DasExceptionHandler.handle(de);
+                }
                 if (parent != null) {
                     ((DasCanvas)parent).freeDisplay(this);
                 }
@@ -273,7 +278,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
     
-    protected void updatePlotImage() {}
+    protected void updatePlotImage() throws DasException {}
     
     protected void paintComponent(Graphics graphics1) {
         

@@ -176,18 +176,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         if ( dsd instanceof ConstantDataSetDescriptor ) {
             try {
+                ds = null;
                 ds= dsd.getDataSet( null, null, null, null );
+                updatePlotImage(xAxis,yAxis, progressPanel);
             } catch ( DasException exception ) {
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                     lastException= exception;
                     ds= null;
                 }
                 DasExceptionHandler.handle(exception);
-            } finally {
-                // bug: no rebinning message is displayed
-                updatePlotImage(xAxis,yAxis, progressPanel);
             }
-            return;
         }
         
         lastException= null;
@@ -258,9 +256,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                         ((DasCanvas)parent.getParent()).freeDisplay(this);
                     }
                 }
+                catch (DasException de) {
+                    ds = null;
+                    lastException = de;
+                }
                 catch (RuntimeException e) {
                     ds = null;
-                    updatePlotImage(xAxis, yAxis, progressPanel);
                     throw e;
                 }
                 finally {
@@ -274,7 +275,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         try {
             progressPanel.setLabel("Loading Data Set" );
             drt.request(dsd, xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, requestor, progressPanel);
+            //This just gives the user something pretty to look at while data is loading.
             updatePlotImage(xAxis, yAxis, null);
+        }
+        catch (DasException de) {
+            //Do nothing, whatever is displayed will be replaced.
         }
         catch (InterruptedException ie) {
             DasExceptionHandler.handle(ie);
@@ -289,7 +294,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * operation cannot operation on an animation interactive time scale.
      *
      */
-    public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor);
+    public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException ;
     
     public void update(DasAxis xAxis, DasAxis yAxis) {
         loadDataSet(xAxis,yAxis);

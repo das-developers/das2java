@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -49,7 +50,7 @@ import javax.swing.*;
  *
  * @author  jbf
  */
-public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot implements edu.uiowa.physics.pw.das.graph.DasZAxisPlot, DataSetUpdateListener {
+public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, DataSetUpdateListener {
     
     private ZAxisComponent zAxisComponent= null;
     private RebinDescriptor xBins= null;
@@ -221,7 +222,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     }
     
     
-    protected void updatePlotImage() {
+    protected void updatePlotImage() throws DasException {
         
         Component parent= getParent();
         Cursor cursor0= parent.getCursor();
@@ -465,7 +466,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             lowResRebinner= new AveragePeakTableRebinner();
         }
         
-        public DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException {
+        public DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
             Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
             if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
             Units rdUnits= x.getUnits();
@@ -499,7 +500,12 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
      */
     public void setPeaksIndicator(PeaksIndicator peaksIndicator) {
         this.peaksIndicator= peaksIndicator;
-        updatePlotImage();
+        try {
+            updatePlotImage();
+        }
+        catch (DasException de) {
+            DasExceptionHandler.handle(de);
+        }
         repaint();
     }
     

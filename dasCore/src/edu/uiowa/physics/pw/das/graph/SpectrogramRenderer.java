@@ -147,13 +147,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        if (plotImage!=null) {
+        if (getDataSet()==null && lastException!=null ) {
+            renderException(g,xAxis,yAxis,lastException);
+        }
+        else if (plotImage!=null) {
             int x = xAxis.getColumn().getDMinimum();
             int y = yAxis.getRow().getDMinimum();
             g.drawImage( plotImage,x,y, getParent() );
-        }
-        if (getDataSet()==null && lastException!=null ) {
-            renderException(g,xAxis,yAxis,lastException);
         }
     }
     
@@ -161,7 +161,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private boolean sliceRebinnedData= true;
     
-    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) {
+    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
         
         TableDataSet rebinData;
         
