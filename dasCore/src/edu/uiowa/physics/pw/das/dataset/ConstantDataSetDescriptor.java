@@ -44,8 +44,10 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
     }
     
     public DataSet getDataSet(Datum start, Datum end, Object params, Datum resolution, DasProgressMonitor monitor) throws DasException {
-        monitor.started();
-        monitor.finished();
+        if (monitor != null) {
+            monitor.started();
+            monitor.finished();
+        }
         return ds;
     }
     
