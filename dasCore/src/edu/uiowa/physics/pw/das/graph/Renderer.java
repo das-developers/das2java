@@ -330,6 +330,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     }
     
     public void update() {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("update");
         if (parent != null) {
            // if ( EventQueue.isDispatchThread() ) {
            //     updateImmediately();
@@ -339,6 +340,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
                 eventQueue.postEvent(drue);
            // }
+        } else {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("update but parent was null");
         }
     }
     
