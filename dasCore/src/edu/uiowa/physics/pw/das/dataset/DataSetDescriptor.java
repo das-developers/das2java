@@ -121,6 +121,13 @@ public abstract class DataSetDescriptor {
         }
     }
     
+    /*
+     * clear any state that's developed, in particular any data caches 
+     */
+    public void reset() {
+       cacheTag= null;        
+    }
+    
     protected void setDefaultCaching( boolean value ) {
         defaultCaching= value;
     }
