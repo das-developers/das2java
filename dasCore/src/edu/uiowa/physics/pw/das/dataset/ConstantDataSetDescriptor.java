@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 
 import java.io.InputStream;
 /**
@@ -42,16 +43,14 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
         this.ds = ds;
     }
     
-    public DataSet getDataSet(Object params, Datum start, Datum end, double resolution) throws DasException {
+    public DataSet getDataSet(Datum start, Datum end, Object params, Datum resolution, DasProgressMonitor monitor) throws DasException {
+        monitor.started();
+        monitor.finished();
         return ds;
     }
     
-    public DataSet getDataSet(InputStream in, Object params, Datum start, Datum end) throws DasException {
-        return ds;
-    }
-    
-    public DataSet getDataSet(Object params, Datum start, Datum end) throws DasException {
-        return ds;
+    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Object params, Datum resolution) throws DasException {
+        throw new UnsupportedOperationException();
     }
     
 }

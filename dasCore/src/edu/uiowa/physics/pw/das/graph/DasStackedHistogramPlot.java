@@ -166,7 +166,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     
     public static DasStackedHistogramPlot create( DasCanvas parent, XTaggedYScanDataSetDescriptor dsd,
     Datum startTime, Datum endTime ) throws edu.uiowa.physics.pw.das.DasException {
-        XTaggedYScanDataSet ds= (XTaggedYScanDataSet)dsd.getDataSet("",startTime,endTime);
+        XTaggedYScanDataSet ds= (XTaggedYScanDataSet)dsd.getDataSet(startTime,endTime, "", null, null);
         DasStackedHistogramPlot result= DasStackedHistogramPlot.create(parent,ds);
         result.setDataSetDescriptor(dsd);
         return result;

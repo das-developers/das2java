@@ -281,7 +281,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         } else {
             if ( ( dataSetDescriptor instanceof ConstantDataSetDescriptor ) ) {
                 try {
-                    Data= dataSetDescriptor.getDataSet( null, null, null );
+                    Data= dataSetDescriptor.getDataSet( null, null, "", null, null );
                     updatePlotImage();
                 } catch ( DasException e ) {
                     DasExceptionHandler.handle(e);

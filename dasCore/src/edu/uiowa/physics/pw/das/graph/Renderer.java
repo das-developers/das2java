@@ -192,7 +192,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         } else {
             if ( ( dsd instanceof ConstantDataSetDescriptor ) ) {
                 try {
-                    ds= dsd.getDataSet( null, null, null );
+                    ds= dsd.getDataSet( null, null, "", null, null );
                     updatePlotImage(xAxis,yAxis);
                 } catch ( edu.uiowa.physics.pw.das.DasException e ) {
                     DasExceptionHandler.handle(e);

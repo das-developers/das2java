@@ -38,6 +38,8 @@ import java.util.List;
  */
 public class DataRequestThread extends Thread {
     
+    private static int threadCount = 0;
+    
     private Object lock = new String("DATA_REQUEST_LOCK");
     
     private DataRequest currentRequest;
@@ -46,6 +48,8 @@ public class DataRequestThread extends Thread {
     
     /** Creates a new instance of DataRequestThread */
     public DataRequestThread() {
+        //Set the name for debugging purposes.
+        setName("DataRequest_" + threadCount++);
         setDaemon(true);
         start();  //Start it up
     }
@@ -137,19 +141,18 @@ public class DataRequestThread extends Thread {
             while (!queue.isEmpty()) {
                 currentRequest = (DataRequest)queue.remove(0);
                 try {
-                    currentRequest.dsd.setDasProgressMonitor(currentRequest.monitor);
                     DataSet ds = currentRequest.dsd.getDataSet(
-                        currentRequest.params,
                         currentRequest.start,
                         currentRequest.end,
-                        currentRequest.resolution);
+                        currentRequest.params,
+                        currentRequest.resolution,
+                        currentRequest.monitor);
                     currentRequest.requestor.finished(ds);
                 }
                 catch (DasException e) {
                     currentRequest.requestor.exception(e);
                 }
                 finally {
-                    currentRequest.dsd.setDasProgressMonitor(null);
                     synchronized (currentRequest) {
                         currentRequest.notifyAll();
                     }

@@ -27,11 +27,12 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.stream.MultiPlanarDataSet;
 
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.Hashtable;
+import java.util.Map;
 
 /**
  *
@@ -66,7 +67,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
     }
     
     /** Creates a new instance of XTaggedYScanDataSetDescriptor */
-    protected XTaggedYScanDataSetDescriptor(Hashtable properties) {
+    protected XTaggedYScanDataSetDescriptor(Map properties) {
         
         super(Units.us2000);
         if (properties!=null) setProperties(properties);
@@ -75,7 +76,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         
     }
     
-    public void setProperties( Hashtable properties ) {
+    protected void setProperties( Map properties ) {
         super.setProperties(properties);
         if (properties.containsKey("y_parameter")) {
             y_parameter = (String)properties.get("y_parameter");
@@ -103,8 +104,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
-    
-    public DataSet getDataSet(Object params, Datum start, Datum end, Datum resolution) throws DasException {
+    public DataSet getDataSet(Datum start, Datum end, Object params, Datum resolution, DasProgressMonitor monitor) throws DasException {
         Datum res= resolution;
         Datum sbResolution= resolution ;
         
@@ -118,20 +118,16 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
             in= standardDataStreamSource.getInputStream( this, params, start, end );
             res= getXSampleWidth();
         }
-        XTaggedYScanDataSet ds= (XTaggedYScanDataSet) getDataSet(in,params,start,end);
+        in = new DasProgressMonitorInputStream(in, monitor);
+        XTaggedYScanDataSet ds
+            = (XTaggedYScanDataSet) getDataSet(in,start,end,params, resolution);
         ds.x_sample_width= res.doubleValue(Units.seconds);        
         ds.setXSampleWidth( res );
         
         return ds;
     }
     
-    public DataSet getDataSet( Object params, Datum start, Datum end ) throws DasException {
-        InputStream in= standardDataStreamSource.getInputStream( this, params, start, end );
-        XTaggedYScanDataSet ds= (XTaggedYScanDataSet) getDataSet(in,params,start,end);
-        return ds;
-    }
-    
-    public DataSet getDataSet(InputStream in0, Object params, Datum start, Datum end) throws DasException {
+    protected DataSet getDataSet(InputStream in0, Datum start, Datum end, Object params, Datum resolution) throws DasException {
         
         int elementCount, elementSize;
         
@@ -171,7 +167,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
             try {
                 System.out.println(mpds.getDataSetNames());
                 try {
-                    mpds.read(in, progressMonitor );
+                    mpds.read(in, null );
                 } catch ( ClassCastException ex ) {
                     System.out.println(ex);
                 }

@@ -91,7 +91,7 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
             Datum dataSetStartTime= ds.getStartTime();
             if ( start.lt(dataSetStartTime) ) {
                 try {                    
-                    XTaggedYScanDataSet appendBefore= (XTaggedYScanDataSet)dsd.getDataSet(params,start,dataSetStartTime,res);
+                    XTaggedYScanDataSet appendBefore= (XTaggedYScanDataSet)dsd.getDataSet(start,dataSetStartTime,params,res,null);
                     ds= appendBefore.append(ds);
                 } catch ( edu.uiowa.physics.pw.das.DasException e ) {
                 }
@@ -99,7 +99,7 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
             Datum dataSetEndTime= ds.getEndTime();
             if ( dataSetEndTime.lt(end) ) {
                 try {
-                    XTaggedYScanDataSet appendAfter= (XTaggedYScanDataSet)dsd.getDataSet(params,dataSetEndTime,end,res);
+                    XTaggedYScanDataSet appendAfter= (XTaggedYScanDataSet)dsd.getDataSet(dataSetEndTime,end,params,res,null);
                     ds= ds.append(appendAfter);
                 } catch ( edu.uiowa.physics.pw.das.DasException e ) {
                 }

@@ -25,8 +25,9 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 
-import java.util.Hashtable;
+import java.util.Map;
 
 /**
  *
@@ -38,16 +39,14 @@ public class CachedXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDesc
     protected CachedXTaggedYScanDataSetDescriptor() {
     }
     
-    protected CachedXTaggedYScanDataSetDescriptor(Hashtable properties) {
-        
+    protected CachedXTaggedYScanDataSetDescriptor(Map properties) {
         super(properties);
         dataCache= new XTaggedYScanDataSetCache();
-        
     }
     
     private XTaggedYScanDataSetCache dataCache;
     
-    public DataSet getDataSet(Object params, Datum start, Datum end, Datum resolution) throws DasException {
+    public DataSet getDataSet(Datum start, Datum end, Object params, Datum resolution, DasProgressMonitor monitor) throws DasException {
         Datum res= resolution;
         edu.uiowa.physics.pw.das.util.DasDie.println(""+dataCache);
         if ( dataCache.haveStored(this,start,end,res,params) ) {
@@ -57,7 +56,7 @@ public class CachedXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDesc
         } else {
             edu.uiowa.physics.pw.das.util.DasDie.println("------- Miss --------");
             
-            DataSet ds= super.getDataSet(params,start,end,resolution);
+            DataSet ds= super.getDataSet(start,end,params,resolution,monitor);
             
             dataCache.store( this, start, end, resolution, params, (XTaggedYScanDataSet)ds );
             

@@ -103,7 +103,7 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
-    public DataSet getDataSet(InputStream in, Object params, Datum start, Datum end) throws DasException {
+    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Object params, Datum resolution) throws DasException {
         
         int elementCount, elementSize;
                 
@@ -145,14 +145,14 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
             ds.items = items;
             ds.label = new String[items];
             Arrays.fill(ds.label, "");
-            Enumeration keys = properties.keys();
+            String[] keys = getPropertyNames();
             Pattern l = Pattern.compile("label\\(\\d+\\)");
-            while (keys.hasMoreElements()) {
-                String k = (String)keys.nextElement();
-                Matcher m = l.matcher(k);
+            for (int keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+                String k = keys[keyIndex];
+                Matcher m = l.matcher(keys[keyIndex]);
                 if (m.matches()) {
                     int index = Integer.parseInt(k.substring(6,k.length()-1).trim());
-                    ds.label[index] = properties.get(k).toString();
+                    ds.label[index] = getProperty(k).toString();
                 }
             }
             elementSize = items + 1;
