@@ -128,7 +128,11 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
         }
         
         public DataSet getPlanarView(String planeID) {
-            return null;
+            if ( "".equals(planeID) ) {
+                return this;
+            } else {
+                return null;
+            }
         }
         
         public Datum getDatum(int i) {
