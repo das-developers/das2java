@@ -75,16 +75,10 @@ public class VectorDataSetBuilder {
         }
     }
     
-    /**
-     * @deprecated use {@link insertY(Datum, Datum)}
-     */
     public void insertY(double x, double y) {
         insertY(x, y, "");
     }
     
-    /**
-     * @deprecated use {@link insertY(Datum, Datum, String)}
-     */
     public void insertY(double x, double y, String planeID) {
         if ( !planeIDs.contains(planeID) ) {
             throw new IllegalArgumentException( "invalid planeID: "+planeID+", have "+planeIDs );
