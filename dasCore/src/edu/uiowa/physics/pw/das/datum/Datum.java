@@ -178,7 +178,7 @@ public abstract class Datum {
     }
     
     public static Datum create(double value) {
-        return new Datum.Double( new java.lang.Double(value), Units.dimensionless );
+        return Units.dimensionless.createDatum(value);
     }
     
     public static Datum create( double value, Units units ) {
@@ -192,11 +192,11 @@ public abstract class Datum {
     }
     
     public static Datum create( int value ) {
-        return new Datum.Double( new Integer(value), Units.dimensionless );
+        return Units.dimensionless.createDatum( value );
     }
     
     public static Datum create( int value, Units units ) {
-        return new Datum.Double( new Integer(value), units );
+        return units.createDatum( value );
     }
     
     public static void main( String[] args ) throws Exception {
