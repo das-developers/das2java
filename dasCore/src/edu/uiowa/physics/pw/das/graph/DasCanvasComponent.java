@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.*;
 
 /**
  *
@@ -75,11 +76,14 @@ public abstract class DasCanvasComponent extends JPanel implements Editable {
         return column;
     }
     
+    /** Called by the DasCanvas layout manager to request this component
+     * to set it's bounds.
+     */
     public void resize() {
-        if ( column==null ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(""+this+" has null column in resize");
-        } else if ( row==null ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(""+this+" has null row in resize");
+        if (column == null || row == null) {
+            Logger logger = DasApplication.getDefaultApplication().getLogger();
+            logger.warning("Null row and/or column in resize: row=" + row
+                + " column=" + column);
         } else {
             setBounds(column.getDMinimum(),row.getDMinimum(),
             (column.getDMaximum()-column.getDMinimum()),
