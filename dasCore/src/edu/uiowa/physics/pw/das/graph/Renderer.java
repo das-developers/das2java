@@ -42,7 +42,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     private DataSetDescriptor dsd;
     
     // avoid get/set methods unless you know what you're doing.
-    private DataSet ds;
+    protected DataSet ds;
     
     DasPlot parent;
     
