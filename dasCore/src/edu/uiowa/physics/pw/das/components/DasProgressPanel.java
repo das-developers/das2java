@@ -169,6 +169,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     public void started() {
         taskStartedTime= System.currentTimeMillis();
         currentTaskPosition = 0;
+        isCancelled = false;
     }
     
     public void cancel() {
