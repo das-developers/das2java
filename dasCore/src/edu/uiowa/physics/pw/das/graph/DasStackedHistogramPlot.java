@@ -224,6 +224,8 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
     
     synchronized protected void updatePlotImage() throws DasException {
         
+        final Color BAR_COLOR= Color.BLACK;
+        
         Component parent= getParent();
         Cursor cursor0= parent.getCursor();
         parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -277,13 +279,13 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                 yBase= yAxis.getItemMin(data.getYTagDatum(0, j));
                 g.setColor(Color.lightGray);
                 g.drawLine(xDMin, yBase, xDMax, yBase );
-                g.setColor(Color.darkGray);
+                g.setColor(BAR_COLOR);
             }
             
             yBase= yAxis.getItemMax(data.getYTagDatum(0, j));
             g.setColor(Color.lightGray);
             g.drawLine(xDMin, yBase, xDMax, yBase );
-            g.setColor(Color.darkGray);
+            g.setColor(BAR_COLOR);
             
             int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
             double canvasHeight= parent.getHeight();
@@ -298,8 +300,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
             int littleRowHeight= yBase - yBase1;
             double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
             
-            if ( yBase1 >= getRow().getDMinimum() && yBase <= getRow().getDMaximum() ) {
-                
+            if ( yBase1 >= getRow().getDMinimum() && yBase <= getRow().getDMaximum() ) {                
                 for (int ibin=0; ibin < data.getXLength(); ibin++) {
                     
                     int x0= (int)getXAxis().transform(binStarts[ibin],xbins.getUnits());
@@ -321,7 +322,7 @@ public class DasStackedHistogramPlot extends DasPlot implements DasZAxisPlot, Da
                                 } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
                                     g.setColor(Color.lightGray);
                                     g.fillRect(x0,yMax,(x1-x0),y0-yMax);
-                                    g.setColor(Color.darkGray);
+                                    g.setColor(BAR_COLOR);
                                 }
                             }
                         }
