@@ -760,6 +760,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (e1.getRenderer() == e2.getRenderer()) {
                 return existingEvent;
             }
+            else {
+                return null;
+            }
         }
         return super.coalesceEvents(existingEvent, newEvent);
     }
