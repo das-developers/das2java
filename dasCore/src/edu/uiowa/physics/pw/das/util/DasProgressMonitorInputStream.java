@@ -40,6 +40,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     private int bytesRead = 0;
     long birthTimeMilli;
     long deathTimeMilli;
+    DecimalFormat transferRateFormat;
     
     /** Creates a new instance of DasProgressMonitorInputStream */
     public DasProgressMonitorInputStream( InputStream in, DasProgressMonitor monitor ) {
@@ -47,11 +48,12 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();
         this.deathTimeMilli= -1;
+        transferRateFormat= new DecimalFormat();
+        transferRateFormat.setMaximumFractionDigits(2);        
+        transferRateFormat.setMinimumFractionDigits(2);        
     }
     
     public void reportTransmitSpeed() {
-        DecimalFormat transferRateFormat= new DecimalFormat();
-        transferRateFormat.setMaximumFractionDigits(2);        
         monitor.setAdditionalInfo("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
     }
     
