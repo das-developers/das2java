@@ -37,14 +37,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class HorizontalSpectrogramSlicer
-extends DasSymbolPlot implements DataPointSelectionListener {
+extends DasPlot implements DataPointSelectionListener {
     
     private JFrame popupWindow;
-            
     private Datum xValue;
+    private edu.uiowa.physics.pw.das.graph.Renderer renderer;
     
     private HorizontalSpectrogramSlicer(DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        super((XMultiYDataSet)null, xAxis, yAxis, row, column);
+        super(xAxis, yAxis, row, column);
+        renderer= new SymbolLineRenderer((DataSetDescriptor)null);
+        addRenderer(renderer);
     }
     
     public static HorizontalSpectrogramSlicer createSlicer(DasPlot plot, TableDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
@@ -93,48 +95,35 @@ extends DasSymbolPlot implements DataPointSelectionListener {
     }
     
     public void DataPointSelected(DataPointSelectionEvent e) {
-	DataSet ds = e.getDataSet();
-	if (ds==null || !(ds instanceof XTaggedYScanDataSet))
-	    return;
-	XTaggedYScanDataSet xtys = (XTaggedYScanDataSet)ds;
-	double[] x = new double[xtys.data.length];
-	double[] y = new double[xtys.data.length];
-	Datum yValue = e.getY();
+        
+        long xxx[]= { 0,0,0,0 };
+        xxx[0] = System.currentTimeMillis()-e.birthMilli;
+        
+        DataSet ds = e.getDataSet();
+        if (ds==null || !(ds instanceof TableDataSet))
+            return;
+        
+        Datum yValue = e.getY();
         xValue = e.getX();
-
+        
+        TableDataSet tds = (TableDataSet)ds;
+        
+        int itable= TableUtil.tableIndexAt( tds, TableUtil.closestColumn( tds, e.getX() ) );
+        VectorDataSet sliceDataSet= tds.getYSlice( TableUtil.closestRow( tds, itable, e.getY() ), itable );
+        
+        xxx[1]= System.currentTimeMillis()-e.birthMilli;
+        
         String xAsString;
         xAsString= ""+xValue;
+        renderer.setDataSet(sliceDataSet);
         
-        if ( xtys.getYUnits()!=yValue.getUnits() ) {
-            yValue= yValue.convertTo(xtys.getYUnits());
-        }
-        
-	double dy = Double.MAX_VALUE;
-	int yIndex = 0;
-	for (int i = 0; i < xtys.y_coordinate.length; i++) {
-	    double delta = Math.abs(yValue.doubleValue(xtys.getYUnits())-xtys.y_coordinate[i]);
-	    if (delta < dy) {
-		dy = delta;
-		yIndex = i;
-	    }
-	}
-        
-	for (int i = 0; i < x.length; i++) {
-	    x[i] = xtys.data[i].x;
-	}
-	for (int i = 0; i < y.length; i++) {
-	    y[i] = xtys.data[i].z[yIndex];
-	}
-	XMultiYDataSet xmy = XMultiYDataSet.create(x,xtys.getXUnits(),y,xtys.getZUnits());
-	xmy.y_fill = xtys.getZFill();
-	addData(xmy);
         setTitle("x: "+xAsString);
-	if (popupWindow != null && !popupWindow.isVisible()) {
-	    popupWindow.setVisible(true);
-	}
-	else {
-	    repaint();
-	}
+        if (popupWindow != null && !popupWindow.isVisible()) {
+            popupWindow.setVisible(true);
+        }
+        else {
+            repaint();
+        }
     }
     
     public void drawContent(Graphics2D g) {

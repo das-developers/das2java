@@ -37,7 +37,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class VerticalSpectrogramSlicer
-extends DasSymbolPlot implements DataPointSelectionListener {
+extends DasPlot implements DataPointSelectionListener {
     
     private JFrame popupWindow;
     
@@ -46,9 +46,12 @@ extends DasSymbolPlot implements DataPointSelectionListener {
     private int lastTagIndex=1;
     
     private long eventBirthMilli;
+    private edu.uiowa.physics.pw.das.graph.Renderer renderer;
     
     private VerticalSpectrogramSlicer(DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        super((XMultiYDataSet)null, xAxis, yAxis, row, column);
+        super( xAxis, yAxis, row, column );
+        renderer= new SymbolLineRenderer((DataSetDescriptor)null);
+        addRenderer(renderer);                
     }
     
     public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer,
@@ -132,58 +135,17 @@ extends DasSymbolPlot implements DataPointSelectionListener {
         xxx[0] = System.currentTimeMillis()-e.birthMilli;    
         
         DataSet ds = e.getDataSet();
-        if (ds==null || !(ds instanceof XTaggedYScanDataSet))
+        if (ds==null || !(ds instanceof TableDataSet))
             return;
-        XTaggedYScanDataSet xtys = (XTaggedYScanDataSet)ds;
-        double[] x = new double[xtys.y_coordinate.length];
-        System.arraycopy(xtys.y_coordinate, 0, x, 0, xtys.y_coordinate.length);
-        double[] y = new double[xtys.y_coordinate.length];
-        Datum xValue = e.getX();
         
-        setTitle("x: "+xValue);
-        if (xtys.getXUnits()!=xValue.getUnits()) {
-            xValue.convertTo(xtys.getXUnits());
-        }
+        TableDataSet tds = (TableDataSet)ds;
         
-        double dx = Double.MAX_VALUE;
+        VectorDataSet sliceDataSet= tds.getXSlice( TableUtil.closestColumn( tds, e.getX() ) );
+               
+        xxx[1]= System.currentTimeMillis()-e.birthMilli;                
         
-        xxx[1]= System.currentTimeMillis()-e.birthMilli;
+        renderer.setDataSet(sliceDataSet);
         
-        
-        int tagIndex = 0;
-        for (int i = 0; i < xtys.data.length; i++) {
-            double delta = Math.abs(xValue.doubleValue(xtys.getXUnits())-xtys.data[i].x);
-            if (delta < dx) {
-                dx = delta;
-                tagIndex = i;
-            }
-        }
-        
-        //JBF: The following code should locate the closest column
-        // faster, but it's not clear that was causing problems, and
-        // this code has not been thoroughly tested.  JBF
-      
-        // int tagIndex = lastTagIndex;
-      
-        //while ( xValue.getValue() > xtys.data[tagIndex].x  &&
-        //    tagIndex<xtys.data.length ) tagIndex++;
-        //while ( xValue.getValue() < xtys.data[tagIndex].x  &&
-        //    tagIndex>0 ) tagIndex--;
-        //if ( Math.abs( xValue.getValue()-xtys.data[tagIndex-1].x ) < 
-        //    Math.abs( xValue.getValue()-xtys.data[tagIndex].x ) )
-        //    tagIndex--;
-        //edu.uiowa.physics.pw.das.util.DasDie.println("Shifted "+(tagIndex-lastTagIndex));
-        //lastTagIndex= tagIndex;
-        
-        //JBF ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        for (int i = 0; i < y.length; i++) {
-            y[i] = xtys.data[tagIndex].z[i];
-        }
-        yValue= e.getY();
-        
-        xxx[2]= System.currentTimeMillis()-e.birthMilli;
-        
-        addData(XMultiYDataSet.create(x,xtys.getYUnits(),y,xtys.getZUnits()));
         if (popupWindow != null && !popupWindow.isVisible()) {
             popupWindow.setVisible(true);
         }
@@ -194,6 +156,11 @@ extends DasSymbolPlot implements DataPointSelectionListener {
         xxx[3]=  System.currentTimeMillis()-e.birthMilli;
         
         //edu.uiowa.physics.pw.das.util.DasDie.println(""+xxx[0]+" "+xxx[1]+" "+xxx[2]+" "+xxx[3]+" ");
+        
+        yValue= e.getY();
+        Datum xValue = e.getX();
+        
+        setTitle("x: "+xValue);
         
         eventBirthMilli= e.birthMilli;
     }
