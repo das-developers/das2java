@@ -30,6 +30,7 @@ public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
     private static final Property[] properties = {
         new Property("rebinner", AccessLevel.DASML, "getRebinner", "setRebinner", null),  
         new Property("colorBar", AccessLevel.DASML, "getColorBar", "setColorBar", null),
+        new Property("sliceRebinnedData", AccessLevel.DASML, "isSliceRebinnedData", "setSliceRebinnedData", null),
     };
     
     public SpectrogramRendererBeanInfo() {

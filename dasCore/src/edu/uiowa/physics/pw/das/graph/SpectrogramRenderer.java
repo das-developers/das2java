@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasNameException;
 import edu.uiowa.physics.pw.das.DasPropertyException;
@@ -158,6 +159,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     int count = 0;
     
+    private boolean sliceRebinnedData= false;
+    
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) {
         
         TableDataSet rebinData;
@@ -226,6 +229,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
             plotImage = getParent().createImage(mis);
             
+            if ( isSliceRebinnedData() ) {
+                DasApplication.getDefaultApplication().getLogger().fine("slicing rebin data");
+                super.ds= rebinData;
+            }
         }
         
         
@@ -367,6 +374,22 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setRebinner( RebinnerEnum rebinnerEnum) {
         this.rebinnerEnum = rebinnerEnum;
+    }
+    
+    /** Getter for property sliceRebinnedData.
+     * @return Value of property sliceRebinnedData.
+     *
+     */
+    public boolean isSliceRebinnedData() {
+        return this.sliceRebinnedData;
+    }
+    
+    /** Setter for property sliceRebinnedData.
+     * @param sliceRebinnedData New value of property sliceRebinnedData.
+     *
+     */
+    public void setSliceRebinnedData(boolean sliceRebinnedData) {
+        this.sliceRebinnedData = sliceRebinnedData;
     }
     
 }
