@@ -77,8 +77,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.rebinner= rebinner;
             this.label= label;
         }
-        public static RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
-        public static RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");
+        public static final RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
+        public static final RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");
+        public static final RebinnerEnum binAverageNoInterpolate;
+        static {
+            AverageTableRebinner rebinner= new AverageTableRebinner();
+            rebinner.setInterpolate(false);
+            binAverageNoInterpolate= new RebinnerEnum(rebinner,"noInterpolate");
+        }
         public Icon getListIcon() {
             return null;
         }
@@ -376,6 +382,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setRebinner( RebinnerEnum rebinnerEnum) {
         this.rebinnerEnum = rebinnerEnum;
+        refreshImage();
     }
     
     /** Getter for property sliceRebinnedData.
