@@ -32,6 +32,9 @@ Requirements for das2 Streams
   2. support for parallelizable
 12. das1 streams can be wrapped to make das2 streams
 13. easily identified (e.g. "das2" is first four bytes)
+14. non-monotonic tags
+15. indication of failure modes, heartbeats
+
 
 Existing das2Stream lacks support for:
   2.2, 3, 6.2, 10
