@@ -58,7 +58,7 @@ public final class DatumUtil {
             if (!(factory instanceof DefaultDatumFormatterFactory)) {
                 return factory.defaultFormatter();
             }
-            double discernable= Math.abs( maximum.subtract(minimum).doubleValue() / ( nsteps-1) );
+            double discernable= Math.abs( maximum.subtract(minimum).doubleValue() / ( nsteps) );
             int nFraction= -1 * (int)Math.floor(DasMath.log10(discernable));
             nFraction= nFraction<0 ? 0 : nFraction;
             String formatString = zeros(nFraction);
@@ -82,7 +82,7 @@ public final class DatumUtil {
     }
     
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
-        double secondsPerStep = maximum.subtract(minimum).doubleValue(Units.seconds) / ( nsteps-1 );
+        double secondsPerStep = maximum.subtract(minimum).doubleValue(Units.seconds) / ( nsteps );
         
         if (secondsPerStep < 1.) {
             return TimeDatumFormatter.MILLISECONDS;

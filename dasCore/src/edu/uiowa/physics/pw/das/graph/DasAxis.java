@@ -820,7 +820,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 datumFormatter = factory.defaultFormatter();
             }
         } else {
-            datumFormatter = DatumUtil.bestFormatter(getDataMaximum(), getDataMaximum(), nTicks);
+            datumFormatter = DatumUtil.bestFormatter( ticks.units.createDatum( DasMath.exp10(minTick) ), 
+              ticks.units.createDatum( DasMath.exp10(maxTick) ), 
+              nTicks-1 ); 
         }
         
         int firstMinorTick= (int)Math.floor(DasMath.log10(min));
@@ -903,7 +905,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             minor= tickSize/4;
         }
         
-        datumFormatter = DatumUtil.bestFormatter( res.units.createDatum(firstTick), res.units.createDatum(lastTick), nTicks );
+        datumFormatter = DatumUtil.bestFormatter( res.units.createDatum(firstTick), res.units.createDatum(lastTick), nTicks-1 );
         
         double firstMinor= minor * Math.ceil( ( minimum - axisLengthData ) / minor );
         double lastMinor= minor * Math.floor( ( maximum + axisLengthData ) / minor );
@@ -1027,7 +1029,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             
             res.minorTickV= minorTickV;
             
-            datumFormatter = DatumUtil.bestFormatter( Units.t2000.createDatum(firstTick), Units.t2000.createDatum(lastTick), nTicks );
+            datumFormatter = DatumUtil.bestFormatter( Units.t2000.createDatum(firstTick), Units.t2000.createDatum(lastTick), nTicks-1 );
             
         } else  { // pick off month boundaries
             double [] result= new double[30];
