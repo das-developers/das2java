@@ -130,6 +130,10 @@ public class RebinDescriptor {
         return (end-start)/(double)nBin;
     }
     
+    public boolean isLog() {
+        return isLog;
+    }
+    
     public Units getUnits() {
         return units;
     }
