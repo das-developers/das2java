@@ -45,7 +45,7 @@ import java.util.*;
  *
  * @author  jbf
  */
-public class DasMouseInputAdapter extends MouseInputAdapter {
+public class DasMouseInputAdapter extends MouseInputAdapter implements Editable {
     
     private MouseModule primary=null;
     private MouseModule secondary=null;
@@ -629,6 +629,28 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
     
     public void removeMouseModule(MouseModule module) {
         // not implemented yet
+    }
+    
+    /**
+     * Getter for property mouseModules.
+     * @return Value of property mouseModules.
+     */
+    public MouseModule getMouseModule(int i) {
+        return (MouseModule)modules.get(i);
+    }
+    
+    public MouseModule[] getMouseModules() {
+        MouseModule[] result= new MouseModule[modules.size()];
+        modules.copyInto(result);
+        return result;
+    }
+    
+    /**
+     * Setter for property mouseModules.
+     * @param mouseModules New value of property mouseModules.
+     */
+    public void setMouseModule( int i, MouseModule mouseModule ) {
+        this.modules.set(i,mouseModule);
     }
     
     public void mouseEntered(MouseEvent e) {
