@@ -118,5 +118,14 @@ public class DatumRange implements Comparable {
     public Datum max() {
         return s2;
     }
+    
+    public DatumRange next() {
+        return rescale(1,2);
+    }
+    
+    public DatumRange previous() {
+        return rescale(-1,0);
+    }
+    
 }
 
