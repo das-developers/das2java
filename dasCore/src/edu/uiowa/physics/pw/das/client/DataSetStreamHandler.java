@@ -49,23 +49,23 @@ public class DataSetStreamHandler implements StreamHandler {
     
     /** Creates a new instance of DataSetStreamHandler */
     public DataSetStreamHandler( DasProgressMonitor _monitor, Datum _start, Datum end ) {
-        this.monitor= _monitor;
-        this.start= _start;
-        this.taskWidth= end.subtract(_start).divide(ntasks);
-        monitor.setTaskSize(ntasks);
+        //this.monitor= _monitor;
+        //this.start= _start;
+        //this.taskWidth= end.subtract(_start).divide(ntasks);
+        //monitor.setTaskSize(ntasks);
         for ( int i=0; i<taskStarted.length; i++ ) taskStarted[i]= false;
     }
     
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {                
         ensureNotNullDelegate();
         delegate.packet(pd, xTag, vectors);
-        Units u= taskWidth.getUnits();
-        int itask= (int)( xTag.subtract(start).doubleValue(u) / taskWidth.doubleValue(u) );
-        if ( itask<0 ) itask=0;
-        if ( itask>=ntasks ) itask=ntasks-1;
-        boolean monitorUpdateNeeded= taskStarted[itask]==false;
-        taskStarted[itask]= true;
-        monitor.setTaskProgress( itask );
+        //Units u= taskWidth.getUnits();
+        //int itask= (int)( xTag.subtract(start).doubleValue(u) / taskWidth.doubleValue(u) );
+        //if ( itask<0 ) itask=0;
+        //if ( itask>=ntasks ) itask=ntasks-1;
+        //boolean monitorUpdateNeeded= taskStarted[itask]==false;
+        //taskStarted[itask]= true;
+        //monitor.setTaskProgress( itask );
         //if ( monitorUpdateNeeded ) {
         //    updateMonitor();
         //}

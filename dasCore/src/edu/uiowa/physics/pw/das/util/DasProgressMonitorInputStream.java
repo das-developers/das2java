@@ -48,13 +48,15 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();
         this.deathTimeMilli= -1;
-        transferRateFormat= new DecimalFormat();
+        transferRateFormat= new DecimalFormat();        
         transferRateFormat.setMaximumFractionDigits(2);        
         transferRateFormat.setMinimumFractionDigits(2);        
+        monitor.setTaskSize(1000);
     }
     
     public void reportTransmitSpeed() {
         monitor.setAdditionalInfo("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
+        monitor.setTaskProgress(bytesRead/1000);
     }
     
     
@@ -77,7 +79,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         if (monitor != null) {
             if (!started) {
                 started = true;
-                monitor.started();
+                monitor.started();                
             }
             if (bytesRead == -1) {
                 monitor.finished();
@@ -105,7 +107,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             else {
                 bytesRead += result;
                 checkCancelled();
-                reportTransmitSpeed();
+                reportTransmitSpeed();                
             }
         }
         return result;
@@ -143,6 +145,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         deathTimeMilli= System.currentTimeMillis();
         if (monitor != null) {
             monitor.finished();
+            started= false;
         }
     }
     
