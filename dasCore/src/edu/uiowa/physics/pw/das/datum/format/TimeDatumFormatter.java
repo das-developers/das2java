@@ -61,7 +61,7 @@ public class TimeDatumFormatter extends DatumFormatter {
             YEARS= new TimeDatumFormatter("yyyy");
             MONTHS= new TimeDatumFormatter("yyyy-MM");
             DAYS = new TimeDatumFormatter("yyyy-MM-dd");
-            HOURS = new TimeDatumFormatter("yyyy-MM-dd HH:mm");
+            HOURS = new TimeDatumFormatter("yyyy-MM-dd HH:mm"); 
             MINUTES = new TimeDatumFormatter("HH:mm");
             SECONDS = new TimeDatumFormatter("HH:mm:ss");
             MILLISECONDS = new TimeDatumFormatter("HH:mm:ss.SSS");
