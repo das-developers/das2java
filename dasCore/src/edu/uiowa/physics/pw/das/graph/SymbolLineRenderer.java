@@ -88,7 +88,7 @@ public class SymbolLineRenderer extends Renderer {
         
         graphics.setColor(color.toColor());                
         
-        double fill= -1e31;
+        double fill= yUnits.getFill().doubleValue(yUnits);
         double xSampleWidth= 1e31;
                 
         if ( psymConnector != PsymConnector.NONE ) {
@@ -96,7 +96,7 @@ public class SymbolLineRenderer extends Renderer {
             int y0 = yAxis.transform(dataSet.getDouble(ixmin,yUnits),yUnits);
             for (int i = ixmin+1; i <= ixmax; i++) {
                 int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
-                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
+                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);                
                 if ( dataSet.getDouble(i,yUnits)!=fill ) {
                     if ( dataSet.getDouble(i-1,yUnits) != fill ) {
                         psymConnector.drawLine(graphics,x0,y0,x,y,lineWidth);

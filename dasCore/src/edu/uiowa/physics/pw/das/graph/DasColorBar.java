@@ -57,9 +57,13 @@ public class DasColorBar extends DasAxis {
         int ncolor = type.getColorCount();
         int icolor= (int)transform(x,units,0, ncolor);
         
-        icolor= (icolor<0)?0:icolor;
-        icolor= (icolor>=ncolor)?(ncolor-1):icolor;
-        return type.getRGB(icolor);
+        if ( units.getFill().doubleValue(units)==x ) {
+            return Color.LIGHT_GRAY.getRGB();
+        } else {
+            icolor= (icolor<0)?0:icolor;
+            icolor= (icolor>=ncolor)?(ncolor-1):icolor;
+            return type.getRGB(icolor);
+        }
     }
     
     public DasColorBar.Type getType() {

@@ -161,16 +161,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         DataSet ds= getDataSet();
         
-        TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
         int itable=0;
         int ny= rebinData.getYLength(itable);
         int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
+        
         for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
             for (int j=0; j<rebinData.getYLength(0); j++) {
-                if (weights.getDouble(i,j,colorBar.getUnits())>0.) {
-                    int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
-                    pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
-                }
+                int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
+                pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
             }
         }
         

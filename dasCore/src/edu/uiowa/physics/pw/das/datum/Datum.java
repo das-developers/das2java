@@ -46,8 +46,7 @@ public abstract class Datum {
         }
         Double( double value ) {
             this( value, Units.dimensionless );
-        }
-        
+        }        
         
     }
     
@@ -92,7 +91,11 @@ public abstract class Datum {
     public Number getValue() {
         return this.value;
     }
-        
+   
+    public boolean isFill() {
+        return getUnits().isFill(getValue());
+    }
+    
     public Datum add( Datum a ) { return add( a.getValue(), a.getUnits() ); }    
     public Datum add( Number a, Units units ) {  return getUnits().add( getValue(), a, units ); }
     public Datum add( double d, Units units ) {  return add( new java.lang.Double(d), units ); }

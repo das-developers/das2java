@@ -60,13 +60,16 @@ public class RipplesDataSet implements TableDataSet {
     public double getDouble(int i, int j, Units units) {
         double x= getXTagDouble(i,xUnits);
         double y= getYTagDouble(0,j,yUnits);
-        double rad1= Math.sqrt((x-x1)*(x-x1)+(y-y1)*(y-y1));
-        double exp1= Math.exp(-rad1/p1)*Math.cos(Math.PI*rad1/p1);
-        double rad2= Math.sqrt((x-x2)*(x-x2)+(y-y2)*(y-y2));
-        double exp2= Math.exp(-rad2/p2)*Math.cos(Math.PI*rad2/p2);
-        double z= (exp1+exp2);
-        if (22.<x && x<24.) z=-1e31f;
-        return z;
+        if (22.<x && x<24.) {
+            return units.getFill().doubleValue(units);
+        } else {
+            double rad1= Math.sqrt((x-x1)*(x-x1)+(y-y1)*(y-y1));
+            double exp1= Math.exp(-rad1/p1)*Math.cos(Math.PI*rad1/p1);
+            double rad2= Math.sqrt((x-x2)*(x-x2)+(y-y2)*(y-y2));
+            double exp2= Math.exp(-rad2/p2)*Math.cos(Math.PI*rad2/p2);
+            double z= (exp1+exp2);
+            return zUnits.convertDoubleTo(units,z);
+        }
     }
     
     public int getInt(int i, int j, Units units) {

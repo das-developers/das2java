@@ -161,6 +161,19 @@ public abstract class Units {
     public abstract Datum createDatum( int value );    
     public abstract Datum createDatum( long value );    
     public abstract Datum createDatum( Number value );
+    public abstract Datum getFill();
+    public boolean isFill( double value ) {
+        return getFill().equals(createDatum(value));
+    }
+    public boolean isFill( long value ) {
+        return getFill().equals(createDatum(value));
+    }
+    public boolean isFill( int value ) {
+        return getFill().equals(createDatum(value));
+    }
+    public boolean isFill( Number value ) {
+        return getFill().equals(createDatum(value));
+    }
     
     public abstract DatumFormatterFactory getDatumFormatterFactory();
     
@@ -213,8 +226,13 @@ public abstract class Units {
         Datum number= Datum.create(1,Units.days);
         
         System.out.println( location.add(number) );
-        System.out.println( number.add(location) );
-        
+        // System.out.println( number.add(location) );  // throws Exception 2003-11-19
+                
+        System.out.println( Units.days.createDatum(1.) );
+        System.out.println( Units.days.createDatum(1.).convertTo(Units.seconds) );
+
+        System.out.println( Units.days.getFill() );
+        System.out.println( Units.days.getFill().convertTo(Units.seconds) );
     }
     
     
