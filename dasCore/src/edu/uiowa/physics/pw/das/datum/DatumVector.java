@@ -29,15 +29,17 @@ package edu.uiowa.physics.pw.das.datum;
  */
 public final class DatumVector {
 
-
     private final Units units;
     private final Object store;
     private final int length;
     
-    private DatumVector(double[] array, Units units) {
-        this.store = array.clone();
+    private DatumVector(double[] array, int offset, int length, Units units) {
+        this.store = new double[length];
+        for (int i = 0; i < length; i++) {
+            ((double[])store)[i] = array[offset + i];
+        }
         this.units = units;
-        this.length = array.length;
+        this.length = length;
     }
     
     public Datum get(int index) {
@@ -61,7 +63,11 @@ public final class DatumVector {
     }
     
     public static DatumVector newDatumVector(double[] array, Units units) {
-        return new DatumVector(array, units);
+        return newDatumVector(array, 0, array.length, units);
+    }
+    
+    public static DatumVector newDatumVector(double[] array, int offset, int length, Units units) {
+        return new DatumVector(array, offset, length, units);
     }
     
     public int getLength() {
