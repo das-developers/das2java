@@ -358,10 +358,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         dataRange.setRange( minimum.doubleValue(getUnits()), maximum.doubleValue(getUnits()) );
         update();
+        createAndFireRangeSelectionEvent();
+    }
+    
+    private void createAndFireRangeSelectionEvent() {
         if (getUnits() instanceof TimeLocationUnits) {
             TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this, this.getDataMinimum(), this.getDataMaximum());
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
-        }
+        }        
     }
     
     /** TODO
@@ -391,8 +395,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.setRangePrev();
         double min1= dataRange.getMinimum();
         double max1= dataRange.getMaximum();
-        animateChange(min0,max0,min1,max1);
+        animateChange(min0,max0,min1,max1);        
         update();
+        createAndFireRangeSelectionEvent();
     }
     
     /** TODO */
@@ -404,6 +409,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double max1= dataRange.getMaximum();
         animateChange(min0,max0,min1,max1);
         update();
+        createAndFireRangeSelectionEvent();        
     }
     
     /** TODO */
