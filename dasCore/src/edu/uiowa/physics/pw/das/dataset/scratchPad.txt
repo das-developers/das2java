@@ -10,3 +10,5 @@ jbf> Suggested Properties for DataSets:
   dataType           String identifier for data type
   defaultRenderer    Renderer Object
   rebinner           Rebinner Object
+  dataPlanes         String[]
+
