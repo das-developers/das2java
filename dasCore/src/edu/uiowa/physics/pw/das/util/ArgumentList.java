@@ -1,5 +1,6 @@
 package edu.uiowa.physics.pw.das.util;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import java.util.*;
 
 public class ArgumentList {
@@ -220,6 +221,13 @@ public class ArgumentList {
     }
     
     public void process(String[] args) {
+                
+        StringBuffer sb= new StringBuffer();
+        for ( int i=0; i<args.length; i++ ) {
+            sb.append(args[i]);
+            sb.append(" ");
+        }
+        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("args: "+sb.toString());
         int iposition=0;
         String value;
         for ( int i=0; i<args.length; i++ ) {
@@ -238,11 +246,11 @@ public class ArgumentList {
                     }
                     key= (String)abbrevs.get(abbrev);
                 }
-                
+                                
                 if ( key==null ) {
                     key= args[i];
                     values.put( key, this.UNDEFINED_SWITCH );
-                    formUsed.put( key, args[i] );
+                    formUsed.put( key, args[i] );                    
                 } else {
                     formUsed.put( key,args[i] );
                     if ( values.get(key) == this.FALSE || values.get(key) == this.TRUE ) { // is boolean
@@ -258,11 +266,13 @@ public class ArgumentList {
                                 value= this.REFERENCEWITHOUTVALUE;
                             }
                         }
+                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("switch key: "+key+"="+value);
                         values.put( key, value );
                     }
                 }
             } else {
                 key= this.positionKeys[iposition];
+                DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("position key: "+key+"="+args[i]);
                 values.put( key, args[i] );
                 iposition= iposition+1;
                 formUsed.put( key, args[i] );
