@@ -6,10 +6,13 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -29,6 +32,7 @@ public class Probe {
     Legend legend;
     Leveler leveler;
     DasCanvas canvas;
+    DasAnnotation titleAnnotation;
     
     DatumRange xrange;
     DatumRange yrange;
@@ -41,9 +45,21 @@ public class Probe {
     
     String title;
     
+    boolean isNull;
+    
     long t0millis;
     boolean needUpdate=false;
     boolean updating=true;
+    
+    /**
+     * Holds value of property xsize.
+     */
+    private int xsize;
+    
+    /**
+     * Holds value of property ysize.
+     */
+    private int ysize;
     
     /* agent has responsibility of conveying info */
     private class Agent {
@@ -51,13 +67,16 @@ public class Probe {
         SymbolLineRenderer renderer;
         DasPlot plot;
         DatumRange xrange, yrange;
+        boolean histogram= false;
         
         int hits;
+        Legend legend;
+        String name;
         
-        Agent( String name, int index ) {
+        Agent( String name, int index, Agent underplotAgent ) {
             builder= new VectorDataSetBuilder(Units.dimensionless,Units.dimensionless);
             renderer= new SymbolLineRenderer((DataSet)null);
-            
+            this.name= name;
             xrange= new DatumRange( Datum.create(0), Datum.create(1) );
             yrange= DatumRangeUtil.newDimensionless(0,0.000001);
             
@@ -70,12 +89,18 @@ public class Probe {
                 thisXAxis.setTickLabelsVisible(false);
             }
             
-            //plot= edu.uiowa.physics.pw.das.graph.Util.newDasPlot(canvas, xrange, yrange );
-            plot= new DasPlot( thisXAxis, new DasAxis( yrange, DasAxis.VERTICAL ) );
+            if ( underplotAgent==null ) {
+                //plot= edu.uiowa.physics.pw.das.graph.Util.newDasPlot(canvas, xrange, yrange );
+                plot= new DasPlot( thisXAxis, new DasAxis( yrange, DasAxis.VERTICAL ) );
+                plot.addMouseModule( new DumpToFileMouseModule( plot, renderer, thisXAxis, plot.getYAxis() ) );
+            } else {
+                plot= underplotAgent.plot;
+            }
             
-            renderer.setPsym(Psym.CIRCLES);
+            renderer.setPsym(Psym.NONE);
             // renderer.setPsymConnector(PsymConnector.NONE);
-            renderer.setSymSize(2.0);
+            //renderer.setSymSize(2.0);
+            
             final SymColor[] symColors= { SymColor.black, SymColor.blue, SymColor.lightRed, SymColor.red, SymColor.darkGreen, SymColor.gray };
             renderer.setColor(symColors[index%symColors.length]);
             
@@ -84,35 +109,62 @@ public class Probe {
             plot.getYAxis().setLabel(name);
             plot.addRenderer(renderer);
             
-            DasRow row= leveler.getRow();
-            
-            canvas.add( plot, row, column );
+            if ( underplotAgent==null ) {
+                DasRow row= leveler.getRow(0.);
+                canvas.add( plot, row, column );                
+            } else {
+                underplotAgent.addToLegend(this);
+            }
             
             hits= 0;
         }
         
+        void addToLegend( Agent overplotAgent ) {
+            if ( legend==null ) {
+                DasCanvas c= plot.getCanvas();
+                legend= new Legend();
+                legend.add( renderer, name );
+                c.add( legend, plot.getRow().createAttachedRow(0.2,0.95), plot.getColumn().createAttachedColumn(0.7,0.99) );
+            }
+            legend.add( overplotAgent.renderer, overplotAgent.name );
+        }
+        
         void add( double value ) {
-            //double seconds= ( System.currentTimeMillis() - t0millis ) / 1000.;
             double xvalue= ++hits;
-            builder.insertY(xvalue,value);
-            
-            
+            synchronized( builder ) {
+                builder.insertY(xvalue,value);
+            }
             if ( !xrange.contains( Units.dimensionless.createDatum(xvalue)) ) {
                 xrange= include( xrange, Units.dimensionless.createDatum(xvalue)) ;
+                if ( !xrange.width().isFinite() ) {
+                    throw new IllegalStateException();
+                }
             }
             if ( !yrange.contains( Units.dimensionless.createDatum(value) ) ) {
                 yrange= include( yrange, Units.dimensionless.createDatum(value) );
+                if ( !yrange.width().isFinite() ) {
+                    throw new IllegalStateException();
+                }
             }
-            
             
             needUpdate=true;
         }
         
+        void add( int value ) {
+            histogram= true;
+            this.add((float)value);
+        }
+        
         void update() {
-            DataSet ds= builder.toVectorDataSet();
-            plot.getXAxis().setDataRange( xrange );
-            plot.getYAxis().setDataRange( yrange );
+            DataSet ds;
+            synchronized( builder ) {
+                ds= builder.toVectorDataSet();
+            }
+            plot.getXAxis().setDatumRange( xrange );
+            plot.getYAxis().setDatumRange( yrange );
+            renderer.setHistogram(histogram);
             renderer.setDataSet(ds);
+            
         }
         
         void destroy() {
@@ -120,9 +172,16 @@ public class Probe {
                 plot.removeRenderer(renderer);
             }
         }
+        
+    }
+    
+    public DasCanvas getCanvas() {
+        if ( isNull ) throw new IllegalArgumentException("getCanvas called for null canvas");
+        return this.canvas;
     }
     
     public void reset() {
+        if ( isNull ) return;
         if ( agents==null ) agents= new HashMap();
         
         for ( Iterator i=agents.keySet().iterator(); i.hasNext(); ) {
@@ -225,13 +284,17 @@ public class Probe {
    
     } */
     
-    public synchronized void add( String name, double value ) {
+    public synchronized void add( String name, int value ) {
+        if ( isNull ) return;
+        if ( Double.isInfinite(value) ) {
+            throw new IllegalStateException("value is not finite: "+name);
+        }
         VectorDataSetBuilder builder;
         edu.uiowa.physics.pw.das.graph.SymbolLineRenderer renderer;
         Agent a;
         if ( ! agents.containsKey(name) ) {
             maybeCreateWidget();
-            a= new Agent( name, agents.size() );
+            a= new Agent( name, agents.size(), null );
             agents.put( name, a );
         } else {
             a= (Agent)agents.get(name);
@@ -239,40 +302,100 @@ public class Probe {
         
         a.add(value);
         
+    }
+    
+    public synchronized void add( String name, double value ) {
+        if ( isNull ) return;
+        if ( Double.isInfinite(value) ) {
+            throw new IllegalStateException("value is not finite: "+name);
+        }        
+        VectorDataSetBuilder builder;
+        Agent a;
+        if ( ! agents.containsKey(name) ) {
+            maybeCreateWidget();
+            a= new Agent( name, agents.size(), null );
+            agents.put( name, a );
+        } else {
+            a= (Agent)agents.get(name);
+        }
         
+        a.add(value);
+    }
+    
+    public synchronized void addOverplot( String overplotName, String underplotName, double value ) {
+        if ( isNull ) return;
+        if ( Double.isInfinite(value) ) {
+            throw new IllegalStateException("value is not finite: "+overplotName);
+        }
+        VectorDataSetBuilder builder;
+        Agent a;
+        if ( ! agents.containsKey(overplotName) ) {
+            maybeCreateWidget();
+            Agent underplotAgent= (Agent)agents.get(underplotName);
+            if ( underplotAgent==null ) {
+                a= new Agent( overplotName, agents.size(), null );
+            } else {
+                a= new Agent( overplotName, agents.size(), underplotAgent );
+            }
+            agents.put( overplotName, a );
+        } else {
+            a= (Agent)agents.get(overplotName);
+        }
+        
+        a.add(value);
+    }
+    
+    public synchronized void addOverplot( String overplotName, String underplotName, int value ) {
+        if ( isNull ) return;
+        VectorDataSetBuilder builder;
+        Agent a;
+        if ( ! agents.containsKey(overplotName) ) {
+            maybeCreateWidget();
+            Agent underplotAgent= (Agent)agents.get(underplotName);
+            if ( underplotAgent==null ) {
+                a= new Agent( overplotName, agents.size(), null );
+            } else {
+                a= new Agent( overplotName, agents.size(), underplotAgent );
+            }
+            agents.put( overplotName, a );
+        } else {
+            a= (Agent)agents.get(overplotName);
+        }
+        
+        a.add(value);
     }
     
     private void startUpdateThread() {
         if ( updating ) {
             new Thread( new Runnable() {
                 public void run() {
-                    try { Thread.sleep(refreshRateMillis); } catch ( InterruptedException e ) { throw new RuntimeException(e); }
-                    update();
+                    while ( true ) {
+                        try { Thread.sleep(refreshRateMillis); } catch ( InterruptedException e ) { throw new RuntimeException(e); }
+                        if ( updating & isWidgetCreated ) update();
+                    }
                 }
             }, "probeUpdateThread" ).start();
         }
     }
     
-    private synchronized void update() {
+    public synchronized void update() {
+        if ( isNull ) return;
         if ( isWidgetCreated && needUpdate ) {
             for (Iterator i=agents.keySet().iterator(); i.hasNext(); ) {
                 Object name= i.next();
                 Agent a= (Agent) agents.get(name);
                 a.update();
             }
-            /*for ( Iterator i=histograms.keySet().iterator(); i.hasNext(); ) {
-                Object name= i.next();
-                int[] histogram= (int[])histograms.get(name);
-                edu.uiowa.physics.pw.das.graph.Renderer renderer= (edu.uiowa.physics.pw.das.graph.Renderer)renderers.get(name);
-                VectorDataSetBuilder builder= new VectorDataSetBuilder( Units.seconds, Units.dimensionless ); // seconds is a kludge
-                for ( int j=0; j<histogram.length; j++ ) {
-                    builder.insertY(j,histogram[j]);
-                }
-                renderer.setDataSet(builder.toVectorDataSet());
-            }*/
         }
         needUpdate= false;
-        if ( isWidgetCreated ) startUpdateThread();
+    }
+    
+    private Action getUpdateAction() {
+        return new AbstractAction("Update") {
+            public void actionPerformed( ActionEvent e ) {
+                update();
+            }
+        };
     }
     
     private void maybeCreateWidget() {
@@ -280,12 +403,18 @@ public class Probe {
             return;
         } else {
             
-            frame= new JFrame( title );
+            frame= DasApplication.getDefaultApplication().getMainFrame();
+            JPanel panel= new JPanel();
+            panel.setLayout( new BorderLayout());
             
-            canvas= new DasCanvas(300,300);
+            canvas= new DasCanvas(xsize,ysize);
+            
+            panel.add(canvas, BorderLayout.CENTER );
+            panel.add( new JButton( getUpdateAction() ), BorderLayout.NORTH );
+            
             column= new DasColumn( canvas, 0.15, 0.9 );
             
-            frame.setContentPane(canvas);
+            frame.setContentPane(panel);
             
             frame.setVisible(true);
             frame.pack();
@@ -311,6 +440,10 @@ public class Probe {
             // no attachedRow method!
             //  canvas.add( legend, plot.getRow().createSubRow(0.95,0.80), plot.getColumn().createAttachedColumn( 0.5, 0.8 ) );
             leveler= new Leveler(canvas);
+            titleAnnotation= new DasAnnotation( title );
+            canvas.add( titleAnnotation, new DasRow(canvas,0.,0.05), new DasColumn( canvas, 0., 1. ) );
+            canvas.revalidate();
+            
             isWidgetCreated= true;
             startUpdateThread();
         }
@@ -319,34 +452,63 @@ public class Probe {
     
     public void setUpdating( boolean updating ) {
         this.updating= updating;
-        if ( isWidgetCreated && updating ) {
-            startUpdateThread();
-        }
     }
     
-    private Probe( String title, boolean active ) {
+    private Probe( String title, boolean notNull, int xsize, int ysize ) {
         this.title= title;
         this.isWidgetCreated= false;
-        this.updating= active;
+        this.updating= notNull;
+        this.isNull= !notNull;
+        this.xsize= xsize;
+        this.ysize= ysize;
         reset();
     }
     
     public static Probe newProbe( String title ) {
-        return new Probe(title,true);
+        return new Probe(title,true, 400, 600 );
     }
     
-    public static Probe nullProbe( String title ) {
-        return new Probe(title,false);
+    public static Probe newProbe( int xsize, int ysize ) {
+        return new Probe( "Probe", true, xsize, ysize );
+    }
+    
+    public static Probe nullProbe() {
+        return new Probe("",false, 400,400 );
     }
     
     public static void main(String[] args) throws Exception {
-        Probe p= new Probe("",true);
+        Probe p= new Probe("Test of Probe with fake data",true,400,600);
         Thread.sleep(2000);
         for ( int i=0; i<100; i++ ) {
             Thread.sleep(200);
             p.add("i", i);
             p.add("j", i % 10 );
         }
+    }
+    
+    public int getXsize() {
+        return this.xsize;
+    }
+    
+    public void setXsize(int xsize) {
+        this.xsize = xsize;
+    }
+    
+    public int getYsize() {
+        return this.ysize;
+    }
+    
+    public void setYsize(int ysize) {
+        this.ysize = ysize;
+    }
+    
+    public String getTitle() {
+        return this.title;
+    }
+    
+    public void setTitle(String title) {
+        this.title = title;
+        if ( titleAnnotation!=null ) titleAnnotation.setText(title);
     }
     
 }
