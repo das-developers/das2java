@@ -433,6 +433,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (getCanvas() != null) {
             rend.installRenderer();
         }
+        markDirty();
+        repaint();
     }
     
     public void removeRenderer(Renderer rend) {
