@@ -373,20 +373,20 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
             Datum datum= ticks.units.createDatum(tick1);
             if ( tick1>=(dataMin*0.999) && tick1<=(dataMax*1.001) ) {
                 int w= getInterItemSpace();
-                int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5) - w/2;
+                int tickPosition= ( getItemMax(datum) + getItemMin(datum ) ) / 2 - g.getFontMetrics().getAscent()/5;
                 tickLength= tickLengthMajor;
                 if (leftTicks) {
                     if ( i==ticks.tickV.length-1 ) g.drawLine( leftPosition, getItemMin(datum), leftPosition - tickLength, getItemMin(datum) );
                     g.drawLine( leftPosition, getItemMax(datum), leftPosition - tickLength, getItemMax(datum) );
                     if (leftTickLabels) {
-                        drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition+w/2);
+                        drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition);
                     }
                 }
                 if (rightTicks) {
                 if ( i==ticks.tickV.length-1 ) g.drawLine( rightPosition, getItemMin(datum), rightPosition + tickLength, getItemMin(datum) );
                     g.drawLine( rightPosition, getItemMax(datum), rightPosition + tickLength, getItemMax(datum) );
                     if (rightTickLabels) {
-                        drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition+w/2);
+                        drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition);
                     }
                 }
             }
