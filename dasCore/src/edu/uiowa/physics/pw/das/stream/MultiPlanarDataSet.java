@@ -58,17 +58,17 @@ public class MultiPlanarDataSet {
     public String[] getDataSetNames() {
         String[] result= new String[dataSets.size()];
         for (int i=0; i<dataSets.size(); i++) {
-            result[i]= ((DataSet)dataSets.get(i)).getName();
+            result[i]= ((DataSet_jbf)dataSets.get(i)).getName();
         }
         return result;
     }
     
-    public DataSet getDataSet(String name) throws NoSuchDataSetException {
-        DataSet result=null;
+    public DataSet_jbf getDataSet(String name) throws NoSuchDataSetException {
+        DataSet_jbf result=null;
         String[] dataSetNames= getDataSetNames();
         for (int i=0; i<dataSets.size(); i++) {
             if (name.equals(dataSetNames[i])) {
-                result= (DataSet)dataSets.get(i);
+                result= (DataSet_jbf)dataSets.get(i);
             }
         }
         if ( result==null ) {
@@ -236,7 +236,7 @@ public class MultiPlanarDataSet {
     }
     
     
-    public DataSet getPrimaryDataSet() {
+    public DataSet_jbf getPrimaryDataSet() {
         String[] dataSetNames= getDataSetNames();
         String primaryDataSetName="";
         try {
@@ -250,7 +250,7 @@ public class MultiPlanarDataSet {
         }
     }
     
-    public DataSet getWeightsDataSet(String name) throws NoSuchDataSetException {
+    public DataSet_jbf getWeightsDataSet(String name) throws NoSuchDataSetException {
         if ( name.equals("") ) {
             return getDataSet("weights");
         } else {
@@ -258,7 +258,7 @@ public class MultiPlanarDataSet {
         }
     }
     
-    public DataSet getPeaksDataSet(String name) throws NoSuchDataSetException {
+    public DataSet_jbf getPeaksDataSet(String name) throws NoSuchDataSetException {
         if ( name.equals("") ) {
             return getDataSet("peaks");
         } else {
@@ -266,7 +266,7 @@ public class MultiPlanarDataSet {
         }
     }
     
-    public DataSet getErrorsDataSet(String name) throws NoSuchDataSetException {
+    public DataSet_jbf getErrorsDataSet(String name) throws NoSuchDataSetException {
         if ( name.equals("") ) {
             return getDataSet("errors");
         } else {
@@ -274,7 +274,7 @@ public class MultiPlanarDataSet {
         }
     }
     
-    public DataSet getVarianceDataSet(String name) throws NoSuchDataSetException {
+    public DataSet_jbf getVarianceDataSet(String name) throws NoSuchDataSetException {
         if ( name.equals("") ) {
             return getDataSet("variance");
         } else {
@@ -294,7 +294,7 @@ public class MultiPlanarDataSet {
                 addDataSet( d.asDataSet(xValues) );
             }
         }
-        DataSet ds= getPrimaryDataSet();
+        DataSet_jbf ds= getPrimaryDataSet();
         String name= ds.getName();
         if ( ds instanceof XTaggedYScanDataSet ) {
             XTaggedYScanDataSet xtysds= (XTaggedYScanDataSet) ds;
