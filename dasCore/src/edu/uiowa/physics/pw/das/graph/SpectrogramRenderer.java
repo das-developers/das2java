@@ -49,7 +49,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private DasColorBar colorBar;
     Image plotImage;
-    DataSet rebinDataSet;
     
     protected class RebinListener implements java.beans.PropertyChangeListener {
         public void propertyChange(java.beans.PropertyChangeEvent e) {
@@ -227,12 +226,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
         plotImage = getParent().createImage(mis);
         getParent().repaint();
-        rebinDataSet = rebinData;
-    }
-    
-    public void setDataSetDescriptor(DataSetDescriptor dsd) {
-        super.setDataSetDescriptor(dsd);
-        rebinDataSet = null;
     }
     
     protected void installRenderer() {
@@ -286,7 +279,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
     
-    public static SpectrogramRenderer processSpectrogramElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    public static SpectrogramRenderer processSpectrogramElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         String dataSetID = element.getAttribute("dataSetID");
         DasColorBar colorbar = null;
         
@@ -318,7 +311,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return renderer;
     }
     
-    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -348,15 +341,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         element.appendChild(zAxisChild);
         
         return element;
-    }
-    
-    public DataSet getDataSet() {
-        if (rebinDataSet == null) {
-            return super.getDataSet();
-        }
-        else {
-            return rebinDataSet;
-        }
     }
     
     /** Getter for property rebinner.
