@@ -31,6 +31,16 @@ public class FFTUtil {
         return builder.toVectorDataSet();
     }
     
+    public static ComplexArray.Double fft( GeneralFFT fft, VectorDataSet vds, Units units ) {  
+        double [] yreal= new double[ vds.getXLength() ];
+        Units yUnits= units;
+        double [] yimag= new double[ vds.getXLength() ];                
+        for ( int i=0; i<vds.getXLength(); i++ ) yreal[i]= vds.getDouble( i, yUnits );            
+        ComplexArray.Double ca= ComplexArray.newArray(yreal);
+        fft.transform( ca );
+        return ca;
+    }
+    
     static DatumVector getFrequencyDomainTags( DatumVector timeDomainTags ) {
         Units timeUnit= timeDomainTags.getUnits();
         double[] x= timeDomainTags.toDoubleArray(timeUnit);
