@@ -23,26 +23,58 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.event.*;
+
 /**
  *
  * @author  Owner
  */
 public class DataPointReporter extends javax.swing.JPanel implements edu.uiowa.physics.pw.das.event.DataPointSelectionListener {
     
-    private javax.swing.JTextField output;
+    private javax.swing.JTextField output;    
     
     /** Creates a new instance of DataPointReporter */
     public DataPointReporter() {
         super();
         this.setLayout(new java.awt.FlowLayout()); 
-        output= new javax.swing.JTextField(20);        
+        output= new javax.swing.JTextField(20);         
         this.add(output);
         
     }
     
     public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
         output.setText("("+e.getX()+","+e.getY()+")");
+        fireDataPointSelectionListenerDataPointSelected(e);       
     }
         
+    /** Registers DataPointSelectionListener to receive events.
+     * @param listener The listener to register.
+     */
+    public synchronized void addDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
+        if (listenerList == null ) {
+            listenerList = new javax.swing.event.EventListenerList();
+        }
+        listenerList.add(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+    }
     
+    /** Removes DataPointSelectionListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removeDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
+        listenerList.remove(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireDataPointSelectionListenerDataPointSelected(DataPointSelectionEvent event) {
+        if (listenerList == null) return;
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class) {
+                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).DataPointSelected(event);
+            }
+        }
+    }
 }
