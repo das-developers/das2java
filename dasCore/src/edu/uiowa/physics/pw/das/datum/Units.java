@@ -144,6 +144,14 @@ public abstract class Units {
         return getConverter( this, toUnits );
     }
     
+    public double convertDoubleTo( Units toUnits, double value ) {
+        if ( this==toUnits ) {
+            return value;
+        } else {
+            return getConverter(this,toUnits).convert(value);
+        }
+    }
+    
     public String toString() {
         return id;
     }
