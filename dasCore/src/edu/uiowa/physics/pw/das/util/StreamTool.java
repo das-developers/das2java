@@ -37,7 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.io.Reader;
-import java.io.StringBufferInputStream;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
@@ -49,6 +49,9 @@ import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.xml.serialize.Method;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -135,31 +138,6 @@ public class StreamTool {
         System.arraycopy( data, 0, result, list.size()*4096, index-(list.size()*4096) );
         return result;
         
-    }
-    
-    public static void main( String[] args ) {
-        PushbackInputStream in= new PushbackInputStream( new StringBufferInputStream("hello there silly man") );
-        
-        try {
-            byte[] firstPart= advanceTo(in,"er".getBytes());
-            System.out.println( "before part: "+ new String(firstPart));
-            
-            int buf;
-            byte[] arrayBuf= new byte[1];
-            
-            System.out.print("after part: ");
-            while ( (buf=in.read())!=-1 ) {
-                arrayBuf[0]= (byte)buf;
-                System.out.print( new String(arrayBuf) );
-            }
-            
-            System.out.println();
-            
-        } catch ( IOException ex ) {
-            System.out.println(ex);
-        } catch ( StreamTool.DelimeterNotFoundException ex ) {
-            System.out.println(ex);
-        }
     }
     
     /** Read off XML data from the InputStream up to the termination of the XML.
@@ -271,6 +249,7 @@ public class StreamTool {
             if ("gzip".equals(sd.getCompression())) {
                 stream = getGZIPChannel(stream);
             }
+            handler.streamDescriptor(sd);
             while (stream.read(bigBuffer) != -1) {
                 bigBuffer.flip();
                 while (getChunk(bigBuffer, four, handler, descriptors));
@@ -427,6 +406,17 @@ public class StreamTool {
         }
         catch ( IOException ex) {
             throw new StreamException(ex);
+        }
+    }
+    
+    public static void formatHeader(Document document, Writer writer) throws StreamException {
+        try {
+            OutputFormat format = new OutputFormat(Method.XML, "US-ASCII", true);
+            XMLSerializer serializer = new XMLSerializer(writer, format);
+            serializer.serialize(document);
+        }
+        catch (IOException ioe) {
+            throw new StreamException(ioe);
         }
     }
     
