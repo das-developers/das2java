@@ -98,8 +98,7 @@ public class SymbolLineRenderer extends Renderer {
         if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
         
         graphics.setColor(color.toColor());
-        
-        double fill= yUnits.getFillDouble();
+                
         double xSampleWidth= 1e31;
         
         if ( psymConnector != PsymConnector.NONE ) {
@@ -108,8 +107,8 @@ public class SymbolLineRenderer extends Renderer {
             for (int i = ixmin+1; i <= ixmax; i++) {
                 int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
                 int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
-                if ( dataSet.getDouble(i,yUnits)!=fill ) {
-                    if ( dataSet.getDouble(i-1,yUnits) != fill ) {
+                if ( !yUnits.isFill(dataSet.getDouble(i,yUnits)) ) {
+                    if ( !yUnits.isFill(dataSet.getDouble(i-1,yUnits)) ) {
                         psymConnector.drawLine(graphics,x0,y0,x,y,lineWidth);
                     }
                     x0= x;
@@ -119,7 +118,7 @@ public class SymbolLineRenderer extends Renderer {
             graphics.setStroke(new BasicStroke(1.0f));
         }
         for (int i = ixmin; i <= ixmax; i++) {
-            if ( dataSet.getDouble(i,yUnits) != fill ) {
+            if ( ! yUnits.isFill(dataSet.getDouble(i,yUnits)) ) {
                 int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
                 int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
                 psym.draw( graphics, x, y, (float)symSize );
