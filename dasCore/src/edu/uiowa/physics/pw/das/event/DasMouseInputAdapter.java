@@ -605,21 +605,25 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                     int y= e.getY();
                     for (int i=0; i<active.size(); i++) {
                         MouseModule j= (MouseModule)active.get(i);
-                        boolean viableXRangeEvent=
-                        j.dragRenderer.isXRangeSelection() && y>=0 && y<=parent.getHeight();
-                        boolean viableYRangeEvent=
-                        j.dragRenderer.isYRangeSelection() && x>=0 && x<=parent.getWidth();
-                        if ( viableXRangeEvent || viableYRangeEvent ) {
-                            MouseDragEvent de=
-                            j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
-                            j.mouseRangeSelected(de);
-                            
-                            //de=
-                            //secondary.dragRenderer.getMouseRangeSelectionEvent(parent,selectionStart,selectionEnd,e.isShiftDown());
-                            //secondary.mouseRangeSelected(de);
+                        try {
+                            boolean viableXRangeEvent=
+                            j.dragRenderer.isXRangeSelection() && y>=0 && y<=parent.getHeight();
+                            boolean viableYRangeEvent=
+                            j.dragRenderer.isYRangeSelection() && x>=0 && x<=parent.getWidth();
+                            if ( viableXRangeEvent || viableYRangeEvent ) {
+                                MouseDragEvent de=
+                                j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
+                                j.mouseRangeSelected(de);
+
+                                //de=
+                                //secondary.dragRenderer.getMouseRangeSelectionEvent(parent,selectionStart,selectionEnd,e.isShiftDown());
+                                //secondary.mouseRangeSelected(de);
+                            }
                         }
-                        button=0;
-                        j.mouseReleased(e);
+                        finally {
+                            button=0;
+                            j.mouseReleased(e);
+                        }
                     }
                     active= null;
                 }
