@@ -393,6 +393,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
         createAndFireRangeSelectionEvent();
     }
+    public void clearHistory() {
+        dataRange.clearHistory();
+    }
     
     private void createAndFireRangeSelectionEvent() {
         if (getUnits() instanceof TimeLocationUnits) {
@@ -791,7 +794,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @return
      */
-    protected TickVDescriptor getTickV() {
+    public TickVDescriptor getTickV() {
         if (tickV == null) updateTickV();
         return tickV;
     }
@@ -811,12 +814,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         int nTicksMax;
         if ( isHorizontal() ) {
-            nTicksMax= (int)Math.floor( getColumn().getWidth() / idlt.getWidth() );
+            nTicksMax= (int)Math.floor( getColumn().getWidth() / ( idlt.getWidth() ) );
         } else {
-            nTicksMax= (int)Math.floor( getRow().getHeight() / idlt.getHeight() );
+            nTicksMax= (int)Math.floor( getRow().getHeight() / ( idlt.getHeight() * 2 ) );
         }        
         
-        tickV= TickVDescriptor.bestTickVLog( getDataMinimum(), getDataMaximum(), nTicksMax );
+        nTicksMax= (nTicksMax<7)?nTicksMax:7;
+        
+        tickV= TickVDescriptor.bestTickVLogNew( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
         datumFormatter= tickV.getFormatter();
         
         return;
@@ -827,18 +832,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int nTicksMax;
         int axisSize;
         if (isHorizontal()) {
-            int tickSizePixels= getFontMetrics(getTickLabelFont()).stringWidth("0.0000");
+            int tickSizePixels= getFontMetrics(getTickLabelFont()).stringWidth("0.0000") ;
             axisSize= getColumn().getWidth();
             nTicksMax= axisSize / tickSizePixels;
         } else {
-            int tickSizePixels= getFontMetrics(getTickLabelFont()).getHeight();
+            int tickSizePixels= getFontMetrics(getTickLabelFont()).getHeight() * 2;
             axisSize= getRow().getHeight();
             nTicksMax= axisSize / tickSizePixels;
         }
         
         nTicksMax= (nTicksMax<7)?nTicksMax:7;
         
-        this.tickV= TickVDescriptor.bestTickVLinear( getDataMinimum(), getDataMaximum(), nTicksMax );
+        this.tickV= TickVDescriptor.bestTickVLinear( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
         datumFormatter= tickV.getFormatter();
         
         return;
@@ -850,7 +855,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int nTicksMax;
         if (isHorizontal()) {
             // two passes to avoid clashes -- not guarenteed
-            tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 6 );
+            tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 3, 6 );
             Datum atick= tickV.getMajorTicks().get(0);
             String granny= tickV.getFormatter().grannyFormat(atick);                        
             
@@ -868,7 +873,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int axisSize= getColumn().getWidth();
             nTicksMax= axisSize / tickSizePixels;                        
             
-            tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), nTicksMax );                
+            tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 3, nTicksMax );                
             datumFormatter= tickV.getFormatter();
             atick= tickV.getMajorTicks().get(0);
             granny= tickV.getFormatter().grannyFormat(atick); 
@@ -891,7 +896,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         nTicksMax= ( nTicksMax>1 ? nTicksMax : 2 ) ;
         nTicksMax= ( nTicksMax<10 ? nTicksMax : 10 ) ;
         
-        tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), nTicksMax );        
+        tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 3, nTicksMax );        
         
         datumFormatter= tickV.getFormatter();
         
