@@ -204,7 +204,7 @@ public class DasMath {
         return sum / A.length + avgGuess;        
     }
     
-    public static double mode( double[] A ) {
+    public static double median( double[] A ) {
         double[] sorted= sort( A );
         return A[A.length/2];
     }
