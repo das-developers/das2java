@@ -1753,8 +1753,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double maximum= dataRange.getMaximum();
         double data_range = maximum-minimum;
         data= data_range*alpha + minimum;
-        if ( dataRange.isLog() ) {
-            formatter = new ExponentialDatumFormatter( 3,(int)Math.floor(DasMath.log10(data)) );
+        if ( dataRange.isLog() ) {            
+            formatter = DatumUtil.limitLogResolutionFormatter(  getDataMinimum(), getDataMaximum(), getDLength() );
         } else {
             formatter = DatumUtil.limitResolutionFormatter( getDataMinimum(), getDataMaximum(), getDLength() );
         }
