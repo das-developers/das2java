@@ -221,8 +221,8 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             }
             if (new String(four).equals("[00]")) {
                 pin.unread(four);
-                                
-                if (monitor != null) monitor.started(); 
+                
+                if (monitor != null) monitor.started();
                 InputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
                 
                 ReadableByteChannel channel = Channels.newChannel(mpin);
@@ -368,6 +368,12 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             }
             builder.insertYScan(xTag, y, z, planeIDs);
         }
+        
+        if ( properties.containsKey("x_sample_width") ) {
+            properties.put( "xTagWidth", Datum.create( ((Double)properties.get("x_sample_width")).doubleValue(),
+            Units.seconds ) );
+        }
+        
         builder.addProperties(properties);
         TableDataSet result = builder.toTableDataSet();
         return result;
