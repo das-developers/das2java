@@ -42,7 +42,7 @@ public class DasApplication {
         LoggerId( String name ) {
             this.name= name;
             this.logger= Logger.getLogger(name);
-            Level level= Level.ALL;
+            Level level= Level.WARNING;
             Handler[] handlers= this.logger.getHandlers();
             for ( int i=0; i<handlers.length; i++ ) {
                 handlers[i].setFormatter(getLoggerFormatter());
