@@ -104,7 +104,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     public void removeMouseModule(MouseModule module) {
         mouseAdapter.removeMouseModule(module);
-    }
+    }        
     
     public DasRow getRow() {
         return row;
@@ -321,11 +321,27 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     public DasMouseInputAdapter getMouseAdapter() {
         return mouseAdapter;
     }
-    
+        
     public Action[] getActions() {
         return new Action[] {
             PROPERTIES_ACTION,
         };
+    }
+    
+    /**
+     * Getter for property dasMouseInputAdapter.
+     * @return Value of property dasMouseInputAdapter.
+     */
+    public DasMouseInputAdapter getDasMouseInputAdapter() {
+        return this.mouseAdapter;
+    }
+    
+    /**
+     * Setter for property dasMouseInputAdapter.
+     * @param dasMouseInputAdapter New value of property dasMouseInputAdapter.
+     */
+    public void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
+        this.mouseAdapter = dasMouseInputAdapter;
     }
     
 }
