@@ -97,8 +97,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             
             HorizontalRangeSelectorMouseModule hrs=
             new HorizontalRangeSelectorMouseModule(this, xAxis);
-            mouseAdapter.addMouseModule(hrs);
-            mouseAdapter.setPrimaryModule(hrs);
+            mouseAdapter.addMouseModule(hrs);            
             hrs.addDataRangeSelectionListener(xAxis);
             
             VerticalRangeSelectorMouseModule vrs=
@@ -109,6 +108,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             MouseModule x= new CrossHairMouseModule(this,xAxis,yAxis);
             mouseAdapter.addMouseModule(x);
             mouseAdapter.setSecondaryModule(x);
+            
+            mouseAdapter.setPrimaryModule(x);
             
             JMenuItem dumpMenuItem= new JMenuItem("Dump Data Set To File");
             dumpMenuItem.addActionListener(new ActionListener() {
@@ -211,7 +212,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         g.dispose();
     }
     
-    protected void updateImmediately() {
+    protected void updateImmediately() {       
         if (dataSetDescriptor==null) {
         } else {
             loadDataSet();
