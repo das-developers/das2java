@@ -159,7 +159,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     int count = 0;
     
-    private boolean sliceRebinnedData= false;
+    private boolean sliceRebinnedData= true;
     
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) {
         
