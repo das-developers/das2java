@@ -40,24 +40,32 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 
-/**
- *
- * @author  eew
+/** TODO
+ * @author eew
  */
 public class DasAxis extends DasCanvasComponent implements DataRangeSelectionListener, Cloneable {
     
+    /** TODO */    
     public static final int TOP = 1;
+    /** TODO */    
     public static final int BOTTOM = 2;
+    /** TODO */    
     public static final int LEFT = 3;
+    /** TODO */    
     public static final int RIGHT = 4;
+    /** TODO */    
     public static final int HORIZONTAL = BOTTOM;
+    /** TODO */    
     public static final int VERTICAL = LEFT;
+    /** TODO */    
     public static final int UP = 995;
+    /** TODO */    
     public static final int DOWN = 996;
     
     private static final String SCAN_PREVIOUS_LABEL = "<< scan";
     private static final String SCAN_NEXT_LABEL = "scan >>";
     
+    /** TODO */    
     protected DataRange dataRange;
     private DasCanvas parent;
     private boolean visible;
@@ -68,6 +76,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private boolean tickLabelsVisible = true;
     
+    /** TODO */    
     protected String axisLabel = "";
     
     private DasFormatter nf;
@@ -78,12 +87,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private PropertyChangeListener dataRangePropertyListener;
     
+    /** TODO */    
     protected JPanel primaryInputPanel;
+    /** TODO */    
     protected JPanel secondaryInputPanel;
     
+    /** TODO */    
     protected ScanButton scanPrevious;
+    /** TODO */    
     protected ScanButton scanNext;
     
+    /** TODO */    
     protected static class tickVDescriptor {
         double [] tickV=null;
         double minor= 1.; // length of the minor ticks.
@@ -104,6 +118,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @param data
+     * @param units
+     * @param row
+     * @param column
+     * @param orientation
+     * @param isLog
+     * @return
+     */    
     public static DasAxis create( double [] data, Units units, DasRow row, DasColumn column, int orientation, boolean isLog ) {
         DasAxis result;
         if ( units instanceof TimeLocationUnits ) {
@@ -115,10 +138,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
+    /** TODO
+     * @param min
+     * @param max
+     * @param row
+     * @param column
+     * @param orientation
+     */    
     public DasAxis( Datum min, Datum max, DasRow row, DasColumn column, int orientation ) {
         this(min, max, row, column, orientation, false);
     }
     
+    /** TODO
+     * @param min
+     * @param max
+     * @param row
+     * @param column
+     * @param orientation
+     * @param log
+     */    
     public DasAxis( Datum min, Datum max, DasRow row, DasColumn column, int orientation, boolean log) {
         this(row, column, orientation);
         dataRange = new DataRange(this,min,max,log);
@@ -127,6 +165,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
     }
     
+    /** TODO
+     * @param range
+     * @param row
+     * @param column
+     * @param orientation
+     */    
     protected DasAxis(DataRange range, DasRow row, DasColumn column, int orientation) {
         this(row, column, orientation);
         dataRange = range;
@@ -164,6 +208,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO */    
     protected void maybeInitializeScanButtons() {
         scanPrevious = new DasAxis.ScanButton(SCAN_PREVIOUS_LABEL);
         scanNext = new DasAxis.ScanButton(SCAN_NEXT_LABEL);
@@ -222,30 +267,45 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         };
     }
     
+    /** TODO
+     * @param l
+     */    
     public void addMouseListener(MouseListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.addMouseListener(l);
         secondaryInputPanel.addMouseListener(l);
     }
     
+    /** TODO
+     * @param l
+     */    
     public void removeMouseListener(MouseListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.removeMouseListener(l);
         secondaryInputPanel.removeMouseListener(l);
     }
     
+    /** TODO
+     * @param l
+     */    
     public void addMouseMotionListener(MouseMotionListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.addMouseMotionListener(l);
         secondaryInputPanel.addMouseMotionListener(l);
     }
     
+    /** TODO
+     * @param l
+     */    
     public void removeMouseMotionListener(MouseMotionListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.removeMouseMotionListener(l);
         secondaryInputPanel.removeMouseMotionListener(l);
     }
     
+    /** TODO
+     * @param orientation
+     */    
     public void setOrientation(int orientation) {
         boolean oldIsHorizontal = isHorizontal();
         setOrientationInternal(orientation);
@@ -302,6 +362,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @param minimum
+     * @param maximum
+     */    
     public void setDataRange(Datum minimum, Datum maximum) {
         
         if ( ! maximum.gt(minimum) ) {
@@ -323,6 +387,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
     
+    /** TODO
+     * @param data
+     */    
     public void setDataRange(double[] data) {
         double min=data[0];
         double max=data[0];
@@ -340,6 +407,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO */    
     public void setDataRangePrev() {
         double min0= dataRange.getMinimum();
         double max0= dataRange.getMaximum();
@@ -350,6 +418,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
     
+    /** TODO */    
     public void setDataRangeForward() {
         double min0= dataRange.getMinimum();
         double max0= dataRange.getMaximum();
@@ -360,6 +429,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
     
+    /** TODO */    
     public void setDataRangeZoomOut() {
         double t1= dataRange.getMinimum();
         double t2= dataRange.getMaximum();
@@ -378,6 +448,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.setRange(min,max);
     }
     
+    /** TODO */    
     public void setDeviceRange(double minimum, double maximum) {
         if (isHorizontal()) {
             getColumn().setDPosition(minimum, maximum);
@@ -388,8 +459,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         deviceRangeChanged();
     }
     
+    /** TODO */    
     protected void deviceRangeChanged() {}
     
+    /** TODO
+     * @return
+     */    
     public Datum getDataMinimum() {
         Datum result= Datum.create( dataRange.getMinimum(), dataRange.getUnits() );
         // We're going to want to add a decimal place or two here
@@ -397,6 +472,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
+    /** TODO
+     * @return
+     */    
     public Datum getDataMaximum() {
         Datum result= Datum.create( dataRange.getMaximum(), dataRange.getUnits() );
         // We're going to want to add a decimal place or two here
@@ -404,6 +482,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
+    /** TODO
+     * @param units
+     * @return
+     */    
     public double getDataMaximum(Units units) {
         double result;
         if (units!=dataRange.getUnits()) {
@@ -414,6 +496,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
+    /** TODO
+     * @param units
+     * @return
+     */    
      public double getDataMinimum(Units units) {
         double result;
         if (units!=dataRange.getUnits()) {
@@ -424,18 +510,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
+     /** TODO
+      * @return
+      */     
     public double getDeviceMinimum() {
         if (isHorizontal())
             return getColumn().getDMinimum();
         else return getRow().getDMinimum();
     }
     
+    /** TODO
+     * @return
+     */    
     public double getDeviceMaximum() {
         if (isHorizontal())
             return getColumn().getDMaximum();
         else return getRow().getDMaximum();
     }
     
+    /** TODO
+     * @return
+     */    
     public final double getDevicePosition() {
         if (orientation == BOTTOM) {
             return getRow().getDMaximum();
@@ -451,10 +546,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @return
+     */    
     public boolean isLog() {
         return dataRange.isLog();
     }
     
+    /** TODO
+     * @param log
+     */    
     public void setLog(boolean log) {
         boolean oldLog = isLog();
         dataRange.setLog(log);
@@ -462,18 +563,35 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (log != oldLog) firePropertyChange("log", oldLog, log);
     }
     
+    /** TODO
+     * @param row
+     * @param column
+     * @return
+     */    
     public DasAxis createAttachedAxis(DasRow row, DasColumn column) {
         return new DasAxis(this.dataRange, row, column, this.getOrientation());
     }
     
+    /** TODO
+     * @param row
+     * @param column
+     * @param orientation
+     * @return
+     */    
     public DasAxis createAttachedAxis(DasRow row, DasColumn column, int orientation) {
         return new DasAxis(this.dataRange, row, column, orientation);
     }
     
+    /** TODO
+     * @return
+     */    
     public DasAxis getMasterAxis() {
         return dataRange.getCreator();
     }
     
+    /** TODO
+     * @param axis
+     */    
     public void attachTo(DasAxis axis) {
         if (this instanceof DasTimeAxis ^ axis instanceof DasTimeAxis) {
             throw new IllegalArgumentException("Cannot attach a time axis to a non-time axis");
@@ -493,6 +611,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("maximum", oldRange.getMaximum(), dataRange.getMaximum());
     }
     
+    /** TODO */    
     public void detach() {
         dataRange.removePropertyChangeListener("log", dataRangePropertyListener);
         dataRange.removePropertyChangeListener("minimum", dataRangePropertyListener);
@@ -507,17 +626,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
     }
     
+    /** TODO
+     * @return
+     */    
     public boolean isAttached() {
         return this != getMasterAxis();
     }
     
+    /** TODO */    
     protected tickVDescriptor tickV;
     
+    /** TODO
+     * @return
+     */    
     protected tickVDescriptor getTickV() {
         if (tickV == null) updateTickV();
         return tickV;
     }
     
+    /** TODO */    
     protected void updateTickV() {
         if (dataRange.isLog()) {
             
@@ -641,6 +768,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO */    
     protected void paintComponent(Graphics graphics) {
         Rectangle clip = graphics.getClipBounds();
         if (clip != null && clip.width <= 1 && clip.height <= 1) {
@@ -657,6 +785,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO */    
     protected void paintHorizontalAxis(Graphics2D g) {
         Rectangle bounds = getBounds();
         g.translate(-bounds.x, -bounds.y);
@@ -795,6 +924,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO */    
     protected void paintVerticalAxis(Graphics2D g) {
         Rectangle bounds = getBounds();
         g.translate(-bounds.x, -bounds.y);
@@ -937,6 +1067,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @return
+     */    
     protected int getTitlePositionOffset() {
         Font tickLabelFont = getTickLabelFont();
         FontMetrics fm = getFontMetrics(tickLabelFont);
@@ -960,6 +1093,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO */    
     protected void drawLabel(Graphics g, double value, int index, int x, int y) {
         
         if (!tickLabelsVisible) return;
@@ -997,20 +1131,35 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         idlt.draw(g,x,y);
     }
     
+    /** TODO
+     * @return
+     */    
     public Font getTickLabelFont() {
         return this.getFont();
     }
     
+    /** TODO
+     * @param tickLabelFont
+     */    
     public void setTickLabelFont(Font tickLabelFont) {
     }
     
+    /** TODO
+     * @return
+     */    
     public Font getLabelFont() {
         return this.getFont();
     }
     
+    /** TODO
+     * @param labelFont
+     */    
     public void setLabelFont(Font labelFont) {
     }
     
+    /** TODO
+     * @return
+     */    
     public Object clone() {
         try {
             return super.clone();
@@ -1031,6 +1180,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @param fm
+     * @return
+     */    
     protected int getMaxLabelWidth(FontMetrics fm) {
         tickVDescriptor ticks = getTickV();
         double[] tickv = ticks.tickV;
@@ -1043,16 +1196,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return size;
     }
     
+    /** TODO */    
     public void resize() {
         setBounds(getAxisBounds());
         invalidate();
         validate();
     }
     
+    /** TODO
+     * @return
+     */    
     public boolean isHorizontal() {
         return orientation == BOTTOM || orientation == TOP;
     }
     
+    /** TODO
+     * @return
+     */    
     protected Rectangle getAxisBounds() {
         if (isHorizontal()) {
             return getHorizontalAxisBounds();
@@ -1221,10 +1381,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return bounds;
     }
     
+    /** TODO
+     * @return
+     */    
     public int getOrientation() {
         return orientation;
     }
     
+    /** TODO
+     * @return
+     */    
     public DasFormatter getFormatter() {
         
         if (nf==null) {
@@ -1248,11 +1414,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return this.nf;
     }
     
+    /** TODO
+     * @return
+     */    
     public int getTickDirection() {
         return tickDirection;
     }
     
     
+    /** TODO
+     * @param datum
+     * @return
+     */    
     public double transform(Datum datum) {
         return transform( datum.getValue(), datum.getUnits() );
     }
@@ -1298,6 +1471,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
+    /** TODO
+     * @param idata
+     * @return
+     */    
     public Datum invTransform(double idata) {
         double data;
         int nPixels;
@@ -1340,6 +1517,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private boolean animated=false;
     
+    /** TODO
+     * @param tickv
+     * @return
+     */    
     protected String tickFormatter(double tickv) {
         if (nf==null) {
             edu.uiowa.physics.pw.das.util.DasDie.println("this");
@@ -1347,6 +1528,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return nf.grannyFormat(tickv,getUnits());
     }
     
+    /** TODO
+     * @param visible
+     */    
     public void setOppositeAxisVisible(boolean visible) {
         if (visible == oppositeAxisVisible) return;
         boolean oldValue = oppositeAxisVisible;
@@ -1356,16 +1540,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("oppositeAxisVisible", oldValue, visible);
     }
     
+    /** TODO
+     * @return
+     */    
     public boolean isOppositeAxisVisible() {
         return oppositeAxisVisible;
     }
     
-    /**
-     * Mutator method for the title property of this axis.
+    /** Mutator method for the title property of this axis.
      *
      * The title for this axis is displayed below the ticks for horizontal axes
      * or to left of the ticks for vertical axes.
-     *
      * @param t The new title for this axis
      */
     public void setLabel(String t) {
@@ -1387,18 +1572,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return axisLabel;
     }
     
+    /** TODO
+     * @param max
+     */    
     public void setDataMaximum(Datum max) {
         max= max.convertTo(dataRange.getUnits());
         dataRange.setMaximum(max.getValue());
         update();
     }
     
+    /** TODO
+     * @param min
+     */    
     public void setDataMinimum(Datum min) {
         min= min.convertTo(dataRange.getUnits());
         dataRange.setMinimum(min.getValue());
         update();
     }
     
+    /** TODO
+     * @param e
+     */    
     public void DataRangeSelected(DataRangeSelectionEvent e) {
         this.setDataRange(e.getMinimum(),e.getMaximum());
     }
@@ -1430,6 +1624,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return new Datum(result,xDatum.getUnits());
     }
     
+    /** TODO
+     * @param xDatum
+     * @param direction
+     * @param minor
+     * @return
+     */    
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         // direction<0 nearest left, direction>0 nearest right, direction=0 nearest.
         if (tickV==null) return xDatum;
@@ -1461,6 +1661,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return Datum.create(result,getUnits());
     }
     
+    /** TODO
+     * @param min0
+     * @param max0
+     * @param min1
+     * @param max1
+     */    
     public void animateChange( double min0, double max0, double min1, double max1 ) {
         
         if ( animated ) {
@@ -1512,10 +1718,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @return
+     */    
     public Units getUnits() {
         return dataRange.getUnits();
     }
     
+    /** TODO */    
     protected void updateImmediately() {
         super.updateImmediately();
         updateTickV();       
@@ -1535,10 +1745,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
      */
     
+    /** TODO
+     * @return
+     */    
     public boolean areTickLabelsVisible() {
         return tickLabelsVisible;
     }
     
+    /** TODO
+     * @param b
+     */    
     public void setTickLabelsVisible(boolean b) {
         if (tickLabelsVisible == b) return;
         boolean oldValue = ticksVisible;
@@ -1547,14 +1763,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("tickLabelsVisible", oldValue, b);
     }
     
+    /** TODO
+     * @param nf
+     */    
     public void setFormatter(DasFormatter nf) {
         this.nf= nf;
     }
     
+    /** TODO */    
     protected void installComponent() {
         super.installComponent();
     }
     
+    /** TODO */    
     protected void uninstallComponent() {
         super.uninstallComponent();
     }
@@ -1567,7 +1788,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }    
    
     /** Setter for property animated.
-     * @param animated New value of property animated.
+     * @param animated new value of property animated.
      */
     public void setAnimated(boolean animated) {
         this.animated = animated;
@@ -1606,6 +1827,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return axis;
     }
     
+    /** TODO
+     * @param i
+     * @return
+     */    
     protected static String orientationToString(int i) {
         switch (i) {
             case TOP:
@@ -1620,6 +1845,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @param orientationString
+     * @return
+     */    
     protected static int parseOrientationString(String orientationString) {
         if (orientationString.equals("horizontal")) {
             return HORIZONTAL;
@@ -1644,6 +1873,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO
+     * @param document
+     * @return
+     */    
     public Element getDOMElement(Document document) {
         Element element;
         if (this.isAttached()) {
@@ -1712,6 +1945,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return axis;
     }
     
+    /** TODO
+     * @param name
+     * @return
+     */    
     public static DasAxis createNamedAxis(String name) {
         DasAxis axis = new DasAxis(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), null, null, DasAxis.HORIZONTAL);
         if (name == null) {
@@ -1726,10 +1963,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return axis;
     }
     
+    /** TODO
+     * @return
+     */    
     public DataRange getDataRange() {
         return this.dataRange;
     }
     
+    /** TODO */    
     public void scanPrevious() {
         Datum delta= ( getDataMaximum().subtract(getDataMinimum())).multiply(1.0);
         Datum tmin= getDataMinimum().subtract(delta);
@@ -1737,6 +1978,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setDataRange(tmin, tmax);
     }
     
+    /** TODO */    
     public void scanNext() {
         Datum delta= ( getDataMaximum().subtract(getDataMinimum())).multiply(1.0);
         Datum tmin= getDataMinimum().add(delta);
@@ -1744,6 +1986,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setDataRange(tmin, tmax);
     }
     
+    /** TODO
+     * @return
+     */    
     public Shape getActiveRegion() {
         Rectangle primaryBounds = primaryInputPanel.getBounds();
         primaryBounds.translate(getX(), getY());
@@ -1760,11 +2005,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
+    /** TODO */    
     protected class AxisLayoutManager implements LayoutManager {
         
         //NOOP
+        /** TODO
+         * @param name
+         * @param comp
+         */        
         public void addLayoutComponent(String name, Component comp) {}
         
+        /** TODO
+         * @param parent
+         */        
         public void layoutContainer(Container parent) {
             if (DasAxis.this != parent) {
                 throw new IllegalArgumentException();
@@ -1777,6 +2030,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
+        /** TODO */        
         protected void horizontalLayout() {
             int topPosition = (int)Math.round(getRow().getDMinimum()) - 1;
             int bottomPosition = (int)Math.round(getRow().getDMaximum());
@@ -1846,6 +2100,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
+        /** TODO */        
         protected void verticalLayout() {
             boolean leftTicks = (orientation == LEFT || oppositeAxisVisible);
             boolean leftTickLabels = (orientation == LEFT && tickLabelsVisible);
@@ -1908,26 +2163,39 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
+        /** TODO
+         * @param parent
+         * @return
+         */        
         public Dimension minimumLayoutSize(Container parent) {
             return new Dimension();
         }
         
+        /** TODO
+         * @param parent
+         * @return
+         */        
         public Dimension preferredLayoutSize(Container parent) {
             return new Dimension();
         }
         
         //NOOP
+        /** TODO
+         * @param comp
+         */        
         public void removeLayoutComponent(Component comp) {}
         
     }
     
-    /**
-     * @author  eew
-     *
+    /** TODO
+     * @author eew
      */
     protected static class ScanButton extends JButton {
         private boolean hover;
         private boolean pressed;
+        /** TODO
+         * @param text
+         */        
         public ScanButton(String text) {
             setOpaque(true);
             setContentAreaFilled(false);
@@ -1961,6 +2229,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             });
         }
+        /** TODO
+         * @param g
+         */        
         protected void paintComponent(Graphics g) {
             if (hover || pressed) {
                 Graphics2D g2 = (Graphics2D)g;
@@ -1973,6 +2244,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aaHint);
             }
         }
+        /** TODO
+         * @param g
+         */        
         protected void paintBorder(Graphics g) {
             if (hover || pressed) {
                 super.paintBorder(g);
