@@ -156,11 +156,11 @@ public class DasTimeFormatter extends DasFormatter {
     }
     
     public String format( double d, Units units ) {
-        return format( new TimeDatum( d, units ) );
+        return format( Datum.create( d, units ) );
     }
     
     public Datum parse(String s, Datum d) {
-        return TimeDatum.create(s);
+        return TimeUtil.create(s);
     }
     
     public TimeContext getContext() {
@@ -168,7 +168,7 @@ public class DasTimeFormatter extends DasFormatter {
     }
     
     public static void main( String[] args ) {
-        TimeDatum d= (TimeDatum)TimeDatum.create("2001-3-1");
+        TimeDatum d= (TimeDatum)TimeUtil.create("2001-3-1");
         DasTimeFormatter t= new DasTimeFormatter(TimeContext.DAYS);
         DasTimeFormatter t1= new DasTimeFormatter(TimeContext.MILLISECONDS);
         edu.uiowa.physics.pw.das.util.DasDie.println(t.format(d));
@@ -177,8 +177,8 @@ public class DasTimeFormatter extends DasFormatter {
         
         edu.uiowa.physics.pw.das.util.DasDie.println("---------------------");
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(d));
-        edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(TimeDatum.create("2001-3-1 01:14")));
-        TimeDatum d2= (TimeDatum)TimeDatum.create("1996-3-1 01:14");
+        edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(TimeUtil.create("2001-3-1 01:14")));
+        TimeDatum d2= (TimeDatum)TimeUtil.create("1996-3-1 01:14");
         edu.uiowa.physics.pw.das.util.DasDie.println(t1.format(d2));
         edu.uiowa.physics.pw.das.util.DasDie.println(t.format(d2));
     }
