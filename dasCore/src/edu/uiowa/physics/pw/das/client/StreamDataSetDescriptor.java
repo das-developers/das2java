@@ -314,6 +314,12 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                     builder.insertY(xTag, yValue, yDescriptors[planeIndex + 1].getName());
                 }
             }
+            
+            if ( properties.containsKey("x_sample_width") ) {
+                properties.put( "xTagWidth", Datum.create( ((Double)properties.get("x_sample_width")).doubleValue(),
+                Units.seconds ) );
+            }
+            
             builder.addProperties(properties);
             VectorDataSet result = builder.toVectorDataSet();
             return result;
