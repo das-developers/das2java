@@ -80,7 +80,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     private Point selectionEnd;     // in component frame
     private Point dSelectionStart;  // in DasCanvas device frame
     private Point dSelectionEnd; // in DasCanvas device frame
-    private Graphics2D g;
+    private Graphics2D graphics;
     
     private MousePointSelectionEvent mousePointSelection;
     private int xOffset;
@@ -181,6 +181,17 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         }
     }
     
+    public KeyAdapter getKeyAdapter() {
+        return new KeyAdapter() {
+            public void keyPressed( KeyEvent ev ) {
+                if ( ev.getKeyCode()==27 & active!=null ) {
+                    clearSelection(graphics);
+                    active=null;
+                }
+            }
+        };
+    }
+    
     public void setPrimaryModule(MouseModule module) {
         
         for ( Iterator i= primaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
@@ -227,7 +238,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
         popupListener = createPopupMenuListener();
-
+        
         Action[] componentActions = parent.getActions();
         for (int iaction = 0; iaction < componentActions.length; iaction++) {
             JMenuItem item = new JMenuItem();
@@ -256,22 +267,19 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 String command = e.getActionCommand();
                 if (command.equals("properties")) {
                     parent.showProperties();
-                }
-                else if (command.equals("print")) {
+                } else if (command.equals("print")) {
                     Printable p = ((DasCanvas)parent.getParent()).getPrintable();
                     PrinterJob pj = PrinterJob.getPrinterJob();
                     pj.setPrintable(p);
                     if (pj.printDialog()) {
                         try {
                             pj.print();
-                        }
-                        catch (PrinterException pe) {
+                        } catch (PrinterException pe) {
                             Object[] message = {"Error printing", pe.getMessage() };
                             JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
                         }
                     }
-                }
-                else if (command.equals("toPng")) {
+                } else if (command.equals("toPng")) {
                     if (pngFileNamePanel == null) {
                         pngFileNamePanel = new JPanel();
                         pngFileNamePanel.setLayout(new BoxLayout(pngFileNamePanel, BoxLayout.X_AXIS));
@@ -289,32 +297,28 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                     pngFileTextField.setText(pngFileChooser.getCurrentDirectory().getPath());
                     String[] options = {"Write to PNG", "Cancel"};
                     int choice = JOptionPane.showOptionDialog(parent,
-                    pngFileNamePanel,
-                    "Write to PNG",
-                    0,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    "Ok");
+                            pngFileNamePanel,
+                            "Write to PNG",
+                            0,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            "Ok");
                     if (choice == 0) {
                         DasCanvas canvas = (DasCanvas)parent.getParent();
                         try {
                             canvas.writeToPng(pngFileTextField.getText());
-                        }
-                        catch (java.io.IOException ioe) {
+                        } catch (java.io.IOException ioe) {
                             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                         }
                     }
-                }
-                else if (command.equals("pngBrowse")) {
+                } else if (command.equals("pngBrowse")) {
                     int choice = pngFileChooser.showDialog(parent, "Select File");
                     if (choice == JFileChooser.APPROVE_OPTION) {
                         pngFileTextField.setText(pngFileChooser.getSelectedFile().getPath());
                     }
-                }
-                else if (command.equals("close")) {
-                }
-                else if (command.equals("primary")) {
+                } else if (command.equals("close")) {
+                } else if (command.equals("primary")) {
                     if (primarySelectedItem!=null) primarySelectedItem.setSelected(false);
                     for (int i=0; i<modules.size(); i++) {
                         JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(modules.get(i));
@@ -458,7 +462,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             map= secondaryActionButtonMap;
         } else {
             throw new IllegalArgumentException( "menu must be primary or secondary popup menu" );
-        }               
+        }
         for ( Iterator i= modules.iterator(); i.hasNext(); ) {
             MouseModule mm= (MouseModule)i.next();
             JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(mm);
@@ -469,12 +473,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     public void mousePressed(MouseEvent e) {
         Point l= parent.getLocation();
+        parent.requestFocus();
         xOffset= l.x;
         yOffset= l.y;
         if (mouseMode==MouseMode.resize) {
             resizeStart= new Point(0,0);
-            g= (Graphics2D) getGlassPane().getGraphics();
-            g.translate(parent.getX(),parent.getY());
+            graphics= (Graphics2D) getGlassPane().getGraphics();
+            graphics.translate(parent.getX(),parent.getY());
             if (mouseMode.resizeRight) {
                 resizeStart.x=  0;
             } else if (mouseMode.resizeLeft) {
@@ -499,13 +504,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 dSelectionStart= SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
                 selectionEnd= e.getPoint();
                 dSelectionEnd= SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                g= (Graphics2D) parent.getGraphics();
+                graphics= (Graphics2D) parent.getGraphics();
                 
                 if ( e.isControlDown() || button==MouseEvent.BUTTON3 ) {
                     if (button==MouseEvent.BUTTON1 || button==MouseEvent.BUTTON3 ) {
-                        showPopup( primaryPopup, e.getPoint() );                        
+                        showPopup( primaryPopup, e.getPoint() );
                     } else {
-                        showPopup( secondaryPopup, e.getPoint() );                        
+                        showPopup( secondaryPopup, e.getPoint() );
                     }
                 } else {
                     
@@ -540,15 +545,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     public void mouseDragged(MouseEvent e) {
         if (mouseMode==MouseMode.resize) {
-            resizeRenderer.clear(g);
-            resizeRenderer.renderDrag(g,resizeStart,e.getPoint());
+            resizeRenderer.clear(graphics);
+            resizeRenderer.renderDrag(graphics,resizeStart,e.getPoint());
         } else {
             if (active!=null) {
-                clearSelection(g);
+                clearSelection(graphics);
                 selectionEnd= e.getPoint();
                 dSelectionEnd= SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
                 
-                renderSelection(g);
+                renderSelection(graphics);
                 
                 mousePointSelection.set((int)dSelectionEnd.getX(),(int)dSelectionEnd.getY());
                 for (int i=0; i<active.size(); i++) {
@@ -600,27 +605,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         } else {
             if (e.getButton()==button) {
                 if (active!=null) {
-                    clearSelection(g);
+                    clearSelection(graphics);
                     int x= e.getX();
                     int y= e.getY();
                     for (int i=0; i<active.size(); i++) {
                         MouseModule j= (MouseModule)active.get(i);
-                        try {
-                            boolean viableXRangeEvent=
-                            j.dragRenderer.isXRangeSelection() && y>=0 && y<=parent.getHeight();
-                            boolean viableYRangeEvent=
-                            j.dragRenderer.isYRangeSelection() && x>=0 && x<=parent.getWidth();
-                            if ( viableXRangeEvent || viableYRangeEvent ) {
-                                MouseDragEvent de=
-                                j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
-                                j.mouseRangeSelected(de);
-
-                                //de=
-                                //secondary.dragRenderer.getMouseRangeSelectionEvent(parent,selectionStart,selectionEnd,e.isShiftDown());
-                                //secondary.mouseRangeSelected(de);
-                            }
-                        }
-                        finally {
+                        try {                            
+                            MouseDragEvent de=
+                                    j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
+                            j.mouseRangeSelected(de);
+                        } finally {
                             button=0;
                             j.mouseReleased(e);
                         }
