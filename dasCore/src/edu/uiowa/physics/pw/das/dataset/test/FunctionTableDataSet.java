@@ -39,7 +39,36 @@ public abstract class FunctionTableDataSet implements TableDataSet {
     protected int ytags;
     protected int xtags;
     
-    public abstract double getDouble(int i, int j, Units units);
+    double[] data;        
+    
+    public abstract double getDoubleImpl(int i, int j, Units units);
+    
+    public FunctionTableDataSet( int nx, int ny ) {
+        xtags= nx;
+        ytags= ny;
+        data= new double[nx*ny];
+        for ( int i=0; i<nx; i++ ) {
+            for ( int j=0; j<ny; j++ ) {
+                int idx= i+j*xtags;            
+                data[idx]= getDoubleImpl(i,j,Units.dimensionless);
+            }
+        }
+    }
+
+    protected void fillCache() {
+        data= new double[xtags*ytags];
+        for ( int i=0; i<xtags; i++ ) {
+            for ( int j=0; j<ytags; j++ ) {
+                int idx= i+j*xtags;            
+                data[idx]= getDoubleImpl(i,j,Units.dimensionless);
+            }
+        }
+    }
+    
+    public double getDouble( int i, int j, Units units ) {
+        int idx= i+j*xtags;
+        return data[idx];
+    }
     
     public Datum getDatum(int i, int j) {
         return zUnits.createDatum(getDouble(i,j,zUnits));

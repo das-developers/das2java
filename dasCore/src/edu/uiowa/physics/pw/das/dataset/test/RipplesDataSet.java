@@ -30,29 +30,29 @@ import edu.uiowa.physics.pw.das.datum.*;
  *
  * @author  jbf
  */
-public class RipplesDataSet extends FunctionTableDataSet implements TableDataSet {
+public final class RipplesDataSet extends FunctionTableDataSet implements TableDataSet {
     
     double x1,y1,p1;
     double x2,y2,p2;    
     
-    public RipplesDataSet( ) {
+    public RipplesDataSet( ) {        
         this( 2, 3, 1, 13, 15, 2, 30, 30 );
     }
     
     /** Creates a new instance of RipplesDataSetDescriptor */
     public RipplesDataSet( double x1, double y1, double p1, double x2, double y2, double p2, int xlength, int ylength ) {
+        super(xlength,ylength);
         this.x1= x1;
         this.y1= y1;
         this.p1= p1;
         this.x2= x2;
         this.y2= y2;
         this.p2= p2;
-        super.xtags= xlength;
-        super.ytags= ylength;
+        fillCache();
         /** Creates a new instance of RipplesDataSet */
     }    
     
-    public double getDouble(int i, int j, Units units) {
+    public double getDoubleImpl(int i, int j, Units units) {
         double x= getXTagDouble(i,xUnits);
         double y= getYTagDouble(0,j,yUnits);
         if (12.<x && x<14.) {
@@ -63,6 +63,7 @@ public class RipplesDataSet extends FunctionTableDataSet implements TableDataSet
             double rad2= Math.sqrt((x-x2)*(x-x2)+(y-y2)*(y-y2));
             double exp2= Math.exp(-rad2/p2)*Math.cos(Math.PI*rad2/p2);
             double z= (exp1+exp2);
+            //double z= (exp2);
             return zUnits.convertDoubleTo(units,z);
         }
     }
