@@ -166,8 +166,9 @@ public class TickVDescriptor {
                 minors= new double[] { 2,3,4,5,6,7,8,9 };
                 formatter= factory.newFormatter("0E0");
             } else {
-                Datum logMinD= Units.dimensionless.createDatum(DasMath.log10(min));
-                Datum logMaxD= Units.dimensionless.createDatum(DasMath.log10(max));
+                Units units = minD.getUnits();
+                Datum logMinD= units.createDatum(DasMath.log10(min));
+                Datum logMaxD= units.createDatum(DasMath.log10(max));
                 TickVDescriptor linTicks= bestTickVLinear( logMinD, logMaxD, nTicksMin, nTicksMax );
                 for ( int i=0; i<linTicks.tickV.length; i++ ) linTicks.tickV[i]= DasMath.exp10( linTicks.tickV[i] );
                 int idx=0;
