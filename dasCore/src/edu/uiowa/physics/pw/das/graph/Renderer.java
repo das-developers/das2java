@@ -340,7 +340,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         loadDataSet(xAxis, yAxis);
     }
     
-    void setDataSetDescriptor(DataSetDescriptor dsd) {
+    public void setDataSetDescriptor(DataSetDescriptor dsd) {
         if ( this.dsd!=null ) this.dsd.removeDataSetUpdateListener(this);
         this.dsd = dsd;
         if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
