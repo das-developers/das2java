@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
 
 /**
  *
@@ -57,6 +58,10 @@ public class DataRangeSelectionEvent extends DasEvent {
     
     public Datum getMaximum() {
         return max; 
+    }
+    
+    public DatumRange getDatumRange() {
+        return new DatumRange( min, max );
     }
     
     public void setDataSet(DataSet ds) {
