@@ -19,17 +19,7 @@ import java.util.*;
 public class TableUtil {
     
     //  maybe a cache to keep track of last finds
-    
-    public static double[] getXTagArrayDouble( TableDataSet table, Units units ) {
         
-        int ixmax= table.tableEnd(table.tableCount()-1);
-        double[] xx= new double[ixmax];
-        for ( int i=0; i<ixmax; i++ ) {
-            xx[i]= table.getXTagDouble(i,units);
-        }
-        return xx;
-    }
-    
     public static double[] getYTagArrayDouble( TableDataSet table, int itable, Units units ) {
         double[] yy= new double[table.getYLength(itable)];
         for ( int j=0; j<yy.length; j++ ) {
@@ -37,24 +27,23 @@ public class TableUtil {
         }
         return yy;
     }
-    
-    private static int closest( double[] xx, double x ) {
-        int result=0;
-        while ( result<(xx.length-1) && xx[result]<x ) result++;
-        while ( result>0 && xx[result]>x ) result--;
-        if ( result<xx.length-2 ) {
-            result= ( ( x-xx[result] ) / ( xx[result+1] - xx[result] ) < 0.5 ? result : result+1 );
-        }
+     
+    public static Datum getLargestYTag( TableDataSet tds ) {
+        Datum result= tds.getYTagDatum( 0, tds.getYLength(0)-1 );
+        for ( int itable=1; itable<tds.tableCount(); itable++ ) {
+            Datum r= tds.getYTagDatum( itable, tds.getYLength(itable)-1 );
+            if ( r.gt(result) ) result= r;
+        }            
         return result;
     }
     
-    public static int closestColumn( TableDataSet table, Datum datum ) {
-        return closestColumn( table, datum.doubleValue(datum.getUnits()), datum.getUnits() );
-    }
-    
-    public static int closestColumn( TableDataSet table, double x, Units units ) {
-        double [] xx= getXTagArrayDouble( table, units );
-        return closest( xx, x );
+    public static Datum getSmallestYTag( TableDataSet tds ) {
+        Datum result= tds.getYTagDatum( 0, 0 );
+        for ( int itable=1; itable<tds.tableCount(); itable++ ) {
+            Datum r= tds.getYTagDatum( itable, 0 );
+            if ( r.lt(result) ) result= r;
+        }                   
+        return result;
     }
     
     public static int closestRow( TableDataSet table, int itable, Datum datum ) {
@@ -63,11 +52,11 @@ public class TableUtil {
     
     public static int closestRow( TableDataSet table, int itable, double x, Units units ) {
         double [] xx= getYTagArrayDouble( table, itable, units );
-        return closest( xx, x );
+        return DataSetUtil.closest( xx, x );
     }
     
     public static Datum closestDatum( TableDataSet table, Datum x, Datum y ) {
-        int i= closestColumn( table, x );
+        int i= DataSetUtil.closestColumn( table, x );
         int j= closestRow( table, table.tableOfIndex(i), y );
         return table.getDatum(i,j);
     }
@@ -77,15 +66,7 @@ public class TableUtil {
         while ( table.tableEnd(itable)<=i ) itable++;
         return itable;
     }
-    
-    public static Datum guessXTagWidth( TableDataSet table ) {
-        if ( table.getXLength()>1 ) {
-            return table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
-        } else {
-            return table.getXUnits().getOffsetUnits().createDatum(0);
-        }
-    }
-    
+        
     public static Datum guessYTagWidth( TableDataSet table ) {
         // cheat and check for logarithmic scale.  If logarithmic, then return YTagWidth as percent.
         double y0= table.getYTagDouble( 0, 0, table.getYUnits());
@@ -223,6 +204,24 @@ public class TableUtil {
                 pout.println();
             }
             
+        }
+    }
+
+    public static int getPreceedingRow( TableDataSet ds, int itable, Datum datum ) {
+        int i= closestRow( ds, itable, datum );
+        if ( i>0 && ds.getYTagDatum(itable,i).gt(datum) ) {
+            return i-1;
+        } else {
+            return i;
+        }
+    }
+    
+    public static int getNextRow( TableDataSet ds, int itable, Datum datum ) {
+        int i= closestRow( ds, itable, datum );
+        if ( i<ds.getXLength()-1 && ds.getYTagDatum(itable,i).lt(datum) ) {
+            return i+1;
+        } else {
+            return i;
         }
     }
 }
