@@ -1,4 +1,4 @@
-/* File: XMultiY.java
+/* File: TCADataSet.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,39 +21,48 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dataset;
+package edu.uiowa.physics.pw.das.client;
+
+import edu.uiowa.physics.pw.das.client.*;
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.dataset.DataSet;
 
 /**
  *
  * @author  eew
  */
-public class XMultiY implements java.io.Serializable {
+public class TCADataSet extends DataSet {
     
-    static final long serialVersionUID = -8494703975732274115L;
+    public String[] label;
     
-    public double x;
+    public int items;
     
-    public double[] y;
+    public String description = "";
     
-    /** Creates a new instance of XMultiY */
-    public XMultiY() {
-    }
-    
-    public XMultiY(double x, double[] y) {
-        this.x= x;
-        this.y= (double[]) y.clone();
+    public XMultiY[] data;
+        
+    /** Creates a new instance of TCADataSet */
+    public TCADataSet( XMultiYDataSetDescriptor dsd, Datum startTime, Datum endTime)
+    {
+        super( dsd, startTime, endTime, null );
     }
     
     public String toString()
     {
+        String dataString = "";
+        String result;
         int i;
-        String yString = "[";
         
-        for (i = 0; i < y.length-1; i++)
-            yString = yString + y[i] + ",";
-        yString = yString + y[i] + "]";
+        for (i = 0; i < data.length; i++)
+            dataString = dataString + data[i];
         
-        return "x tag: " + x + "\n y values: " + yString + "\n";
+        result = "description = " + description + "\n" +
+        "items = " + items + "\n" +
+        "Labels = " + java.util.Arrays.asList(label).toString() + "\n" +
+        "Start time = " + startTime + "\n" +
+        "End time = " + endTime + "\n" + 
+        dataString;
+        
+        return result;
     }
-    
 }

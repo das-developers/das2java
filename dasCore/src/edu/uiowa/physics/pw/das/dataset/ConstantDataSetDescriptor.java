@@ -27,7 +27,6 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 
-import java.io.InputStream;
 /**
  *
  * @author  eew
@@ -38,7 +37,7 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
     
     /** Creates a new instance of ConstantXTaggedYScanDataSetDescriptor */
     public ConstantDataSetDescriptor(DataSet ds) {
-        super(ds.getXUnits());
+        super();
         if (ds == null) throw new NullPointerException("DataSet parameter cannot be null");
         this.ds = ds;
     }
@@ -50,9 +49,13 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
         }
         return ds;
     }
+        
+    public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+        return ds;
+    }
     
-    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException {
-        throw new UnsupportedOperationException();
+    public edu.uiowa.physics.pw.das.datum.Units getXUnits() {
+        return ds.getXUnits();
     }
     
 }

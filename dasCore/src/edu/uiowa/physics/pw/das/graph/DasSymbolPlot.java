@@ -33,8 +33,8 @@ import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.ConstantDataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.dataset.XMultiYDataSet;
-import edu.uiowa.physics.pw.das.dataset.XMultiYDataSetDescriptor;
+import edu.uiowa.physics.pw.das.client.XMultiYDataSet;
+import edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor;
 import edu.uiowa.physics.pw.das.datum.*;
 
 public class DasSymbolPlot extends DasPlot {

@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 
 import java.awt.*;

@@ -25,7 +25,8 @@ package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer;
+import edu.uiowa.physics.pw.das.client.XTaggedYScanDataSetConsumer;
+import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.Renderer;
@@ -38,7 +39,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     private DasAxis xaxis;
     private DasAxis yaxis;
     
-    private edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer dataSetConsumer;
+    private TableDataSetConsumer dataSetConsumer;
     
     /** Creates a new instance of VerticalSlicerMouseModule */
     
@@ -47,17 +48,17 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
     
-    public HorizontalSlicerMouseModule(DasPlot parent, edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
-        this( parent, (edu.uiowa.physics.pw.das.dataset.DataSetConsumer)dataSetConsumer, xaxis, yaxis );
+    public HorizontalSlicerMouseModule(DasPlot parent, XTaggedYScanDataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
+        this( parent, (DataSetConsumer)dataSetConsumer, xaxis, yaxis );
     }
     
-    protected HorizontalSlicerMouseModule(DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
+    protected HorizontalSlicerMouseModule(DasPlot parent, DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
         this.parent= parent;
         
-        if (!(dataSetConsumer instanceof edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer)) {
+        if (!(dataSetConsumer instanceof TableDataSetConsumer)) {
             throw new IllegalArgumentException("dataSetConsumer must be an XTaggedYScanDataSetConsumer");
         }
-        this.dataSetConsumer= (edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer)dataSetConsumer;
+        this.dataSetConsumer= ( TableDataSetConsumer)dataSetConsumer;
         this.xaxis= xaxis;
         this.yaxis= yaxis;
         this.dragRenderer= new HorizontalSliceSelectionRenderer(parent);
@@ -90,7 +91,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     /** Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
+    public synchronized void addDataPointSelectionListener( DataPointSelectionListener listener) {
         if (listenerList == null ) {
             listenerList = new javax.swing.event.EventListenerList();
         }
@@ -100,8 +101,8 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     /** Removes DataPointSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
-        listenerList.remove(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+    public synchronized void removeDataPointSelectionListener( DataPointSelectionListener listener) {
+        listenerList.remove( DataPointSelectionListener.class, listener);
     }
     
     /** Notifies all registered listeners about the event.

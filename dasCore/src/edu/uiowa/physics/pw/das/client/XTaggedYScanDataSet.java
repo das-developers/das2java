@@ -21,14 +21,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dataset;
+package edu.uiowa.physics.pw.das.client;
 
+import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.dataset.ConstantXTaggedYScanDataSetDescriptor;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScan;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,7 +39,7 @@ import java.util.LinkedList;
  *
  * @author  eew
  */
-public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable {
+public class XTaggedYScanDataSet extends TableDataSet implements java.io.Serializable {
     
     //static final long serialVersionUID = 2277565010159376982L;
     
@@ -100,7 +97,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
     }
     
     public XTaggedYScanDataSet(XTaggedYScanDataSetDescriptor dataSetDescriptor, Datum start, Datum end) {
-        super(dataSetDescriptor,start,end);
+        super(dataSetDescriptor,start,end,null);
         //if (!(dataSetDescriptor instanceof XTaggedYScanDataSetDescriptor))
         //    throw new IllegalArgumentException("dataSetDescriptor is not a XTaggedYScanDataSetDescriptor");
         if (dataSetDescriptor!=null) {
@@ -163,7 +160,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         edu.uiowa.physics.pw.das.util.DasDie.println(" rebin: " + x_sample_width + " to " + ddX.binWidth() );
         XTaggedYScanDataSet result= this.binAverage(ddX,ddY);
         result.setNnRebin(this.isNnRebin());
-        result.fillInterpolateY(ddY.isLog);
+        result.fillInterpolateY(ddY.isLog());
         result.fillInterpolateX();
         
         return result;
@@ -241,11 +238,11 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         XTaggedYScan[] weights=null;
         XTaggedYScan[] newWeights=null;
         
-        newData= new XTaggedYScan[ddX.nBin];
-        newWeights= new XTaggedYScan[ddX.nBin];
+        newData= new XTaggedYScan[ddX.numberOfBins()];
+        newWeights= new XTaggedYScan[ddX.numberOfBins()];
         weights= getWeights();
         
-        for ( int k=0; k<ddX.nBin; k++ ) {
+        for ( int k=0; k<ddX.numberOfBins(); k++ ) {
             float[] z= new float[ny];
             Arrays.fill(z,0.f);
             newData[k]= new XTaggedYScan( xBinCenters[k],z);
@@ -256,8 +253,8 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
         
         if ( auxData.containsKey("peaks") ) {
             peaks= (XTaggedYScan[])auxData.get("peaks");
-            newPeaks= new XTaggedYScan[ddX.nBin];
-            for ( int k=0; k<ddX.nBin; k++ ) {
+            newPeaks= new XTaggedYScan[ddX.numberOfBins()];
+            for ( int k=0; k<ddX.numberOfBins(); k++ ) {
                 float[] z= new float[ny];
                 Arrays.fill(z,zFill);
                 newPeaks[k]= new XTaggedYScan(xBinCenters[k],z);
@@ -278,7 +275,7 @@ public class XTaggedYScanDataSet extends DataSet implements java.io.Serializable
             }
         }
         
-        for ( int k=0; k<ddX.nBin; k++ ) {
+        for ( int k=0; k<ddX.numberOfBins(); k++ ) {
             for ( int j=0; j<ny; j++) {
                 if ( newWeights[k].z[j]>0.f ) {
                     newData[k].z[j]= newData[k].z[j] / newWeights[k].z[j];

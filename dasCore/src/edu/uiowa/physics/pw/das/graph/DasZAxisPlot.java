@@ -28,9 +28,9 @@ package edu.uiowa.physics.pw.das.graph;
  * @author  jbf
  */
 import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer;
+import edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer;
 
-public interface DasZAxisPlot extends edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer {
+public interface DasZAxisPlot extends edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer {
     
     /** Creates a new instance of DasZAxisPlot */
     public DasAxis getZAxis();

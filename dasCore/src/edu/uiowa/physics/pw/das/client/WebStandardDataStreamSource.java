@@ -89,7 +89,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         }
     }
     
-    public InputStream getInputStream(DataSetDescriptor dsd, Datum start, Datum end) throws DasException {
+    public InputStream getInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException {
         String serverType;
         serverType="dataset";
         
@@ -103,7 +103,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     }
     
     
-    public InputStream getReducedInputStream( DataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
+    public InputStream getReducedInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
         // params is either String, or object with toString properly defined.
                 
         String formData;
@@ -147,7 +147,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
     }
     
-    protected synchronized InputStream openURLConnection( DataSetDescriptor dsd,
+    protected synchronized InputStream openURLConnection( StreamDataSetDescriptor dsd,
       Datum start, Datum end, String additionalFormData )
     throws DasException {
         
@@ -313,6 +313,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         Authenticator authenticator;
         authenticator= new Authenticator(server);
         key= authenticator.authenticate();
-    }
+    }      
     
 }

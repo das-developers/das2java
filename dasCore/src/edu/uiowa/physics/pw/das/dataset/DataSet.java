@@ -37,6 +37,7 @@ implements java.io.Serializable, edu.uiowa.physics.pw.das.components.PropertyEdi
     
     protected Datum startTime;
     protected Datum endTime;
+    protected Datum resolution;
     
     private Units xUnits;
     
@@ -47,7 +48,7 @@ implements java.io.Serializable, edu.uiowa.physics.pw.das.components.PropertyEdi
     
     public double xSampleWidth;
     
-    public DataSet(DataSetDescriptor dsd) {
+    public DataSet(DataSetDescriptor dsd ) {
         this.dataSetDescriptor= dsd;
         if ( dsd!=null ) {
             this.xUnits= dsd.getXUnits();
@@ -56,10 +57,11 @@ implements java.io.Serializable, edu.uiowa.physics.pw.das.components.PropertyEdi
         }
     }
     
-    public DataSet(DataSetDescriptor dsd, Datum startTime, Datum endTime) {
+    public DataSet( DataSetDescriptor dsd, Datum startTime, Datum endTime, Datum resolution ) {
         this(dsd);
         this.startTime = startTime;
         this.endTime = endTime;
+        this.resolution= resolution;
     }
     
     public DataSet(Units xUnits) {

@@ -31,8 +31,8 @@ import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSet;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer;
+import edu.uiowa.physics.pw.das.client.XTaggedYScanDataSet;
+import edu.uiowa.physics.pw.das.client.XTaggedYScanDataSetConsumer;
 
 import java.awt.*;
 import java.text.DecimalFormat;

@@ -21,18 +21,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dataset;
+package edu.uiowa.physics.pw.das.client;
 
-/**
- *
- * @author  jbf
- */
+import edu.uiowa.physics.pw.das.dataset.*;
 
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
-
-public interface XTaggedYScanDataSetConsumer extends DataSetConsumer {
-    public DataSet getDataSet();
-    public DasAxis getZAxis();
+public interface XTaggedYScanDataSetConsumer extends TableDataSetConsumer {    
 }

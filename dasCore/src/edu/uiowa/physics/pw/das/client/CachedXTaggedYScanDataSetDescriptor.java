@@ -21,9 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dataset;
+package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.DasException;
+import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 

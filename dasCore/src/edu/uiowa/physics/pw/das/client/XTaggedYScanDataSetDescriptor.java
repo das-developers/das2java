@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dataset;
+package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -38,7 +38,7 @@ import java.util.Map;
  *
  * @author  jbf
  */
-public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
+public class XTaggedYScanDataSetDescriptor extends StreamDataSetDescriptor {
     
     public float z_fill = Float.NaN;
     

@@ -23,9 +23,9 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 
@@ -98,7 +98,7 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
      * @param event The event to be fired
      */
     private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event) {
-        if ( dataSetConsumer instanceof edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetConsumer ) {
+        if ( dataSetConsumer instanceof XTaggedYScanDataSetConsumer ) {
             event.setDataSet(dataSetConsumer.getDataSet());
         }
         if (listenerList == null) return;

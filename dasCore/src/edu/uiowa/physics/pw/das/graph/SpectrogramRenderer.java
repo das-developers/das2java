@@ -34,8 +34,9 @@ import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.event.*;
-import edu.uiowa.physics.pw.das.dataset.*;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,7 +45,7 @@ import org.w3c.dom.NodeList;
 import java.awt.*;
 import java.awt.image.MemoryImageSource;
 
-public class SpectrogramRenderer extends Renderer implements XTaggedYScanDataSetConsumer {
+public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer {
     
     private DasColorBar colorBar;
     Image plotImage;
@@ -188,7 +189,7 @@ public class SpectrogramRenderer extends Renderer implements XTaggedYScanDataSet
             setDataSetDescriptor(null);
             return;
         }
-        DataSetDescriptor dsd = DataSetDescriptor.create(id);
+        DataSetDescriptor dsd = DataSetDescriptorUtil.create(id);
         if (!(dsd instanceof XTaggedYScanDataSetDescriptor)) {
             throw new DataSetDescriptorNotAvailableException(id + " does not refer to an x-tagged-y-scan data set");
         }

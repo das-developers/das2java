@@ -21,15 +21,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dataset;
+package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.LocationUnits;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.XMultiY;
+import edu.uiowa.physics.pw.das.dataset.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +37,7 @@ import java.awt.*;
  *
  * @author  eew
  */
-public class XMultiYDataSet extends DataSet implements java.io.Serializable {
+public class XMultiYDataSet extends VectorDataSet implements java.io.Serializable {
     
     //static final long serialVersionUID = -1170391053428276284L;
     
@@ -69,7 +68,7 @@ public class XMultiYDataSet extends DataSet implements java.io.Serializable {
     }
     
     public XMultiYDataSet(XMultiYDataSetDescriptor dataSetDescriptor, Datum start, Datum end ) {
-        super(dataSetDescriptor,start, end);
+        super(dataSetDescriptor,start, end,null);
         if (dataSetDescriptor!=null) {
             yUnits= dataSetDescriptor.getYUnits();
         } else {

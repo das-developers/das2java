@@ -29,6 +29,7 @@ import edu.uiowa.physics.pw.das.DasPropertyException;
 import edu.uiowa.physics.pw.das.NameContext;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.*;
@@ -591,7 +592,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (dataset.equals(this.dataset)) return;
         this.dataset=dataset;
         try {
-            dsd = (XMultiYDataSetDescriptor)DataSetDescriptor.create(dataset);
+            dsd = (XMultiYDataSetDescriptor)DataSetDescriptorUtil.create(dataset);
         }
         catch (edu.uiowa.physics.pw.das.DasException de) {
             DasExceptionHandler.handle(de);

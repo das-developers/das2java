@@ -26,8 +26,8 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.dataset.XMultiYDataSet;
-import edu.uiowa.physics.pw.das.dataset.XMultiYDataSetDescriptor;
+import edu.uiowa.physics.pw.das.client.XMultiYDataSet;
+import edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -47,11 +47,11 @@ public class SymbolLineRenderer extends Renderer {
     /** Holds value of property color. */
     private SymColor color= SymColor.black;
     
-    public SymbolLineRenderer(edu.uiowa.physics.pw.das.dataset.XMultiYDataSetDescriptor dsd) {
+    public SymbolLineRenderer(edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor dsd) {
         this((edu.uiowa.physics.pw.das.dataset.DataSetDescriptor)dsd);
     }
     
-    public SymbolLineRenderer(edu.uiowa.physics.pw.das.dataset.XMultiYDataSet ds) {
+    public SymbolLineRenderer(edu.uiowa.physics.pw.das.client.XMultiYDataSet ds) {
         super(ds);
     }
     
@@ -72,7 +72,7 @@ public class SymbolLineRenderer extends Renderer {
      * @deprecated use {@link
      * #SymbolLineRenderer(das_proto.XMultiYDataSetDescriptor)}
      */
-    public SymbolLineRenderer(DasPlot parent, edu.uiowa.physics.pw.das.dataset.XMultiYDataSetDescriptor dsd) {
+    public SymbolLineRenderer(DasPlot parent, edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor dsd) {
         this(dsd);
         this.parent = parent;
     }
@@ -81,13 +81,13 @@ public class SymbolLineRenderer extends Renderer {
      * @deprecated use {@link
      * #SymbolLineRenderer(das_proto.XMultiYDataSet)}
      */
-    public SymbolLineRenderer(DasPlot parent, edu.uiowa.physics.pw.das.dataset.XMultiYDataSet ds) {
+    public SymbolLineRenderer(DasPlot parent, edu.uiowa.physics.pw.das.client.XMultiYDataSet ds) {
         this(ds);
         this.parent = parent;
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        edu.uiowa.physics.pw.das.dataset.XMultiYDataSet Data= ( edu.uiowa.physics.pw.das.dataset.XMultiYDataSet ) getDataSet();
+        edu.uiowa.physics.pw.das.client.XMultiYDataSet Data= ( edu.uiowa.physics.pw.das.client.XMultiYDataSet ) getDataSet();
         if (Data == null) return;
         
         double xSampleWidth = Data.xSampleWidth;
@@ -220,7 +220,7 @@ public class SymbolLineRenderer extends Renderer {
         String dataSetID = element.getAttribute("dataSetID");
         Psym psym = Psym.parsePsym(element.getAttribute("psym"));
         SymColor color = SymColor.parseSymColor(element.getAttribute("color"));
-        SymbolLineRenderer renderer = new SymbolLineRenderer(parent, (edu.uiowa.physics.pw.das.dataset.XMultiYDataSet)null);
+        SymbolLineRenderer renderer = new SymbolLineRenderer(parent, (edu.uiowa.physics.pw.das.client.XMultiYDataSet)null);
         float lineWidth = Float.parseFloat(element.getAttribute("lineWidth"));
         try {
             renderer.setDataSetID(dataSetID);

@@ -33,19 +33,19 @@ public class DataSetCache {
     
     protected class Tag {
         
-        DataSetDescriptor dsd;
-        Datum start;
-        Datum end;
-        Datum resolution;
-        DataSet data;
-        int nhits;
-        long birthTime;
-        long lastAccess;
+        protected DataSetDescriptor dsd;
+        protected Datum start;
+        protected Datum end;
+        protected Datum resolution;
+        protected DataSet data;
+        protected int nhits;
+        protected long birthTime;
+        protected long lastAccess;
         
         Tag() {
             this( null, null, null, null, null );
         }
-        
+            
         Tag( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, DataSet data ) {
             this.dsd= dsd;
             this.start= start;
@@ -55,6 +55,10 @@ public class DataSetCache {
             this.nhits= 0;
             this.birthTime= System.currentTimeMillis();
             this.lastAccess= birthTime;
+        }
+        
+        public DataSet getData() {
+            return data;
         }
         
         protected boolean isWithin( Tag tag ) {
@@ -72,7 +76,7 @@ public class DataSetCache {
         }
     }
     
-    Tag[] buffer;
+    protected Tag[] buffer;
     private boolean enabled=true;
     public int hits=0;
     public int misses=0;
@@ -139,7 +143,7 @@ public class DataSetCache {
         }
     };
     
-    public DataSet retrieve( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
+    public DataSet retrieve( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution ) {
         int iHit= findStored( dsd, start, end, resolution );
         if (iHit!=-1) {
             edu.uiowa.physics.pw.das.util.DasDie.println(" time offset= "+buffer[iHit].start.subtract(start) );
@@ -169,7 +173,7 @@ public class DataSetCache {
     }
     
     public String toString() {
-        String result="\n---XTaggedYScanDataSetCache---\n";
+        String result="\n---DataSetCache---\n";
         for (int i=0; i<buffer.length; i++) {
             result+= "Buffer "+i+": ";
             if (buffer[i]!=null) {

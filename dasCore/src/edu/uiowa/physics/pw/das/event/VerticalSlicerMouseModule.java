@@ -49,7 +49,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
     private javax.swing.event.EventListenerList listenerList =  null;
     
     public VerticalSlicerMouseModule( DasCanvasComponent parent,
-        edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis ) {
+        DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis ) {
         this.parent= parent;
         this.dataSetConsumer= dataSetConsumer;
         this.xaxis= xaxis;
