@@ -39,6 +39,7 @@ public class DasApplication {
     }
     
     private NameContext nameContext;
+    private Logger debugLogger;
     
     /** Creates a new instance of DasApplication */
     private DasApplication() {
@@ -113,5 +114,9 @@ public class DasApplication {
     
     public Logger getLogger() {
         return DasProperties.getLogger();
+    }
+    
+    public synchronized Logger getDebugLogger() {
+        return Logger.getLogger("debug");
     }
 }
