@@ -572,7 +572,7 @@ public class DatumRangeUtil {
             if (  ts2.year-ts1.year == 1 ) {
                 return "" + ts1.year;
             } else {
-                return "" + ts1.year + " - " + ts2.year;
+                return "" + ts1.year + " to " + ts2.year;
             }
         } else if ( isMonthBoundry1 && isMonthBoundry2 ) { // no need to indicate day of month
             if ( ts2.month == 1 ) {
@@ -583,10 +583,10 @@ public class DatumRangeUtil {
                 if ( ts2.month-ts1.month == 1 ) {
                     return monthStr[ts1.month-1] + " " + ts1.year;
                 } else {
-                    return monthStr[ts1.month-1]+ " - " + monthStr[ts2.month-1-1] + " " + ts1.year;
+                    return monthStr[ts1.month-1]+ " to " + monthStr[ts2.month-1-1] + " " + ts1.year;
                 }
             } else {
-                return monthStr[ts1.month-1] + " " + ts1.year + " - "
+                return monthStr[ts1.month-1] + " " + ts1.year + " to "
                 + monthStr[ts2.month-1-1] + " " + ts2.year;
             }
         }
@@ -596,7 +596,7 @@ public class DatumRangeUtil {
                 return TimeDatumFormatter.DAYS.format( self.min() );
             } else {
                 Datum endtime= self.max().subtract( Datum.create( 1, Units.days ) );
-                return TimeDatumFormatter.DAYS.format( self.min() ) + " - "
+                return TimeDatumFormatter.DAYS.format( self.min() ) + " to "
                 + TimeDatumFormatter.DAYS.format( endtime );
             }
             
@@ -618,7 +618,7 @@ public class DatumRangeUtil {
                 String t1str= timeOfDayFormatter.format( self.min() );
                 String t2str= timeOfDayFormatter.format( self.max() );
                 return TimeDatumFormatter.DAYS.format( self.min() ) + " " + t1str
-                + " - " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + t2str;
+                + " to " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + t2str;
             }
         }
     }
