@@ -170,7 +170,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         else {
             ycoordinate = new double[tds.getYLength(0)];
             for (int j = 0; j < ycoordinate.length; j++) {
-                ycoordinate[j] = tds.getDouble(0, j, tds.getYUnits());
+                ycoordinate[j] = tds.getDouble(0, j, zUnits );
             }
         }
         
