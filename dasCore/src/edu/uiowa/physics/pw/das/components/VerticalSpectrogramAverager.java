@@ -146,10 +146,13 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         Datum xValue2 = e.getMaximum();
     
         this.setTitle( ""+xValue1+" - "+xValue2 );
-        
+        if ( xValue2.equals(xValue1) ) {
+            return;
+        }
+                
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
         AverageTableRebinner rebinner = new AverageTableRebinner();
-        try {
+        try {            
             TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
             VectorDataSet ds1 = rebinned.getXSlice(0);
             renderer.setDataSet(ds1);
