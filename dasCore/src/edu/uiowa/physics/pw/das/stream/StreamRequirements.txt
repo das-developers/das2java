@@ -1,0 +1,45 @@
+Requirements for das2 Streams
+
+- self describing
+  - the stream must contain all information needed to be "useful."
+  - dataset interface in das2 defines useful.
+- extensible 
+  - meta data ( e.g. xml header )
+  - introduction of new data types ( yscan, multiy, ... )
+- mode changes, table geometry
+- multiple data "planes"
+  - define planes as datasets that share tags
+  - e.g. Peaks and Averages
+- compressible
+- allow for progress indication during transport
+  - total size attribute
+  - indication of parametric tag location 
+    ( the tableBuilder knows the start,end parameters, plus the last paremeter
+      read from the stream, therefore progress can be indicated. )
+- streamable so that there needn't be any server side storage
+- chainable operators can be built without difficulty
+  - reduction, fft, peaksAndAverages
+- non-streaming operators
+  - append
+- parallelizable
+  - divide request into set of subtasks that can be easily combined (e.g. via append)
+  - redirect to workers
+- easily appendable
+  - caching becomes trivial when a cache of streams can be collected and easily
+    appended to satisfy the request
+  - support for parallelizable
+- das1 streams can be wrapped to make das2 streams
+
+I'm providing a glossary in case I'm misusing words, and so we share a common
+core vocabulary when talking about these things.  
+
+   reduction: reduction of a dataset statistically, such as bin averaging
+   compaction: lossless compression of a data set for transmission or storage, such as gzip
+   planes: datasets that share tags
+   tags: data that indicates the context of science data, such as a timetag.  
+     For efficiency, tags are generally required to be monotonically increasing.  
+   worker: server that satisfies requests of a master server
+   scalability: ability to handle exponentially increasing demands.
+   meta data: data useful for documentation but not required for normal operations
+   extensibility: ability to expand functionality 
+   streamable: not requiring temporary local storage of data.  
