@@ -165,8 +165,8 @@ public class SymbolLineRenderer extends Renderer {
         if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
         
         double xSampleWidth;
-        if (dataSet.getProperty("xSampleWidth") != null) {
-            Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xSampleWidth");
+        if (dataSet.getProperty("xTagWidth") != null) {
+            Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xTagWidth");
             xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
         }
         else {
