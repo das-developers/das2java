@@ -71,16 +71,18 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
                          double[] yValues, Units yUnits,
                          Map yValuesMap, Map yUnitsMap,
                          Map properties) {
-        super(xTags, xUnits, yUnits, properties);
+        super(xTags, xUnits, yUnits, properties);        
         if (yValuesMap == null ^ yUnitsMap == null) {
             throw new IllegalArgumentException("yValuesMap == null ^ yUnitsMap == null");
         }
-        if (yValuesMap.keySet().equals(yUnitsMap.keySet())) {
-            throw new IllegalArgumentException("mismatched keySets for yValuesMap and yUnitsMap");
-        }
-        for (Iterator it = yValuesMap.keySet().iterator(); it.hasNext();) {
-            if (!(it.next() instanceof String)) {
-                throw new IllegalArgumentException("Non-String key found in yValuesMap");
+        if ( yValuesMap!=null ) {
+            if (yValuesMap.keySet().equals(yUnitsMap.keySet())) {
+                throw new IllegalArgumentException("mismatched keySets for yValuesMap and yUnitsMap");
+            }
+            for (Iterator it = yValuesMap.keySet().iterator(); it.hasNext();) {
+                if (!(it.next() instanceof String)) {
+                    throw new IllegalArgumentException("Non-String key found in yValuesMap");
+                }
             }
         }
         int planeCount = 1 + (yValuesMap == null ? 0 : yValuesMap.size());
