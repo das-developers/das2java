@@ -115,6 +115,18 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         return flat;
     }
 
+    public static DefaultTableDataSet createSimple( double[] xTags, double[] yTags, double[][] zValues ) {
+        int nx= zValues.length;
+        int ny= zValues[0].length;
+        if ( xTags.length!=nx ) {
+            throw new IllegalArgumentException("xTags ("+xTags.length+") don't match zValues' first dimension ("+nx+","+ny+")." );
+        }
+        if ( yTags.length!=ny ) {
+            throw new IllegalArgumentException("yTags ("+yTags.length+") don't match zValues' first dimension ("+nx+","+ny+")." );
+        } 
+        return new DefaultTableDataSet( xTags, Units.dimensionless, yTags, Units.dimensionless, zValues, Units.dimensionless, new HashMap() );
+    }
+    
     /** Creates a DefaultTableDataSet when the table geometry changes. */
     public DefaultTableDataSet(double[] xTags, Units xUnits,
                                double[] yTags, Units yUnits,
