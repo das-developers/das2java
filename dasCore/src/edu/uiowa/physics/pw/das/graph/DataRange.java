@@ -34,7 +34,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Stack;
 
-class DataRange implements Cloneable {
+public class DataRange implements Cloneable {
     
     private DasAxis parent;
     
