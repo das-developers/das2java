@@ -27,13 +27,17 @@ import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.Vector;
 
-/**
- *
- * @author  jbf
+/** A MouseModule is a pluggable unit that promotes simple
+ * mouse events into human events or actions that are useful
+ * for science analysis.  Each component has a mouseInputAdapter
+ * that manages a set of mouseModules, one is active at any
+ * given time.
+ * @author jbf
  */
-public class MouseModule extends MouseInputAdapter {
+public class MouseModule  {
     
     protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
@@ -48,6 +52,7 @@ public class MouseModule extends MouseInputAdapter {
         this.label= this.getClass().getName();
     }
     
+    /** returns a string that identifies the module */    
     public String getLabel() {
         return label;
     }
@@ -56,6 +61,7 @@ public class MouseModule extends MouseInputAdapter {
         return null;
     }
     
+    /** return a cursor that indicates the selected module. */    
     public Cursor getCursor() {
         return new Cursor(Cursor.DEFAULT_CURSOR);
     }
@@ -63,9 +69,15 @@ public class MouseModule extends MouseInputAdapter {
     public void hotSpotPressed(Shape s) {
     }
     
+    public DragRenderer getDragRenderer() {
+        return dragRenderer;
+    }
+    
+    /** Action to take when a mouse range has been selected. */    
     public void mouseRangeSelected(MouseDragEvent e) {
     }
     
+    /** Action to take when a point is selected. */    
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
@@ -73,5 +85,13 @@ public class MouseModule extends MouseInputAdapter {
         // note the label must be set before the module is added to the dmia!!!
         this.label= label;
     }
+        
+    public void mouseReleased(MouseEvent e) {        
+    }
     
+    public void mousePressed(MouseEvent e) {
+    }
+    
+    public void mouseDragged(MouseEvent e) {
+    }
 }
