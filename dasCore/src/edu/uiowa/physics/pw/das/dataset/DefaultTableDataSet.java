@@ -513,9 +513,11 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
         
         public Object getProperty(String name) {
-            return DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
-        }
-        
+            Object result= DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
+            if ( result==null ) result= DefaultTableDataSet.this.getProperty(name);
+            return result;        
+        }        
+            
         public DatumVector getYTags(int table) {
             return DefaultTableDataSet.this.getYTags(table);
         }
