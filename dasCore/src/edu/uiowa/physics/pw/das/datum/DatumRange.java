@@ -61,7 +61,11 @@ public class DatumRange implements Comparable {
      * @return the DatumRange as a String.
      */    
     public String toString() {
-        return ""+this.s1+" to "+this.s2;
+        if ( this.s1.getUnits() instanceof TimeLocationUnits ) {
+            return DatumRangeUtil.formatTimeRange(this);
+        } else {
+            return ""+this.s1+" to "+this.s2;
+        }
     }
     
     
