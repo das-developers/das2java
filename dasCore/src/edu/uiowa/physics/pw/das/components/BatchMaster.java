@@ -52,15 +52,20 @@ public class BatchMaster {
         public void completeTask( DatumRange range );
     }
     
+    private String insertRange( String filenameTemplate, DatumRange range ) {
+        String rangeString= range.toString().replaceAll(":","-").replaceAll(" ","_");
+        String s= filenameTemplate
+                .replaceAll( "BEGIN", range.min().toString().replaceAll(":","-") )
+                .replaceAll( "END", range.max().toString().replaceAll(":","-") )
+                .replaceAll( "RANGE", rangeString );
+        return s;
+    }
+    
     public TaskOutputDescriptor createPngsTaskOutputDescriptor( final String pngFilenameTemplate ) {
         return new TaskOutputDescriptor() {
             public void completeTask( DatumRange range ) {
-                Image image= BatchMaster.this.canvas.getImage( canvas.getWidth(), canvas.getHeight() );
-                String rangeString= range.toString().replaceAll(":","-").replaceAll(" ","_");
-                String s= pngFilenameTemplate
-                        .replaceAll( "BEGIN", range.min().toString().replaceAll(":","-") )
-                        .replaceAll( "END", range.max().toString().replaceAll(":","-") )
-                        .replaceAll( "RANGE", rangeString );
+                Image image= BatchMaster.this.canvas.getImage( canvas.getWidth(), canvas.getHeight() );                
+                String s= insertRange( pngFilenameTemplate, range );
                 try {
                     OutputStream out= new FileOutputStream( s );
                     try {
@@ -99,12 +104,12 @@ public class BatchMaster {
         result.readStartEndSpecFile( specFile );
         return result;
     }
-        
+    
     /** Creates a new instance of BatchMaster */
     public BatchMaster( DasCanvas canvas ) {
         this.canvas= canvas;
         taskList= new ArrayList();
-        itask= 0;        
+        itask= 0;
     }
     
     public void start() {
@@ -132,7 +137,7 @@ public class BatchMaster {
                     DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info( "itask="+taskList.get(itask) );
                     DataRangeSelectionEvent ev=  (DataRangeSelectionEvent) taskList.get(itask++);
                     fireDataRangeSelectionListenerDataRangeSelected( ev );
-                    canvas.waitUntilIdle();                    
+                    canvas.waitUntilIdle();
                     tod.completeTask( ev.getDatumRange() );
                     submitNextTask();
                 }
