@@ -218,7 +218,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         for (int i=0; i<renderers.size(); i++) {
             Renderer rend= (Renderer)renderers.get(i);
-            rend.update(xAxis,yAxis);
+            rend.update();
         }
     }
     
@@ -731,4 +731,61 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return getBounds();
     }
     
+    /** Potentially coalesce an event being posted with an existing
+     * event.  This method is called by <code>EventQueue.postEvent</code>
+     * if an event with the same ID as the event to be posted is found in
+     * the queue (both events must have this component as their source).
+     * This method either returns a coalesced event which replaces
+     * the existing event (and the new event is then discarded), or
+     * <code>null</code> to indicate that no combining should be done
+     * (add the second event to the end of the queue).  Either event
+     * parameter may be modified and returned, as the other one is discarded
+     * unless <code>null</code> is returned.
+     * <p>
+     * This implementation of <code>coalesceEvents</code> coalesces
+     * <code>DasUpdateEvent</code>s, returning the existingEvent parameter
+     *
+     * @param  existingEvent  the event already on the <code>EventQueue</code>
+     * @param  newEvent       the event being posted to the
+     * 		<code>EventQueue</code>
+     * @return a coalesced event, or <code>null</code> indicating that no
+     * 		coalescing was done
+     */
+    protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent) {
+        if (existingEvent instanceof DasRendererUpdateEvent && newEvent instanceof DasRendererUpdateEvent) {
+            DasRendererUpdateEvent e1 = (DasRendererUpdateEvent)existingEvent;
+            DasRendererUpdateEvent e2 = (DasRendererUpdateEvent)newEvent;
+            if (e1.getRenderer() == e2.getRenderer()) {
+                return existingEvent;
+            }
+        }
+        return super.coalesceEvents(existingEvent, newEvent);
+    }
+
+    /** Processes events occurring on this component. By default this
+     * method calls the appropriate
+     * <code>process&lt;event&nbsp;type&gt;Event</code>
+     * method for the given class of event.
+     * <p>Note that if the event parameter is <code>null</code>
+     * the behavior is unspecified and may result in an
+     * exception.
+     *
+     * @param     e the event
+     * @see       java.awt.Component#processComponentEvent
+     * @see       java.awt.Component#processFocusEvent
+     * @see       java.awt.Component#processKeyEvent
+     * @see       java.awt.Component#processMouseEvent
+     * @see       java.awt.Component#processMouseMotionEvent
+     * @see       java.awt.Component#processInputMethodEvent
+     * @see       java.awt.Component#processHierarchyEvent
+     * @see       java.awt.Component#processMouseWheelEvent
+     * @see       #processDasUpdateEvent
+     */
+    protected void processEvent(AWTEvent e) {
+        super.processEvent(e);
+        if (e instanceof DasRendererUpdateEvent) {
+            DasRendererUpdateEvent drue = (DasRendererUpdateEvent)e;
+            drue.getRenderer().updateImmediately();
+        }
+    }
 }
