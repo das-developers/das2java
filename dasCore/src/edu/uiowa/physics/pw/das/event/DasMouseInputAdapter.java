@@ -27,13 +27,11 @@ import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
@@ -493,6 +491,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                     mousePointSelection.set(e.getX()+xOffset,e.getY()+yOffset);
                     for (int i=0; i<active.size(); i++) {
                         MouseModule j= (MouseModule)active.get(i);
+                        j.mousePressed(e);
                         if (j.dragRenderer.isPointSelection()) {
                             mouseDragged(e);
                         }
@@ -525,6 +524,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                         MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
                         j.mouseRangeSelected(de);
                     }
+                    j.mouseDragged(e);
                 }
             }
         }
@@ -582,6 +582,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                             //secondary.mouseRangeSelected(de);
                         }
                         button=0;
+                        j.mouseReleased(e);
                     }
                     active= null;
                 }
