@@ -26,6 +26,7 @@ package edu.uiowa.physics.pw.das.datum;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.util.DasMath;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,10 +42,14 @@ public final class DatumUtil {
     private DatumUtil() {
     }
     
+    /**
+     *
+     * @param minimum
+     * @param maximum
+     * @param nsteps
+     * @return
+     */    
     public static DatumFormatter bestFormatter(Datum minimum, Datum maximum, int nsteps) {
-        if ( minimum.getUnits() != minimum.getUnits() ) {
-            throw new IllegalArgumentException( "Units don't match!" );
-        }
         
         Units units = minimum.getUnits();
         
@@ -143,12 +148,44 @@ public final class DatumUtil {
     }
     
     /* convert to human-friendly units.  Right now this will just convert us2000 to seconds. */
-    public static Datum asOrderOneUnits(Datum d) {
+   /* public static Datum asOrderOneUnits(Datum d) {
         if ( d.getUnits()==Units.microseconds ) {
             return d.convertTo(Units.seconds);
         } else {
             return d;
         }
+    }*/
+    
+    /**
+     * This method takes the input datum and gets it as close to order one as
+     * possible by trying all possible conversions.
+     * @param d A datum that needs to have its units changed to order one units.
+     * @return The order-one-ified Datum.
+     */    
+    public static Datum asOrderOneUnits(Datum d) {
+        Units dunits = d.getUnits();
+        Units[] conversions = dunits.getConvertableUnits();
+        
+        double bestScore = 0;
+        Datum bestDatum = d;
+        for (int i = 0; i < conversions.length; i++) {
+            Datum dd = d.convertTo(conversions[i]);
+            Number n = dd.getValue();
+            
+            double nn = Math.abs(n.doubleValue());
+            
+            double score;
+            if (n.doubleValue() > 1)
+                score = 1/nn;
+            else
+                score = nn;
+            
+            if (score > bestScore) {
+                bestScore = score;
+                bestDatum = dd;
+            }
+        }
+        return bestDatum;
     }
     
 }
