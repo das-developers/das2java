@@ -109,8 +109,9 @@ public abstract class DataSetDescriptor {
             return cacheDataSet;
         } else {
             try {
-                cacheDataSet= getDataSetImpl( start, end, resolution, monitor );
-                if ( cacheDataSet!=null ) {
+                DataSet ds = getDataSetImpl( start, end, resolution, monitor );
+                if (ds != null) {
+                    cacheDataSet = ds;
                     cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
                     if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
                 }
