@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -145,15 +145,11 @@ public class DasColorBar extends DasAxis {
         cb.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         cb.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
         cb.setType(DasColorBar.Type.parse(element.getAttribute("type")));
-        
-        if (!name.equals("")) {
-            try {
-                cb.setDasName(name);
-            }
-            catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
-            }
-        }
+
+        cb.setDasName(name);
+        DasApplication app = form.getDasApplication();
+        NameContext nc = app.getNameContext();
+        nc.put(name, cb);
         
         return cb;
     }

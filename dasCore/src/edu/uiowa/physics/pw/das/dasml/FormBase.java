@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
@@ -64,7 +65,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
     /** The factory object used for creating DOM parsers. */
     private static DocumentBuilderFactory domFactory;
     
-    private edu.uiowa.physics.pw.das.DasApplication application = edu.uiowa.physics.pw.das.DasApplication.getDefaultApplication();
+    private DasApplication application = DasApplication.getDefaultApplication();
     
     /** static initialization block for this class */
     static {
@@ -123,22 +124,13 @@ public class FormBase extends JTabbedPane implements FormComponent {
         try {
             Document document = parseDasML(reader, eh);
             createFormFromTree(document);
-            if (initBlock != null) initBlock.execute(this);
+            registerComponent();
         }
         catch (ParserConfigurationException pce) {
             throw new IllegalStateException("DOM parser not configured properly: " + pce.getMessage());
         }
         catch (edu.uiowa.physics.pw.das.DasException de) {
             throw new SAXException(de);
-        }
-        catch (DataFormatException dfe) {
-            throw new SAXException(dfe);
-        }
-        catch (ParsedExpressionException pee) {
-            throw new SAXException(pee);
-        }
-        catch (InvocationTargetException ite) {
-            DasExceptionHandler.handle(ite.getCause());
         }
     }
     
@@ -476,6 +468,36 @@ public class FormBase extends JTabbedPane implements FormComponent {
     
     public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
         throw new edu.uiowa.physics.pw.das.DasNameException();
+    }
+    
+    public void deregisterComponent() {
+        for (int index = 0; index < getComponentCount(); index++) {
+            Component c = getComponent(index);
+            if (c instanceof FormComponent) {
+                ((FormComponent)c).deregisterComponent();
+            }
+        }
+        for (Iterator i = windowList.iterator(); i.hasNext();) {
+            FormWindow w = (FormWindow)i.next();
+            w.deregisterComponent();
+        }
+    }
+    
+    public edu.uiowa.physics.pw.das.DasApplication getDasApplication() {
+        return application;
+    }
+    
+    public void registerComponent() throws edu.uiowa.physics.pw.das.DasException {
+        for (int index = 0; index < getComponentCount(); index++) {
+            Component c = getComponent(index);
+            if (c instanceof FormComponent) {
+                ((FormComponent)c).registerComponent();
+            }
+        }
+        for (Iterator i = windowList.iterator(); i.hasNext();) {
+            FormWindow w = (FormWindow)i.next();
+            w.registerComponent();
+        }
     }
     
     private class DnDSupport implements DropTargetListener {

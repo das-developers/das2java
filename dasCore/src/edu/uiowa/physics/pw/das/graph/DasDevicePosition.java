@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
@@ -71,9 +72,12 @@ public abstract class DasDevicePosition implements edu.uiowa.physics.pw.das.comp
         }
         String oldName = dasName;
         dasName = name;
-        edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().put(name, this);
-        if (oldName != null) {
-            edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().remove(oldName);
+        DasApplication app = parent.getDasApplication();
+        if (app != null) {
+            app.getNameContext().put(name, this);
+            if (oldName != null) {
+                app.getNameContext().remove(oldName);
+            }
         }
         this.firePropertyChange("name", oldName, name);
     }

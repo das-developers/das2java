@@ -190,7 +190,7 @@ public class CommandBlock {
         }
         
         public void execute(FormBase form)throws edu.uiowa.physics.pw.das.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException, edu.uiowa.physics.pw.das.DasNameException {
-            edu.uiowa.physics.pw.das.DasApplication.getDefaultApplication().getNameContext().set(id, value);
+            form.getDasApplication().getNameContext().set(id, value);
         }
         
         public Element getDOMElement(Document document) {
@@ -276,10 +276,10 @@ public class CommandBlock {
             Matcher refMatcher = edu.uiowa.physics.pw.das.NameContext.refPattern.matcher(test);
             Object value;
             if (refMatcher.matches()) {
-                value = edu.uiowa.physics.pw.das.DasApplication.getDefaultApplication().getNameContext().get(refMatcher.group(1));
+                value = form.getDasApplication().getNameContext().get(refMatcher.group(1));
             }
             else {
-                value = edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().parseValue(test, boolean.class);
+                value = form.getDasApplication().getNameContext().parseValue(test, boolean.class);
             }
             Boolean bool;
             if (value instanceof Boolean) {

@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import org.w3c.dom.*;
 
@@ -106,6 +107,22 @@ public class FormText extends JTextArea implements PropertyEditor.Editable, Form
     
     public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
         throw new edu.uiowa.physics.pw.das.DasNameException();
+    }
+    
+    public void deregisterComponent() {
+    }
+    
+    public DasApplication getDasApplication() {
+        Container p = getParent();
+        if (p instanceof FormComponent) {
+            return ((FormComponent)p).getDasApplication();
+        }
+        else {
+            return null;
+        }
+    }
+    
+    public void registerComponent() throws DasException {
     }
     
 }

@@ -23,11 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-/**
- *
- * @author  jessica
- */
-import edu.uiowa.physics.pw.das.DasException;
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -593,12 +589,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         DasPlot plot = new DasPlot(xAxis, yAxis, row, column);
         plot.setTitle(element.getAttribute("title"));
-        try {
-            plot.setDasName(name);
-        }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
-        }
+
+        plot.setDasName(name);
+        DasApplication app = form.getDasApplication();
+        NameContext nc = app.getNameContext();
+        nc.put(name, plot);
         
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);

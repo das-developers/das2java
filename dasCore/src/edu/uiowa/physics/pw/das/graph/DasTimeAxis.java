@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
@@ -727,14 +728,10 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         timeaxis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         timeaxis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
     
-        if (!name.equals("")) {
-            try {
-                timeaxis.setDasName(name);
-            }
-            catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
-            }
-        }
+        timeaxis.setDasName(name);
+        DasApplication app = form.getDasApplication();
+        NameContext nc = app.getNameContext();
+        nc.put(name, timeaxis);
     
         return timeaxis;
     }

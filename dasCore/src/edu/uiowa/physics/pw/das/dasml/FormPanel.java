@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import org.w3c.dom.Document;

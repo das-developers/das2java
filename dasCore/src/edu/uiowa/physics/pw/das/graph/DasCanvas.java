@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
@@ -638,12 +639,15 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
      * @param element The DOM tree node that represents the element
      */
     public static DasCanvas processCanvasElement(Element element, FormBase form)
-    throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, ParsedExpressionException {
+    throws DasPropertyException, DasNameException, DasException, ParsedExpressionException {
         try {
             
             String name = element.getAttribute("name");
             int width = Integer.parseInt(element.getAttribute("width"));
             int height = Integer.parseInt(element.getAttribute("height"));
+            
+            DasApplication app = form.getDasApplication();
+            NameContext nc = app.getNameContext();
             
             DasCanvas canvas = new DasCanvas(width, height);
             
@@ -692,12 +696,8 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
                     }
                 }
             }
-            try {
-                canvas.setDasName(name);
-            }
-            catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
-            }
+            canvas.setDasName(name);
+            nc.put(name, canvas);
             
             return canvas;
         }
@@ -1270,13 +1270,123 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
         }
         String oldName = dasName;
         dasName = name;
-        edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().put(name, this);
-        if (oldName != null) {
-            edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().remove(oldName);
+        DasApplication app = getDasApplication();
+        if (app != null) {
+            app.getNameContext().put(name, this);
+            if (oldName != null) {
+                app.getNameContext().remove(oldName);
+            }
         }
         this.firePropertyChange("name", oldName, name);
     }
     
+    public void deregisterComponent() {
+        DasApplication app = getDasApplication();
+        if (app != null) {
+            NameContext nc = app.getNameContext();
+            for (Iterator i = devicePositionList.iterator(); i.hasNext();) {
+                DasDevicePosition dp = (DasDevicePosition)i.next();
+                try {
+                    if (nc.get(dp.getDasName()) == dp) {
+                        nc.remove(dp.getDasName());
+                    }
+                }
+                catch (DasPropertyException dpe) {
+                    //This exception would only occur due to some invalid state.
+                    //So, wrap it and toss it.
+                    IllegalStateException se = new IllegalStateException(dpe.toString());
+                    se.initCause(dpe);
+                    throw se;
+                }
+                catch (java.lang.reflect.InvocationTargetException ite) {
+                    //This exception would only occur due to some invalid state.
+                    //So, wrap it and toss it.
+                    IllegalStateException se = new IllegalStateException(ite.toString());
+                    se.initCause(ite);
+                    throw se;
+                }
+            }
+            for (int index = 0; index < getComponentCount(); index++) {
+                Component c = getComponent(index);
+                if (c instanceof DasCanvasComponent) {
+                    DasCanvasComponent cc = (DasCanvasComponent)c;
+                    try {
+                        if (nc.get(cc.getDasName()) == cc) {
+                            nc.remove(cc.getDasName());
+                        }
+                    }
+                    catch (DasPropertyException dpe) {
+                        //This exception would only occur due to some invalid state.
+                        //So, wrap it and toss it.
+                        IllegalStateException se = new IllegalStateException(dpe.toString());
+                        se.initCause(dpe);
+                        throw se;
+                    }
+                    catch (java.lang.reflect.InvocationTargetException ite) {
+                        //This exception would only occur due to some invalid state.
+                        //So, wrap it and toss it.
+                        IllegalStateException se = new IllegalStateException(ite.toString());
+                        se.initCause(ite);
+                        throw se;
+                    }
+                }
+            }
+            try {
+                if (nc.get(getDasName()) == this) {
+                    nc.remove(getDasName());
+                }
+            }
+            catch (DasPropertyException dpe) {
+                //This exception would only occur due to some invalid state.
+                //So, wrap it and toss it.
+                IllegalStateException se = new IllegalStateException(dpe.toString());
+                se.initCause(dpe);
+                throw se;
+            }
+            catch (java.lang.reflect.InvocationTargetException ite) {
+                //This exception would only occur due to some invalid state.
+                //So, wrap it and toss it.
+                IllegalStateException se = new IllegalStateException(ite.toString());
+                se.initCause(ite);
+                throw se;
+            }
+        }
+    }    
+    
+    public DasApplication getDasApplication() {
+        Container p = getParent();
+        if (p instanceof FormComponent) {
+            return ((FormComponent)p).getDasApplication();
+        }
+        else {
+            return null;
+        }
+    }
+    
+    public void registerComponent() throws edu.uiowa.physics.pw.das.DasException {
+        try {
+            DasApplication app = getDasApplication();
+            if (app != null) {
+                NameContext nc = app.getNameContext();
+                for (Iterator i = devicePositionList.iterator(); i.hasNext();) {
+                    DasDevicePosition dp = (DasDevicePosition)i.next();
+                    nc.put(dp.getDasName(), dp);
+                }
+                for (int index = 0; index < getComponentCount(); index++) {
+                    Component c = getComponent(index);
+                    if (c instanceof DasCanvasComponent) {
+                        DasCanvasComponent cc = (DasCanvasComponent)c;
+                        nc.put(cc.getDasName(), cc);
+                    }
+                }
+                nc.put(getDasName(), this);
+            }
+        }
+        catch (DasNameException dne) {
+            deregisterComponent();
+            throw dne;
+        }
+    }
     
     public static class HotLine implements PropertyChangeListener {
         

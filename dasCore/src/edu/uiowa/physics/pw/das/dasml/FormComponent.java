@@ -23,6 +23,9 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import java.awt.event.MouseEvent;
+import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.util.DnDSupport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -40,12 +43,18 @@ public interface FormComponent {
     
     void setEditingMode(boolean b);
     
-    edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport();
+    DnDSupport getDnDSupport();
     
-    boolean startDrag(int x, int y, int action, java.awt.event.MouseEvent evt);
+    boolean startDrag(int x, int y, int action, MouseEvent evt);
     
     String getDasName();
     
-    void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException;
+    void setDasName(String name) throws DasNameException;
+    
+    DasApplication getDasApplication();
+    
+    void registerComponent() throws DasException;
+    
+    void deregisterComponent();
     
 }

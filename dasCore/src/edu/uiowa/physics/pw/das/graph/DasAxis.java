@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.*;
@@ -1597,15 +1598,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         axis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
         
-        
-        if (!name.equals("")) {
-            try {
-                axis.setDasName(name);
-            }
-            catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
-            }
-        }
+        axis.setDasName(name);
+        DasApplication app = form.getDasApplication();
+        NameContext nc = app.getNameContext();
+        nc.put(name, axis);
         
         return axis;
     }
@@ -1708,14 +1704,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         axis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
         
-        if (!name.equals("")) {
-            try {
-                axis.setDasName(name);
-            }
-            catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
-            }
-        }
+        axis.setDasName(name);
+        DasApplication app = form.getDasApplication();
+        NameContext nc = app.getNameContext();
+        nc.put(name, axis);
         
         return axis;
     }

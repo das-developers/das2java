@@ -364,7 +364,7 @@ public class NameContext {
         return str;
     }
     
-    public static NameContext getDefaultNameContext() {
-        return DasApplication.getDefaultApplication().getNameContext();
+    public String toString() {
+        return getClass().getName() + nameMap.keySet().toString();
     }
 }

@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -61,17 +62,15 @@ public class DasRow extends DasDevicePosition {
      *
      * @param element The DOM tree node that represents the element
      */
-    static DasRow processRowElement(Element element, DasCanvas canvas, FormBase form) {
+    static DasRow processRowElement(Element element, DasCanvas canvas, FormBase form) throws DasException {
         String name = element.getAttribute("name");
         double minimum = Double.parseDouble(element.getAttribute("minimum"));
         double maximum = Double.parseDouble(element.getAttribute("maximum"));
         DasRow row =  new DasRow(canvas, minimum, maximum);
-        try {
-            row.setDasName(name);
-        }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
-        }
+        row.setDasName(name);
+        DasApplication app = form.getDasApplication();
+        NameContext nc = app.getNameContext();
+        nc.put(name, row);
         return row;
     }
     

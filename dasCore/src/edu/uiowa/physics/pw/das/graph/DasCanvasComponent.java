@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
@@ -257,9 +258,15 @@ implements edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
         }
         String oldName = dasName;
         dasName = name;
-        edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().put(name, this);
-        if (oldName != null) {
-            edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().remove(oldName);
+        DasApplication app = null;
+        if (getCanvas() != null) {
+            app = getCanvas().getDasApplication();
+        }
+        if (app != null) {
+            app.getNameContext().put(name, this);
+            if (oldName != null) {
+                app.getNameContext().remove(oldName);
+            }
         }
         this.firePropertyChange("name", oldName, name);
     }

@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;
@@ -379,6 +380,40 @@ public abstract class FormContainer extends JPanel implements PropertyEditor.Edi
     
     public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
         throw new edu.uiowa.physics.pw.das.DasNameException();
+    }
+    
+    public void deregisterComponent() {
+        for (int index = 0; index < getComponentCount(); index++) {
+            Component c = getComponent(index);
+            if (c instanceof FormComponent) {
+                ((FormComponent)c).deregisterComponent();
+            }
+        }
+    }
+    
+    public DasApplication getDasApplication() {
+        Container p = getParent();
+        if (p instanceof FormComponent) {
+            return ((FormComponent)p).getDasApplication();
+        }
+        else {
+            return null;
+        }
+    }
+    
+    public void registerComponent() throws DasException {
+        try {
+            for (int index = 0; index < getComponentCount(); index++) {
+                Component c = getComponent(index);
+                if (c instanceof FormComponent) {
+                    ((FormComponent)c).registerComponent();
+                }
+            }
+        }
+        catch (DasNameException dne) {
+            deregisterComponent();
+            throw dne;
+        }
     }
     
     class NoBorder extends EmptyBorder {

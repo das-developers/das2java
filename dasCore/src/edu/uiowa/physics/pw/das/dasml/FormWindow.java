@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -170,9 +171,12 @@ public class FormWindow extends FormContainer implements PropertyEditor.Editable
         }
         String oldName = dasName;
         dasName = name;
-        edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().put(name, this);
-        if (oldName != null) {
-            edu.uiowa.physics.pw.das.NameContext.getDefaultNameContext().remove(oldName);
+        DasApplication app = getDasApplication();
+        if (app != null) {
+            app.getNameContext().put(name, this);
+            if (oldName != null) {
+                app.getNameContext().remove(oldName);
+            }
         }
         this.firePropertyChange("name", oldName, name);
     }
@@ -362,6 +366,51 @@ public class FormWindow extends FormContainer implements PropertyEditor.Editable
             return internalFrame;
         }
         return null;
+    }
+    
+    public void deregisterComponent() {
+        DasApplication app = getDasApplication();
+        if (app != null) {
+            NameContext nc = app.getNameContext();
+            try {
+                if (nc.get(getDasName()) == this) {
+                    nc.remove(getDasName());
+                }
+            }
+            catch (DasPropertyException dpe) {
+                //This exception would only occur due to some invalid state.
+                //So, wrap it and toss it.
+                IllegalStateException se = new IllegalStateException(dpe.toString());
+                se.initCause(dpe);
+                throw se;
+            }
+            catch (java.lang.reflect.InvocationTargetException ite) {
+                //This exception would only occur due to some invalid state.
+                //So, wrap it and toss it.
+                IllegalStateException se = new IllegalStateException(ite.toString());
+                se.initCause(ite);
+                throw se;
+            }
+        }
+        super.deregisterComponent();
+    }
+    
+    public DasApplication getDasApplication() {
+        if (form != null) {
+            return form.getDasApplication();
+        }
+        else {
+            return null;
+        }
+    }
+    
+    public void registerComponent() throws edu.uiowa.physics.pw.das.DasException {
+        DasApplication app = getDasApplication();
+        if (app != null) {
+            NameContext nc = app.getNameContext();
+            nc.put(getDasName(), this);
+        }
+        super.registerComponent();
     }
     
     public class InternalFrame extends JInternalFrame {
