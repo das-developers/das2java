@@ -82,7 +82,7 @@ public final class DatumUtil {
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
         double secondsPerStep = maximum.subtract(minimum).convertTo(Units.seconds).getValue() / nsteps;
         if (secondsPerStep < 1.) {
-            return TimeDatumFormatter.MICROSECONDS;
+            return TimeDatumFormatter.MILLESECONDS;
         }
         else if (secondsPerStep < 60.) {
             return TimeDatumFormatter.SECONDS;
