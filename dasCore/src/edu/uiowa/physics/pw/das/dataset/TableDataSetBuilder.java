@@ -43,8 +43,7 @@ public class TableDataSetBuilder {
     
     private List zValues = new ArrayList();
     
-    private List planeIDs = new ArrayList();
-    {
+    private List planeIDs = new ArrayList(); {
         planeIDs.add("");
     }
     
@@ -52,8 +51,7 @@ public class TableDataSetBuilder {
     
     private Units yUnits = Units.dimensionless;
     
-    private Map zUnitsMap = new HashMap();
-    {
+    private Map zUnitsMap = new HashMap(); {
         zUnitsMap.put("", Units.dimensionless);
     }
     
@@ -79,11 +77,11 @@ public class TableDataSetBuilder {
     public Object getProperty(String name) {
         return properties.get(name);
     }
-
+    
     public void addProperties(Map map) {
         properties.putAll(map);
     }
-
+    
     public void addPlane(String name, Units zUnits ) {
         if (!planeIDs.contains(name)) {
             planeIDs.add(name);
@@ -117,10 +115,14 @@ public class TableDataSetBuilder {
                 zUnits = Units.dimensionless;
                 addPlane(planeID, zUnits);
             }
-            double[] z = scans[i].toDoubleArray(zUnits);
-            scan.put(planeID, z);
-            scan.setYTags(y);
-            zValues.add(insertionIndex, scan);
+            try {
+                double[] z = scans[i].toDoubleArray(zUnits);
+                scan.put(planeID, z);
+                scan.setYTags(y);
+                zValues.add(insertionIndex, scan);
+            } catch ( Exception e ) {
+                e.printStackTrace();
+            }
         }
     }
     
@@ -206,7 +208,7 @@ public class TableDataSetBuilder {
         Units[] zUnitsArray = getUnitsArray(planeIDs, zUnitsMap);
         return new DefaultTableDataSet(xTags.toArray(), xUnits, collapsedYTags, yUnits, collapsedZValues, zUnitsArray, (String[])planeIDs.toArray(new String[planeIDs.size()]), tableOffsets, properties);
     }
-        
+    
     private static double[] insert(double[] array, double value, int index) {
         double[] result = new double[array.length + 1];
         System.arraycopy(array, 0, result, 0, index);
@@ -214,7 +216,7 @@ public class TableDataSetBuilder {
         System.arraycopy(array, index, result, index + 1, array.length - index);
         return result;
     }
-
+    
     private static double[][] insert(double[][] array, double[] values, int index) {
         double[][] result = new double[array.length + 1][];
         System.arraycopy(array, 0, result, 0, index);
@@ -226,7 +228,7 @@ public class TableDataSetBuilder {
     private static String toString(double[] array) {
         return toString(array, 0, array.length);
     }
-
+    
     private static String toString(double[] array, int startIndex, int endIndex) {
         if (array.length == 0) return "[]";
         StringBuffer buffer = new StringBuffer("[");
@@ -236,7 +238,7 @@ public class TableDataSetBuilder {
         buffer.append(array[endIndex - 1]).append(']');
         return buffer.toString();
     }
-
+    
     private static int getTableCount(List list) {
         int count = 0;
         double[] previous = null;
