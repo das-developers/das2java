@@ -76,8 +76,10 @@ public abstract class Units {
     
     public static final Units hertz= new NumberUnits("Hz");
     public static final Units kiloHertz = new NumberUnits("kHz");
+    public static final Units megaHertz = new NumberUnits("MHz");
     static {
         hertz.registerConverter(kiloHertz, UnitsConverter.KILO);
+        hertz.registerConverter(megaHertz, UnitsConverter.MEGA);
     }
     
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
@@ -119,6 +121,9 @@ public abstract class Units {
         unitsMap.put("microseconds", Units.microseconds);
         unitsMap.put("", Units.dimensionless);
         unitsMap.put("dB", Units.dB);
+        unitsMap.put("Hz", Units.hertz);
+        unitsMap.put("kHz", Units.kiloHertz);
+        unitsMap.put("MHz", Units.megaHertz);
     }
     
     private String id;
@@ -278,7 +283,7 @@ public abstract class Units {
     
     public static Units getByName(String s) {
         Units units = (Units)unitsMap.get(s);
-        if (s == null) {
+        if (units == null) {
             throw new IllegalArgumentException("Unrecognized units");
         }
         else return units;
@@ -289,5 +294,12 @@ public abstract class Units {
         Datum db = ratio.convertTo(dB);
         System.out.println("ratio: " + ratio);
         System.out.println("dB: " + db);
+        
+        Datum Hz = Datum.create(1000000.0, hertz);
+        Datum kHz = Hz.convertTo(kiloHertz);
+        Datum MHz = kHz.convertTo(megaHertz);
+        System.out.println("Hz: " + Hz);
+        System.out.println("kHz: " + kHz);
+        System.out.println("MHz: " + MHz);
     }
 }
