@@ -654,6 +654,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return dataset;
     }
     
+    /**
+     * 
+     * @param dataset The URL identifier string of a TCA data set, or "" for no TCAs.
+     */
     public void setDataPath(String dataset) {
         if (dataset == null) throw new NullPointerException("null dataPath string not allowed");
         Object oldValue = this.dataset;
