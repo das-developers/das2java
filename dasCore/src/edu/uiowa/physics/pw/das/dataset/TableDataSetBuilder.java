@@ -77,7 +77,7 @@ public class TableDataSetBuilder {
     }
     
     public void addPlane(String name, Units zUnits ) {
-        if (!planeIDs.contains(name)) {
+        if (name != null && !planeIDs.contains(name)) {
             planeIDs.add(name);
             zUnitsMap.put(name, zUnits );
         }
