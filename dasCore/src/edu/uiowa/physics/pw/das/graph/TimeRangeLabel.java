@@ -98,13 +98,13 @@ public class TimeRangeLabel extends DasCanvasComponent {
         String label= df.format(max);
         g.drawString(label,
            ( x + getColumn().getWidth() - fm.stringWidth(label)),
-           y-fm.getHeight()/2);
-        
+           y-fm.getHeight()/2);        
     }
-    
+        
     public void resize() {
-        Rectangle bounds= DasDevicePosition.toRectangle(getRow(),getColumn());
-        this.setBounds(new Rectangle(bounds.x-30,bounds.y-30,bounds.width+60,bounds.height+30));
+        Rectangle bounds= new Rectangle( getColumn().getDMinimum()-30, getRow().getDMinimum()-30, 
+              getColumn().getWidth()+60, 30 );
+        this.setBounds( bounds );
     }
     
     private void updateFormatter() {
