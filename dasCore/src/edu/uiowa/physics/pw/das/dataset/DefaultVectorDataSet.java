@@ -152,7 +152,19 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
      * @return the specified view, as a <code>DataSet</code>
      */
     public DataSet getPlanarView(String planeID) {
-        return null;
+        int index = -1;
+        for (int i = 0; i < planeIDs.length; i++) {
+            if (planeIDs[i].equals(planeID)) {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1) {
+            return null;
+        }
+        else {
+            return new PlanarViewDataSet(index);
+        }
     }
     
     private class PlanarViewDataSet extends AbstractDataSet.ViewDataSet implements VectorDataSet {
@@ -181,6 +193,10 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
         
         public DataSet getPlanarView(String planeID) {
             return null;
+        }
+        
+        public Object getProperty(String name) {
+            return DefaultVectorDataSet.this.getProperty(planeIDs[index] + "." + name);
         }
         
     }

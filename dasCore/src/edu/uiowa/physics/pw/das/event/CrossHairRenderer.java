@@ -29,10 +29,7 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasStackedHistogramPlot;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
-import edu.uiowa.physics.pw.das.client.XTaggedYScanDataSet;
-import edu.uiowa.physics.pw.das.client.XTaggedYScanDataSetConsumer;
+import edu.uiowa.physics.pw.das.client.*;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -128,7 +125,7 @@ public class CrossHairRenderer implements DragRenderer {
                 }
                 catch (java.text.ParseException pe) {
                     edu.uiowa.physics.pw.das.DasProperties.getLogger().severe("failure to create formatter");
-                    DasAxis axis = ((XTaggedYScanDataSetConsumer)dataSetConsumer).getZAxis();
+                    DasAxis axis = ((TableDataSetConsumer)dataSetConsumer).getZAxis();
                     axis.getUnits().getDatumFormatterFactory().defaultFormatter();
                 }
                 

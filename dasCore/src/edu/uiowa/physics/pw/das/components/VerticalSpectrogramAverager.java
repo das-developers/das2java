@@ -43,7 +43,7 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
     private Datum yValue;
     
     private VerticalSpectrogramAverager(DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        super((XMultiYDataSet)null, xAxis, yAxis, row, column);
+        super((VectorDataSet)null, xAxis, yAxis, row, column);
     }
     
     public static VerticalSpectrogramAverager createAverager(DasPlot plot, TableDataSetConsumer dataSetConsumer, DasRow row, DasColumn column) {
@@ -105,18 +105,21 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
     
     public void DataRangeSelected(DataRangeSelectionEvent e) {
         DataSet ds = e.getDataSet();
-        if (ds==null || !(ds instanceof XTaggedYScanDataSet))
+        if (ds==null || !(ds instanceof TableDataSet))
             return;
-        XTaggedYScanDataSet xtys = (XTaggedYScanDataSet)ds;
+        TableDataSet xtys = (TableDataSet)ds;
+        /*
         double[] x = new double[xtys.y_coordinate.length];
         System.arraycopy(xtys.y_coordinate, 0, x, 0, xtys.y_coordinate.length);
         double[] y = new double[xtys.y_coordinate.length];
         double[] w = new double[xtys.y_coordinate.length];
+         */
         Datum xValue1 = e.getMinimum();
         Datum xValue2 = e.getMaximum();
     
         this.setTitle( ""+xValue1+" - "+xValue2 );
         
+        /*
         if (xtys.getXUnits()!=xValue1.getUnits()) {
             xValue1.convertTo(xtys.getXUnits());
         }
@@ -148,9 +151,17 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
         }
         
         //yValue= e.getY();
+        */
         
+        RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
+        AverageTableRebinner rebinner = new AverageTableRebinner();
+        TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
+        VectorDataSet ds1 = rebinned.getXSlice(0);
+        
+        /*
         XMultiYDataSet ds1= XMultiYDataSet.create(x,xtys.getYUnits(),y,xtys.getZUnits());
         ds1.y_fill= -1e31;
+         */
  
         addData(ds1);
         
@@ -160,6 +171,15 @@ public class VerticalSpectrogramAverager extends DasSymbolPlot implements DataRa
         else {
             repaint();
         }
+    }
+    
+    protected void uninstallComponent() {
+        super.uninstallComponent();
+    }
+    
+    protected void installComponent() {
+        super.installComponent();
+        getCanvas().getGlassPane().setVisible(false);
     }
     
 }

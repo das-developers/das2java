@@ -34,6 +34,13 @@ import java.text.MessageFormat;
  */
 public final class DefaultTableDataSet extends AbstractTableDataSet {
     
+    /**
+     * Description of indices
+     * From left to right:
+     * 1. Index of the plane.  0 is primary
+     * 2. Index of the yscan within the dataset.
+     * 3. Index of the zValue within the yscan.
+     */
     private double[][][] tableData;
     
     private Units[] zUnits;
@@ -44,26 +51,12 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     private String[] planeIDs;
     
-    /** Creates a new DefaultTableDataSet for tables where the
-     * table geometry does not change.
-     */
-    public static final DefaultTableDataSet create( double[] xTags, Units xUnits,
-                               double[] yTagsIn, Units yUnits,
-                               double[][] zValues, Units zUnits,
-                               Map properties ) {
-        double[][] yTags= new double[][] { yTagsIn };        
-        return new DefaultTableDataSet( xTags, xUnits,
-                                        yTags, yUnits, zValues, zUnits, properties );
-        
-    }
-                                   
-    
     /** Creates a new instance of DefaultTableDataSet for tables where the
      * table geometry changes, and the DataSet contains multiple planes.
      */
     public DefaultTableDataSet(double[] xTags, Units xUnits,
                                double[][] yTags, Units yUnits,
-                               double[][] zValues, Units zUnits,
+                               double[][][] zValues, Units zUnits,
                                Map zValuesMap, Map zUnitsMap,
                                Map properties) {
         super(xTags, xUnits, yUnits, zUnits, properties);
@@ -82,7 +75,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
         int planeCount = 1 + (zValuesMap == null ? 0 : zValuesMap.size());
         this.tableData = new double[planeCount][][];
-        this.tableData[0] = copy(zValues);
+        this.tableData[0] = flatten(zValues);
         this.yTags = copy(yTags);
         this.zUnits = new Units[planeCount];
         this.zUnits[0] = zUnits;
@@ -94,21 +87,37 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             for (Iterator it = new TreeMap(zValuesMap).entrySet().iterator(); it.hasNext();) {
                 Map.Entry entry = (Map.Entry)it.next();
                 String key = (String)entry.getKey();
-                double[][] d = (double[][])entry.getValue();
-                d = copy(d);
+                double[][][] d = (double[][][])entry.getValue();
+                double[][] f = flatten(d);
                 this.planeIDs[index] = key;
-                this.tableData[index] = d;
+                this.tableData[index] = f;
                 this.zUnits[index] = (Units)zUnitsMap.get(key);
             }
         }
     }
+    
+    private double[][] flatten(double[][][] d) {
+        int sum = 0;
+        for (int index = 0; index < d.length; index++) {
+            sum += d[index].length;
+        }
+        double[][] flat = new double[sum][];
+        int offset = 0;
+        for (int i = 0; i < d.length; i++) {
+            for (int j = 0; j < d[i].length; j++) {
+                flat[offset] = (double[])d[i][j].clone();
+                offset++;
+            }
+        }
+        return flat;
+    }
 
-    /** Creates a DefaultTableDataSet when the table geometry changes. */    
+    /** Creates a DefaultTableDataSet when the table geometry changes. */
     public DefaultTableDataSet(double[] xTags, Units xUnits,
-                               double[][] yTags, Units yUnits,
+                               double[] yTags, Units yUnits,
                                double[][] zValues, Units zUnits,
                                Map properties) {
-        this(xTags, xUnits, yTags, yUnits, zValues, zUnits, null, null, properties);
+        this(xTags, xUnits, new double[][]{yTags}, yUnits, new double[][][]{zValues}, zUnits, null, null, properties);
     }
     
     DefaultTableDataSet(double[] xTags, Units xUnits,
@@ -124,21 +133,28 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         this.tableOffsets = tableOffsets;
     }
     
+    private static double[][][] copy(double[][][] d) {
+        double[][][] copy = new double[d.length][][];
+        for (int index = 0; index < d.length; index++) {
+            copy[index] = copy(d[index]);
+        }
+        return copy;
+    }
+
     private static double[][] copy(double[][] d) {
         double[][] copy = new double[d.length][];
-        for (int index = 0; index < d.length; index ++) {
+        for (int index = 0; index < d.length; index++) {
             copy[index] = (double[])d[index].clone();
         }
         return copy;
     }
     
-    private static int[] computeTableOffsets(double[][] tableData, double[][] yTags) {
+    private static int[] computeTableOffsets(double[][][] tableData, double[][] yTags) {
         int[] tableOffsets = new int[tableData.length];
         int currentOffset = 0;
         for (int index = 0; index < tableOffsets.length; index++) {
             tableOffsets[index] = currentOffset;
-            int xTableLength = tableData[index].length / yTags[index].length;
-            currentOffset += xTableLength;
+            currentOffset += tableData[index].length;;
         }
         return tableOffsets;
     }
@@ -147,15 +163,17 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         int table = tableOfIndex(i);
         int iTable = i - tableOffsets[table];
         int yLength = yTags[table].length;
-        double value = tableData[0][table][i * yLength + j];
+        double value = tableData[0][i][j];
         return Datum.create(value, zUnits[0]);
     }
     
     public double getDouble(int i, int j, Units units) {
         int table = tableOfIndex(i);
-        int iTable = i - tableOffsets[table];
         int yLength = yTags[table].length;
-        double value = tableData[0][table][i * yLength + j];
+        double value = tableData[0][i][j];
+        if (units == getZUnits()) {
+            return value;
+        }
         return zUnits[0].getConverter(units).convert(value);
     }
     
@@ -189,6 +207,9 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     public double getYTagDouble(int table, int j, Units units) {
         double value = yTags[table][j];
+        if (units == getYUnits()) {
+            return value;
+        }
         return getYUnits().getConverter(units).convert(value);
     }
     
@@ -197,7 +218,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     }
     
     public int tableCount() {
-        return tableData[0].length;
+        return yTags.length;
     }
     
     public int tableEnd(int table) {
@@ -289,17 +310,15 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         
         public Datum getDatum(int i, int j) {
             int table = tableOfIndex(i);
-            int iTable = i - tableOffsets[table];
             int yLength = yTags[table].length;
-            double value = tableData[index][table][i * yLength + j];
+            double value = tableData[index][i][j];
             return Datum.create(value, zUnits[index]);
         }
         
         public double getDouble(int i, int j, Units units) {
             int table = tableOfIndex(i);
-            int iTable = i - tableOffsets[table];
             int yLength = yTags[table].length;
-            double value = tableData[index][table][i * yLength + j];
+            double value = tableData[index][i][j];
             return zUnits[index].getConverter(units).convert(value);
         }
         
@@ -349,6 +368,10 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         
         public int tableStart(int table) {
             return DefaultTableDataSet.this.tableStart(table);
+        }
+        
+        public Object getProperty(String name) {
+            return DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
         }
         
     }

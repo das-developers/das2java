@@ -56,9 +56,18 @@ public class PsymConnector implements PropertyEditor.Enumeration {
         public void drawLine( Graphics2D g, int x1, int y1, int x2, int y2, float width ) {
             g.setStroke( getStroke(width) );
             int xMid= (x1 + x2) / 2;
-            line.setLine(x1,y1,xMid,y1);  g.draw(line);
-            line.setLine(xMid,y1,xMid,y2);  g.draw(line);
-            line.setLine(xMid,y2,x2,y2);  g.draw(line);
+            Line2D _line;
+            if (!SwingUtilities.isEventDispatchThread()) {
+                //For thread-safeness
+                _line = new Line2D.Double();
+            }
+            else {
+                //We know there is only one dispatch thread, so just reuse line member.
+                _line = line;
+            }
+            _line.setLine(x1,y1,xMid,y1);  g.draw(_line);
+            _line.setLine(xMid,y1,xMid,y2);  g.draw(_line);
+            _line.setLine(xMid,y2,x2,y2);  g.draw(_line);
         }
     };
     
@@ -105,8 +114,18 @@ public class PsymConnector implements PropertyEditor.Enumeration {
         if ( stroke==null ) {
             return;
         } else {
+            Line2D _line;
+            if (!SwingUtilities.isEventDispatchThread()) {
+                //For thread-safeness
+                _line = new Line2D.Double();
+            }
+            else {
+                //We know there is only one dispatch thread, so just reuse line member.
+                _line = line;
+            }
+            _line.setLine(x1, y1, x2, y2);
             g.setStroke( getStroke(width) );
-            g.drawLine(x1,y1,x2,y2);
+            g.draw(_line);
         }
     }
     

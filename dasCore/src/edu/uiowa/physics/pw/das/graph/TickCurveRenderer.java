@@ -273,10 +273,6 @@ public class TickCurveRenderer extends Renderer {
         return ""+line.getX1()+" "+line.getY1()+" "+line.getX2()+" "+line.getY2();
     }
     
-    public static void main( String[] args ) {
-        new testNew.TickCurveRendererTest();
-    }
-    
     /** Getter for property tickStyle.
      * @return Value of property tickStyle.
      *

@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import javax.swing.*;
 import java.util.*;
+import java.util.List;
 import java.util.regex.*;
 
 /** TODO
@@ -121,7 +122,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /* TCA RELATED INSTANCE MEMBERS */
     private DataSetDescriptor dsd;
-    private TCADataSet tcaData;
+    private VectorDataSet[] tcaData = new VectorDataSet[0];
     private String dataset = "";
     private boolean drawTca;
     private DataRequestThread drt;
@@ -601,7 +602,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (dataset.equals(this.dataset)) return;
         this.dataset=dataset;
         try {
-            dsd = DataSetDescriptorUtil.create(dataset);
+            dsd = DataSetDescriptor.create(dataset);
         }
         catch (edu.uiowa.physics.pw.das.DasException de) {
             DasExceptionHandler.handle(de);
@@ -650,9 +651,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                 }
                 public void finished(DataSet dsFinished) {
-                    tcaData = (TCADataSet)dsFinished;
+                    VectorDataSet ds = (VectorDataSet)dsFinished;
+                    List itemList = (List)ds.getProperty("plane-list");
+                    VectorDataSet[] newData = new VectorDataSet[itemList.size() + 1];
+                    newData[0] = ds;
+                    for (int i = 0; i < itemList.size(); i++) {
+                        newData[i + 1] = (VectorDataSet)ds.getPlanarView((String)itemList.get(i));
+                    }
+                    tcaData = newData;
                     update();
-                    edu.uiowa.physics.pw.das.util.DasDie.println("I GOT HERE WITH: " + dsFinished);
                 }
             };
             if (drt == null) {
@@ -1132,9 +1139,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
              */
             int width, leftEdge;
             
-            for (int i = 0; i < tcaData.items; i++) {
+            for (int i = 0; i < tcaData.length; i++) {
                 baseLine += lineHeight;
-                idlt.setString(this, tcaData.label[i]);
+                idlt.setString(this, (String)tcaData[i].getProperty("label"));
                 width = (int)Math.floor(idlt.getWidth() + 0.5);
                 leftEdge = rightEdge - width;
                 idlt.draw(g, (float)leftEdge, (float)baseLine);
@@ -1361,7 +1368,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if (getOrientation() == BOTTOM) {
             if (drawTca && tcaData != null) {
-                offset += tcaData.items * (tickLabelFont.getSize() + getLineSpacing());
+                offset += tcaData.length * (tickLabelFont.getSize() + getLineSpacing());
             }
             offset += tickLabelFont.getSize() + getLineSpacing();
         }
@@ -1421,9 +1428,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Font tickLabelFont = getTickLabelFont();
         FontMetrics fm = getFontMetrics(tickLabelFont);
         int lineHeight = tickLabelFont.getSize() + getLineSpacing();
-        for (int i = 0; i < tcaData.items; i++) {
+        for (int i = 0; i < tcaData.length; i++) {
             baseLine += lineHeight;
-            String item = format(tcaData.data[index].y[i], "(f8.2)");
+            String item = format(tcaData[i].getDouble(index, tcaData[i].getYUnits()), "(f8.2)");
             width = fm.stringWidth(item);
             leftEdge = rightEdge - width;
             g.drawString(item, leftEdge, baseLine);
@@ -1519,7 +1526,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int DMax = getColumn().getDMaximum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int tcaHeight = (tickLabelFont.getSize() + getLineSpacing())*tcaData.items;
+                int tcaHeight = (tickLabelFont.getSize() + getLineSpacing())*tcaData.length;
                 int maxLabelWidth = getMaxLabelWidth(getFontMetrics(tickLabelFont));
                 bounds.height += tcaHeight;
                 blLabelRect.height += tcaHeight;
@@ -1527,8 +1534,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
                 idlt.setString(this, "SCET");
                 int tcaLabelWidth = (int)Math.floor(idlt.getWidth() + 0.5);
-                for (int i = 0; i < tcaData.items; i++) {
-                    idlt.setString(this, tcaData.label[i]);
+                for (int i = 0; i < tcaData.length; i++) {
+                    idlt.setString(this, (String)tcaData[i].getProperty("label"));
                     int width = (int)Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }
@@ -2487,7 +2494,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             if (drawTca && getOrientation() == BOTTOM && tcaData != null) {
                 Rectangle bounds = primaryInputPanel.getBounds();
-                int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing())*tcaData.items;
+                int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing())*tcaData.length;
                 bounds.height += tcaHeight;
                 primaryInputPanel.setBounds(bounds);
             }

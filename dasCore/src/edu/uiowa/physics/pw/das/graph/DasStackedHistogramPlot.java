@@ -34,6 +34,7 @@ import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.stream.*;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
@@ -73,25 +74,25 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
     }
     
-    public static DasStackedHistogramPlot create(DasCanvas parent, XTaggedYScanDataSet Data) {
+    public static DasStackedHistogramPlot create(DasCanvas parent, TableDataSet Data) {
         DasRow row= new DasRow(parent,.05,.85);
         DasColumn column= new DasColumn(parent,0.15,0.90);
         
         double [] x;
         
-        int nx= Data.data.length;
-        int ny= Data.y_coordinate.length;
+        int nx= Data.getXLength();
+        int ny= Data.getYLength(0);
         
         x= new double[nx];
         for (int i=0; i<nx; i++) {
-            x[i]= Data.data[i].x;
+            x[i]= Data.getXTagDouble(i, Data.getXUnits());
         }
         
         double [] z= new double[nx*ny];
         int iz= 0;
         for (int i=0; i<nx; i++) {
             for (int j=0; j<ny; j++) {
-                z[iz++]= Data.data[i].z[j];
+                z[iz++]= Data.getDouble(i, j, Data.getZUnits());
             }
         }
         
@@ -107,38 +108,38 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     }
     
     
-    public static DasStackedHistogramPlot create(DasCanvas parent, XTaggedYScanDataSet data,
+    public static DasStackedHistogramPlot create(DasCanvas parent, TableDataSet data,
     DasAxis xAxis, DasAxis zAxis,
     DasRow row, DasColumn column) {
-        Datum[] datums= new Datum[data.y_coordinate.length];
+        Datum[] datums= new Datum[data.getYLength(0)];
         Units units= data.getYUnits();
-        for ( int i=0; i<data.y_coordinate.length; i++ ) datums[i]= Datum.create(data.y_coordinate[i],units);
-        return new DasStackedHistogramPlot(  new ConstantDataSetDescriptor(data),
-        xAxis,
-        new DasLabelAxis(datums,row,column,DasAxis.VERTICAL),
-        zAxis,
-        row,
-        column );
+        for ( int i = 0; i < data.getYLength(0); i++ ) {
+            datums[i]= data.getXTagDatum(i);
+        }
+        DataSetDescriptor dsd = new ConstantDataSetDescriptor(data);
+        DasLabelAxis yAxis = new DasLabelAxis(datums,row,column,DasAxis.VERTICAL);
+        return new DasStackedHistogramPlot( dsd, xAxis, yAxis, zAxis, row, column );
     }
     
-    public static DasStackedHistogramPlot create( XTaggedYScanDataSetDescriptor dsd,
-    DasAxis xAxis, DasAxis zAxis,
-    DasRow row, DasColumn column) {
-        Datum[] datums= new Datum[dsd.y_coordinate.length];
-        Units units= dsd.getYUnits();
-        for ( int i=0; i<dsd.y_coordinate.length; i++ ) datums[i]= Datum.create(dsd.y_coordinate[i],units);
-        return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis(datums,row,column,DasAxis.VERTICAL), zAxis, row, column );
+    public static DasStackedHistogramPlot create( DataSetDescriptor dsd, DasAxis xAxis, DasAxis zAxis, DasRow row, DasColumn column) {
+        if (dsd instanceof StreamDataSetDescriptor) {
+            StreamDataSetDescriptor sdsd = (StreamDataSetDescriptor)dsd;
+            if (sdsd.getProperty("form").equals("x_tagged_y_scan")) {
+                StreamDescriptor sd = sdsd.getDefaultStreamDescriptor();
+                StreamYScanDescriptor yscan = (StreamYScanDescriptor)sd.getYDescriptors().get(0);
+                Datum[] datums= new Datum[yscan.getNItems()];
+                Units units= yscan.getYUnits();
+                double[] y_coordinate = yscan.getYCoordinates();
+                for ( int i=0; i<y_coordinate.length; i++ ) {
+                    datums[i]= Datum.create(y_coordinate[i],units);
+                }
+                return new DasStackedHistogramPlot( dsd, xAxis, new DasLabelAxis(datums,row,column,DasAxis.VERTICAL), zAxis, row, column );
+            }
+        }
+        return null;
     }
     
-    public DasStackedHistogramPlot( XTaggedYScanDataSetDescriptor dsd,
-    DasAxis xAxis, DasLabelAxis yAxis, DasAxis zAxis,
-    DasRow row, DasColumn column) {
-        this( (DataSetDescriptor)dsd, xAxis, yAxis, zAxis, row, column );
-    }
-    
-    private DasStackedHistogramPlot( DataSetDescriptor dsd,
-    DasAxis xAxis, DasLabelAxis yAxis, DasAxis zAxis,
-    DasRow row, DasColumn column ) {
+    public DasStackedHistogramPlot( DataSetDescriptor dsd, DasAxis xAxis, DasLabelAxis yAxis, DasAxis zAxis, DasRow row, DasColumn column) {
         super(xAxis, yAxis, row, column);
         this.zAxisComponent = new ZAxisComponent(this,zAxis);
         this.setZAxis(zAxis);
@@ -158,9 +159,8 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
     }
     
-    public static DasStackedHistogramPlot create( DasCanvas parent, XTaggedYScanDataSetDescriptor dsd,
-    Datum startTime, Datum endTime ) throws edu.uiowa.physics.pw.das.DasException {
-        XTaggedYScanDataSet ds= (XTaggedYScanDataSet)dsd.getDataSet(startTime,endTime, null, null);
+    public static DasStackedHistogramPlot create( DasCanvas parent, DataSetDescriptor dsd, Datum startTime, Datum endTime ) throws edu.uiowa.physics.pw.das.DasException {
+        TableDataSet ds= (TableDataSet)dsd.getDataSet(startTime,endTime, null, null);
         DasStackedHistogramPlot result= DasStackedHistogramPlot.create(parent,ds);
         result.setDataSetDescriptor(dsd);
         return result;
@@ -222,13 +222,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         g.setRenderingHints(hints);
         
         DasAxis xaxis= getXAxis();
-        RebinDescriptor xbins=
-        new RebinDescriptor(
-        xaxis.getDataMinimum(),
-        xaxis.getDataMaximum(),
-        (int)(Math.abs(getColumn().getWidth())/1)+1,
-        (getXAxis().isLog())
-        );
+        RebinDescriptor xbins= new RebinDescriptor(xaxis.getDataMinimum(), xaxis.getDataMaximum(), (int)(Math.abs(getColumn().getWidth())/1)+1, (getXAxis().isLog()));
         
         int xDMax= getColumn().getDMaximum();
         int xDMin= getColumn().getDMinimum();
@@ -237,27 +231,27 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         //DasRow drawZAxisRow=null;
         //DasAxis drawThisZAxis=null;
         
-        XTaggedYScanDataSet xtysData= (XTaggedYScanDataSet)Data;
+        TableDataSet xtysData= (TableDataSet)Data;
         
         if ( Data==null ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("null data set");
             return;
         }
         
-        xtysData.getPeaks();  // create peaks if it doesn't have them already
-        XTaggedYScanDataSet rebinDs= xtysData.binAverageX(xbins);
-        XTaggedYScan[] data= rebinDs.data;
-        XTaggedYScan[] peaks= rebinDs.getPeaks();
-        XTaggedYScan[] weights= rebinDs.getWeights();
+        //xtysData.getPeaks();  // create peaks if it doesn't have them already
+        DataSetRebinner rebinner = new AveragePeakTableRebinner();
+        TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
+        TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
+        TableDataSet weights= (TableDataSet)data.getPlanarView("weights");
                 
         Rectangle2D.Double r= new Rectangle2D.Double();
         Line2D.Double l= new Line2D.Double();
         Rectangle2D.Double rmax= new Rectangle2D.Double();
         
-        for (int j=0; j<xtysData.y_coordinate.length; j++) {
+        for (int j = 0; j < data.getYLength(0); j++) {
             DasLabelAxis yAxis= (DasLabelAxis)getYAxis();
             
-            int yBase= getYAxis().transform(xtysData.y_coordinate[j],xtysData.getYUnits());
+            int yBase= getYAxis().transform(data.getYTagDatum(0, j));
             
             Line2D.Float lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
             g.setColor(Color.lightGray);
@@ -278,17 +272,18 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             int littleRowHeight= littleRow.getHeight();
             double zAxisMax= zAxisComponent.getAxis().getDataMaximum().doubleValue(xtysData.getZUnits());
             
-            for (int ibin=0; ibin<data.length; ibin++) {
+            for (int ibin=0; ibin < data.getXLength(); ibin++) {
                 int x0= getXAxis().transform(binStarts[ibin],xbins.getUnits());
                 int x1;
                 x1=x0+1; // 1 pixel wide
-                if ( weights[ibin].z[j]>0 ) {
-                    int yAvg= zAxisComponent.transform(data[ibin].z[j],xtysData.getZUnits());
+                if ( weights.getDouble(ibin, j, Units.dimensionless) > 0.0 ) {
+                    int yAvg= zAxisComponent.transform(data.getDouble(ibin, j, data.getZUnits()), data.getZUnits());
                     yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
                     int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
                     yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
-                    if (peaks[ibin].z[j]<=zAxisMax) {
-                        int yMax= zAxisComponent.transform(peaks[ibin].z[j],xtysData.getZUnits());
+                    double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
+                    if (peakValue <= zAxisMax) {
+                        int yMax= zAxisComponent.transform(peakValue, peaks.getZUnits());
                         yMax= (y0-yMax)>(0) ? yMax : (y0);
                         if (peaksIndicator==PeaksIndicator.MaxLines) {
                             l.setLine(x0,yMax,x0,yMax);
@@ -313,7 +308,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         parent.setCursor(cursor0);
     }
     
-    public void setData(XTaggedYScanDataSet Data) {
+    public void setData(TableDataSet Data) {
         super.setData(Data);
     }
     

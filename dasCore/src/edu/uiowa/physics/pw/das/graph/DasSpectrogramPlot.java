@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import org.w3c.dom.*;
 
@@ -38,12 +38,12 @@ import org.w3c.dom.*;
 public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot implements DasZAxisPlot
 {
     
-    private XTaggedYScanDataSet rebinData;
+    private TableDataSet rebinData;
     
     private SpectrogramRenderer renderer;
     
     /** Creates a new instance of DasSpectrogramPlot */
-    public static DasSpectrogramPlot create(DasCanvas parent, XTaggedYScanDataSet Data) {
+    public static DasSpectrogramPlot create(DasCanvas parent, TableDataSet Data) {
         
         DasRow row= new DasRow(parent,.05,.85);
         DasColumn column= new DasColumn(parent,0.15,0.80);
@@ -51,37 +51,41 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
         double [] x;
         double [] y;
         
-        int nx= Data.data.length;
-        int ny= Data.y_coordinate.length;
+        int nx= Data.getXLength();
+        int ny= Data.getYLength(0);
         
         x= new double[nx];
         for (int i=0; i<nx; i++) {
-            x[i]= Data.data[i].x;
+            x[i]= Data.getXTagDouble(i, Data.getXUnits());
         }
         
-        y= Data.y_coordinate;
+        y= new double[ny];
+        for (int j = 0; j < ny; j++) {
+            y[j] = Data.getYTagDouble(0, j, Data.getYUnits());
+        }
         
-        float z_fill= Data.getZFill();
+        double z_fill = Double.NaN;
         
         double [] zl= new double[nx*ny];
         int iz= 0;
         for (int i=0; i<nx; i++) {
             for (int j=0; j<ny; j++) {
-                if (Data.data[i].z[j] != z_fill)
-                    zl[iz++]= Data.data[i].z[j];
+                double zValue = Data.getDouble(i, j, Data.getZUnits());
+                if (!Double.isNaN(zValue))
+                    zl[iz++]= zValue;
             }
         }
         double [] z= new double[iz];
-        for (int i=0; i<iz; i++) z[i]= zl[i];
+        System.arraycopy(zl, 0, z, 0, iz);
         
         DasColorBar colorBar= new DasColorBar(Datum.create(0,Data.getZUnits()),Datum.create(0,Data.getZUnits()),row,DasColorBar.getColorBarColumn(column),false);
         colorBar.setDataRange(z);
+        DasAxis xAxis = new DasAxis(Datum.create(0,Data.getXUnits()),Datum.create(0,Data.getXUnits()),row,column,DasAxis.HORIZONTAL,false);
+        xAxis.setDataRange(x);
+        DasAxis yAxis = new DasAxis(Datum.create(0,Data.getYUnits()),Datum.create(0,Data.getYUnits()),row,column,DasAxis.VERTICAL,false);
+        xAxis.setDataRange(x);
         
-        DasSpectrogramPlot result= new DasSpectrogramPlot(Data,
-        Data.getXAxis(row,column),
-        Data.getYAxis(row,column),
-        row, column,
-        colorBar );
+        DasSpectrogramPlot result= new DasSpectrogramPlot(Data, xAxis, yAxis, row, column, colorBar );
         
         return result;
     }
@@ -101,31 +105,21 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
      * @see #setColorBar(DasColorBar)
      */
     public DasSpectrogramPlot() {
-        this((XTaggedYScanDataSetDescriptor)null, null, null, null, null, null);
+        this((DataSetDescriptor)null, null, null, null, null, null);
     }
     
-    public DasSpectrogramPlot(XTaggedYScanDataSet data,
-    DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column, DasColorBar colorBar) {
+    public DasSpectrogramPlot(TableDataSet data, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column, DasColorBar colorBar) {
         this((data==null ? null : new ConstantDataSetDescriptor(data)),
         xAxis, yAxis, row, column, colorBar);
     }
     
-    public DasSpectrogramPlot(XTaggedYScanDataSetDescriptor dataSetDescriptor,
-        DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column, DasColorBar colorBar) {
-            this((DataSetDescriptor)dataSetDescriptor, xAxis, yAxis, row, column, colorBar);
-    }
-    
-    protected DasSpectrogramPlot(DataSetDescriptor dataSetDescriptor,
-    DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column, DasColorBar colorBar) {
-        
+    public DasSpectrogramPlot(DataSetDescriptor dataSetDescriptor, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column, DasColorBar colorBar) {
         super(xAxis,yAxis,row,column);
-        
         renderer= new SpectrogramRenderer( this, dataSetDescriptor, colorBar );
         this.addRenderer(renderer); 
-
     }    
     
-    public XTaggedYScanDataSet getRebinData() {
+    public TableDataSet getRebinData() {
         return rebinData;
     }
     
@@ -141,10 +135,6 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
      */
     public void setColorBar(DasColorBar colorBar) {
         //Noop
-    }
-    
-    public void setData(XTaggedYScanDataSet Data) {
-        this.Data= Data;
     }
     
     /**
@@ -168,10 +158,13 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
         return renderer.getDataSetID();
     }
     
-    private static XTaggedYScanDataSet createEmptyDataSet() {
-        XTaggedYScanDataSet ds = new XTaggedYScanDataSet(null);
-        ds.data = new XTaggedYScan[0];
-        ds.y_coordinate = new double[0];
+    private static TableDataSet createEmptyDataSet() {
+        Units xUnits, yUnits, zUnits;
+        xUnits = yUnits = zUnits = Units.dimensionless;
+        double[] xTags, yTags;
+        xTags = yTags = new double[0];
+        double[][] zValues = {};
+        TableDataSet ds = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, java.util.Collections.EMPTY_MAP);
         return ds;
     }
     
@@ -231,7 +224,7 @@ public class DasSpectrogramPlot extends edu.uiowa.physics.pw.das.graph.DasPlot i
             colorbar = (DasColorBar)form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
         }
         
-        DasSpectrogramPlot plot = new DasSpectrogramPlot((XTaggedYScanDataSet)null, xAxis, yAxis, row, column, colorbar);
+        DasSpectrogramPlot plot = new DasSpectrogramPlot((DataSetDescriptor)null, xAxis, yAxis, row, column, colorbar);
         
         plot.setTitle(element.getAttribute("title"));
         try {

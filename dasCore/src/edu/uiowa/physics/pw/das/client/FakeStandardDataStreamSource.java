@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.client.XTaggedYScanDataSetDescriptor;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 
 import java.io.InputStream;
@@ -105,15 +105,10 @@ public class FakeStandardDataStreamSource implements StandardDataStreamSource {
     
     public InputStream getInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException {
         
-        double recsPerSecond= 1 / dsd.x_sample_width;
+        double recsPerSecond= 1 / 120000.0;
         int nRec= (int) ( end.subtract(start).doubleValue(Units.seconds) * recsPerSecond );
         
-        int nitems;
-        if ( dsd instanceof XTaggedYScanDataSetDescriptor ) {
-            nitems= ((XTaggedYScanDataSetDescriptor)dsd).y_coordinate.length;
-        } else {
-            throw new IllegalArgumentException("Only XTYSDSD's please!");
-        }
+        int nitems = 12;
         
         InputStream result= new FakeStandardDataStreamSource.FakeInputStream(nRec,recsPerSecond,nitems);
         return result;

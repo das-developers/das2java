@@ -22,20 +22,14 @@
  */
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import java.nio.ByteBuffer;
 
 public interface SkeletonDescriptor {
     
     public int getSizeBytes();
     
-    public int getNumRecords();
+    public void read(ByteBuffer input, double[] output, int offset);
     
-    public void read(byte[] buf, int offset, int length);
-    
-    public edu.uiowa.physics.pw.das.dataset.DataSet asDataSet(edu.uiowa.physics.pw.das.datum.Datum[] timeTags);
-    
-    public String getName();
+    public void write(double[] input, int offset, ByteBuffer output);
     
 }
-

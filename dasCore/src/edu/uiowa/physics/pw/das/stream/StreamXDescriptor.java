@@ -23,13 +23,9 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.LocationUnits;
-import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.datum.UnitsConverter;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -37,70 +33,50 @@ import java.util.ArrayList;
 
 public class StreamXDescriptor implements SkeletonDescriptor {
     
-    Datum baseTime;
+    private Units units = Units.seconds;
     
-    ArrayList records;
+    private DataTransferType transferType = DataTransferType.SUN_REAL4;
     
-    double current;
+    public StreamXDescriptor() {
+    }
     
-    UnitsConverter uc;
-    Units offsetUnits;
-    
-    String name="";
-    
-    StreamXDescriptor( Node node, StreamDescriptor streamDescriptor ) {
-        records= new ArrayList();        
-        this.baseTime= streamDescriptor.getStartTime();        
-        Node attrNode;
-        offsetUnits= null;
-        if ( (attrNode=node.getAttributes().getNamedItem("units"))!=null ) {
-            String unitsStr= attrNode.getNodeValue();
-            if ( !unitsStr.equals("seconds") ) {
-                throw new IllegalStateException("X units are not seconds!!!");
-            } else {
-                offsetUnits= Units.seconds;
-            }
+    public StreamXDescriptor( Element element ) {
+        String typeStr = element.getAttribute("type");
+        DataTransferType type = DataTransferType.getByName(typeStr);
+        if (type != null) {
+            transferType = type;
         }
-        NamedNodeMap attr= node.getAttributes();
-        if ( ( attrNode=attr.getNamedItem("name") ) != null ) {
-            name= attrNode.getNodeValue();
-        } else {
-            name= "";
-        }
-        if ( baseTime != null ) {
-            uc= UnitsConverter.getConverter(offsetUnits,((LocationUnits)baseTime.getUnits()).getOffsetUnits());
-        } else {
-            uc= null;
+        else {
+            throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
     }
     
     public int getSizeBytes() {
-        return 8;
+        return transferType.getSizeBytes();
     }
     
-    public int getNumRecords() {
-        return records.size();
+    public Units getUnits() {
+        return units;
     }
     
-    public void read(byte[] buf, int offset, int length) {
-        // offset should be zero for this case, since the X is special in that it's needed for the YScans
-        java.nio.ByteBuffer nbuf= ByteBuffer.wrap(buf);        
-        DoubleBuffer doubleBuffer=nbuf.asDoubleBuffer();
-        doubleBuffer.position(offset/8);        
-        current= doubleBuffer.get();
-        records.add(baseTime.add(current,Units.seconds));
+    public void setUnits(Units units) {
+        this.units = units;
     }
     
-    public DataSet asDataSet(Datum[] timeTags) {
-        return null;
+    public void setDataTransferType(DataTransferType transferType) {
+        this.transferType = transferType;
     }
     
-    public Datum[] getValues() {
-        return (Datum[])records.toArray(new Datum[records.size()]);
+    public DataTransferType getDataTransferType() {
+        return transferType;
     }
     
-    public String getName() {
-        return name;
+    public void read(ByteBuffer input, double[] output, int offset) {
+        output[offset] = transferType.read(input);
+    }
+    
+    public void write(double[] input, int offset, ByteBuffer output) {
+        transferType.write(input[offset], output);
     }
     
 }

@@ -23,43 +23,33 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.UnitsConverter;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
-public class StreamYScanDescriptor extends XTaggedYScanDataSetDescriptor implements SkeletonDescriptor {
-    
-    int nitems=-999;
-    double[] yCoordinate;
-    Datum startTime, endTime;
-    
-    ArrayList records;
-    String name;
-    
-    public StreamYScanDescriptor( Node node, StreamDescriptor stream ) {
-        super(null);
-        if ( !node.getNodeName().equals("YScan") ) {
-            throw new IllegalArgumentException("xml tree root node is not the right type. "+
-            "Node type is: "+node.getNodeName());
-        }
-        NamedNodeMap attr= node.getAttributes();
-        Node attrNode;
-        this.startTime= (Datum)stream.getStartTime();
-        this.endTime= (Datum)stream.getEndTime();
-        
-        if ( ( attrNode=attr.getNamedItem("nitems") ) != null ) {
-            nitems= Integer.parseInt(attrNode.getNodeValue());
-        }
-        if ( ( attrNode=attr.getNamedItem("yCoordinate") ) != null ) {
-            String yCoordinateString= attrNode.getNodeValue();
-            try {
+public class StreamYScanDescriptor implements SkeletonDescriptor {
+
+    private Units yUnits = Units.dimensionless;
+    private Units zUnits = Units.dimensionless;
+    private double[] yCoordinate;
+    private int nitems;
+    private String name;
+    private DataTransferType transferType = DataTransferType.SUN_REAL4;
+
+    public StreamYScanDescriptor( Element element ) {
+        try {
+            if ( !element.getTagName().equals("YScan") ) {
+                throw new IllegalArgumentException("xml tree root node is not the right type. "+
+                "Node type is: "+element.getTagName());
+            }
+            nitems= Integer.parseInt(element.getAttribute("nitems"));
+            if ( element.getAttribute("yCoordinate") != null ) {
+                String yCoordinateString= element.getAttribute("yCoordinate");
                 yCoordinate= new double[nitems];            
                 int parseIdx=0;
                 for (int i=0; i<nitems-1; i++) {                    
@@ -68,54 +58,79 @@ public class StreamYScanDescriptor extends XTaggedYScanDataSetDescriptor impleme
                     parseIdx= toIdx+2;
                 }
                 yCoordinate[nitems-1]= Double.parseDouble(yCoordinateString.substring(parseIdx));
-                y_coordinate= yCoordinate;
-            } catch ( NumberFormatException ex ) {
-                throw new IllegalArgumentException("Error in das2stream at yCoordinate");
+            } 
+            String typeStr = element.getAttribute("type");
+            DataTransferType type = DataTransferType.getByName(typeStr);
+            if (type != null) {
+                transferType = type;
             }
-        } 
-        if ( ( attrNode=attr.getNamedItem("name") ) != null ) {
-            name= attrNode.getNodeValue();
+            else {
+                throw new RuntimeException("Illegal transfer type: " + typeStr);
+            }
+        } catch ( NumberFormatException ex ) {
+            throw new IllegalArgumentException("Error in das2stream at yCoordinate");
+        }
+        if ( element.getAttribute("name") != null ) {
+            name= element.getAttribute("name");
         } else {
             name="";
         }
-        records= new ArrayList();
     }
     
-    public int getSizeBytes() {
-        return nitems*4;
-    }
-    
-    public void read(byte[] buf, int offset, int length) {
-        float[] fbuf= new float[nitems];
-        java.nio.ByteBuffer nbuf= ByteBuffer.wrap(buf);  
-        FloatBuffer floatBuffer=  nbuf.asFloatBuffer();
-        floatBuffer.position(offset/4); // requires word-alignment
-        floatBuffer.get(fbuf);
-        records.add(new XTaggedYScan(-1e31,fbuf));
-    }
-    
-    public int getNumRecords() {
-        return records.size();
-    }
-    
-    public DataSet asDataSet(Datum[] xValues) {
-        if ( xValues.length!=records.size() ) {
-            throw new IllegalArgumentException("Number of xValues doesn't match number of records");
-        }        
-        XTaggedYScanDataSet ds= XTaggedYScanDataSet.create(this,(XTaggedYScan[])records.toArray(new XTaggedYScan[records.size()]));
-        ds.setStartTime(startTime);
-        ds.setEndTime(endTime);
-        ds.y_coordinate= yCoordinate;
-                        
-        for ( int i=0; i<ds.data.length; i++ ) {
-            ds.data[i].x= xValues[i].doubleValue(ds.getXUnits());
-        }
-        ds.setName(name);
-        return ds;
+    public StreamYScanDescriptor() {
     }
     
     public String getName() {
         return this.name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public double[] getYCoordinates() {
+        return (double[])yCoordinate.clone();
+    }
+    
+    public void setYCoordinates(double[] yCoordinates) {
+        this.yCoordinate = (double[])yCoordinates.clone();
+        this.nitems = yCoordinates.length;
+    }
+    
+    public int getNItems() {
+        return nitems;
+    }
+    
+    public Units getYUnits() {
+        return yUnits;
+    }
+    
+    public Units getZUnits() {
+        return zUnits;
+    }
+
+    public void setDataTransferType(DataTransferType transferType) {
+        this.transferType = transferType;
+    }
+    
+    public DataTransferType getDataTransferType() {
+        return transferType;
+    }
+    
+    public int getSizeBytes() {
+        return nitems * transferType.getSizeBytes();
+    }
+    
+    public void read(ByteBuffer input, double[] output, int offset) {
+        for (int i = 0; i < nitems; i++) {
+            output[offset + i] = transferType.read(input);
+        }
+    }
+    
+    public void write(double[] input, int offset, ByteBuffer output) {
+        for (int i = 0; i < nitems; i++) {
+            transferType.write(input[offset + i], output);
+        }
     }
     
 }

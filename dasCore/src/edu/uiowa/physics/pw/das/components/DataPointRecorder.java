@@ -107,32 +107,37 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         update();
     }
     
-    class MyDataSetDescriptor extends XMultiYDataSetDescriptor {
+    class MyDataSetDescriptor extends DataSetDescriptor {
         MyDataSetDescriptor() {
             super(null);
         }
         public void fireUpdate() {
-                fireDataSetUpdateEvent( new DataSetUpdateEvent(this) );
+            fireDataSetUpdateEvent( new DataSetUpdateEvent(this) );
         }
-        public DataSet getDataSet( Datum s1, Datum s2, Datum s3, DasProgressMonitor monitor ) throws DasException {
+
+        protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, DasProgressMonitor monitor) throws DasException {
             if ( dataPoints.size()==0 ) {
                 return null;
             } else {
-                XMultiYDataSet result= new XMultiYDataSet( unitsArray[0], unitsArray[1] );
-                XMultiY[] data= new XMultiY[dataPoints.size()];
+                VectorDataSetBuilder builder = new VectorDataSetBuilder();
+                builder.setXUnits(unitsArray[0]);
+                builder.setYUnits(unitsArray[1]);
                 for ( int irow= 0; irow<dataPoints.size(); irow++ ) {
                     DataPoint dp= (DataPoint)dataPoints.get(irow);
-                    data[irow]= new XMultiY(dp.get(0), new double[] { dp.get(1) });
+                    builder.insertY(dp.get(0), dp.get(1));
                 }
-                result.data= data;
-                return result;
+                return builder.toVectorDataSet();
             }
+        }
+        
+        public Units getXUnits() {
+            return unitsArray[0];
         }
         
     }
     private MyDataSetDescriptor dataSetDescriptor;
         
-    public XMultiYDataSetDescriptor getDataSetDescriptor() {
+    public DataSetDescriptor getDataSetDescriptor() {
         if ( dataSetDescriptor==null ) {
             dataSetDescriptor= new MyDataSetDescriptor();
         } 

@@ -11,7 +11,7 @@ import edu.uiowa.physics.pw.das.datum.*;
  */
 public abstract class ViewDataSet implements DataSet {
     
-    DataSet source;
+    private DataSet source;
     
     protected ViewDataSet(DataSet source) {
         this.source= source;

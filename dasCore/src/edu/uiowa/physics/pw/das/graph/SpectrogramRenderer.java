@@ -29,13 +29,11 @@ package edu.uiowa.physics.pw.das.graph;
  */
 
 import edu.uiowa.physics.pw.das.client.DataSetDescriptorNotAvailableException;
-import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
-import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
-import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.event.*;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.components.*;
 
 import org.w3c.dom.Document;
@@ -166,7 +164,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         java.util.Arrays.fill(pix, 0x00000000);
         
         if ( getDataSet() == null) {
-            rebinData = XTaggedYScanDataSet.create(new double[0], new double[0], new float[0][0]);
+            Units xUnits = getParent().getXAxis().getUnits();
+            Units yUnits = getParent().getYAxis().getUnits();
+            Units zUnits = getColorBar().getUnits();
+            double[] xTags, yTags;
+            xTags = yTags = new double[0];
+            double[][] zValues = {yTags};
+            rebinData = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, java.util.Collections.EMPTY_MAP);
         } else {
             RebinDescriptor xRebinDescriptor;
             xRebinDescriptor = new RebinDescriptor(
@@ -209,10 +213,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             setDataSetDescriptor(null);
             return;
         }
-        DataSetDescriptor dsd = DataSetDescriptorUtil.create(id);
+        DataSetDescriptor dsd = DataSetDescriptor.create(id);
+        /* TODO: We need some other sort of test here.
         if (!(dsd instanceof XTaggedYScanDataSetDescriptor)) {
             throw new DataSetDescriptorNotAvailableException(id + " does not refer to an x-tagged-y-scan data set");
         }
+         */
         setDataSetDescriptor(dsd);
     }
     
@@ -289,7 +295,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             }
         }
         
-        SpectrogramRenderer renderer = new SpectrogramRenderer(parent, (XTaggedYScanDataSetDescriptor)null, colorbar);
+        SpectrogramRenderer renderer = new SpectrogramRenderer(parent, null, colorbar);
         try {
             renderer.setDataSetID(dataSetID);
         }

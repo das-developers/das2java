@@ -22,81 +22,45 @@
  */
 package edu.uiowa.physics.pw.das.client;
 
-import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.DasIOException;
-import edu.uiowa.physics.pw.das.client.CachedXTaggedYScanDataSetDescriptor;
-import edu.uiowa.physics.pw.das.dataset.DataRequestor;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.event.DasEventMulticaster;
 import edu.uiowa.physics.pw.das.util.*;
+import edu.uiowa.physics.pw.das.stream.*;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.lang.reflect.*;
+import java.net.*;
+import java.nio.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
+import javax.xml.parsers.*;
+import org.xml.sax.*;
+import org.w3c.dom.*;
 
-public abstract class StreamDataSetDescriptor extends DataSetDescriptor implements Serializable {
-    
-    private DataSet cacheDataSet;
-    private class CacheTag {
-        Datum start;
-        Datum end;
-        Datum resolution;
-        CacheTag( Datum start, Datum end, Datum resolution ) {
-            this.start= start;
-            this.end= end;
-            this.resolution= resolution;
-        }
-    }
-    private CacheTag cacheTag;
-    
-    private static Map EMPTY_MAP = Collections.EMPTY_MAP;
-    
-    private Map properties = EMPTY_MAP;
-    
-    DataSet cachedDS;
-    
-    public String description = "";
-    public String form = "";
-    public String reader = "";
-    public String dataSetID= "No dsdfFile set";
-    
-    public String x_parameter = "";
-    public String x_unit = "";
-    
-    public double x_sample_width = Double.NaN;  // from dsdf -- obsolete
-    public double xSampleWidth= Double.NaN;  // this is used now, and is in xUnits.
-    
-    private Units xUnits;
+public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     protected StandardDataStreamSource standardDataStreamSource;
-    
-    /**
-     * Creates a new instance of <code>DataSetDescription</code>
-     * from the specified file
-     *
-     * @param filename the name of the file containing the data set description
-     * @throws java.io.IOException if there is an error reading from the file.
-     */
-    
-    protected StreamDataSetDescriptor( Units xUnits ) {       
-        this.xUnits= xUnits;
-        // yuck--I trust you will set the sdss.
+    private boolean serverSideReduction = true;
+    private StreamDescriptor defaultStreamDescriptor;
+
+    public Units getXUnits() {
+        return defaultStreamDescriptor.getXDescriptor().getUnits();
     }
     
+    /**
+     * Creates a new instance of <code>StreamDataSetDescriptor</code>
+     * from the specified file
+     */
+    protected StreamDataSetDescriptor(Map properties) {
+        setProperties(properties);
+    }
     
-    private boolean serverSideReduction = true;
+    public StreamDataSetDescriptor(StreamDescriptor sd, StandardDataStreamSource sdss) {
+        this(sd.getProperties());
+        this.standardDataStreamSource = sdss;
+    }
     
     public void setStandardDataStreamSource(StandardDataStreamSource sdss) {
         this.standardDataStreamSource= sdss;
@@ -106,28 +70,13 @@ public abstract class StreamDataSetDescriptor extends DataSetDescriptor implemen
         return this.standardDataStreamSource;
     }
     
-    public boolean isDas2Stream() {
-        String xxx= (String)properties.get("stream");
-        return ( xxx!=null) && xxx.equals("1");
+    protected void setProperties( Map properties ) {
+        super.setProperties(properties);
+        defaultStreamDescriptor = dsdfToStreamDescriptor(properties);
     }
-        
-    /**
-     * Returns the value of the property with the specified name
-     *
-     * @param name The name of the property requested
-     * @return The value of the requested property as an Object
-     */
-    public Object getProperty(String name) {
-        return properties.get(name);
-    }
-    
-    /**
-     * Returns a list of valid property names in this DataSetDescription
-     *
-     * @return Property names for this DataSetDescription as a String array
-     */
-    public String[] getPropertyNames() {
-        return (String[])properties.keySet().toArray(new String[properties.size()]);
+
+    public StreamDescriptor getDefaultStreamDescriptor() {
+        return defaultStreamDescriptor;
     }
     
     /**
@@ -139,14 +88,13 @@ public abstract class StreamDataSetDescriptor extends DataSetDescriptor implemen
      * @return array of floats containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    protected float[] readFloats(InputStream in, Datum start, Datum end) throws DasException {
+    protected float[] readFloats(InputStream in) throws DasException {
         float[] f;
-        byte[] data = readBytes(in, start, end);
+        byte[] data = readBytes(in);
         f = new float[data.length/4];
         ByteBuffer buff = ByteBuffer.wrap(data);
         FloatBuffer fbuff = buff.asFloatBuffer();
         fbuff.get(f);
-        
         return f;
     }
     
@@ -159,17 +107,22 @@ public abstract class StreamDataSetDescriptor extends DataSetDescriptor implemen
      * @return array of doubles containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    protected double[] readDoubles(InputStream in, Datum start, Datum end) throws DasException {
+    protected double[] readDoubles(InputStream in) throws DasException {
         double[] d;
-        byte[] data = readBytes(in, start, end);
+        byte[] data = readBytes(in);
         d = new double[data.length/4];
         ByteBuffer buff = ByteBuffer.wrap(data);
         FloatBuffer fbuff = buff.asFloatBuffer();
         for (int i = 0; i < d.length; i++) {
             d[i] = fbuff.get();
         }
-        
         return d;
+    }
+    
+    private ByteBuffer getByteBuffer(InputStream in) throws DasException {
+        byte[] data = readBytes(in);
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        return buffer;
     }
     
     /**
@@ -183,48 +136,28 @@ public abstract class StreamDataSetDescriptor extends DataSetDescriptor implemen
      * @param end A Datum object representing the end time for the interval requested
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    protected byte[] readBytes(InputStream uin, Datum start, Datum end) throws edu.uiowa.physics.pw.das.DasException {
-        
+    protected byte[] readBytes(InputStream in) throws DasException {
         LinkedList list = new LinkedList();
-        byte[] data;
+        byte[] data = new byte[4096];
         int bytesRead=0;
         int totalBytesRead=0;
-        
-        //BufferedInputStream in= new BufferedInputStream(uin,4096*2);
-        InputStream in= uin;
-        
-        long time = System.currentTimeMillis();
-        //FileOutputStream out= new FileOutputStream("x."+time+".dat");
-        
-        data = new byte[4096];
-        
         int lastBytesRead = -1;
-        
-        String s;
-        
         int offset=0;
+        long time = System.currentTimeMillis();
         
         try {
-            
             bytesRead= in.read(data,offset,4096-offset);
-            
             while (bytesRead != -1) {
-                
                 int bytesSoFar = totalBytesRead;
-                
                 offset+=bytesRead;
                 lastBytesRead= offset;
-                
                 if (offset==4096) {
                     list.addLast(data);
                     data = new byte[4096];
                     offset=0;
                 }
-                
                 totalBytesRead+= bytesRead;
-                
                 bytesRead= in.read(data,offset,4096-offset);
-                
             }
         } catch ( IOException e ) {
             throw new DasIOException(e);
@@ -235,27 +168,23 @@ public abstract class StreamDataSetDescriptor extends DataSetDescriptor implemen
         }
         
         if (list.size()== 0) {
-            throw new DasIOException("Error reading data for '"+description+"', no data available");
+            throw new DasIOException("Error reading data: no data available");
         }
-        
         int dataLength = (list.size()-1)*4096 + lastBytesRead;
-        
         data = new byte[dataLength];
-        
         Iterator iterator = list.iterator();
-        int i;
-        for (i = 0; i < list.size()-1; i++) {
-            System.arraycopy(iterator.next(), 0, data, i*4096, 4096);
+        for (int i = 0; i < list.size()-1; i++) {
+            System.arraycopy(list.get(i), 0, data, i*4096, 4096);
         }
-        System.arraycopy(iterator.next(), 0, data, i*4096, lastBytesRead);
+        System.arraycopy(list.get(list.size()-1), 0, data, (list.size() - 1)*4096, lastBytesRead);
         return data;
     }
     
     public String toString() {
-        return dataSetID;
+        return getDataSetID();
     }
     
-    public DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
+    protected DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         if ( ! resolution.isFinite() ) throw new IllegalArgumentException( "resolution is not finite" );
         InputStream in;
         DataSet result;
@@ -266,52 +195,200 @@ public abstract class StreamDataSetDescriptor extends DataSetDescriptor implemen
         }
         in = new DasProgressMonitorInputStream(in, monitor);
         result = getDataSet( in, start, end, resolution );
-        cacheTag= new CacheTag(start,end,resolution);
-        cacheDataSet= result;
         return result;
     }
     
-    protected abstract DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException;
-    
-    public String getDataSetID() {
-        return dataSetID;
+    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException {
+        if (getProperty("form").equals("x_tagged_y_scan")) {
+            return getTableDataSet(in, start);
+        }
+        else if (getProperty("form").equals("x_multi_y")) {
+            return getVectorDataSet(in, start);
+        }
+        else {
+            throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
+        }
     }
     
-    protected void setProperties(Map properties) {
-        
-        this.properties = new HashMap(properties);
-        
-        if (properties.containsKey("description")) {
-            description= (String)properties.get("description");
+    private DataSet getVectorDataSet(InputStream in0, Datum start) throws DasException {
+        try {
+            PushbackInputStream in = new PushbackInputStream(in0, 50);
+            StreamDescriptor sd = getStreamDescriptor(in);
+            VectorDataSetBuilder builder = new VectorDataSetBuilder();
+            builder.setXUnits(start.getUnits());
+            builder.setYUnits(Units.dimensionless);
+            for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
+                Object o = i.next();
+                if (o instanceof StreamMultiYDescriptor) {
+                    StreamMultiYDescriptor y = (StreamMultiYDescriptor)o;
+                    String name =  y.getName();
+                    if (name != null && !name.equals("")) {
+                        builder.addPlane(name);
+                    }
+                }
+                else {
+                    throw new DasIOException("Invalid Stream Header: Non-Y-descriptor encountered");
+                }
+            }
+            StreamMultiYDescriptor[] yDescriptors = (StreamMultiYDescriptor[])sd.getYDescriptors().toArray(new StreamMultiYDescriptor[0]);
+            int planeCount = yDescriptors.length - 1;
+            String[] planeIDs = new String[planeCount];
+            int recordSize = sd.getXDescriptor().getSizeBytes() + yDescriptors[0].getSizeBytes();
+            for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
+                planeIDs[planeIndex] = yDescriptors[planeIndex+1].getName();
+                recordSize += yDescriptors[planeIndex+1].getSizeBytes();
+            }
+            ByteBuffer data = getByteBuffer(in);
+            int recordCount = data.remaining() / recordSize;
+            double timeBaseValue = start.doubleValue(start.getUnits());
+            Units offsetUnits = start.getUnits().getOffsetUnits();
+            UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
+            double[] xTag = new double[1];
+            double[] yValue = new double[1];
+            while (data.remaining() > recordSize) {
+                sd.getXDescriptor().read(data, xTag, 0);
+                xTag[0] = timeBaseValue + uc.convert(xTag[0]);
+                yDescriptors[0].read(data, yValue, 0);
+                builder.insertY(xTag[0], yValue[0]);
+                for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
+                    yDescriptors[planeIndex + 1].read(data, yValue, 0);
+                    builder.insertY(xTag[0], yValue[0], yDescriptors[planeIndex + 1].getName());
+                }
+            }
+            builder.addProperties(properties);
+            VectorDataSet result = builder.toVectorDataSet();
+            return result;
         }
-        if (properties.containsKey("form")) {
-            form = (String)properties.get("form");
+        catch (DasException de) {
+            de.printStackTrace();
+            throw de;
         }
-        if (properties.containsKey("reader")) {
-            reader = (String)properties.get("reader");
-        }
-        if (properties.containsKey("x_parameter")) {
-            x_parameter = (String)properties.get("x_parameter");
-        }
-        if (properties.containsKey("x_unit")) {
-            x_unit= (String)properties.get("x_unit");
-        }
-        if (properties.containsKey("x_sample_width")) {
-            x_sample_width = ((Double)properties.get("x_sample_width")).doubleValue();
-            UnitsConverter uc= UnitsConverter.getConverter(Units.seconds,((LocationUnits)getXUnits()).getOffsetUnits());
-            xSampleWidth= uc.convert(x_sample_width);
-        }
-        
     }
     
-    public Units getXUnits() {
-        return this.xUnits;
+    private DataSet getTableDataSet(InputStream in0, Datum start) throws DasException {
+        PushbackInputStream in= new PushbackInputStream(in0,50);
+        StreamDescriptor sd = getStreamDescriptor(in);
+        TableDataSetBuilder builder = new TableDataSetBuilder();
+        builder.setXUnits(start.getUnits());
+        builder.setYUnits(Units.dimensionless);
+        builder.setZUnits(Units.dimensionless);
+        for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
+            Object o = i.next();
+            if (o instanceof StreamYScanDescriptor) {
+                StreamYScanDescriptor scan = (StreamYScanDescriptor)o;
+                String name = scan.getName();
+                if (name != null && !name.equals("")) {
+                    builder.addPlane(name);
+                }
+            }
+            else {
+                throw new DasIOException("Invalid Stream Header: Non-yScan descriptor encountered");
+            }
+        }
+        StreamYScanDescriptor[] yScans = (StreamYScanDescriptor[])sd.getYDescriptors().toArray(new StreamYScanDescriptor[0]);
+        int planeCount = yScans.length - 1;
+        String[] planeIDs = new String[planeCount];
+        int recordSize = sd.getXDescriptor().getSizeBytes() + yScans[0].getSizeBytes();
+        for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
+            planeIDs[planeIndex] = yScans[planeIndex+1].getName();
+            recordSize += yScans[planeIndex+1].getSizeBytes();
+        }
+        ByteBuffer data = getByteBuffer(in);
+        int recordCount = data.remaining() / recordSize;
+        double timeBaseValue= start.doubleValue(start.getUnits());
+        Units offsetUnits = start.getUnits().getOffsetUnits();
+        UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
+        double[] xTag = new double[1];
+        double[] yCoordinates = yScans[0].getYCoordinates();
+        double[] scan = new double[yScans[0].getNItems()];
+        while (data.remaining() > recordSize) {
+            sd.getXDescriptor().read(data, xTag, 0);
+            xTag[0] = timeBaseValue + uc.convert(xTag[0]);
+            yScans[0].read(data, scan, 0);
+            builder.insertYScan(xTag[0], yCoordinates, scan);
+            for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
+                yScans[planeIndex + 1].read(data, scan, 0);
+                builder.insertYScan(xTag[0], yCoordinates, scan, yScans[planeIndex + 1].getName());
+            }
+        }
+        builder.addProperties(properties);
+        TableDataSet result = builder.toTableDataSet();
+        return result;
+    }
+    
+    private static final byte[] HEADER = { (byte)'d', (byte)'a', (byte)'s', (byte)'2', (byte)0177, (byte)0177 };
+    
+    private StreamDescriptor getStreamDescriptor(PushbackInputStream in) throws DasIOException {
+        try {
+            byte[] tip = new byte[HEADER.length];
+            
+            int bytesRead = 0;
+            int totalBytesRead = 0;
+            do {
+                bytesRead = in.read(tip, totalBytesRead, HEADER.length - totalBytesRead);
+                if (bytesRead != -1) totalBytesRead += bytesRead;
+            } while (totalBytesRead < HEADER.length && bytesRead != -1);
+            if (Arrays.equals(tip, HEADER)) {
+                byte[] header = StreamTool.advanceTo(in, "\177\177".getBytes());
+                ByteArrayInputStream source = new ByteArrayInputStream(header);
+                DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                Document document = builder.parse(source);
+                Element docNode= document.getDocumentElement();
+                StreamDescriptor streamDescriptor= new StreamDescriptor(docNode);
+                return streamDescriptor;
+            }
+            else {
+                in.unread(tip, 0, totalBytesRead);
+                return defaultStreamDescriptor;
+            }
+        }
+        catch ( ParserConfigurationException ex ) {
+            throw new IllegalStateException(ex.getMessage());
+        }
+        catch ( StreamTool.DelimeterNotFoundException dnfe) {
+            DasIOException dioe = new DasIOException(dnfe.getMessage());
+            dioe.initCause(dioe);
+            throw dioe;
+        }
+        catch ( SAXException ex ) {
+            DasIOException e= new DasIOException(ex.getMessage());
+            e.initCause(ex);
+            throw e;
+        }
+        catch ( IOException ex) {
+            throw new DasIOException(ex);
+        }
+    }
+    
+    private StreamDescriptor dsdfToStreamDescriptor(Map dsdf) {
+        StreamDescriptor streamDescriptor = new StreamDescriptor();
+        streamDescriptor.setXDescriptor(new StreamXDescriptor());
+        if (dsdf.get("form").equals("x_tagged_y_scan")) {
+            StreamYScanDescriptor yscan = new StreamYScanDescriptor();
+            yscan.setYCoordinates((double[])dsdf.get("y_coordinate"));
+            streamDescriptor.addYScan(yscan);
+        }
+        else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("ny") != null) {
+            StreamMultiYDescriptor y = new StreamMultiYDescriptor();
+            streamDescriptor.addYMulti(y);
+        }
+        else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("items") != null) {
+            List planeList = (List)dsdf.get("plane-list");
+            streamDescriptor.addYMulti(new StreamMultiYDescriptor());
+            for (int index = 0; index < planeList.size(); index++) {
+                StreamMultiYDescriptor y = new StreamMultiYDescriptor();
+                y.setName((String)planeList.get(index));
+                streamDescriptor.addYMulti(y);
+            }
+        }
+    
+        return streamDescriptor;
     }
     
     public boolean isRestrictedAccess() {
         boolean result;
-        if (properties.containsKey("groupAccess")) {
-            result= !(properties.get("groupAccess").equals(""));
+        if (getProperty("groupAccess") != null) {
+            result= !("".equals(getProperty("groupAccess")));
         } else {
             result= false;
         }
@@ -324,33 +401,6 @@ public abstract class StreamDataSetDescriptor extends DataSetDescriptor implemen
     
     public edu.uiowa.physics.pw.das.graph.Renderer getRenderer(edu.uiowa.physics.pw.das.graph.DasPlot plot) {
         return null;
-    }
-    
-    
-    public static void main( String[] args ) {
-        try {
-            String url= "http://www-pw.physics.uiowa.edu/das/dasServer?galileo/pws/best-e";
-            DataSetDescriptor dsd= DataSetDescriptorUtil.create(url);
-            System.out.println(dsd);        
-        } catch ( DasException e ) {
-            System.out.println(e);
-        }
-    }
-    
-    public Datum getXSampleWidth() {
-        Units xUnits= getXUnits();
-        if ( xUnits instanceof LocationUnits ) {
-            xUnits= ((LocationUnits)xUnits).getOffsetUnits();
-        }
-        return Datum.create(xSampleWidth,xUnits);
-    }
-    
-    public void setXSampleWidth( Datum datum ) {
-        if ( getXUnits() instanceof LocationUnits ) {
-            xSampleWidth= datum.doubleValue( ((LocationUnits)getXUnits()).getOffsetUnits() );
-        } else {
-            xSampleWidth= datum.doubleValue(getXUnits());
-        }
     }
     
     public void setServerSideReduction(boolean x) {

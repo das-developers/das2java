@@ -24,9 +24,16 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.util.*;
+import edu.uiowa.physics.pw.das.stream.*;
+
+import java.net.*;
+import java.util.*;
+import java.util.regex.*;
+import java.lang.reflect.*;
 import javax.swing.event.*;
 
 /**
@@ -38,8 +45,10 @@ public abstract class DataSetDescriptor {
      * repeat getDataSet calls by returning a cached dataset.  If a dataSetUpdate event
      * is thrown, the defaultCache is reset.
      */
+    protected Map properties = new HashMap();
     private boolean defaultCaching;
     private DataSet cacheDataSet;
+    private String dataSetID;
     private class CacheTag {
         Datum start;
         Datum end;
@@ -52,9 +61,9 @@ public abstract class DataSetDescriptor {
     }
     private CacheTag cacheTag;
     
-    protected DataSetDescriptor(String dataSetId) {
+    protected DataSetDescriptor(final String dataSetID) {
         cacheTag=null;
-        this.dataSetId= dataSetId;
+        this.dataSetID= dataSetID;
     }
     protected DataSetDescriptor() {
         this("");
@@ -64,7 +73,7 @@ public abstract class DataSetDescriptor {
      * getDataSet call of the abstract DataSetDescriptor uses this routine to satisfy requests and
      * fill its cache.  This caching may be disabled via setDefaultCaching;
      */
-    public abstract DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException ;
+    protected abstract DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException ;
     
     public abstract Units getXUnits();
     
@@ -115,14 +124,114 @@ public abstract class DataSetDescriptor {
         }
     }
     
-    String dataSetId;
-
-    public String getDataSetId() {
-        return this.dataSetId;
+    public String getDataSetID() {
+        return this.dataSetID;
     }
     
-    public void setDataSetId(String dataSetId) {
-        this.dataSetId= dataSetId;
+    private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z\\.]+)(?:\\?(.*))?");
+    private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.]+)=([_0-9a-zA-Z%+./]+)");
+            
+    public static DataSetDescriptor create( final String dataSetID ) throws DasException {
+        java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);
+        DataSetDescriptor result;
+        if (classMatcher.matches()) {
+            result = createFromClassName(dataSetID, classMatcher);
+        }
+        else {
+            try {
+                result = createFromServerAddress(new URL(dataSetID));
+                //result = DasServer.createDataSetDescriptor(new URL(dataSetID));
+            }
+            catch (MalformedURLException mue) {
+                throw new DasIOException(mue.getMessage());
+            }
+        }
+        result.dataSetID = dataSetID;
+        return result;
+    }
+    
+    private static DataSetDescriptor createFromServerAddress(final URL url) throws DasException {
+        DasServer server = DasServer.create(url);
+        StreamDescriptor sd = server.getStreamDescriptor(url);
+        /*
+        if ( sd.getProperty("form").equals("x_multi_y") && sd.getProperty("ny") == null) {
+            return new XMultiYDataSetDescriptor(sd.getProperties(), server.getStandardDataStreamSource());
+        }
+         */
+        return new StreamDataSetDescriptor(sd, server.getStandardDataStreamSource());
+    }
+    
+    private static DataSetDescriptor createFromClassName( final String dataSetID, final Matcher matcher) throws DasException {
+        try {
+            String className = matcher.group(1);
+            String argString = matcher.group(2);
+            String[] argList;
+            if (argString != null && argString.length() > 0) {
+                argList = argString.split("&");
+            }
+            else {
+                argList = new String[0];
+            }
+            URLDecoder decoder = new URLDecoder();
+            Map argMap = new HashMap();
+            for (int index = 0; index < argList.length; index++) {
+                Matcher argMatcher = NAME_VALUE.matcher(argList[index]);
+                if (argMatcher.matches()) {
+                    argMap.put(decoder.decode(argMatcher.group(1), "UTF-8"),
+                    decoder.decode(argMatcher.group(2), "UTF-8"));
+                }
+                else {
+                    throw new NoSuchDataSetException("Invalid argument: " + argList[index]);
+                }
+            }
+            Class dsdClass = Class.forName(className);
+            Method method = dsdClass.getMethod("newDataSetDescriptor", new Class[]{java.util.Map.class});
+            if (!Modifier.isStatic(method.getModifiers())) {
+                throw new NoSuchDataSetException("newDataSetDescriptor must be static");
+            }
+            return (DataSetDescriptor)method.invoke(null, new Object[]{argMap});
+        }
+        catch (ClassNotFoundException cnfe) {
+            DataSetDescriptorNotAvailableException dsdnae =
+            new DataSetDescriptorNotAvailableException(cnfe.getMessage());
+            dsdnae.initCause(cnfe);
+            throw dsdnae;
+        }
+        catch (NoSuchMethodException nsme) {
+            DataSetDescriptorNotAvailableException dsdnae =
+            new DataSetDescriptorNotAvailableException(nsme.getMessage());
+            dsdnae.initCause(nsme);
+            throw dsdnae;
+        }
+        catch (InvocationTargetException ite) {
+            DataSetDescriptorNotAvailableException dsdnae =
+            new DataSetDescriptorNotAvailableException(ite.getTargetException().getMessage());
+            dsdnae.initCause(ite.getTargetException());
+            throw dsdnae;
+        }
+        catch (IllegalAccessException iae) {
+            DataSetDescriptorNotAvailableException dsdnae =
+            new DataSetDescriptorNotAvailableException(iae.getMessage());
+            dsdnae.initCause(iae);
+            throw dsdnae;
+        }
+        catch (java.io.UnsupportedEncodingException uee) {
+            throw new RuntimeException(uee);
+        }
+    }
+
+    protected void setProperties( Map properties ) {
+        this.properties.putAll(properties);
+    }
+
+    /**
+     * Returns the value of the property with the specified name
+     *
+     * @param name The name of the property requested
+     * @return The value of the requested property as an Object
+     */
+    public Object getProperty(String name) {
+        return properties.get(name);
     }
     
 }

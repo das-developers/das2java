@@ -42,17 +42,35 @@ public class PeakTableRebinner implements DataSetRebinner {
         TableDataSet tds = (TableDataSet)ds;
         long timer= System.currentTimeMillis();
         
-        int nx= ddX.numberOfBins();
-        int ny= ddY.numberOfBins();
+        int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
+        int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
         
-        double[] rebinData= new double[nx*ny];
-        double[] rebinWeights= new double[nx*ny];
+        double[][] rebinData= new double[nx][ny];
+        double[][] rebinWeights= new double[nx][ny];
 
         peaks(tds, rebinData, ddX, ddY);
         
-        double[] xTags = ddX.binCenters();
-        double[][] yTags = {ddY.binCenters()};
-        double[][][] zValues = {{rebinData}};
+        double[] xTags;
+        if (ddX != null) {
+            xTags = ddX.binCenters();
+        }
+        else {
+            xTags = new double[tds.getXLength()];
+            for (int i = 0; i < xTags.length; i++) {
+                xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
+            }
+        }
+        double[][] yTags;
+        if (ddY != null) {
+            yTags = new double[][]{ddY.binCenters()};
+        }
+        else {
+            yTags = new double[0][tds.getYLength(0)];
+            for (int j = 0; j < yTags[0].length; j++) {
+                yTags[0][j] = tds.getYTagDouble(0, j, tds.getYUnits());
+            }
+        }
+        double[][][] zValues = {rebinData};
         int[] tableOffsets = {0};
         Units[] zUnits = {tds.getZUnits()};
         String[] planeIDs = {""};
@@ -60,37 +78,56 @@ public class PeakTableRebinner implements DataSetRebinner {
         return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
     }
     
-    static void peaks(TableDataSet tds, double[] rebinData, RebinDescriptor ddX, RebinDescriptor ddY) {
-        double[] ycoordinate= ddY.binCenters();
+    static void peaks(TableDataSet tds, double[][] rebinData, RebinDescriptor ddX, RebinDescriptor ddY) {
+        double[] ycoordinate;
+        if (ddY != null) {
+            ycoordinate = ddY.binCenters();
+        }
+        else {
+            ycoordinate = new double[tds.getYLength(0)];
+            for (int j = 0; j < ycoordinate.length; j++) {
+                ycoordinate[j] = tds.getDouble(0, j, tds.getYUnits());
+            }
+        }
 
-        int nx= ddX.numberOfBins();
-        int ny= ddY.numberOfBins();
+        int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
+        int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
         
-        java.util.Arrays.fill(rebinData, Double.NaN);
+        for (int i = 0; i < rebinData.length; i++) {
+            java.util.Arrays.fill(rebinData[i], Double.NaN);
+        }
         
         int [] ibiny= new int[tds.getYLength(0)];
         for (int j=0; j < ibiny.length; j++) {
-            ibiny[j]= ddY.whichBin(tds.getYTagDouble(0, j, tds.getYUnits()), tds.getYUnits());
+            if (ddY != null) {
+                ibiny[j]= ddY.whichBin(tds.getYTagDouble(0, j, tds.getYUnits()), tds.getYUnits());
+            }
+            else {
+                ibiny[j] = j;
+            }
         }
 
         for (int i=0; i < tds.getXLength(); i++) {
-            int ibinx= ddX.whichBin(tds.getXTagDouble(i, tds.getXUnits()), tds.getXUnits());
+            int ibinx;
+            if (ddX != null) {
+                ibinx= ddX.whichBin(tds.getXTagDouble(i, tds.getXUnits()), tds.getXUnits());
+            }
+            else {
+                ibinx = i;
+            }
             if (ibinx>=0 && ibinx<nx) {
                 for (int j = 0; j < ibiny.length; j++) {
                     if (ibiny[j] >= 0 && ibiny[j] < ny) {
-                        int index = ibinx*ny + ibiny[j];
                         double value = tds.getDouble(i, j, tds.getZUnits());
-                        if (Double.isNaN(rebinData[index])) {
-                            rebinData[index] = value;
+                        if (Double.isNaN(rebinData[ibinx][ibiny[j]])) {
+                            rebinData[ibinx][ibiny[j]] = value;
                         }
                         else {
-                            rebinData[index] = Math.max(value, rebinData[index]);
+                            rebinData[ibinx][ibiny[j]] = Math.max(value, rebinData[ibinx][ibiny[j]]);
                         }
                     }
                 }
             }
         }
-        
     }
-    
 }

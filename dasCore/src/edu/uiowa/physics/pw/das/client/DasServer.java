@@ -26,7 +26,7 @@ package edu.uiowa.physics.pw.das.client;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.DasProperties;
 import edu.uiowa.physics.pw.das.DasIOException;
-import edu.uiowa.physics.pw.das.client.*;
+import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.*;
 
@@ -218,13 +218,15 @@ public class DasServer {
         return standardDataStreamSource;
     }
 
-    public static StreamDataSetDescriptor createDataSetDescriptor( Properties properties, StandardDataStreamSource sdss ) throws DasException {
+    private static StreamDataSetDescriptor createDataSetDescriptor( Properties properties, StandardDataStreamSource sdss ) throws DasException {
         StreamDataSetDescriptor result;
         String form= (String)properties.get("form");
         if (form.equals("x_tagged_y_scan")) {
-            result= new CachedXTaggedYScanDataSetDescriptor(properties);
-        } else if ( form.equals("x_multi_y") ) {
-            result= new XMultiYDataSetDescriptor(properties);
+            result= new StreamDataSetDescriptor(properties);
+        } else if ( form.equals("x_multi_y") && properties.get("ny") != null) {
+            result= new StreamDataSetDescriptor(properties);
+        } else if ( form.equals("x_multi_y")) {
+            result= null;//new XMultiYDataSetDescriptor(properties);
         } else {
             throw new IllegalArgumentException("dsdf file is invalid, 'form' keyword is not valid.");
         }        
@@ -232,193 +234,32 @@ public class DasServer {
         return result;
     }
 
-    
-   /**
-     * Creates a new instance of <code>DataSetDescription</code>
-     * from the specified <code>Reader</code>
-     *
-     * @param in the specified <code>Reader</code>
-     * @throws java.io.IOException if there is an error reading from the <code>InputStream</code>
-     */
-    private static StreamDataSetDescriptor createDataSetDescriptor(Reader r, StandardDataStreamSource sdss ) throws DasException, IOException {
-        BufferedReader in = new BufferedReader(r);
-        IDLParser parser = new IDLParser();
-        double[] array;
-        String key;
-        String value;
-        String line;
-        int index, lineNumber;
-        
-        line = in.readLine();
-        lineNumber = 1;
-        
-        Properties properties = new Properties();
-        
-        while (line != null) {
-            //Get rid of any comments
-            index = line.trim().indexOf(';');
-            if (index == 0) {
-                lineNumber++;
-                line = in.readLine();
-                continue;
-            }
-            else if (index != -1) {
-                line = line.substring(0, index);
-            }
-            
-            //Break line into key-value pairs
-            index = line.indexOf('=');
-            key = line.substring(0,index).trim();
-            value = line.substring(index+1).trim();
-            
-            //deterimine type of value
-            
-            if (key.equals("description")) {
-                String description = value.substring(1, value.length()-1);
-                properties.put(key, description);
-            }
-            else if (key.equals("groupAccess")) {
-                properties.put(key, value.substring(1, value.length()-1));
-            }
-            else if (key.equals("form")) {
-                properties.put(key, value);
-            }
-            else if (key.equals("reader")) {
-                String reader = value.substring(1, value.length()-1);
-                properties.put(key, reader);
-            }
-            else  if (key.equals("x_parameter")) {
-                String x_parameter = value.substring(1, value.length()-1);
-                properties.put(key, x_parameter);
-            }
-            else if (key.equals("x_unit")) {
-                String x_unit = value.substring(1, value.length()-1);
-                properties.put(key, x_unit);
-            }
-            else if (key.equals("y_parameter")) {
-                String y_parameter = value.substring(1, value.length()-1);
-                properties.put(key, y_parameter);
-            }
-            else if (key.equals("y_unit")) {
-                String y_unit = value.substring(1, value.length()-1);
-                properties.put(key, y_unit);
-            }
-            else if (key.equals("z_parameter")) {
-                String z_parameter = value.substring(1, value.length()-1);
-                properties.put(key, z_parameter);
-            }
-            else if (key.equals("z_unit")) {
-                String z_unit = value.substring(1, value.length()-1);
-                properties.put(key, z_unit);
-            }
-            else if (key.equals("x_sample_width")) {
-                double x_sample_width = parser.parseIDLScalar(value);
-                if (x_sample_width == Double.NaN)
-                    throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                properties.put(key, new Double(x_sample_width));
-            }
-            else if (key.equals("y_fill")) {
-                double y_fill = parser.parseIDLScalar(value);
-                if (y_fill == Double.NaN)
-                    throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                properties.put(key, new Double(y_fill));
-            }
-            else if (key.equals("z_fill")) {
-                double z_fill = (float)parser.parseIDLScalar(value);
-                if (z_fill == Float.NaN)
-                    throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                properties.put(key, new Float(z_fill));
-            }
-            else if (key.equals("y_coordinate")) {
-                array = parser.parseIDLArray(value);
-                if (array == null) {
-                    throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                }
-                properties.put(key, array);
-            }
-            else if (key.equals("ny")) {
-                int ny;
-                try {
-                    ny = Integer.parseInt(value);
-                }
-                catch (NumberFormatException nfe) {
-                    throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                }
-                properties.put(key, new Integer(ny));
-            }
-            else if (key.equals("items")) {
-                int items;
-                try {
-                    items = Integer.parseInt(value);
-                }
-                catch (NumberFormatException nfe) {
-                    throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
-                }
-                properties.put(key, new Integer(items));
-            }
-            else if (value.charAt(0)=='\'' && value.charAt(value.length()-1)=='\'') {
-                properties.put(key, value.substring(1, value.length()-1));
-            }
-            else if (value.charAt(0)=='"' && value.charAt(value.length()-1)=='"') {
-                properties.put(key, value.substring(1, value.length()-1));
-            }
-            else {
-                properties.put(key, value);
-            }
-            line = in.readLine();
-            lineNumber++;
-        }
-        
-        StreamDataSetDescriptor result= createDataSetDescriptor( properties, sdss );
-     
-        return result;
-    }
-
-    public static StreamDataSetDescriptor createDataSetDescriptor( URL url ) throws DasException {
-        DasServer dasServer = DasServer.create(url);
+    public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
         try {
-            String dsdfString= dasServer.getDataSetDescriptor(url.getQuery());
-            StreamDataSetDescriptor dsd = createDataSetDescriptor(new StringReader(dsdfString),dasServer.getStandardDataStreamSource());            
-            dsd.dataSetID= url.toExternalForm(); // not to be confused with dataSetId jbf
-            return dsd;
-        } catch ( IOException e ) {
-            throw new DasIOException(e.getMessage());
-        }        
-    }
-
-    private String getDataSetDescriptor(String dsdf) throws edu.uiowa.physics.pw.das.DasException {
-        URL url;
-        
-        try {
-            url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
-        } catch ( MalformedURLException e ) {
-            throw new DataSetDescriptorNotAvailableException("malformed URL");
-        } catch ( IOException e ) {
-            throw new DataSetDescriptorNotAvailableException("I/O Error");
-        }
-        
-        edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,"getting "+url.toString());
-        
-        try {
+            String dsdf = dataSetID.getQuery();
+            URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
+            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,"getting "+url.toString());
             URLConnection connection = url.openConnection();
             connection.connect();
             String contentType = connection.getContentType();
             String[] s1= contentType.split(";"); // dump charset info
             contentType= s1[0];
             
-            if (!contentType.equalsIgnoreCase("text/plain")) {
-                BufferedReader bin = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String message = "";
-                String line = bin.readLine();
-                while (line != null) {
-                    message = message.concat(line);
-                    line = bin.readLine();
-                }
-                throw new IOException(message);
-            } else {
-                byte [] b= read(connection.getInputStream());
-                return new String(b);
+            if (contentType.equalsIgnoreCase("text/plain")) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StreamDescriptor result = StreamDescriptor.createLegacyDescriptor(in);
+                return result;
             }
+            else {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuffer message = new StringBuffer();
+                for (String line = in.readLine(); line != null; line = in.readLine()) {
+                    message.append(line).append('\n');
+                }
+                throw new IOException(message.toString());
+            }
+        } catch ( MalformedURLException e ) {
+            throw new DataSetDescriptorNotAvailableException("malformed URL");
         } catch ( FileNotFoundException e ) {
             throw new DasServerNotFoundException( e.getMessage() );
         } catch ( IOException e ) {
@@ -632,6 +473,7 @@ public class DasServer {
         return data;
     }
     
+    /*
     public static void main(String[] argv) {
         DasServer dasServer= DasServer.plasmaWaveGroup;
         
@@ -652,6 +494,7 @@ public class DasServer {
         }
         
     }
+     */
     
     public String getHost() {
         return host;

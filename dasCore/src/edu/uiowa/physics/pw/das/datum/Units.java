@@ -163,6 +163,9 @@ public abstract class Units {
         return id;
     }
     
+    public Units getOffsetUnits() {
+        return this;
+    }
     
     public abstract Datum createDatum( double value );    
     public abstract Datum createDatum( int value );    

@@ -41,29 +41,54 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         }
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
+        TableDataSet peaks = (TableDataSet)ds.getPlanarView("peaks");
         
         long timer= System.currentTimeMillis();
         
-        int nx= ddX.numberOfBins();
-        int ny= ddY.numberOfBins();
+        int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
+        int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
         
-        double[] averageData= new double[nx*ny];
-        double[] averageWeights= new double[nx*ny];
-        double[] peakData = new double[nx*ny];
+        double[][] averageData= new double[nx][ny];
+        double[][] averageWeights= new double[nx][ny];
+        double[][] peakData = new double[nx][ny];
 
         AverageTableRebinner.average(tds, weights, averageData, averageWeights, ddX, ddY);
         
-        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, ddX.binCenters(), Double.POSITIVE_INFINITY);
-        AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY.binCenters(), Double.POSITIVE_INFINITY, ddY.isLog());
+        double[] xTags;
+        if (ddX != null) {
+            xTags = ddX.binCenters();
+        }
+        else {
+            xTags = new double[nx];
+            for (int i = 0; i < nx; i++) {
+                xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
+            }
+        }
+        double[][] yTags;
+        if (ddY != null) {
+            yTags = new double[][]{ddY.binCenters()};
+        }
+        else {
+            yTags = new double[1][ny];
+            for (int j = 0; j < ny; j++) {
+                yTags[0][j] = tds.getYTagDouble(0, j, tds.getYUnits());
+            }
+        }
         
-        PeakTableRebinner.peaks(tds, peakData, ddX, ddY);
+        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, Double.POSITIVE_INFINITY);
+        AverageTableRebinner.fillInterpolateY(averageData, averageWeights, yTags[0], Double.POSITIVE_INFINITY, ddY == null ? false : ddY.isLog());
+        
+        if (peaks == null) {
+            PeakTableRebinner.peaks(tds, peakData, ddX, ddY);
+        }
+        else {
+            PeakTableRebinner.peaks(peaks, peakData, ddX, ddY);
+        }
 
-        double[] xTags = ddX.binCenters();
-        double[][] yTags = {ddY.binCenters()};
         int[] tableOffsets = {0};
-        String[] planeIDs =     {"",                "peaks",            "weights"};
-        double[][][] zValues =  {{averageData},     {peakData},         {averageWeights}};
-        Units[] zUnits =        {tds.getZUnits(),   tds.getZUnits(),    Units.dimensionless};
+        String[] planeIDs =     {"",               "peaks",          "weights"};
+        double[][][] zValues =  {averageData,      peakData,         averageWeights};
+        Units[] zUnits =        {tds.getZUnits(),  tds.getZUnits(),  Units.dimensionless};
 
         return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
     }

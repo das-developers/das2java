@@ -31,10 +31,10 @@ package edu.uiowa.physics.pw.das.client;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.client.DasServer;
+import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.format.TimeDatumFormatter;
+import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.*;
@@ -49,9 +49,14 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     private Key key;
     private DasServer server;
     private MeteredInputStream min;
+    private boolean legacyStream = true;
     
     public WebStandardDataStreamSource(DasServer server) {
         this.server = server;
+    }
+    
+    public boolean isLegacyStream() {
+        return legacyStream;
     }
     
     private Key getKey() {
@@ -108,22 +113,20 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 
         String formData;
         
-        if ( dsd instanceof XTaggedYScanDataSetDescriptor ) {            
+        if ( dsd.getProperty("form").equals("x_tagged_y_scan") ) {            
             formData= "server=compactdataset";
-            formData+= "&nitems="+(((XTaggedYScanDataSetDescriptor)dsd).y_coordinate.length+1);
+            StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultStreamDescriptor().getYDescriptors().get(0);
+            formData+= "&nitems=" + (y.getNItems() + 1);
             formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
-        } else if ( dsd instanceof XMultiYDataSetDescriptor ) {            
+        } else if ( dsd.getProperty("form").equals("x_multi_y") && dsd.getProperty("ny") != null) {            
             formData= "server=dataset";
-            XMultiYDataSetDescriptor mdsd= (XMultiYDataSetDescriptor)dsd;
-            if ( mdsd.isTCA() ) {
-                formData+= "&interval="+timeResolution.doubleValue(Units.seconds);
-            }
-        } else {
-            throw new IllegalStateException("dsd type not handled");
+        }
+        else {
+            formData= "server=dataset";
+            formData+= "&interval="+timeResolution.doubleValue(Units.seconds);
         }
         
-        
-        boolean compress=true;
+        boolean compress=false;
         if ( min!=null ) {
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "last transfer speed (byte/sec)= "+min.calcTransmitSpeed());
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "   time to transfer (sec)= "+min.calcTransmitTime());
@@ -134,41 +137,37 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             compress= false;
         }
             
-        if ( dsd.isDas2Stream() && compress ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "compressing data stream");
+        if (compress) {
             formData+= "&compress=true";
-        } else {
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "NOT compressing data stream");
-        }            
+        }
         
         InputStream in= openURLConnection( dsd, start, end, formData );        
         min= new MeteredInputStream(in);
+        if (compress) {
+            return new java.util.zip.ZipInputStream(min);
+        }
         return min;
 
     }
     
-    protected synchronized InputStream openURLConnection( StreamDataSetDescriptor dsd,
-      Datum start, Datum end, String additionalFormData )
-    throws DasException {
+    private String createFormDataString(String dataSetID, Datum start, Datum end, String additionalFormData) throws UnsupportedEncodingException {
+        DatumFormatter formatter = start.getUnits().getDatumFormatterFactory().defaultFormatter();
+        String startStr = formatter.format(start);
+        String endStr= formatter.format(end);
+        StringBuffer formData= new StringBuffer("dataset=");
+        formData.append(URLEncoder.encode(dataSetID,"UTF-8"));
+        formData.append("&start_time=").append(URLEncoder.encode(startStr,"UTF-8"));
+        formData.append("&end_time=").append(URLEncoder.encode(endStr,"UTF-8"));
+        formData.append("&").append(additionalFormData);
+        return formData.toString();
+    }
+    
+    protected synchronized InputStream openURLConnection( StreamDataSetDescriptor dsd, Datum start, Datum end, String additionalFormData ) throws DasException {
         
-        String dataSetID = dsd.getDataSetID();
-        String[] split = dataSetID.split("\\?", 2);
-        if (split.length > 1) {
-            dataSetID = split[1];
-        }
+        String dataSetID = dsd.getDataSetID().split("\\?", 2)[1];
         
         try {
-            TimeDatumFormatter formatter = TimeDatumFormatter.DEFAULT;
-            if ( !(start.getUnits() instanceof TimeLocationUnits) ) {
-                throw new IllegalStateException( "start,end units are not TimeLocationUnits -- not supported" );
-            }
-            
-            String formData= "dataset="+URLEncoder.encode(dataSetID,"UTF-8");
-            String startStr= formatter.format(start);
-            formData+= "&start_time="+URLEncoder.encode(startStr,"UTF-8");
-            String endStr= formatter.format(end);
-            formData+= "&end_time="+URLEncoder.encode(endStr,"UTF-8");
-            
+            String formData = createFormDataString(dataSetID, start, end, additionalFormData);
             if (dsd.isRestrictedAccess() || key!=null ) {
                 if (key==null) {
                     authenticate();
@@ -178,7 +177,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 }
             }
             
-            formData+= "&"+additionalFormData;
             URL server= this.server.getURL(formData);
             DasDie.println(DasDie.VERBOSE,server.toString());
             
@@ -200,55 +198,65 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             
             InputStream in= server.openStream();
             
-            BufferedInputStream bin= new BufferedInputStream(in);
-            
-            bin.mark(Integer.MAX_VALUE);
-            String serverResponse= readServerResponse(bin);
-            
-            if ( serverResponse.equals("") ) {
-                return bin;
-                
-            } else {
-                
-                if (serverResponse.equals("<noDataInInterval/>")) {
-                    throw new NoDataInIntervalException("no data in interval");
-                }
-                
-                String errorTag= "error";
-                if (serverResponse.startsWith("<"+errorTag+">")) {
-                    int index2= serverResponse.indexOf("</"+errorTag+">");
-                    
-                    String error= serverResponse.substring( errorTag.length()+2,
-                    serverResponse.length()-(errorTag.length()+3));
-                    
-                    edu.uiowa.physics.pw.das.util.DasDie.println("error="+error);
-                    
-                    if (error.equals("<needKey/>")) {
-                        authenticate();
-                        throw new NoKeyProvidedException("");
-                    }
-                    
-                    if (error.equals("<accessDenied/>")) {
-                        throw new AccessDeniedException("");
-                    }
-                    
-                    if (error.equals("<invalidKey/>" )) {
-                        throw new NoKeyProvidedException("invalid Key");
-                    }
-                    
-                    if (error.equals("<noSuchDataSet/>")) {
-                        throw new NoSuchDataSetException("");
-                    }
-                    
-                    else {
-                        throw new DasServerException("Error response from server: "+error);
-                    }
-                }
-                
-                return bin;
+            if (isLegacyStream()) {
+                return processLegacyStream(in);
+            }
+            else {
+                throw new UnsupportedOperationException();
             }
         } catch (IOException e) {
             throw new DasIOException(e.getMessage());
+        }
+    }
+    
+    private InputStream processLegacyStream(InputStream in) throws IOException, DasException {
+
+        BufferedInputStream bin= new BufferedInputStream(in);
+
+        bin.mark(Integer.MAX_VALUE);
+        String serverResponse= readServerResponse(bin);
+
+        if ( serverResponse.equals("") ) {
+            return bin;
+
+        } else {
+
+            if (serverResponse.equals("<noDataInInterval/>")) {
+                throw new NoDataInIntervalException("no data in interval");
+            }
+
+            String errorTag= "error";
+            if (serverResponse.startsWith("<"+errorTag+">")) {
+                int index2= serverResponse.indexOf("</"+errorTag+">");
+
+                String error= serverResponse.substring( errorTag.length()+2,
+                serverResponse.length()-(errorTag.length()+3));
+
+                edu.uiowa.physics.pw.das.util.DasDie.println("error="+error);
+
+                if (error.equals("<needKey/>")) {
+                    authenticate();
+                    throw new NoKeyProvidedException("");
+                }
+
+                if (error.equals("<accessDenied/>")) {
+                    throw new AccessDeniedException("");
+                }
+
+                if (error.equals("<invalidKey/>" )) {
+                    throw new NoKeyProvidedException("invalid Key");
+                }
+
+                if (error.equals("<noSuchDataSet/>")) {
+                    throw new NoSuchDataSetException("");
+                }
+
+                else {
+                    throw new DasServerException("Error response from server: "+error);
+                }
+            }
+
+            return bin;
         }
     }
     

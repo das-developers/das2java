@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
-import edu.uiowa.physics.pw.das.client.XTaggedYScanDataSetConsumer;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
@@ -48,7 +47,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
     
-    public HorizontalSlicerMouseModule(DasPlot parent, XTaggedYScanDataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
+    public HorizontalSlicerMouseModule(DasPlot parent, TableDataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
         this( parent, (DataSetConsumer)dataSetConsumer, xaxis, yaxis );
     }
     

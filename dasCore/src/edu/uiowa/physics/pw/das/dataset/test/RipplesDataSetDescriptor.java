@@ -93,7 +93,7 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
         z[0][0]= 1.0f;
         z[25][25]= -.5f;
         
-        return DefaultTableDataSet.create( x, Units.dimensionless, y, Units.dimensionless, z, Units.dimensionless, null );
+        return new DefaultTableDataSet( x, Units.dimensionless, y, Units.dimensionless, z, Units.dimensionless, null );
     }
         
 }

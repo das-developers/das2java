@@ -33,23 +33,17 @@ import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.ConstantDataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.client.XMultiYDataSet;
-import edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor;
 import edu.uiowa.physics.pw.das.datum.*;
 
 public class DasSymbolPlot extends DasPlot {
        
     private SymbolLineRenderer renderer;
     
-    public DasSymbolPlot(XMultiYDataSet data, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
+    public DasSymbolPlot(VectorDataSet data, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
         this((data==null ? null : new ConstantDataSetDescriptor(data)),xAxis,yAxis,row,column);
     }
     
-    public DasSymbolPlot(XMultiYDataSetDescriptor dsd, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
-        this((DataSetDescriptor)dsd,xAxis,yAxis,row,column);
-    }
-    
-    protected DasSymbolPlot(DataSetDescriptor dsd, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
+    public DasSymbolPlot(DataSetDescriptor dsd, DasAxis xAxis, DasAxis yAxis, DasRow row, DasColumn column) {
         super(xAxis,yAxis,row,column);
         renderer= new SymbolLineRenderer(dsd);
         addRenderer(renderer);
@@ -80,7 +74,8 @@ public class DasSymbolPlot extends DasPlot {
     }
     
     public void addData(double [] x, double [] y) {
-        addData(XMultiYDataSet.create(x,Units.dimensionless,y,Units.dimensionless));
+        Units units = Units.dimensionless;
+        addData(new DefaultVectorDataSet(x, units, y, units, java.util.Collections.EMPTY_MAP));
     }
     
     public void addData(double[] y) {
@@ -89,11 +84,11 @@ public class DasSymbolPlot extends DasPlot {
         addData(x,y);
     }
     
-    public void addData(XMultiYDataSet Data) {
+    public void addData(VectorDataSet Data) {
         renderer.setDataSet(Data);
     }
     
-    public static DasSymbolPlot create(DasCanvas parent, XMultiYDataSetDescriptor dsd) {
+    public static DasSymbolPlot create(DasCanvas parent, DataSetDescriptor dsd) {
         
         DasRow row= new DasRow(parent,.05,.85);
         DasColumn column= new DasColumn(parent,0.15,0.90);
@@ -109,11 +104,7 @@ public class DasSymbolPlot extends DasPlot {
             xAxis= new DasAxis( Datum.create(0,dsd.getXUnits()), Datum.create(10,dsd.getXUnits()), row, column, DasAxis.HORIZONTAL );
         }
         
-        if (dsd.getYUnits() instanceof TimeLocationUnits ) {
-            yAxis= new DasAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.VERTICAL );
-        } else {
-            yAxis= new DasAxis( Datum.create(0,dsd.getYUnits()), Datum.create(10,dsd.getYUnits()), row, column, DasAxis.VERTICAL );
-        }
+        yAxis= new DasAxis( Datum.create(0, Units.dimensionless), Datum.create(10, Units.dimensionless), row, column, DasAxis.VERTICAL );
         
         DasSymbolPlot result= new DasSymbolPlot(dsd,
         xAxis, yAxis,
@@ -125,28 +116,28 @@ public class DasSymbolPlot extends DasPlot {
         return result;
     }
     
-    public static DasSymbolPlot create(DasCanvas parent, XMultiYDataSet Data) {
+    public static DasSymbolPlot create(DasCanvas parent, VectorDataSet Data) {
         DasRow row= new DasRow(parent,.05,.85);
         DasColumn column= new DasColumn(parent,0.15,0.90);
         
         double [] x;
         
-        int nx= Data.data.length;
-        int ny= Data.ny*nx;
+        int nx= Data.getXLength();
+        int ny= nx;
         
         x= new double[nx];
         for (int i=0; i<nx; i++) {
-            x[i]= Data.data[i].x;
+            x[i]= Data.getXTagDouble(i, Data.getXUnits());
         }
         
-        double y_fill= Data.y_fill;
+        double y_fill= Double.NaN;
         
         double [] y= new double[ny];
         int iy= 0;
-        for (int i=0; i<nx; i++) {
-            for (int j=0; j<Data.ny; j++) {
-                if (Data.data[i].y[j] != y_fill)
-                    y[iy++]= Data.data[i].y[j];
+        for (int i=0; i < ny; i++) {
+            double yValue = Data.getDouble(i, Data.getYUnits());
+            if (!Double.isNaN(yValue)) {
+                y[iy++]= yValue;
             }
         }
         
@@ -156,8 +147,6 @@ public class DasSymbolPlot extends DasPlot {
         row, column );
         
         parent.addCanvasComponent(result);
-        parent.addCanvasComponent(result.getXAxis());
-        parent.addCanvasComponent(result.getYAxis());
         return result;
     }
     

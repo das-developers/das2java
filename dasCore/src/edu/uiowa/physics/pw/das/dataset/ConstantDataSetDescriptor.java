@@ -35,7 +35,7 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
     
     DataSet ds;
     
-    /** Creates a new instance of ConstantXTaggedYScanDataSetDescriptor */
+    /** Creates a new instance of ConstantDataSetDescriptor */
     public ConstantDataSetDescriptor(DataSet ds) {
         super();
         if (ds == null) throw new NullPointerException("DataSet parameter cannot be null");

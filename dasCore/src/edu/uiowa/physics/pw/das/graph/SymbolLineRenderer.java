@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.client.XMultiYDataSet;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
@@ -59,12 +58,11 @@ public class SymbolLineRenderer extends Renderer {
         super(dsd);
     }
     
-    
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         long timer0= System.currentTimeMillis();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
-        if (dataSet == null) return;
+        if (dataSet == null || dataSet.getXLength() == 0) return;
         
         Graphics2D graphics= (Graphics2D) g;
         
@@ -211,7 +209,7 @@ public class SymbolLineRenderer extends Renderer {
         String dataSetID = element.getAttribute("dataSetID");
         Psym psym = Psym.parsePsym(element.getAttribute("psym"));
         SymColor color = SymColor.parseSymColor(element.getAttribute("color"));
-        SymbolLineRenderer renderer = new SymbolLineRenderer( (edu.uiowa.physics.pw.das.client.XMultiYDataSet)null );
+        SymbolLineRenderer renderer = new SymbolLineRenderer( (VectorDataSet)null );
         parent.addRenderer(renderer);
         float lineWidth = Float.parseFloat(element.getAttribute("lineWidth"));
         try {
@@ -252,19 +250,5 @@ public class SymbolLineRenderer extends Renderer {
         this.psymConnector = psymConnector;
         refreshImage();
     }
-    
-    public static void main( String[] args ) {
-        DasCanvas canvas= new DasCanvas(400,400);
-        DasPlot plot= DasPlot.createDummyPlot(DasRow.create(canvas), DasColumn.create(canvas));
-        canvas.add(plot);
-        DataSetDescriptor dsd= new edu.uiowa.physics.pw.das.dataset.test.SineWaveDataSetDescriptor( Datum.create(4.), Datum.create(2.) );
-        plot.addRenderer(new SymbolLineRenderer(dsd));
-        javax.swing.JFrame jframe= new javax.swing.JFrame("SymbolLineRenderer");
-        jframe.getContentPane().add(canvas);
-        jframe.pack();
-        jframe.setVisible(true);
-        jframe.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-    }
-    
     
 }

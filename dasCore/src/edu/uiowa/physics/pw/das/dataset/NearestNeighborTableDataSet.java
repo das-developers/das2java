@@ -92,7 +92,13 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     }
     
     public DataSet getPlanarView(String planeID) {
-        return new NearestNeighborTableDataSet((TableDataSet)source.getPlanarView(planeID),ddX,ddY);
+        TableDataSet ds = (TableDataSet)source.getPlanarView(planeID);
+        if (ds != null) {
+            return new NearestNeighborTableDataSet(ds,ddX,ddY);
+        }
+        else {
+            return null;
+        }
     }
     
     public Object getProperty(String name) {
