@@ -1,8 +1,8 @@
 /* File: DataSet.java
  * Copyright (C) 2002-2003 The University of Iowa
- * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
- *             Jessica Swanner <jessica@space.physics.uiowa.edu>
- *             Edward E. West <eew@space.physics.uiowa.edu>
+ *
+ * Created on October 24, 2003, 11:23 AM
+ *      by Edward West <eew@space.physics.uiowa.edu>
  *
  * This file is part of the das2 library.
  *
@@ -24,111 +24,69 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.Units;
 
-/**
+/** General interface for objects encapsulating a data set
  *
- * @author  eew
+ * @author  Edward West
  */
-public abstract class DataSet
-implements java.io.Serializable, edu.uiowa.physics.pw.das.components.PropertyEditor.Editable {
+public interface DataSet {
     
-    DataSetDescriptor dataSetDescriptor;
+    /** Returns the property value associated with the string <code>name</code>
+     * @param name the name of the property requested
+     * @return the property value for <code>name</code> or null
+     */
+    Object getProperty(String name);
     
-    protected Datum startTime;
-    protected Datum endTime;
-    protected Datum resolution;
+    /** Returns the Units object representing the unit type of the x tags
+     * for this data set.
+     * @return the x units
+     */
+    Units getXUnits();
     
-    private Units xUnits;
+    /** Returns the Units object representing the unit type of the y tags
+     * or y values for this data set.
+     * @return the y units
+     */
+    Units getYUnits();
     
-    /** This member will only temporarily be public */
-    public String dsdfPath;
+    /** Returns the value of the x tag at the given index i as a
+     *      <code>Datum</datum>.
+     * @param i the index of the requested x tag
+     * @return the value of the x tag at the given index i as a
+     *      <code>Datum</code>.
+     */
+    Datum getXTagDatum(int i);
     
-    private String name="";
+    /** Returns the value of the x tag at the given index i as a
+     *      <code>double</datum> in the given units.  XTags must be
+     *      monotonically increasing with i.
+     * @return the value of the x tag at the given index i as a
+     *      <code>double</code>.
+     * @param units the units of the returned value
+     * @param i the index of the requested x tag
+     */
+    double getXTagDouble(int i, Units units);
     
-    public double xSampleWidth;
+    /** Returns the value of the x tag at the given index i as an
+     *      <code>int</datum> in the given units.  XTags must be
+     *      monotonically increasing with i.
+     * @return the value of the x tag at the given index i as an
+     *      <code>int</code>.
+     * @param units the units of the returned value.
+     * @param i the index of the requested x tag
+     */
+    int getXTagInt(int i, Units units);
+
+    /** Returns the number of x tags in this data set.  XTags must be
+     *      monotonically increasing with i.
+     * @return the number of x tags in this data set.
+     */
+    int getXLength();
     
-    public DataSet(DataSetDescriptor dsd ) {
-        this.dataSetDescriptor= dsd;
-        if ( dsd!=null ) {
-            this.xUnits= dsd.getXUnits();
-        } else {
-            this.xUnits= Units.dimensionless;
-        }
-    }
-    
-    public DataSet( DataSetDescriptor dsd, Datum startTime, Datum endTime, Datum resolution ) {
-        this(dsd);
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.resolution= resolution;
-    }
-    
-    public DataSet(Units xUnits) {
-        this.xUnits= xUnits;
-    }
-    
-    public DataSet() {
-        this(Units.dimensionless);
-    }
-    
-    public Units getXUnits() {
-        return xUnits;
-    }
-    
-    public void setXUnits(Units units) {
-        xUnits = units;
-    }
-    
-    public Datum getStartTime() {
-        return startTime;
-    }
-    
-    public Datum getEndTime() {
-        return endTime;
-    }
-    
-    public void setStartTime(Datum startTime) {
-        this.startTime= startTime;
-    }
-    
-    public void setEndTime(Datum endTime) {
-        this.endTime= endTime;
-    }
-    
-    public DataSetDescriptor getDataSetDescriptor() {
-        return dataSetDescriptor;
-    }
-    
-    public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
-        this.dataSetDescriptor= dataSetDescriptor;
-    }
-    
-    public String getName() {
-        return this.name;
-    }
-    
-    public void setName(java.lang.String name) {
-        this.name= name;
-    }
-    
-    public int sizeBytes() {
-        return -99999;
-    }
-    
-    public Datum getXSampleWidth() {
-        Units xUnits= getXUnits();
-        if ( xUnits instanceof LocationUnits ) {
-            xUnits= ((LocationUnits)xUnits).getOffsetUnits();
-        }
-        return Datum.create(xSampleWidth,xUnits);
-    }
-    
-    public void setXSampleWidth( Datum datum ) {
-        if ( getXUnits() instanceof LocationUnits ) {
-            xSampleWidth= datum.doubleValue( ((LocationUnits)getXUnits()).getOffsetUnits() );
-        } else {
-            xSampleWidth= datum.doubleValue(getXUnits());
-        }
-    }
+    /** Returns a <code>DataSet</code> with the specified view as the primary
+     * view.
+     * @param planeID the <code>String</code> id of the requested plane.
+     * @return the specified view, as a <code>DataSet</code>
+     */
+    DataSet getPlanarView(String planeID);
 }

@@ -7,4 +7,5 @@ jbf> Suggested Properties for DataSets:
   spacecraft         Spacecraft enumeration object
   xRange             DataRange object suggestion
   yRange             DataRange object suggestion
-  
+  dataType           String identifier for data type
+  DefaultRenderer    Renderer Object

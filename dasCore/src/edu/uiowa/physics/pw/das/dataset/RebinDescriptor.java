@@ -100,6 +100,11 @@ public class RebinDescriptor {
         return result;
     }
     
+    public double binCenter(int ibin) {  
+        double result= start+((ibin+0.5)/(double)(nBin)*(end-start));
+        if ( isLog ) return Math.exp(result); else return result;        
+    }
+    
     public double[] binStarts() {
         double [] result= new double[nBin];
         for (int i=0; i<nBin; i++) {
