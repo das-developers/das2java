@@ -2055,13 +2055,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             long t0= System.currentTimeMillis();
             
             DataRange dataRange0= dataRange;
-            DataRange tempRange=null;
-            try { tempRange= (DataRange)dataRange.clone(); }
-            catch ( CloneNotSupportedException e ) {
-                DasExceptionHandler.handle(e);
-                return;
-            }
-            
+            DataRange tempRange= dataRange.getAnimationDataRange();
+                        
             this.dataRange= tempRange;
             
             double transitionTime= 300; // millis

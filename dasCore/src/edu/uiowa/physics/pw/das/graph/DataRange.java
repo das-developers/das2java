@@ -73,6 +73,12 @@ public class DataRange implements Cloneable {
     }
     
     public void setLog(boolean log) {
+        /*
+         * propose new logic for going between lin/log axes:
+         * to log: pick first minor tick greater than zero.
+         * to lin: pick first minor tick in linear space less than min.
+         */
+        
         if (this.log==log) return;
         boolean oldLog = this.log;
         if (log) {
@@ -138,8 +144,9 @@ public class DataRange implements Cloneable {
             setRange(minimum, max);
         }
     }
-    
-    public void setRange(double min, double max) {
+        
+    public void setRange( double min, double max ) {
+        boolean pushStack= true;
         if ( min>max ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("min>max in DasAxis.DataRange.setRange");
             if (isLog()) {
@@ -152,15 +159,20 @@ public class DataRange implements Cloneable {
             if (min<0.) min=minimum;
             if (max<0.) max=maximum;
         }
+        
+        if ( pushStack ) {
+            Datum h[] = new Datum[2];
+            if (minimum!=maximum) {  //  kludge for create() method
+                h[0] = Datum.create(minimum,units);
+                h[1] = Datum.create(maximum,units);
+                history.push(h);
+            }
+            forwardHistory.removeAllElements();
+        }
+        
         double oldMin = minimum;
         double oldMax = maximum;
-        Datum h[] = new Datum[2];
-        if (minimum!=maximum) {  //  kludge for create() method
-            h[0] = Datum.create(minimum,units);
-            h[1] = Datum.create(maximum,units);
-            history.push(h);
-        }
-        forwardHistory.removeAllElements();
+        
         minimum = min;
         maximum = max;
         fireUpdate();
@@ -264,12 +276,38 @@ public class DataRange implements Cloneable {
         }
     }
     
-    public Object clone() throws CloneNotSupportedException {
+    public DataRange getAnimationDataRange() {
+        Datum min= Datum.create( this.getMinimum(), this.getUnits() );
+        Datum max= Datum.create( this.getMaximum(), this.getUnits() );
+        return new DataRange( this.parent, min, max, this.isLog() ) {
+            protected void fireUpdate() {};
+            public void setRange( double min, double max ) {
+                if ( min>max ) {
+                    edu.uiowa.physics.pw.das.util.DasDie.println("min>max in DasAxis.DataRange.setRange");
+                    if (isLog()) {
+                        max= min*10.;
+                    } else {
+                        max= min+1.;
+                    }
+                }
+                if ( isLog() ) {
+                    if (min<0.) min=minimum;
+                    if (max<0.) max=maximum;
+                }  
+                minimum= min;
+                maximum= max;                
+            }
+            public double getMinimum() { return minimum; }
+            public double getMaximum() { return maximum; }
+        };
+    }
+    
+/*    public Object clone() throws CloneNotSupportedException {
         DataRange result= (DataRange) super.clone();
         result.history= (Stack)history.clone();
         result.forwardHistory= (Stack)forwardHistory.clone();
         return result;
-    }
+    }*/
     
 }
 
