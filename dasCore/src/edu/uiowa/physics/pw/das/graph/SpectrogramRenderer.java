@@ -153,7 +153,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             h,
             yAxis.isLog());
             
-            DataSetRebinner rebinner= new TableNearestNeighborRebinner();
+            DataSetRebinner rebinner= new NearestNeighborTableRebinner();
             
             rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
             
