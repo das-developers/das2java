@@ -33,8 +33,8 @@ import java.text.ParseException;
  */
 public abstract class Units {
     
-    String id;
-    String description;
+    private String id;
+    private String description;
     
     protected Units( String id ) {
         this( id, "" );
@@ -214,6 +214,21 @@ public abstract class Units {
     public abstract Datum subtract( Number a, Number b, Units bUnits );
     public abstract Datum multiply( Number a, Number b, Units bUnits );
     public abstract Datum divide( Number a, Number b, Units bUnits );
+    
+    public static Units getByName(String s) {
+        if (s.equals("")) {
+            return Units.dimensionless;
+        }
+        else if (s.equals("TIME")) {
+            return Units.us2000;
+        }
+        else if (s.equals("seconds") || s.equals("s")) {
+            return Units.seconds;
+        }
+        else {
+            throw new IllegalArgumentException("Unrecognized units");
+        }
+    }
     
     public static void main( String[] args ) {
         dumpConversionTable();
