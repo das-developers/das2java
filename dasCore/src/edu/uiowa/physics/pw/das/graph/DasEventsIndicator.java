@@ -115,15 +115,15 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
                 for ( int i=ivds0; i<ivds1; i++ ) {
                     Datum x= vds.getXTagDatum(i);
                     int ix= (int)axis.transform(x);
-                    
-                    if ( getColumn().contains(ix) ) {
-                        int iwidth;
-                        if ( uc!=null ) {
-                            Datum y= widthsDs.getDatum(i);
-                            iwidth= (int)axis.transform( x.add( y ) ) - ix;
-                        } else {
-                            iwidth= 1;
-                        }
+                    int iwidth;
+                    if ( uc!=null ) {
+                        Datum y= widthsDs.getDatum(i);
+                        iwidth= (int)axis.transform( x.add( y ) ) - ix;
+                    } else {
+                        iwidth= 1;
+                    }
+                    if ( getColumn().getDMinimum() < ( ix+iwidth ) || 
+                        getColumn().getDMaximum() > (ix) ) {
                         if ( iwidth==0 ) iwidth=1;
                         g.fill( new Rectangle( ix, getY(), iwidth, getHeight() ) );
                         int im= ix-getX();
