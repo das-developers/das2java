@@ -25,7 +25,7 @@ public class DatumRange implements Comparable {
         this.s1=s1;
         this.s2=s2;
     } 
-    
+        
     /**
      * returns true of the DatumRange overlaps this.  Note that the endpoints are not
      * included in the comparison, so that Tuesday.intersects(Wednesday)==false.
@@ -93,5 +93,30 @@ public class DatumRange implements Comparable {
         }        
     }
     
+    public DatumRange zoomOut( double factor ) {
+        double add= (factor-1)/2;        
+        return rescale( -add, 1+add );        
+    }
+    
+    /**
+     * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum.
+     * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
+     *
+     *@param min
+     *@param max
+     *@return new Datum
+     */
+    public DatumRange rescale( double min, double max ) {
+        Datum w= width();
+        return new DatumRange( s1.add( w.multiply(min) ), s1.add( w.multiply(max) ) );
+    }
+    
+    public Datum min() {
+        return s1;
+    }
+    
+    public Datum max() {
+        return s2;
+    }
 }
 
