@@ -23,35 +23,27 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.dasml.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.*;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DateFormatter;
-import javax.swing.text.DocumentFilter;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import javax.swing.text.*;
+import javax.swing.text.DocumentFilter.FilterBypass;
+import javax.swing.tree.*;
+
+import java.lang.reflect.*;
+import java.text.*;
 import java.util.*;
 import java.util.List;
+import javax.swing.*;
 
 /**
  * This class implements a Hierarchical property editor
@@ -244,8 +236,8 @@ public class PropertyEditor extends JPanel {
         return (PropertyTreeTableModel)table.getModel();
     }
     
-    private edu.uiowa.physics.pw.das.dasml.OptionListEditor optionListEditor;
-    private edu.uiowa.physics.pw.das.dasml.CommandBlockEditor commandBlockEditor;
+    private OptionListEditor optionListEditor;
+    private CommandBlockEditor commandBlockEditor;
     
     private class PropertyTableMouseListener extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
@@ -271,15 +263,15 @@ public class PropertyEditor extends JPanel {
             else {
                 PropertyTreeTableModel model = getPropertyTreeTableModel();
                 Class type = model.getPropertyType(row);
-                if (type.equals(edu.uiowa.physics.pw.das.dasml.ListOption[].class)) {
+                if (type.equals(ListOption[].class)) {
                     if (optionListEditor == null) {
-                        optionListEditor = new edu.uiowa.physics.pw.das.dasml.OptionListEditor();
+                        optionListEditor = new OptionListEditor();
                     }
                     return optionListEditor;
                 }
-                else if (type.equals(edu.uiowa.physics.pw.das.dasml.CommandBlock.class)) {
+                else if (type.equals(CommandBlock.class)) {
                     if (commandBlockEditor == null) {
-                        commandBlockEditor = new edu.uiowa.physics.pw.das.dasml.CommandBlockEditor();
+                        commandBlockEditor = new CommandBlockEditor();
                     }
                     return commandBlockEditor;
                 }
@@ -625,7 +617,7 @@ public class PropertyEditor extends JPanel {
         private JFormattedTextField integerField;
         private JFormattedTextField floatField;
         private JTextField stringField;
-        private JFormattedTextField dateField;
+        private DatumEditor datumEditor;
         private JCheckBox booleanBox;
         private JButton editableButton;
         private JComboBox enumerationChoice;
@@ -657,13 +649,17 @@ public class PropertyEditor extends JPanel {
             
             stringField = new JTextField();
             stringField.addActionListener(this);
+            datumEditor = new DatumEditor();
+            datumEditor.addActionListener(this);
             booleanBox = new JCheckBox();
             booleanBox.addActionListener(this);
             
+            /*
             DateFormatter dateFormatter= new DateFormatter(
                 new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
             dateField = new JFormattedTextField(dateFormatter);
             dateField.addActionListener(this);
+             */
             
             editableButton = new JButton("Edit");
             editableButton.addActionListener(this);
@@ -735,10 +731,11 @@ public class PropertyEditor extends JPanel {
                 booleanBox.setText(value.toString());
                 return booleanBox;
             }
-            else if (value instanceof edu.uiowa.physics.pw.das.datum.Datum) {
+            else if (value instanceof Datum) {
                 editorState = DATUM;
-                stringField.setText(((edu.uiowa.physics.pw.das.datum.Datum)value).format());
-                return stringField;
+                Datum d = (Datum)value;
+                datumEditor.setValue(d);
+                return datumEditor;
             }
             else{
                 editorState = STRING;
@@ -791,7 +788,7 @@ public class PropertyEditor extends JPanel {
             }
             else if (editorState == DATUM) {
                 try {
-                    return ((edu.uiowa.physics.pw.das.datum.Datum)currentValue).parse(stringField.getText());
+                    return datumEditor.getValue();
                 }
                 catch (IllegalArgumentException iae) {
                     DasExceptionHandler.handle(iae);
@@ -1155,7 +1152,7 @@ public class PropertyEditor extends JPanel {
         
     }
     
-    protected static class FloatingPointFormatter extends JFormattedTextField.AbstractFormatter {
+    protected static class FloatingPointFormatter extends AbstractFormatter {
                 
         /** Parses <code>text</code> returning an arbitrary Object. Some
          * formatters may return null.
