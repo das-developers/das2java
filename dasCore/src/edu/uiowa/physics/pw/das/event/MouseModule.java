@@ -39,9 +39,10 @@ import java.util.Vector;
  */
 public class MouseModule  {
     
-    protected DasCanvasComponent parent;
+    //protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
     private String label;
+    protected DasCanvasComponent parent;    
     
     protected MouseModule() {
         label= "unlabelled MM";
@@ -49,9 +50,14 @@ public class MouseModule  {
     }
     
     public MouseModule(DasCanvasComponent parent) {
+       this( parent, EmptyDragRenderer.renderer, "unlabelled MM" );
+       setLabel(this.getClass().getName());
+    }
+    
+    public MouseModule(DasCanvasComponent parent, DragRenderer dragRenderer, String label) {
         this.parent= parent;
-        this.dragRenderer= EmptyDragRenderer.renderer;
-        this.label= this.getClass().getName();
+        this.dragRenderer= dragRenderer;
+        this.label= label;
     }
     
     /** returns a string that identifies the module */    
@@ -83,7 +89,7 @@ public class MouseModule  {
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
-    public void setLabel(java.lang.String label) {
+    private void setLabel(java.lang.String label) {
         // note the label must be set before the module is added to the dmia!!!
         this.label= label;
     }
