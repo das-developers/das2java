@@ -51,7 +51,8 @@ public class VectorDataSetBuilder {
     private Map properties = new HashMap();
     
     /** Creates a new instance of VectorDataSetBuilder */
-    public VectorDataSetBuilder() {
+    public VectorDataSetBuilder( Units xUnits ) {
+        this.xUnits= xUnits;
     }
 
     public void setProperty(String name, Object value) {
@@ -66,10 +67,10 @@ public class VectorDataSetBuilder {
         properties.putAll(map);
     }
 
-    public void addPlane(String name) {
+    public void addPlane(String name, Units yUnits ) {
         if (!planeIDs.contains(name)) {
             planeIDs.add(name);
-            yUnitsMap.put(name, Units.dimensionless);
+            yUnitsMap.put(name, yUnits );
         }
     }
     
