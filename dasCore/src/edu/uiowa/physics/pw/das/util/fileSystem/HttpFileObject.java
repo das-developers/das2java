@@ -144,7 +144,7 @@ public class HttpFileObject implements FileObject {
     }
     
     public String toString() {
-        return "[wfs]"+getNameExt();
+        return "["+wfs+"]"+getNameExt();
     }
     
     public String getNameExt() {
