@@ -90,9 +90,9 @@ public class DataSetUtil {
         return closest( xx, x );
     }
     
-    public static int getPreceedingColumn( DataSet ds, Datum datum ) {
+    public static int getPreviousColumn( DataSet ds, Datum datum ) {
         int i= closestColumn( ds, datum );
-        if ( i>0 && ds.getXTagDatum(i).gt(datum) ) {
+        if ( i>0 && ds.getXTagDatum(i).ge(datum) ) {
             return i-1;
         } else {
             return i;
@@ -101,7 +101,7 @@ public class DataSetUtil {
     
     public static int getNextColumn( DataSet ds, Datum datum ) {
         int i= closestColumn( ds, datum );
-        if ( i<ds.getXLength()-1 && ds.getXTagDatum(i).lt(datum) ) {
+        if ( i<ds.getXLength()-1 && ds.getXTagDatum(i).le(datum) ) {
             return i+1;
         } else {
             return i;

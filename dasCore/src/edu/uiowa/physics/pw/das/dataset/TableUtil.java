@@ -96,12 +96,22 @@ public class TableUtil {
         return result;
     }
     
+    public static String toString(TableDataSet tds) {
+        StringBuffer buffer= new StringBuffer();
+        buffer.append( tds.getYLength(0) );
+        for ( int i=1; i<tds.tableCount(); i++ ) {
+            buffer.append( ", "+tds.getYLength(i) );
+        }        
+        return "["+tds.getXLength()+" xTags, "+buffer.toString()+" yTags]";        
+    }
+    
     public static void dumpToAsciiStream( TableDataSet tds, OutputStream out ) {
         PrintStream pout= new PrintStream(out);
         
         Datum base=null;
         Units offsetUnits= null;
         
+        pout.print("This is not a das2 stream, even though it looks like it.");
         pout.print("[00]");
         pout.println("<stream start=\""+tds.getXTagDatum(0)+"\" end=\""+tds.getXTagDatum(tds.getXLength()-1)+"\" >");
         pout.println("<comment>Stream creation date: "+TimeUtil.now().toString()+"</comment>");
@@ -112,9 +122,8 @@ public class TableUtil {
             offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
             if ( offsetUnits==Units.microseconds ) {
                 offsetUnits= Units.seconds;
-            }
-        }
-        
+            }            
+        }                
         
         pout.print("[01]<packet>\n");
         pout.print("<x type=\"asciiTab10\" ");
@@ -126,7 +135,11 @@ public class TableUtil {
         }
         pout.println(" />");
         
-        pout.println("<yscan type=\"asciiTab10\" zUnits=\""+tds.getZUnits()+"\" />");
+        String yTagsString= ""+tds.getYTagDatum(0,0);
+        for ( int j=1; j<tds.getYLength(0); j++ ) {
+            yTagsString+= ", "+tds.getYTagDatum(0, j);
+        }        
+        pout.println("<yscan type=\"asciiTab10\" zUnits=\""+tds.getZUnits()+"\" yTags=\""+yTagsString+"\"/>");
         pout.print("</packet>");
         
         NumberFormat xnf= new DecimalFormat("00000.000");
@@ -207,7 +220,7 @@ public class TableUtil {
         }
     }
 
-    public static int getPreceedingRow( TableDataSet ds, int itable, Datum datum ) {
+    public static int getPreviousRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
         if ( i>0 && ds.getYTagDatum(itable,i).gt(datum) ) {
             return i-1;
