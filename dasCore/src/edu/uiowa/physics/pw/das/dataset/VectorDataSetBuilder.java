@@ -71,7 +71,7 @@ public class VectorDataSetBuilder {
     public void addPlane(String name, Units yUnits ) {
         if (!planeIDs.contains(name)) {
             planeIDs.add(name);
-            yUnitsMap.put(name, yUnits );
+            yUnitsMap.put(name, yUnits );            
         }
     }
     
@@ -134,7 +134,8 @@ public class VectorDataSetBuilder {
     
     public VectorDataSet toVectorDataSet() {
         double[][] collapsedYValues = collapseYValues(yValues, planeIDs, yUnitsMap);
-        Units[] yUnitsArray = getUnitsArray(planeIDs, yUnitsMap);
+        Units[] yUnitsArray = getUnitsArray(planeIDs, yUnitsMap);        
+        properties.put( "plane-list", Collections.unmodifiableList(planeIDs) ); 
         return new DefaultVectorDataSet(xTags.toArray(), xUnits, collapsedYValues, yUnitsArray, (String[])planeIDs.toArray(new String[planeIDs.size()]), properties);
     }
         
@@ -197,7 +198,7 @@ public class VectorDataSetBuilder {
     private class MultiY {
         private HashMap yValues = new HashMap();
         private void put(String name, double y) {
-            yValues.put(name, new Double(y));
+            yValues.put(name, new Double(y));            
         }
         private double get(String name) {
             Double y = (Double)yValues.get(name);
