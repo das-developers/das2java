@@ -130,7 +130,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     public Exception getLastException() {
         return this.lastException;
     }
-
+    
     public void setDataSet(DataSet ds) {
         setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
     }
@@ -168,7 +168,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         if ( e instanceof NoDataInIntervalException ) {
             s= "no data in interval";
-        } else { 
+        } else {
             s= e.getMessage();
             if ( "".equals(s) ) {
                 s= e.toString();
@@ -199,7 +199,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 }
                 DasExceptionHandler.handle(exception);
             }
-
+            
         } else {
             
             lastException= null;
@@ -244,12 +244,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             DataRequestor requestor = new DataRequestor() {
                 public void exception(Exception exception) {
                     try {
-                        if (!(exception instanceof InterruptedIOException) && 
+                        if (!(exception instanceof InterruptedIOException) &&
                         !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
                             if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
                                 lastException= exception;
                             }
-                            if ( ! ( ( exception instanceof NoDataInIntervalException ) )  ){ 
+                            if ( ! ( ( exception instanceof NoDataInIntervalException ) )  ){
                                 DasExceptionHandler.handle(exception);
                             }
                             
@@ -311,6 +311,18 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      */
     public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException ;
     
+    protected void refreshImage() {
+        if ( getParent()!=null ) {
+            getParent().markDirty();
+            if ( this instanceof SpectrogramRenderer ) {
+                DasAxis xaxis= getParent().getXAxis();
+                DasAxis yaxis= getParent().getYAxis();
+                update(xaxis,yaxis);
+            }
+            getParent().repaint();
+        }
+    }
+    
     public void update(DasAxis xAxis, DasAxis yAxis) {
         loadDataSet(xAxis,yAxis);
     }
@@ -332,7 +344,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         ds = null;
     }
     
-    protected DataSetDescriptor getDataSetDescriptor() {
+    public DataSetDescriptor getDataSetDescriptor() {
         return this.dsd;
     }
     
