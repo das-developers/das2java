@@ -87,7 +87,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
             setDataSetDescriptor(null);
             return;
         }
-        DataSetDescriptor dsd = DataSetDescriptor.create(id);
+        DataSetDescriptor dsd = DataSetDescriptorUtil.create(id);
         setDataSetDescriptor(dsd);
     }
     
@@ -95,7 +95,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         if (dsd == null) {
             return "";
         }
-        return dsd.getDataSetID();
+        return dsd.getDataSetId();
     }
     
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
