@@ -70,9 +70,9 @@ public class TimeRangeLabel extends DasCanvasComponent {
         setColumn(column);
         this.dataRange= dataRange;
         
-        MouseModule mm= new mouseModule();
+        /* MouseModule mm= new mouseModule();
         mouseAdapter.addMouseModule(mm);
-        mouseAdapter.setPrimaryModule(mm); // THIS SHOULD BE AUTOMATIC!!!
+        mouseAdapter.setPrimaryModule(mm); // THIS SHOULD BE AUTOMATIC!!! */
         updateFormatter();
     }
     
