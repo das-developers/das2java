@@ -37,7 +37,7 @@ import java.awt.*;
  *
  * @author  eew
  */
-public class XMultiYDataSet extends VectorDataSet implements java.io.Serializable {
+public class XMultiYDataSet extends DataSet_jbf implements VectorDataSet, java.io.Serializable {
     
     //static final long serialVersionUID = -1170391053428276284L;
     
@@ -190,6 +190,42 @@ public class XMultiYDataSet extends VectorDataSet implements java.io.Serializabl
         }
         return DasAxis.create(y,yUnits,row,column,DasAxis.VERTICAL,isLog);
         
+    }
+    
+    public Datum getXTagDatum(int i) {
+        return getXUnits().createDatum(data[i].x);
+    }
+    
+    public int getXLength() {
+        return data.length;
+    }
+    
+    public int getInt(int i, Units units) {
+        return (int)getDouble(i, units);
+    }
+    
+    public double getDouble(int i, Units units) {
+        return getYUnits().convertDoubleTo(units,data[i].y[0]);
+    }
+    
+    public DataSet getPlanarView(String planeID) {
+        throw new IllegalArgumentException("XMultiYDataSet doesn't have planes");
+    }
+    
+    public Datum getDatum(int i) {
+        return getYUnits().createDatum(data[i].y[0]);
+    }    
+    
+    public double getXTagDouble(int i, Units units) {
+        return getXUnits().convertDoubleTo(units,data[i].x);
+    }
+    
+    public int getXTagInt(int i, Units units) {
+        return (int)getXTagDouble(i, units);
+    }
+    
+    public Object getProperty(String name) {
+        return null;
     }
     
 }

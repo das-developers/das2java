@@ -23,13 +23,10 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.client.XMultiYDataSet;
-import edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor;
-import edu.uiowa.physics.pw.das.dataset.test.SineWaveDataSetDescriptor;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.dasml.FormBase;
+import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -52,106 +49,75 @@ public class SymbolLineRenderer extends Renderer {
     /** Holds value of property psymConnector. */
     private PsymConnector psymConnector= PsymConnector.SOLID;
     
-    public SymbolLineRenderer(edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor dsd) {
-        this((edu.uiowa.physics.pw.das.dataset.DataSetDescriptor)dsd);
-    }
+    private long lastUpdateMillis;
     
-    public SymbolLineRenderer(edu.uiowa.physics.pw.das.client.XMultiYDataSet ds) {
+    public SymbolLineRenderer(DataSet ds) {
         super(ds);
     }
     
-    protected SymbolLineRenderer(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd) {
+    public SymbolLineRenderer(DataSetDescriptor dsd) {
         super(dsd);
     }
     
-    /**
-     * @deprecated use {@link
-     * #SymbolLineRenderer(das_prot.XMultiYDataSetDescriptor)}
-     */
-    protected SymbolLineRenderer(DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd) {
-        super(dsd);
-        this.parent = parent;
-    }
-    
-    /** Creates a new instance of SymbolLineRenderer
-     * @deprecated use {@link
-     * #SymbolLineRenderer(das_proto.XMultiYDataSetDescriptor)}
-     */
-    public SymbolLineRenderer(DasPlot parent, edu.uiowa.physics.pw.das.client.XMultiYDataSetDescriptor dsd) {
-        this(dsd);
-        this.parent = parent;
-    }
-    
-    /**
-     * @deprecated use {@link
-     * #SymbolLineRenderer(das_proto.XMultiYDataSet)}
-     */
-    public SymbolLineRenderer(DasPlot parent, edu.uiowa.physics.pw.das.client.XMultiYDataSet ds) {
-        this(ds);
-        this.parent = parent;
-    }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        XMultiYDataSet Data= ( XMultiYDataSet ) getDataSet();
-        if (Data == null) return;
+        long timer0= System.currentTimeMillis();
         
-        double xSampleWidth = Data.xSampleWidth;
-        if (xSampleWidth == 0.0) {
-            xSampleWidth = Double.POSITIVE_INFINITY;
-        }
+        VectorDataSet dataSet= (VectorDataSet)getDataSet();
+        if (dataSet == null) return;
         
         Graphics2D graphics= (Graphics2D) g;
         
-        if (xAxis.getUnits()!=Data.getXUnits()) throw new IllegalArgumentException("Data x units and xAxis units differ");
-        if (yAxis.getUnits()!=Data.getYUnits()) throw new IllegalArgumentException("Data y units and yAxis units differ");
+        if (xAxis.getUnits()!=dataSet.getXUnits()) throw new IllegalArgumentException("dataSet x units and xAxis units differ");
+        if (yAxis.getUnits()!=dataSet.getYUnits()) throw new IllegalArgumentException("dataSet y units and yAxis units differ");
         
         Dimension d;
         
         edu.uiowa.physics.pw.das.datum.Units xUnits= xAxis.getUnits();
         edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();
-        double xmax= xAxis.getDataMaximum(xUnits);
-        double xmin= xAxis.getDataMinimum(xUnits);
-        double ymax= yAxis.getDataMaximum(yUnits);
-        double ymin= yAxis.getDataMinimum(yUnits);
+        double xmax= xAxis.getDataMaximum().doubleValue(xUnits);
+        double xmin= xAxis.getDataMinimum().doubleValue(xUnits);
+        double ymax= yAxis.getDataMaximum().doubleValue(yUnits);
+        double ymin= yAxis.getDataMinimum().doubleValue(yUnits);
         int ixmax, ixmin;
         
-        ixmin=0;
-        while (ixmin<Data.data.length-1 && Data.data[ixmin].x<xmin) ixmin++;
-        if (ixmin>Data.data.length-1) ixmin--;
+        ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
+        if ( ixmin>0 ) ixmin--;
+        ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
+        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
         
-        ixmax=Data.data.length-1;
-        while (ixmax>0 && Data.data[ixmin].x>xmax) ixmax--;
-        if (ixmax<0) ixmax++;
+        graphics.setColor(color.toColor());                
         
-        graphics.setColor(color.toColor());
-        
-        for (int iy = 0; iy < Data.data[0].y.length; iy++) {
-            
-            if ( psymConnector != PsymConnector.NONE ) {                
-                int x0 = xAxis.transform(Data.data[ixmin].x,Data.getXUnits());
-                int y0 = yAxis.transform(Data.data[ixmin].y[iy],Data.getYUnits());                
-                for (int i = ixmin+1; i <= ixmax; i++) {
-                    int x = xAxis.transform(Data.data[i].x,Data.getXUnits());
-                    int y = yAxis.transform(Data.data[i].y[iy],Data.getYUnits());
-                    if ( Data.data[i].y[iy] != Data.y_fill ) {
-                        if ( Data.data[i].y[iy] != Data.y_fill && Data.data[i-1].y[iy] != Data.y_fill
-                        && Math.abs(Data.data[i].x - Data.data[i-1].x) < xSampleWidth) {
-                            psymConnector.drawLine(graphics,x0,y0,x,y,lineWidth);
-                        }
-                        x0= x;
-                        y0= y;
+        double fill= -1e31;
+        double xSampleWidth= 1e31;
+                
+        if ( psymConnector != PsymConnector.NONE ) {
+            int x0 = xAxis.transform(dataSet.getXTagDouble(ixmin,xUnits),xUnits);
+            int y0 = yAxis.transform(dataSet.getDouble(ixmin,yUnits),yUnits);
+            for (int i = ixmin+1; i <= ixmax; i++) {
+                int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
+                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
+                if ( dataSet.getDouble(i,yUnits)!=fill ) {
+                    if ( dataSet.getDouble(i-1,yUnits) != fill ) {
+                        psymConnector.drawLine(graphics,x0,y0,x,y,lineWidth);
                     }
+                    x0= x;
+                    y0= y;
                 }
-                graphics.setStroke(new BasicStroke(1.0f));
             }
-            for (int i = ixmin; i <= ixmax; i++) {
-                if ( Data.data[i].y[iy] != Data.y_fill ) {
-                    int x = xAxis.transform(Data.data[i].x,Data.getXUnits());
-                    int y = yAxis.transform(Data.data[i].y[iy],Data.getYUnits());
-                    psym.draw( graphics, x, y, (float)symSize );
-                }
+            graphics.setStroke(new BasicStroke(1.0f));
+        }
+        for (int i = ixmin; i <= ixmax; i++) {
+            if ( dataSet.getDouble(i,yUnits) != fill ) {
+                int x = xAxis.transform(dataSet.getXTagDouble(i,xUnits),xUnits);
+                int y = yAxis.transform(dataSet.getDouble(i,yUnits),yUnits);
+                psym.draw( graphics, x, y, (float)symSize );
             }
         }
+        
+        long milli= System.currentTimeMillis();
+        //System.out.println( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis ) );
+        lastUpdateMillis= milli;
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis) {
@@ -202,7 +168,7 @@ public class SymbolLineRenderer extends Renderer {
     public void setColor(SymColor color) {
         this.color= color;
         if ( getParent()!=null ) getParent().repaint();
-    }     
+    }
     
     public float getLineWidth() {
         return lineWidth;
@@ -223,7 +189,8 @@ public class SymbolLineRenderer extends Renderer {
         String dataSetID = element.getAttribute("dataSetID");
         Psym psym = Psym.parsePsym(element.getAttribute("psym"));
         SymColor color = SymColor.parseSymColor(element.getAttribute("color"));
-        SymbolLineRenderer renderer = new SymbolLineRenderer(parent, (edu.uiowa.physics.pw.das.client.XMultiYDataSet)null);
+        SymbolLineRenderer renderer = new SymbolLineRenderer( (edu.uiowa.physics.pw.das.client.XMultiYDataSet)null );
+        parent.addRenderer(renderer);
         float lineWidth = Float.parseFloat(element.getAttribute("lineWidth"));
         try {
             renderer.setDataSetID(dataSetID);
@@ -253,8 +220,8 @@ public class SymbolLineRenderer extends Renderer {
      */
     public PsymConnector getPsymConnector() {
         return this.psymConnector;
-    }    
-
+    }
+    
     /** Setter for property psymConnector.
      * @param psymConnector New value of property psymConnector.
      *
@@ -267,13 +234,13 @@ public class SymbolLineRenderer extends Renderer {
         DasCanvas canvas= new DasCanvas(400,400);
         DasPlot plot= DasPlot.createDummyPlot(DasRow.create(canvas), DasColumn.create(canvas));
         canvas.add(plot);
-        XMultiYDataSetDescriptor dsd= new SineWaveDataSetDescriptor( Datum.create(4.), Datum.create(2.) );  
+        DataSetDescriptor dsd= new edu.uiowa.physics.pw.das.dataset.test.SineWaveDataSetDescriptor( Datum.create(4.), Datum.create(2.) );
         plot.addRenderer(new SymbolLineRenderer(dsd));
         javax.swing.JFrame jframe= new javax.swing.JFrame("SymbolLineRenderer");
         jframe.getContentPane().add(canvas);
         jframe.pack();
         jframe.setVisible(true);
-        jframe.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);                
+        jframe.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
     }
     
     

@@ -39,7 +39,7 @@ import java.util.LinkedList;
  *
  * @author  eew
  */
-public class XTaggedYScanDataSet extends TableDataSet implements java.io.Serializable {
+public class XTaggedYScanDataSet extends DataSet_jbf implements TableDataSet, java.io.Serializable {
     
     //static final long serialVersionUID = 2277565010159376982L;
     
@@ -81,11 +81,9 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
     
     /** Holds value of property nnRebin. */
     private boolean nnRebin;
-    
+        
     public XTaggedYScanDataSet(XTaggedYScanDataSetDescriptor dataSetDescriptor ) {
-        super(dataSetDescriptor);
-        //if (!(dataSetDescriptor instanceof XTaggedYScanDataSetDescriptor))
-        //    throw new IllegalArgumentException("dataSetDescriptor is not a XTaggedYScanDataSetDescriptor");
+        super( dataSetDescriptor );
         if (dataSetDescriptor!=null) {
             yUnits= dataSetDescriptor.getYUnits();
             zUnits= dataSetDescriptor.getZUnits();
@@ -97,9 +95,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
     }
     
     public XTaggedYScanDataSet(XTaggedYScanDataSetDescriptor dataSetDescriptor, Datum start, Datum end) {
-        super(dataSetDescriptor,start,end,null);
-        //if (!(dataSetDescriptor instanceof XTaggedYScanDataSetDescriptor))
-        //    throw new IllegalArgumentException("dataSetDescriptor is not a XTaggedYScanDataSetDescriptor");
+        super( dataSetDescriptor, start, end, null );
         if (dataSetDescriptor!=null) {
             yUnits= dataSetDescriptor.getYUnits();
             zUnits= dataSetDescriptor.getZUnits();
@@ -120,22 +116,14 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
         }
         XTaggedYScanDataSet result=
         new XTaggedYScanDataSet( dataSetDescriptor );
-        if ( dataSetDescriptor.getXUnits() instanceof TimeLocationUnits ) {
-            result.setStartTime( Datum.create( xMin, dataSetDescriptor.getXUnits() ) );
-            result.setEndTime( Datum.create( xMax, dataSetDescriptor.getXUnits() ) );
-        }
         result.data= data;
         result.y_coordinate= dataSetDescriptor.y_coordinate;
-        result.yUnits= dataSetDescriptor.getYUnits();
-        result.setXUnits(dataSetDescriptor.getXUnits());
-        result.zUnits= dataSetDescriptor.getZUnits();
         
         return result;
     }
     
     public String toString() {
-        return getClass().getName() + "[Description = \"" + description +
-        "\" Start time = " + startTime + " End time = " + endTime + "]";
+        return getClass().getName();
     }
     
     public void setZFill(float zfill) {
@@ -196,7 +184,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
     
     /** returns peaks for the dataset, and creates a set equal to the
      * data values if peaks is not defined.
-     */    
+     */
     public XTaggedYScan[] getPeaks() {
         if ( auxData.containsKey("peaks") ) {
             return (XTaggedYScan[]) auxData.get("peaks");
@@ -265,7 +253,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
             int ibinx= ddX.whichBin(data[i].x,getXUnits());
             if (ibinx>=0 && ibinx<newData.length) {
                 for (int j=0; j<ny; j++) {
-                    newData[ibinx].z[j]+= data[i].z[j] * weights[i].z[j]; 
+                    newData[ibinx].z[j]+= data[i].z[j] * weights[i].z[j];
                     newWeights[ibinx].z[j]+= weights[i].z[j];
                     if ( peaks!=null ) {
                         newPeaks[ibinx].z[j]=
@@ -287,7 +275,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
         XTaggedYScanDataSet.create( (XTaggedYScanDataSetDescriptor)getDataSetDescriptor(), newData );
         result.setWeights(newWeights);
         if ( newPeaks!=null ) result.setPeaks(newPeaks);
-        result.xSampleWidth= ddX.binWidth();
+        xSampleWidth= ddX.binWidth();
         
         return result;
     }
@@ -299,8 +287,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
         XTaggedYScanDataSet result=
         new XTaggedYScanDataSet((XTaggedYScanDataSetDescriptor)this.getDataSetDescriptor(), this.startTime,this.endTime);
         
-        result.x_sample_width= x_sample_width;
-        result.xSampleWidth= xSampleWidth;
+        xSampleWidth= xSampleWidth;
         result.z_fill= z_fill;
         
         result.zUnits= zUnits;
@@ -518,7 +505,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
         
         int appendStart=0;
         while ( appendStart < data1.data.length-1
-            && data1.data[appendStart].x < this.data[nd1-1].x ) {
+        && data1.data[appendStart].x < this.data[nd1-1].x ) {
             appendStart++;
         }
         
@@ -531,7 +518,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
             
             XTaggedYScan[] newData= new XTaggedYScan[nd1+nd2];
             
-            for (int i=0; i<nd1; i++) newData[i]= this.data[i];            
+            for (int i=0; i<nd1; i++) newData[i]= this.data[i];
             for (int i=0; i<nd2; i++) newData[i+nd1]= data1.data[i+appendStart];
             result.data= newData;
             
@@ -549,7 +536,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
                     }
                 }
             }
-                        
+            
             result.x_sample_width= Math.max( this.x_sample_width, data1.x_sample_width );
             result.xSampleWidth= Math.max( this.xSampleWidth, data1.xSampleWidth );
             result.y_coordinate= this.y_coordinate;
@@ -681,7 +668,7 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
         DasAxis xAxis= createXAxis(row,col);
         DasAxis yAxis= createYAxis(row,col);
         DasColorBar colorBar= new DasColorBar(Datum.create(1e-15),Datum.create(1e-13),row,DasColorBar.getColorBarColumn(col),true);
-        SpectrogramRenderer rend= new SpectrogramRenderer( new ConstantXTaggedYScanDataSetDescriptor(this), colorBar );
+        SpectrogramRenderer rend= new SpectrogramRenderer( new ConstantDataSetDescriptor(this), colorBar );
         DasPlot plot= new DasPlot(xAxis,yAxis,row,col);
         plot.addRenderer(rend);
         canvas.addCanvasComponent(plot);
@@ -822,6 +809,106 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
         return data.length * ( this.y_coordinate.length * 4 + 8 );
     }
     
+    // Here begins the TableDatasetImplementation
+    
+    public int tableStart(int table) {
+        return 0;
+    }
+    
+    public Datum getXTagDatum(int i) {
+        return getXUnits().createDatum(data[i].x);
+    }
+    
+    public int tableEnd(int table) {
+        return data.length;
+    }
+    
+    public VectorDataSet getXSlice(int tagIndex) {
+        double[] x = new double[this.y_coordinate.length];
+        System.arraycopy(this.y_coordinate, 0, x, 0, this.y_coordinate.length);
+        double[] y = new double[this.y_coordinate.length];          
+        for (int ii = 0; ii < y.length; ii++) {
+            y[ii] = this.data[tagIndex].z[ii];
+        }
+        return XMultiYDataSet.create(x,this.getYUnits(),y,this.getZUnits());                
+    }
+    
+    public int getYLength(int table) {
+        return y_coordinate.length;
+    }
+    
+    public int getXLength() {
+        return data.length;
+    }
+    
+    public int getInt(int i, int j, Units units) {
+        return (int)getDouble(i,j,units);
+    }
+    
+    public double getDouble(int i, int j, Units units) {
+        if ( units==zUnits ) {
+            return data[i].z[j];
+        } else {
+            return zUnits.getConverter(units).convert(data[i].z[j]);
+        }
+    }
+    
+    public Datum getDatum(int i, int j) {
+        return zUnits.createDatum(data[i].z[j]);
+    }
+    
+    public int tableCount() {
+        return 1;
+    }
+    
+    public double getYTagDouble(int table, int j, Units units) {
+        return yUnits.getConverter(units).convert(y_coordinate[j]);
+    }
+    
+    public DataSet getPlanarView(String planeID) {
+        XTaggedYScanDataSet result= new XTaggedYScanDataSet((XTaggedYScanDataSetDescriptor)getDataSetDescriptor());
+        result.y_coordinate= this.y_coordinate;
+        result.auxData= this.auxData;
+        result.data= (XTaggedYScan[])this.auxData.get(planeID);
+        return result;
+    }
+    
+    public double getXTagDouble(int i, Units units) {
+        return getXUnits().getConverter(units).convert(data[i].x);
+    }
+    
+    public VectorDataSet getYSlice(int j, int table) {
+        double[] x = new double[data.length];
+        for (int ii= 0; ii < x.length; ii++) {
+            x[ii]= data[ii].x;
+        }        
+        double[] y = new double[data.length];          
+        for (int ii = 0; ii < y.length; ii++) {
+            y[ii] = data[ii].z[j];
+        }
+        return XMultiYDataSet.create(x,this.getXUnits(),y,this.getZUnits());                
+    }
+    
+    public int getYTagInt(int table, int j, Units units) {
+        return (int)getYTagDouble(table,j,units);
+    }
+    
+    public int tableOfIndex(int i) {
+        return 0;
+    }
+    
+    public int getXTagInt(int i, Units units) {
+        return (int)getXTagDouble(i, units);
+    }
+    
+    public Datum getYTagDatum(int table, int j) {
+        return getYUnits().createDatum(y_coordinate[j]);
+    }
+    
+    public Object getProperty(String name) {
+        return null;
+    }
+    
     private static class XTagComparator implements java.util.Comparator {
         
         /** Compares its two arguments for order.  Returns a negative integer,
@@ -862,5 +949,6 @@ public class XTaggedYScanDataSet extends TableDataSet implements java.io.Seriali
         }
         
     }
+    
     
 }

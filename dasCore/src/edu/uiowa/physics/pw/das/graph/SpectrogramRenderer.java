@@ -57,8 +57,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     RebinListener rebinListener= new RebinListener();
-
-    protected SpectrogramRenderer(DataSetDescriptor dsd, DasColorBar colorBar ) {
+    
+    public SpectrogramRenderer(DataSetDescriptor dsd, DasColorBar colorBar ) {
         super( dsd );
         this.colorBar= colorBar;
         if (this.colorBar != null) {
@@ -68,22 +68,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("type", rebinListener);
         }
     }
-
-    public SpectrogramRenderer(XTaggedYScanDataSetDescriptor dsd, DasColorBar colorBar) {
-        this((DataSetDescriptor)dsd, colorBar);
-    }
+    
     
     /** Creates a new instance of SpectrogramRenderer
      * @deprecated use {link
-     * #SpectrogramRenderer(edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor,
+     * #SpectrogramRenderer(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor,
      * edu.uiowa.physics.pw.das.graph.DasColorBar)}
      */
-    public SpectrogramRenderer( DasPlot parent, XTaggedYScanDataSetDescriptor dsd, DasColorBar colorBar ) {
-        this((DataSetDescriptor)dsd, colorBar );
-        this.parent = parent;
-    }
-    
-    protected SpectrogramRenderer( DasPlot parent, DataSetDescriptor dsd, DasColorBar colorBar ) {
+    public SpectrogramRenderer( DasPlot parent, DataSetDescriptor dsd, DasColorBar colorBar ) {
         this( dsd, colorBar );
         this.parent = parent;
     }
@@ -126,31 +118,30 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             int x = xAxis.getColumn().getDMinimum();
             int y = yAxis.getRow().getDMinimum();
             g.drawImage( plotImage,x,y, getParent() );
-        } 
+        }
         if (getDataSet()==null && lastException!=null ) {
-             renderException(g,xAxis,yAxis,lastException);
+            renderException(g,xAxis,yAxis,lastException);
         }
     }
-        
+    
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis ) {
-               
-        XTaggedYScanDataSet rebinData;
+        
+        TableDataSet rebinData;
         
         int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
         int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
         
-      	if (getParent()==null  || w<=1 || h<=1 ) {
+        if (getParent()==null  || w<=1 || h<=1 ) {
             edu.uiowa.physics.pw.das.util.DasDie.println("canvas not useable!!!");
             return;
         }
-
+        
         int[] pix= new int[ w * h ];
         java.util.Arrays.fill(pix, 0x00000000);
         
         if ( getDataSet() == null) {
             rebinData = XTaggedYScanDataSet.create(new double[0], new double[0], new float[0][0]);
-        }
-        else {
+        } else {
             RebinDescriptor xRebinDescriptor;
             xRebinDescriptor = new RebinDescriptor(
             xAxis.getDataMinimum(), xAxis.getDataMaximum(),
@@ -162,19 +153,24 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             h,
             yAxis.isLog());
             
-            rebinData = ((XTaggedYScanDataSet)getDataSet()).rebin(xRebinDescriptor, yRebinDescriptor);
+            DataSetRebinner rebinner= new TableNearestNeighborRebinner();
+            
+            rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
+            
         }
         
         DataSet ds= getDataSet();
-        //setDataSet(rebinData);  This fires off a new update event -- infinate loop jbf July3,03
-        int index=0;
-        XTaggedYScan[] weights= rebinData.getWeights();
-        for (int iz=rebinData.y_coordinate.length-1;iz>=0; iz--) {
-            for (int i=0; i<rebinData.data.length; i++) {
-                if (weights[i].z[iz]>0.) {
-                    pix[index]= colorBar.itransform(rebinData.data[i].z[iz],rebinData.getZUnits());
+        
+        TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+        int itable=0;
+        int ny= rebinData.getYLength(itable);
+        int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
+        for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
+            for (int j=0; j<rebinData.getYLength(0); j++) {
+                if (weights.getDouble(i,j,colorBar.getUnits())>0.) {
+                    int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
+                    pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
                 }
-                index++;
             }
         }
         
@@ -220,20 +216,20 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     VerticalSlicerMouseModule vsl = VerticalSlicerMouseModule.create(this);
                     vsl.addDataPointSelectionListener(vSlicer);
                     mouseAdapter.addMouseModule(vsl);
-
+                    
                     HorizontalSpectrogramSlicer hSlicer
                     = HorizontalSpectrogramSlicer.createPopupSlicer(parent, this, 640, 480);
                     HorizontalSlicerMouseModule hsl = HorizontalSlicerMouseModule.create(this);
                     hsl.addDataPointSelectionListener(hSlicer);
                     mouseAdapter.addMouseModule(hsl);
-
-                    VerticalSpectrogramAverager vAverager 
+                    
+                    VerticalSpectrogramAverager vAverager
                     = VerticalSpectrogramAverager.createPopupAverager(parent, this, 640, 480);
                     HorizontalDragRangeSelectorMouseModule vrl = new HorizontalDragRangeSelectorMouseModule(parent,this,parent.getXAxis());
                     vrl.setLabel("Vertical Averager");
                     vrl.addDataRangeSelectionListener(vAverager);
                     mouseAdapter.addMouseModule(vrl);
-
+                    
                     MouseModule ch= new CrossHairMouseModule(parent,this,parent.getXAxis(), parent.getYAxis());
                     mouseAdapter.addMouseModule(ch);
                 }
@@ -258,7 +254,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 colorbar = processZAxisElement((Element)node, parent.getRow(), parent.getColumn(), form);
             }
         }
-
+        
         if (colorbar == null) {
             try {
                 colorbar = (DasColorBar)form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
@@ -278,7 +274,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
         return renderer;
     }
-
+    
     private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -296,7 +292,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         Element element = document.createElement("spectrogram");
         element.setAttribute("dataSetID", getDataSetID());
-                
+        
         Element zAxisChild = document.createElement("zAxis");
         Element zAxisElement = getColorBar().getDOMElement(document);
         if (zAxisElement.getAttribute("row").equals(getParent().getRow().getDasName())) {
