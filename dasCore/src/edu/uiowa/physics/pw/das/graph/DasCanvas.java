@@ -546,7 +546,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param filename the specified filename
      * @throws IOException if there is an error opening the file for writing
      */
-    public void writeToPng(String filename) throws IOException {
+    public void writeToPng(String filename) throws IOException {        
+        
         final FileOutputStream out = new FileOutputStream(filename);
         
         Image image= getImage( getWidth(), getHeight() );
@@ -558,11 +559,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         catch (IOException ioe) {}
         finally {
-            try { out.close(); } catch (IOException ioe) {}
+            try { out.close(); } catch (IOException ioe) { throw new RuntimeException(ioe); }
         }
         
     }
-    
+        
     /**
      * @param filename the specified filename
      * @throws IOException if there is an error opening the file for writing
