@@ -60,7 +60,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     protected class RebinListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
-            update(getParent().getXAxis(),getParent().getYAxis());
+            update();
         }
     }
     
