@@ -105,9 +105,17 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
         
+        double yTagWidthDouble;
+        Datum yTagWidth= (Datum)ds.getProperty("yTagWidth");
+        if ( yTagWidth==null ) {
+            yTagWidthDouble= Double.POSITIVE_INFINITY;
+        } else {
+            yTagWidthDouble= yTagWidth.doubleValue(ddY.getUnits().getOffsetUnits());
+        }
+            
         if ( this.interpolate ) {
             if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
-            if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
+            if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], yTagWidthDouble, ddY.isLog());
         } else {
             enlargePixels( rebinData, rebinWeights );
         }
@@ -384,10 +392,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
     
-    static void fillInterpolateY(final double[][] data, final double[][] weights, final double[] yTags, final double ySampleWidth, final boolean log) {
-        
-        //boolean nearestNeighbor=isNnRebin();
-        
+    static void fillInterpolateY(final double[][] data, final double[][] weights, final double[] yTags, double ySampleWidth, final boolean log) {
+               
         final int nx = data.length;
         final int ny = yTags.length;
         final int[] i1= new int[ny];
@@ -397,7 +403,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         float a2;
         
         if (log) {
-            for (int j=0; j<ny; j++) y_temp[j]= Math.log(yTags[j]);
+            for (int j=0; j<ny; j++) y_temp[j]= Math.log(yTags[j]);            
         } else {
             for (int j=0; j<ny; j++) y_temp[j]= yTags[j];
         }
@@ -432,10 +438,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
             
             
-            for (int j = 0; j < ny; j++) {
-                if (i1[j] != -1) {
-                    a2 = (float)((y_temp[j] - y_temp[i1[j]]) / (y_temp[i2[j]] - y_temp[i1[j]]));
-                    //if (nearestNeighbor) a2= (a2<0.5f)?0.f:1.f;
+            for (int j = 0; j < ny; j++) {                   
+                if ( (i1[j] != -1) && ( ( yTags[i2[j]] - yTags[i1[j]] ) < ySampleWidth * 1.5 ) ) {
+                    a2 = (float)((y_temp[j] - y_temp[i1[j]]) / (y_temp[i2[j]] - y_temp[i1[j]]));                    
                     a1 = 1.f - a2;
                     data[i][j] = data[i][i1[j]] * a1 + data[i][i2[j]] * a2;
                     weights[i][j] = weights[i][i1[j]] * a1 + weights[i][i2[j]] * a2; //approximate
