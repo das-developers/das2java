@@ -24,7 +24,6 @@ package edu.uiowa.physics.pw.das.graph;
  
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
-import edu.uiowa.physics.pw.das.graph.DasAxis.TickVDescriptor;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.util.*;

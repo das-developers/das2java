@@ -2359,28 +2359,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
-    /** A TickVDescriptor describes the position that ticks
-     * should be drawn, so that a fairly generic tick drawing routine
-     * can be used for multiple types of axes.
-     */
-    protected static class TickVDescriptor {
-        double [] tickV=null;
-        double [] minorTickV=null;
-        Units units=null;
-
-        /** Returns a String representation of the TickVDescriptor.
-         * @return a String representation of the TickVDescriptor.
-         */
-        public String toString() {
-            String s="tickV=[";
-            for (int i=0; i<tickV.length; i++) s+=tickV[i]+", ";
-            s+="],minor=";
-            for (int i=0; i<minorTickV.length; i++) s+=minorTickV[i]+", ";
-            s+="]";
-            return s;
-        }
-    }
-
     protected class AxisLayoutManager implements LayoutManager {
         
         //NOOP
