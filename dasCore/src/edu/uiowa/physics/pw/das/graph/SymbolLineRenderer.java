@@ -146,13 +146,7 @@ public class SymbolLineRenderer extends Renderer {
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
     }
     
-    private void refreshImage() {
-        if ( getParent()!=null ) {
-            getParent().markDirty();
-            getParent().repaint();
-        }
-    }
-    
+
     /** Getter for property psym.
      * @return Value of property psym.
      */
@@ -277,6 +271,7 @@ public class SymbolLineRenderer extends Renderer {
      */
     public void setAntiAliased(boolean antiAliased) {
         this.antiAliased = antiAliased;
+        refreshImage();
     }
     
 }
