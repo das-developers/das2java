@@ -68,7 +68,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
                 throw new IllegalArgumentException( "Datums must all have same units!" );
             }
         }
-        this.df = DatumUtil.bestFormatter(labels[0], labels[1],1);
+        this.df = DatumUtil.bestFormatter( DatumVector.newDatumVector( labelValues, labelUnits ));
     }
     
     protected DasLabelAxis(Datum[] labels, DataRange dataRange, int orientation) {
@@ -125,7 +125,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     public void updateTickV() {
-        super.updateTickV();
+        //super.updateTickV();
         updateTickPositions();
     }
     
@@ -136,6 +136,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         result.tickV= new double[ny];
         result.minorTickV= new double[0];  // no minor ticks
         for (int i=0; i<ny; i++) result.tickV[i]= labels[i+indexMinimum].doubleValue(result.units);
+        
         return result;
     }
     
