@@ -82,7 +82,7 @@ public class LocalFileObject implements FileObject {
     }
     
     public String toString() {
-        return "[lfs]"+getNameExt();
+        return "["+lfs+"]"+getNameExt();
     }
     
     public java.nio.channels.Channel getChannel() throws FileNotFoundException {

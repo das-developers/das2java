@@ -60,4 +60,8 @@ public class LocalFileSystem extends FileSystem {
         });
     }
     
+    public String toString() {
+        return "lfs "+localRoot;
+    }
+    
 }
