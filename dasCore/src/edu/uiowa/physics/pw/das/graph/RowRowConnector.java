@@ -46,6 +46,7 @@ public class RowRowConnector extends DasCanvasComponent implements java.beans.Pr
     
     protected void paintComponent(Graphics g1) {        
         Graphics2D g= (Graphics2D)g1;
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         g.translate(-getX(), -getY());
         
         int hlen=3;
