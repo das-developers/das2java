@@ -45,7 +45,7 @@ public interface VectorDataSet extends DataSet {
      * @param units the units the returned value should be coverted to.
      * @return the value at index location i as a <code>double</code>.
      */    
-    double getDouble(int j, Units units);
+    double getDouble(int i, Units units);
     
     /** Returns the Y value for the given index into the x tags as a
      * <code>int</code> with the given units.
