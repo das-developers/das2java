@@ -79,8 +79,8 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
 
-        fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits()));
-        fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
+        if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits()));
+        if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], Double.POSITIVE_INFINITY, ddY.isLog());
 
         double[][][] zValues = {rebinData,rebinWeights};
         int[] tableOffsets = {0};
