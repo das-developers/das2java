@@ -342,6 +342,8 @@ public class StreamTool {
             }
             else if (root.getTagName().equals("exception")) {
                 throw exception(root);
+            } else if ( root.getTagName().equals("comment")) {
+                struct.handler.streamComment( new StreamComment(doc.getDocumentElement()) );
             }
             else {
                 throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
@@ -392,8 +394,10 @@ public class StreamTool {
     
     private static boolean isPacketDescriptorHeader(byte[] four) {
         return four[0] == (byte)'[' && four[3] == (byte)']'
-            && Character.isDigit((char)four[1])
-            && Character.isDigit((char)four[2]);
+            && ( Character.isDigit((char)four[1])
+                 && Character.isDigit((char)four[2]) 
+                 || (char)four[1]=='x'  
+                 && (char)four[2]=='x' ); 
     }
     
     private static boolean isPacketHeader(byte[] four) {
