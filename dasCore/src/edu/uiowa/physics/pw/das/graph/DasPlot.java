@@ -317,7 +317,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             rend.render(plotGraphics,xAxis,yAxis);
         }
         
-        graphics.setColor(Color.black);
+        graphics.setColor(getForeground());
         graphics.drawRect(x-1, y-1, xSize + 1, ySize + 1);
         
         if (plotTitle != null && plotTitle.length() != 0) {
