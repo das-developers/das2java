@@ -112,7 +112,6 @@ extends DasSymbolPlot implements DataPointSelectionListener {
         x= System.currentTimeMillis()-eventBirthMilli;
         //edu.uiowa.physics.pw.das.util.DasDie.println("event handled in "+x+" milliseconds");
         
-        super.drawContent(g);
         int ix= (int)this.getXAxis().transform(yValue);
         DasRow row= this.getRow();
         int iy0= (int)row.getDMinimum();
@@ -122,6 +121,10 @@ extends DasSymbolPlot implements DataPointSelectionListener {
         g.drawLine(ix+3,iy1,ix,iy1-3);
         g.drawLine(ix-3,iy1,ix,iy1-3);
         
+        g.setColor( new Color(230,230,230) );
+        g.drawLine( ix, iy0+4, ix, iy1-4 );
+        
+        super.drawContent(g);
         x= System.currentTimeMillis()-eventBirthMilli;
         //edu.uiowa.physics.pw.das.util.DasDie.println("event handled in "+x+" milliseconds");
     }
