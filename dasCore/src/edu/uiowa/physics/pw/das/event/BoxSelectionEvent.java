@@ -35,8 +35,7 @@ public class BoxSelectionEvent extends DasEvent {
     edu.uiowa.physics.pw.das.datum.Datum xMax;
     edu.uiowa.physics.pw.das.datum.Datum yMin;
     edu.uiowa.physics.pw.das.datum.Datum yMax;
-    
-    /** Creates a new instance of TimeRangeSelectionEvent */
+       
     public BoxSelectionEvent(Object source, edu.uiowa.physics.pw.das.datum.Datum xMin, edu.uiowa.physics.pw.das.datum.Datum xMax, edu.uiowa.physics.pw.das.datum.Datum yMin, edu.uiowa.physics.pw.das.datum.Datum yMax) {
         super(source);
         if (xMin.gt(xMax)) {
