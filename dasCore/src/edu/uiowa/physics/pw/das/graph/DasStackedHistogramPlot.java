@@ -150,6 +150,11 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     
     public DasStackedHistogramPlot( DataSetDescriptor dsd, DasAxis xAxis, DasLabelAxis yAxis, DasAxis zAxis, DasRow row, DasColumn column) {
         super(xAxis, yAxis, row, column);
+        yAxis.addPropertyChangeListener("labelPositions", rebinListener);
+        
+        yAxis.setFloppyItemSpacing(true);
+        yAxis.setOutsidePadding(1);
+        
         this.zAxisComponent = new ZAxisComponent(this,zAxis);
         this.setZAxis(zAxis);
         this.peaksIndicator= PeaksIndicator.MaxLines;
@@ -206,6 +211,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             edu.uiowa.physics.pw.das.util.DasDie.die("You can't call setYAxis for stackedHistogramPlot");
     }
     
+    
     protected void updatePlotImage() {
         
         Component parent= getParent();
@@ -257,15 +263,27 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         Line2D.Double l= new Line2D.Double();
         Rectangle2D.Double rmax= new Rectangle2D.Double();
         
+        DasLabelAxis yAxis= (DasLabelAxis)getYAxis();
+        
         for (int j = 0; j < data.getYLength(0); j++) {
-            DasLabelAxis yAxis= (DasLabelAxis)getYAxis();
             
-            int yBase= yAxis.getItemMax(data.getYTagDatum(0, j));
+            int yBase;
+            Line2D.Float lBase;
             
-            Line2D.Float lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
+            if ( j==(data.getYLength(0)-1) ) {   /* Draw top grey line */
+                yBase= yAxis.getItemMin(data.getYTagDatum(0, j));
+                lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
+                g.setColor(Color.lightGray);
+                g.draw(lBase);
+                g.setColor(Color.darkGray);
+            }
+            
+            yBase= yAxis.getItemMax(data.getYTagDatum(0, j));
+            lBase= new Line2D.Float( (float)xDMin, (float)yBase, (float)xDMax, (float)yBase );
             g.setColor(Color.lightGray);
             g.draw(lBase);
             g.setColor(Color.darkGray);
+            
             
             int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
             double canvasHeight= parent.getHeight();
@@ -349,7 +367,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             setBounds(getBounds());
         }
         
-        public Rectangle getBounds(){
+        private Rectangle getZAxisComponentBounds(){
             int x1= parent.getColumn().getDMaximum();
             int x2= zAxis.getColumn().getDMaximum();
             int ylow1= parent.getRow().getDMaximum();
@@ -375,6 +393,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             if (row.contains(zAxisMid))  {
                 rowLittleDoc= row;
             }
+            repaint();
         }
         
         public int transform( double x, Units units ) {
@@ -383,15 +402,15 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         }
         
         public void resize() {
-            setBounds(getBounds());
+            setBounds(getZAxisComponentBounds());
         }
         
         protected void paintComponent(Graphics g1) {
             
             if ( rowLittleDoc==null ) {
-                return;
+                return;                
             }
-            
+                        
             Graphics2D g= (Graphics2D)g1;
             g.translate(-getX(), -getY());
             
@@ -480,5 +499,5 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         super.setDataSetDescriptor(dataSetDescriptor);
         dataSetDescriptor.addDataSetUpdateListener( this );
     }
-    
+        
 }
