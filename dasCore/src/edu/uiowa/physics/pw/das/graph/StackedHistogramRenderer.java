@@ -280,8 +280,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             double zAxisMax= zAxis.getDataMaximum().doubleValue(xtysData.getZUnits());
             
             if ( yBase1 >= row.getDMinimum() && yBase <= row.getDMaximum() ) {
-                for (int ibin=0; ibin < data.getXLength(); ibin++) {
-                    
+                for (int ibin=0; ibin < data.getXLength(); ibin++) {                    
                     int x0= (int)xAxis.transform(binStarts[ibin],xbins.getUnits());
                     int x1;
                     x1=x0+1; // 1 pixel wide
@@ -300,16 +299,15 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                                     g.drawLine(x0,yMax,x0,yMax);
                                 } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
                                     g.setColor(Color.lightGray);
-                                    g.fillRect(x0,yMax,(x1-x0),y0-yMax);
+                                    g.drawLine(x0,yMax,x0,y0);
                                     g.setColor(BAR_COLOR);
                                 } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {                                    
                                     g.setColor(BAR_COLOR);
-                                    g.fillRect(x0,yMax,(x1-x0),y0-yMax);                                                                        
+                                    g.drawLine(x0,yMax,x0,y0);                                                                        
                                 }
                             }
-                        }
-                       
-                        g.fillRect(x0,yAvg,(x1-x0),yHeight);                        
+                        }                                 
+                        g.drawLine(x0, yAvg, x0, yAvg+yHeight );                                                
                     }
                 }
             }
