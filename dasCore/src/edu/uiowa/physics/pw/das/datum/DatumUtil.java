@@ -57,8 +57,8 @@ public final class DatumUtil {
                 array[i]= datums.get(i).subtract(datums.get(0)).doubleValue(units);
             }
         } else {
-            units= datums.getUnits();            
-            array= datums.toDoubleArray(units);            
+            units= datums.getUnits();
+            array= datums.toDoubleArray(units);
         }
         
         double limit= DasMath.exp10( (int)DasMath.log10( DasMath.max( array ) ) - 7 );
@@ -76,7 +76,7 @@ public final class DatumUtil {
                 }
             }
         }
-                
+        
         Datum resolution= units.createDatum(gcd);
         Datum base= datums.get(ismallestExp);
         if ( base.lt(units.createDatum(0.) ) ) {
@@ -86,19 +86,27 @@ public final class DatumUtil {
     }
     
     public static int fractionalDigits( Datum resolution ) {
-        /* returns the number of digits after the decimal place.  This is negative when 
+        /* returns the number of digits after the decimal place.  This is negative when
          * the resolution is a integer multiple of 10,100, etc...
-         */ 
+         */
         double d= Math.abs( resolution.doubleValue() );
         double frac= d-Math.floor(d);
-        if ( frac==0. ) {
-            int e=0;
-            int emax= (int)DasMath.log10(d+0.1);
-            while ( e<emax && ( d/DasMath.exp10(e) % 1 == 0. ) ) e++;
-            return -1*(e);
+        final int DOUBLE_DIGITS= 13;
+        if ( frac==0. ) {            
+            int e= (int)Math.ceil( DasMath.log10(d) );
+            int emin=0;
+            if ( e<0 ) e=0;
+            boolean notDone= true;            
+            while ( e>emin && notDone ) {                
+                double remain= d/DasMath.exp10(e) % 1;
+                if ( remain>0.5 ) remain= 1.0 - remain;
+                notDone= remain > (1/10000.);
+                e--;
+            }
+            return -1*(e+1);
         } else {
             int e= (int)Math.floor( DasMath.log10(frac)+0.0001 );
-            int emin= (int)DasMath.log10(d) - 18;            
+            int emin= (int)DasMath.log10(d) - DOUBLE_DIGITS;
             boolean notDone= true;
             while ( e>emin && notDone  ) {
                 double remain= frac/DasMath.exp10(e) % 1;
@@ -109,19 +117,19 @@ public final class DatumUtil {
             return -1*(e+1);
         }
     }
- 
-    public static DatumFormatter limitLogResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {        
+    
+    public static DatumFormatter limitLogResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {
         Units units = minimum.getUnits();
         
         if ( units instanceof TimeLocationUnits ) {
             return bestTimeFormatter(minimum, maximum, nsteps);
         }
-
+        
         double logmin= DasMath.log10( minimum.doubleValue( units ) );
-        double logmax= DasMath.log10( maximum.doubleValue( units ) );        
-                
+        double logmax= DasMath.log10( maximum.doubleValue( units ) );
+        
         double percent= ( DasMath.exp10( ( logmax - logmin ) / nsteps ) - 1. ) * 100;
-                       
+        
         int nFraction= 2 - (int)Math.floor( 0.05 + DasMath.log10( percent ) );
         
         nFraction= nFraction<0 ? 0 : nFraction;
@@ -134,15 +142,15 @@ public final class DatumUtil {
         }
     }
     
-    public static DatumFormatter limitResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {        
+    public static DatumFormatter limitResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {
         Units units = minimum.getUnits();
         
         if ( units instanceof TimeLocationUnits ) {
             return bestTimeFormatter(minimum, maximum, nsteps);
         }
-
+        
         Datum resolution= maximum.subtract(minimum).divide(nsteps);
-        double discernable= resolution.doubleValue(units);        
+        double discernable= resolution.doubleValue(units);
         int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
         
         nFraction= nFraction<0 ? 0 : nFraction;
@@ -192,8 +200,8 @@ public final class DatumUtil {
                     if ( ee<smallestExp ) smallestExp=ee;
                 }
             }
-                        
-            if ( smallestExp < -3 || smallestExp > 3 ) {               
+            
+            if ( smallestExp < -3 || smallestExp > 3 ) {
                 return new ExponentialDatumFormatter( smallestExp - (-1*fracDigits) +1 , smallestExp );
             } else {
                 int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
