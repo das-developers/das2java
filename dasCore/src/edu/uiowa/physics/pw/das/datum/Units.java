@@ -137,9 +137,7 @@ public abstract class Units {
     }
     
     public Units[] getConvertableUnits() {
-        ArrayList result= new ArrayList();
-        Map visited = new HashMap();
-        visited.put( this, UnitsConverter.IDENTITY );
+        Set result= new HashSet();                
         LinkedList queue = new LinkedList();
         queue.add(this);
         while (!queue.isEmpty()) {
@@ -147,8 +145,7 @@ public abstract class Units {
             for (Iterator i = current.conversionMap.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry)i.next();
                 Units next = (Units)entry.getKey();
-                if (!visited.containsKey(next)) {
-                    visited.put(next, current);
+                if (!result.contains(next)) {                    
                     queue.add(next);
                     result.add(next);
                 }
