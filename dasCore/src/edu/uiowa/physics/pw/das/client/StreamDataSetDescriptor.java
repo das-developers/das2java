@@ -83,6 +83,11 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     protected void setProperties(Map properties, boolean legacy) {
         super.setProperties(properties);
+        if (properties.containsKey("form") && properties.get("form").equals("x_multi_y")
+            && properties.containsKey("items")) {
+                System.err.println("TCA!!!");
+                setDefaultCaching(false);
+        }
         if (legacy) {
             defaultPacketDescriptor = PacketDescriptor.createLegacyPacketDescriptor(properties);
         }
