@@ -23,7 +23,9 @@
 package edu.uiowa.physics.pw.das.datum;
 
 import java.util.*;
+
 import edu.uiowa.physics.pw.das.util.*;
+import edu.uiowa.physics.pw.das.datum.format.*;
 
 /**
  *
@@ -56,7 +58,7 @@ public final class TimeUtil {
     }
     
     public static int dayOfYear( int month, int day, int year ) {
-        return (day-1)+ dayOffset[isLeapYear(year)?1:0][month];
+        return day + dayOffset[isLeapYear(year)?1:0][month];
     }
     
     
@@ -143,6 +145,7 @@ public final class TimeUtil {
         result.year= year;
         result.month= month;
         result.day= day;
+        result.doy = dayOfYear(month, day, year);
         result.hour= hour;
         result.minute= minute;
         result.seconds= justSeconds;
@@ -643,8 +646,7 @@ public final class TimeUtil {
         TimeStruct ts= TimeUtil.toTimeStruct(x);
         System.out.println( TimeUtil.toDatum(ts) );
         
-        DasTimeFormatter tf= new DasTimeFormatter(TimeContext.MILLISECONDS);
-        tf.setAlwaysShowDate(true);
+        TimeDatumFormatter tf = TimeDatumFormatter.DEFAULT;
         
         for ( int i=0; i<44; i++ ) {
             System.out.println(tf.format(x)+"\t"+(long)x.doubleValue(Units.us2000));
