@@ -296,6 +296,10 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         out.println("============================================================");
     }
     
+    public String toString() {
+        return "DefaultTableDataSet "+TableUtil.toString(this);        
+    }
+    
     private final class PlanarViewDataSet extends AbstractDataSet.ViewDataSet implements TableDataSet {
         
         private final int index;
