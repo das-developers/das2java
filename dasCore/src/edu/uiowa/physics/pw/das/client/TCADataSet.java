@@ -25,13 +25,13 @@ package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
+import edu.uiowa.physics.pw.das.dataset.*;
 
 /**
  *
  * @author  eew
  */
-public class TCADataSet extends DataSet {
+public class TCADataSet extends XMultiYDataSet {
     
     public String[] label;
     
@@ -44,7 +44,7 @@ public class TCADataSet extends DataSet {
     /** Creates a new instance of TCADataSet */
     public TCADataSet( XMultiYDataSetDescriptor dsd, Datum startTime, Datum endTime)
     {
-        super( dsd, startTime, endTime, null );
+        super( dsd, startTime, endTime );
     }
     
     public String toString()
