@@ -126,7 +126,7 @@ public class DasFormatter implements Cloneable {
     //        return nf.format(d);
     //    }
     
-    public Datum parse(String s, Datum d) {
+    public Datum parse(String s, Datum d) throws java.text.ParseException {
         return d.create(nf.parse(s,new ParsePosition(0)).doubleValue(),d.getUnits());
     }
     

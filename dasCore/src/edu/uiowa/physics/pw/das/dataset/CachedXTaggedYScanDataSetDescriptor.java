@@ -56,9 +56,9 @@ public class CachedXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDesc
         } else {
             edu.uiowa.physics.pw.das.util.DasDie.println("------- Miss --------");
             
-            DataSet ds= super.getDataSet(start,end,params,resolution,monitor);
+            DataSet ds= super.getDataSet(start,end,resolution,monitor);
             
-            dataCache.store( this, start, end, resolution, params, (XTaggedYScanDataSet)ds );
+            dataCache.store( this, start, end, resolution, (XTaggedYScanDataSet)ds );
             
             return ds;
         }

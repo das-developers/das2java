@@ -28,7 +28,7 @@ import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
-import edu.uiowa.physics.pw.das.util.DasDate;
+
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.GrannyTextRenderer;
 import edu.uiowa.physics.pw.das.datum.*;
@@ -79,11 +79,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         maybeInitializeScanButtons();
         setAnimated(true);
     }
-    
-    public DasTimeAxis( DasDate timeBase, DasDate timeMax, DasRow row, DasColumn column, int orientation) {
-        this(TimeUtil.create(timeBase), TimeUtil.create(timeMax), row, column, orientation);
-    }
-    
+        
     public DasTimeAxis( Datum startt, Datum endt, DasRow row, DasColumn column, int orientation) {
         super(startt, endt, row, column, orientation, false);
         maybeInitializeScanButtons();
@@ -101,9 +97,9 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
      * @param column The column in which this axis resides
      * @param orientation The orientation of this axis
      * (Either DasAxis.HORIZONTAL or DasAxis.VERTICAL)
-     * @deprecated use DasTimeAxis(String, DasDate, DasDate, DasRow, DasColumn, int)
+     * @deprecated use DasTimeAxis(String, Datum, Datum, DasRow, DasColumn, int)
      */
-    public DasTimeAxis(String dataPath, DasDate timeBase, DasDate timeMax,
+    public DasTimeAxis(String dataPath, Datum timeBase, Datum timeMax,
     DasRow row, DasColumn column, int orientation) {
         this(timeBase, timeMax, row, column, orientation );
         setDataPath(dataPath);
@@ -111,9 +107,10 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         setAnimated(true);
     }
     
-    public DasTimeAxis(XMultiYDataSetDescriptor dsd, DasDate timeBase, DasDate timeMax, DasRow row, DasColumn column, int orientation) {
+    public DasTimeAxis(XMultiYDataSetDescriptor dsd, Datum timeBase, Datum timeMax, DasRow row, DasColumn column, int orientation) {
         this(timeBase, timeMax, row, column, orientation);
-        this.dsd = dsd;
+        throw new IllegalStateException("this constructor doesn't work"); //need to set drawTca, set the datapath string, debug, verify...
+        //this.dsd = dsd;
     }
     
     public DasAxis createAttachedAxis(DasRow row, DasColumn column) {
@@ -162,26 +159,26 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         firePropertyChange("dataPath", oldValue, dataset);
     }
     
-    public void setDataRange( DasDate timeMin, DasDate timeMax ) {
-        super.setDataRange( TimeUtil.create(timeMin), TimeUtil.create(timeMax) );
-        TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this,(Datum)this.getDataMinimum(),(Datum)this.getDataMaximum());
+    public void setDataRange( Datum timeMin, Datum timeMax ) {
+        super.setDataRange( timeMin, timeMax );
+        TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this, this.getDataMinimum(), this.getDataMaximum());
         fireTimeRangeSelectionListenerTimeRangeSelected(e);
     }
     
-    public DasDate getTimeMaximum() {
-        return DasDate.create(getDataMaximum());
+    public Datum getTimeMaximum() {
+        return getDataMaximum();
     }
     
-    public DasDate getTimeMinimum() {
-        return DasDate.create(getDataMinimum());
+    public Datum getTimeMinimum() {
+        return getDataMinimum();
     }
     
-    public void setTimeMaximum(DasDate d) {
-        setDataMaximum(TimeUtil.create(d));
+    public void setTimeMaximum(Datum d) {
+        setDataMaximum(d);
     }
     
-    public void setTimeMinimum(DasDate d) {
-        setDataMinimum(TimeUtil.create(d));
+    public void setTimeMinimum(Datum d) {
+        setDataMinimum(d);
     }
     
     public void updateTickV() {
@@ -353,11 +350,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             res.minorTickV[ii]= uc.convert(res.minorTickV[ii]);
         }        
         res.units= getUnits();
-        
-        context= (res.tickV.length < 2
-        ? DasDate.context.getContextFromSeconds(1.0)
-        : DasDate.context.getContextFromSeconds(res.tickV[1]-res.tickV[0]));
-        
+                
         this.tickV = res;
         updateDataSet();
     }
@@ -436,12 +429,12 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         if (!drawTca || dataset.equals("") || dsd==null) return;
         double [] tickV = getTickV().tickV;
         Units units= getTickV().units;
-        final Datum data_minimum;
-        final Datum data_maximum;
+        Datum data_minimum;
+        Datum data_maximum;
         Datum iinterval;
         if (tickV.length == 1) {
             data_minimum = Datum.create(tickV[0],getTickV().units);
-            data_maximum = Datum.create(tickV[0] + 1.0, getTickV().units);
+            data_maximum = Datum.create(tickV[0], getTickV().units);
             iinterval = data_maximum.subtract(data_minimum);
         }
         else {
@@ -449,6 +442,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             data_maximum = Datum.create(tickV[tickV.length-1],getTickV().units);
             iinterval = (data_maximum.subtract(data_minimum)).divide(tickV.length-1);
         }
+        data_maximum= data_maximum.add(iinterval);
         final Datum interval = iinterval;
         tcaData = null;
             DataRequestor requestor = new DataRequestor() {
@@ -460,6 +454,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
                 public void exception(Exception exception) {
                     if (!(exception instanceof java.io.InterruptedIOException)) {
                         if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
+                            DasExceptionHandler.handle(exception);
                             finished(null);
                         } else {
                             Object[] message = {"Error reading data set", new javax.swing.JEditorPane("text/html", exception.getMessage())};
@@ -479,30 +474,15 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             if (drt == null) {
                 drt = new DataRequestThread();
             }
-            try {
-                drt.request(dsd, new Double(interval.doubleValue(Units.seconds)),
-                                 data_minimum,
+            try { 
+                drt.request(dsd, data_minimum,
                                  data_maximum.add(Datum.create(1.0,Units.seconds)), 
-                                 Datum.create(0.0,Units.seconds), requestor, null );
+                                 interval, requestor, null );
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
             }
-        /*
-        try {
-            DataSet x= dsd.getDataSet(
-                new Double(interval.convertTo(Units.seconds).getValue()),
-                DasDate.create(data_minimum),
-                DasDate.create((Datum)data_maximum.add(new Datum(1.0,Units.seconds)))
-            );
-            tcaData = (TCADataSet)x;
-        }
-        catch (edu.uiowa.physics.pw.das.DasException de) {
-            error = true;
-            errorString = de.getMessage();
-            DasExceptionHandler.handle(de);
-        }
-         */
+
     }
     
     protected void paintComponent(Graphics graphics) {
@@ -510,7 +490,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         super.paintComponent(g);
         g.translate(-getX(), -getY());
         
-        if (drawTca && getOrientation() == BOTTOM && tcaData != null) {
+         if (drawTca && getOrientation() == BOTTOM && tcaData != null) {
             
             int position = (int)Math.round(getRow().getDMaximum());
             int DMin = (int)Math.round(getColumn().getDMinimum());
@@ -729,10 +709,10 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         return getTickLabelFont().getSize()/4;
     }
 
-    static DasTimeAxis processTimeaxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    static DasTimeAxis processTimeaxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         String name = element.getAttribute("name");
-        DasDate timeMinimum = new DasDate(element.getAttribute("timeMinimum"));
-        DasDate timeMaximum = new DasDate(element.getAttribute("timeMaximum"));
+        Datum timeMinimum = TimeUtil.create(element.getAttribute("timeMinimum"));
+        Datum timeMaximum = TimeUtil.create(element.getAttribute("timeMaximum"));
         int orientation = parseOrientationString(element.getAttribute("orientation"));
     
         String rowString = element.getAttribute("row");
@@ -790,7 +770,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     }
 
     public static DasTimeAxis createNamedTimeAxis(String name) {
-        DasTimeAxis axis = new DasTimeAxis((Datum)TimeUtil.create("2000-1-1"), (Datum)TimeUtil.create("2000-1-2"), null, null, DasAxis.HORIZONTAL);
+        DasTimeAxis axis = new DasTimeAxis((Datum)TimeUtil.createValid("2000-1-1"), (Datum)TimeUtil.createValid("2000-1-2"), null, null, DasAxis.HORIZONTAL);
         if (name == null) {
             name = "timeaxis_" + Integer.toHexString(System.identityHashCode(axis));
         }

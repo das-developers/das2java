@@ -81,6 +81,8 @@ public abstract class DataSetDescriptor implements Serializable {
     private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z\\.]+)(?:\\?(.*))?");
     private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.]+)=([_0-9a-zA-Z%+./]+)");
     
+    private boolean serverSideReduction = true;
+    
     public static DataSetDescriptor create(String dataSetID) throws DasException {
         java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);
         if (classMatcher.matches()) {
@@ -344,9 +346,9 @@ public abstract class DataSetDescriptor implements Serializable {
      * @return array of floats containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    protected float[] readFloats(InputStream in, Object params, Datum start, Datum end) throws DasException {
+    protected float[] readFloats(InputStream in, Datum start, Datum end) throws DasException {
         float[] f;
-        byte[] data = readBytes(in, params, start, end);
+        byte[] data = readBytes(in, start, end);
         f = new float[data.length/4];
         ByteBuffer buff = ByteBuffer.wrap(data);
         FloatBuffer fbuff = buff.asFloatBuffer();
@@ -364,9 +366,9 @@ public abstract class DataSetDescriptor implements Serializable {
      * @return array of doubles containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    protected double[] readDoubles(InputStream in, Object params, Datum start, Datum end) throws DasException {
+    protected double[] readDoubles(InputStream in, Datum start, Datum end) throws DasException {
         double[] d;
-        byte[] data = readBytes(in, params, start, end);
+        byte[] data = readBytes(in, start, end);
         d = new double[data.length/4];
         ByteBuffer buff = ByteBuffer.wrap(data);
         FloatBuffer fbuff = buff.asFloatBuffer();
@@ -388,7 +390,7 @@ public abstract class DataSetDescriptor implements Serializable {
      * @param end A Datum object representing the end time for the interval requested
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
-    protected byte[] readBytes(InputStream uin, Object params, Datum start, Datum end) throws edu.uiowa.physics.pw.das.DasException {
+    protected byte[] readBytes(InputStream uin, Datum start, Datum end) throws edu.uiowa.physics.pw.das.DasException {
         
         LinkedList list = new LinkedList();
         byte[] data;
@@ -460,16 +462,20 @@ public abstract class DataSetDescriptor implements Serializable {
         return dataSetID;
     }
     
-    public DataSet getDataSet( Datum start, Datum end, Object params, Datum resolution, DasProgressMonitor monitor ) throws DasException {
+    public DataSet getDataSet( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         InputStream in;
-        DataSet result;
-        in= standardDataStreamSource.getInputStream( this, params, start, end );
+        DataSet result;        
+        if ( isServerSideReduction() ) {
+            in= standardDataStreamSource.getReducedInputStream( this, start, end, resolution);
+        } else {
+            in= standardDataStreamSource.getInputStream( this, start, end );
+        }
         in = new DasProgressMonitorInputStream(in, monitor);
-        result = getDataSet( in, start, end, params, resolution );
+        result = getDataSet( in, start, end, resolution );
         return result;
     }
     
-    protected abstract DataSet getDataSet(InputStream in, Datum start, Datum end, Object params, Datum resolution) throws DasException;
+    protected abstract DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException;
     
     public String getDataSetID() {
         return dataSetID;
@@ -566,4 +572,11 @@ public abstract class DataSetDescriptor implements Serializable {
         }
     }
     
+    public void setServerSideReduction(boolean x) {
+        serverSideReduction= x;
+    }
+    
+    public boolean isServerSideReduction() {
+        return serverSideReduction;
+    }
 }

@@ -103,14 +103,14 @@ public class FakeStandardDataStreamSource implements StandardDataStreamSource {
     public FakeStandardDataStreamSource() {
     }
     
-    public InputStream getInputStream(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, Datum start, Datum end) throws DasException {
+    public InputStream getInputStream( DataSetDescriptor dsd, Datum start, Datum end) throws DasException {
         
         double recsPerSecond= 1 / dsd.x_sample_width;
         int nRec= (int) ( end.subtract(start).doubleValue(Units.seconds) * recsPerSecond );
         
         int nitems;
-        if ( dsd instanceof edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor ) {
-            nitems= ((edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor)dsd).y_coordinate.length;
+        if ( dsd instanceof XTaggedYScanDataSetDescriptor ) {
+            nitems= ((XTaggedYScanDataSetDescriptor)dsd).y_coordinate.length;
         } else {
             throw new IllegalArgumentException("Only XTYSDSD's please!");
         }
@@ -119,8 +119,8 @@ public class FakeStandardDataStreamSource implements StandardDataStreamSource {
         return result;
     }
     
-    public InputStream getReducedInputStream(edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor dsd, Object params, Datum start, Datum end, Datum timeResolution) throws DasException {
-        return getInputStream( dsd, params, start, end );
+    public InputStream getReducedInputStream( DataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
+        return getInputStream( dsd, start, end );
     }
     
     public void reset() {

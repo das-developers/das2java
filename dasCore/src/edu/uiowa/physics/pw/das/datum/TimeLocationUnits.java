@@ -49,42 +49,9 @@ public class TimeLocationUnits extends LocationUnits {
         return result;
     }
     
-    public double parse(String s) {
-        int DATE = 0;
-        int YEAR = 1;
-        int MONTH = 2;
-        int DAY = 3;
-        int HOUR = 4;
-        int MINUTE = 5;
-        int SECOND = 6;
-        
-        Number[] d = edu.uiowa.physics.pw.das.util.DasDate.parseTime(s);
-        
-        if (d == null)
-            throw new IllegalArgumentException("Could not parse date string: \"" + s + "\"");
-        
-        int year, month, day, hour, minute;
-        int jd;
-        double seconds;
-        
-        year = d[YEAR].intValue();
-        month = d[MONTH].intValue();
-        day = d[DAY].intValue();
-        hour = d[HOUR].intValue();
-        jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
-        3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
-        275 * month / 9 + day + 1721029;
-        minute = d[MINUTE].intValue();
-        seconds = d[SECOND].floatValue() + hour*(float)3600.0 + minute*(float)60.0;
-        
-        double result;
-        result= ( jd-2451545 ) * 86400000000. + seconds * 1000000.;
-        if ( this!=us2000 ) {
-            UnitsConverter uc= getConverter( us2000, this );
-            result= uc.convert(result);
-        }
-        return result;
-        
+    public double parse(String s) throws java.text.ParseException {
+        Datum datum= TimeUtil.create(s);
+        return datum.doubleValue(this);        
     }
     
 }

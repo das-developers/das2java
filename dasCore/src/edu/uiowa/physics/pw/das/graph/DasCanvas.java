@@ -707,7 +707,7 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
      * @return
      */
     public static DasCanvas processCanvasElement(Element element, FormBase form)
-    throws DasPropertyException, DasNameException, DasException, ParsedExpressionException {
+    throws DasPropertyException, DasNameException, DasException, ParsedExpressionException, java.text.ParseException {
         try {
             
             String name = element.getAttribute("name");
@@ -737,7 +737,7 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
                         = DasAxis.processAxisElement((Element)node, null, null, form);
                         canvas.add(axis);
                     }
-                    else if (tagName.equals("timeaxis")) {
+                    else if (tagName.equals("timeaxis")) {                        
                         DasTimeAxis timeaxis
                         = DasTimeAxis.processTimeaxisElement((Element)node, null, null, form);
                         canvas.add(timeaxis);

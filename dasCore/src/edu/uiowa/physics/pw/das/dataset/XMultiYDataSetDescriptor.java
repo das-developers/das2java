@@ -103,11 +103,15 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
-    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Object params, Datum resolution) throws DasException {
+    public boolean isTCA() {
+        return ny == -1;
+    }
+    
+    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException {
         
         int elementCount, elementSize;
                 
-        if ( ny != -1) {
+        if ( !isTCA() ) {
             XMultiYDataSet ds = new XMultiYDataSet( this, start, end );
             double[] data;
             ds.description = description;
@@ -124,7 +128,7 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
         
             Datum timeBase= start.convertTo(ds.getXUnits());
             
-            data = readDoubles(in, "", start, end);
+            data = readDoubles(in, start, end);
             elementCount = data.length / elementSize;
             ds.data = new XMultiY[elementCount];
             
@@ -157,7 +161,7 @@ public class XMultiYDataSetDescriptor extends DataSetDescriptor {
             }
             elementSize = items + 1;
             
-            data = readDoubles(in, params, start, end);
+            data = readDoubles(in, start, end);
             elementCount = data.length/elementSize;
             ds.data = new XMultiY[elementCount];
             for (int i = 0; i < elementCount; i++) {

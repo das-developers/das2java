@@ -61,18 +61,43 @@ public class StreamDescriptor {
     }
     
     public Datum getStartTime() {
-        return TimeUtil.create(getAttribute("startTime"));
+        try {
+            return TimeUtil.create(getAttribute("startTime"));
+        } catch ( java.text.ParseException ex ) {
+            throw new IllegalStateException( "startTime is not a valid time" );
+        }
     }
     
     public Datum getEndTime() {
-        return TimeUtil.create(getAttribute("endTime"));
+        try {
+            return TimeUtil.create(getAttribute("endTime"));
+        } catch ( java.text.ParseException ex ) {
+            throw new IllegalStateException( "endTime is not a valid time" );
+        }
     }
     
     public boolean isCompressed() {
         return getAttribute("compression").equals("gzip");
     }
     
-    public static Document parseHeader(String header) throws DasIOException {
+    private static void validate( Document document ) throws java.text.ParseException, DasStreamFormatException {
+        NamedNodeMap attr1= document.getAttributes();
+        Node s;
+        s= attr1.getNamedItem("startTime");
+        if ( s==null ) {
+            throw new DasStreamFormatException( "startTime not provided" );
+        } else {
+            TimeUtil.create(s.getNodeValue());
+        }
+        s= attr1.getNamedItem("endTime");
+        if ( s==null ) {
+            throw new DasStreamFormatException( "startTime not provided" );
+        } else {
+            TimeUtil.create(s.getNodeValue());
+        }
+    }
+    
+    public static Document parseHeader(String header) throws DasIOException, DasStreamFormatException {
         DocumentBuilder builder;
         try {
             builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -88,6 +113,11 @@ public class StreamDescriptor {
         } catch ( IOException ex) {
             throw new DasIOException(ex.getMessage());
         }
+        try {
+            validate(document);
+        } catch ( java.text.ParseException e ) {
+            throw new DasStreamFormatException( e.getMessage() );
+        } 
         return document;
     }
     
@@ -105,5 +135,5 @@ public class StreamDescriptor {
         String result= writer.toString();
         return result;
     }
-
+    
 }

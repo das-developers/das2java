@@ -51,7 +51,7 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
         return ds;
     }
     
-    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Object params, Datum resolution) throws DasException {
+    protected DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException {
         throw new UnsupportedOperationException();
     }
     

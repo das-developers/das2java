@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import org.apache.xml.serialize.*;
 import org.w3c.dom.Document;
@@ -294,7 +293,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
     private boolean isValidType(Class type) {
         return type.isPrimitive()
         || type == String.class
-        || type == DasDate.class
+        || type == Datum.class
         || edu.uiowa.physics.pw.das.datum.Datum.class.isAssignableFrom(type)
         || Number.class.isAssignableFrom(type);
     }
@@ -628,14 +627,17 @@ public class FormBase extends JTabbedPane implements FormComponent {
                 //exception is handled by allowing success to remain false
             }
             catch (IOException ioe) {
+                DasExceptionHandler.handle(ioe);
                 //Allow to fall through.
                 //exception is handled by allowing success to remain false
             }
             catch (ParserConfigurationException pce) {
+                DasExceptionHandler.handle(pce);
                 //Allow to fall through.
                 //exception is handled by allowing success to remain false
             }
             catch (SAXException se) {
+                DasExceptionHandler.handle(se);
                 //Allow to fall through.
                 //exception is handled by allowing success to remain false
             }

@@ -235,7 +235,7 @@ public class Datum {
 //        }
 //    }
     
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws Exception {
         Datum temp1= new Datum( 32, Units.fahrenheit );
         Datum temp2= new Datum( 212, Units.fahrenheit );
         Datum temp3= new Datum( 100, Units.celcius );
@@ -255,11 +255,9 @@ public class Datum {
         edu.uiowa.physics.pw.das.util.DasDie.println("=======");
         edu.uiowa.physics.pw.das.util.DasDie.println(""+temp2.subtract(temp1));
         edu.uiowa.physics.pw.das.util.DasDie.println(""+temp3.subtract(temp1));
-        
-        edu.uiowa.physics.pw.das.util.DasDate x= new edu.uiowa.physics.pw.das.util.DasDate("09/15/1997 17:27:32");
-        Datum y= TimeUtil.create(x);
-        edu.uiowa.physics.pw.das.util.DasDie.println(x.toString());
-        edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDate.create(y));
+                
+        Datum y= TimeUtil.create("09/15/1997 17:27:32");
+        edu.uiowa.physics.pw.das.util.DasDie.println(y.toString());
     }
     
     public DasFormatter getFormatter() {
@@ -300,7 +298,7 @@ public class Datum {
         return formatter.format(this);
     }
     
-    public Datum parse(String s) {
+    public Datum parse(String s) throws java.text.ParseException {
         return formatter.parse(s,this);
     }
     

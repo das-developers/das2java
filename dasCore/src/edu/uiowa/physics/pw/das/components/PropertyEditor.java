@@ -735,11 +735,6 @@ public class PropertyEditor extends JPanel {
                 booleanBox.setText(value.toString());
                 return booleanBox;
             }
-            else if (value instanceof edu.uiowa.physics.pw.das.util.DasDate) {
-                editorState = DATE;
-                stringField.setText(value.toString());
-                return stringField;
-            }
             else if (value instanceof edu.uiowa.physics.pw.das.datum.Datum) {
                 editorState = DATUM;
                 stringField.setText(((edu.uiowa.physics.pw.das.datum.Datum)value).format());
@@ -794,21 +789,16 @@ public class PropertyEditor extends JPanel {
             else if (editorState == BOOLEAN) {
                 return (booleanBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
             }
-            else if (editorState == DATE) {
-                try {
-                    return new edu.uiowa.physics.pw.das.util.DasDate(stringField.getText());
-                }
-                catch (IllegalArgumentException iae) {
-                    DasExceptionHandler.handle(iae);
-                    return currentValue;
-                }
-            }
             else if (editorState == DATUM) {
                 try {
                     return ((edu.uiowa.physics.pw.das.datum.Datum)currentValue).parse(stringField.getText());
                 }
                 catch (IllegalArgumentException iae) {
                     DasExceptionHandler.handle(iae);
+                    return currentValue;
+                }
+                catch ( java.text.ParseException ex ) {
+                    DasExceptionHandler.handle(ex);
                     return currentValue;
                 }
             }

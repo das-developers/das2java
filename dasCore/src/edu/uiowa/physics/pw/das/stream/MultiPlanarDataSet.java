@@ -357,7 +357,8 @@ public class MultiPlanarDataSet {
         try {
             XTaggedYScanDataSetDescriptor dsd= (XTaggedYScanDataSetDescriptor)DataSetDescriptor.create("http://www-pw.physics.uiowa.edu/das/dasServerTest1?das2/demo/sa-4s-sd_jbf");
             StandardDataStreamSource sds= dsd.getStandardDataStreamSource();
-            InputStream in= sds.getReducedInputStream(dsd,null,TimeUtil.create("1979-3-1"), TimeUtil.create("1979-3-2"), Datum.create(120.,Units.seconds));
+            InputStream in;
+            in= sds.getReducedInputStream(dsd,TimeUtil.createValid("1979-3-1"), TimeUtil.createValid("1979-3-2"), Datum.create(120.,Units.seconds));
             MultiPlanarDataSet mpds= new MultiPlanarDataSet();
             mpds.read(in);                       
             XTaggedYScanDataSet ds= (XTaggedYScanDataSet)mpds.getPrimaryDataSet();

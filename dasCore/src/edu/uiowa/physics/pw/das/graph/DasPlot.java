@@ -270,7 +270,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 drt = new DataRequestThread();
             }
             try {
-                drt.request(dataSetDescriptor, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
+                drt.request(dataSetDescriptor, taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
@@ -280,7 +280,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         } else {
             if ( ( dataSetDescriptor instanceof ConstantDataSetDescriptor ) ) {
                 try {
-                    Data= dataSetDescriptor.getDataSet( null, null, "", null, null );
+                    Data= dataSetDescriptor.getDataSet( null, null, null, null );
                     updatePlotImage();
                 } catch ( DasException e ) {
                     DasExceptionHandler.handle(e);
@@ -475,7 +475,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return (Renderer[])renderers.toArray(new Renderer[0]);
     }
     
-    public static DasPlot processPlotElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    public static DasPlot processPlotElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         String name = element.getAttribute("name");
         
         DasRow row = (DasRow)form.checkValue(element.getAttribute("row"), DasRow.class, "<row>");
@@ -525,7 +525,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return plot;
     }
     
-    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -557,7 +557,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
     
-    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);

@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -111,8 +112,12 @@ public class FormTab extends FormContainer {
             if (node instanceof Element) {
                 String tagName = node.getNodeName();
                 if (tagName.equals("panel")) {
-                    FormPanel p = new FormPanel((Element)node, form);
-                    add(p);
+                    try {
+                        FormPanel p = new FormPanel((Element)node, form);
+                        add(p);
+                    } catch ( java.text.ParseException ex ) {
+                        DasExceptionHandler.handle(ex);
+                    }
                 }
                 else if (tagName.equals("text") || tagName.equals("info")) {
                     FormText text = new FormText((Element)node);
@@ -151,6 +156,10 @@ public class FormTab extends FormContainer {
                         add(canvas);
                     }
                     catch (edu.uiowa.physics.pw.das.DasException dne) {
+                        DasExceptionHandler.handle(dne);
+                    }
+                    catch ( java.text.ParseException ex ) {
+                        DasExceptionHandler.handle(ex);
                     }
                 }
                 else {

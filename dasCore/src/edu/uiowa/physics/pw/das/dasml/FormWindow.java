@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.PropertyEditor;
+import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -91,11 +92,11 @@ public class FormWindow extends FormContainer implements PropertyEditor.Editable
     
     /** Creates a new instance of FormWindow */
     FormWindow(Element element, FormBase form)
-        throws DasException,
-        ParsedExpressionException, org.xml.sax.SAXException {
-            
+    throws DasException,
+    ParsedExpressionException, org.xml.sax.SAXException {
+        
         this.form = form;
-            
+        
         String name = element.getAttribute("name");
         String title = element.getAttribute("title");
         String alignment = element.getAttribute("alignment");
@@ -108,12 +109,20 @@ public class FormWindow extends FormContainer implements PropertyEditor.Editable
         for (int index = 0; index < children.getLength(); index++) {
             Node node = children.item(index);
             if (node instanceof Element && node.getNodeName().equals("panel")) {
-                FormPanel panel = new FormPanel((Element)node, form);
-                add(panel);
+                try {
+                    FormPanel panel = new FormPanel((Element)node, form);
+                    add(panel);
+                } catch ( java.text.ParseException ex ) {
+                    DasExceptionHandler.handle(ex);
+                }
             }
             else if (node instanceof Element && node.getNodeName().equals("canvas")) {
-                edu.uiowa.physics.pw.das.graph.DasCanvas canvas = edu.uiowa.physics.pw.das.graph.DasCanvas.processCanvasElement((Element)node, form);
-                add(canvas);
+                try {
+                    edu.uiowa.physics.pw.das.graph.DasCanvas canvas = edu.uiowa.physics.pw.das.graph.DasCanvas.processCanvasElement((Element)node, form);
+                    add(canvas);
+                } catch ( java.text.ParseException ex ) {
+                    DasExceptionHandler.handle(ex);
+                }
             }
         }
         

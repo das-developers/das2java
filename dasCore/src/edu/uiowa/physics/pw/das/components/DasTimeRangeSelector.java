@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.datum.*;
 /**
  *
  * @author  jbf
@@ -30,7 +31,6 @@ package edu.uiowa.physics.pw.das.components;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
-import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.util.DasDie;
 import java.awt.*;
 
@@ -42,8 +42,8 @@ import javax.swing.*;
 
 public class DasTimeRangeSelector extends JPanel implements ActionListener, TimeRangeSelectionListener {
     
-    private DasDate startTime = null;
-    private DasDate endTime = null;
+    private Datum startTime = null;
+    private Datum endTime = null;
     
     JTextField idStart= null;
     JTextField idStop= null;
@@ -86,7 +86,7 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         
     }
     
-    public DasTimeRangeSelector(DasDate startTime, DasDate endTime) {
+    public DasTimeRangeSelector(Datum startTime, Datum endTime) {
         this();
         setStartTime(startTime);
         update();
@@ -94,21 +94,21 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         update();
     }
     
-    public DasDate getStartTime() {
-        DasDate s1;
+    public Datum getStartTime() {
+        Datum s1;
         try {
-            s1= new DasDate(idStart.getText());
-        } catch (IllegalArgumentException e) {
+            s1= TimeUtil.create(idStart.getText());
+        } catch (java.text.ParseException e) {
             s1= null;
         }
         return s1;
     }
     
-    public DasDate getEndTime() {
-        DasDate s2;
+    public Datum getEndTime() {
+        Datum s2;
         try {
-            s2= new DasDate(idStop.getText());
-        } catch (IllegalArgumentException e) {
+            s2= TimeUtil.create(idStop.getText());
+        } catch (java.text.ParseException e) {
             s2= null;
         }
         return s2;
@@ -119,54 +119,54 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         if (endTime!=null) idStop.setText(endTime.toString());
     }
     
-    public void setStartTime(DasDate s1) {
+    public void setStartTime(Datum s1) {
         startTime= s1;
         endTime= getEndTime();
         if (endTime!=null) {
             if (startTime.compareTo(endTime)==1)
-                endTime= new DasDate( startTime.toString() );
+                endTime= startTime.add(1,Units.seconds);
         }
         update();
     }
     
-    public void setEndTime(DasDate s2) {
+    public void setEndTime(Datum s2) {
         endTime= s2;
         startTime= getStartTime();
         if (startTime!=null) {
             if (startTime.compareTo(endTime)==1)
-                startTime= new DasDate( endTime.toString() );
+                startTime= endTime.subtract(1,Units.seconds);
         }
         update();
     }
     
-    public boolean isWithin(DasDate s1, DasDate s2) {
-        DasDate startTime= getStartTime();
-        DasDate endTime= getEndTime();
+    public boolean isWithin(Datum s1, Datum s2) {
+        Datum startTime= getStartTime();
+        Datum endTime= getEndTime();
         return s1.compareTo(startTime) <= 0 && endTime.compareTo(s2) <= 0;
     }
     
     public void actionPerformed(ActionEvent actionEvent) {
         String command= actionEvent.getActionCommand();
         if (command.equals("previous")) {
-            double twidth= getEndTime().subtract(getStartTime());
+            Datum twidth= getEndTime().subtract(getStartTime());
             setStartTime(getStartTime().subtract(twidth));
             setEndTime(getEndTime().subtract(twidth));
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,startTime,endTime));
         } else if (command.equals("next")) {
-            double twidth= getEndTime().subtract(getStartTime());
+            Datum twidth= getEndTime().subtract(getStartTime());
             setStartTime(getStartTime().add(twidth));
             setEndTime(getEndTime().add(twidth));
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,startTime,endTime));
         } else if (command.equals("startTime")) {
             setStartTime(getStartTime());
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,startTime,endTime));
         } else if (command.equals("endTime")) {
             setEndTime(getEndTime());
             fireTimeRangeSelectionListenerTimeRangeSelected(
-            new TimeRangeSelectionEvent(this,TimeUtil.create(startTime),TimeUtil.create(endTime)));
+            new TimeRangeSelectionEvent(this,startTime,endTime));
         }
     }
     
@@ -183,8 +183,8 @@ public class DasTimeRangeSelector extends JPanel implements ActionListener, Time
         }
         if (!e.equals(lastEventProcessed)) {
             lastEventProcessed= e;
-            setStartTime(DasDate.create(e.getStartTime()));
-            setEndTime(DasDate.create(e.getEndTime()));
+            setStartTime( e.getStartTime() );
+            setEndTime( e.getEndTime() );
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
         }
     }

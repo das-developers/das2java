@@ -28,7 +28,6 @@ import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.HorizontalSlicerMouseModule;
 import edu.uiowa.physics.pw.das.event.VerticalSlicerMouseModule;
-import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -165,7 +164,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
     
     public static DasStackedHistogramPlot create( DasCanvas parent, XTaggedYScanDataSetDescriptor dsd,
     Datum startTime, Datum endTime ) throws edu.uiowa.physics.pw.das.DasException {
-        XTaggedYScanDataSet ds= (XTaggedYScanDataSet)dsd.getDataSet(startTime,endTime, "", null, null);
+        XTaggedYScanDataSet ds= (XTaggedYScanDataSet)dsd.getDataSet(startTime,endTime, null, null);
         DasStackedHistogramPlot result= DasStackedHistogramPlot.create(parent,ds);
         result.setDataSetDescriptor(dsd);
         return result;

@@ -212,7 +212,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
         DasColumn column= new DasColumn(canvas,0.1,0.9);
         
         canvas.addCanvasComponent(DasPlot.createDummyPlot(row,column));
-        DataRange dataRange= new DataRange(null,TimeUtil.create("1998-01-01"),TimeUtil.create("1999-01-01"),false);
+        DataRange dataRange= new DataRange(null,TimeUtil.createValid("1998-01-01"),TimeUtil.createValid("1999-01-01"),false);
         canvas.addCanvasComponent(new TimeRangeLabel(dataRange,row,column));
         
         panel.setLayout(new BorderLayout());

@@ -36,7 +36,7 @@ import java.io.InputStream;
  */
 public interface StandardDataStreamSource {
     
-    public InputStream getInputStream(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor dsd, Object params, Datum start, Datum end) throws DasException;
-    public InputStream getReducedInputStream(edu.uiowa.physics.pw.das.dataset.XTaggedYScanDataSetDescriptor dsd, Object params, Datum start, Datum end, Datum timeResolution) throws DasException;
+    public InputStream getInputStream( DataSetDescriptor dsd, Datum start, Datum end) throws DasException;
+    public InputStream getReducedInputStream( DataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException;
     public void reset();
 }

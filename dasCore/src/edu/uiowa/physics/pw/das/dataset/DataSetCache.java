@@ -37,22 +37,20 @@ public class DataSetCache {
         Datum start;
         Datum end;
         Datum resolution;
-        Object params;
         DataSet data;
         int nhits;
         long birthTime;
         long lastAccess;
         
         Tag() {
-            this( null, null, null, null, null, null );
+            this( null, null, null, null, null );
         }
         
-        Tag( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params, DataSet data ) {
+        Tag( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, DataSet data ) {
             this.dsd= dsd;
             this.start= start;
             this.end= end;
             this.resolution= resolution;
-            this.params= params;
             this.data= data;
             this.nhits= 0;
             this.birthTime= System.currentTimeMillis();
@@ -65,8 +63,6 @@ public class DataSetCache {
             result= result && ( tag.start.compareTo( this.start) >= 0 )  &&
             ( tag.end.compareTo(this.end) <= 0 );
             result= result && ( tag.resolution.ge(this.resolution) );
-            result= result &&
-            ( ( tag.params==this.params ) || ( tag.params.toString().equals(this.params.toString()) ) );
             return result;
         }
         
@@ -86,10 +82,10 @@ public class DataSetCache {
         buffer= new Tag[1];
     }
     
-    public void store( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params, DataSet data ) {
+    public void store( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, DataSet data ) {
         if ( !enabled ) return;
         
-        Tag tag= new Tag( dsd, start, end, resolution, params, data );
+        Tag tag= new Tag( dsd, start, end, resolution, data );
         int iMin=-1;
         for (int i=buffer.length-1; i>=0; i--) {
             if (buffer[i]==null) {
@@ -111,8 +107,8 @@ public class DataSetCache {
         buffer[iMin]= tag;
     };
     
-    int findStored( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
-        Tag tag= new Tag( dsd, start, end, resolution, params, null );
+    int findStored( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution ) {
+        Tag tag= new Tag( dsd, start, end, resolution, null );
         
         int iHit=-1;
         for (int i=0; i<buffer.length; i++) {
@@ -126,13 +122,13 @@ public class DataSetCache {
         return iHit;
     };
     
-    public boolean haveStored( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
-        Tag tag= new Tag( dsd, start, end, resolution, params, null );
+    public boolean haveStored( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution ) {
+        Tag tag= new Tag( dsd, start, end, resolution, null );
         
         edu.uiowa.physics.pw.das.util.DasDie.println(toString());
         edu.uiowa.physics.pw.das.util.DasDie.println("    need: "+tag.toString());
         
-        int iHit= findStored( dsd, start, end, resolution, params );
+        int iHit= findStored( dsd, start, end, resolution );
         
         if (iHit!=-1) {
             hits++;
@@ -144,7 +140,7 @@ public class DataSetCache {
     };
     
     public DataSet retrieve( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
-        int iHit= findStored( dsd, start, end, resolution, params );
+        int iHit= findStored( dsd, start, end, resolution );
         if (iHit!=-1) {
             edu.uiowa.physics.pw.das.util.DasDie.println(" time offset= "+buffer[iHit].start.subtract(start) );
             buffer[iHit].nhits++;

@@ -28,7 +28,6 @@ package edu.uiowa.physics.pw.das.graph;
  * @author  jessica
  */
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.util.DasDate;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -105,13 +104,13 @@ public class DasSymbolPlot extends DasPlot {
         edu.uiowa.physics.pw.das.util.DasDie.println("  dsd: "+dsd+" units: "+dsd.getXUnits() );
         
         if (dsd.getXUnits() instanceof TimeLocationUnits ) {
-            xAxis= new DasTimeAxis( TimeUtil.create("2000/1/1"), TimeUtil.create("2000/1/2"), row, column, DasAxis.HORIZONTAL );
+                xAxis= new DasTimeAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.HORIZONTAL );
         } else {
             xAxis= new DasAxis( Datum.create(0,dsd.getXUnits()), Datum.create(10,dsd.getXUnits()), row, column, DasAxis.HORIZONTAL );
         }
         
         if (dsd.getYUnits() instanceof TimeLocationUnits ) {
-            yAxis= new DasTimeAxis( TimeUtil.create("2000/1/1"), TimeUtil.create("2000/1/2"), row, column, DasAxis.VERTICAL );
+            yAxis= new DasTimeAxis( TimeUtil.createValid("2000/1/1"), TimeUtil.createValid("2000/1/2"), row, column, DasAxis.VERTICAL );
         } else {
             yAxis= new DasAxis( Datum.create(0,dsd.getYUnits()), Datum.create(10,dsd.getYUnits()), row, column, DasAxis.VERTICAL );
         }

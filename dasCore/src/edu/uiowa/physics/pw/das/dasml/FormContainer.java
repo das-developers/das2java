@@ -567,6 +567,9 @@ public abstract class FormContainer extends JPanel implements PropertyEditor.Edi
             catch (IOException ioe) {
                 edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
             }
+            catch ( java.text.ParseException ex ) {
+                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ex);
+            }
             return null;
         }
         

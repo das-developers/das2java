@@ -72,11 +72,11 @@ public class DataRequestThread extends Thread {
      * @param requestor <code>DataRequestor</code> that is notified
      *      when the data loading operation is complete.
      */
-    public void request(DataSetDescriptor dsd, Object params,
+    public void request(DataSetDescriptor dsd, 
         Datum start, Datum end, Datum resolution, DataRequestor requestor, DasProgressMonitor monitor)
         throws InterruptedException {
 
-        requestInternal(new DataRequest(dsd, params, start, end, resolution, requestor, monitor));
+        requestInternal(new DataRequest(dsd, start, end, resolution, requestor, monitor));
         
     }
     /**
@@ -104,7 +104,7 @@ public class DataRequestThread extends Thread {
         Datum start, Datum end, Datum resolution, DataRequestor requestor, DasProgressMonitor monitor)
         throws InterruptedException {
 
-        DataRequest request = new DataRequest(dsd, params, start, end, resolution, requestor, monitor);
+        DataRequest request = new DataRequest(dsd, start, end, resolution, requestor, monitor);
 
         //Wait till thread is done loading
         synchronized (request) {
@@ -144,7 +144,6 @@ public class DataRequestThread extends Thread {
                     DataSet ds = currentRequest.dsd.getDataSet(
                         currentRequest.start,
                         currentRequest.end,
-                        currentRequest.params,
                         currentRequest.resolution,
                         currentRequest.monitor);
                     currentRequest.requestor.finished(ds);
@@ -177,11 +176,10 @@ public class DataRequestThread extends Thread {
         Datum resolution;
         DataRequestor requestor;
         DasProgressMonitor monitor;
-        DataRequest(DataSetDescriptor dsd, Object params, Datum start,
+        DataRequest(DataSetDescriptor dsd, Datum start,
                     Datum end, Datum resolution,
                     DataRequestor requestor, DasProgressMonitor monitor) {
             this.dsd = dsd;
-            this.params = params;
             this.start = start;
             this.end = end;
             this.resolution = resolution;

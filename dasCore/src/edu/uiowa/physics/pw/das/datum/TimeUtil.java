@@ -169,7 +169,11 @@ public final class TimeUtil {
         int year= cal.get(Calendar.YEAR);
         int doy= cal.get(Calendar.DAY_OF_YEAR);
         
-        return TimeUtil.create(year+"//"+doy+" "+hour+":"+minute+":"+second);
+        try {
+            return TimeUtil.create(year+"//"+doy+" "+hour+":"+minute+":"+second);
+        } catch ( java.text.ParseException ex ) {
+            throw new IllegalStateException(ex.getMessage());
+        }
     }
     
     public static double convert(int year, int month, int day, int hour, int minute, double second, TimeLocationUnits units) {
@@ -197,7 +201,7 @@ public final class TimeUtil {
         }
     }
     
-    public static final TimeStruct parseTime(String s) {
+    public static final TimeStruct parseTime(String s) throws java.text.ParseException {
         int year, month, day_month, day_year, hour, minute;
         //String s;
         double second;
@@ -287,7 +291,7 @@ public final class TimeUtil {
         /* tokenize the time string */
         st = new StringTokenizer(s, delimiters);
         
-        if (!st.hasMoreTokens()) return null;
+        if (!st.hasMoreTokens()) throw new java.text.ParseException( "No tokens in '"+s+"'", 0 );
         
         for (n = 0; n < 10 && st.hasMoreTokens(); n++) tok[n] = st.nextToken();
         
@@ -308,13 +312,13 @@ public final class TimeUtil {
             try {
                 value = Double.parseDouble(tok[i]);
             } catch (NumberFormatException e) {
-                if (len < 3 || !want[DATE]) return null;
+                if (len < 3 || !want[DATE]) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 for (j = 0; j < 12; j++) {
                     if (tok[i].equalsIgnoreCase(months[j]) || tok[i].equalsIgnoreCase(mons[j])) {
                         month = j + 1;
                         want[MONTH] = false;
                         if (hold > 0) {
-                            if (day_month > 0) return null;
+                            if (day_month > 0) throw new java.text.ParseException( "Ambiguous dates in token '"+tok[i]+"' in '"+s+"'", 0 );
                             day_month = hold;
                             hold = 0;
                             want[DAY] = false;
@@ -322,7 +326,7 @@ public final class TimeUtil {
                         break;
                     }
                 }
-                if (want[MONTH]) return null;
+                if (want[MONTH]) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 continue;
             }
             
@@ -330,15 +334,15 @@ public final class TimeUtil {
                 if (want[SECOND]) {
                     second = value;
                     break;
-                } else return null;
+                } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
             }
             
             number = (int)value;
-            if (number < 0) return null;
+            if (number < 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
             
             if (want[DATE]) {
                 
-                if (number == 0) return null;
+                if (number == 0) throw new java.text.ParseException( "m,d, or y can't be 0 in '"+s+"'", 0 );
                 
                 if (number > 31) {
                     
@@ -351,7 +355,7 @@ public final class TimeUtil {
                         month = 0;
                         day_year = number;
                         want[DAY] = false;
-                    } else return null;
+                    } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     
                 } else if (number > 12) {
                     
@@ -361,13 +365,13 @@ public final class TimeUtil {
                             want[MONTH] = false;
                         }
                         if (len == 3) {
-                            if (month > 0) return null;
+                            if (month > 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                             day_year = number;
                             day_month = 0;
                             want[MONTH] = false;
                         } else day_month = number;
                         want[DAY] = false;
-                    } else return null;
+                    } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     
                 } else if (!want[MONTH]) {
                     
@@ -382,19 +386,19 @@ public final class TimeUtil {
                     
                 } else if (!want[DAY]) {
                     
-                    if (day_year > 0) return null;
+                    if (day_year > 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     month = number;
                     want[MONTH] = false;
                     
                 } else if (!want[YEAR]) {
                     
                     if (len == 3) {
-                        if (month > 0) return null;
+                        if (month > 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                         day_year = number;
                         day_month = 0;
                         want[DAY] = false;
                     } else {
-                        if (day_year > 0) return null;
+                        if (day_year > 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                         month = number;
                         if (hold > 0) {
                             day_month = hold;
@@ -422,49 +426,52 @@ public final class TimeUtil {
                 
                 if (len == 4) {
                     hold = number / 100;
-                    if (hold > 23) return null;
+                    // TODO: handle times like Jan-1-2001T24:00 --> Jan-2-2001T00:00,  for ease of modifying times
+                    if (hold > 23) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     hour = hold;
                     hold = number % 100;
-                    if (hold > 59) return null;
+                    if (hold > 59) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     minute = hold;
                     want[MINUTE] = false;
                 } else {
-                    if (number > 23) return null;
+                    if (number > 23) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     hour = number;
                 }
                 want[HOUR] = false;
                 
             } else if (want[MINUTE]) {
-                
-                if (number > 59) return null;
+                // TODO: handle times like 0:90 --> 1:30,  for ease of modifying times
+                if (number > 59) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 minute = number;
                 want[MINUTE] = false;
                 
             } else if (want[SECOND]) {
                 
-                if (number > 61) return null;
+                if (number > 61) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 second = number;
                 want[SECOND] = false;
                 
-            } else return null;
+            } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
             
         } /* for all tokens */
         
-        if (month > 12) return null;
+        if (month > 12) throw new java.text.ParseException("Month is greater than 12 in '"+s+"'",0);
         if (month > 0 && day_month <= 0) day_month = 1;
         
         leap = ((year & 3) > 0 ? 0 : ((year % 100) > 0 ? 1 : ((year % 400) > 0 ? 0 : 1)) );
         
         if ((month > 0) && (day_month > 0) && (day_year == 0)) {
-            if (day_month > days_in_month[leap][month]) return null;
+            if (day_month > days_in_month[leap][month]) throw new java.text.ParseException( "day of month too high in '"+s+"'",0 );
             day_year = day_offset[leap][month] + day_month;
         } else if ((day_year > 0) && (month == 0) && (day_month == 0)) {
-            if (day_year > (365 + leap)) return null;
+            if (day_year > (365 + leap)) throw new java.text.ParseException( "day of year too high in '"+s+"'",0 );
             for (i = 2; i < 14 && day_year > day_offset[leap][i]; i++);
             i--;
             month = i;
             day_month = day_year - day_offset[leap][i];
-        } else return null;
+        } else {
+            throw new java.text.ParseException( "Need month/day or doy in '"+s+"'",0 );
+        }
         
         TimeStruct result= new TimeStruct();
         result.year = year;
@@ -477,17 +484,32 @@ public final class TimeUtil {
         
         return result;
     }
-    public static Datum create(edu.uiowa.physics.pw.das.util.DasDate date) {        
-        edu.uiowa.physics.pw.das.util.DasDate base2000= new edu.uiowa.physics.pw.das.util.DasDate("01/01/2000 00:00");
-        return Datum.create(date.subtract(base2000)*1000000,Units.us2000);
-    }
     
-    public static Datum create(String s) {
+    /** Creates a datum from a string
+     * @param s
+     * @throws ParseException
+     * @return
+     */
+    public static Datum create(String s) throws java.text.ParseException {
         TimeStruct ts= parseTime(s);
         return toDatum(ts);
     }
     
-    public static void main(String[] args) {
+    /** creates a Datum from a string which is known to contain
+     * a valid time format.  Throws a RuntimeException if the
+     * string is not valid.
+     * @param validString
+     * @return
+     */
+    public static Datum createValid(String validString ) {
+        try {
+            return create( validString );
+        } catch ( java.text.ParseException ex ) {
+            throw new RuntimeException( ex );
+        }
+    }
+    
+    public static void main(String[] args) throws Exception {
         System.out.println( TimeUtil.now() );
         System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 ));
         Datum x=create( "1972-1-17 13:26" );
@@ -496,5 +518,9 @@ public final class TimeUtil {
         TimeStruct ts= TimeUtil.toTimeStruct(x);
         System.out.println( TimeUtil.toDatum(ts) );
     }
-
+    
+    public static Datum prevMidnight(Datum datum) {
+        return datum.subtract(getSecondsSinceMidnight(datum), Units.seconds);
+    }
+    
 }

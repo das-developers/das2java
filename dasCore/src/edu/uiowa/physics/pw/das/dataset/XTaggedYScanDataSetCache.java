@@ -60,12 +60,12 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
         Datum start1= start.add(tenpercent);
         Datum end1= end.subtract(tenpercent);
         
-        DataSetCache.Tag tag= new DataSetCache.Tag( dsd, start, end, resolution, params, null );
+        DataSetCache.Tag tag= new DataSetCache.Tag( dsd, start, end, resolution, null );
         
         edu.uiowa.physics.pw.das.util.DasDie.println(toString());
         edu.uiowa.physics.pw.das.util.DasDie.println("    need: "+tag.toString());
         
-        int iHit= findStored( dsd, start1, end1, resolution, params );
+        int iHit= findStored( dsd, start1, end1, resolution );
         
         if (iHit!=-1) {
             hits++;
@@ -77,12 +77,12 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
     };
     
         
-    public DataSet retrieve( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution, Object params ) {
+    public DataSet retrieve( DataSetDescriptor dsd, Datum start, Datum end, Datum resolution ) {
         Datum tenpercent= (end.subtract(start)).divide(5);
         Datum start1= start.add(tenpercent);
         Datum end1= end.subtract(tenpercent);
 
-        int iHit= findStored( dsd, start1, end1, resolution, params );
+        int iHit= findStored( dsd, start1, end1, resolution );
         if (iHit!=-1) {
             buffer[iHit].nhits++;
             buffer[iHit].lastAccess= System.currentTimeMillis();
@@ -91,7 +91,7 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
             Datum dataSetStartTime= ds.getStartTime();
             if ( start.lt(dataSetStartTime) ) {
                 try {                    
-                    XTaggedYScanDataSet appendBefore= (XTaggedYScanDataSet)dsd.getDataSet(start,dataSetStartTime,params,res,null);
+                    XTaggedYScanDataSet appendBefore= (XTaggedYScanDataSet)dsd.getDataSet(start,dataSetStartTime,res,null);
                     ds= appendBefore.append(ds);
                 } catch ( edu.uiowa.physics.pw.das.DasException e ) {
                 }
@@ -99,12 +99,12 @@ public class XTaggedYScanDataSetCache extends DataSetCache {
             Datum dataSetEndTime= ds.getEndTime();
             if ( dataSetEndTime.lt(end) ) {
                 try {
-                    XTaggedYScanDataSet appendAfter= (XTaggedYScanDataSet)dsd.getDataSet(dataSetEndTime,end,params,res,null);
+                    XTaggedYScanDataSet appendAfter= (XTaggedYScanDataSet)dsd.getDataSet(dataSetEndTime,end,res,null);
                     ds= ds.append(appendAfter);
                 } catch ( edu.uiowa.physics.pw.das.DasException e ) {
                 }
             }
-            DataSetCache.Tag tag= new DataSetCache.Tag( dsd, start, end, res, params, ds );
+            DataSetCache.Tag tag= new DataSetCache.Tag( dsd, start, end, res, ds );
             buffer[iHit]= tag;
             return ds;
         } else {

@@ -141,7 +141,7 @@ public class Units {
         return id;
     }
     
-    public double parse(String s) {
+    public double parse(String s) throws java.text.ParseException {
         throw new IllegalArgumentException("not implemented for Units besides TimeLocationUnits.");
     }
     

@@ -34,7 +34,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.client.DasServer;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.*;
 import java.io.*;
@@ -88,13 +88,13 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         }
     }
     
-    public InputStream getInputStream(DataSetDescriptor dsd, Object params, Datum start, Datum end) throws DasException {
+    public InputStream getInputStream(DataSetDescriptor dsd, Datum start, Datum end) throws DasException {
         String serverType;
         serverType="dataset";
         
         String formData= "server="+serverType;
         
-        InputStream in= openURLConnection( dsd, params, start, end, formData );        
+        InputStream in= openURLConnection( dsd, start, end, formData );        
         MeteredInputStream min= new MeteredInputStream(in);
         min.setSpeedLimit(3300);
         return min;
@@ -102,14 +102,25 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     }
     
     
-    public InputStream getReducedInputStream(XTaggedYScanDataSetDescriptor dsd, Object params, Datum start, Datum end, Datum timeResolution) throws DasException {
+    public InputStream getReducedInputStream( DataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
         // params is either String, or object with toString properly defined.
+                
+        String formData;
         
-        String serverType= "compactdataset";
+        if ( dsd instanceof XTaggedYScanDataSetDescriptor ) {            
+            formData= "server=compactdataset";
+            formData+= "&nitems="+(((XTaggedYScanDataSetDescriptor)dsd).y_coordinate.length+1);
+            formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
+        } else if ( dsd instanceof XMultiYDataSetDescriptor ) {            
+            formData= "server=dataset";
+            XMultiYDataSetDescriptor mdsd= (XMultiYDataSetDescriptor)dsd;
+            if ( mdsd.isTCA() ) {
+                formData+= "&interval="+timeResolution.doubleValue(Units.seconds);
+            }
+        } else {
+            throw new IllegalStateException("dsd type not handled");
+        }
         
-        String formData= "server="+serverType;
-        formData+= "&resolution="+timeResolution.doubleValue(Units.seconds);
-        formData+= "&nitems="+(dsd.y_coordinate.length+1);
         
         boolean compress=true;
         if ( min!=null ) {
@@ -129,15 +140,14 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "NOT compressing data stream");
         }            
         
-        InputStream in= openURLConnection( dsd, params, start, end, formData );        
+        InputStream in= openURLConnection( dsd, start, end, formData );        
         min= new MeteredInputStream(in);
-        //min.setSpeedLimit(3300);
         return min;
 
     }
     
     protected synchronized InputStream openURLConnection( DataSetDescriptor dsd,
-    Object params, Datum start, Datum end, String additionalFormData )
+      Datum start, Datum end, String additionalFormData )
     throws DasException {
         
         String dataSetID = dsd.getDataSetID();
@@ -160,7 +170,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             formData+= "&start_time="+URLEncoder.encode(startStr,"UTF-8");
             String endStr= formatter.format(end).replace(' ','T');                        
             formData+= "&end_time="+URLEncoder.encode(endStr,"UTF-8");
-            formData+= URLEncoder.encode((params==null?"":params+" "),"UTF-8");
             
             if (dsd.isRestrictedAccess() || key!=null ) {
                 if (key==null) {
@@ -173,7 +182,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             
             formData+= "&"+additionalFormData;
             URL server= this.server.getURL(formData);
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
+            DasDie.println(DasDie.VERBOSE,server.toString());
             
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();

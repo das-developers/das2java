@@ -58,8 +58,6 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
     
     private XTaggedYScanDataSetCache dataCache;
     
-    private boolean serverSideReduction= true;
-    
     protected XTaggedYScanDataSetDescriptor() {
         super(Units.us2000);
         yUnits= Units.dimensionless;
@@ -104,7 +102,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
-    public DataSet getDataSet(Datum start, Datum end, Object params, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
         Datum res= resolution;
         Datum sbResolution= resolution ;
         
@@ -112,22 +110,22 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         
         InputStream in;
         if (isServerSideReduction()) {
-            in= standardDataStreamSource.getReducedInputStream( this, params, start, end, resolution );
+            in= standardDataStreamSource.getReducedInputStream( this, start, end, resolution );
             res= ( resolution.gt( this.getXSampleWidth() ) ? resolution : getXSampleWidth() );
         } else {
-            in= standardDataStreamSource.getInputStream( this, params, start, end );
+            in= standardDataStreamSource.getInputStream( this, start, end );
             res= getXSampleWidth();
         }
         in = new DasProgressMonitorInputStream(in, monitor);
         XTaggedYScanDataSet ds
-            = (XTaggedYScanDataSet) getDataSet(in,start,end,params, resolution);
+            = (XTaggedYScanDataSet) getDataSet(in,start,end, resolution);
         ds.x_sample_width= res.doubleValue(Units.seconds);        
         ds.setXSampleWidth( res );
         
         return ds;
     }
     
-    protected DataSet getDataSet(InputStream in0, Datum start, Datum end, Object params, Datum resolution) throws DasException {
+    protected DataSet getDataSet(InputStream in0, Datum start, Datum end, Datum resolution) throws DasException {
         
         int elementCount, elementSize;
         
@@ -178,7 +176,7 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
             
         } else {
             
-            data = readFloats(in,"", start, end);
+            data = readFloats(in,start, end);
                         
             Datum timeBase= start.convertTo(ds.getXUnits());
             
@@ -220,12 +218,5 @@ public class XTaggedYScanDataSetDescriptor extends DataSetDescriptor {
         return this.zUnits;
     }
     
-    public void setServerSideReduction(boolean x) {
-        serverSideReduction= x;
-    }
-    
-    public boolean isServerSideReduction() {
-        return serverSideReduction;
-    }
     
 }

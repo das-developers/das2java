@@ -183,7 +183,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
                 drt = new DataRequestThread();
             }
             try {
-                drt.request(dsd, "", taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
+                drt.request(dsd, taxis.getDataMinimum(), taxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
             }
             catch (InterruptedException ie) {
                 DasExceptionHandler.handle(ie);
@@ -192,7 +192,7 @@ public abstract class Renderer implements DataSetConsumer, PropertyEditor.Editab
         } else {
             if ( ( dsd instanceof ConstantDataSetDescriptor ) ) {
                 try {
-                    ds= dsd.getDataSet( null, null, "", null, null );
+                    ds= dsd.getDataSet( null, null, null, null );
                     updatePlotImage(xAxis,yAxis);
                 } catch ( edu.uiowa.physics.pw.das.DasException e ) {
                     DasExceptionHandler.handle(e);

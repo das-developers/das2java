@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.util.DasDate;
+import edu.uiowa.physics.pw.das.datum.*;
 
 import java.io.InputStream;
 
@@ -42,15 +42,15 @@ public class ConstantXTaggedYScanDataSetDescriptor extends XTaggedYScanDataSetDe
         this.xtys = xtys;
     }
     
-    public DataSet getDataSet(Object params, DasDate start, DasDate end, double resolution) throws DasException {
+    public DataSet getDataSet(Object params, Datum start, Datum end, Datum resolution) throws DasException {
         return xtys;
     }
     
-    public DataSet getDataSet(InputStream in, Object params, DasDate start, DasDate end) throws DasException {
+    public DataSet getDataSet(InputStream in, Datum start, Datum end) throws DasException {
         return xtys;
     }
     
-    public DataSet getDataSet(Object params, DasDate start, DasDate end) throws DasException {
+    public DataSet getDataSet(Object params, Datum start, Datum end) throws DasException {
         return xtys;
     }
     

@@ -829,7 +829,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
-    /** TODO */
+    /** Paint the axis if it is horizontal  */
     protected void paintHorizontalAxis(Graphics2D g) {
         Rectangle bounds = getBounds();
         g.translate(-bounds.x, -bounds.y);
@@ -876,7 +876,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
-            if ( tick1>=dataMin && tick1<=dataMax ) {
+            if ( tick1>=(dataMin*0.999) && tick1<=(dataMax*1.001) ) {
                 String tickLabel= tickFormatter(tick1);
                 int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
                 tickLength= tickLengthMajor;
@@ -932,7 +932,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
-    /** TODO */
+    /** Paint the axis if it is vertical  */
     protected void paintVerticalAxis(Graphics2D g) {
         Rectangle bounds = getBounds();
         g.translate(-bounds.x, -bounds.y);
@@ -978,7 +978,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         for ( int i=0; i<ticks.tickV.length; i++ ) {
             double tick1= ticks.tickV[i];
-            if ( tick1>=dataMin && tick1<=dataMax ) {
+            if ( tick1>=(dataMin*0.999) && tick1<=(dataMax*1.001) ) {
                 String tickLabel= tickFormatter(tick1);
                 int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
                 tickLength= tickLengthMajor;

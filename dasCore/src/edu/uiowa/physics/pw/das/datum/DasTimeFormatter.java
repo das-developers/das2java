@@ -159,7 +159,7 @@ public class DasTimeFormatter extends DasFormatter {
         return format( Datum.create( d, units ) );
     }
     
-    public Datum parse(String s, Datum d) {
+    public Datum parse(String s, Datum d) throws java.text.ParseException {
         return TimeUtil.create(s);
     }
     
@@ -167,7 +167,7 @@ public class DasTimeFormatter extends DasFormatter {
         return this.timeContext;
     }
     
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws Exception {
         Datum d= TimeUtil.create("2001-3-1");
         DasTimeFormatter t= new DasTimeFormatter(TimeContext.DAYS);
         DasTimeFormatter t1= new DasTimeFormatter(TimeContext.MILLISECONDS);
