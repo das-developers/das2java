@@ -4,7 +4,9 @@ package edu.uiowa.physics.pw.das.datum;
  * A DatumRange is provided as a means to carry an ordered pair of Datums 
  * representing an interval.  This sort of data structure comes up often in 
  * processing, and it's useful to define once and get the operators 
- * implemented correctly.
+ * implemented correctly.  Consider using this object whenever you see
+ * pairs of Datums in interfaces and codes (e.g. tbegin,tend), they are probably
+ * a DatumRange!
  */
 
 public class DatumRange implements Comparable {
@@ -22,7 +24,7 @@ public class DatumRange implements Comparable {
         if ( s2.lt(s1) ) throw new IllegalArgumentException( "s2<s1: "+s2+"<"+s1 ) ;        
         this.s1=s1;
         this.s2=s2;
-    }
+    } 
     
     /**
      * returns true of the DatumRange overlaps this.  Note that the endpoints are not
