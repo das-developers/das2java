@@ -142,11 +142,8 @@ public class MultiPlanarDataSet {
         return skeletonArrayList;
     }
     
-    public void read(InputStream in) throws DasException {
-        read(in, null);
-    }
     
-    public void read(InputStream in, DasProgressMonitor monitor ) throws DasException {
+    public void read( InputStream in ) throws DasException {
         
         MultiPlanarDataSet result= this;
         
@@ -204,9 +201,6 @@ public class MultiPlanarDataSet {
         byte[] buf= new byte[bytesPerRecord];
         
         long timer0= System.currentTimeMillis();
-        if ( monitor != null) {
-            monitor.setTaskProgress(-1);
-        }
         
         int irec=0;
         while (notDone) {
@@ -218,9 +212,6 @@ public class MultiPlanarDataSet {
                     if (bytesRead!=-1) {
                         off+= bytesRead;
                         totalBytesRead+= bytesRead;
-                        if ( monitor!=null) {
-                            monitor.setTaskProgress(totalBytesRead);
-                        }
                     }
                 } catch ( IOException e ) {
                     throw new DasIOException(e.getMessage());
@@ -328,7 +319,7 @@ public class MultiPlanarDataSet {
             PushbackInputStream pin= new PushbackInputStream(in,100);
             System.out.println(isMultiPlanarDataSetStream(pin));
             MultiPlanarDataSet mpds= new MultiPlanarDataSet();
-            mpds.read(pin,null);
+            mpds.read(pin);
             String[] names= mpds.getDataSetNames();
             for (int i=0; i<names.length; i++) {
                 System.out.println(names[i]);
