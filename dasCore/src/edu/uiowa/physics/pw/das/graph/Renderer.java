@@ -286,7 +286,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 }
                 progressPanel.cancel();
                 
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+xAxis.getDataMinimum()+" "+xAxis.getDataMaximum()+" "+resolution);
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+xAxis.getDatumRange()+" @ "+resolution);
                 dsd.requestDataSet(xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel);
                 
             }
