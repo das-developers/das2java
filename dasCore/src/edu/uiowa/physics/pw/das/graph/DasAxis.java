@@ -1056,8 +1056,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 minorStep= TimeUtil.YEAR;
                 nstep= 2;
             }
-            current= TimeUtil.next(step,Datum.create(data_minimum,Units.t2000));
-            while(max.gt(current)) {
+            
+            Datum firstTickDatum= TimeUtil.prev(step,TimeUtil.prev(step,min));
+            Datum lastTickDatum= TimeUtil.next(step,TimeUtil.next(step,max));
+            
+            current= firstTickDatum;
+            
+            while(lastTickDatum.ge(current)) {
                 result[ir++]= current.doubleValue(Units.t2000);
                 current= TimeUtil.next(step,current);
                 for (int ii=nstep; ii>1; ii--) current= TimeUtil.next(step,current);
@@ -1066,8 +1071,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             res.tickV= new double[ir];
             for (ir=0; ir<res.tickV.length; ir++) res.tickV[ir]= result[ir];
             
-            current = TimeUtil.next(minorStep,Datum.create(data_minimum,Units.t2000));
-            while(max.gt(current)) {
+            current = firstTickDatum;
+            while(lastTickDatum.ge(current)) {
                 minorTickV.add( current );
                 current= TimeUtil.next(minorStep,current);
                 for (int ii=minorNStep; ii>1; ii--) current= TimeUtil.next(minorStep,current);
