@@ -98,7 +98,7 @@ public class CrossHairMouseModule extends MouseModule {
      *
      * @param event The event to be fired
      */
-    private void fireDataPointSelectionListenerDataPointSelected(DataPointSelectionEvent event) {
+    protected void fireDataPointSelectionListenerDataPointSelected(DataPointSelectionEvent event) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
