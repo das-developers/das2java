@@ -28,5 +28,5 @@ package edu.uiowa.physics.pw.das.event;
  * @author  jbf
  */
 public abstract interface TimeRangeSelectionListener extends java.util.EventListener {
-    public void TimeRangeSelected(TimeRangeSelectionEvent e);
+    public void timeRangeSelected(TimeRangeSelectionEvent e);
 }

@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
@@ -75,8 +76,7 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
                 min= nnMin;
                 max= nnMax;
             }
-            TimeRangeSelectionEvent te=
-            new TimeRangeSelectionEvent(parent,(Datum)min,(Datum)max);
+            TimeRangeSelectionEvent te= new TimeRangeSelectionEvent(parent,new DatumRange( min,max ) );
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else if (e0.getGesture()==Gesture.BACK) {
             timeAxis.setDataRangePrev();
@@ -85,18 +85,12 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
         } else if (e0.getGesture()==Gesture.FORWARD) {
             timeAxis.setDataRangeForward();
         } else if (e0.getGesture()==Gesture.SCANPREV) {
-            Datum delta= ( timeAxis.getDataMaximum().subtract(timeAxis.getDataMinimum()) ).multiply(0.9);
-            tmin= timeAxis.getDataMinimum().subtract(delta);
-            tmax= timeAxis.getDataMaximum().subtract(delta);
-            TimeRangeSelectionEvent te=
-            new TimeRangeSelectionEvent(parent,(Datum)tmin,(Datum)tmax);
+            DatumRange range0= timeAxis.getRange();
+            TimeRangeSelectionEvent te= new TimeRangeSelectionEvent(parent, range0.previous() );
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else if (e0.getGesture()==Gesture.SCANNEXT) {
-            Datum delta= ( timeAxis.getDataMaximum().subtract(timeAxis.getDataMinimum()) ).multiply(0.9);
-            tmin= timeAxis.getDataMinimum().add(delta);
-            tmax= timeAxis.getDataMaximum().add(delta);
-            TimeRangeSelectionEvent te=
-            new TimeRangeSelectionEvent(parent,(Datum)tmin,(Datum)tmax);
+            DatumRange range0= timeAxis.getRange();
+            TimeRangeSelectionEvent te= new TimeRangeSelectionEvent(parent, range0.next() );
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else {
             throw new RuntimeException("unrecognized gesture: "+e0.getGesture());
@@ -132,7 +126,7 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class) {
                 DasDie.println("fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event);
-                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).TimeRangeSelected(event);
+                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }
     }

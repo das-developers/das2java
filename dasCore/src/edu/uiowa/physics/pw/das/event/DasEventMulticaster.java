@@ -48,9 +48,9 @@ public class DasEventMulticaster extends java.awt.AWTEventMulticaster
         ((DataRangeSelectionListener)b).DataRangeSelected(e);
     }
 
-    public void TimeRangeSelected(TimeRangeSelectionEvent e) {
-        ((TimeRangeSelectionListener)a).TimeRangeSelected(e);
-        ((TimeRangeSelectionListener)b).TimeRangeSelected(e);
+    public void timeRangeSelected(TimeRangeSelectionEvent e) {
+        ((TimeRangeSelectionListener)a).timeRangeSelected(e);
+        ((TimeRangeSelectionListener)b).timeRangeSelected(e);
     }
 
     public static DataPointSelectionListener add(DataPointSelectionListener a, DataPointSelectionListener b) {
