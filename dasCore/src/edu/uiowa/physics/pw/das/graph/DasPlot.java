@@ -368,10 +368,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public void setTitle(String t) {
         Object oldValue = plotTitle;
         plotTitle = t;
-        FontMetrics fm = getFontMetrics(getFont());
-        int titleHeight = fm.getHeight() + fm.getHeight()/2;
-        resize();
-        repaint(0,0,getWidth(),titleHeight);
+        if (getCanvas() != null) {
+            FontMetrics fm = getFontMetrics(getCanvas().getFont());
+            int titleHeight = fm.getHeight() + fm.getHeight()/2;
+            resize();
+            repaint(0,0,getWidth(),titleHeight);
+        }
         if (t != oldValue) firePropertyChange("title", oldValue, t);
     }
     
