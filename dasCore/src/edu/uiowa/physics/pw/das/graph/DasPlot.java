@@ -232,7 +232,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         double deviceRange = Math.floor(getColumn().getDMaximum() + 0.5) - Math.floor(getColumn().getDMinimum() + 0.5);
         double resolution =  dataRange/deviceRange;
         if (progressPanel == null) {
-            progressPanel = new DasProgressPanel();
+            progressPanel = new DasProgressPanel("loading data set");
             ((Container)((DasCanvas)getParent()).getGlassPane()).add(progressPanel);
         }
         progressPanel.setSize(progressPanel.getPreferredSize());
