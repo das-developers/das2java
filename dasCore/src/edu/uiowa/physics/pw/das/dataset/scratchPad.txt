@@ -24,7 +24,7 @@ eew> Agreed proeprties for DataSets
   rebinner           Rebinner Object
   cacheTag           Description of the start, end and resolution satisfied by this
                      data set.
-  planeIDs			 java.util.List 
+  plane-list			 java.util.List 
 
 eew> Agreed plane identifiers
 	 peaks - peaks
