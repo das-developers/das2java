@@ -200,6 +200,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     }
     
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeDelegate.addPropertyChangeListener(listener);
+    }
+    
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertyChangeDelegate.addPropertyChangeListener(propertyName, listener);
     }
