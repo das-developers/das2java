@@ -83,6 +83,7 @@ public abstract class DataSetDescriptor {
      */
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         if ( cacheTag!=null &&
+        defaultCaching &&
         cacheTag.start.equals(start) &&
         cacheTag.end.equals(end) &&
         cacheTag.resolution.equals(resolution) ) {
@@ -95,7 +96,7 @@ public abstract class DataSetDescriptor {
     }
         
     protected void setDefaultCaching( boolean value ) {
-        defaultCaching= true;
+        defaultCaching= value;
     }
     
     EventListenerList listenerList;      
