@@ -134,10 +134,10 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setOpaque(false);
         buttonPanel.add(cancelButton);
-        
+                
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
-        add(buttonPanel, BorderLayout.SOUTH);
+        add(buttonPanel, BorderLayout.SOUTH);        
     }
     
     public void finished() {
