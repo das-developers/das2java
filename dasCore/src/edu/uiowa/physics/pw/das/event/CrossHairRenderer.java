@@ -115,23 +115,9 @@ public class CrossHairRenderer implements DragRenderer {
                 
                 Datum zValue= xtyds.getClosestZValue(x,y);
                 
-                //                if (Math.abs(xtyds.data[ix].x-xx)>5*xtyds.xSampleWidth) {
-                //                    ix= (int)((xx-xtyds.data[0].x)/xtyds.xSampleWidth);
-                //                    ix= ix<0?0:ix;
-                //                    ix= ix<xtyds.data.length?ix:(xtyds.data.length-1);
-                //                }
-                //                while (ix<xtyds.data.length && xtyds.data[ix].x<xx) ix++;
-                //                ix= ix<xtyds.data.length?ix:(xtyds.data.length-1);
-                //                while (ix>(-1) && !(xtyds.data[ix].x<xx)) ix--;
-                //                ix= ix<0?0:ix;
-                //                while (iy<xtyds.y_coordinate.length && xtyds.y_coordinate[iy]<yy) iy++;
-                //                iy= iy<xtyds.y_coordinate.length?iy:(xtyds.y_coordinate.length-1);
-                //                while (iy>(-1) && xtyds.y_coordinate[iy]>yy) iy--;
-                //                iy= iy<0?0:iy;
-                //
                 try {
-                    if ( dataSetConsumer instanceof XTaggedYScanDataSetConsumer ) {
-                        nfz= ((XTaggedYScanDataSetConsumer)dataSetConsumer).getZAxis().getDatumFormatter();
+                    if ( dataSetConsumer instanceof TableDataSetConsumer ) {
+                        nfz= ((TableDataSetConsumer)dataSetConsumer).getZAxis().getDatumFormatter();
                         nfz = DefaultDatumFormatterFactory.getInstance().newFormatter(nfz.toString() + "0");
                     } else if ( parent instanceof DasStackedHistogramPlot ) {
                         nfz = ((DasStackedHistogramPlot) parent).getZAxis().getDatumFormatter();
