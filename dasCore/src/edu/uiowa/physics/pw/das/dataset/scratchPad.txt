@@ -4,6 +4,9 @@ jbf> TableDataSetConsumer should be renamed ZAxisDataSetComsumer or something li
 
 jbf> Suggested Properties for DataSets:
   xSampleWidth       Datum typical time between samples
+    xTagWidth        Datum the extent of relevance of the x tags
+    yTagWidth        Datum "   "   "  of the y tags
+       introduce Units.percent, which is useful for specifying log width.
   spacecraft         Spacecraft enumeration object
   xRange             DataRange object suggestion
   yRange             DataRange object suggestion
