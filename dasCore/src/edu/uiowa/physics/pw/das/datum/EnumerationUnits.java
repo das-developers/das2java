@@ -156,9 +156,5 @@ public class EnumerationUnits extends Units {
         }
         return result;
     }    
-    
-    public Datum getFill() {
-        return createDatum("<fill>");
-    }
-        
+            
 }

@@ -31,18 +31,15 @@ import java.text.ParseException;
  *
  * @author  jbf
  */
-public class NumberUnits extends Units {    
-
-    private Datum fillDatum= null;
+public class NumberUnits extends Units {
     
-    public NumberUnits(String id) {        
+    public NumberUnits(String id) {
         this(id,"");
     }
     
     public NumberUnits(String id, String description) {
         super(id,description);
-        this.fillDatum= this.createDatum( -1e31 );
-    } 
+    }
     
     public Datum createDatum( double value ) {
         return new Datum.Double( new Double(value), this );
@@ -93,14 +90,6 @@ public class NumberUnits extends Units {
         }
     }
     
-    protected static boolean isNumberFill( Number a ) {
-        if ( a instanceof Integer ) {
-            return a.intValue()==-999999999;
-        } else {
-            return a.doubleValue()==Double.NaN;
-        }
-    }
-    
     protected static Number divide( Number a, Number value ) {
         if ( ( a instanceof Integer ) && ( value instanceof Integer ) ) {
             return new Integer( a.intValue() / value.intValue() );
@@ -116,13 +105,13 @@ public class NumberUnits extends Units {
             return new java.lang.Double( a.doubleValue()*value.doubleValue() );
         }
     }
-            
+    
     public Datum add( Number a, Number b, Units bUnits ) {
         if ( bUnits!=this ) {
             UnitsConverter uc= Units.getConverter( bUnits, this );
             b= uc.convert(b);
         }
-        return createDatum( add( a, b ) );        
+        return createDatum( add( a, b ) );
     }
     
     public Datum subtract( Number a, Number b, Units bUnits ) {
@@ -146,37 +135,7 @@ public class NumberUnits extends Units {
             return createDatum( divide( a, b ) );
         } else {
             throw new IllegalArgumentException("Only multiplication by dimensionless numbers is supported");
-        }        
-    }
-    
-    public Datum getFill() {
-        return fillDatum;
-    }
-    
-    public boolean isFill(Number value) {
-        if ( value instanceof Double ) {
-            return isFill(value.doubleValue());
-        } else if ( value instanceof Float ) {
-            return isFill(value.floatValue());
-        } else if ( value instanceof Integer ) {
-            return isFill(value.intValue());
-        } else if ( value instanceof Long ) {
-            return isFill(value.longValue());
-        } else {
-            throw new IllegalArgumentException("Unknown Number class: "+value.getClass().toString());
         }
-    }
-    
-    public boolean isFill(double value) {
-        return value==Double.NaN;
-    }
-    
-    public boolean isFill(long value) {
-        return value==-9999999999L;       
-    }
-    
-    public boolean isFill(int value) {
-        return value==-99999999;
-    }
+    }   
     
 }
