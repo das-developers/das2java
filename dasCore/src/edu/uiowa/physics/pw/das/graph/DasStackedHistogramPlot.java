@@ -293,7 +293,7 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
             
             zAxisComponent.setLittleRow(yBase,yBase1);
             
-            double [] binStarts= xbins.binStarts();
+            double [] binStarts= xbins.binStarts(); 
             double [] binStops= xbins.binStops();
             
             int y0= yBase;
