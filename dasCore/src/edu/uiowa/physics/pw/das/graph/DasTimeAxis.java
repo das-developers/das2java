@@ -80,7 +80,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     }
     
     public DasTimeAxis( DasDate timeBase, DasDate timeMax, DasRow row, DasColumn column, int orientation) {
-        this(TimeDatum.create(timeBase), TimeDatum.create(timeMax), row, column, orientation);
+        this((TimeDatum)TimeUtil.create(timeBase), (TimeDatum)TimeUtil.create(timeMax), row, column, orientation);
     }
     
     public DasTimeAxis( TimeDatum startt, TimeDatum endt, DasRow row, DasColumn column, int orientation) {
@@ -162,7 +162,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     }
     
     public void setDataRange( DasDate timeMin, DasDate timeMax ) {
-        super.setDataRange( TimeDatum.create(timeMin), TimeDatum.create(timeMax) );
+        super.setDataRange( TimeUtil.create(timeMin), TimeUtil.create(timeMax) );
         TimeRangeSelectionEvent e= new TimeRangeSelectionEvent(this,(TimeDatum)this.getDataMinimum(),(TimeDatum)this.getDataMaximum());
         fireTimeRangeSelectionListenerTimeRangeSelected(e);
     }
@@ -176,11 +176,11 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     }
     
     public void setTimeMaximum(DasDate d) {
-        setDataMaximum(TimeDatum.create(d));
+        setDataMaximum(TimeUtil.create(d));
     }
     
     public void setTimeMinimum(DasDate d) {
-        setDataMinimum(TimeDatum.create(d));
+        setDataMinimum(TimeUtil.create(d));
     }
     
     public void updateTickV() {
@@ -287,8 +287,8 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             double [] result= new double[30];
             int ir=0;
             DasDate current;
-            DasDate min= DasDate.create(new TimeDatum(data_minimum,Units.t2000));
-            DasDate max= DasDate.create(new TimeDatum(data_maximum,Units.t2000));
+            DasDate min= DasDate.create( (TimeDatum)Datum.create(data_minimum,Units.t2000));
+            DasDate max= DasDate.create( (TimeDatum)Datum.create(data_maximum,Units.t2000));
             int step;
             int nstep=1;
             if ((data_maximum-data_minimum)<86400*30*6) {  // months
@@ -305,9 +305,9 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
                 res.minor= 365*86400;
                 nstep= 2;
             }
-            current= DasDate.create(new TimeDatum(data_minimum,Units.t2000)).next(step);
+            current= DasDate.create((TimeDatum)Datum.create(data_minimum,Units.t2000)).next(step);
             while(max.subtract(current)>0) {
-                result[ir++]= TimeDatum.create(current).doubleValue(Units.t2000);
+                result[ir++]= TimeUtil.create(current).doubleValue(Units.t2000);
                 current= current.next(step);
                 for (int ii=nstep; ii>1; ii--) current= current.next(step);
             }
@@ -412,17 +412,17 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
         if (!drawTca || dataset.equals("") || dsd==null) return;
         double [] tickV = getTickV().tickV;
         Units units= getTickV().units;
-        final TimeDatum data_minimum;
-        final TimeDatum data_maximum;
+        final Datum data_minimum;
+        final Datum data_maximum;
         Datum iinterval;
         if (tickV.length == 1) {
-            data_minimum = new TimeDatum(tickV[0],getTickV().units);
-            data_maximum = new TimeDatum(tickV[0] + 1.0, getTickV().units);
+            data_minimum = Datum.create(tickV[0],getTickV().units);
+            data_maximum = Datum.create(tickV[0] + 1.0, getTickV().units);
             iinterval = data_maximum.subtract(data_minimum);
         }
         else {
-            data_minimum = new TimeDatum(tickV[0],getTickV().units);
-            data_maximum = new TimeDatum(tickV[tickV.length-1],getTickV().units);
+            data_minimum = Datum.create(tickV[0],getTickV().units);
+            data_maximum = Datum.create(tickV[tickV.length-1],getTickV().units);
             iinterval = (data_maximum.subtract(data_minimum)).divide(tickV.length-1);
         }
         final Datum interval = iinterval;
@@ -560,9 +560,9 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
                 leftEdge = rightEdge - width;
                 g.drawString(item, leftEdge, baseLine);
             }
-            TimeDatum date = new TimeDatum(value,getUnits());
+            TimeDatum date = (TimeDatum)Datum.create(value,getUnits());
             DasTimeFormatter nf= (DasTimeFormatter)getFormatter();
-            if (date.getSecondsSinceMidnight() == 0 &&
+            if (TimeUtil.getSecondsSinceMidnight(date) == 0 &&
             nf.getContext() == TimeContext.HOURS ) {
                 DasTimeFormatter nfdate= new DasTimeFormatter(TimeContext.DAYS);
                 label = nfdate.format(date);
@@ -573,9 +573,9 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
             }
         }
         else if (getOrientation() == BOTTOM && areTickLabelsVisible()) {
-            TimeDatum date = new TimeDatum(value,getUnits());
+            TimeDatum date = (TimeDatum)Datum.create(value,getUnits());
             DasTimeFormatter nf= (DasTimeFormatter)getFormatter();
-            if (date.getSecondsSinceMidnight() == 0 &&
+            if (TimeUtil.getSecondsSinceMidnight(date) == 0 &&
             nf.getContext() == TimeContext.HOURS ) {
                 DasTimeFormatter nfdate= new DasTimeFormatter(TimeContext.DAYS);
                 label = nfdate.format(date);
@@ -766,7 +766,7 @@ public class DasTimeAxis extends DasAxis implements Cloneable, TimeRangeSelectio
     }
 
     public static DasTimeAxis createNamedTimeAxis(String name) {
-        DasTimeAxis axis = new DasTimeAxis((TimeDatum)TimeDatum.create("2000-1-1"), (TimeDatum)TimeDatum.create("2000-1-2"), null, null, DasAxis.HORIZONTAL);
+        DasTimeAxis axis = new DasTimeAxis((TimeDatum)TimeUtil.create("2000-1-1"), (TimeDatum)TimeUtil.create("2000-1-2"), null, null, DasAxis.HORIZONTAL);
         if (name == null) {
             name = "timeaxis_" + Integer.toHexString(System.identityHashCode(axis));
         }

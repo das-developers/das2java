@@ -335,7 +335,7 @@ public class NameContext {
         }
         else if (type == TimeDatum.class) {
             try {
-                return TimeDatum.create(valueString);
+                return TimeUtil.create(valueString);
             }
             catch (IllegalArgumentException iae) {
                 throw new ParsedExpressionException(valueString + " cannot be parsed as a TimeDatum");
