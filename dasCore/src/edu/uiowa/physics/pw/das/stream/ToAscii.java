@@ -77,6 +77,10 @@ public class ToAscii implements StreamHandler {
         handler.streamException(se);
     }
     
+    public void streamComment(StreamComment se) throws StreamException {
+        handler.streamComment(se);
+    }
+    
     public void packet(PacketDescriptor pd, DatumVector vector) throws StreamException {
     }
     

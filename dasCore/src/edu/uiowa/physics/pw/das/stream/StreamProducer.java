@@ -235,6 +235,8 @@ public class StreamProducer implements StreamHandler {
     public void streamException(StreamException se) throws StreamException {
     }
     
+    
+    
     public void flush() throws StreamException {
         try {
             bigBuffer.flip();
@@ -282,5 +284,9 @@ public class StreamProducer implements StreamHandler {
         return new DeflaterChannel(channel);
         //return Channels.newChannel(new DeflaterOutputStream(Channels.newOutputStream(channel)));
     }
+    
+    public void streamComment(StreamComment sc) throws StreamException {
+    }
+    
 }
 

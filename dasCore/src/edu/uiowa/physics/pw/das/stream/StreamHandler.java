@@ -36,4 +36,5 @@ public interface StreamHandler {
     void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException;
     void streamClosed(StreamDescriptor sd) throws StreamException;
     void streamException(StreamException se) throws StreamException;
+    void streamComment(StreamComment sc) throws StreamException;
 }
