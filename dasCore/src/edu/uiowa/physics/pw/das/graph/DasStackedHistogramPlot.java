@@ -220,6 +220,8 @@ public class DasStackedHistogramPlot extends edu.uiowa.physics.pw.das.graph.DasP
         
         int w= getColumn().getWidth();
         int h= getRow().getHeight();
+             
+        if ( w==0 ) return;
         
         plotImage = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
