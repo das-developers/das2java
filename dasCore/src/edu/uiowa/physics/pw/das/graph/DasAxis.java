@@ -357,9 +357,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
-    public void setDataRange( DatumRange dr ) {
+    public void setDatumRange( DatumRange dr ) {
         this.setDataRange( dr.min(), dr.max() );
-    }
+    }    
+    
+    public DatumRange getDatumRange() {
+        return new DatumRange( getDataMinimum(), getDataMaximum() );
+    }    
     
     /** TODO
      * @param minimum
@@ -368,7 +372,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setDataRange(Datum minimum, Datum maximum) {
         
         if ( ! maximum.gt(minimum) ) {
-            DasDie.println(DasDie.CRITICAL, "setDataRange where min > max ignored");
+            DasDie.println(DasDie.CRITICAL, "setDataRange where min => max ignored");
             return;
         }
         
@@ -564,6 +568,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public void setUnits(Units newUnits) {
         dataRange.setUnits(newUnits);
+    }
+    
+    /*
+     * changes the units of the axis to a new unit, probably breaking all sorts of things!  
+     */
+    public void resetRange( DatumRange range ) {        
+        dataRange.resetRange( range );
+        update();
     }
     
     /** TODO
@@ -2220,7 +2232,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public void timeRangeSelected(TimeRangeSelectionEvent e) {
         if ( e.getSource()!=this && !e.equals(lastProcessedEvent)) {
-            setDataRange(e.getRange());
+            setDatumRange(e.getRange());
             lastProcessedEvent= e;
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
         }
