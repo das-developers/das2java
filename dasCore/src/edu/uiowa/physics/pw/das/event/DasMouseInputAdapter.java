@@ -450,6 +450,23 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
         }
     }
     
+    private void showPopup( JPopupMenu menu, Point p ) {
+        HashMap map=null;
+        if ( menu==primaryPopup ) {
+            map= primaryActionButtonMap;
+        } else if ( menu==secondaryPopup ) {
+            map= secondaryActionButtonMap;
+        } else {
+            throw new IllegalArgumentException( "menu must be primary or secondary popup menu" );
+        }               
+        for ( Iterator i= modules.iterator(); i.hasNext(); ) {
+            MouseModule mm= (MouseModule)i.next();
+            JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(mm);
+            j.setText(mm.getLabel());
+        }
+        menu.show( parent, p.x, p.y);
+    }
+    
     public void mousePressed(MouseEvent e) {
         Point l= parent.getLocation();
         xOffset= l.x;
@@ -486,11 +503,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter {
                 
                 if ( e.isControlDown() || button==MouseEvent.BUTTON3 ) {
                     if (button==MouseEvent.BUTTON1 || button==MouseEvent.BUTTON3 ) {
-                        primaryPopupLocation= e.getPoint();
-                        primaryPopup.show( e.getComponent(), e.getX(), e.getY());
+                        showPopup( primaryPopup, e.getPoint() );                        
                     } else {
-                        secondaryPopupLocation= e.getPoint();
-                        secondaryPopup.show( e.getComponent(), e.getX(), e.getY());
+                        showPopup( secondaryPopup, e.getPoint() );                        
                     }
                 } else {
                     
