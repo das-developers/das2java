@@ -204,8 +204,9 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     public void setTaskSize(long taskSize) {
         if (taskSize == -1) {
             progressBar.setIndeterminate(true);
-        }
-        else {
+        } else if ( taskSize<1 ) {
+            throw new IllegalArgumentException( "taskSize must be positive, or -1" );
+        } else {
             progressBar.setIndeterminate(false);
         }
         maximumTaskPosition = taskSize;
@@ -231,8 +232,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void cancel() {
         isCancelled = true;
-        running = false;
-        setVisible(false);
+        finished();
     }
     
     public boolean isCancelled() {
