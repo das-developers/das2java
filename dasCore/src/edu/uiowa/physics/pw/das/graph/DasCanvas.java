@@ -264,9 +264,9 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
     synchronized void lockDisplay(Object o) {
         synchronized (displayLockObject) {
             displayLockCount++;
-            if (displayLockCount == 1) {
-                glassPane.setBlocking(true);
-            }
+            //if (displayLockCount == 1) {
+            //    glassPane.setBlocking(true);
+            //}
         }
     }
     
@@ -281,7 +281,7 @@ public class DasCanvas extends JLayeredPane implements Printable, PropertyEditor
         synchronized (displayLockObject) {
             displayLockCount--;
             if (displayLockCount == 0) {
-                glassPane.setBlocking(false);
+            //    glassPane.setBlocking(false);
                 displayLockObject.notifyAll();
             }
         }
