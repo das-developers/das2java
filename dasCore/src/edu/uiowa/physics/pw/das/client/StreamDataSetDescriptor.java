@@ -46,7 +46,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     private boolean serverSideReduction = true;
     private PacketDescriptor defaultPacketDescriptor;
     
-
+    
     public Units getXUnits() {
         return defaultPacketDescriptor.getXDescriptor().getUnits();
     }
@@ -86,7 +86,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     protected void setProperties( Map properties ) {
         setProperties(properties, false);
     }
-
+    
     /**
      * Reads data for the given start and end dates and returns an array of floats
      *
@@ -213,16 +213,16 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         //if (new String(four).equals("[00]")) {
         //}
         //else {
-            //pin.unread(four);
-            if (getProperty("form").equals("x_tagged_y_scan")) {
-                return getLegacyTableDataSet(pin, start);
-            }
-            else if (getProperty("form").equals("x_multi_y")) {
-                return getLegacyVectorDataSet(pin, start);
-            }
-            else {
-                throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
-            }
+        //pin.unread(four);
+        if (getProperty("form").equals("x_tagged_y_scan")) {
+            return getLegacyTableDataSet(pin, start);
+        }
+        else if (getProperty("form").equals("x_multi_y")) {
+            return getLegacyVectorDataSet(pin, start);
+        }
+        else {
+            throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
+        }
         //}
     }
     
@@ -285,9 +285,11 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         PushbackInputStream in= new PushbackInputStream(in0,50);
         PacketDescriptor sd = getPacketDescriptor(in);
         TableDataSetBuilder builder = new TableDataSetBuilder(start.getUnits(),Units.dimensionless,Units.dimensionless);
+        Units zUnits= Units.dimensionless;
+        
         builder.setXUnits(start.getUnits());
         builder.setYUnits(Units.dimensionless);
-        builder.setZUnits(Units.dimensionless);
+        builder.setZUnits(zUnits);
         for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
             Object o = i.next();
             if (o instanceof StreamYScanDescriptor) {
@@ -317,13 +319,31 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         double[] xTag = new double[1];
         double[] yCoordinates = yScans[0].getYCoordinates();
         double[] scan = new double[yScans[0].getNItems()];
+        
+        double zfill;
+        if ( properties.get( "z_fill" )!= null ) {
+            zfill= ((Float)properties.get("z_fill")).doubleValue();
+        } else {
+            zfill= zUnits.getFillDouble();
+        }
+        
         while (data.remaining() > recordSize) {
             sd.getXDescriptor().read(data, xTag, 0);
             xTag[0] = timeBaseValue + uc.convert(xTag[0]);
             yScans[0].read(data, scan, 0);
+            if (zfill!=zUnits.getFillDouble()) {
+                for ( int i=0; i<scan.length; i++ ) {
+                    if ( scan[i]==zfill ) scan[i]= zUnits.getFillDouble();
+                }
+            }
             builder.insertYScan(xTag[0], yCoordinates, scan);
             for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
                 yScans[planeIndex + 1].read(data, scan, 0);
+                if (zfill!=zUnits.getFillDouble()) {
+                    for ( int i=0; i<scan.length; i++ ) {
+                        if ( scan[i]==zfill ) scan[i]= zUnits.getFillDouble();
+                    }
+                }
                 builder.insertYScan(xTag[0], yCoordinates, scan, yScans[planeIndex + 1].getName());
             }
         }
@@ -405,5 +425,5 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     public PacketDescriptor getDefaultPacketDescriptor() {
         return defaultPacketDescriptor;
     }
-        
+    
 }
