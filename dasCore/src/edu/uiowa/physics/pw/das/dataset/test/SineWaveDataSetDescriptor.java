@@ -26,7 +26,7 @@ package edu.uiowa.physics.pw.das.dataset.test;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 
 /**
@@ -48,18 +48,24 @@ public class SineWaveDataSetDescriptor extends XMultiYDataSetDescriptor {
     }
     
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
-        XMultiYDataSet result= new XMultiYDataSet( period.getUnits(), amplitude.getUnits() );        
         int nstep= (int)(end.subtract(start).doubleValue(resolution.getUnits()) / resolution.doubleValue(resolution.getUnits()));        
         int stepSize= 5;
         nstep= nstep / stepSize; 
-        result.data= new XMultiY[nstep];
+        
+        double[] yvalues= new double[nstep];
+        double[] xtags= new double[nstep];
+        Units xunits= period.getUnits();
+        Units yunits= amplitude.getUnits();
+       
         for ( int i=0; i<nstep; i++ ) {
-            Datum x= start.add(resolution.multiply(i*stepSize));
-            double y= amplitude.doubleValue(result.getYUnits()) * Math.sin( 2 * Math.PI * ( x.subtract(phase).doubleValue(period.getUnits()) 
-               / period.doubleValue(period.getUnits()))) ;
-            result.data[i]= new XMultiY(x.doubleValue(result.getXUnits()), 
-              new double[] { y } );
+            Datum x= start.add(resolution.multiply(i*stepSize));            
+            double y= amplitude.doubleValue(yunits) * Math.sin( 2 * Math.PI * ( x.subtract(phase).doubleValue(xunits) 
+               / period.doubleValue(xunits))) ;
+            xtags[i]= x.doubleValue(xunits);
+            yvalues[i]= y;
         }
+        VectorDataSet result= new DefaultVectorDataSet( xtags, xunits, yvalues, yunits, null );
+        
         return result;
     }    
     
