@@ -149,7 +149,7 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
         PropertyDescriptor pd = node.getPropertyDescriptor();
         if (value instanceof Enumeration) {
             editorState = ENUMERATION;
-            Object[] list = getEnumerationList(value.getClass());
+            Object[] list = getEnumerationList(pd.getPropertyType());
             enumerationChoice.setModel(new DefaultComboBoxModel(list));
             enumerationChoice.setSelectedItem(value);
             return enumerationChoice;
