@@ -58,7 +58,7 @@ public final class DatumUtil {
             if (!(factory instanceof DefaultDatumFormatterFactory)) {
                 return factory.defaultFormatter();
             }
-            double discernable= Math.abs( maximum.subtract(minimum).getValue() / nsteps );
+            double discernable= Math.abs( maximum.subtract(minimum).doubleValue() / nsteps );
             int nFraction= -1 * (int)Math.floor(DasMath.log10(discernable));
             nFraction= nFraction<0 ? 0 : nFraction;
             String formatString = zeros(nFraction);
@@ -71,7 +71,7 @@ public final class DatumUtil {
             }
         }
     }
-    
+        
     private static String zeros(int count) {
         if (count <= 0) return "0";
         StringBuffer buff = new StringBuffer(count+2).append("0.");
@@ -82,7 +82,7 @@ public final class DatumUtil {
     }
     
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
-        double secondsPerStep = maximum.subtract(minimum).convertTo(Units.seconds).getValue() / nsteps;
+        double secondsPerStep = maximum.subtract(minimum).doubleValue(Units.seconds) / nsteps;
         
         if (secondsPerStep < 1.) {
             return TimeDatumFormatter.MILLISECONDS;
@@ -101,5 +101,21 @@ public final class DatumUtil {
     public static Datum createValid(java.lang.String s) {
         return Datum.create( Double.parseDouble(s), Units.dimensionless );
     }    
+
+    public static double[] doubleValues( Datum[] datums, Units units ) {
+        double[] result= new double[datums.length];
+        for (int j=0; j<datums.length; j++ ) {
+            result[j]= datums[j].doubleValue(units);
+        }
+        return result;
+    }
+        
+    public static double[] doubleValues( Datum[] datums, Units[] unitsArray ) {
+        double[] result= new double[datums.length];
+        for (int j=0; j<datums.length; j++ ) {
+            result[j]= datums[j].doubleValue(unitsArray[j]);
+        }
+        return result;
+    }
     
 }

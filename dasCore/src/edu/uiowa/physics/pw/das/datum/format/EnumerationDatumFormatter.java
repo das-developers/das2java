@@ -40,10 +40,7 @@ public class EnumerationDatumFormatter extends DatumFormatter {
     }
     
     public String format(Datum datum) {
-        if ( !( datum instanceof EnumerationDatum ) ) {
-            throw new IllegalArgumentException("Argument is not an EnumerationDatum! ("+datum.getClass().getName()+")" );
-        }
-        return datum.toString();
+        return ((EnumerationUnits)datum.getUnits()).getObject(datum).toString();
     }
     
 }

@@ -1697,6 +1697,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return orientation;
     }
     
+
     /** TODO
      * @return
      */

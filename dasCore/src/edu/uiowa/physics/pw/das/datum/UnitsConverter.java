@@ -64,11 +64,18 @@ public class UnitsConverter {
     }
     
     public double convert( double value ) {
-//        numServed++;
-//        if ( numServed % 1000 == 0) {
-//            edu.uiowa.physics.pw.das.util.DasDie.println("  Units Converter ["+this+"]: "+numServed+" conversions");
-//        }
         return scale * value + offset;
+    }
+    
+    public Number convert( Number value ) {
+        double doubleValue= convert(value.doubleValue());
+        if ( value instanceof Integer ) {
+            return new Integer((int)doubleValue);
+        } else if ( value instanceof Float ) {
+            return new Float(doubleValue);
+        } else {
+            return new Double(doubleValue);
+        }
     }
     
     public String toString() {

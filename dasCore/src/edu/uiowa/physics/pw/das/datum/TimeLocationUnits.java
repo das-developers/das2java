@@ -33,7 +33,8 @@ public class TimeLocationUnits extends LocationUnits {
     
     /* TimeLocationUnits class is introduced because it is often necessary to
      * easily identify a time quantity, for instance when deciding whether to
-     * use a timeAxis or not.
+     * use a timeAxis or not.  (TimeAxis is no longer a class, but we use a 
+     * special tickV for time units.)
      */        
     
     public TimeLocationUnits( String id, String description, Units offsetUnits ) {
@@ -43,7 +44,7 @@ public class TimeLocationUnits extends LocationUnits {
     public DatumFormatterFactory getDatumFormatterFactory() {
         return TimeDatumFormatterFactory.getInstance();
     }
-    
+        
     public Datum parse(String s) throws java.text.ParseException {
         return TimeUtil.toDatum(TimeUtil.parseTime(s));
     }

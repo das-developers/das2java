@@ -30,32 +30,58 @@ import edu.uiowa.physics.pw.das.datum.format.*;
  *
  * @author  jbf
  */
-public class Datum {
+public abstract class Datum {
     
-    private double value;
     private Units units;
+    private Number value;
     private DatumFormatter formatter;
     
-    /** Creates a new instance of Datum */
-    protected Datum( double value ) {
-        this( value, Units.dimensionless );
+    public static class Double extends Datum {
+        
+        Double( Number value, Units units ) {
+            super(value,units);
+        }
+        Double( double value, Units units ) {
+            this(new java.lang.Double(value),units);
+        }
+        Double( double value ) {
+            this( value, Units.dimensionless );
+        }
+        
+        
     }
     
-    protected Datum( double value, Units units ) {
-        this(value, units, units.getDatumFormatterFactory().defaultFormatter());
+    private Datum(Number value, Units units) {
+        this( value, units, units.getDatumFormatterFactory().defaultFormatter());
     }
     
-    protected Datum (double value, Units units, DatumFormatter formatter) {
+    private Datum(Number value, Units units, DatumFormatter formatter) {
         this.value = value;
         this.units = units;
         this.formatter = formatter;
     }
     
+    protected double doubleValue() {
+        return this.getValue().doubleValue();
+    }
+    
     public double doubleValue(Units units) {
-        if ( units!=this.units ) { 
-            return getUnits().getConverter(units).convert(this.value);
+        if ( units!=getUnits() ) {
+            return getUnits().getConverter(units).convert(this.getValue()).doubleValue();
         } else {
-            return this.value;
+            return this.getValue().doubleValue();
+        }
+    }
+    
+    protected int intValue() {
+        return this.getValue().intValue();
+    }
+    
+    public int intValue(Units units) {
+        if ( units!=getUnits() ) {
+            return getUnits().getConverter(units).convert(this.getValue()).intValue();
+        } else {
+            return this.getValue().intValue();
         }
     }
     
@@ -63,85 +89,35 @@ public class Datum {
         return this.units;
     }
     
-    protected double getValue() {
+    public Number getValue() {
         return this.value;
     }
+        
+    public Datum add( Datum a ) { return add( a.getValue(), a.getUnits() ); }    
+    public Datum add( Number a, Units units ) {  return getUnits().add( getValue(), a, units ); }
+    public Datum add( double d, Units units ) {  return add( new java.lang.Double(d), units ); }
     
-    public Datum add( Datum a ) throws IllegalArgumentException {
-        return add( a.getValue(), a.getUnits() );
-    }
+    public Datum subtract( Datum a ) { return subtract( a.getValue(), a.getUnits() ); }
+    public Datum subtract( Number a, Units units ) { return getUnits().subtract( getValue(), a, units ); }
+    public Datum subtract( double d, Units units ) {  return subtract( new java.lang.Double(d), units ); }    
     
-    public Datum add( double a, Units aUnits ) throws IllegalArgumentException {
-        if ( units instanceof LocationUnits ) {
-            if ( aUnits instanceof LocationUnits ) {
-                throw new IllegalArgumentException("You can't add "+units+" to "+aUnits);
-            } else {
-                Units offsetUnits= ((LocationUnits)units).getOffsetUnits();
-                if ( aUnits!=offsetUnits) {
-                    UnitsConverter uc= Units.getConverter( aUnits, offsetUnits );
-                    a= uc.convert(a);
-                }
-                return create( this.getValue() + a, units );
-            }
-        } else {
-            if ( units != aUnits ) {
-                UnitsConverter uc= Units.getConverter( aUnits, units );
-                a= uc.convert(a);
-            }
-            Datum result= create( this.value + a, units );
-            return result;
-        }
-    }
+    public Datum divide( Number a, Units units ) { return getUnits().divide( getValue(), a, units ); }
+    public Datum divide( double d ) {  return divide( new java.lang.Double(d), Units.dimensionless ); }
     
-    public Datum subtract( double a, Units units ) throws IllegalArgumentException {
-        return this.add(-1*a, units);
-    }
+    public Datum multiply( Number a, Units units ) { return getUnits().multiply( getValue(), a, units ); }
+    public Datum multiply( double d ) {  return multiply( new java.lang.Double(d), Units.dimensionless ); }
     
-    public Datum subtract( Datum a ) throws IllegalArgumentException {
-        if ( units instanceof LocationUnits ) {
-            LocationUnits units= (LocationUnits)getUnits();
-            if ( a.getUnits() instanceof LocationUnits ) {
-                if ( units != a.getUnits() ) {
-                    a= a.convertTo(units);
-                }
-                double value= this.getValue()-a.getValue();
-                return new Datum( value, units.getOffsetUnits() );
-            } else {
-                if ( a.getUnits()!=units.getOffsetUnits()) {
-                    a= a.convertTo(units.getOffsetUnits());
-                }
-                return create( this.getValue()-a.getValue(), units );
-            }
-        } else {
-            if ( this.units != a.units ) {
-                a= a.convertTo(this.units);
-            }
-            Datum result= create( this.value - a.value, this.units );
-            return result;
-        }
-    }
-    
-    public Datum divide( double a ) {
-        if ( units instanceof LocationUnits ) {
-            throw new IllegalArgumentException( "It doesn't make sense to divide LocationUnits, since they indicate a point in space/time" );
-        } else {
-            return create( this.value/a, this.units );
-        }
-    }
-    
-    public Datum multiply( double a ) {
-        if ( units instanceof LocationUnits ) {
-            throw new IllegalArgumentException( "It doesn't make sense to multiply LocationUnits, since they indicate a point in space/time" );
-        } else {
-            return create( this.value * a, this.units );
-        }
+    public Datum convertTo( Units units ) throws IllegalArgumentException {
+        UnitsConverter muc= this.getUnits().getConverter(units);
+        Datum result= units.createDatum( muc.convert( this.getValue() ) );
+        return result;
     }
     
     public int hashCode() {
-        long bits = Double.doubleToLongBits(value);
-	int doubleHash= (int)(bits ^ (bits >>> 32));
+        long bits = (long) getValue().hashCode();
+        int doubleHash= (int)(bits ^ (bits >>> 32));
         int unitsHash= units.hashCode();
-        return doubleHash ^ unitsHash;        
+        return doubleHash ^ unitsHash;
     }
     
     public boolean equals( Object a ) throws IllegalArgumentException {
@@ -149,7 +125,7 @@ public class Datum {
     }
     
     public boolean equals( Datum a ) throws IllegalArgumentException {
-        return ( a.units==this.units && a.value==this.value );
+        return ( a.units==this.units && a.value.equals(this.value) );
     }
     
     public boolean lt( Datum a ) throws IllegalArgumentException {
@@ -167,7 +143,7 @@ public class Datum {
     public boolean ge( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)>=0);
     }
-
+    
     public int compareTo( Object a ) throws IllegalArgumentException {
         if ( ! (a instanceof Datum) ) throw new IllegalArgumentException("comparable type mismatch");
         return compareTo((Datum)a);
@@ -177,7 +153,8 @@ public class Datum {
         if ( this.units != a.units ) {
             a= a.convertTo(this.units);
         }
-        double d= this.value - a.value;
+        
+        double d= this.getValue().doubleValue() - a.getValue().doubleValue();
         
         if (d==0.) {
             return 0;
@@ -189,13 +166,7 @@ public class Datum {
     }
     
     public boolean isValid() {
-        return (value!=Double.NaN);
-    }
-    
-    public Datum convertTo( Units units ) throws IllegalArgumentException {
-        UnitsConverter muc= this.units.getConverter(units);
-        Datum result= create( muc.convert( this.value ), units );
-        return result;
+        return (value.doubleValue()!=java.lang.Double.NaN);
     }
     
     public String toString() {
@@ -206,25 +177,35 @@ public class Datum {
         }
     }
     
-    public static Datum create(double value) {                
-        return create( value, Units.dimensionless );
+    public static Datum create(double value) {
+        return new Datum.Double( new java.lang.Double(value), Units.dimensionless );
     }
     
     public static Datum create( double value, Units units ) {
-            return new Datum( value, units );
+        return units.createDatum( value );
     }
     
     public static Datum create(double value, Units units, DatumFormatter formatter) {
-        return new Datum(value, units, formatter);
+        Datum result= create( value, units);
+        result.formatter= formatter;
+        return result;
+    }
+    
+    public static Datum create( int value ) {
+        return new Datum.Double( new Integer(value), Units.dimensionless );
+    }
+    
+    public static Datum create( int value, Units units ) {
+        return new Datum.Double( new Integer(value), units );
     }
     
     public static void main( String[] args ) throws Exception {
-        Datum temp1= new Datum( 32, Units.fahrenheit );
-        Datum temp2= new Datum( 212, Units.fahrenheit );
-        Datum temp3= new Datum( 100, Units.celcius );
+        Datum temp1= Datum.create( 32, Units.fahrenheit );
+        Datum temp2= Datum.create( 212, Units.fahrenheit );
+        Datum temp3= Datum.create( 100, Units.celcius );
         
-        System.out.println( new Datum( 1 ).hashCode() );
-        System.out.println( new Datum( 1 ).hashCode() );
+        System.out.println( Datum.create( 1 ).hashCode() );
+        System.out.println( Datum.create( 1 ).hashCode() );
         
         Units.dumpConversionTable();
         
@@ -238,7 +219,7 @@ public class Datum {
         edu.uiowa.physics.pw.das.util.DasDie.println("=======");
         edu.uiowa.physics.pw.das.util.DasDie.println(""+temp2.subtract(temp1));
         edu.uiowa.physics.pw.das.util.DasDie.println(""+temp3.subtract(temp1));
-                
+        
         Datum y= TimeUtil.create("09/15/1997 17:27:32");
         edu.uiowa.physics.pw.das.util.DasDie.println(y.toString());
     }

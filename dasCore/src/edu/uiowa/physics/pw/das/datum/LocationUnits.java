@@ -27,18 +27,53 @@ package edu.uiowa.physics.pw.das.datum;
  *
  * @author  jbf
  */
-public class LocationUnits extends Units {
+public class LocationUnits extends NumberUnits {
     
-    Units offsetUnits;
+    Units offsetUnits; 
     
     /** Creates a new instance of LocationUnit */
     public LocationUnits( String id, String description, Units offsetUnits ) {
         super( id, description );
-        this.offsetUnits= offsetUnits;        
+        this.offsetUnits= offsetUnits;
     }
     
     public Units getOffsetUnits() {
         return this.offsetUnits;
+    }
+    
+    public Datum add(Number a, Number b, Units bUnits) {
+        if ( bUnits instanceof LocationUnits ) {
+            throw new IllegalArgumentException("You can't add "+this+" to "+bUnits+", they both identify a location in a space");
+        } else {
+            Units offsetUnits= getOffsetUnits();
+            if ( bUnits!=offsetUnits) {
+                UnitsConverter uc= Units.getConverter( bUnits, offsetUnits );
+                b= uc.convert(b);
+            }
+            return createDatum( add( a, b ) );
+        }
+    }
+    
+    public Datum divide(Number a, Number b, Units bUnits) {
+        throw new IllegalArgumentException("multiplication of locationUnits");
+    }
+    
+    public Datum multiply(Number a, Number b, Units bUnits) {
+        throw new IllegalArgumentException("division of locationUnits");
+    }
+    
+    public Datum subtract( Number a, Number b, Units bUnits) {
+        if ( bUnits instanceof LocationUnits ) {
+            if ( this != bUnits ) {
+                b= bUnits.getConverter(this).convert(b);
+            }
+            return getOffsetUnits().createDatum(subtract( a, b ));            
+        } else {
+            if ( bUnits != getOffsetUnits()) {
+                b= bUnits.getConverter( getOffsetUnits() ).convert(b);
+            }
+            return createDatum( subtract( a, b ) );
+        }
     }
     
 }

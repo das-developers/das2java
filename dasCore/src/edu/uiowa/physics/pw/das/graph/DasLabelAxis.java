@@ -23,25 +23,28 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.format.*;
+import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
+import edu.uiowa.physics.pw.das.graph.DasAxis.TickVDescriptor;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
-
-import javax.swing.*;
+import edu.uiowa.physics.pw.das.util.*;
+import java.awt.*;
 import java.text.DecimalFormat;
+import javax.swing.JFrame;
+
 
 
 public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     DecimalFormat nfy= null;
-    edu.uiowa.physics.pw.das.datum.Datum[] labels= null;
+    Datum[] labels= null;
     double[] labelValues= null;
-    edu.uiowa.physics.pw.das.datum.Units labelUnits=null;
+    Units labelUnits=null;
     int[] labelPositions= null;
     DatumFormatter df= null;
     int indexMinimum;  // first label to be displayed
     int indexMaximum;  // last label to be displayed
-
-    private void setLabels( edu.uiowa.physics.pw.das.datum.Datum[] labels ) {
+    
+    private void setLabels(Datum[] labels) {
         if (labels.length==0) {
             throw new IllegalArgumentException( "labels can not be a zero-length array!" );
         }
@@ -61,45 +64,49 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         this.df = DatumUtil.bestFormatter(labels[0], labels[1],1);
     }
     
-    protected DasLabelAxis(edu.uiowa.physics.pw.das.datum.Datum[] labels, DataRange dataRange, DasRow row, DasColumn column, int orientation) {
-        super( dataRange, row, column, orientation );                
+    protected DasLabelAxis(Datum[] labels, DataRange dataRange, DasRow row, DasColumn column, int orientation) {
+        super( dataRange, row, column, orientation );
         setLabels(labels);
         getDataRange().addpwUpdateListener(this);
     }
-
-
-    public DasLabelAxis(edu.uiowa.physics.pw.das.datum.Datum[] labels, DasRow row, DasColumn column, int orientation) {
+    
+    
+    public DasLabelAxis(Datum[] labels, DasRow row, DasColumn column, int orientation) {
         super( labels[0], labels[labels.length-1], row, column, orientation, false );
         setLabels(labels);
         getDataRange().addpwUpdateListener(this);
     }
     
     
-    private void updateTickPositions() {        
+    public int[] getLabelPositions() {
+        return this.labelPositions;
+    }
+    
+    private void updateTickPositions() {
         int nlabel= indexMaximum - indexMinimum + 1;
-
+        
         int size;
         int min;
         
         int interItemSpacing;
         
         if ( this.getOrientation()==DasAxis.HORIZONTAL ) {
-            size= getColumn().getWidth();            
-            min= getColumn().getDMinimum();
+            size= getColumn().getWidth()-10;            
             interItemSpacing= size / nlabel;
+            min= getColumn().getDMinimum()+5+interItemSpacing/2;
         } else {
-            size= getRow().getHeight();
-            min= getRow().getDMaximum();
-            interItemSpacing= -1 * size / nlabel;
+            size= getRow().getHeight()-10;            
+            interItemSpacing= -1 * size / nlabel ;
+            min= getRow().getDMaximum()-5+interItemSpacing/2;
         }
-                                      
+        
         for ( int i=0; i<labelPositions.length; i++ ) {
-            labelPositions[i]= min + interItemSpacing * ( (i-indexMinimum)+0 );
-        }        
-       
+            labelPositions[i]= min + interItemSpacing * ( (i-indexMinimum)+0 );                        
+        }
+        
     }
     
-    public edu.uiowa.physics.pw.das.datum.Datum findTick(edu.uiowa.physics.pw.das.datum.Datum xDatum, double direction, boolean minor) {
+    public Datum findTick(Datum xDatum, double direction, boolean minor) {
         // somehow tickv.minor is set to non-zero, and Axis.findTick gets messed up.
         // This is a work-around...
         return xDatum;
@@ -107,7 +114,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     
     public void updateTickV() {
         super.updateTickV();
-        updateTickPositions();        
+        updateTickPositions();
     }
     
     public TickVDescriptor getTickV() {
@@ -120,11 +127,11 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return result;
     }
     
-    public int transform( double value, edu.uiowa.physics.pw.das.datum.Units units ) {
+    public int transform(double value, Units units) {
         if ( units!=this.labelUnits ) {
             throw new IllegalArgumentException("units don't match");
-        }        
-        int iclose= findClosestIndex( labelValues, value );        
+        }
+        int iclose= findClosestIndex( labelValues, value );
         return labelPositions[iclose];
     }
     
@@ -136,8 +143,8 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
             if ( c1<closest ) {
                 iclose= i;
                 closest= c1;
-            }            
-        }                
+            }
+        }
         return iclose;
     }
     
@@ -149,21 +156,21 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
             if ( c1<closest ) {
                 iclose= i;
                 closest= c1;
-            }            
-        }                
+            }
+        }
         return iclose;
-    }    
+    }
     
-    public edu.uiowa.physics.pw.das.datum.Datum invTransform( int idata ) {
+    public Datum invTransform(int idata) {
         int iclose= findClosestIndex( labelPositions, idata );
-        return labels[iclose];        
+        return labels[iclose];
     }
-
-    public void setDataRange(edu.uiowa.physics.pw.das.datum.Datum minimum, edu.uiowa.physics.pw.das.datum.Datum maximum) {
-        super.setDataRange(minimum, maximum);                
+    
+    public void setDataRange(Datum minimum, Datum maximum) {
+        super.setDataRange(minimum, maximum);
     }
-         
-    protected String tickFormatter(double tickv) {                
+    
+    protected String tickFormatter(double tickv) {
         return df.format(Datum.create(tickv,labels[0].getUnits()));
     }
     
@@ -171,7 +178,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return tickFormatter(tickv);
     }
     
-    public int getInterItemSpace() { 
+    public int getInterItemSpace() {
         return Math.abs(transform(labels[1])-transform(labels[0]));
     }
     
@@ -186,14 +193,17 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     public static void main( String[] args ) throws Exception {
-        edu.uiowa.physics.pw.das.datum.Datum[] labels= new edu.uiowa.physics.pw.das.datum.Datum[] { edu.uiowa.physics.pw.das.datum.EnumerationDatum.create("cat"), edu.uiowa.physics.pw.das.datum.EnumerationDatum.create("dog"), edu.uiowa.physics.pw.das.datum.EnumerationDatum.create("fish") };
+        EnumerationUnits units= EnumerationUnits.create("");
+        Datum x= units.createDatum(new Object());
+        
+        Datum[] labels= new Datum[] { units.createDatum("cat"), units.createDatum("dog"), units.createDatum("fish") };
         DasCanvas canvas= new DasCanvas(400,400);
         DasRow row= DasRow.create(canvas);
         DasColumn column= DasColumn.create(canvas);
         
-        edu.uiowa.physics.pw.das.datum.Datum[] labels2= edu.uiowa.physics.pw.das.datum.EnumerationDatum.create(new String[] {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"});
+        Datum[] labels2= units.createDatum(new String[] {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"});
         DasPlot p= new DasPlot( new DasLabelAxis( labels, row, column, DasAxis.HORIZONTAL ),
-            new DasLabelAxis( labels2, row, column, DasAxis.VERTICAL ), row, column );
+        new DasLabelAxis( labels2, row, column, DasAxis.VERTICAL ), row, column );
         canvas.add(p);
         
         JFrame jframe= new JFrame();
@@ -206,20 +216,179 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     public void update(DasUpdateEvent e) {
         double minimum=  getDataRange().getMinimum();
         double maximum=  getDataRange().getMaximum();
-        if ( getDataRange().getUnits()!=this.labelUnits ) { 
+        if ( getDataRange().getUnits()!=this.labelUnits ) {
             throw new IllegalArgumentException("units don't match");
         }
         
-        this.indexMinimum=  findClosestIndex(labelValues,minimum);        
+        this.indexMinimum=  findClosestIndex(labelValues,minimum);
         this.indexMaximum= findClosestIndex(labelValues,maximum);
-
+        
         if ( this.indexMinimum > this.indexMaximum ) {
             int t= this.indexMinimum;
             this.indexMaximum= this.indexMinimum;
-            this.indexMinimum= t; 
+            this.indexMinimum= t;
         }
         
-
+        
+    }
+    
+    protected void paintHorizontalAxis(java.awt.Graphics2D g) {
+        boolean bottomTicks = (getOrientation() == BOTTOM || isOppositeAxisVisible());
+        boolean bottomTickLabels = (getOrientation() == BOTTOM && areTickLabelsVisible());
+        boolean bottomLabel = (getOrientation() == BOTTOM && !axisLabel.equals(""));
+        boolean topTicks = (getOrientation() == TOP || isOppositeAxisVisible());
+        boolean topTickLabels = (getOrientation() == TOP && areTickLabelsVisible());
+        boolean topLabel = (getOrientation() == TOP && !axisLabel.equals(""));
+        
+        int topPosition = getRow().getDMinimum() - 1;
+        int bottomPosition = getRow().getDMaximum();
+        int DMax= getColumn().getDMaximum();
+        int DMin= getColumn().getDMinimum();
+        
+        Font labelFont = getTickLabelFont();
+        
+        double dataMax= dataRange.getMaximum();
+        double dataMin= dataRange.getMinimum();
+        
+        TickVDescriptor ticks= getTickV();
+        double[] tickv= ticks.tickV;
+        
+        if (bottomTicks) {
+            g.drawLine(DMin,bottomPosition,DMax,bottomPosition);
+        }
+        if (topTicks) {
+            g.drawLine(DMin,topPosition,DMax,topPosition);
+        }
+        
+        int tickLengthMajor = labelFont.getSize() * 2 / 3;
+        int tickLengthMinor = tickLengthMajor / 2;
+        int tickLength;
+        
+        for ( int i=0; i<ticks.tickV.length; i++ ) {
+            double tick1= ticks.tickV[i];
+            int w= getInterItemSpace();
+            int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5)-w/2;
+            tickLength= tickLengthMajor;
+            if (bottomTicks) {
+                g.drawLine( tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+                g.drawLine( tickPosition+w, bottomPosition, tickPosition+w, bottomPosition + tickLength);
+                if (bottomTickLabels) {
+                    drawLabel(g, tick1, i, tickPosition+w/2 , bottomPosition + tickLength);
+                }
+            }
+            if (topTicks) {
+                g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                g.drawLine( tickPosition+w, topPosition, tickPosition+w, topPosition - tickLength);
+                if (topTickLabels) {
+                    drawLabel(g, tick1, i, tickPosition+w/2, topPosition - tickLength);
+                }
+            }
+        }
+        
+        
+        if (!axisLabel.equals("")) {
+            Graphics2D g2 = (Graphics2D)g.create();
+            int titlePositionOffset = getTitlePositionOffset();
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(this, axisLabel);
+            int titleWidth = (int)gtr.getWidth();
+            int baseline;
+            int leftEdge;
+            g2.setFont(getLabelFont());
+            if (bottomLabel) {
+                leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+                baseline = bottomPosition + titlePositionOffset;
+                gtr.draw(g2, (float)leftEdge, (float)baseline);
+            }
+            if (topLabel) {
+                leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+                baseline = topPosition - titlePositionOffset;
+                gtr.draw(g2, (float)leftEdge, (float)baseline);
+            }
+            g2.dispose();
+        }
+    }
+    
+    
+    protected void paintVerticalAxis(java.awt.Graphics2D g) {
+        boolean leftTicks = (getOrientation() == LEFT || isOppositeAxisVisible());
+        boolean leftTickLabels = (getOrientation() == LEFT && areTickLabelsVisible());
+        boolean leftLabel = (getOrientation() == LEFT && !axisLabel.equals(""));
+        boolean rightTicks = (getOrientation() == RIGHT || isOppositeAxisVisible());
+        boolean rightTickLabels = (getOrientation() == RIGHT && areTickLabelsVisible());
+        boolean rightLabel = (getOrientation() == RIGHT && !axisLabel.equals(""));
+        
+        int leftPosition = getColumn().getDMinimum() - 1;
+        int rightPosition = getColumn().getDMaximum();
+        int DMax= getRow().getDMaximum();
+        int DMin= getRow().getDMinimum();
+        
+        Font labelFont = getTickLabelFont();
+        
+        double dataMax= dataRange.getMaximum();
+        double dataMin= dataRange.getMinimum();
+        
+        TickVDescriptor ticks= getTickV();
+        double[] tickv= ticks.tickV;
+        
+        if (leftTicks) {
+            g.drawLine(leftPosition,DMin,leftPosition,DMax);
+        }
+        if (rightTicks) {
+            g.drawLine(rightPosition,DMin,rightPosition,DMax);
+        }
+        
+        int tickLengthMajor= labelFont.getSize()*2/3;
+        int tickLengthMinor = tickLengthMajor / 2;
+        int tickLength;
+        
+        for ( int i=0; i<ticks.tickV.length; i++ ) {
+            double tick1= ticks.tickV[i];
+            if ( tick1>=(dataMin*0.999) && tick1<=(dataMax*1.001) ) {
+                int w= getInterItemSpace();
+                int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5) - w/2;
+                tickLength= tickLengthMajor;
+                if (leftTicks) {
+                    g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition );
+                    g.drawLine( leftPosition, tickPosition+w, leftPosition - tickLength, tickPosition+w );
+                    if (leftTickLabels) {
+                        drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition+w/2);  
+                    }
+                }
+                if (rightTicks) {
+                    g.drawLine( rightPosition, tickPosition, rightPosition + tickLength, tickPosition );
+                    g.drawLine( rightPosition, tickPosition+w, rightPosition + tickLength, tickPosition+w );
+                    if (rightTickLabels) {
+                        drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition+w/2);
+                    }
+                }
+            }
+        }
+                
+        if (!axisLabel.equals("")) {
+            Graphics2D g2 = (Graphics2D)g.create();
+            int titlePositionOffset = getTitlePositionOffset();
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(this, axisLabel);
+            int titleWidth = (int)gtr.getWidth();
+            int baseline;
+            int leftEdge;
+            g2.setFont(getLabelFont());
+            if (leftLabel) {
+                g2.rotate(-Math.PI/2.0);
+                leftEdge = -DMax + (DMax-DMin - titleWidth)/2;
+                baseline = leftPosition - titlePositionOffset;
+                gtr.draw(g2, (float)leftEdge, (float)baseline);
+            }
+            if (rightLabel) {
+                g2.rotate(Math.PI/2.0);
+                leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+                baseline = - rightPosition - titlePositionOffset;
+                gtr.draw(g2, (float)leftEdge, (float)baseline);
+            }
+            g2.dispose();
+        }
+        
     }
     
 }

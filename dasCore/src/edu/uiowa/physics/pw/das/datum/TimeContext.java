@@ -63,7 +63,7 @@ public class TimeContext {
     
     public static TimeContext getContext( Datum t1, Datum t2) {
         TimeContext context;
-        double seconds= t2.subtract(t1).convertTo(Units.seconds).getValue();
+        double seconds= t2.subtract(t1).doubleValue(Units.seconds);
         if (seconds<1) { context=MILLISECONDS; }
         else if (seconds<60) { context=SECONDS; }
         else if (seconds<3600) { context=MINUTES; }
