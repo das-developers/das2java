@@ -54,6 +54,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             }
             else {
                 bytesRead++;
+                checkCancelled();
                 monitor.setTaskProgress(bytesRead);
             }
         }
@@ -73,6 +74,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             }
             else {
                 bytesRead += result;
+                checkCancelled();
                 monitor.setTaskProgress(bytesRead);
             }
         }
@@ -92,6 +94,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             }
             else {
                 bytesRead += result;
+                checkCancelled();
                 monitor.setTaskProgress(bytesRead);
             }
         }
