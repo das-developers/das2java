@@ -28,6 +28,8 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.util.ByteBufferInputStream;
+import edu.uiowa.physics.pw.das.util.StreamTool;
 
 import java.io.*;
 import java.lang.reflect.*;
@@ -36,9 +38,11 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.util.regex.*;
+import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.*;
 import org.xml.sax.*;
 import org.w3c.dom.*;
+import org.w3c.dom.Document;
 
 public class StreamDataSetDescriptor extends DataSetDescriptor {
     
@@ -210,23 +214,49 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     }
     
     protected DataSet getDataSet(InputStream in, Datum start, Datum end, Datum resolution) throws DasException {
-        PushbackInputStream pin = new PushbackInputStream(in, 4);
-        //byte[] four = new byte[4];
-        //pin.read(four);
-        //if (new String(four).equals("[00]")) {
-        //}
-        //else {
-        //pin.unread(four);
-        if (getProperty("form").equals("x_tagged_y_scan")) {
-            return getLegacyTableDataSet(pin, start);
+        PushbackInputStream pin = new PushbackInputStream(in, 4096);
+        try {
+            byte[] four = new byte[4];
+            pin.read(four);
+            if (new String(four).equals("[00]")) {
+                pin.unread(four);
+                ReadableByteChannel channel = Channels.newChannel(pin);
+                DataSetStreamHandler handler = new DataSetStreamHandler();
+                StreamTool.readStream(channel, handler);
+                return handler.getDataSet();
+            }
+            else {
+                pin.unread(four);
+                if (getProperty("form").equals("x_tagged_y_scan")) {
+                    return getLegacyTableDataSet(pin, start);
+                }
+                else if (getProperty("form").equals("x_multi_y")) {
+                    return getLegacyVectorDataSet(pin, start);
+                }
+                else {
+                    throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
+                }
+            }
         }
-        else if (getProperty("form").equals("x_multi_y")) {
-            return getLegacyVectorDataSet(pin, start);
+        catch (UnsupportedEncodingException uee) {
+            //UTF-8 should be supported by all JVM's
+            throw new RuntimeException(uee);
+        }
+        catch (IOException ioe) {
+            throw new DasIOException(ioe);
+        }
+        finally {
+            try { pin.close(); } catch (IOException ioe) {}
+        }
+    }
+    
+    private static String getPacketID(byte[] four) throws DasException {
+        if ((four[0] == (byte)'[' && four[3] == (byte)']') || (four[0] == (byte)':' && four[3] == (byte)':')) {
+            return new String(new char[]{(char)four[1], (char)four[2]});
         }
         else {
-            throw new IllegalStateException("Unrecognized data set type: " + getProperty("form"));
+            throw new DasException("Invalid stream, expecting 4 byte header, encountered '" + new String(four) + "'");
         }
-        //}
     }
     
     private DataSet getLegacyVectorDataSet(InputStream in0, Datum start) throws DasException {
@@ -320,7 +350,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         Units offsetUnits = start.getUnits().getOffsetUnits();
         UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
         double[] xTag = new double[1];
-        double[] yCoordinates = yScans[0].getYCoordinates();
+        double[] yCoordinates = yScans[0].getYTags();
         double[] scan = new double[yScans[0].getNItems()];
         
         double zfill;
@@ -359,15 +389,15 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     private PacketDescriptor getPacketDescriptor(PushbackInputStream in) throws DasIOException {
         try {
-            byte[] tip = new byte[HEADER.length];
+            byte[] four = new byte[HEADER.length];
             
             int bytesRead = 0;
             int totalBytesRead = 0;
             do {
-                bytesRead = in.read(tip, totalBytesRead, HEADER.length - totalBytesRead);
+                bytesRead = in.read(four, totalBytesRead, HEADER.length - totalBytesRead);
                 if (bytesRead != -1) totalBytesRead += bytesRead;
             } while (totalBytesRead < HEADER.length && bytesRead != -1);
-            if (Arrays.equals(tip, HEADER)) {
+            if (Arrays.equals(four, HEADER)) {
                 byte[] header = StreamTool.advanceTo(in, "\177\177".getBytes());
                 ByteArrayInputStream source = new ByteArrayInputStream(header);
                 DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -377,7 +407,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                 return packetDescriptor;
             }
             else {
-                in.unread(tip, 0, totalBytesRead);
+                in.unread(four, 0, totalBytesRead);
                 return defaultPacketDescriptor;
             }
         }
