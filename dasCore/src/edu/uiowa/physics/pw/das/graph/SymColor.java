@@ -41,8 +41,11 @@ public final class SymColor extends Color implements Enumeration {
     
     public static final SymColor black= new SymColor( "black",Color.black );
     public static final SymColor blue= new SymColor( "blue",Color.blue );
+    public static final SymColor lightRed= new SymColor( "lightRed", new Color( 255, 128, 128 ) );
     public static final SymColor red= new SymColor( "red",Color.red );
+    public static final SymColor darkRed= new SymColor( "darkRed",Color.red.darker() );
     public static final SymColor green= new SymColor( "green",Color.green );
+    public static final SymColor darkGreen= new SymColor( "darkGreen",Color.green.darker() );
     public static final SymColor white= new SymColor( "white",Color.white );
     public static final SymColor gray= new SymColor( "gray",Color.gray );
     public static final SymColor magenta = new SymColor( "magenta",Color.magenta);
