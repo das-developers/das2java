@@ -80,6 +80,9 @@ public class VectorDataSetBuilder {
     }
     
     public void insertY(double x, double y, String planeID) {
+        if ( !planeIDs.contains(planeID) ) {
+            throw new IllegalArgumentException( "invalid planeID: "+planeID+", have "+planeIDs );
+        }
         int insertionIndex = xTags.indexOf(x);
         if (planeID == null) {
             planeID = "";
