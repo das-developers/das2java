@@ -76,7 +76,7 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
             throw new IllegalArgumentException("yValuesMap == null ^ yUnitsMap == null");
         }
         if ( yValuesMap!=null ) {
-            if (yValuesMap.keySet().equals(yUnitsMap.keySet())) {
+            if (!yValuesMap.keySet().equals(yUnitsMap.keySet())) {
                 throw new IllegalArgumentException("mismatched keySets for yValuesMap and yUnitsMap");
             }
             for (Iterator it = yValuesMap.keySet().iterator(); it.hasNext();) {
