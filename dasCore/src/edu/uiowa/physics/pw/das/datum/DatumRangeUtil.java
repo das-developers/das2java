@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.datum;
 
 import edu.uiowa.physics.pw.das.datum.format.*;
 import java.text.*;
+import java.util.*;
 import java.util.regex.*;
 
 /**
@@ -16,180 +17,687 @@ import java.util.regex.*;
  */
 public class DatumRangeUtil {
     
-    private static Datum parseUnit( double value, String s ) {
-        // return Datum, attempting to make value be integer to avoid roundoffs        
-        if ( s.equals("d") ) {
-            return Units.microseconds.createDatum( value*86400*1e6 );
-        } else if ( s.equals( "h" ) ) {
-            return Units.microseconds.createDatum( value*3600*1e6 );
-        } else if ( s.equals( "m" ) ) {
-            return Units.microseconds.createDatum( value*60*1e6 );
-        } else if ( s.equals( "s" ) ) {
-            return Units.microseconds.createDatum( value*1e6 );
-        } else if ( s.equals( "ms" ) ) {
-            return Units.nanoseconds.createDatum( value*1e6 );
-        } else if ( s.equals( "us" ) ) {
-            return Units.nanoseconds.createDatum( value*1e3 );
-        } else if ( s.equals( "ns" ) ) {
-            return Units.nanoseconds.createDatum( value );
+    private static final int DATEFORMAT_USA= 1;
+    private static final int DATEFORMAT_EUROPE= 0;
+    private static final int DATEFORMAT_YYYY_DDD= 2;
+    
+    private static final boolean DEBUG=true;
+    // this pattern is always a year
+    private static boolean isYear( String string ) {
+        return string.length()==4 && Pattern.matches("\\d{4}",string);
+    }
+    
+    // this pattern is always a day of year
+    private static boolean isDayOfYear( String string ) {
+        return string.length()==3 && Pattern.matches("\\d{3}",string);
+    }
+    
+    private static int monthNumber( String string ) throws ParseException {
+        if ( Pattern.matches("\\d+", string) ) {
+            return parseInt(string);
         } else {
-            throw new IllegalArgumentException("Unit not recognized: "+s);
+            int month= monthNameNumber(string);
+            if ( month==-1 ) throw new ParseException("hoping for month at, got "+string, 0);
+            return month;
         }
     }
     
-    private static Datum parseTimeWidth( String ss ) {
-        long days=0, seconds=0L, nanos=0L;
-        double rseconds= 0.d;
-        double rnanos= 0.d;
-        
-        String[] s= ss.split(" ");
-        
-        Datum accum= Units.nanoseconds.createDatum(0.);
-        int i=0;
-        while ( i<s.length ) {
-            while ( s[i].equals("") ) i++;
-            double value= Double.parseDouble(s[i++]);
-            while ( s[i].equals("") ) i++;
-            String unit= s[i++];
-            Datum datum= parseUnit( value,  unit );
-            accum= accum.add(datum);
+    private static int monthNameNumber( String string ) {
+        if ( string.length() < 3 ) return -1;
+        String[] monthNames= new String[] { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" };
+        string= string.substring(0,3).toLowerCase();
+        int r=-1;
+        for ( int i=0; i<monthNames.length; i++ ) {
+            if ( string.equals(monthNames[i]) ) r=i;
         }
-        return accum;
+        if (r==-1) return -1; else return r+1;
     }
     
-    public static int getIncrement( Datum startDatum, String s1 ) throws ParseException {
-        try {
-            if ( s1.length()<4 ) {
-                s1= "2000-"+s1;
-                TimeUtil.TimeStruct ts= TimeUtil.parseTime(s1); // check for ParseException
-                return TimeUtil.DAY;
-            } else if ( s1.length()<5 ) {
-                s1= s1+"-001";
-                TimeUtil.TimeStruct ts= TimeUtil.parseTime(s1); // check for ParseException
-                return TimeUtil.YEAR;
+    private static int y2k( String syear ) throws ParseException {
+        int year= parseInt(syear);
+        if ( year > 100 ) {
+            return year;
+        } else {
+            if ( year < 70 ) {
+                return 2000+year;
             } else {
-                TimeUtil.TimeStruct ts= TimeUtil.parseTime(s1);
-                // when the day is not specified, loop doesn't work.  check for this.
-                if ( ts.want[3] ) return 2;
-                int i=6;
-                while ( i>0 ) {
-                    if ( !ts.want[i] ) {
-                        break;
-                    }
-                    i--;
-                }
-                return i;
+                return 1900+year;
             }
-        } catch ( ParseException e ) {
-            String s= TimeDatumFormatter.DAYS.format(startDatum)+" "+s1;
-            TimeUtil.TimeStruct ts= TimeUtil.parseTime(s);
-            if ( ts.want[3] ) return 2;
-            int i=6;
-            while ( i>0 ) {
-                if ( !ts.want[i] ) {
-                    break;
-                }
-                i--;
-            }
-            return i;
-        }
-    }
-        
-    private static Datum getStartDatum( String s1 ) throws ParseException {
-        if ( s1.length()<5 ) {
-            s1= s1+"-001";
-            TimeUtil.TimeStruct ts= TimeUtil.parseTime(s1);
-            return TimeUtil.toDatum(ts);
-        } else {
-            TimeUtil.TimeStruct ts= TimeUtil.parseTime(s1);
-            return TimeUtil.toDatum(ts);
         }
     }
     
-    private static Datum getEndDatum( Datum startDatum, String s1 ) throws ParseException {
-        Datum endStart;
+    public static class DateDescriptor {
+        String date;
+        String year;
+        String month;
+        String day;
+        int dateformat;
+    }
+    
+    private int stregex( String string, String regex ) {
+        Matcher matcher= Pattern.compile(regex).matcher(string);
+        if ( matcher.find() ) {
+            return matcher.start();
+        } else {
+            return -1;
+        }
+    }
+    
+    private static void caldat( int julday, DateDescriptor dateDescriptor ) {
+        int jalpha, j1, j2, j3, j4, j5;
+        
+        jalpha = (int)(((double)(julday - 1867216) - 0.25)/36524.25);
+        j1 = julday + 1 + jalpha - jalpha/4;
+        j2 = j1 + 1524;
+        j3 = 6680 + (int)(((j2-2439870)-122.1)/365.25);
+        j4 = 365*j3 + j3/4;
+        j5 = (int)((j2-j4)/30.6001);
+        
+        int day = j2 - j4 - (int)(30.6001*j5);
+        int month = j5-1;
+        month = ((month - 1) % 12) + 1;
+        int year = j3 - 4715;
+        year = year - (month > 2 ? 1 : 0);
+        year = year - (year <= 0 ? 1 : 0);
+        
+        dateDescriptor.day= ""+day;
+        dateDescriptor.month= ""+month;
+        dateDescriptor.year= ""+year;
+        
+    }
+    
+    private static int julday( int month, int day, int year ) {
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+        3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+        275 * month / 9 + day + 1721029;
+        return jd;
+    }
+    
+    private static void printGroups( Matcher matcher ) {
+        for ( int i=0; i<=matcher.groupCount(); i++ ) {
+            System.out.println(" "+i+": "+matcher.group(i) );
+        }
+        System.out.println(" " );
+    }
+    
+    private static Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |T|-)");
+    
+    private static boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
+        Matcher matcher= regex.matcher( string.toLowerCase() );
+        if ( matcher.find() && matcher.start()==0 ) {
+            //printGroups(matcher);
+            int posDate= matcher.start();
+            int length= matcher.end()-matcher.start();
+            dateDescriptor.date= string.substring( posDate, posDate+length );
+            String month;
+            String day;
+            String year;
+            dateDescriptor.day= matcher.group(groups[2]);
+            dateDescriptor.month= matcher.group(groups[1]);
+            dateDescriptor.year= matcher.group(groups[0]);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public static boolean isDate( String string, DateDescriptor dateDescriptor ) throws ParseException {
+        //  this is introduced because mm/dd/yy is so ambiguous, the parser
+        //  has trouble with these dates.  Check for these as a group.
+        
+        if ( string.length()<6 ) return false;
+        
+        int[] groups;
+        String yearRegex= "(\\d{2}(\\d{2})?)( |t|-)"; // t lower case because tryPattern folds case
+        
+        if ( tryPattern( yyyymmddPattern, string, new int[] { 2,3,4 }, dateDescriptor ) ) {
+            dateDescriptor.dateformat= DATEFORMAT_USA;
+            return true;
+        }
+        
+        String delim;
+        
+        String delims="(/|\\.|-| )";
+        Matcher matcher= Pattern.compile(delims).matcher(string);
+        
+        if ( matcher.find() ) {
+            int posDelim= matcher.start();
+            delim= string.substring(matcher.start(),matcher.end());
+        } else {
+            return false;
+        }
+        
+        String monthNameRegex= "(jan[a-z]*|feb[a-z]*|mar[a-z]*|apr[a-z]*|may|june?|july?|aug[a-z]*|sep[a-z]*|oct[a-z]*|nov[a-z]*|dec[a-z]*)";
+        String monthRegex= "((\\d?\\d)|"+monthNameRegex+")";
+        String dayRegex= "(\\d?\\d)";
+        
+        String euroDateRegex;
+        
+        if ( delim.equals(".") ) {
+            euroDateRegex= "(" + dayRegex + "\\." + monthRegex + "\\." + yearRegex + ")";
+            groups= new int [] { 6, 3, 2 };
+        } else {
+            euroDateRegex= "(" + dayRegex + delim + monthNameRegex + delim + yearRegex + ")";
+            groups= new int [] { 4, 3, 2 };
+        }
+        if ( tryPattern( Pattern.compile( euroDateRegex ), string, groups, dateDescriptor ) ) {
+            dateDescriptor.dateformat= DATEFORMAT_EUROPE;
+            return true;
+        }
+        
+        String usaDateRegex= monthRegex + delim + dayRegex + delim + yearRegex;
+        if ( tryPattern( Pattern.compile( usaDateRegex ), string, new int[] { 5,1,4 }, dateDescriptor ) ) {
+            dateDescriptor.dateformat= DATEFORMAT_USA;
+            return true;
+        }
+        
+        String lastDateRegex= "(\\d{4})" + delim + monthRegex + delim + dayRegex + "( |t|-)";
+        if ( tryPattern( Pattern.compile( lastDateRegex ), string, new int[] { 1,2,5 }, dateDescriptor ) ) {
+            dateDescriptor.dateformat= DATEFORMAT_USA;
+            return true;
+        }
+        
+        String doyRegex= "(\\d{3})";
+        String dateRegex= doyRegex+"(-|/)"+yearRegex + "( |t|-)";
+        
+        if ( tryPattern( Pattern.compile( dateRegex ), string, new int[] { 3,1,1 }, dateDescriptor ) ) {
+            int doy= parseInt(dateDescriptor.day);
+            if ( doy>366 ) return false;
+            int year= parseInt(dateDescriptor.year);
+            caldat( julday( 12, 31, year-1 ) + doy, dateDescriptor );
+            dateDescriptor.dateformat= DATEFORMAT_YYYY_DDD;
+            
+            return true;
+        }
+        
+        return false;
+        
+    }
+    
+    private static int parseInt( String s ) throws ParseException {
         try {
-            TimeUtil.TimeStruct ts;
-            if ( s1.length()<4 ) {
-                TimeUtil.TimeStruct tsStart= TimeUtil.toTimeStruct(startDatum);
-                ts= TimeUtil.parseTime(""+tsStart.year+"-"+s1);
-            } else if ( s1.length()<5 ) {                
-                ts= TimeUtil.parseTime(s1+"-001");
-            } else {
-                ts= TimeUtil.parseTime(s1);
-            }
-            endStart= TimeUtil.toDatum(ts);
-        } catch ( ParseException e ) {
-            String s= TimeDatumFormatter.DAYS.format(startDatum)+" "+s1;
-            TimeUtil.TimeStruct ts= TimeUtil.parseTime(s);
-            endStart= TimeUtil.toDatum(ts);
-        }
-        
-        int inc= getIncrement( startDatum, s1 );
-        if ( inc <= TimeUtil.DAY ) {
-            return TimeUtil.next( inc, endStart );
-        } else {
-            return endStart;
-        }
-        
+            return Integer.parseInt(s);
+        } catch ( NumberFormatException e ) {
+            throw new ParseException( "failed attempt to parse int in "+s, 0 );
+        }            
     }
     
-    public static DatumRange parseTimeRange( String s ) throws ParseException {
-        String[] delims= new String[] { "[", "to", "through", "-" };
-        int i=0;
-        while ( i<delims.length ) {
-            if ( s.indexOf(delims[i]) >= 0 ) break;
-            i++;
-        }
-        String s1, s2;
-        Datum d1, d2;
-        Datum w2;
+    /*;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    //;;
+    //;; papco_parse_timerange, string -> timeRange
+    //;;
+    //;; parses a timerange from a string.  Valid strings include:
+    //    ;;  "2001"
+    //    ;;  "2001-2004"
+    //    ;;  "2003-004"
+    //    ;;  "12/31/2001"
+    //    ;;  "Jan 2001"
+    //   ;;  "Jan-Feb 2004"
+    //    ;;  "2004-004 - 2003-007"
+    //    ;;  "JAN to MAR 2004"
+    //    ;;  "2004/feb-2004/mar"
+    //    ;;  "2004/004-008
+    //    ;;
+    //    ;; TODO: keep track of format(e.g. %Y-%j) to reserialize
+    //    ;;
+    //    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     
+     
+    // if an element is trivially identifiable, as in "mar", then it is required
+    // that the corresponding range element be of the same format or not specified.
+     */
+    public static DatumRange parseTimeRange( String string_in ) throws ParseException {
         
-        if ( i == delims.length ) { // no delimeters found
-            Datum start= getStartDatum(s);
-            Datum end= getEndDatum( start, s );
-            return new DatumRange( start, end );
-        } else {
-            if ( delims[i].equals("-") ) {
-                String[] ss= s.split("-");
-                if ( ss.length % 2 != 0 ) {
-                    throw new IllegalArgumentException("times contain even number of -'s, giving up");
+        String string= string_in+" ";
+        
+        String delimRegEx= " |-|/|\\.|:|to|through|T|Z";
+        int[] ts1= new int[] { -1, -1, -1, -1, -1, -1, -1 };
+        int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
+        int[] ts= null;
+        
+        ArrayList beforeToUnresolved= new ArrayList();
+        ArrayList afterToUnresolved= new ArrayList();
+        
+        Matcher matcher;
+        String token;
+        
+        String[] formatCodes= new String[] { "%y", "%m", "%d", "%H", "%M", "%S", "" };
+        String[] digitIdentifiers= new String[] {"YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "NANO" };
+        
+        final int YEAR=0;
+        final int MONTH=1;
+        final int DAY=2;
+        final int HOUR=3;
+        final int MINUTE=4;
+        final int SECOND=5;
+        final int NANO=6;
+        
+        final int STATE_OPEN=89;
+        final int STATE_TS1TIME=90;
+        final int STATE_TS2TIME=90;
+        
+        int state= STATE_OPEN;
+        
+        int ipos= 0;
+        String delim="";
+        
+        String format="";
+        boolean beforeTo= true;   // true if before the "to" delineator
+        
+        DateDescriptor dateDescriptor= new DateDescriptor();        
+        
+        int dateFormat= DATEFORMAT_USA;
+        
+        while ( ipos < string.length() ) {
+            String lastdelim= delim;
+            format= format+lastdelim;
+            
+            if ( lastdelim.equals("to") ) beforeTo=false;
+            if ( lastdelim.equals("through") ) beforeTo=false;
+            if ( lastdelim.equals("-") ) beforeTo=false;
+            if ( isDate( string.substring( ipos ), dateDescriptor ) ) {
+                format= format+"%x";
+                if ( ts1[DAY] != -1 || ts1[MONTH] != -1 || ts1[YEAR] != -1 ) { beforeTo= false; }
+                
+                int month= monthNumber(dateDescriptor.month);
+                int year= y2k(dateDescriptor.year);
+                int day= parseInt(dateDescriptor.day);
+                if ( beforeTo ) {
+                    ts1[DAY]= day;
+                    ts1[MONTH]= month;
+                    ts1[YEAR]= year;
                 } else {
-                    int n= ss.length;
-                    StringBuffer sb1= new StringBuffer(ss[0]);
-                    for ( int ii=1; i<n/2; ii++ ) sb1.append( "-" ).append(ss[ii]);
-                    StringBuffer sb2= new StringBuffer(ss[n/2]);
-                    for ( int ii=n/2+1; i<n; ii++ ) sb2.append( "-" ).append(ss[ii]);
-                    // special case YYYY-DDD is misidentified as range.  Handle this
-                    if ( sb1.length()==4 && sb2.length()== 3 ) {  
-                        String yyyy_ddd= sb1.append("/").append(sb2).toString();
-                        Datum start= getStartDatum( yyyy_ddd );
-                        Datum end= getEndDatum( start, yyyy_ddd );
-                        return new DatumRange( start, end );
-                    } 
-                    Datum start= getStartDatum(sb1.toString());                     
-                    Datum end= getEndDatum(start,sb2.toString());
-                    return new DatumRange( start, end );
+                    ts2[DAY]= day;
+                    ts2[MONTH]= month;
+                    ts2[YEAR]= year;
                 }
-            } else if ( delims[i].equals("[") ) {
-                String[] ss= s.split("\\[");
-                Datum start= getStartDatum(ss[0]);
-                String widthString= ss[1];
-                if ( widthString.indexOf(']') != -1 ) {
-                    widthString= widthString.substring(0,widthString.indexOf(']'));
-                }
-                Datum width= parseTimeWidth(widthString);
-                return new DatumRange( start, start.add(width) );
+                delim= dateDescriptor.date.substring( dateDescriptor.date.length()-1, dateDescriptor.date.length() );
+                ipos= ipos+dateDescriptor.date.length();
+                
             } else {
-                String[] ss= s.split(delims[i]);
-                Datum start= getStartDatum(ss[0]);                
-                return new DatumRange( start, getEndDatum( start,ss[1] ) );
+                
+                matcher= Pattern.compile( delimRegEx ).matcher( string.substring(ipos) );
+                if ( matcher.find() ) {
+                    int r= matcher.start();
+                    int length= matcher.end()-matcher.start();
+                    token= string.substring( ipos, ipos+r );
+                    delim= string.substring( ipos+r, ipos+r+length );
+                    ipos= ipos + r + length;
+                } else {
+                    token= string.substring(ipos);
+                    delim= "";
+                    ipos= string.length();
+                }
+                
+                if ( token.equals("") ) continue;
+                
+                if ( isYear(token) ) {
+                    format= format+"%Y";
+                    if ( ts1[YEAR] == -1 && beforeTo ) {
+                        ts1[YEAR]= parseInt(token);
+                        ts2[YEAR]= ts1[YEAR];
+                    } else {
+                        beforeTo=false;
+                        ts2[YEAR]= parseInt(token);
+                        if ( ts1[YEAR]==-1 ) ts1[YEAR]=ts2[YEAR];
+                    }
+                } else if ( isDayOfYear(token) ) {
+                    dateFormat=DATEFORMAT_YYYY_DDD;
+                    format= format+"%j";
+                    if ( ts1[YEAR] == -1 ) {
+                        throw new ParseException( "day of year before year", ipos );
+                    }
+                    int doy= parseInt(token);
+                    caldat( julday( 12, 31, ts1[YEAR]-1 ) + doy, dateDescriptor );
+                    dateFormat= DATEFORMAT_YYYY_DDD;
+                    int day= parseInt(dateDescriptor.day);
+                    int month= parseInt(dateDescriptor.month);
+                    if ( ts1[DAY] == -1 && beforeTo) {
+                        ts1[DAY]= day;
+                        ts1[MONTH]= month;
+                        ts2[DAY]= day;
+                        ts2[MONTH]= month;
+                    } else {
+                        beforeTo=false;
+                        ts2[DAY]= day;
+                        ts2[MONTH]= month;
+                        if ( ts1[DAY] == -1 ) {
+                            ts1[DAY]= day;
+                            ts1[MONTH]= month;
+                        }
+                    }
+                } else if ( monthNameNumber( token )!=-1 ) {
+                    format= format+"%b";
+                    int month= monthNameNumber( token );
+                    if ( ts1[MONTH] == -1 ) {
+                        ts1[MONTH]= month;
+                        ts2[MONTH]= month;
+                    } else {
+                        beforeTo=false;
+                        ts2[MONTH]= month;
+                        if ( ts1[MONTH]==-1 ) ts1[MONTH]= month;
+                    }
+                } else {
+                    boolean isWithinTime= delim.equals(":") || lastdelim.equals(":");
+                    if ( isWithinTime ) {
+                        if ( delim.equals(":") && !lastdelim.equals(":") && state == STATE_OPEN ) {
+                            format= format+"%H";
+                            if ( ts1[HOUR] == -1 ) {
+                                state= STATE_TS1TIME;
+                                ts= ts1;
+                            } else {
+                                beforeTo= false;
+                                state= STATE_TS2TIME;
+                                ts= ts2;
+                            }
+                            ts[HOUR]= parseInt(token);
+                        } else {
+                            int i= HOUR;
+                            while ( i<=NANO ) {
+                                if ( ts[i] == -1 ) break;
+                                i=i+1;
+                            }
+                            
+                            if ( i == NANO ) {
+                                int tokenDigits= token.length();
+                                ts[i]= parseInt(token) * 10^(9-tokenDigits);
+                                switch (tokenDigits) {
+                                    case 3: format= format+"%_ms"; break;
+                                    case 6: format= format+"%_us"; break;
+                                    default: format=format+"%N"; break;
+                                    
+                                }
+                            } else {
+                                ts[i]= parseInt(token);
+                                format= format+formatCodes[i];
+                            }
+                        }
+                        
+                        if ( !delim.equals(":") && !delim.equals(".") ) {
+                            state= STATE_OPEN;
+                        }
+                    } else { // parsing date
+                        if ( beforeTo ) {
+                            beforeToUnresolved.add( token );
+                            format= format+"UNRSV1"+beforeToUnresolved.size();
+                        } else {
+                            afterToUnresolved.add( token );
+                            format= format+"UNRSV2"+afterToUnresolved.size();
+                        }
+                        
+                    }
+                }
+            }
+        }
+        
+        format= format+" ";
+        
+        if ( beforeTo ) {
+            int idx=0;
+            for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
+                while( ts1[idx]!=-1 ) idx++;
+                ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
+                String[] s= format.split("UNRSV1"+(i+1));
+                format= s[0]+formatCodes[idx]+s[1];
+            }
+            beforeToUnresolved.removeAll(beforeToUnresolved);
+        }                
+        
+        if ( beforeToUnresolved.size()+afterToUnresolved.size() > 0 ) {
+            ArrayList unload;
+            String formatUn;
+            int idx=0;
+            
+            if ( beforeToUnresolved.size() < afterToUnresolved.size() ) {
+                if ( beforeToUnresolved.size()>0 ) {
+                    for ( int i=0; i<afterToUnresolved.size(); i++ ) {
+                        while( ts2[idx]!=-1 ) idx++;
+                        ts2[idx]= parseInt((String)afterToUnresolved.get(i));
+                        String[] s= format.split("UNRSV2"+(i+1));
+                        format= s[0]+formatCodes[idx]+s[1];
+                    }
+                    unload= beforeToUnresolved;
+                    formatUn= "UNRSV1";
+                    ts= ts1;
+                } else {
+                    while( ts1[idx]!=-1) idx++;
+                    idx--;
+                    unload= afterToUnresolved;
+                    formatUn= "UNRSV2";
+                    ts= ts2;
+                }
+            } else {
+                if ( afterToUnresolved.size()>0 ) {
+                    for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
+                        while( ts1[idx]!=-1 ) idx++;
+                        ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
+                        String[] s= format.split("UNRSV1"+(i+1));
+                        format= s[0]+formatCodes[idx]+s[1];
+                    }
+                    unload= afterToUnresolved;
+                    formatUn= "UNRSV2";
+                    ts= ts2;
+                } else {
+                    while( ts2[idx]!=-1) idx++;
+                    idx--;
+                    unload= beforeToUnresolved;
+                    formatUn= "UNRSV1";
+                    ts= ts1;
+                }
+            }
+            int lsd=idx;
+            for ( int i=unload.size()-1; i>=0; i-- ) {
+                while ( ts[lsd]!=-1 && lsd>0 ) lsd--;
+		if ( ts[lsd]!=-1 ) {
+                    throw new ParseException( "can't resolve these tokens: "+unload, 0 );
+                }
+                ts[lsd]= parseInt((String)unload.get(i));
+                String[] s= format.split(formatUn+(i+1));
+                format= s[0]+formatCodes[lsd]+s[1];
             }
             
+        } // unresolved entities
+        
+        if ( DEBUG ) {
+            for ( int i=0; i<7; i++ ) System.out.print(""+ts1[i]+" "); System.out.println("");
+            for ( int i=0; i<7; i++ ) System.out.print(""+ts2[i]+" "); System.out.println("");
+            System.out.println(format);
+        }
+        
+        // contextual fill
+        for ( int i=YEAR; i<=DAY; i++ ) {
+            if ( ts2[i] == -1 && ts1[i] != -1 ) ts2[i]= ts1[i];
+            if ( ts1[i] == -1 && ts2[i] != -1 ) ts1[i]= ts2[i];
+        }
+        
+        int i= NANO;
+        int[] implicit_timearr= new int[] { -1, 1, 1, 0, 0, 0, 0 };
+        int ts1lsd= -1;
+        int ts2lsd= -1;
+        while (i>=0) {
+            if ( ts2[i] != -1 && ts2lsd == -1 ) ts2lsd=i;
+            if ( ts2lsd == -1 ) ts2[i]= implicit_timearr[i];
+            if ( ts2[i] == -1 && ts2lsd != -1 ) {
+                throw new ParseException("not specified in stop time: "+digitIdentifiers[i],ipos);
+            }
+            if ( ts1[i] != -1 && ts1lsd == -1 ) ts1lsd=i;
+            if ( ts1lsd == -1 ) ts1[i]= implicit_timearr[i];
+            if ( ts1[i] == -1 && ts1lsd != -1 ) {
+                throw new ParseException("not specified in start time:"+digitIdentifiers[i],ipos);
+            }
+            i= i-1;
+        }
+        
+        if ( ts1lsd != ts2lsd ) {
+            throw new ParseException( "resolution mismatch: "+digitIdentifiers[ts1lsd]+" specified for start, but "
+            + digitIdentifiers[ts2lsd]+" specified for end, must be same", ipos );
+        }
+        
+        if ( ts2lsd < HOUR ) {
+            ts2[ts2lsd]++;
+        }
+        
+        if ( ts1[0]<1900 ) ts1[0]= y2k(""+ts1[0]);
+        if ( ts2[0]<1900 ) ts2[0]= y2k(""+ts2[0]);
+        
+        Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
+        Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
+        
+        return new DatumRange( time1, time2 );                    
+        
+    }
+    
+    public static String formatTimeRange( DatumRange self ) {
+        
+        String[] monthStr= new String[] { "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        
+        double seconds= self.width().doubleValue(Units.seconds);
+        
+        TimeUtil.TimeStruct ts1= TimeUtil.toTimeStruct(self.min());
+        TimeUtil.TimeStruct ts2= TimeUtil.toTimeStruct(self.max());
+        
+        //        ts1= [ year1, month1, dom1, hour1, minute1, second1, nanos1 ]
+        //        ts2= [ year2, month2, dom2, hour2, minute2, second2, nanos2 ]
+        
+        boolean isMidnight1= TimeUtil.getSecondsSinceMidnight( self.min() ) == 0.;
+        boolean isMidnight2= TimeUtil.getSecondsSinceMidnight( self.max() ) == 0.;
+        
+        boolean isMonthBoundry1= isMidnight1 && ts1.day == 1;
+        boolean isMonthBoundry2= isMidnight2 && ts2.day == 1;
+        
+        boolean isYearBoundry1= isMonthBoundry1 && ts1.month == 1;
+        boolean isYearBoundry2= isMonthBoundry2 && ts2.month == 1;
+        
+        if ( isYearBoundry1 && isYearBoundry2 ) {  // no need to indicate month
+            if (  ts2.year-ts1.year == 1 ) {
+                return "" + ts1.year;
+            } else {
+                return "" + ts1.year + " - " + ts2.year;
+            }
+        } else if ( isMonthBoundry1 && isMonthBoundry2 ) { // no need to indicate day of month
+            if ( ts2.month == 1 ) {
+                ts2.month=13;
+                ts2.year--;
+            }
+            if ( ts2.year == ts1.year ) {
+                if ( ts2.month-ts1.month == 1 ) {
+                    return monthStr[ts1.month-1] + " " + ts1.year;
+                } else {
+                    return monthStr[ts1.month-1]+ " - " + monthStr[ts2.month-1-1] + " " + ts1.year;
+                }
+            } else {
+                return monthStr[ts1.month-1] + " " + ts1.year + " - "
+                + monthStr[ts2.month-1-1] + " " + ts2.year;
+            }
+        }
+        
+        if ( isMidnight1 && isMidnight2 ) { // no need to indicate HH:MM
+            if ( TimeUtil.getJulianDay( self.max() ) - TimeUtil.getJulianDay( self.min() ) == 1 ) {
+                return TimeDatumFormatter.DAYS.format( self.min() );
+            } else {
+                Datum endtime= self.max().subtract( Datum.create( 1, Units.days ) );
+                return TimeDatumFormatter.DAYS.format( self.min() ) + " - "
+                + TimeDatumFormatter.DAYS.format( endtime );
+            }
+            
+        } else {
+            DatumFormatter timeOfDayFormatter;
+            
+            if ( seconds<1. ) timeOfDayFormatter= TimeDatumFormatter.MILLISECONDS;
+            else if ( seconds<60. ) timeOfDayFormatter= TimeDatumFormatter.MILLISECONDS;
+            else if ( seconds<3600. ) timeOfDayFormatter= TimeDatumFormatter.SECONDS;
+            else timeOfDayFormatter= TimeDatumFormatter.MINUTES;
+            
+            int maxDay= TimeUtil.getJulianDay(self.max());
+            // if ( TimeUtil.getSecondsSinceMidnight(self.max())==0 ) maxDay--;  want to have 24:00, not 00:00
+            if ( maxDay== TimeUtil.getJulianDay(self.min()) ) {
+                return TimeDatumFormatter.DAYS.format(self.min())
+                + " " + timeOfDayFormatter.format( self.min() )
+                + " - " + timeOfDayFormatter.format( self.max() );
+            } else {
+                String t1str= timeOfDayFormatter.format( self.min() );
+                String t2str= timeOfDayFormatter.format( self.max() );
+                return TimeDatumFormatter.DAYS.format( self.min() ) + " " + t1str
+                + " - " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + t2str;
+            }
         }
     }
     
-    public static DatumRange newDimensionless( double lower, double upper ) {
+    private static void testParse( String s ) throws ParseException {
+        System.out.println( "in:" + s );
+        DatumRange t1= parseTimeRange( s );
+        String formatString= formatTimeRange( t1 );
+        System.out.println( "out: " + formatString );
+        DatumRange parseTR= parseTimeRange( formatString );
+        if ( !t1.equals(parseTR) ) {
+            System.out.println( "*** fails: "+s );
+        }
+    }
+    
+    private static void testParse( String s, String sokay ) throws ParseException {
+        System.out.println( "in:" + s );
+        DatumRange t1= parseTimeRange( s );
+        String formatString= formatTimeRange( t1 );
+        System.out.println( "2out: " + formatString );
+        DatumRange parseTR= parseTimeRange( sokay );
+        if ( !t1.equals(parseTR) ) {
+            System.out.println( "*** fails: "+s );
+        }
+    }
+    
+    static void main1() throws Exception {
+        testParse( "5 may 04 6 to 7" );
+        testParse( "5-6 2004", "may-june 2004" );
+        testParse( "5-6 may 2004", "may-5-2004 -may-6-2004" );
+        testParse( "5 may 2004 5-7", "2004-5-5 5:00-7:00");
+        testParse( "2004-05-06 5:00-6:00");
+        testParse( "5.6.2004 5:00-6:00");
+        testParse( "5 june 2004 5:00-6:00");
+        testParse( "june 5 2004 5:00-6:00");
+        testParse( "1-2-02-1-5-02" );
+        testParse( "1.2.02-1.5.02" );
+        testParse( "2001");
+        testParse( "jan-2-2003 23:00-24:00" );
+        testParse( "2.10.2003" );
+        testParse( "2.oct.2003" );
+        testParse( "10/2/2003" );
+        testParse( "oct/2/2003" );
+        testParse( "2001/360");
+        testParse( "2001", "2001-1-1 - 2001-12-31");
+        testParse( "2001/12-2002/1", "2001-12-1 - 2002-1-31");
+        testParse( "2001/dec-2002/jan");
+        testParse( "2001/2-2001/5");
+        testParse( "2001/360-2002/001");
+        testParse( "2001/360-362");
+        testParse( "2001-360");
+        testParse( "2001/360 20:00-22:00");
+        testParse( "2001/360 20:00 to 22:00");
+        testParse( "2001/360 20:00 through 22:00");
+        testParse( "2002 010-015");
+        testParse( "010-2002-020-2002");
+        testParse( "2000-001T09:00-9:10");
+        testParse( "5-6 2004", "may-june 2004" );
+        testParse( "5-6 may 2004", "may-5-2004 -may-6-2004" );
+        testParse( "may-june 2004");
+    }
+    
+    static void main2() throws Exception {
+        testParse("2004-11-07T06-8");
+        testParse( "2-2003 4-5" );
+        testParse( "1 2 03 4 5 06" );
+        testParse( "2-3-5 6-7" );
+    }
+    
+    public static void main( String [] args ) throws Exception {
+        String regex="(\\d{4})-((\\d?\\d)|(jan[a-z]*|feb[a-z]*|mar[a-z]*|apr[a-z]*|may|june?|july?|aug[a-z]*|sep[a-z]*|oct[a-z]*|nov[a-z]*|dec[a-z]*))-(\\d?\\d)( |T|-)";
+        String date="2004-11-07T";
+        System.out.println(date.matches(regex));
+        main2();
+        
+    }
+    
+    public static DatumRange newDimensionless(double lower, double upper) {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
     }
+    
 }
