@@ -218,7 +218,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         for (int i=0; i<renderers.size(); i++) {
             Renderer rend= (Renderer)renderers.get(i);
-            rend.update(xAxis,yAxis);
+            rend.update();
         }
     }
     

@@ -96,8 +96,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     /* Canvas actions */
     
-    private static abstract class CanvasAction extends AbstractAction {
-        static DasCanvas currentCanvas;
+    protected static abstract class CanvasAction extends AbstractAction {
+        protected static DasCanvas currentCanvas;
         CanvasAction(String label) { super(label); }
     }
     

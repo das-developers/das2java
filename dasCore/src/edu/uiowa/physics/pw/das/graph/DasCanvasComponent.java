@@ -41,7 +41,7 @@ import java.util.logging.*;
  */
 public abstract class DasCanvasComponent extends JComponent implements Editable {
     
-    protected static abstract class CanvasComponentAction extends AbstractAction {
+    protected static abstract class CanvasComponentAction extends DasCanvas.CanvasAction {
         private static DasCanvasComponent currentCanvasComponent;
         public CanvasComponentAction(String label) {
             super(label);
@@ -55,6 +55,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         public void mousePressed(MouseEvent e) {
             DasCanvasComponent dcc = (DasCanvasComponent)SwingUtilities.getAncestorOfClass(DasCanvasComponent.class, e.getComponent());
             CanvasComponentAction.currentCanvasComponent = (DasCanvasComponent)e.getSource();
+            DasCanvas canvas = dcc.getCanvas();
+            DasCanvas.CanvasAction.currentCanvas = canvas;
         }
     };
     
