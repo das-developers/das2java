@@ -119,9 +119,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             if ( dataPoints.size()==0 ) {
                 return null;
             } else {
-                VectorDataSetBuilder builder = new VectorDataSetBuilder();
-                builder.setXUnits(unitsArray[0]);
-                builder.setYUnits(unitsArray[1]);
+                VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0],unitsArray[1]);
                 for ( int irow= 0; irow<dataPoints.size(); irow++ ) {
                     DataPoint dp= (DataPoint)dataPoints.get(irow);
                     builder.insertY(dp.get(0), dp.get(1));
