@@ -46,6 +46,7 @@ import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.beans.*;
 import java.io.*;
 import java.text.*;
@@ -208,21 +209,18 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         
         if ( w==0 ) return;
         
-        plotImage = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        //plotImage = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        BufferedImage plotImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         
-        Graphics2D g = (Graphics2D)plotImage.getGraphics();
+        Graphics2D g = plotImage.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, plotImage.getWidth(), plotImage.getHeight());
         g.translate(-column.getDMinimum(),-row.getDMinimum());
         
         Dimension d;
         
         double iMin= column.getDMinimum();
-        double jMin= row.getDMinimum();
-        
-        RenderingHints hints0= g.getRenderingHints();
-        RenderingHints hints=
-        new RenderingHints( RenderingHints.KEY_ANTIALIASING,
-        RenderingHints.VALUE_ANTIALIAS_OFF );
-        g.setRenderingHints(hints);
+        double jMin= row.getDMinimum();       
         
         RebinDescriptor xbins= new RebinDescriptor(xAxis.getDataMinimum(), xAxis.getDataMaximum(), (int)(Math.abs(column.getWidth())/1)+1, (xAxis.isLog()));
         
@@ -311,11 +309,10 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                     }
                 }
             }
-        }
-        
-        g.setRenderingHints(hints0);
+        }                
         
         g.dispose();
+        this.plotImage = plotImage;
         parent.setCursor(cursor0);
         getParent().repaint();
         
