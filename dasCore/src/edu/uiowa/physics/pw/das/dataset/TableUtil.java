@@ -192,6 +192,18 @@ public class TableUtil {
     }
     
     public static void dumpToAsciiStream(TableDataSet tds, WritableByteChannel out) {
+        dumpToDas2Stream( tds, out, true );
+    }
+
+    public static void dumpToDas2Stream( TableDataSet tds, OutputStream out, boolean asciiTransferTypes ) {
+         dumpToDas2Stream(tds, Channels.newChannel(out), asciiTransferTypes );
+    }
+    
+    public static void dumpToBinaryStream( TableDataSet tds, OutputStream out ) {
+        dumpToDas2Stream(tds, Channels.newChannel(out), false );
+    }    
+    
+    private static void dumpToDas2Stream( TableDataSet tds, WritableByteChannel out, boolean asciiTransferTypes ) {
         try {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
@@ -201,17 +213,25 @@ public class TableUtil {
             if (TimeUtil.now().lt(TimeUtil.createValid("2004-05-19"))) sd.setProperty("comment", "This *IS* a das2 stream, and it looks like it.");
             /** == == */
             
-            DataTransferType ascii10 = DataTransferType.getByName("ascii10");
-            DataTransferType ascii24 = DataTransferType.getByName("ascii24");
+            DataTransferType zTransferType;
+            DataTransferType xTransferType;
 
+            if ( asciiTransferTypes ) {
+                zTransferType= DataTransferType.getByName("ascii10");
+                xTransferType= DataTransferType.getByName("ascii24");
+            } else {
+                zTransferType= DataTransferType.getByName("sun_real4");
+                xTransferType= DataTransferType.getByName("sun_real8");
+            }
+            
             producer.streamDescriptor(sd);
             DatumVector[] zValues = new DatumVector[1];
             for (int table = 0; table < tds.tableCount(); table++) {
-                StreamXDescriptor xDescriptor = new StreamXDescriptor();
-                xDescriptor.setDataTransferType(ascii24);
+                StreamXDescriptor xDescriptor = new StreamXDescriptor();                
+                xDescriptor.setDataTransferType(xTransferType);
                 xDescriptor.setUnits(tds.getXUnits());
                 StreamYScanDescriptor yDescriptor = new StreamYScanDescriptor();
-                yDescriptor.setDataTransferType(ascii10);
+                yDescriptor.setDataTransferType(zTransferType);
                 yDescriptor.setZUnits(tds.getZUnits());
                 yDescriptor.setYCoordinates(tds.getYTags(table));
                 PacketDescriptor pd = new PacketDescriptor();
@@ -231,56 +251,6 @@ public class TableUtil {
         }
     }
     
-    public static void dumpToStream( TableDataSet table, OutputStream out ) {
-        
-        PrintStream pout= new PrintStream(out);
-        
-        Datum base=null;
-        Units offsetUnits= null;
-        
-        if ( table.getXUnits() instanceof LocationUnits ) {
-            base= table.getXTagDatum(0);
-            offsetUnits= ((LocationUnits)base.getUnits()).getOffsetUnits();
-            if ( offsetUnits==Units.microseconds ) {
-                offsetUnits= Units.seconds;
-            }
-            pout.println("# X is first value, offset in "+offsetUnits+" from "+base);
-        } else {
-            pout.println("# X is first value, in "+table.getXUnits());
-        }
-        
-        pout.println("# Z values follow, in "+table.getZUnits());
-        pout.println("# This file contains "+table.tableCount()+" tables.");
-        
-        pout.println("#");
-        pout.println("# File created on: "+TimeUtil.now().toString()+" UT");
-        String tab= "\011";
-        
-        for ( int itable=0; itable< table.tableCount(); itable++ ) {
-            pout.println("# Begin table "+itable);
-            
-            pout.print("# yValues ("+table.getYUnits()+"):"+tab);
-            for (int j=0; j<table.getYLength(itable); j++ ) {
-                pout.print(""+table.getYTagDouble(itable,j,table.getYUnits())+tab);
-            }
-            pout.println();
-            
-            for (int i=table.tableStart(itable); i<table.tableEnd(itable); i++) {
-                double x;
-                if ( base!=null ) {
-                    x= table.getXTagDatum(i).subtract(base).doubleValue(offsetUnits);
-                } else {
-                    x= table.getXTagDouble(i,table.getXUnits());
-                }
-                pout.print(""+x+tab);
-                for (int j=0; j<table.getYLength(itable); j++) {
-                    pout.print(""+table.getDouble(i,j,table.getZUnits())+tab);
-                }
-                pout.println();
-            }
-            
-        }
-    }
     
     public static int getPreviousRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
