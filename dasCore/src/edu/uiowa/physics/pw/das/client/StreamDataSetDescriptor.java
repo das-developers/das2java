@@ -342,7 +342,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             }
         }
         StreamYScanDescriptor[] yScans = (StreamYScanDescriptor[])sd.getYDescriptors().toArray(new StreamYScanDescriptor[0]);
-        int planeCount = yScans.length;
+        final int planeCount = yScans.length;
         String[] planeIDs = new String[planeCount];
         int recordSize = sd.getXDescriptor().getSizeBytes();
         for (int planeIndex = 0; planeIndex < planeCount; planeIndex++) {
@@ -359,9 +359,9 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         while (data.remaining() > recordSize) {
             DatumVector vector = sd.getXDescriptor().read(data);
             Datum xTag = start.add(vector.get(0));
-            DatumVector[] z = new DatumVector[yScans.length + 1];
+            DatumVector[] z = new DatumVector[planeCount];
             for (int planeIndex = 0; planeIndex < z.length; planeIndex++) {
-                z[0]= yScans[planeIndex].read(data);
+                z[planeIndex]= yScans[planeIndex].read(data);
                 builder.insertYScan(xTag, y, z, planeIDs);
             }
         }
