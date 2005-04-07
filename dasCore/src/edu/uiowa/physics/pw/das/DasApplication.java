@@ -41,14 +41,7 @@ public class DasApplication {
         Logger logger;
         LoggerId( String name ) {
             this.name= name;
-            this.logger= Logger.getLogger(name);
-            Level level= Level.WARNING;
-            Handler[] handlers= this.logger.getHandlers();
-            for ( int i=0; i<handlers.length; i++ ) {
-                handlers[i].setFormatter(getLoggerFormatter());
-                handlers[i].setLevel(level);
-            }
-            this.logger.setLevel(level);
+            this.logger= Logger.getLogger(name);            
             this.logger.fine( name +" logging at "+this.logger.getLevel() );
         }
         public String toString() {
@@ -58,35 +51,33 @@ public class DasApplication {
             return this.logger;
         }
     }
-    
-    private static Formatter getLoggerFormatter() {
-        return new Formatter() {
-            public String format( LogRecord rec ) {
-                StackTraceElement[] st= new Throwable().getStackTrace();                
-                return rec.getLoggerName()+"\n"+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n\tat "+st[7]+"\n\tat "+st[8]+"\n";
-            }
-        };
+            
+    {
+        try {
+            java.net.URL logConfigURL= DasApplication.class.getResource("logging.properties");
+            LogManager.getLogManager().readConfiguration( logConfigURL.openStream() );
+        } catch ( Exception e ) {            
+            System.out.println(e);
+        }
     }
     
-    
-    
     /* messages having to do with the application-specific Das 2 Application */
-    public static final LoggerId APPLICATION_LOG= new LoggerId("");
+    public static final LoggerId APPLICATION_LOG= new LoggerId( "" );
     
     /* system messages such as RequestProcessor activity */
-    public static final LoggerId SYSTEM_LOG= new LoggerId("system");
+    public static final LoggerId SYSTEM_LOG= new LoggerId( "das2.system" );
     
     /* events, gestures, user feedback */
-    public static final LoggerId GUI_LOG= new LoggerId("gui");
+    public static final LoggerId GUI_LOG= new LoggerId( "das2.gui" );
     
     /* renders, drawing */
-    public static final LoggerId GRAPHICS_LOG= new LoggerId("graphics");
+    public static final LoggerId GRAPHICS_LOG= new LoggerId( "das2.graphics" );
     
     /* rebinning */
-    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId("dataOperations");
+    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId( "das2.dataOperations" );
     
     /* internet transactions, file I/O */
-    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId("dataTransfer");
+    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( "das2.dataTransfer" );
     
     static {
         String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans" };
