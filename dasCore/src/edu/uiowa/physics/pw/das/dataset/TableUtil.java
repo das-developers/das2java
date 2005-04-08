@@ -130,7 +130,8 @@ public class TableUtil {
     public static String toString(TableDataSet tds) {
         StringBuffer buffer= new StringBuffer();
         buffer.append( tds.getYLength(0) );
-        for ( int i=1; i<tds.tableCount(); i++ ) {
+        int tableCountLimit=3;
+        for ( int i=1; i<tds.tableCount() && i<tableCountLimit; i++ ) {
             buffer.append( ", "+tds.getYLength(i) );
         }
         return "["+tds.getXLength()+" xTags, "+buffer.toString()+" yTags]";
