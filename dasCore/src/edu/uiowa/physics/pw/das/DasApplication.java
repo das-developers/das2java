@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das;
 
 import java.awt.event.*;
+import java.io.*;
 import java.util.logging.*;
 import java.util.prefs.*;
 import javax.swing.*;
@@ -54,7 +55,15 @@ public class DasApplication {
             
     {
         try {
-            java.net.URL logConfigURL= DasApplication.class.getResource("logging.properties");
+            java.net.URL logConfigURL;
+            
+            File localLogConfig= new File( getDas2UserDirectory(), "logging.properties" );            
+            if ( localLogConfig.exists() ) {
+                Logger.getLogger("").info("using "+localLogConfig);
+                logConfigURL= localLogConfig.toURL();
+            } else {
+                logConfigURL= DasApplication.class.getResource("logging.properties");
+            }
             LogManager.getLogManager().readConfiguration( logConfigURL.openStream() );
         } catch ( Exception e ) {            
             System.out.println(e);
@@ -110,6 +119,27 @@ public class DasApplication {
         String osName= System.getProperty( "os.name" );
         return "SunOS".equals( osName )
         || "Linux".equals( osName );
+    }
+    
+    /**
+     * returns the location of the local directory sandbox.  For example,
+     * The web filesystem object downloads temporary files to here, logging 
+     * properties file, etc.
+     *
+     * Assume that this File is local, so I/O is quick, and that the process
+     * has write access to this area.
+     * For definition, assume that at least 1Gb of storage is available as 
+     * well.
+     */
+    public static File getDas2UserDirectory() {
+        File local;
+         if ( System.getProperty("user.name").equals("Web") ) {
+            local= new File("/tmp");
+        } else {
+            local= new File( System.getProperty("user.home") );
+        }
+        local= new File( local, ".das2" );
+        return local;
     }
     
     public static boolean isHeadAvailable() {
