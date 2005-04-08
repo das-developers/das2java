@@ -50,6 +50,13 @@ public final class DatumUtil {
             return EnumerationDatumFormatterFactory.getInstance().defaultFormatter();
         }
         
+        if ( datums.getUnits() instanceof TimeLocationUnits ) {
+            Datum t1= datums.get(0);
+            int nticks= datums.getLength();
+            Datum t2= datums.get(nticks-1);
+            return DatumUtil.bestTimeFormatter(t1,t2,nticks-1);
+        }
+        
         if ( datums.getUnits() instanceof LocationUnits ) {
             array= new double[ datums.getLength() ];
             units= ((LocationUnits)datums.get(0).getUnits()).getOffsetUnits();
