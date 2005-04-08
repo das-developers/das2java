@@ -171,8 +171,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     public void setDataSet(DataSet ds) {
         if (ds == null) {
             setDataSetDescriptor(null);
-        }
-        else {
+        } else {
             setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
         }
     }
@@ -322,9 +321,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     protected void refreshImage() {
         if ( getParent()!=null ) {
             getParent().markDirty();
-            if ( this instanceof SpectrogramRenderer ) {
-                update();
-            }
+            update();
             getParent().repaint();
         }
     }
@@ -332,14 +329,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     public void update() {
         DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("update");
         if (parent != null) {
-           // if ( EventQueue.isDispatchThread() ) {
-           //     updateImmediately();
-           // } else {
-                java.awt.EventQueue eventQueue =
-                        Toolkit.getDefaultToolkit().getSystemEventQueue();
-                DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
-                eventQueue.postEvent(drue);
-           // }
+            // if ( EventQueue.isDispatchThread() ) {
+            //     updateImmediately();
+            // } else {
+            java.awt.EventQueue eventQueue =
+                    Toolkit.getDefaultToolkit().getSystemEventQueue();
+            DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
+            eventQueue.postEvent(drue);
+            // }
         } else {
             DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("update but parent was null");
         }
