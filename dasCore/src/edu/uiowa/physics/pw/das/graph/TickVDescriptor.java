@@ -57,12 +57,9 @@ public class TickVDescriptor {
      * @return a String representation of the TickVDescriptor.
      *
      */
-    public String toString() {
-        String s="tickV=[";
-        for (int i=0; i<tickV.length; i++) s+=datumFormatter.format(units.createDatum(tickV[i]))+", ";
-        s+="],minor=";
-        for (int i=0; i<minorTickV.length; i++) s+=minorTickV[i]+", ";
-        s+="]";
+    public String toString() {        
+        String s="tickV=" + getMajorTicks();        
+        s+=",minor=" + getMinorTicks();                
         return s;
     }
     
@@ -249,6 +246,8 @@ public class TickVDescriptor {
     
     public static TickVDescriptor bestTickVTime( Datum minD, Datum maxD, int nTicksMin, int nTicksMax ) {
         
+        Datum length= maxD.subtract(minD);
+        
         Datum minute = Datum.create(60.0, Units.seconds);
         if (maxD.subtract(minD).lt(minute)) {
             Datum base= TimeUtil.prevMidnight( minD );
@@ -262,6 +261,26 @@ public class TickVDescriptor {
             DatumVector majorTicks= offTicks.getMajorTicks().add(base);
             
             TickVDescriptor result= TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks );
+            result.datumFormatter= DatumUtil.bestFormatter( majorTicks );
+            return result;
+        } 
+        
+        
+        if ( length.gt( Datum.create( 1, Units.days ) ) && length.lt( Datum.create( 10, Units.days ) ) ) {
+            
+            Datum base= TimeUtil.prevMidnight( minD );
+            
+            Units offUnits= Units.days;
+            Datum offMin= minD.subtract(base).convertTo(offUnits);
+            Datum offMax= maxD.subtract(base).convertTo(offUnits);
+            TickVDescriptor offTicks= bestTickVLinear( offMin, offMax, nTicksMin, nTicksMax );
+            
+            DatumVector minorTicks= offTicks.getMinorTicks().add(base);
+            DatumVector majorTicks= offTicks.getMajorTicks().add(base);
+            
+            TickVDescriptor dayTicks= TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks );
+            dayTicks.datumFormatter= DatumUtil.bestFormatter( majorTicks );
+            return dayTicks;
         }
         
         if ( maxD.subtract(minD).gt( Datum.create(10*365,Units.days)) ) {
