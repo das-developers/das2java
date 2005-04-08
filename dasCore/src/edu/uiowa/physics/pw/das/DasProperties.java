@@ -121,8 +121,13 @@ public class DasProperties extends Properties {
                 }
             } else if ( propertyName.equals("debugLevel") ) {
                 String debugLevel= value.toString();                
-                if (debugLevel.equals("endUser")) instance.logger.setLevel(Level.WARNING);
-                else if (debugLevel.equals("dasDeveloper")) instance.logger.setLevel(Level.ALL);
+                if (debugLevel.equals("endUser")) {
+                    Logger.getLogger("").setLevel(Level.WARNING);
+                    Logger.getLogger("das2").setLevel(Level.WARNING);
+                } else if (debugLevel.equals("dasDeveloper")) {
+                    Logger.getLogger("").setLevel(Level.FINE);
+                    Logger.getLogger("das2").setLevel(Level.FINE);
+                }
                 else instance.logger.setLevel(Level.parse(debugLevel));
                 edu.uiowa.physics.pw.das.util.DasDie.setDebugVerbosityLevel(value.toString());
             }
