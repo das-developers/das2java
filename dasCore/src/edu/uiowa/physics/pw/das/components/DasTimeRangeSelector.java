@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.*;
 /**
  *
@@ -32,13 +33,11 @@ import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
 import edu.uiowa.physics.pw.das.util.*;
-import edu.uiowa.physics.pw.das.util.DasDie;
 import java.awt.*;
 
 import javax.swing.event.EventListenerList;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.*;
 import java.util.prefs.*;
 import javax.swing.*;
@@ -303,19 +302,13 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
      * @param event The event to be fired
      */
     protected void fireTimeRangeSelected(TimeRangeSelectionEvent event) {
-        if (false) {
-            DasDie.println("firing event");
-            Graphics2D g= (Graphics2D)getGraphics();
-            g.setColor(new Color(255,255,0,200));
-            Rectangle dirty= new Rectangle(0,0,getWidth(),getHeight());
-            g.fill(dirty);
-            try { Thread.sleep(600); } catch ( InterruptedException e ) {};
-            paintImmediately(dirty);
-        }
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length-2; i>=0; i-=2) {
+        for (int i = listeners.length-2; i>=0; i-=2) {            
             if (listeners[i]==TimeRangeSelectionListener.class) {
+                String logmsg= "fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event;                
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine(logmsg);
+                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
                 ((TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }
