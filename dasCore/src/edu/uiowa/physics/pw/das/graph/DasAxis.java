@@ -2222,9 +2222,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public void timeRangeSelected(TimeRangeSelectionEvent e) {
         if ( e.getSource()!=this && !e.equals(lastProcessedEvent)) {
-            setDatumRange(e.getRange());
-            lastProcessedEvent= e;
-            fireTimeRangeSelectionListenerTimeRangeSelected(e);
+            setDatumRange(e.getRange()); // setDatumRange fires the event
+            lastProcessedEvent= e;            
         }
     }
     
@@ -2250,20 +2249,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param event The event to be fired
      */
     private void fireTimeRangeSelectionListenerTimeRangeSelected(TimeRangeSelectionEvent event) {
-        if (false) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("firing event");
-            Graphics2D g= (Graphics2D)getGraphics();
-            g.setColor(new Color(255,255,0,200));
-            Rectangle dirty= new Rectangle(0,0,getWidth(),getHeight());
-            g.fill(dirty);
-            try { Thread.sleep(600); } catch ( InterruptedException e ) {};
-            paintImmediately(dirty);
-        }
         if (timeRangeListenerList == null) return;
         Object[] listeners = timeRangeListenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class) {
-                edu.uiowa.physics.pw.das.util.DasDie.println("fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event);
+                String logmsg= "fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event;
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( logmsg );
                 ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }
