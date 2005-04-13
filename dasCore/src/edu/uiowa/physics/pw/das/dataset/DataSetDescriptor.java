@@ -48,13 +48,15 @@ public abstract class DataSetDescriptor {
      */
     protected Map properties = new HashMap();
     private boolean defaultCaching= true;
-    private DataSet cacheDataSet;
+    
+    private DataSetCache dataSetCache;
+    
     private String dataSetID;
-    private CacheTag cacheTag;
+    
     private EventListenerList listenerList;
     
     protected DataSetDescriptor(final String dataSetID) {
-        cacheTag=null;
+        dataSetCache= DasApplication.getDefaultApplication().getDataSetCache();
         this.dataSetID= dataSetID;
     }
     protected DataSetDescriptor() {
@@ -67,6 +69,9 @@ public abstract class DataSetDescriptor {
      */
     protected abstract DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException ;
     
+    /**
+     * return the x units of the DataSetDescriptor.
+     */
     public abstract Units getXUnits();
     
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution, final DasProgressMonitor monitor) {
@@ -125,30 +130,25 @@ public abstract class DataSetDescriptor {
      * if such a resolution exists.
      */
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
-        if (monitor != null) {
-            monitor.started();
-        }
-        if ( cacheTag!=null &&
-                defaultCaching &&
-                cacheTag.start.le(start) &&
-                cacheTag.end.ge(end) &&
-                ( cacheTag.resolution==null || (resolution != null && cacheTag.resolution.le(resolution)) ) ) {
-            if (monitor != null) {
-                monitor.finished();
-            }
-            return cacheDataSet;
+        if ( monitor==null ) monitor=DasProgressMonitor.NULL;
+        monitor.started();
+        
+        CacheTag tag= new CacheTag( start, end, resolution );
+        
+        if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {            
+            monitor.finished();
+            return dataSetCache.retrieve( this, tag );            
         } else {
             try {
                 DataSet ds = getDataSetImpl( start, end, resolution, monitor );
-                if (ds != null) {
-                    cacheDataSet = ds;
-                    cacheTag= (CacheTag)cacheDataSet.getProperty( "cacheTag" );
-                    if ( cacheTag == null ) cacheTag= new CacheTag( start, end, resolution );
+                if (ds != null) {                    
+                    if ( ds.getProperty( "cacheTag" )!=null ) tag= (CacheTag)ds.getProperty( "cacheTag" );
+                    if ( defaultCaching ) dataSetCache.store( this, tag, ds );
                 }
                 if (monitor != null) {
                     monitor.finished();
                 }
-                return cacheDataSet;
+                return ds;
             } catch ( DasException e ) {
                 throw e;
             }
@@ -159,7 +159,7 @@ public abstract class DataSetDescriptor {
      * clear any state that's developed, in particular any data caches
      */
     public void reset() {
-        cacheTag= null;
+        dataSetCache.reset();
     }
     
     protected void setDefaultCaching( boolean value ) {
