@@ -23,6 +23,9 @@
 
 package edu.uiowa.physics.pw.das;
 
+import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.dataset.DataSetCache;
+import edu.uiowa.physics.pw.das.dataset.LimitCountDataSetCache;
 import java.awt.event.*;
 import java.io.*;
 import java.util.logging.*;
@@ -95,6 +98,8 @@ public class DasApplication {
     
     private NameContext nameContext;
     private Logger debugLogger;
+    
+    private DataSetCache dataSetCache;
     
     /** Creates a new instance of DasApplication */
     private DasApplication() {
@@ -186,6 +191,14 @@ public class DasApplication {
             }
             System.setProperty("java.awt.headless","false");
         }
+    }
+    
+    public DataSetCache getDataSetCache() {
+        if ( dataSetCache==null ) {
+            dataSetCache= new SimpleDataSetCache();
+            //dataSetCache= new LimitCountDataSetCache(10);
+        }
+        return dataSetCache;
     }
     
     public JFrame getMainFrame( java.awt.Container canvas ) {
