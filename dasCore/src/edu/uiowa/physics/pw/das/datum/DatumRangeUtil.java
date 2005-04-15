@@ -108,8 +108,8 @@ public class DatumRangeUtil {
     
     private static int julday( int month, int day, int year ) {
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
-        3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
-        275 * month / 9 + day + 1721029;
+                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                275 * month / 9 + day + 1721029;
         return jd;
     }
     
@@ -250,7 +250,7 @@ public class DatumRangeUtil {
         
         String string= string_in+" ";
         
-        String delimRegEx= " |-|/|\\.|:|to|through|T|Z";
+        String delimRegEx= " |-|/|\\.|:|to|through|T|Z|\u2013";
         int[] ts1= new int[] { -1, -1, -1, -1, -1, -1, -1 };
         int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
         int[] ts= null;
@@ -295,6 +295,7 @@ public class DatumRangeUtil {
             if ( lastdelim.equals("to") ) beforeTo=false;
             if ( lastdelim.equals("through") ) beforeTo=false;
             if ( lastdelim.equals("-") ) beforeTo=false;
+            if ( lastdelim.equals("\u2013") ) beforeTo=false;
             if ( isDate( string.substring( ipos ), dateDescriptor ) ) {
                 format= format+"%x";
                 if ( ts1[DAY] != -1 || ts1[MONTH] != -1 || ts1[YEAR] != -1 ) { beforeTo= false; }
@@ -530,7 +531,7 @@ public class DatumRangeUtil {
         
         if ( ts1lsd != ts2lsd ) {
             throw new ParseException( "resolution mismatch: "+digitIdentifiers[ts1lsd]+" specified for start, but "
-            + digitIdentifiers[ts2lsd]+" specified for end, must be same", ipos );
+                    + digitIdentifiers[ts2lsd]+" specified for end, must be same", ipos );
         }
         
         if ( ts2lsd < HOUR ) {
@@ -544,7 +545,7 @@ public class DatumRangeUtil {
             return new MonthDatumRange( ts1, ts2 );
         } else {
             Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
-            Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );        
+            Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
             return new DatumRange( time1, time2 );
         }
         
@@ -556,7 +557,7 @@ public class DatumRangeUtil {
         } catch ( ParseException e ) {
             throw new RuntimeException(e);
         }
-    }    
+    }
     
     /* formats time, supressing trailing zeros.  Time2 is another time that will be displayed alongside time,
      * and may be used when deciding how the time should be formatted.  context is used to describe an external
@@ -569,10 +570,10 @@ public class DatumRangeUtil {
         
         int stopRes= 3;
         if ( TimeUtil.getSecondsSinceMidnight(time)==0. && time.equals(context.max()) ) {
-             ts.hour=24;
-             ts.day--;  
-        }            
-            
+            ts.hour=24;
+            ts.day--;
+        }
+        
         timeString= ""+ts.hour;
         
         Datum[] times= new Datum[] { time, time2 };
@@ -627,11 +628,13 @@ public class DatumRangeUtil {
         boolean isYearBoundry1= isMonthBoundry1 && ts1.month == 1;
         boolean isYearBoundry2= isMonthBoundry2 && ts2.month == 1;
         
+        //String toDelim= " \u2013 ";
+        String toDelim= " to ";
         if ( isYearBoundry1 && isYearBoundry2 ) {  // no need to indicate month
             if (  ts2.year-ts1.year == 1 ) {
                 return "" + ts1.year;
             } else {
-                return "" + ts1.year + " to " + ts2.year;
+                return "" + ts1.year + toDelim + ts2.year;
             }
         } else if ( isMonthBoundry1 && isMonthBoundry2 ) { // no need to indicate day of month
             if ( ts2.month == 1 ) {
@@ -642,11 +645,11 @@ public class DatumRangeUtil {
                 if ( ts2.month-ts1.month == 1 ) {
                     return monthStr[ts1.month-1] + " " + ts1.year;
                 } else {
-                    return monthStr[ts1.month-1]+ " to " + monthStr[ts2.month-1-1] + " " + ts1.year;
+                    return monthStr[ts1.month-1]+ toDelim  + monthStr[ts2.month-1-1] + " " + ts1.year;
                 }
             } else {
-                return monthStr[ts1.month-1] + " " + ts1.year + " to "
-                + monthStr[ts2.month-1-1] + " " + ts2.year;
+                return monthStr[ts1.month-1] + " " + ts1.year + toDelim 
+                        + monthStr[ts2.month-1-1] + " " + ts2.year;
             }
         }
         
@@ -655,8 +658,8 @@ public class DatumRangeUtil {
                 return TimeDatumFormatter.DAYS.format( self.min() );
             } else {
                 Datum endtime= self.max().subtract( Datum.create( 1, Units.days ) );
-                return TimeDatumFormatter.DAYS.format( self.min() ) + " to "
-                + TimeDatumFormatter.DAYS.format( endtime );
+                return TimeDatumFormatter.DAYS.format( self.min() ) + toDelim 
+                        + TimeDatumFormatter.DAYS.format( endtime );
             }
             
         } else {
@@ -677,17 +680,17 @@ public class DatumRangeUtil {
                 String t1str= efficientTime( self.min(), self.max(), self );
                 String t2str= efficientTime( self.max(), self.min(), self );
                 return TimeDatumFormatter.DAYS.format( self.min() ) + " " + t1str
-                + " to " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + t2str;
+                        + " to " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + t2str;
             }
         }
     }
     
     public static List generateList( DatumRange bounds, DatumRange element ) {
-        ArrayList result= new ArrayList();      
+        ArrayList result= new ArrayList();
         DatumRange dr= element;
         while ( dr.max().gt(bounds.min()) ) {
             result.add(0,dr);
-            dr= dr.previous();            
+            dr= dr.previous();
         }
         dr= element.next();
         while( dr.min().lt(bounds.max() ) ) {
@@ -702,21 +705,28 @@ public class DatumRangeUtil {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
     }
     
-    public static DatumRange parseDatumRange( String str, DatumRange orig ) {
-        // consider Patterns
-        String[] ss= str.split("to");
-        if ( ss.length != 2 ) {
-            if ( ss.length==3 ) {
-                ss[0]= "-"+ss[1];
-                ss[1]= ss[2];
-            } else {
-                throw new IllegalArgumentException("failed to parse: "+str);
+    public static DatumRange parseDatumRange( String str, DatumRange orig ) throws ParseException {
+        if ( orig.getUnits() instanceof TimeLocationUnits ) {
+            return parseTimeRange( str );
+        } else {
+            // consider Patterns -- dash not handled because of negative sign.
+            String[] ss= str.split("to");  
+            if ( ss.length==1 ) {
+                ss= str.split("\u2013");
             }
-        }
+            if ( ss.length != 2 ) {
+                if ( ss.length==3 ) {
+                    ss[0]= "-"+ss[1];
+                    ss[1]= ss[2];
+                } else {
+                    throw new IllegalArgumentException("failed to parse: "+str);
+                }
+            }
             
-        double d1= Double.parseDouble(ss[0]);
-        double d2= Double.parseDouble(ss[1]);
-        return DatumRange.newDatumRange( d1, d2, orig.getUnits() );
+            double d1= Double.parseDouble(ss[0]);
+            double d2= Double.parseDouble(ss[1]);
+            return DatumRange.newDatumRange( d1, d2, orig.getUnits() );
+        }
     }
     
 }
