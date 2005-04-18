@@ -149,7 +149,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     }
     
     public double getXTagDouble(int i, Units units) {
-        return ddX.binCenter(i);
+        return ddX.binCenter(i,units);
     }
     
     public int getXTagInt(int i, Units units) {
@@ -180,7 +180,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         if ( ddY==null ) {
             return source.getYTagDouble( table, j, units );
         } else {
-            return ddY.binCenter(j);
+            return ddY.binCenter(j,units);
         }
     }
     
