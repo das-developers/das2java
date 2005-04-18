@@ -52,7 +52,7 @@ public class SineWaveStream {
             double[] z = new double[1];
             DatumVector[] yValues = new DatumVector[1];
             for (int i = 0; i < nx; i++) {
-                Datum xTag = Datum.create((double)i, Units.seconds);
+                Datum xTag = Datum.create((double)i*0.001, Units.seconds);
                 z[0] = Math.sin(Math.PI * frequency * i );
                 yValues[0] = DatumVector.newDatumVector(z, Units.dimensionless);
                 producer.packet(pd, xTag, yValues);
