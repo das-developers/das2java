@@ -90,6 +90,11 @@ public class RebinDescriptor {
         return result;
     }
     
+    public DatumVector binCentersDV() {
+        double [] result= binCenters();
+        return DatumVector.newDatumVector(result, units);
+    }
+    
     public double[] binCenters() {
         double [] result= new double[nBin];
         for (int i=0; i<nBin; i++) {
@@ -101,9 +106,18 @@ public class RebinDescriptor {
         return result;
     }
     
-    public double binCenter(int ibin) {
+    public double binCenter(int ibin,Units units) {
+        UnitsConverter uc= this.units.getConverter(units);
         double result= start+((ibin+0.5)/(double)(nBin)*(end-start));
-        if ( isLog ) return Math.exp(result); else return result;
+        if ( isLog ) return uc.convert( Math.exp(result) ); else return uc.convert( result );
+    }
+    
+    public Datum binCenter(int ibin) {
+        return Datum.create( binCenter( ibin, units ), units );
+    }
+    
+    public Datum binStart( int ibin ) {
+        return Datum.create( binStart( ibin, units ), units );
     }
     
     public double binStart( int ibin, Units units ) {
@@ -119,6 +133,10 @@ public class RebinDescriptor {
         } else {
             return uc.convert(result);
         }
+    }
+    
+    public Datum binStop( int ibin ) {
+        return Datum.create( binStop( ibin, units ), units );
     }
     
     public double binStop( int ibin, Units units ) {
@@ -192,13 +210,13 @@ public class RebinDescriptor {
             i1= dd.numberOfBins();
             ymax= units.createDatum(dd.binStop(dd.numberOfBins()-1,units));
         }
-
+        
         if ( i0> 10000000 ) {
             throw new IllegalArgumentException( "ymax would result in impossibly large rebin descriptor (ymax="+ymax+" falls in bin number "+i0+")" );
         }
-
-        int nbins= i1-i0+1;                        
-                    
+        
+        int nbins= i1-i0+1;
+        
         return new RebinDescriptor( units.createDatum(dd.binStart(i0,units)), units.createDatum(dd.binStop(i1,units)), nbins, dd.isLog() );
     }
     
@@ -214,7 +232,7 @@ public class RebinDescriptor {
         return units;
     }
     
-    public String toString() {        
+    public String toString() {
         return "["+units.createDatum(start)+" - "+units.createDatum(end)+" in "+nBin+" bins "+(isLog?"Log":"")+"]";
     }
     
