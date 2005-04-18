@@ -25,7 +25,7 @@ import javax.swing.*;
 public class HttpFileSystem extends FileSystem {
     
     final File localRoot;
-    final URL root;
+    final URL root;    
     
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URL root, File localRoot) {
@@ -45,10 +45,10 @@ public class HttpFileSystem extends FileSystem {
             }
         }
         this.root= root;
-        this.localRoot= localRoot;
+        this.localRoot= localRoot;          
     }
     
-    public static HttpFileSystem createHttpFileSystem( URL root ) throws IOException {        
+    public static HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {        
         File local;         
         if ( System.getProperty("user.name").equals("Web") ) {
             local= new File("/tmp");
