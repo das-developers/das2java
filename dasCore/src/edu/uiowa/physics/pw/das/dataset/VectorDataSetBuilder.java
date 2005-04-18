@@ -83,6 +83,9 @@ public class VectorDataSetBuilder {
         if ( !planeIDs.contains(planeID) ) {
             throw new IllegalArgumentException( "invalid planeID: "+planeID+", have "+planeIDs );
         }
+        if ( Double.isInfinite(x) || Double.isNaN(x) ) {
+            throw new IllegalArgumentException( "x is not finite" );
+        }        
         int insertionIndex = xTags.indexOf(x);
         if (planeID == null) {
             planeID = "";
