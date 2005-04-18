@@ -40,10 +40,10 @@ public class DasApplication {
     
     private static final DasApplication DEFAULT = new DasApplication();
     
-    private static class LoggerId {
-        String name;
-        Logger logger;
-        LoggerId( String name ) {
+    public static class LoggerId {
+        private String name;
+        private Logger logger;
+        private LoggerId( String name ) {
             this.name= name;
             this.logger= Logger.getLogger(name);            
             this.logger.fine( name +" logging at "+this.logger.getLevel() );
@@ -51,7 +51,7 @@ public class DasApplication {
         public String toString() {
             return this.name;
         }
-        public Logger getLogger() {
+        Logger getLogger() {
             return this.logger;
         }
     }
@@ -195,8 +195,8 @@ public class DasApplication {
     
     public DataSetCache getDataSetCache() {
         if ( dataSetCache==null ) {
-            dataSetCache= new SimpleDataSetCache();
-            //dataSetCache= new LimitCountDataSetCache(10);
+            //dataSetCache= new SimpleDataSetCache();
+            dataSetCache= new LimitCountDataSetCache(10);
         }
         return dataSetCache;
     }
