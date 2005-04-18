@@ -1,22 +1,36 @@
 /*
- * WebFileSystem.java
+ * FileSystem.java
  *
  * Created on May 14, 2004, 12:43 PM
  */
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.net.*;
 
 /**
+ * Filesystems provide an abstraction layer so that clients can access 
+ * any heirarchy of files in a implementation-independent way.  For example,
+ * remote filesystems accessible via http are accessible through the same 
+ * interface as a local filesystem.
  *
  * @author  Jeremy
  */
+
+
 public abstract class FileSystem  {   
+        
+    public class FileSystemOfflineException extends IOException {        
+    }
     
-    public static FileSystem create( URL root ) throws IOException {        
+    /**
+     * Creates a FileSystem by parsing the URL and creating the correct FS type.
+     * Presently, only "file://" and "http://" are supported.
+     */
+    public static FileSystem create( URL root ) throws FileSystemOfflineException {        
         if ( "file".equals(root.getProtocol()) ) {
             return new LocalFileSystem( root );
         } else if ( "http".equals( root.getProtocol() ) ) {
