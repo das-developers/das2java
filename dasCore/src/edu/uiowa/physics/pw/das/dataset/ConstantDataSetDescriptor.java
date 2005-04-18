@@ -42,20 +42,26 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
         this.ds = ds;
     }
     
-    public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
-        if (monitor != null) {
-            monitor.started();
-            monitor.finished();
-        }
-        return ds;
-    }
-        
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
         return ds;
-    }
+    }    
     
     public edu.uiowa.physics.pw.das.datum.Units getXUnits() {
         return ds.getXUnits();
+    }
+    
+    public void requestDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor, Object lockObject) {
+        DataSetUpdateEvent dsue= null;
+        try {
+            DataSet ds= getDataSet(start, end, resolution, monitor);
+            dsue= new DataSetUpdateEvent( this, ds );
+            fireDataSetUpdateEvent(dsue);
+        } catch ( DasException e ) {
+            dsue= new DataSetUpdateEvent( this,e);
+            fireDataSetUpdateEvent(dsue);
+        }
+        return;
+        
     }
     
 }

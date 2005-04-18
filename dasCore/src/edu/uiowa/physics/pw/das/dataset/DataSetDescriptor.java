@@ -74,22 +74,48 @@ public abstract class DataSetDescriptor {
      */
     public abstract Units getXUnits();
     
-    public void requestDataSet(final Datum start, final Datum end, final Datum resolution, final DasProgressMonitor monitor) {
-        DataSetUpdateEvent dsue;
-        try {
-            DataSet ds = getDataSet(start, end, resolution, monitor);
-            if (ds == null) {
-                dsue = new DataSetUpdateEvent(DataSetDescriptor.this,
-                        new NoDataInIntervalException(start + " to " + end));
-            } else {
-                dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
-            }
-        } catch (DasException de) {
-            dsue = new DataSetUpdateEvent(DataSetDescriptor.this, de);
+    /**
+     * Requests that a dataSet be loaded, and that the dataSet be returned via a DataSetUpdate event.
+     * The @param lockObject is an object that is dependent on the load, for example, the DasCanvas,
+     * and will be passed in to the request processor.  If the dataSet is available in interactive time,
+     * then the dataSetUpdate may be fired on the same thread as the request is made.
+     */
+    public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
+            final DasProgressMonitor monitor, Object lockObject ) {
+        
+        CacheTag tag= new CacheTag( start, end, resolution );
+        if ( dataSetCache.haveStored( this, tag ) ) {
+            DataSet ds= dataSetCache.retrieve( this, tag );
+            DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
+            fireDataSetUpdateEvent(dsue);
+            return;
         }
-        fireDataSetUpdateEvent(dsue);
+        
+        Runnable request = new Runnable() {
+            public void run() {
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("requestDataSet: "+start+" "+end+" "+resolution);
+                try {
+                    DataSet ds= getDataSet( start, end, resolution, monitor );
+                    if ( ds==null ) throw new NoDataInIntervalException( new DatumRange(start,end).toString() );
+                    DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
+                    fireDataSetUpdateEvent(dsue);
+                } catch ( DasException e ) {
+                    DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+                    fireDataSetUpdateEvent(dsue);
+                }
+            }
+            public String toString() {
+                return "loadDataSet "+ start+" - "+ end;
+            }
+        };
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("submit data request");
+        RequestProcessor.invokeLater( request, lockObject );
+        
     }
     
+    /**
+     * Request the dataset, and the dataset is returned only to the listener.
+     */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
             final DasProgressMonitor monitor, final DataSetUpdateListener listener ) {
         if ( this instanceof ConstantDataSetDescriptor ) {
@@ -132,16 +158,17 @@ public abstract class DataSetDescriptor {
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         if ( monitor==null ) monitor=DasProgressMonitor.NULL;
         monitor.started();
-        
+                        
         CacheTag tag= new CacheTag( start, end, resolution );
-        
-        if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {            
+        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getDataSet "+tag);
+                
+        if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {
             monitor.finished();
-            return dataSetCache.retrieve( this, tag );            
+            return dataSetCache.retrieve( this, tag );
         } else {
             try {
                 DataSet ds = getDataSetImpl( start, end, resolution, monitor );
-                if (ds != null) {                    
+                if (ds != null) {
                     if ( ds.getProperty( "cacheTag" )!=null ) tag= (CacheTag)ds.getProperty( "cacheTag" );
                     if ( defaultCaching ) dataSetCache.store( this, tag, ds );
                 }

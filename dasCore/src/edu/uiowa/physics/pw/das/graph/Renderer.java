@@ -242,57 +242,27 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             return;
         }
         
-        if ( dsd instanceof ConstantDataSetDescriptor ) {
-            try {
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("get data from ConstantDataSetDescriptor");
-                ds= dsd.getDataSet( null, null, null, null );
-                updatePlotImage(xAxis,yAxis, progressPanel);
-                return;
-            } catch ( DasException exception ) {
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).warning("exception in ConstantDataSetDescriptor.getDataSet");
-                if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
-                    lastException= exception;
-                    ds= null;
-                }
-                DasExceptionHandler.handle(exception);
-            }
+        Datum resolution;
+        Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
+        
+        double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
+        if (fullResolution) {
+            resolution = null;
+        } else {
+            resolution =  dataRange1.divide(deviceRange);
+        }
+        
+        if ( deviceRange==0.0 ) {
+            // this condition occurs sometimes at startup, it's not known why
             return;
         }
-        lastException= null;
         
-        Runnable request = new Runnable() {
-            public void run() {
-                
-                Datum resolution;
-                Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-                
-                double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-                if (fullResolution) {
-                    resolution = null;
-                } else {
-                    resolution =  dataRange1.divide(deviceRange);
-                }
-                
-                if ( deviceRange==0.0 ) {
-                    // this conidition occurs sometimes at startup, it's not known why
-                    return;
-                }
-                
-                if (progressPanel == null) {
-                    progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
-                } else {
-                    progressPanel.setLabel("Loading data set" );
-                }
-                progressPanel.cancel();
-                
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+xAxis.getDatumRange()+" @ "+resolution);
-                dsd.requestDataSet(xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel);
-                
-            }
-            public String toString() {
-                return "loadDataSet "+ xAxis.getDatumRange();
-            }
-        };
+        if (progressPanel == null) {
+            progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
+        } else {
+            progressPanel.setLabel("Loading data set" );
+        }
+        progressPanel.cancel();
         
         //Give the user something pretty (and consistent with the axes) to look at.
         //This will scale the current data, or move it off screen
@@ -303,10 +273,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         } catch (DasException de) {
             //We don't care if this throws an exception.
         }
+
+        lastException=null;
         
-        // the request should come back with a DataSetUpdated event
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("submit data request");
-        RequestProcessor.invokeLater(request, getParent().getCanvas());
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+xAxis.getDatumRange()+" @ "+resolution);
+        dsd.requestDataSet( xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel, getParent().getCanvas() );                                
+        // the request will come back with a DataSetUpdated event        
+        
     }
     
     /** updatePlotImage is called once the expensive operation of loading
