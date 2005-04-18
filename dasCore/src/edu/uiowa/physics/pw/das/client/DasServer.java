@@ -46,7 +46,7 @@ import org.w3c.dom.Element;
  *
  * @author  jbf
  * A DasServer is the object that holds the methods of a remote das server.
- * These include, for example, getLogo() which returns a graphical pnuemonic
+ * These include, for example, getLogo() which returns a graphical mnemonic
  * for the server, authenticate() and setPassword().
  */
 
