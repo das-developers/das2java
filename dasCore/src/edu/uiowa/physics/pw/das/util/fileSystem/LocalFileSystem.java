@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import java.util.regex.*;
 
 /**
@@ -16,19 +17,24 @@ import java.util.regex.*;
  */
 public class LocalFileSystem extends FileSystem {
     
-    File localRoot;
+    File localRoot;    
         
-    protected LocalFileSystem(URL root) {
+    protected LocalFileSystem(URL root) throws FileSystemOfflineException {
         if ( !("file".equals(root.getProtocol()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
         localRoot= new File( root.getFile() );
         if ( !localRoot.exists() ) {
-            throw new IllegalArgumentException( "root does not exist: "+root );
+            File[] roots= File.listRoots();
+            if ( Arrays.asList(roots).contains(localRoot) ) {
+                throw new FileSystemOfflineException();
+            } else {
+                throw new IllegalArgumentException( "root does not exist: "+root );
+            }
         }
     }
     
-    public FileObject getFile(String filename) {
+    public FileObject getFile(String filename) {        
         return new LocalFileObject( this, localRoot, filename );
     }
     
