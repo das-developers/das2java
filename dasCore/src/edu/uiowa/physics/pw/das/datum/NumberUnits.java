@@ -134,7 +134,9 @@ public class NumberUnits extends Units {
         if ( bUnits==Units.dimensionless ) {
             return createDatum( divide( a, b ) );
         } else {
-            throw new IllegalArgumentException("Only multiplication by dimensionless numbers is supported");
+            UnitsConverter uc= bUnits.getConverter(this);
+            if ( uc==null ) throw new IllegalArgumentException("Only division by dimensionless or convertable Datums is supported");
+            return Units.dimensionless.createDatum( divide( a, uc.convert(b) ) );
         }
     }   
     
