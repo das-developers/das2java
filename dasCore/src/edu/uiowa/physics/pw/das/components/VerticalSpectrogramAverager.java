@@ -150,6 +150,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         this.setTitle( new DatumRange( xValue1, xValue2 ).toString() );
         
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
+        ddX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         AverageTableRebinner rebinner = new AverageTableRebinner();
         try {
             TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
