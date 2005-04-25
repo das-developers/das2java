@@ -53,10 +53,6 @@ public class Util {
         return form;
     }
     
-    public static GeneralPath getPath( DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, boolean histogram ) {
-        return getPath( xAxis, yAxis, new XTagsVectorDataSet( xds ), xds, histogram );
-    }
-    
     public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, VectorDataSet yds, boolean histogram) {
         
         GeneralPath newPath = new GeneralPath();
