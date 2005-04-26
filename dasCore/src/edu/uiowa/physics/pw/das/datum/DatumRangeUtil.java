@@ -6,9 +6,11 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import java.text.*;
 import java.util.*;
+import java.util.logging.*;
 import java.util.regex.*;
 
 /**
@@ -290,6 +292,8 @@ public class DatumRangeUtil {
         
         public DatumRange parse( String stringIn ) throws ParseException {
             
+            Logger logger= DasApplication.getDefaultApplication().getLogger( DasApplication.SYSTEM_LOG );
+            
             this.string= stringIn+" ";
             this.ipos= 0;
             
@@ -427,7 +431,7 @@ public class DatumRangeUtil {
                                 }
                                 if ( i == NANO ) {
                                     int tokenDigits= token.length();
-                                    ts[i]= parseInt(token) * 10^(9-tokenDigits);
+                                    ts[i]= parseInt(token) * (int)Math.pow( 10, (9-tokenDigits) );
                                     switch (tokenDigits) {
                                         case 3: format= format+"%_ms"; break;
                                         case 6: format= format+"%_us"; break;
@@ -457,15 +461,19 @@ public class DatumRangeUtil {
                 }
             }
             
-            /* go through the start and end time, resolving all the symbols 
+            /* go through the start and end time, resolving all the symbols
              * which are marked as unresolvable during the first pass.
              */
             format= format+" ";
             
-            if ( DEBUG ) {
-                System.err.print("ts1: "); for ( int i=0; i<7; i++ ) System.err.print(""+ts1[i]+" "); System.err.println("");
-                System.err.print("ts2: "); for ( int i=0; i<7; i++ ) System.err.print(""+ts2[i]+" "); System.err.println("");                
-                System.err.println(format);            
+            {
+                StringBuffer stringBuffer= new StringBuffer("ts1: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts1[i]+" ");
+                logger.fine( stringBuffer.toString() );
+                stringBuffer= new StringBuffer("ts2: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts2[i]+" ");
+                logger.fine( stringBuffer.toString() );
+                logger.fine( format );
             }
             
             if ( beforeTo ) {
@@ -534,15 +542,19 @@ public class DatumRangeUtil {
                 
             } // unresolved entities
             
-            if ( DEBUG ) {
-                for ( int i=0; i<7; i++ ) System.err.print(""+ts1[i]+" "); System.err.println("");
-                for ( int i=0; i<7; i++ ) System.err.print(""+ts2[i]+" "); System.err.println("");
-                System.out.println(format);
+            {
+                StringBuffer stringBuffer= new StringBuffer("ts1: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts1[i]+" ");
+                logger.fine( stringBuffer.toString() );
+                stringBuffer= new StringBuffer("ts2: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts2[i]+" ");
+                logger.fine( stringBuffer.toString() );
+                logger.fine( format );
             }
             
-            /* contextual fill.  Copy over digits that were specified in one time but 
+            /* contextual fill.  Copy over digits that were specified in one time but
              * not the other.
-             */                
+             */
             for ( int i=YEAR; i<=DAY; i++ ) {
                 if ( ts2[i] == -1 && ts1[i] != -1 ) ts2[i]= ts1[i];
                 if ( ts1[i] == -1 && ts2[i] != -1 ) ts1[i]= ts2[i];
@@ -567,10 +579,10 @@ public class DatumRangeUtil {
             }
             
             
-           if ( ts1lsd != ts2lsd && ( ts1lsd<HOUR || ts2lsd<HOUR ) ) {
+            if ( ts1lsd != ts2lsd && ( ts1lsd<HOUR || ts2lsd<HOUR ) ) {
                 throw new ParseException( "resolution mismatch: "+digitIdentifiers[ts1lsd]+" specified for start, but "
                         + digitIdentifiers[ts2lsd]+" specified for end, must be same" + " in \""+stringIn+"\"", ipos );
-           }
+            }
             
             if ( ts2lsd < HOUR ) {
                 ts2[ts2lsd]++;
@@ -683,7 +695,7 @@ public class DatumRangeUtil {
             if (  ts2.year-ts1.year == 1 ) {
                 return "" + ts1.year;
             } else {
-                return "" + ts1.year + toDelim + ts2.year;
+                return "" + ts1.year + toDelim + (ts2.year-1);
             }
         } else if ( isMonthBoundry1 && isMonthBoundry2 ) { // no need to indicate day of month
             if ( ts2.month == 1 ) {
