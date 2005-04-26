@@ -146,7 +146,7 @@ public class DatumRangeUtil {
     //    ;;  "2004/feb-2004/mar"
     //    ;;  "2004/004-008
     //    ;;
-    //    ;; TODO: keep track of format(e.g. %Y-%j) to reserialize
+    //    ;; keeps track of format(e.g. %Y-%j) for debugging, and perhaps to reserialize
     //    ;;
     //    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     // if an element is trivially identifiable, as in "mar", then it is required
@@ -301,6 +301,7 @@ public class DatumRangeUtil {
             ArrayList afterToUnresolved= new ArrayList();
             
             String[] formatCodes= new String[] { "%y", "%m", "%d", "%H", "%M", "%S", "" };
+            formatCodes[6]= "%N"; // note %_ms, %_us might be used instead
             String[] digitIdentifiers= new String[] {"YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "NANO" };
             
             final int YEAR=0;
@@ -495,7 +496,8 @@ public class DatumRangeUtil {
                 if ( beforeToUnresolved.size() < afterToUnresolved.size() ) {
                     if ( beforeToUnresolved.size()>0 ) {
                         for ( int i=0; i<afterToUnresolved.size(); i++ ) {
-                            while( ts2[idx]!=-1 ) idx++;
+                            while( idx<7 && ts2[idx]!=-1 ) idx++;
+                            if ( idx==7 ) throw new ParseException( "can't resolve token in \""+stringIn+"\": "+afterToUnresolved.get(i)+ " ("+format+")", 0 );
                             ts2[idx]= parseInt((String)afterToUnresolved.get(i));
                             String[] s= format.split("UNRSV2"+(i+1));
                             format= s[0]+formatCodes[idx]+s[1];
@@ -504,7 +506,7 @@ public class DatumRangeUtil {
                         formatUn= "UNRSV1";
                         ts= ts1;
                     } else {
-                        while( ts1[idx]!=-1) idx++;
+                        while( idx<7 && ts1[idx]!=-1 ) idx++;
                         idx--;
                         unload= afterToUnresolved;
                         formatUn= "UNRSV2";
@@ -513,7 +515,8 @@ public class DatumRangeUtil {
                 } else {
                     if ( afterToUnresolved.size()>0 ) {
                         for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
-                            while( ts1[idx]!=-1 ) idx++;
+                            while( idx<7 && ts1[idx]!=-1 ) idx++;
+                            if ( idx==7 ) throw new ParseException( "can't resolve token in \""+stringIn+"\": "+beforeToUnresolved.get(i)+ " ("+format+")", 0 );
                             ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
                             String[] s= format.split("UNRSV1"+(i+1));
                             format= s[0]+formatCodes[idx]+s[1];
@@ -522,7 +525,7 @@ public class DatumRangeUtil {
                         formatUn= "UNRSV2";
                         ts= ts2;
                     } else {
-                        while( ts2[idx]!=-1) idx++;
+                        while( idx<7 && ts2[idx]!=-1) idx++;
                         idx--;
                         unload= beforeToUnresolved;
                         formatUn= "UNRSV1";
@@ -533,7 +536,7 @@ public class DatumRangeUtil {
                 for ( int i=unload.size()-1; i>=0; i-- ) {
                     while ( ts[lsd]!=-1 && lsd>0 ) lsd--;
                     if ( ts[lsd]!=-1 ) {
-                        throw new ParseException( "can't resolve these tokens in \""+stringIn+"\": "+unload, 0 );
+                        throw new ParseException( "can't resolve these tokens in \""+stringIn+"\": "+unload+ " ("+format+")", 0 );
                     }
                     ts[lsd]= parseInt((String)unload.get(i));
                     String[] s= format.split(formatUn+(i+1));
@@ -568,12 +571,12 @@ public class DatumRangeUtil {
                 if ( ts2[i] != -1 && ts2lsd == -1 ) ts2lsd=i;
                 if ( ts2lsd == -1 ) ts2[i]= implicit_timearr[i];
                 if ( ts2[i] == -1 && ts2lsd != -1 ) {
-                    throw new ParseException("not specified in stop time: "+digitIdentifiers[i]+" in "+stringIn,ipos);
+                    throw new ParseException("not specified in stop time: "+digitIdentifiers[i]+" in "+stringIn+" ("+format+")",ipos);
                 }
                 if ( ts1[i] != -1 && ts1lsd == -1 ) ts1lsd=i;
                 if ( ts1lsd == -1 ) ts1[i]= implicit_timearr[i];
                 if ( ts1[i] == -1 && ts1lsd != -1 ) {
-                    throw new ParseException("not specified in start time:"+digitIdentifiers[i]+" in "+stringIn,ipos);
+                    throw new ParseException("not specified in start time:"+digitIdentifiers[i]+" in "+stringIn+" ("+format+")",ipos);
                 }
                 i= i-1;
             }
@@ -581,7 +584,7 @@ public class DatumRangeUtil {
             
             if ( ts1lsd != ts2lsd && ( ts1lsd<HOUR || ts2lsd<HOUR ) ) {
                 throw new ParseException( "resolution mismatch: "+digitIdentifiers[ts1lsd]+" specified for start, but "
-                        + digitIdentifiers[ts2lsd]+" specified for end, must be same" + " in \""+stringIn+"\"", ipos );
+                        + digitIdentifiers[ts2lsd]+" specified for end, must be same" + " in \""+stringIn+"\""+ " ("+format+")", ipos );
             }
             
             if ( ts2lsd < HOUR ) {
@@ -595,7 +598,7 @@ public class DatumRangeUtil {
                 try {
                     return new MonthDatumRange( ts1, ts2 );
                 } catch ( IllegalArgumentException e ) {
-                    ParseException eNew= new ParseException( "fails to parse due to MonthDatumRange: "+stringIn, 0 );
+                    ParseException eNew= new ParseException( "fails to parse due to MonthDatumRange: "+stringIn+ " ("+format+")", 0 );
                     throw eNew;
                 }
             } else {
