@@ -176,7 +176,7 @@ public class RebinDescriptor {
         return result;
     }
     
-    private void setOutOfBoundsAction(int action) {
+    public void setOutOfBoundsAction(int action) {
         outOfBoundsAction= action;
     }
     
