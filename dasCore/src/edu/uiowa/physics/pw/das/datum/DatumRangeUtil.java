@@ -120,100 +120,6 @@ public class DatumRangeUtil {
         System.out.println(" " );
     }
     
-    private static Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |T|-)");
-    
-    private static boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
-        Matcher matcher= regex.matcher( string.toLowerCase() );
-        if ( matcher.find() && matcher.start()==0 ) {
-            //printGroups(matcher);
-            int posDate= matcher.start();
-            int length= matcher.end()-matcher.start();
-            dateDescriptor.date= string.substring( posDate, posDate+length );
-            String month;
-            String day;
-            String year;
-            dateDescriptor.day= matcher.group(groups[2]);
-            dateDescriptor.month= matcher.group(groups[1]);
-            dateDescriptor.year= matcher.group(groups[0]);
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    public static boolean isDate( String string, DateDescriptor dateDescriptor ) throws ParseException {
-        //  this is introduced because mm/dd/yy is so ambiguous, the parser
-        //  has trouble with these dates.  Check for these as a group.
-        
-        if ( string.length()<6 ) return false;
-        
-        int[] groups;
-        String yearRegex= "(\\d{2}(\\d{2})?)( |t|-)"; // t lower case because tryPattern folds case
-        
-        if ( tryPattern( yyyymmddPattern, string, new int[] { 2,3,4 }, dateDescriptor ) ) {
-            dateDescriptor.dateformat= DATEFORMAT_USA;
-            return true;
-        }
-        
-        String delim;
-        
-        String delims="(/|\\.|-| )";
-        Matcher matcher= Pattern.compile(delims).matcher(string);
-        
-        if ( matcher.find() ) {
-            int posDelim= matcher.start();
-            delim= string.substring(matcher.start(),matcher.end());
-        } else {
-            return false;
-        }
-        
-        String monthNameRegex= "(jan[a-z]*|feb[a-z]*|mar[a-z]*|apr[a-z]*|may|june?|july?|aug[a-z]*|sep[a-z]*|oct[a-z]*|nov[a-z]*|dec[a-z]*)";
-        String monthRegex= "((\\d?\\d)|"+monthNameRegex+")";
-        String dayRegex= "(\\d?\\d)";
-        
-        String euroDateRegex;
-        
-        if ( delim.equals(".") ) {
-            euroDateRegex= "(" + dayRegex + "\\." + monthRegex + "\\." + yearRegex + ")";
-            groups= new int [] { 6, 3, 2 };
-        } else {
-            euroDateRegex= "(" + dayRegex + delim + monthNameRegex + delim + yearRegex + ")";
-            groups= new int [] { 4, 3, 2 };
-        }
-        if ( tryPattern( Pattern.compile( euroDateRegex ), string, groups, dateDescriptor ) ) {
-            dateDescriptor.dateformat= DATEFORMAT_EUROPE;
-            return true;
-        }
-        
-        String usaDateRegex= monthRegex + delim + dayRegex + delim + yearRegex;
-        if ( tryPattern( Pattern.compile( usaDateRegex ), string, new int[] { 5,1,4 }, dateDescriptor ) ) {
-            dateDescriptor.dateformat= DATEFORMAT_USA;
-            return true;
-        }
-        
-        String lastDateRegex= "(\\d{4})" + delim + monthRegex + delim + dayRegex + "( |t|-)";
-        if ( tryPattern( Pattern.compile( lastDateRegex ), string, new int[] { 1,2,5 }, dateDescriptor ) ) {
-            dateDescriptor.dateformat= DATEFORMAT_USA;
-            return true;
-        }
-        
-        String doyRegex= "(\\d{3})";
-        String dateRegex= doyRegex+"(-|/)"+yearRegex + "( |t|-)";
-        
-        if ( tryPattern( Pattern.compile( dateRegex ), string, new int[] { 3,1,1 }, dateDescriptor ) ) {
-            int doy= parseInt(dateDescriptor.day);
-            if ( doy>366 ) return false;
-            int year= parseInt(dateDescriptor.year);
-            caldat( julday( 12, 31, year-1 ) + doy, dateDescriptor );
-            dateDescriptor.dateformat= DATEFORMAT_YYYY_DDD;
-            
-            return true;
-        }
-        
-        return false;
-        
-    }
-    
     private static int parseInt( String s ) throws ParseException {
         try {
             return Integer.parseInt(s);
@@ -241,28 +147,16 @@ public class DatumRangeUtil {
     //    ;; TODO: keep track of format(e.g. %Y-%j) to reserialize
     //    ;;
     //    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     
-     
     // if an element is trivially identifiable, as in "mar", then it is required
     // that the corresponding range element be of the same format or not specified.
      */
-    public static DatumRange parseTimeRange( String string_in ) throws ParseException {
-        
-        String string= string_in+" ";
-        
-        String delimRegEx= " |-|/|\\.|:|to|through|T|Z|\u2013";
-        int[] ts1= new int[] { -1, -1, -1, -1, -1, -1, -1 };
-        int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
-        int[] ts= null;
-        
-        ArrayList beforeToUnresolved= new ArrayList();
-        ArrayList afterToUnresolved= new ArrayList();
-        
-        Matcher matcher;
+    
+    static class TimeRangeParser {
         String token;
+        String delim="";
         
-        String[] formatCodes= new String[] { "%y", "%m", "%d", "%H", "%M", "%S", "" };
-        String[] digitIdentifiers= new String[] {"YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "NANO" };
+        String string;
+        int ipos;
         
         final int YEAR=0;
         final int MONTH=1;
@@ -278,278 +172,433 @@ public class DatumRangeUtil {
         
         int state= STATE_OPEN;
         
-        int ipos= 0;
-        String delim="";
+        String delimRegEx= " |-|/|\\.|:|to|through|T|Z|\u2013";
+        Pattern delimPattern= Pattern.compile( delimRegEx );
+        int[] ts1= new int[] { -1, -1, -1, -1, -1, -1, -1 };
+        int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
+        int[] ts= null;
         
-        String format="";
-        boolean beforeTo= true;   // true if before the "to" delineator
+        private Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |T|-)");
         
-        DateDescriptor dateDescriptor= new DateDescriptor();
-        
-        int dateFormat= DATEFORMAT_USA;
-        
-        while ( ipos < string.length() ) {
-            String lastdelim= delim;
-            format= format+lastdelim;
-            
-            if ( lastdelim.equals("to") ) beforeTo=false;
-            if ( lastdelim.equals("through") ) beforeTo=false;
-            if ( lastdelim.equals("-") ) beforeTo=false;
-            if ( lastdelim.equals("\u2013") ) beforeTo=false;
-            if ( isDate( string.substring( ipos ), dateDescriptor ) ) {
-                format= format+"%x";
-                if ( ts1[DAY] != -1 || ts1[MONTH] != -1 || ts1[YEAR] != -1 ) { beforeTo= false; }
-                
-                int month= monthNumber(dateDescriptor.month);
-                int year= y2k(dateDescriptor.year);
-                int day= parseInt(dateDescriptor.day);
-                if ( beforeTo ) {
-                    ts1[DAY]= day;
-                    ts1[MONTH]= month;
-                    ts1[YEAR]= year;
-                } else {
-                    ts2[DAY]= day;
-                    ts2[MONTH]= month;
-                    ts2[YEAR]= year;
-                }
-                delim= dateDescriptor.date.substring( dateDescriptor.date.length()-1, dateDescriptor.date.length() );
-                ipos= ipos+dateDescriptor.date.length();
-                
+        private boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
+            Matcher matcher= regex.matcher( string.toLowerCase() );
+            if ( matcher.find() && matcher.start()==0 ) {
+                //printGroups(matcher);
+                int posDate= matcher.start();
+                int length= matcher.end()-matcher.start();
+                dateDescriptor.date= string.substring( posDate, posDate+length );
+                String month;
+                String day;
+                String year;
+                dateDescriptor.day= matcher.group(groups[2]);
+                dateDescriptor.month= matcher.group(groups[1]);
+                dateDescriptor.year= matcher.group(groups[0]);
+                return true;
             } else {
+                return false;
+            }
+        }
+        
+        public boolean isDate( String string, DateDescriptor dateDescriptor ) throws ParseException {
+            //  this is introduced because mm/dd/yy is so ambiguous, the parser
+            //  has trouble with these dates.  Check for these as a group.
+            
+            if ( string.length()<6 ) return false;
+            
+            int[] groups;
+            String yearRegex= "(\\d{2}(\\d{2})?)( |t|-)"; // t lower case because tryPattern folds case
+            
+            if ( tryPattern( yyyymmddPattern, string, new int[] { 2,3,4 }, dateDescriptor ) ) {
+                dateDescriptor.dateformat= DATEFORMAT_USA;
+                return true;
+            }
+            
+            String delim;
+            
+            String delims="(/|\\.|-| )";
+            Matcher matcher= Pattern.compile(delims).matcher(string);
+            
+            if ( matcher.find() ) {
+                int posDelim= matcher.start();
+                delim= string.substring(matcher.start(),matcher.end());
+            } else {
+                return false;
+            }
+            
+            String monthNameRegex= "(jan[a-z]*|feb[a-z]*|mar[a-z]*|apr[a-z]*|may|june?|july?|aug[a-z]*|sep[a-z]*|oct[a-z]*|nov[a-z]*|dec[a-z]*)";
+            String monthRegex= "((\\d?\\d)|"+monthNameRegex+")";
+            String dayRegex= "(\\d?\\d)";
+            
+            String euroDateRegex;
+            
+            if ( delim.equals(".") ) {
+                euroDateRegex= "(" + dayRegex + "\\." + monthRegex + "\\." + yearRegex + ")";
+                groups= new int [] { 6, 3, 2 };
+            } else {
+                euroDateRegex= "(" + dayRegex + delim + monthNameRegex + delim + yearRegex + ")";
+                groups= new int [] { 4, 3, 2 };
+            }
+            if ( tryPattern( Pattern.compile( euroDateRegex ), string, groups, dateDescriptor ) ) {
+                dateDescriptor.dateformat= DATEFORMAT_EUROPE;
+                return true;
+            }
+            
+            String usaDateRegex= monthRegex + delim + dayRegex + delim + yearRegex;
+            if ( tryPattern( Pattern.compile( usaDateRegex ), string, new int[] { 5,1,4 }, dateDescriptor ) ) {
+                dateDescriptor.dateformat= DATEFORMAT_USA;
+                return true;
+            }
+            
+            String lastDateRegex= "(\\d{4})" + delim + monthRegex + delim + dayRegex + "( |t|-)";
+            if ( tryPattern( Pattern.compile( lastDateRegex ), string, new int[] { 1,2,5 }, dateDescriptor ) ) {
+                dateDescriptor.dateformat= DATEFORMAT_USA;
+                return true;
+            }
+            
+            String doyRegex= "(\\d{3})";
+            String dateRegex= doyRegex+"(-|/)"+yearRegex + "( |t|-)";
+            
+            if ( tryPattern( Pattern.compile( dateRegex ), string, new int[] { 3,1,1 }, dateDescriptor ) ) {
+                int doy= parseInt(dateDescriptor.day);
+                if ( doy>366 ) return false;
+                int year= parseInt(dateDescriptor.year);
+                caldat( julday( 12, 31, year-1 ) + doy, dateDescriptor );
+                dateDescriptor.dateformat= DATEFORMAT_YYYY_DDD;
                 
-                matcher= Pattern.compile( delimRegEx ).matcher( string.substring(ipos) );
-                if ( matcher.find() ) {
-                    int r= matcher.start();
-                    int length= matcher.end()-matcher.start();
-                    token= string.substring( ipos, ipos+r );
-                    delim= string.substring( ipos+r, ipos+r+length );
-                    ipos= ipos + r + length;
-                } else {
-                    token= string.substring(ipos);
-                    delim= "";
-                    ipos= string.length();
-                }
+                return true;
+            }
+            
+            return false;
+            
+        }
+        
+        
+        private void nextToken( ) {
+            Matcher matcher= delimPattern.matcher( string.substring(ipos) );
+            if ( matcher.find() ) {
+                int r= matcher.start();
+                int length= matcher.end()-matcher.start();
+                token= string.substring( ipos, ipos+r );
+                delim= string.substring( ipos+r, ipos+r+length );
+                ipos= ipos + r + length;
+            } else {
+                token= string.substring(ipos);
+                delim= "";
+                ipos= string.length();
+            }
+        }
+        
+        public DatumRange parse( String stringIn ) throws ParseException {
+            
+            this.string= stringIn+" ";
+            this.ipos= 0;
+            
+            ArrayList beforeToUnresolved= new ArrayList();
+            ArrayList afterToUnresolved= new ArrayList();
+            
+            String[] formatCodes= new String[] { "%y", "%m", "%d", "%H", "%M", "%S", "" };
+            String[] digitIdentifiers= new String[] {"YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "NANO" };
+            
+            final int YEAR=0;
+            final int MONTH=1;
+            final int DAY=2;
+            final int HOUR=3;
+            final int MINUTE=4;
+            final int SECOND=5;
+            final int NANO=6;
+            
+            final int STATE_OPEN=89;
+            final int STATE_TS1TIME=90;
+            final int STATE_TS2TIME=90;
+            
+            int state= STATE_OPEN;
+            
+            String format="";
+            boolean beforeTo= true;   // true if before the "to" delineator
+            
+            DateDescriptor dateDescriptor= new DateDescriptor();
+            
+            int dateFormat= DATEFORMAT_USA;
+            
+            while ( ipos < string.length() ) {
+                String lastdelim= delim;
+                format= format+lastdelim;
                 
-                if ( token.equals("") ) continue;
-                
-                if ( isYear(token) ) {
-                    format= format+"%Y";
-                    if ( ts1[YEAR] == -1 && beforeTo ) {
-                        ts1[YEAR]= parseInt(token);
-                        ts2[YEAR]= ts1[YEAR];
-                    } else {
-                        beforeTo=false;
-                        ts2[YEAR]= parseInt(token);
-                        if ( ts1[YEAR]==-1 ) ts1[YEAR]=ts2[YEAR];
-                    }
-                } else if ( isDayOfYear(token) ) {
-                    dateFormat=DATEFORMAT_YYYY_DDD;
-                    format= format+"%j";
-                    if ( ts1[YEAR] == -1 ) {
-                        throw new ParseException( "day of year before year", ipos );
-                    }
-                    int doy= parseInt(token);
-                    caldat( julday( 12, 31, ts1[YEAR]-1 ) + doy, dateDescriptor );
-                    dateFormat= DATEFORMAT_YYYY_DDD;
+                if ( lastdelim.equals("to") ) beforeTo=false;
+                if ( lastdelim.equals("through") ) beforeTo=false;
+                if ( lastdelim.equals("-") ) beforeTo=false;
+                if ( lastdelim.equals("\u2013") ) beforeTo=false;
+                if ( isDate( string.substring( ipos ), dateDescriptor ) ) {
+                    format= format+"%x";
+                    if ( ts1[DAY] != -1 || ts1[MONTH] != -1 || ts1[YEAR] != -1 ) { beforeTo= false; }
+                    
+                    int month= monthNumber(dateDescriptor.month);
+                    int year= y2k(dateDescriptor.year);
                     int day= parseInt(dateDescriptor.day);
-                    int month= parseInt(dateDescriptor.month);
-                    if ( ts1[DAY] == -1 && beforeTo) {
+                    if ( beforeTo ) {
                         ts1[DAY]= day;
                         ts1[MONTH]= month;
-                        ts2[DAY]= day;
-                        ts2[MONTH]= month;
+                        ts1[YEAR]= year;
                     } else {
-                        beforeTo=false;
                         ts2[DAY]= day;
                         ts2[MONTH]= month;
-                        if ( ts1[DAY] == -1 ) {
+                        ts2[YEAR]= year;
+                    }
+                    delim= dateDescriptor.date.substring( dateDescriptor.date.length()-1, dateDescriptor.date.length() );
+                    ipos= ipos+dateDescriptor.date.length();
+                    
+                } else {
+                    
+                    nextToken();
+                    
+                    if ( token.equals("") ) continue;
+                    
+                    if ( isYear(token) ) {
+                        format= format+"%Y";
+                        if ( ts1[YEAR] == -1 && beforeTo ) {
+                            ts1[YEAR]= parseInt(token);
+                            ts2[YEAR]= ts1[YEAR];
+                        } else {
+                            beforeTo=false;
+                            ts2[YEAR]= parseInt(token);
+                            if ( ts1[YEAR]==-1 ) ts1[YEAR]=ts2[YEAR];
+                        }
+                    } else if ( isDayOfYear(token) ) {
+                        dateFormat=DATEFORMAT_YYYY_DDD;
+                        format= format+"%j";
+                        if ( ts1[YEAR] == -1 ) {
+                            throw new ParseException( "day of year before year: "+stringIn, ipos );
+                        }
+                        int doy= parseInt(token);
+                        caldat( julday( 12, 31, ts1[YEAR]-1 ) + doy, dateDescriptor );
+                        dateFormat= DATEFORMAT_YYYY_DDD;
+                        int day= parseInt(dateDescriptor.day);
+                        int month= parseInt(dateDescriptor.month);
+                        if ( ts1[DAY] == -1 && beforeTo) {
                             ts1[DAY]= day;
                             ts1[MONTH]= month;
-                        }
-                    }
-                } else if ( monthNameNumber( token )!=-1 ) {
-                    format= format+"%b";
-                    int month= monthNameNumber( token );
-                    if ( ts1[MONTH] == -1 ) {
-                        ts1[MONTH]= month;
-                        ts2[MONTH]= month;
-                    } else {
-                        beforeTo=false;
-                        ts2[MONTH]= month;
-                        if ( ts1[MONTH]==-1 ) ts1[MONTH]= month;
-                    }
-                } else {
-                    boolean isWithinTime= delim.equals(":") || lastdelim.equals(":");
-                    if ( isWithinTime ) {
-                        if ( delim.equals(":") && !lastdelim.equals(":") && state == STATE_OPEN ) {
-                            format= format+"%H";
-                            if ( ts1[HOUR] == -1 ) {
-                                state= STATE_TS1TIME;
-                                ts= ts1;
-                            } else {
-                                beforeTo= false;
-                                state= STATE_TS2TIME;
-                                ts= ts2;
-                            }
-                            ts[HOUR]= parseInt(token);
+                            ts2[DAY]= day;
+                            ts2[MONTH]= month;
                         } else {
-                            int i= HOUR;
-                            while ( i<=NANO ) {
-                                if ( ts[i] == -1 ) break;
-                                i=i+1;
+                            beforeTo=false;
+                            ts2[DAY]= day;
+                            ts2[MONTH]= month;
+                            if ( ts1[DAY] == -1 ) {
+                                ts1[DAY]= day;
+                                ts1[MONTH]= month;
+                            }
+                        }
+                    } else if ( monthNameNumber( token )!=-1 ) {
+                        format= format+"%b";
+                        int month= monthNameNumber( token );
+                        if ( ts1[MONTH] == -1 ) {
+                            ts1[MONTH]= month;
+                            ts2[MONTH]= month;
+                        } else {
+                            beforeTo=false;
+                            ts2[MONTH]= month;
+                            if ( ts1[MONTH]==-1 ) ts1[MONTH]= month;
+                        }
+                    } else {
+                        boolean isWithinTime= delim.equals(":") || lastdelim.equals(":");
+                        if ( isWithinTime ) {
+                            if ( delim.equals(":") && !lastdelim.equals(":") && state == STATE_OPEN ) {
+                                format= format+"%H";
+                                if ( ts1[HOUR] == -1 ) {
+                                    state= STATE_TS1TIME;
+                                    ts= ts1;
+                                } else {
+                                    beforeTo= false;
+                                    state= STATE_TS2TIME;
+                                    ts= ts2;
+                                }
+                                ts[HOUR]= parseInt(token);
+                            } else {
+                                int i= HOUR;
+                                while ( i<=NANO ) {
+                                    if ( ts[i] == -1 ) break;
+                                    i=i+1;
+                                }
+                                if ( i == SECOND && delim.equals(".") ) {
+                                    ts[i]= parseInt(token);
+                                    format= format+formatCodes[i];
+                                    nextToken();
+                                    i=NANO;
+                                }
+                                if ( i == NANO ) {
+                                    int tokenDigits= token.length();
+                                    ts[i]= parseInt(token) * 10^(9-tokenDigits);
+                                    switch (tokenDigits) {
+                                        case 3: format= format+"%_ms"; break;
+                                        case 6: format= format+"%_us"; break;
+                                        default: format=format+"%N"; break;
+                                        
+                                    }
+                                } else {
+                                    ts[i]= parseInt(token);
+                                    format= format+formatCodes[i];
+                                }
                             }
                             
-                            if ( i == NANO ) {
-                                int tokenDigits= token.length();
-                                ts[i]= parseInt(token) * 10^(9-tokenDigits);
-                                switch (tokenDigits) {
-                                    case 3: format= format+"%_ms"; break;
-                                    case 6: format= format+"%_us"; break;
-                                    default: format=format+"%N"; break;
-                                    
-                                }
-                            } else {
-                                ts[i]= parseInt(token);
-                                format= format+formatCodes[i];
+                            if ( !delim.equals(":") && !delim.equals(".") ) {
+                                state= STATE_OPEN;
                             }
+                        } else { // parsing date
+                            if ( beforeTo ) {
+                                beforeToUnresolved.add( token );
+                                format= format+"UNRSV1"+beforeToUnresolved.size();
+                            } else {
+                                afterToUnresolved.add( token );
+                                format= format+"UNRSV2"+afterToUnresolved.size();
+                            }
+                            
                         }
-                        
-                        if ( !delim.equals(":") && !delim.equals(".") ) {
-                            state= STATE_OPEN;
-                        }
-                    } else { // parsing date
-                        if ( beforeTo ) {
-                            beforeToUnresolved.add( token );
-                            format= format+"UNRSV1"+beforeToUnresolved.size();
-                        } else {
-                            afterToUnresolved.add( token );
-                            format= format+"UNRSV2"+afterToUnresolved.size();
-                        }
-                        
                     }
                 }
             }
-        }
-        
-        format= format+" ";
-        
-        if ( beforeTo ) {
-            int idx=0;
-            for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
-                while( ts1[idx]!=-1 ) idx++;
-                ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
-                String[] s= format.split("UNRSV1"+(i+1));
-                format= s[0]+formatCodes[idx]+s[1];
-            }
-            beforeToUnresolved.removeAll(beforeToUnresolved);
-        }
-        
-        if ( beforeToUnresolved.size()+afterToUnresolved.size() > 0 ) {
-            ArrayList unload;
-            String formatUn;
-            int idx=0;
             
-            if ( beforeToUnresolved.size() < afterToUnresolved.size() ) {
-                if ( beforeToUnresolved.size()>0 ) {
-                    for ( int i=0; i<afterToUnresolved.size(); i++ ) {
-                        while( ts2[idx]!=-1 ) idx++;
-                        ts2[idx]= parseInt((String)afterToUnresolved.get(i));
-                        String[] s= format.split("UNRSV2"+(i+1));
-                        format= s[0]+formatCodes[idx]+s[1];
+            /* go through the start and end time, resolving all the symbols 
+             * which are marked as unresolvable during the first pass.
+             */
+            format= format+" ";
+            
+            if ( DEBUG ) {
+                System.err.print("ts1: "); for ( int i=0; i<7; i++ ) System.err.print(""+ts1[i]+" "); System.err.println("");
+                System.err.print("ts2: "); for ( int i=0; i<7; i++ ) System.err.print(""+ts2[i]+" "); System.err.println("");                
+                System.err.println(format);            
+            }
+            
+            if ( beforeTo ) {
+                int idx=0;
+                for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
+                    while( ts1[idx]!=-1 ) idx++;
+                    ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
+                    String[] s= format.split("UNRSV1"+(i+1));
+                    format= s[0]+formatCodes[idx]+s[1];
+                }
+                beforeToUnresolved.removeAll(beforeToUnresolved);
+            }
+            
+            if ( beforeToUnresolved.size()+afterToUnresolved.size() > 0 ) {
+                ArrayList unload;
+                String formatUn;
+                int idx=0;
+                
+                if ( beforeToUnresolved.size() < afterToUnresolved.size() ) {
+                    if ( beforeToUnresolved.size()>0 ) {
+                        for ( int i=0; i<afterToUnresolved.size(); i++ ) {
+                            while( ts2[idx]!=-1 ) idx++;
+                            ts2[idx]= parseInt((String)afterToUnresolved.get(i));
+                            String[] s= format.split("UNRSV2"+(i+1));
+                            format= s[0]+formatCodes[idx]+s[1];
+                        }
+                        unload= beforeToUnresolved;
+                        formatUn= "UNRSV1";
+                        ts= ts1;
+                    } else {
+                        while( ts1[idx]!=-1) idx++;
+                        idx--;
+                        unload= afterToUnresolved;
+                        formatUn= "UNRSV2";
+                        ts= ts2;
                     }
-                    unload= beforeToUnresolved;
-                    formatUn= "UNRSV1";
-                    ts= ts1;
                 } else {
-                    while( ts1[idx]!=-1) idx++;
-                    idx--;
-                    unload= afterToUnresolved;
-                    formatUn= "UNRSV2";
-                    ts= ts2;
+                    if ( afterToUnresolved.size()>0 ) {
+                        for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
+                            while( ts1[idx]!=-1 ) idx++;
+                            ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
+                            String[] s= format.split("UNRSV1"+(i+1));
+                            format= s[0]+formatCodes[idx]+s[1];
+                        }
+                        unload= afterToUnresolved;
+                        formatUn= "UNRSV2";
+                        ts= ts2;
+                    } else {
+                        while( ts2[idx]!=-1) idx++;
+                        idx--;
+                        unload= beforeToUnresolved;
+                        formatUn= "UNRSV1";
+                        ts= ts1;
+                    }
+                }
+                int lsd=idx;
+                for ( int i=unload.size()-1; i>=0; i-- ) {
+                    while ( ts[lsd]!=-1 && lsd>0 ) lsd--;
+                    if ( ts[lsd]!=-1 ) {
+                        throw new ParseException( "can't resolve these tokens in \""+stringIn+"\": "+unload, 0 );
+                    }
+                    ts[lsd]= parseInt((String)unload.get(i));
+                    String[] s= format.split(formatUn+(i+1));
+                    format= s[0]+formatCodes[lsd]+s[1];
+                }
+                
+            } // unresolved entities
+            
+            if ( DEBUG ) {
+                for ( int i=0; i<7; i++ ) System.err.print(""+ts1[i]+" "); System.err.println("");
+                for ( int i=0; i<7; i++ ) System.err.print(""+ts2[i]+" "); System.err.println("");
+                System.out.println(format);
+            }
+            
+            /* contextual fill.  Copy over digits that were specified in one time but 
+             * not the other.
+             */                
+            for ( int i=YEAR; i<=DAY; i++ ) {
+                if ( ts2[i] == -1 && ts1[i] != -1 ) ts2[i]= ts1[i];
+                if ( ts1[i] == -1 && ts2[i] != -1 ) ts1[i]= ts2[i];
+            }
+            
+            int i= NANO;
+            int[] implicit_timearr= new int[] { -1, 1, 1, 0, 0, 0, 0 };
+            int ts1lsd= -1;
+            int ts2lsd= -1;
+            while (i>=0) {
+                if ( ts2[i] != -1 && ts2lsd == -1 ) ts2lsd=i;
+                if ( ts2lsd == -1 ) ts2[i]= implicit_timearr[i];
+                if ( ts2[i] == -1 && ts2lsd != -1 ) {
+                    throw new ParseException("not specified in stop time: "+digitIdentifiers[i]+" in "+stringIn,ipos);
+                }
+                if ( ts1[i] != -1 && ts1lsd == -1 ) ts1lsd=i;
+                if ( ts1lsd == -1 ) ts1[i]= implicit_timearr[i];
+                if ( ts1[i] == -1 && ts1lsd != -1 ) {
+                    throw new ParseException("not specified in start time:"+digitIdentifiers[i]+" in "+stringIn,ipos);
+                }
+                i= i-1;
+            }
+            
+            
+           if ( ts1lsd != ts2lsd && ( ts1lsd<HOUR || ts2lsd<HOUR ) ) {
+                throw new ParseException( "resolution mismatch: "+digitIdentifiers[ts1lsd]+" specified for start, but "
+                        + digitIdentifiers[ts2lsd]+" specified for end, must be same" + " in \""+stringIn+"\"", ipos );
+           }
+            
+            if ( ts2lsd < HOUR ) {
+                ts2[ts2lsd]++;
+            }
+            
+            if ( ts1[0]<1900 ) ts1[0]= y2k(""+ts1[0]);
+            if ( ts2[0]<1900 ) ts2[0]= y2k(""+ts2[0]);
+            
+            if ( ts1lsd < DAY ) {
+                try {
+                    return new MonthDatumRange( ts1, ts2 );
+                } catch ( IllegalArgumentException e ) {
+                    ParseException eNew= new ParseException( "fails to parse due to MonthDatumRange: "+stringIn, 0 );
+                    throw eNew;
                 }
             } else {
-                if ( afterToUnresolved.size()>0 ) {
-                    for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
-                        while( ts1[idx]!=-1 ) idx++;
-                        ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
-                        String[] s= format.split("UNRSV1"+(i+1));
-                        format= s[0]+formatCodes[idx]+s[1];
-                    }
-                    unload= afterToUnresolved;
-                    formatUn= "UNRSV2";
-                    ts= ts2;
-                } else {
-                    while( ts2[idx]!=-1) idx++;
-                    idx--;
-                    unload= beforeToUnresolved;
-                    formatUn= "UNRSV1";
-                    ts= ts1;
-                }
+                Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
+                Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
+                return new DatumRange( time1, time2 );
             }
-            int lsd=idx;
-            for ( int i=unload.size()-1; i>=0; i-- ) {
-                while ( ts[lsd]!=-1 && lsd>0 ) lsd--;
-                if ( ts[lsd]!=-1 ) {
-                    throw new ParseException( "can't resolve these tokens: "+unload, 0 );
-                }
-                ts[lsd]= parseInt((String)unload.get(i));
-                String[] s= format.split(formatUn+(i+1));
-                format= s[0]+formatCodes[lsd]+s[1];
-            }
-            
-        } // unresolved entities
-        
-        if ( DEBUG ) {
-            for ( int i=0; i<7; i++ ) System.out.print(""+ts1[i]+" "); System.out.println("");
-            for ( int i=0; i<7; i++ ) System.out.print(""+ts2[i]+" "); System.out.println("");
-            System.out.println(format);
-        }
-        
-        // contextual fill
-        for ( int i=YEAR; i<=DAY; i++ ) {
-            if ( ts2[i] == -1 && ts1[i] != -1 ) ts2[i]= ts1[i];
-            if ( ts1[i] == -1 && ts2[i] != -1 ) ts1[i]= ts2[i];
-        }
-        
-        int i= NANO;
-        int[] implicit_timearr= new int[] { -1, 1, 1, 0, 0, 0, 0 };
-        int ts1lsd= -1;
-        int ts2lsd= -1;
-        while (i>=0) {
-            if ( ts2[i] != -1 && ts2lsd == -1 ) ts2lsd=i;
-            if ( ts2lsd == -1 ) ts2[i]= implicit_timearr[i];
-            if ( ts2[i] == -1 && ts2lsd != -1 ) {
-                throw new ParseException("not specified in stop time: "+digitIdentifiers[i],ipos);
-            }
-            if ( ts1[i] != -1 && ts1lsd == -1 ) ts1lsd=i;
-            if ( ts1lsd == -1 ) ts1[i]= implicit_timearr[i];
-            if ( ts1[i] == -1 && ts1lsd != -1 ) {
-                throw new ParseException("not specified in start time:"+digitIdentifiers[i],ipos);
-            }
-            i= i-1;
-        }
-        
-        if ( ts1lsd != ts2lsd ) {
-            throw new ParseException( "resolution mismatch: "+digitIdentifiers[ts1lsd]+" specified for start, but "
-                    + digitIdentifiers[ts2lsd]+" specified for end, must be same", ipos );
-        }
-        
-        if ( ts2lsd < HOUR ) {
-            ts2[ts2lsd]++;
-        }
-        
-        if ( ts1[0]<1900 ) ts1[0]= y2k(""+ts1[0]);
-        if ( ts2[0]<1900 ) ts2[0]= y2k(""+ts2[0]);
-        
-        if ( ts1lsd < DAY ) {
-            return new MonthDatumRange( ts1, ts2 );
-        } else {
-            Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
-            Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
-            return new DatumRange( time1, time2 );
         }
         
     }
+    
+    public static DatumRange parseTimeRange( String string ) throws ParseException {
+        return new TimeRangeParser().parse(string);
+    }
+    
     
     public static DatumRange parseTimeRangeValid( String s ) {
         try {
@@ -648,7 +697,7 @@ public class DatumRangeUtil {
                     return monthStr[ts1.month-1]+ toDelim  + monthStr[ts2.month-1-1] + " " + ts1.year;
                 }
             } else {
-                return monthStr[ts1.month-1] + " " + ts1.year + toDelim 
+                return monthStr[ts1.month-1] + " " + ts1.year + toDelim
                         + monthStr[ts2.month-1-1] + " " + ts2.year;
             }
         }
@@ -658,7 +707,7 @@ public class DatumRangeUtil {
                 return TimeDatumFormatter.DAYS.format( self.min() );
             } else {
                 Datum endtime= self.max().subtract( Datum.create( 1, Units.days ) );
-                return TimeDatumFormatter.DAYS.format( self.min() ) + toDelim 
+                return TimeDatumFormatter.DAYS.format( self.min() ) + toDelim
                         + TimeDatumFormatter.DAYS.format( endtime );
             }
             
@@ -710,7 +759,7 @@ public class DatumRangeUtil {
             return parseTimeRange( str );
         } else {
             // consider Patterns -- dash not handled because of negative sign.
-            String[] ss= str.split("to");  
+            String[] ss= str.split("to");
             if ( ss.length==1 ) {
                 ss= str.split("\u2013");
             }
