@@ -33,7 +33,7 @@ public class MonthDatumRange extends DatumRange {
         for ( int i=0; i<7; i++ ) {
             if ( widthArr[i]!=0 ) {
                 if ( widthDigit!=-1 ) {
-                    throw new IllegalArgumentException("only one non-zero digit allowed");
+                    throw new IllegalArgumentException("MonthDatumRange must only vary in month or year, not both");
                 } else {
                     widthDigit=i;
                     width= widthArr[widthDigit];
