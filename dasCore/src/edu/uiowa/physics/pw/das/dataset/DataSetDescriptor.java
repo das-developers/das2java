@@ -38,8 +38,22 @@ import java.lang.reflect.*;
 import javax.swing.event.*;
 
 /**
+ * DataSetDescriptors are a source from where datasets are produced.  These uniquely identify a data set
+ * that is parameteric.  Typically, the parameter is time, so for example, there might be a DataSetDescriptor
+ * for "discharge of the Iowa River measured at Iowa City."  Clients of the class get 
+ * DataSets from the DataSetDescriptor via the getDataSet( Start, End, Resolution ) method.  So for 
+ * example, you might ask what is the discharge from June 1 to August 31st, 2005, at a resolution of
+ * 1 day.  Presently it's implicit that this means to give bin averages of the data.  
+ * 
+ * DataSetDescriptors are identified with a URL-like string:
+ * http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy
+ * 
+ * The protocol of the string indicates how the DataSetDescriptor is to be constructed, and presently
+ * there are:
+ *   http     a das2Server provides the specification of the datasetdescriptor.
+ *   class    refers to a loadable java class that is an instanceof DataSetDescriptor.
  *
- * @author  jbf
+ * @author jbf
  */
 public abstract class DataSetDescriptor {
     /* defaultCaching means that the abstract DataSetDescriptor is allowed to handle
@@ -82,7 +96,8 @@ public abstract class DataSetDescriptor {
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
             final DasProgressMonitor monitor, Object lockObject ) {
-        
+
+        /*
         CacheTag tag= new CacheTag( start, end, resolution );
         if ( dataSetCache.haveStored( this, tag ) ) {
             DataSet ds= dataSetCache.retrieve( this, tag );
@@ -90,6 +105,7 @@ public abstract class DataSetDescriptor {
             fireDataSetUpdateEvent(dsue);
             return;
         }
+         */
         
         Runnable request = new Runnable() {
             public void run() {
@@ -109,7 +125,14 @@ public abstract class DataSetDescriptor {
             }
         };
         DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("submit data request");
-        RequestProcessor.invokeLater( request, lockObject );
+
+        CacheTag tag= new CacheTag( start, end, resolution );
+        if ( dataSetCache.haveStored( this, tag ) ) {
+            request.run();
+        }
+        else {
+            RequestProcessor.invokeLater( request, lockObject );
+        }
         
     }
     
