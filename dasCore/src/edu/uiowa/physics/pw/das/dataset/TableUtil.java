@@ -56,7 +56,7 @@ public class TableUtil {
         double [] xx= getYTagArrayDouble( table, itable, units );
         return DataSetUtil.closest( xx, x );
     }
-    
+
     public static Datum closestDatum( TableDataSet table, Datum x, Datum y ) {
         int i= DataSetUtil.closestColumn( table, x );
         int j= closestRow( table, table.tableOfIndex(i), y );
@@ -128,8 +128,8 @@ public class TableUtil {
     }
     
     public static String toString(TableDataSet tds) {
-        StringBuffer buffer= new StringBuffer();
-        buffer.append( tds.getYLength(0) );
+        StringBuffer buffer= new StringBuffer();        
+        if ( tds.tableCount()>0 ) buffer.append( tds.getYLength(0) );
         int tableCountLimit=3;
         for ( int i=1; i<tds.tableCount() && i<tableCountLimit; i++ ) {
             buffer.append( ", "+tds.getYLength(i) );
