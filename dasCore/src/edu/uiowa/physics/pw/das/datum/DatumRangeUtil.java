@@ -73,6 +73,7 @@ public class DatumRangeUtil {
         String year;
         String month;
         String day;
+        String delim;
         int dateformat;
     }
     
@@ -170,7 +171,7 @@ public class DatumRangeUtil {
         
         final int STATE_OPEN=89;
         final int STATE_TS1TIME=90;
-        final int STATE_TS2TIME=90;
+        final int STATE_TS2TIME=91;
         
         int state= STATE_OPEN;
         
@@ -180,21 +181,25 @@ public class DatumRangeUtil {
         int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
         int[] ts= null;
         
-        private Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |T|-)");
+        boolean beforeTo;
         
+        private Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |to|t|-)");
+        
+        /* groups= group numbers: { year, month, day, delim } (0 is all) */
         private boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
             Matcher matcher= regex.matcher( string.toLowerCase() );
             if ( matcher.find() && matcher.start()==0 ) {
-                //printGroups(matcher);
+               // printGroups(matcher);
                 int posDate= matcher.start();
                 int length= matcher.end()-matcher.start();
-                dateDescriptor.date= string.substring( posDate, posDate+length );
+                dateDescriptor.delim= matcher.group(groups[3]);
+                dateDescriptor.date= string.substring( matcher.start(), matcher.end()-dateDescriptor.delim.length() );
                 String month;
                 String day;
                 String year;
                 dateDescriptor.day= matcher.group(groups[2]);
                 dateDescriptor.month= matcher.group(groups[1]);
-                dateDescriptor.year= matcher.group(groups[0]);
+                dateDescriptor.year= matcher.group(groups[0]);                
                 return true;
             } else {
                 return false;
@@ -208,9 +213,10 @@ public class DatumRangeUtil {
             if ( string.length()<6 ) return false;
             
             int[] groups;
-            String yearRegex= "(\\d{2}(\\d{2})?)( |t|-)"; // t lower case because tryPattern folds case
+            String dateDelimRegex= "( |to|t|-)";
+            String yearRegex= "(\\d{2}(\\d{2})?)"; // t lower case because tryPattern folds case
             
-            if ( tryPattern( yyyymmddPattern, string, new int[] { 2,3,4 }, dateDescriptor ) ) {
+            if ( tryPattern( yyyymmddPattern, string, new int[] { 2,3,4,5 }, dateDescriptor ) ) {
                 dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
             }
@@ -234,33 +240,34 @@ public class DatumRangeUtil {
             String euroDateRegex;
             
             if ( delim.equals(".") ) {
-                euroDateRegex= "(" + dayRegex + "\\." + monthRegex + "\\." + yearRegex + ")";
-                groups= new int [] { 6, 3, 2 };
+                euroDateRegex= "(" + dayRegex + "\\." + monthRegex + "\\." + yearRegex + dateDelimRegex + ")";
+                groups= new int [] { 6, 3, 2, 8  };
             } else {
-                euroDateRegex= "(" + dayRegex + delim + monthNameRegex + delim + yearRegex + ")";
-                groups= new int [] { 4, 3, 2 };
+                euroDateRegex= "(" + dayRegex + delim + monthNameRegex + delim + yearRegex + dateDelimRegex + ")";
+                groups= new int [] { 4, 3, 2, 6 };
             }
             if ( tryPattern( Pattern.compile( euroDateRegex ), string, groups, dateDescriptor ) ) {
                 dateDescriptor.dateformat= DATEFORMAT_EUROPE;
                 return true;
             }
             
-            String usaDateRegex= monthRegex + delim + dayRegex + delim + yearRegex;
-            if ( tryPattern( Pattern.compile( usaDateRegex ), string, new int[] { 5,1,4 }, dateDescriptor ) ) {
+            String usaDateRegex= monthRegex + delim + dayRegex + delim + yearRegex + dateDelimRegex ;
+            if ( tryPattern( Pattern.compile( usaDateRegex ), string, new int[] { 5,1,4,7 }, dateDescriptor ) ) {
                 dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
             }
             
-            String lastDateRegex= "(\\d{4})" + delim + monthRegex + delim + dayRegex + "( |t|-)";
-            if ( tryPattern( Pattern.compile( lastDateRegex ), string, new int[] { 1,2,5 }, dateDescriptor ) ) {
+            // only works for four-digit years
+            String lastDateRegex= "(\\d{4})" + delim + monthRegex + delim + dayRegex + dateDelimRegex;
+            if ( tryPattern( Pattern.compile( lastDateRegex ), string, new int[] { 1,2,5,6 }, dateDescriptor ) ) {
                 dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
             }
             
             String doyRegex= "(\\d{3})";
-            String dateRegex= doyRegex+"(-|/)"+yearRegex + "( |t|-)";
+            String dateRegex= doyRegex+"(-|/)" + yearRegex + dateDelimRegex;
             
-            if ( tryPattern( Pattern.compile( dateRegex ), string, new int[] { 3,1,1 }, dateDescriptor ) ) {
+            if ( tryPattern( Pattern.compile( dateRegex ), string, new int[] { 3,1,1,5 }, dateDescriptor ) ) {
                 int doy= parseInt(dateDescriptor.day);
                 if ( doy>366 ) return false;
                 int year= parseInt(dateDescriptor.year);
@@ -269,9 +276,18 @@ public class DatumRangeUtil {
                 
                 return true;
             }
-            
-            return false;
-            
+                        
+            dateRegex= yearRegex +"(-|/)" + doyRegex + dateDelimRegex;            
+            if ( tryPattern( Pattern.compile( dateRegex ), string, new int[] { 1,4,4,5 }, dateDescriptor ) ) {
+                int doy= parseInt(dateDescriptor.day);
+                if ( doy>366 ) return false;
+                int year= parseInt(dateDescriptor.year);
+                caldat( julday( 12, 31, year-1 ) + doy, dateDescriptor );
+                dateDescriptor.dateformat= DATEFORMAT_YYYY_DDD;
+                
+                return true;
+            }
+            return false;            
         }
         
         
@@ -288,6 +304,53 @@ public class DatumRangeUtil {
                 delim= "";
                 ipos= string.length();
             }
+        }
+        
+        private void setBeforeTo( boolean v ) {
+            beforeTo= v;
+            if ( beforeTo ) {
+                ts= ts1;
+            } else {
+                ts= ts2;
+            }
+        }
+            
+        /* identify and make the "to" delimiter unambiguous */
+        public String normalizeTo( String s ) throws ParseException {
+            
+            int minusCount= 0;
+            for ( int i=0; i<s.length(); i++ ) if ( s.charAt(i)=='-' ) minusCount++;
+            if ( minusCount==0 ) return s;            
+         
+            DateDescriptor dateDescriptor= new DateDescriptor();
+            ipos=0;
+                    
+            StringBuffer newString= new StringBuffer();
+            while ( ipos<s.length() ) {
+                if ( isDate( s.substring( ipos ), dateDescriptor ) ) {
+                    ipos= ipos+dateDescriptor.date.length()+dateDescriptor.delim.length();
+                    token= dateDescriptor.date;
+                    delim= dateDescriptor.delim;                                                    
+                } else {
+                    nextToken();                                        
+                }
+                newString.append(token);
+                if ( delim.equals("-") ) {  
+                    newString.append("to");
+                } else {
+                    newString.append(delim);
+                }
+            } 
+            String result= newString.toString();
+            
+            String[] ss= result.split("to");
+            if ( ss.length>2 ) {
+                result= ss[0];
+                for ( int i=1; i<ss.length; i++ ) {
+                    result= result + "-" + ss[i];
+                }                
+            } 
+            return result;
         }
         
         public DatumRange parse( String stringIn ) throws ParseException {
@@ -314,43 +377,41 @@ public class DatumRangeUtil {
             
             final int STATE_OPEN=89;
             final int STATE_TS1TIME=90;
-            final int STATE_TS2TIME=90;
+            final int STATE_TS2TIME=91;
             
             int state= STATE_OPEN;
             
             String format="";
-            boolean beforeTo= true;   // true if before the "to" delineator
+            setBeforeTo( true );   // true if before the "to" delineator
             
             DateDescriptor dateDescriptor= new DateDescriptor();
             
-            int dateFormat= DATEFORMAT_USA;
+            int dateFormat= DATEFORMAT_USA;                                    
             
+            String newString= normalizeTo(string);
+            string= newString;
+            
+            ipos=0;
             while ( ipos < string.length() ) {
                 String lastdelim= delim;
                 format= format+lastdelim;
                 
-                if ( lastdelim.equals("to") ) beforeTo=false;
-                if ( lastdelim.equals("through") ) beforeTo=false;
-                if ( lastdelim.equals("-") ) beforeTo=false;
-                if ( lastdelim.equals("\u2013") ) beforeTo=false;
+                if ( lastdelim.equals("to") ) setBeforeTo( false );
+                if ( lastdelim.equals("through") ) setBeforeTo( false );                
+                if ( lastdelim.equals("\u2013") ) setBeforeTo( false );
+                                
                 if ( isDate( string.substring( ipos ), dateDescriptor ) ) {
                     format= format+"%x";
-                    if ( ts1[DAY] != -1 || ts1[MONTH] != -1 || ts1[YEAR] != -1 ) { beforeTo= false; }
+                    if ( ts1[DAY] != -1 || ts1[MONTH] != -1 || ts1[YEAR] != -1 ) { setBeforeTo( false ); }
                     
                     int month= monthNumber(dateDescriptor.month);
                     int year= y2k(dateDescriptor.year);
-                    int day= parseInt(dateDescriptor.day);
-                    if ( beforeTo ) {
-                        ts1[DAY]= day;
-                        ts1[MONTH]= month;
-                        ts1[YEAR]= year;
-                    } else {
-                        ts2[DAY]= day;
-                        ts2[MONTH]= month;
-                        ts2[YEAR]= year;
-                    }
-                    delim= dateDescriptor.date.substring( dateDescriptor.date.length()-1, dateDescriptor.date.length() );
-                    ipos= ipos+dateDescriptor.date.length();
+                    int day= parseInt(dateDescriptor.day);                    
+                    ts[DAY]= day;
+                    ts[MONTH]= month;
+                    ts[YEAR]= year;                    
+                    delim=dateDescriptor.delim;
+                    ipos= ipos+dateDescriptor.date.length() + dateDescriptor.delim.length();
                     
                 } else {
                     
@@ -364,7 +425,7 @@ public class DatumRangeUtil {
                             ts1[YEAR]= parseInt(token);
                             ts2[YEAR]= ts1[YEAR];
                         } else {
-                            beforeTo=false;
+                            setBeforeTo( false );
                             ts2[YEAR]= parseInt(token);
                             if ( ts1[YEAR]==-1 ) ts1[YEAR]=ts2[YEAR];
                         }
@@ -372,7 +433,7 @@ public class DatumRangeUtil {
                         dateFormat=DATEFORMAT_YYYY_DDD;
                         format= format+"%j";
                         if ( ts1[YEAR] == -1 ) {
-                            throw new ParseException( "day of year before year: "+stringIn, ipos );
+                            throw new ParseException( "day of year before year: "+stringIn+" ("+format+")", ipos );
                         }
                         int doy= parseInt(token);
                         caldat( julday( 12, 31, ts1[YEAR]-1 ) + doy, dateDescriptor );
@@ -385,7 +446,7 @@ public class DatumRangeUtil {
                             ts2[DAY]= day;
                             ts2[MONTH]= month;
                         } else {
-                            beforeTo=false;
+                            setBeforeTo( false );
                             ts2[DAY]= day;
                             ts2[MONTH]= month;
                             if ( ts1[DAY] == -1 ) {
@@ -400,22 +461,20 @@ public class DatumRangeUtil {
                             ts1[MONTH]= month;
                             ts2[MONTH]= month;
                         } else {
-                            beforeTo=false;
+                            setBeforeTo( false );
                             ts2[MONTH]= month;
                             if ( ts1[MONTH]==-1 ) ts1[MONTH]= month;
                         }
                     } else {
                         boolean isWithinTime= delim.equals(":") || lastdelim.equals(":");
-                        if ( isWithinTime ) {
+                        if ( isWithinTime ) { // TODO: can we get rid of state?
                             if ( delim.equals(":") && !lastdelim.equals(":") && state == STATE_OPEN ) {
                                 format= format+"%H";
-                                if ( ts1[HOUR] == -1 ) {
-                                    state= STATE_TS1TIME;
-                                    ts= ts1;
+                                if ( beforeTo && ts1[HOUR] == -1 ) {
+                                    state= STATE_TS1TIME;                                    
                                 } else {
-                                    beforeTo= false;
-                                    state= STATE_TS2TIME;
-                                    ts= ts2;
+                                    setBeforeTo( false );
+                                    state= STATE_TS2TIME;                                    
                                 }
                                 ts[HOUR]= parseInt(token);
                             } else {
@@ -599,6 +658,7 @@ public class DatumRangeUtil {
                     return new MonthDatumRange( ts1, ts2 );
                 } catch ( IllegalArgumentException e ) {
                     ParseException eNew= new ParseException( "fails to parse due to MonthDatumRange: "+stringIn+ " ("+format+")", 0 );
+                    eNew.initCause(e);
                     throw eNew;
                 }
             } else {
