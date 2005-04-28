@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import java.util.*;
 import javax.swing.*;
 
 /**
@@ -132,14 +133,14 @@ public class DataSetUtil {
         }
     }
     
-    
+    /* finds the element closest to x in xx.  xx must be sorted!!! */
     protected static int closest( double[] xx, double x ) {
         if ( xx.length==0 ) {
             throw new IllegalArgumentException("array has no elements");
         }
-        int result=0;
-        while ( result<(xx.length-1) && xx[result]<x ) result++;
-        while ( result>0 && xx[result]>x ) result--;
+        long t0= System.currentTimeMillis();
+        int result= Arrays.binarySearch( xx, x );        
+        if ( result<0 ) result= -1 - result; // usually this is the case
         if ( result<xx.length-2 ) {
             result= ( ( x-xx[result] ) / ( xx[result+1] - xx[result] ) < 0.5 ? result : result+1 );
         }
