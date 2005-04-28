@@ -390,10 +390,22 @@ public class Probe {
         needUpdate= false;
     }
     
+    public synchronized void pause() {
+        updating= false;
+    }
+    
     private Action getUpdateAction() {
         return new AbstractAction("Update") {
             public void actionPerformed( ActionEvent e ) {
                 update();
+            }
+        };
+    }
+
+    private Action getPauseAction() {
+        return new AbstractAction("Pause") {
+            public void actionPerformed( ActionEvent e ) {
+                pause();
             }
         };
     }
@@ -410,7 +422,12 @@ public class Probe {
             canvas= new DasCanvas(xsize,ysize);
             
             panel.add(canvas, BorderLayout.CENTER );
-            panel.add( new JButton( getUpdateAction() ), BorderLayout.NORTH );
+            
+            Box box= Box.createHorizontalBox();
+            box.add( new JButton( getUpdateAction() ) );
+            box.add( new JButton( getPauseAction() ) );
+            
+            panel.add( box, BorderLayout.NORTH );
             
             column= new DasColumn( canvas, 0.15, 0.9 );
             
