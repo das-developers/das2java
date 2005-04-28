@@ -70,7 +70,7 @@ public class DataSetStreamHandler implements StreamHandler {
         }
     }
     
-    public void packetDescriptor(PacketDescriptor pd) throws StreamException {       
+    public void packetDescriptor(PacketDescriptor pd) throws StreamException {               
         DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got packet descriptor");
         if (delegate == null) {
             SkeletonDescriptor descriptor = pd.getYDescriptor(0);
