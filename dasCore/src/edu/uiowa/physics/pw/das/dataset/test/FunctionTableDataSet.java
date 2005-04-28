@@ -120,7 +120,7 @@ public abstract class FunctionTableDataSet implements TableDataSet {
     }
     
     public double getXTagDouble(int i, Units units) {
-        return xUnits.convertDoubleTo(units, ((double)i*20)/xtags);
+        return xUnits.convertDoubleTo(units, (double)i);
     }
     
     public int getXTagInt(int i, Units units) {
@@ -145,7 +145,7 @@ public abstract class FunctionTableDataSet implements TableDataSet {
     
     public double getYTagDouble(int table, int j, Units units) {
         if ( table>0 ) throw new IllegalArgumentException("table doesn't exist: "+table);
-        return yUnits.convertDoubleTo(units, ((double)j*20)/ytags);
+        return yUnits.convertDoubleTo(units, (double)j);
     }
     
     public int getYTagInt(int table, int j, Units units) {
