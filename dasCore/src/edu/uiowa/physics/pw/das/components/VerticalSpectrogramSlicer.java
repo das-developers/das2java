@@ -41,8 +41,7 @@ extends DasPlot implements DataPointSelectionListener {
     
     private JDialog popupWindow;
     private DasPlot parentPlot;
-    private Datum yValue;
-    private int lastTagIndex=1;
+    private Datum yValue;    
     private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     
