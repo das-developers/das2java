@@ -219,7 +219,7 @@ public class DasServer {
     }
     
     public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
-        try {
+        try {            
             String dsdf = dataSetID.getQuery().split("&")[0];
             URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
             DasApplication.getDefaultApplication().getLogger().info("getting dataSetDescription from "+url);            
@@ -508,5 +508,9 @@ public class DasServer {
     
     public void setKey( Key key ) {
         this.key= key;
+    }
+    
+    public String toString() {
+        return this.getURL();
     }
 }
