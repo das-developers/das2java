@@ -224,6 +224,10 @@ public class RebinDescriptor {
         return (end-start)/(double)nBin;
     }
     
+    public Datum binWidthDatum() {
+        return Datum.create( binWidth(), getUnits().getOffsetUnits() );
+    }
+    
     public boolean isLog() {
         return isLog;
     }
