@@ -24,6 +24,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
@@ -124,6 +125,8 @@ public class DataRange implements Cloneable {
     
     public Units getUnits() { return units; }
     
+    public DatumRange getDatumRange() { return new DatumRange( minimum, maximum, units ); }
+
     public void setUnits(Units newUnits) {
         if (units.equals(newUnits)) {
             return;
@@ -169,6 +172,7 @@ public class DataRange implements Cloneable {
                 h[0] = Datum.create(minimum,units);
                 h[1] = Datum.create(maximum,units);
                 history.push(h);
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( "push history: "+h[0]+" "+h[1] );
 //                reportHistory();
             }
             forwardHistory.removeAllElements();
@@ -273,10 +277,9 @@ public class DataRange implements Cloneable {
         }
     }
     
-    public DataRange getAnimationDataRange() {
-        Datum min= Datum.create( this.getMinimum(), this.getUnits() );
-        Datum max= Datum.create( this.getMaximum(), this.getUnits() );
-        return new DataRange( this.parent, min, max, this.isLog() ) {
+    public static DataRange getAnimationDataRange( DatumRange range, boolean log ) {       
+        return new DataRange( (DasAxis)null, range.min(), range.max(), log ) {
+            private double minimum, maximum;
             protected void fireUpdate() {};
             public void setRange( double min, double max ) {
                 minimum= min;
