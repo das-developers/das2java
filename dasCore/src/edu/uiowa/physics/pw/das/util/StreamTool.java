@@ -309,7 +309,7 @@ public class StreamTool {
         return new StreamException(type);
     }
     
-    private static boolean getChunk(ReadStreamStructure struct) throws StreamException, IOException {
+    private static boolean getChunk(ReadStreamStructure struct ) throws StreamException, IOException {
         struct.bigBuffer.mark();
         if (struct.bigBuffer.remaining() < 4) {
             return false;
@@ -336,7 +336,7 @@ public class StreamTool {
             Document doc = getXMLDocument(struct.bigBuffer, contentLength);
             Element root = doc.getDocumentElement();
             if (root.getTagName().equals("packet")) {
-                PacketDescriptor pd = new PacketDescriptor(doc.getDocumentElement());
+                PacketDescriptor pd = new PacketDescriptor( doc.getDocumentElement() );
                 struct.handler.packetDescriptor(pd);
                 struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
             }
@@ -481,6 +481,7 @@ public class StreamTool {
     public static Map processPropertiesElement(Element element) throws StreamException {
         try {
             if (!element.getTagName().equals("properties")) {
+                // TODO maybe this should be a RuntimeException
                 throw new StreamException("expecting 'properties' element, encountered '" + element.getTagName() + "'");
             }
             HashMap map = new HashMap();
