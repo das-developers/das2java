@@ -32,6 +32,23 @@ import java.util.*;
  */
 public interface DataSet {
     
+    /* CacheTag object describing the start, end, and resolution of the dataset. */
+    final static String PROPERTY_CACHE_TAG= "cacheTag";
+    
+    /* Long estimating the size of the dataset in memory.  For example, if a dataset is
+       backed by a local file, then zero for this indicates no penalty for storing this
+       dataset. */
+    final static String PROPERTY_SIZE_BYTES= "sizeBytes";
+    
+    /* Datum nominal distance between successive xTags.  This is used for example to prevent
+     * interpolation between distant measurements 
+     */
+    final static String PROPERTY_X_TAG_WIDTH= "xTagWidth";
+    
+    /* Datum, see xTagWidth */
+    final static String PROPERTY_Y_TAG_WIDTH= "yTagWidth";    
+    
+    
     /** Returns the property value associated with the string <code>name</code>
      * @param name the name of the property requested
      * @return the property value for <code>name</code> or null
