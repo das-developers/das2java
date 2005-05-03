@@ -139,10 +139,13 @@ public class DataSetUtil {
             throw new IllegalArgumentException("array has no elements");
         }
         long t0= System.currentTimeMillis();
-        int result= Arrays.binarySearch( xx, x );        
+        int result= Arrays.binarySearch( xx, x );
         if ( result<0 ) result= -1 - result; // usually this is the case
         if ( result<xx.length-2 ) {
             result= ( ( x-xx[result] ) / ( xx[result+1] - xx[result] ) < 0.5 ? result : result+1 );
+        }
+        if ( result >= xx.length ) {
+            result= xx.length-1;            
         }
         return result;
     }
@@ -155,7 +158,24 @@ public class DataSetUtil {
         double [] xx= getXTagArrayDouble( table, units );
         return closest( xx, x );
     }
-    
+
+    public static int closestColumn( DataSet table, Datum xdatum, int guessIndex ) {
+        int result= guessIndex;
+        int len= table.getXLength();
+        if ( result>=len ) result=len-1;
+        if ( result<0 ) result=0;    
+        Units units= xdatum.getUnits();
+        double x= xdatum.doubleValue(units);
+        while ( result<(len-1) && table.getXTagDouble(result,units)<x ) result++;
+        while ( result>0 && table.getXTagDouble(result,units)>x ) result--;
+        if ( result<len-2 ) {
+            double alpha= ( x - table.getXTagDouble( result, units ) ) /
+                    ( table.getXTagDouble( result+1, units ) - table.getXTagDouble( result, units ) );
+            result= ( alpha < 0.5 ? result : result+1 );
+        }
+        return result;
+    }
+
     public static int getPreviousColumn( DataSet ds, Datum datum ) {
         int i= closestColumn( ds, datum );
         if ( i>0 && ds.getXTagDatum(i).ge(datum) ) {
@@ -219,5 +239,30 @@ public class DataSetUtil {
         }
         return DatumRange.newDatumRange( min, max, zunits );
         
+    }
+    
+    /* Give an estimate of the size of the data set, or PROPERTY_SIZE_BYTES if available.
+     * Generally this would be used as a penalty against the dataset, and it's probably
+     * better to overestimate the dataset size. 
+     */
+    public static long guessSizeBytes( DataSet ds ) {
+        Long o= (Long)ds.getProperty( DataSet.PROPERTY_SIZE_BYTES );
+        if ( o != null ) {
+            return o.longValue();
+        } else {
+            long planeCount= ds.getPlaneIds().length;
+            int datumBytes= 8; // storage size for each datum
+            long sizeXTags= ds.getXLength() * datumBytes;
+            if ( ds instanceof TableDataSet ) {
+                TableDataSet tds= (TableDataSet)ds;
+                long sizeBytes=0;                
+                for ( int i=0; i<tds.tableCount(); i++ ) {
+                    sizeBytes+= ( tds.tableEnd(i)-tds.tableStart(i) ) * tds.getYLength(i) * planeCount * datumBytes;
+                }
+                return sizeBytes + sizeXTags;
+            } else {
+                return ds.getXLength() * planeCount * datumBytes + sizeXTags;
+            }                 
+        }
     }
 }
