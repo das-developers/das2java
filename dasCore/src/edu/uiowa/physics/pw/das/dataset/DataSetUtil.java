@@ -245,7 +245,7 @@ public class DataSetUtil {
      * Generally this would be used as a penalty against the dataset, and it's probably
      * better to overestimate the dataset size. 
      */
-    public static long guessSizeBytes( DataSet ds ) {
+    public static long guessSizeBytes( DataSet ds ) { 
         Long o= (Long)ds.getProperty( DataSet.PROPERTY_SIZE_BYTES );
         if ( o != null ) {
             return o.longValue();
