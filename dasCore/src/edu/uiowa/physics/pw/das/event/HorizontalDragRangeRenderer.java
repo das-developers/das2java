@@ -35,12 +35,19 @@ public class HorizontalDragRangeRenderer implements DragRenderer {
     
     private Rectangle dirtyBounds;
     DasCanvasComponent parent;
+    boolean updating;
     
     public HorizontalDragRangeRenderer(DasCanvasComponent parent) {
         this.parent= parent;
         dirtyBounds= new Rectangle();
+        updating= true;
     }
     
+    public HorizontalDragRangeRenderer(DasCanvasComponent parent, boolean updating ) {
+        this( parent );
+        this.updating= updating;
+    }
+        
     public void renderDrag(Graphics g1, Point p1, Point p2) {
         
         Graphics2D g= (Graphics2D) g1;
@@ -94,7 +101,7 @@ public class HorizontalDragRangeRenderer implements DragRenderer {
     }
     
     public boolean isUpdatingDragSelection() {
-        return true;
+        return updating;
     }
     
 }
