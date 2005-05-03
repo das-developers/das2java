@@ -17,7 +17,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     
     RebinDescriptor ddY;
     
-    NearestNeighborTableDataSet( TableDataSet source, RebinDescriptor ddX, RebinDescriptor ddY ) {
+    NearestNeighborTableDataSet( TableDataSet source, RebinDescriptor ddX, RebinDescriptor ddY ) {        
         imap= new int[ddX.numberOfBins()];
         if ( ddY==null ) {
             if ( source.tableCount()>1 ) {
@@ -38,7 +38,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         this.ddY= ddY;
         this.source= source;
         
-        double[] xx= ddX.binCenters();
+        DatumVector xx= ddX.binCentersDV();
         double[] yy;
         if ( ddY==null ) {
             yy= TableUtil.getYTagArrayDouble( source, 0, source.getYUnits() );
@@ -47,11 +47,14 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
         
         int itable0=-1;
+        int guess= 0;
         for ( int i=0; i<imap.length; i++ ) {
-            imap[i]= DataSetUtil.closestColumn(source, xx[i], ddX.getUnits() );
+            imap[i]= DataSetUtil.closestColumn( source, xx.get(i), guess );
+            guess= imap[i];
             Datum xclose= source.getXTagDatum(imap[i]);
             Units xunits= xTagWidth.getUnits();
-            if ( Math.abs(xclose.subtract(xx[i],ddX.getUnits()).doubleValue(xunits)) > xTagWidth.doubleValue(xunits)/2. ) {
+            
+            if ( Math.abs(xclose.subtract( xx.get(i) ).doubleValue(xunits) ) > xTagWidth.doubleValue(xunits)/1.99 ) {
                 imap[i]=-1;
             } else {
                 int itable= source.tableOfIndex(imap[i]);
@@ -95,10 +98,15 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     }
     
     public double getDouble(int i, int j, Units units) {
+        try {
         if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
             return source.getDouble(imap[i], jmap[itableMap[i]][j], units);
         } else {
             return source.getZUnits().getFillDouble();
+        }
+        } catch ( ArrayIndexOutOfBoundsException e ) {
+            System.err.println("here: "+e);
+            throw new RuntimeException(e);
         }
     }
     
