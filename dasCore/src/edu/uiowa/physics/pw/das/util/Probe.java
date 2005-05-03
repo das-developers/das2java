@@ -495,8 +495,8 @@ public class Probe {
     
     public static void main(String[] args) throws Exception {
         Probe p= new Probe("Test of Probe with fake data",true,400,600);
-        Thread.sleep(2000);
-        for ( int i=0; i<100; i++ ) {
+        Thread.sleep(500);
+        for ( int i=0; i<500; i++ ) {
             Thread.sleep(200);
             p.add("i", i);
             p.add("j", i % 10 );
