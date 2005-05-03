@@ -25,7 +25,9 @@ package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
+import edu.uiowa.physics.pw.das.util.*;
 import java.nio.ByteBuffer;
+import java.util.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,14 +47,15 @@ public class PacketDescriptor implements Cloneable {
     
     private StreamXDescriptor xDescriptor;
     private SkeletonDescriptor[] yDescriptors = new SkeletonDescriptor[6];
-    private int yCount = 0;
+    private int yCount = 0;    
+    private Map properties;
     
     /** Creates a new instance of StreamProperties */
-    public PacketDescriptor(Element element) {
+    public PacketDescriptor( Element element ) {
+        properties= new HashMap();        
         if (element.getTagName().equals("packet")) {
             processElement(element);
-        }
-        else {
+        } else {
             processLegacyElement(element);
         }
     }
@@ -66,14 +69,23 @@ public class PacketDescriptor implements Cloneable {
                 String name = child.getTagName();
                 if ( name.equals("x") ) {
                     xDescriptor = new StreamXDescriptor(child);
-                }
-                else if ( name.equals("y") ) {
+                } else if ( name.equals("y") ) {
                     StreamMultiYDescriptor d = new StreamMultiYDescriptor(child);
                     addYDescriptor(d);
-                }
-                else if ( name.equals("yscan") ) {
+                } else if ( name.equals("yscan") ) {
                     StreamYScanDescriptor d = new StreamYScanDescriptor(child);
                     addYDescriptor(d);
+                } else if ( name.equals("properties") ) {
+                    try {
+                        NodeList list = element.getElementsByTagName("properties");
+                        if (list.getLength() != 0) {
+                            Element propertiesElement = (Element)list.item(0);
+                            Map m = StreamTool.processPropertiesElement(propertiesElement);
+                            properties.putAll(m);
+                        }
+                    } catch ( StreamException e ) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
@@ -140,7 +152,7 @@ public class PacketDescriptor implements Cloneable {
         }
         return yDescriptors[index];
     }
-
+    
     public int getSizeBytes() {
         int sizeBytes = xDescriptor.getSizeBytes();
         for (int i = 0; i < yCount; i++) {
@@ -161,17 +173,16 @@ public class PacketDescriptor implements Cloneable {
     public void write(Datum xTag, DatumVector[] vectors, ByteBuffer output) {
         xDescriptor.writeDatum(xTag, output);
         for (int i = 0; i < yCount; i++) {
-             yDescriptors[i].write(vectors[i], output);
+            yDescriptors[i].write(vectors[i], output);
         }
         //ASCII KLUDGE!!!!
         if (yDescriptors[yCount - 1] instanceof StreamYScanDescriptor
-            && ((StreamYScanDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
-            && Character.isWhitespace((char)output.get(output.position() - 1))) {
+                && ((StreamYScanDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
+                && Character.isWhitespace((char)output.get(output.position() - 1))) {
             output.put(output.position() - 1, (byte)'\n');
-        }
-        else if (yDescriptors[yCount - 1] instanceof StreamMultiYDescriptor
-                 && ((StreamMultiYDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
-                 && Character.isWhitespace((char)output.get(output.position() - 1))) {
+        } else if (yDescriptors[yCount - 1] instanceof StreamMultiYDescriptor
+                && ((StreamMultiYDescriptor)yDescriptors[yCount - 1]).getDataTransferType().isAscii()
+                && Character.isWhitespace((char)output.get(output.position() - 1))) {
             output.put(output.position() - 1, (byte)'\n');
         }
     }
@@ -180,17 +191,15 @@ public class PacketDescriptor implements Cloneable {
         int index = line.indexOf(';');
         if (index == 0) {
             return "";
-        }
-        else if (index != -1) {
+        } else if (index != -1) {
             return line.substring(0, index);
-        }
-        else {
+        } else {
             return line;
         }
     }
     
     private static final Pattern LABEL_PATTERN = Pattern.compile("\\s*label\\((\\d+)\\)\\s*");
-
+    
     public static PacketDescriptor createLegacyPacketDescriptor(Map dsdf) {
         PacketDescriptor packetDescriptor = new PacketDescriptor();
         packetDescriptor.setXDescriptor(new StreamXDescriptor());
@@ -198,12 +207,10 @@ public class PacketDescriptor implements Cloneable {
             StreamYScanDescriptor yscan = new StreamYScanDescriptor();
             yscan.setYCoordinates((double[])dsdf.get("y_coordinate"));
             packetDescriptor.addYDescriptor(yscan);
-        }
-        else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("ny") != null) {
+        } else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("ny") != null) {
             StreamMultiYDescriptor y = new StreamMultiYDescriptor();
             packetDescriptor.addYDescriptor(y);
-        }
-        else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("items") != null) {
+        } else if (dsdf.get("form").equals("x_multi_y") && dsdf.get("items") != null) {
             List planeList = (List)dsdf.get("plane-list");
             packetDescriptor.addYDescriptor(new StreamMultiYDescriptor());
             for (int index = 0; index < planeList.size(); index++) {
@@ -218,17 +225,15 @@ public class PacketDescriptor implements Cloneable {
     private static String[] ensureCapacity(String[] array, int capacity) {
         if (array == null) {
             return new String[capacity];
-        }
-        else if (array.length >= capacity) {
+        } else if (array.length >= capacity) {
             return array;
-        }
-        else {
+        } else {
             String[] temp = new String[capacity];
             System.arraycopy(array, 0, temp, 0, array.length);
             return temp;
         }
     }
-
+    
     public Element getDOMElement(Document document) {
         Element element = document.createElement("packet");
         element.appendChild(xDescriptor.getDOMElement(document));
@@ -236,6 +241,18 @@ public class PacketDescriptor implements Cloneable {
             element.appendChild(yDescriptors[i].getDOMElement(document));
         }
         return element;
+    }
+        
+    public Object getProperty(String name) {
+        return properties.get(name);
+    }
+    
+    public Map getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+    
+    public void setProperty(String name, Object value) {
+        properties.put(name, value);
     }
     
     public Object clone() {
@@ -247,8 +264,7 @@ public class PacketDescriptor implements Cloneable {
                 clone.yDescriptors[i] = (SkeletonDescriptor)yDescriptors[i].clone();
             }
             return clone;
-        }
-        catch (CloneNotSupportedException cnse) {
+        } catch (CloneNotSupportedException cnse) {
             throw new RuntimeException(cnse);
         }
     }
