@@ -33,6 +33,13 @@ import java.util.regex.*;
  * @author  Edward West
  */
 public abstract class DatumFormatter {
+    //TODO: consider the following api:
+    /*
+     *  String format( Datum datum )  returns fully-qualified datum e.g. "12 days"
+     *  String format( Datum datum, Units units )  returns formatted in the context of units (e.g.for axis)
+     * 
+     * we've considered this and it needs to be implemented.
+     */
     
     /** Available for use by subclasses */
     protected DatumFormatter() {}
