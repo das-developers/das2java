@@ -235,6 +235,11 @@ public class DataSetStreamHandler implements StreamHandler {
                 y = (StreamYScanDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(), y.getZUnits());
             }
+            Map p= pd.getProperties();
+            for ( Iterator i=p.keySet().iterator(); i.hasNext(); ) {
+                String key= (String)i.next();
+                builder.setProperty( key, p.get(key) );
+            }
         }
         
         public void streamClosed(StreamDescriptor sd) throws StreamException {}
