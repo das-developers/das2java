@@ -950,7 +950,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             updateTickVLog();
         } else {
             updateTickVLinear();
-        }
+        }        
     }
     
     private double pixelSizeData() {
@@ -958,7 +958,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return ( getDataMaximum().doubleValue(units) - getDataMinimum().doubleValue(units) ) / getDLength();
     }
     
-    /** TODO */
+    /** paints the axis component.  The tickV's and bounds should be calculated at this point */
     protected void paintComponent(Graphics graphics) {
         
         /* This was code was keeping axes from being printed on PC's
@@ -973,6 +973,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g.translate(-getX(), -getY());
+                
         /* Debugging code */
         /* The compiler will optimize it out if DEBUG_GRAPHICS == false */
         if (DEBUG_GRAPHICS) {
@@ -1075,7 +1076,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double dataMax= dataRange.getMaximum();
         double dataMin= dataRange.getMinimum();
         
-        TickVDescriptor ticks= getTickV();
+        TickVDescriptor ticks= getTickV();        
+        
         double[] tickv= ticks.tickV;
         
         if (bottomLine) {
@@ -1171,8 +1173,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         double dataMax= dataRange.getMaximum();
         double dataMin= dataRange.getMinimum();
+                
+        TickVDescriptor ticks= getTickV();       
         
-        TickVDescriptor ticks= getTickV();
         double[] tickv= ticks.tickV;
         
         if (leftLine) {
@@ -1897,13 +1900,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private void animateChange( double min0, double max0, double min1, double max1 ) {
         
         if ( animated ) {
+            DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "animate axis" );
             boolean drawTca0= getDrawTca();
             setDrawTca(false);
             
             long t0= System.currentTimeMillis();
             
             DataRange dataRange0= dataRange;
-            DataRange tempRange= dataRange.getAnimationDataRange();
+            DataRange tempRange= DataRange.getAnimationDataRange( dataRange.getDatumRange(),dataRange.isLog() );
             
             this.dataRange= tempRange;
             
@@ -1916,9 +1920,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 double t= -3 + 6 * alpha;
                 double a1= (DasMath.tanh(t)+1)/2;
                 double a0= 1-a1;
-                
                 tempRange.setRange( min0*a0+min1*a1, max0*a0+max1*a1 );
-                
                 //updateTickV();
                 this.paintImmediately(0,0,this.getWidth(),this.getHeight());
             }
