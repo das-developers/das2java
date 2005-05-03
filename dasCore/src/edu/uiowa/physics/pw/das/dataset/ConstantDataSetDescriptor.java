@@ -42,7 +42,12 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
         this.ds = ds;
     }
     
+    // this is never called because we override getDataSet
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+        return ds;
+    }    
+    
+    public DataSet getDataSet( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
         return ds;
     }    
     
