@@ -303,12 +303,13 @@ public final class DatumUtil {
      * @param d A datum that needs to have its units changed to order one units.
      * @return The order-one-ified Datum.
      */
-    public static Datum asOrderOneUnits(Datum d) {
+    public static Datum asOrderOneUnits(Datum d) {       
+        
         Units dunits = d.getUnits();
         
-        // Don't use location units.
-        if (dunits instanceof LocationUnits)
-            return d;
+        if ( dunits==Units.dimensionless ) return d;                
+        if ( dunits==Units.dB ) return d;
+        if ( dunits instanceof LocationUnits ) return d;
         
         Units[] conversions = dunits.getConvertableUnits();
         
