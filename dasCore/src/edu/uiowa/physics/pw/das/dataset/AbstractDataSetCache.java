@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasApplication;
+import java.text.*;
 /**
  * Keeps keep track of cache statistics and to give consistent
  * log messages, and provides the Entry class.
@@ -66,7 +67,9 @@ public abstract class AbstractDataSetCache implements DataSetCache {
         }
         
         public String toString() {
-            return dsd.toString() + " " + cacheTag + " ["+nhits+" hits]";
+            long sizeBytes= DataSetUtil.guessSizeBytes(this.data);
+            String sizeBytesString= " ("+NumberFormat.getIntegerInstance().format(sizeBytes)+" bytes)";
+            return dsd.toString() + " " + cacheTag + " ["+nhits+" hits]"+sizeBytesString;
         }
     }
         
