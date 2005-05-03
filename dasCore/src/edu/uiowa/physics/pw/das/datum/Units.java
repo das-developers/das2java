@@ -168,6 +168,22 @@ public abstract class Units {
         return (Units[])result.toArray( new Units[result.size()] );
     }
     
+    public boolean isConvertableTo( Units toUnits ) {
+        try {
+            this.getConverter(toUnits);
+            return true;
+        } catch ( IllegalArgumentException e ) {
+            return false;
+        }
+    }
+    
+    /**
+     * 
+     * @param fromUnits 
+     * @param toUnits 
+     * @return 
+     * @throws IllegalArgumentException when the conversion is not possible.
+     */
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
         if (fromUnits == toUnits) {
             return UnitsConverter.IDENTITY;
@@ -216,6 +232,12 @@ public abstract class Units {
         return converter;
     }
     
+    /**
+     * 
+     * @param toUnits 
+     * @return 
+     * @throws IllegalArgumentException if conversion between units is not possible
+     */
     public UnitsConverter getConverter( Units toUnits ) {
         return getConverter( this, toUnits );
     }
