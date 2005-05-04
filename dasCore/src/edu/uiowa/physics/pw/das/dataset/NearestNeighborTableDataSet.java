@@ -54,7 +54,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
             Datum xclose= source.getXTagDatum(imap[i]);
             Units xunits= xTagWidth.getUnits();
             
-            if ( Math.abs(xclose.subtract( xx.get(i) ).doubleValue(xunits) ) > xTagWidth.doubleValue(xunits)/1.99 ) {
+            if ( Math.abs(xclose.subtract( xx.get(i) ).doubleValue(xunits) ) > xTagWidth.doubleValue(xunits)/1.50 ) {
                 imap[i]=-1;
             } else {
                 int itable= source.tableOfIndex(imap[i]);
