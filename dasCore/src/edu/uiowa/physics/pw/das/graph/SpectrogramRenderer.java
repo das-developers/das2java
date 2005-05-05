@@ -200,6 +200,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             Arrays.fill(pix, 0x00000000);
             
             if ( getDataSet() == null) {
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "got null dataset, setting image to null" );
                 Units xUnits = getParent().getXAxis().getUnits();
                 Units yUnits = getParent().getYAxis().getUnits();
                 Units zUnits = getColorBar().getUnits();
@@ -223,15 +224,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 h,
                 yAxis.isLog());
                 
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "rebinning to pixel resolution" );
                 DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
+                                
+                rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
                 
-                rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
-                
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "converting to pixel map" );
                 //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
                 int itable=0;
                 int ny= rebinData.getYLength(itable);
                 int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
-                
+                                
                 for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
                     for (int j=0; j<rebinData.getYLength(0); j++) {
                         int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
@@ -239,11 +242,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                 }
                 
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "creating MemoryImageSource" );
+                
                 MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
                 plotImage = getParent().createImage(mis);
                 
                 if ( isSliceRebinnedData() ) {
-                    DasApplication.getDefaultApplication().getLogger().fine("slicing rebin data");
+                    DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine("slicing rebin data");
                     super.ds= rebinData;
                 }
             }
