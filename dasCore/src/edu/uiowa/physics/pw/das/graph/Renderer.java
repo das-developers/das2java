@@ -257,12 +257,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             return;
         }
         
-        if (progressPanel == null) {
-            progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
-        } else {
-            progressPanel.setLabel("Loading data set" );
-        }
-        progressPanel.cancel();
+        /* cancel any previous active operation */       
+        if ( progressPanel!=null ) {
+            progressPanel.cancel();
+            ((Container)(parent.getCanvas().getGlassPane())).remove(progressPanel);
+        }        
+        
+        progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
         
         //Give the user something pretty (and consistent with the axes) to look at.
         //This will scale the current data, or move it off screen
