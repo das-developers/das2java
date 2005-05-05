@@ -88,7 +88,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         
         ((Container)(component.getCanvas().getGlassPane())).add(progressPanel);
         
-        progressPanel.setVisible(false);
+        progressPanel.setVisible(false); 
         
         return progressPanel;
         
