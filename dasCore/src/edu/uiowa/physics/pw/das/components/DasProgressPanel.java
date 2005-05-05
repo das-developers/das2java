@@ -88,6 +88,8 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         
         ((Container)(component.getCanvas().getGlassPane())).add(progressPanel);
         
+        progressPanel.setVisible(false);
+        
         return progressPanel;
         
     }
@@ -250,7 +252,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void setTaskSize(long taskSize) {
         if (taskSize == -1) {
-            progressBar.setIndeterminate(true);
+            progressBar.setIndeterminate(true);            
         } else if ( taskSize<1 ) {
             throw new IllegalArgumentException( "taskSize must be positive, or -1" );
         } else {
