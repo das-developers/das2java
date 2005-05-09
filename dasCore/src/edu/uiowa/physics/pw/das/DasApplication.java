@@ -40,6 +40,8 @@ public class DasApplication {
     
     private static final DasApplication DEFAULT = new DasApplication();
     
+    private JFrame mainFrame;
+    
     public static class LoggerId {
         private String name;
         private Logger logger;
@@ -200,8 +202,8 @@ public class DasApplication {
         }
         return dataSetCache;
     }
-    
-    public JFrame getMainFrame( java.awt.Container canvas ) {
+        
+    public JFrame createMainFrame( java.awt.Container canvas ) {
         JFrame frame= getMainFrame();
         frame.setContentPane(canvas);
         frame.pack();
@@ -209,22 +211,26 @@ public class DasApplication {
         return frame;
     }
     
-    public JFrame getMainFrame() {
-        final JFrame result= new JFrame("Das2");
+    public JFrame createMainFrame() {
+        mainFrame= new JFrame("Das2");
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
         
         int xlocation= prefs.getInt( "xlocation", 20 );
         int ylocation= prefs.getInt( "ylocation", 20 );
-        result.setLocation(xlocation, ylocation);
-        result.addWindowListener( new WindowAdapter() {
+        mainFrame.setLocation(xlocation, ylocation);
+        mainFrame.addWindowListener( new WindowAdapter() {
             public void windowClosing( WindowEvent e ) {
-                prefs.putInt( "xlocation", result.getLocation().x );
-                prefs.putInt( "ylocation", result.getLocation().y );
-                System.out.println("bye!"+result.getLocation());
+                prefs.putInt( "xlocation", mainFrame.getLocation().x );
+                prefs.putInt( "ylocation", mainFrame.getLocation().y );
+                System.out.println("bye!"+mainFrame.getLocation());
             }
         } );
-        result.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        return result;
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        return mainFrame;
+    }
+    
+    public JFrame getMainFrame() {            
+        return this.mainFrame;
     }
     
     /**
