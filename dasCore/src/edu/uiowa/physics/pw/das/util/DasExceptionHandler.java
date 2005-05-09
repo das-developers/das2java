@@ -72,9 +72,9 @@ public final class DasExceptionHandler {
 
     private static void showExceptionDialog(Throwable t, String extraInfo) {
         String errorMessage = extraInfo + t.getClass().getName() + "\n"
-            + (t.getMessage() == null ? "" : t.getMessage());
-        final JDialog dialog = new JDialog();
-        dialog.setTitle("Error");
+            + (t.getMessage() == null ? "" : t.getMessage());        
+        final JDialog dialog = new JDialog( DasApplication.getDefaultApplication().getMainFrame() );        
+        dialog.setTitle("Error in das2");
         dialog.setModal(false);
         dialog.setResizable(false);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
