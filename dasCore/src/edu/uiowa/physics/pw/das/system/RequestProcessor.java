@@ -183,6 +183,10 @@ public final class RequestProcessor {
                             }
                         }
                     }
+                    catch (ThreadDeath td) {
+                        // See documentation for ThreadDeath.  If this error is caught but not thrown, then the thread doesn't die.
+                        throw td;
+                    }
                     catch (Throwable t) {
                         DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("uncaught exception "+t);
                         DasExceptionHandler.handleUncaught(t);
