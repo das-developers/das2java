@@ -415,7 +415,7 @@ public class Probe {
             return;
         } else {
             
-            frame= DasApplication.getDefaultApplication().getMainFrame();
+            frame= DasApplication.getDefaultApplication().createMainFrame();
             JPanel panel= new JPanel();
             panel.setLayout( new BorderLayout());
             
