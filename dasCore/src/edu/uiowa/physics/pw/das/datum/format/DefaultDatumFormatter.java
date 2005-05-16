@@ -46,8 +46,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
         if (formatString.equals("")) {
             this.formatString = "";
             format = null;
-        }
-        else {
+        } else {
             this.formatString = formatString;
             format = new DecimalFormat(formatString);
         }
@@ -55,15 +54,34 @@ public class DefaultDatumFormatter extends DatumFormatter {
     
     public String format(Datum datum) {
         if (format == null) {
-            return Double.toString(datum.doubleValue(datum.getUnits()));
+            Units units= datum.getUnits().getOffsetUnits();
+         /*   if ( datum.getResolution( units ) != 0. ) {
+                Datum maxDatum= datum.add( datum.getResolution( units ), units );
+                DatumFormatter formatter= new ResolutionFormatter();
+                return formatter.format(datum);
+            } */
+            return Double.toString(datum.doubleValue(datum.getUnits())) + " " + datum.getUnits();
+        } else {
+            return format.format(datum.doubleValue(datum.getUnits())) + " " + datum.getUnits();
         }
-        else {
-            return format.format(datum.doubleValue(datum.getUnits()));
+    }
+
+    public String format(Datum datum, Units units ) {
+        if (format == null) {
+         /*    Units units= datum.getUnits().getOffsetUnits();
+           if ( datum.getResolution( units ) != 0. ) {
+                Datum maxDatum= datum.add( datum.getResolution( units ), units );
+                DatumFormatter formatter= new ResolutionFormatter();
+                return formatter.format(datum);
+            } */
+            return Double.toString(datum.doubleValue(units)) ;
+        } else {
+            return format.format(datum.doubleValue(units));
         }
     }
     
     public String grannyFormat(Datum datum) {
-        String format= format(datum);
+        String format= format(datum, datum.getUnits() );
         if ( format.indexOf("E")!=-1 ) {
             int iE= format.indexOf("E");
             StringBuffer granny = new StringBuffer(format.length() + 4);
@@ -74,7 +92,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
             granny.append("10").append("!A").append(format.substring(iE+1)).append("!N");
             format = granny.toString();
         }
-        return format;
+        return format + " " + datum.getUnits();
     }
     
     public String toString() {
