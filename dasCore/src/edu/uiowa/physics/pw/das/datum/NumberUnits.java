@@ -45,6 +45,10 @@ public class NumberUnits extends Units {
         return new Datum.Double( new Double(value), this );
     }
     
+    public Datum createDatum( double value, double resolution ) {
+        return new Datum.Double( value, this, resolution );
+    }
+    
     public Datum createDatum( int value ) {
         return new Datum.Double( new Double(value), this );
     }
