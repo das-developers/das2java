@@ -130,7 +130,7 @@ public final class DatumUtil {
         } catch ( java.text.ParseException e ) {
             throw new RuntimeException(e);
         }
-    }
+    }        
     
     public static DatumFormatter limitResolutionFormatter( Datum minimum, Datum maximum, int nsteps ) {
         Units units = minimum.getUnits();
@@ -218,13 +218,19 @@ public final class DatumUtil {
         return buffer.toString();
     }
     
-    private static String zeros(int count) {
-        if (count <= 0) return "0";
-        StringBuffer buff = new StringBuffer(count+2).append("0.");
-        for (int index = 0; index < count; index++) {
-            buff.append('0');
+    private static final String zeros100= "0.00000000000000000000"
+            + "0000000000000000000000000000000000000000"
+            + "0000000000000000000000000000000000000000";
+    public static String zeros(int count) {
+        if ( count < 0 ) return "0";
+        else if ( count <= 100 ) return zeros100.substring(0,count+2);
+        else {
+           StringBuffer buff = new StringBuffer(count+2).append("0.");
+           for (int index = 0; index < count; index++) {
+                buff.append('0');
+           }
+           return buff.toString();
         }
-        return buff.toString();
     }
     
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
@@ -322,8 +328,8 @@ public final class DatumUtil {
             double nn = Math.abs(n.doubleValue());
             
             double score;
-            if (n.doubleValue() > 1)
-                score = 1/nn;
+            if (nn > 10)
+                score = 10/nn;
             else
                 score = nn;
             
