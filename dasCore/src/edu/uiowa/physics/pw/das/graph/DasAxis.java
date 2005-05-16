@@ -355,14 +355,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return new DatumRange( getDataMinimum(), getDataMaximum() );
     }
     
+    /*
+     * @returns true is the range is acceptible, false otherwise.  This method
+     * is overriden by DasLabelAxis.
+     */
+    protected boolean rangeIsAcceptable( DatumRange dr ) {        
+       return dr.min().lt( dr.max() );
+    }    
+            
     /** TODO
      * @param minimum
      * @param maximum
      */
     public void setDataRange(Datum minimum, Datum maximum) {
         
-        if ( ! maximum.gt(minimum) ) {
-            DasDie.println(DasDie.CRITICAL, "setDataRange where min => max ignored");
+        if ( ! rangeIsAcceptable( new DatumRange( minimum, maximum ) ) ) {
+            DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).warning( "invalid range ignored" );
             return;
         }
         
@@ -391,6 +399,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
         createAndFireRangeSelectionEvent();
     }
+    
     public void clearHistory() {
         dataRange.clearHistory();
     }
@@ -1798,17 +1807,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double maximum= dataRange.getMaximum();
         double data_range = maximum-minimum;
         data= data_range*alpha + minimum;
-        if ( dataRange.isLog() ) {
+      /*  if ( dataRange.isLog() ) {
             formatter = DatumUtil.limitLogResolutionFormatter(  getDataMinimum(), getDataMaximum(), getDLength() );
         } else {
             formatter = DatumUtil.limitResolutionFormatter( getDataMinimum(), getDataMaximum(), getDLength() );
-        }
+        } */
         
         if ( dataRange.isLog() ) {
             data= DasMath.exp10(data);
         }
         
-        Datum result= Datum.create( data, dataRange.getUnits(), formatter );
+        Datum result= Datum.create( data, dataRange.getUnits(), data_range / getDLength() );
         return result;
     }
     
@@ -1817,7 +1826,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */
     protected String tickFormatter(double tickv) {
-        return datumFormatter.grannyFormat(Datum.create(tickv, getUnits()));
+        // TODO: label the axis with the Unit!
+        return datumFormatter.grannyFormat(Datum.create(tickv, getUnits()),getUnits());
         
     }
     
