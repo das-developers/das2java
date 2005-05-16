@@ -66,6 +66,8 @@ public abstract class Units {
         celcius.registerConverter(fahrenheit, new UnitsConverter.ScaleOffset(1.8, 32));
     }
     
+    public static final Units hours= new NumberUnits("hr");
+    public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
     public static final Units microseconds= new NumberUnits("microseconds");
     public static final Units nanoseconds= new NumberUnits("nanoseconds");
@@ -73,6 +75,8 @@ public abstract class Units {
     static {
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
         seconds.registerConverter(nanoseconds,UnitsConverter.NANO);
+        hours.registerConverter(seconds, new UnitsConverter.ScaleOffset( 3600.,0.0));
+        minutes.registerConverter(seconds, new UnitsConverter.ScaleOffset( 60.,0.0));
         days.registerConverter(seconds, new UnitsConverter.ScaleOffset(8.64e4, 0.0));
     }
     
@@ -258,10 +262,12 @@ public abstract class Units {
         return this;
     }
     
-    public abstract Datum createDatum( double value );
+    public abstract Datum createDatum( double value );    
     public abstract Datum createDatum( int value );
     public abstract Datum createDatum( long value );
     public abstract Datum createDatum( Number value );
+    
+    public abstract Datum createDatum( double value, double resolution );
     
     private static double FILL_DOUBLE= -1e31;
     private static float FILL_FLOAT= -1e31f;
