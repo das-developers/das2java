@@ -76,15 +76,7 @@ public class EnumerationUnits extends Units {
             objects.put(object,result);
             return result;
         }
-    }
-    
-    /* public Datum[] createDatum( Object[] object ) {
-        Datum[] result= new Datum[object.length];
-        for ( int i=0; i<object.length; i++ ) {
-            result[i]= createDatum(object[i]);
-        }
-        return result;
-    } */
+    }    
     
     public Datum createDatum( int value ) {
         Integer key= new Integer(value);
@@ -126,6 +118,10 @@ public class EnumerationUnits extends Units {
     public Datum createDatum( double d ) {
         return createDatum((int)d);
     }    
+    
+    public Datum createDatum( double d, double resolution ) {
+        return createDatum((int)d);
+    }
     
     public DatumFormatterFactory getDatumFormatterFactory() {
         return EnumerationDatumFormatterFactory.getInstance();
