@@ -30,10 +30,11 @@ import edu.uiowa.physics.pw.das.datum.format.*;
  *
  * @author  jbf
  */
-public abstract class Datum {
+public class Datum {
     
     private Units units;
     private Number value;
+    private double resolution;
     private DatumFormatter formatter;
     
     public static class Double extends Datum {
@@ -47,16 +48,20 @@ public abstract class Datum {
         Double( double value ) {
             this( value, Units.dimensionless );
         }        
+        Double( double value, Units units, double resolution ) {
+            super( new java.lang.Double(value), units, units.getDatumFormatterFactory().defaultFormatter(), resolution );
+        }
         
     }
     
     private Datum(Number value, Units units) {
-        this( value, units, units.getDatumFormatterFactory().defaultFormatter());
+        this( value, units, units.getDatumFormatterFactory().defaultFormatter(), 0. );
     }
     
-    private Datum(Number value, Units units, DatumFormatter formatter) {
+    private Datum(Number value, Units units, DatumFormatter formatter, double resolution ) {
         this.value = value;
         this.units = units;
+        this.resolution= resolution;
         this.formatter = formatter;
     }
     
@@ -69,6 +74,15 @@ public abstract class Datum {
             return getUnits().getConverter(units).convert(this.getValue()).doubleValue();
         } else {
             return this.getValue().doubleValue();
+        }
+    }
+    
+    public double getResolution( Units units ) {
+        Units offsetUnits= getUnits().getOffsetUnits();
+        if ( units!=offsetUnits ) {
+            return offsetUnits.getConverter(units).convert(this.resolution);
+        } else {
+            return this.resolution;
         }
     }
     
@@ -96,12 +110,25 @@ public abstract class Datum {
         return getUnits().isFill(getValue());
     }
     
-    public Datum add( Datum a ) { return add( a.getValue(), a.getUnits() ); }    
+    public Datum add( Datum a ) { 
+        Datum result= add( a.getValue(), a.getUnits() ); 
+        result.resolution= Math.sqrt( a.resolution * a.resolution + this.resolution * this.resolution );
+        return result;
+    }    
+    
     public Datum add( Number a, Units units ) {  return getUnits().add( getValue(), a, units ); }
     public Datum add( double d, Units units ) {  return add( new java.lang.Double(d), units ); }
     
-    public Datum subtract( Datum a ) { return subtract( a.getValue(), a.getUnits() ); }
-    public Datum subtract( Number a, Units units ) { return getUnits().subtract( getValue(), a, units ); }
+    public Datum subtract( Datum a ) { 
+        Datum result= subtract( a.getValue(), a.getUnits() );
+        result.resolution= Math.sqrt( a.resolution * a.resolution + this.resolution * this.resolution );
+        return result;
+    }
+                
+    public Datum subtract( Number a, Units units ) { 
+        Datum result= getUnits().subtract( getValue(), a, units );        
+        return result; 
+    }
     public Datum subtract( double d, Units units ) {  return subtract( new java.lang.Double(d), units ); }    
     
     public Datum divide( Datum a ) { return getUnits().divide( getValue(), a.getValue(), a.getUnits() ); }
@@ -113,8 +140,12 @@ public abstract class Datum {
     public Datum multiply( double d ) {  return multiply( new java.lang.Double(d), Units.dimensionless ); }
     
     public Datum convertTo( Units units ) throws IllegalArgumentException {
-        UnitsConverter muc= this.getUnits().getConverter(units);
+        UnitsConverter muc= this.units.getConverter(units);
         Datum result= units.createDatum( muc.convert( this.getValue() ) );
+        if ( this.resolution!=0. ) {
+            muc= this.units.getOffsetUnits().getConverter(units.getOffsetUnits());
+            result.resolution= muc.convert(this.resolution);
+        }
         return result;
     }
     
@@ -198,6 +229,12 @@ public abstract class Datum {
     public static Datum create(double value, Units units, DatumFormatter formatter) {
         Datum result= create( value, units);
         result.formatter= formatter;
+        return result;
+    }
+    
+    public static Datum create( double value, Units units, double resolution ) {
+        Datum result= units.createDatum( value, resolution );
+        result.formatter= units.getDatumFormatterFactory().defaultFormatter();
         return result;
     }
     
