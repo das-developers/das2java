@@ -204,7 +204,7 @@ public class DasApplication {
     }
         
     public JFrame createMainFrame( java.awt.Container canvas ) {
-        JFrame frame= getMainFrame();
+        JFrame frame= createMainFrame();
         frame.setContentPane(canvas);
         frame.pack();
         frame.setVisible(true);
