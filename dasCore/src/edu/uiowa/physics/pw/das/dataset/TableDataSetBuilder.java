@@ -129,7 +129,8 @@ public class TableDataSetBuilder {
         }
     }
     
-    public void append(TableDataSet tds) {
+    public void append(TableDataSet tds) {        
+       // TODO: consider copying the properties
         String[] planeIDs = (String[])this.planeIDs.toArray(new String[this.planeIDs.size()]);
         TableDataSet[] planes = new TableDataSet[planeIDs.length];
         planes[0] = tds;
