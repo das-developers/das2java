@@ -252,6 +252,7 @@ public class DasColorBar extends DasAxis {
         public static final Type COLOR_WEDGE = new Type("color_wedge");
         public static final Type GRAYSCALE = new Type("grayscale");
         public static final Type INVERSE_GRAYSCALE = new Type("inverse_grayscale");
+        public static final Type WRAPPED_COLOR_WEDGE = new Type("wrapped_color_wedge");
         
         private BufferedImage image;
         private int[] colorTable;
@@ -329,6 +330,9 @@ public class DasColorBar extends DasAxis {
                 else if (this == INVERSE_GRAYSCALE) {
                     initializeInverseGrayScale();
                 }
+                else if (this == WRAPPED_COLOR_WEDGE) {
+                    initializeWrappedColorWedge();
+                }
             }
         }
         
@@ -353,6 +357,26 @@ public class DasColorBar extends DasAxis {
             colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
         }
         
+        private void initializeWrappedColorWedge() {
+            int[] index = {   0,   32,   64,  96, 128, 160, 192, 224, 255, };
+            int[] red =   { 225,    0,    0,   0, 255, 255, 255, 255, 255, };
+            int[] green = {   0,    0,  255, 255, 255, 185,  84,   0,   0, };
+            int[] blue =  { 225,  255,  255,   0,   0,   0,   0,   0, 255, };
+            colorTable = new int[256];
+
+            int ii= 0;
+            for (int i = 0; i < colorTable.length; i++) {
+                if (i > index[ii + 1]) {
+                    ii++;
+                }
+                double a= (i-index[ii]) / (double)(index[ii+1]-index[ii]);
+                double rr= (red[ii]*(1-a) + red[ii+1]*a)/(double)255.;
+                double gg= (green[ii]*(1-a) + green[ii+1]*a)/(double)255.;
+                double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
+                colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
+            }
+            //colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
+        }
         
         private void initializeInverseGrayScale() {
             colorTable = new int[256];
