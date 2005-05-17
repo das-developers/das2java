@@ -98,6 +98,12 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
         
+        /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
+         * new dataset.
+         */
+        Units resultXUnits= ddX==null ? tds.getXUnits() : ddX.getUnits();
+        Units resultYUnits= ddY==null ? tds.getYUnits() : ddY.getUnits();
+        
         if ( this.interpolate ) {
             Datum xTagWidth= (Datum)ds.getProperty("xTagWidth");
             if ( xTagWidth==null ) {
@@ -105,16 +111,10 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
             double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
             
-            double yTagWidthDouble;
             Datum yTagWidth= (Datum)ds.getProperty("yTagWidth");
-            if ( yTagWidth==null ) {
-                yTagWidthDouble= Double.POSITIVE_INFINITY;
-            } else {
-                yTagWidthDouble= yTagWidth.doubleValue(ddY.getUnits().getOffsetUnits());
-            }            
             
             if ( ddX!=null ) fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble );
-            if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, yTags[0], yTagWidthDouble, ddY.isLog());
+            if ( ddY!=null ) fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth );
         } else if (enlargePixels) {
             enlargePixels( rebinData, rebinWeights );
         }
@@ -124,12 +124,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", "weights"};
         
-        /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
-         * new dataset.
-         */
-        Units resultXUnits= ddX==null ? tds.getXUnits() : ddX.getUnits();
-        Units resultYUnits= ddY==null ? tds.getYUnits() : ddY.getUnits();
-        TableDataSet result= new DefaultTableDataSet(xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        TableDataSet result= new DefaultTableDataSet( xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
         
         return result;
     }
@@ -380,21 +375,47 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
     
-    static void fillInterpolateY(final double[][] data, final double[][] weights, final double[] yTags, double ySampleWidth, final boolean log) {
+    static void fillInterpolateY(final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth ) {
         
         final int nx = data.length;
-        final int ny = yTags.length;
+        final int ny = ddY.numberOfBins();
         final int[] i1= new int[ny];
         final int[] i2= new int[ny];
-        final double [] y_temp= new double[yTags.length];
+        final double [] y_temp= new double[ddY.numberOfBins()];
         float a1;
         float a2;
         
+        final double[] yTags= ddY.binCenters();
+        final Units yTagUnits= ddY.getUnits();
+        final boolean log= ddY.isLog();
+                
         if (log) {
             for (int j=0; j<ny; j++) y_temp[j]= Math.log(yTags[j]);
         } else {
             for (int j=0; j<ny; j++) y_temp[j]= yTags[j];
         }
+        
+        double[] ySampleWidth= new double[ny];
+        double fudge= 2.0;
+        if ( yTagWidth==null ) {
+            double d= Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
+            for ( int j=0; j<ny; j++ ) {
+                ySampleWidth[j]= d;
+            }
+        } else {
+            if ( yTagWidth.getUnits()==Units.percent ) {
+                double perc= yTagWidth.doubleValue(Units.percent);
+                for ( int j=0; j<ny; j++ ) {
+                    ySampleWidth[j]= yTags[j] * perc / 100 * fudge;
+                }
+            } else {
+                double d= yTagWidth.doubleValue(yTagUnits.getOffsetUnits());
+                for ( int j=0; j<ny; j++ ) {
+                    ySampleWidth[j]= d * fudge;
+                }
+            }
+        }
+        
         
         for (int i = 0; i < nx; i++) {
             int ii1= -1;
@@ -427,7 +448,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             
             
             for (int j = 0; j < ny; j++) {
-                if ( (i1[j] != -1) && ( ( yTags[i2[j]] - yTags[i1[j]] ) < ySampleWidth * 1.5 ) ) {
+                if ( (i1[j] != -1) && ( ( yTags[i2[j]] - yTags[i1[j]] ) < ySampleWidth[j] ) ) {
                     a2 = (float)((y_temp[j] - y_temp[i1[j]]) / (y_temp[i2[j]] - y_temp[i1[j]]));
                     a1 = 1.f - a2;
                     data[i][j] = data[i][i1[j]] * a1 + data[i][i2[j]] * a2;

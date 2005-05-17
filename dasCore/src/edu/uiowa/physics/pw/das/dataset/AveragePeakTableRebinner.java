@@ -30,11 +30,7 @@ import edu.uiowa.physics.pw.das.datum.*;
  * @author  Edward West
  */
 public class AveragePeakTableRebinner implements DataSetRebinner {
-    
-    /**
-     * Holds value of property debug.
-     */
-    
+
     /* adds additional planes for debugging */
     private boolean debug= false;
     
@@ -82,13 +78,15 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
             }
         }
         
-        Datum xTagWidth= (Datum)ds.getProperty("xTagWidth");
-        if ( xTagWidth==null ) {
-            xTagWidth= DataSetUtil.guessXTagWidth(tds);
-        }
+        Datum xTagWidth= DataSetUtil.guessXTagWidth(ds);
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
         AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagWidthDouble  );
-        if ( ddY!=null ) AverageTableRebinner.fillInterpolateY(averageData, averageWeights, yTags[0], Double.POSITIVE_INFINITY, ddY == null ? false : ddY.isLog());
+        
+        
+        if ( ddY!=null ) {
+            Datum yTagWidth= (Datum)ds.getProperty( DataSet.PROPERTY_Y_TAG_WIDTH );
+            AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, yTagWidth );
+        }
         
         if (peaks == null) {
             PeakTableRebinner.peaks(tds, peakData, ddX, ddY);
