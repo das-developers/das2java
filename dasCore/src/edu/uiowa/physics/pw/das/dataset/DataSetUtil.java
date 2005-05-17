@@ -120,7 +120,12 @@ public class DataSetUtil {
         return result;
     }
     
+    /**
+     * Provide a reasonable xTagWidth either by returning the specified xTagWidth property, 
+     * or by statistically looking at the X tags.
+     */
     public static Datum guessXTagWidth( DataSet table ) {
+        if ( table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH)!=null ) return (Datum)table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
         if ( table.getXLength()>2 ) {
             Datum min= table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
             for ( int i=2; i<table.getXLength(); i++ ) {
@@ -129,6 +134,7 @@ public class DataSetUtil {
             }
             return min;
         } else {
+            // We're in trouble now!
             return table.getXUnits().getOffsetUnits().createDatum(0);
         }
     }
