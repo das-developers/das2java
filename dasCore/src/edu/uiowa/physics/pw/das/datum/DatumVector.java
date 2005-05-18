@@ -31,16 +31,17 @@ public final class DatumVector {
     
     private final Units units;
     private final Object store;
+    private final double resolution;
     private final int offset;
     private final int length;
     
     /** T0DO: check offset and length for out of bounds condition */
     private DatumVector(double[] array, int offset, int length, Units units) {
-        this(array, offset, length, units, true);
+        this(array, offset, length, units, 0.0, true);
     }
     
     /** T0DO: check offset and length for out of bounds condition */
-    private DatumVector(double[] array, int offset, int length, Units units, boolean copy) {
+    private DatumVector(double[] array, int offset, int length, Units units, double resolution, boolean copy) {
         if (copy) {
             this.store = new double[length];
             for (int i = 0; i < length; i++) {
@@ -53,6 +54,7 @@ public final class DatumVector {
         }
         this.offset = offset;
         this.units = units;
+        this.resolution= resolution;
         this.length = length;
     }
     
@@ -61,11 +63,11 @@ public final class DatumVector {
         if (start == 0 && end == length) {
             return this;
         }
-        else return new DatumVector((double[])store, offset + start, end - start, units, false);
+        else return new DatumVector((double[])store, offset + start, end - start, units, resolution, false);
     }
     
     public Datum get(int index) {
-        return Datum.create(((double[])store)[index + offset], units);
+        return Datum.create( ((double[])store)[index + offset], units, resolution );
     }
     
     public Units getUnits() {
@@ -107,11 +109,15 @@ public final class DatumVector {
     public static DatumVector newDatumVector(double[] array, Units units) {
         return newDatumVector(array, 0, array.length, units);
     }
-    
+
+    public static DatumVector newDatumVector(double[] array, double resolution, Units units) {
+        return new DatumVector( array, 0, array.length, units, resolution, true );
+    }
+
     public static DatumVector newDatumVector(double[] array, int offset, int length, Units units) {
         return new DatumVector(array, offset, length, units);
     }
-    
+
     public int getLength() {
         return length;
     }
