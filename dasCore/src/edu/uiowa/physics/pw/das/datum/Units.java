@@ -109,9 +109,9 @@ public abstract class Units {
         Units.spacecraft.createDatum( "Cluster Tango" );
     }
     
-  /*
+  /**
    * Units.percent might be useful for specifying logarithmic spacing.  Define percent space between two numbers a, b where a<b
-   * as ( b-a )*100. / a.  So { 1,2,4,8 } has a spacing of 100%.
+   * as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100%.
    */
     public static final Units percent= new NumberUnits("%","Special dimensionless number, possibly useful for specifying Tag relevance on logarithmic scale");
     
