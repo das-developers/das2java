@@ -44,8 +44,11 @@ public class WritableTableDataSet implements TableDataSet {
         for ( int j=0; j<ny; j++ ) {
             result.setYTagDouble( 0, j, tds.getYTagDouble( 0, j, tds.getYUnits() ), tds.getYUnits() );
         }
-        if ( tds.getProperty("xTagWidth")!=null ) {
-            result.setProperty( "xTagWidth", tds.getProperty("xTagWidth") );
+        if ( tds.getProperty(PROPERTY_X_TAG_WIDTH)!=null ) {
+            result.setProperty( PROPERTY_X_TAG_WIDTH, tds.getProperty(PROPERTY_X_TAG_WIDTH) );
+        }
+        if ( tds.getProperty(PROPERTY_Y_TAG_WIDTH)!=null ) {
+            result.setProperty( PROPERTY_Y_TAG_WIDTH, tds.getProperty(PROPERTY_Y_TAG_WIDTH) );
         }
         return result;
     }
@@ -60,6 +63,7 @@ public class WritableTableDataSet implements TableDataSet {
                 result.setDouble(i, j, tds.getDouble( i, j, tds.getZUnits() ), tds.getZUnits() );
             }
         }
+        result.properties= new HashMap( tds.getProperties() );
         return result;
     }
     
