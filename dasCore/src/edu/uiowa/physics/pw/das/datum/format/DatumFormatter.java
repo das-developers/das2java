@@ -44,15 +44,37 @@ public abstract class DatumFormatter {
     /** Available for use by subclasses */
     protected DatumFormatter() {}
     
-    public abstract String format(Datum datum);
+    /*
+     * format the Datum so that it is understood out-of-context.  For
+     * example, "4.5 seconds"
+     */
+    public abstract String format( Datum datum );
     
+    /*
+     * format the Datum in the context of a given unit.  For example,
+     * "4.5".  It is acceptable to return the fully-qualified Datum, which
+     * is also the default class behavior.  This will give somewhat undesirable
+     * results on axes.     
+     */
+    public String format( Datum datum, Units units ) {
+        return format( datum );
+    }
+        
     /** Returns the datum formatted as a String with special formatting
-     * characters.
+     * characters.  As with format, this should be out-of-context and should
+     * be tagged with the Units. 
+     *
      * The default implementation just returns the result of
      * {@link #format(edu.uiowa.physics.pw.das.datum.Datum)}
      */
     public String grannyFormat(Datum datum) {
         return format(datum);
+    }
+    
+    /** formats the Datum in the context of the units. 
+     */
+    public String grannyFormat( Datum datum, Units units ) {
+        return format( datum, units );
     }
     
 }
