@@ -55,6 +55,14 @@ public class DataRange implements Cloneable {
     
     private PropertyChangeSupport propertyChangeDelegate;
     
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new Error("Assertion failure");
+        }
+    }
+    
     public DataRange( DasAxis parent, Datum min, Datum max, boolean log ) {
         if (min.gt(max)) throw new IllegalArgumentException("data min on axis is greater than data max");
         if (!min.isValid()) throw new IllegalArgumentException("data_minimum on axis is NaN");
@@ -84,8 +92,8 @@ public class DataRange implements Cloneable {
      */
     public void resetRange( DatumRange range ) {
         this.units= range.getUnits();
-        this.minimum= range.min().doubleValue(this.units); 
-        this.maximum= range.max().doubleValue(this.units); 
+        this.minimum= range.min().doubleValue(this.units);
+        this.maximum= range.max().doubleValue(this.units);
         fireUpdate();
     }
     
@@ -126,7 +134,7 @@ public class DataRange implements Cloneable {
     public Units getUnits() { return units; }
     
     public DatumRange getDatumRange() { return new DatumRange( minimum, maximum, units ); }
-
+    
     public void setUnits(Units newUnits) {
         if (units.equals(newUnits)) {
             return;
@@ -173,7 +181,7 @@ public class DataRange implements Cloneable {
                 h[1] = Datum.create(maximum,units);
                 history.push(h);
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( "push history: "+h[0]+" "+h[1] );
-//                reportHistory();
+                //                reportHistory();
             }
             forwardHistory.removeAllElements();
         }
@@ -277,7 +285,7 @@ public class DataRange implements Cloneable {
         }
     }
     
-    public static DataRange getAnimationDataRange( DatumRange range, boolean log ) {       
+    public static DataRange getAnimationDataRange( DatumRange range, boolean log ) {
         return new DataRange( (DasAxis)null, range.min(), range.max(), log ) {
             private double minimum, maximum;
             protected void fireUpdate() {};
