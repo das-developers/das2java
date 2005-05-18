@@ -35,7 +35,9 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
         }
         this.axis= axis;
         this.dsd= dsd;
-        dsd.addDataSetUpdateListener(this);
+        
+        if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
+        
         axis.addPropertyChangeListener("dataMinimum", getPropertyChangeListener());
         axis.addPropertyChangeListener("dataMaximum", getPropertyChangeListener());
         axis.addPropertyChangeListener("log", getPropertyChangeListener());
@@ -89,6 +91,12 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
     }
     
     public void paint(java.awt.Graphics g1) {
+        
+        if ( dsd==null ) {     
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("null events data set descriptor");
+            return;
+        }
+        
         Graphics2D g= ( Graphics2D ) g1;
         g.translate(-getX(), -getY());
         g.setColor(Color.white);
@@ -98,7 +106,7 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
         
         g.setColor(new Color(100,100,100,180));
         
-        eventMap= new int[getWidth()];
+        eventMap= new int[getWidth()];        
         
         try {
             vds= (VectorDataSet)dsd.getDataSet( axis.getDataMinimum(), axis.getDataMaximum(), null, null );
@@ -152,6 +160,7 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
     
     public void setDataSetDescriptor( DataSetDescriptor dsd ) {
         this.dsd= dsd;
+        this.dsd.addDataSetUpdateListener(this);
         markDirty();
         update();
     }
