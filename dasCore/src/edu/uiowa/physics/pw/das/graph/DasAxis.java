@@ -144,6 +144,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     private int debugColorIndex = 0;
     
+    private DasPlot dasPlot;
     
     /** TODO
      * @param data
@@ -1374,6 +1375,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param labelFont
      */
     public void setLabelFont(Font labelFont) {
+        // TODO: whah?--jbf
     }
     
     /** TODO
@@ -1381,7 +1383,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     public Object clone() {
         try {
-            return super.clone();
+            DasAxis result= (DasAxis)super.clone();
+            result.dataRange= (DataRange)result.dataRange.clone();
+            return result;
         } catch (CloneNotSupportedException e) {
             throw new Error("Assertion failure");
         }
@@ -1807,21 +1811,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double maximum= dataRange.getMaximum();
         double data_range = maximum-minimum;
         data= data_range*alpha + minimum;
-        
-        if ( dataRange.isLog() ) {
+      /*  if ( dataRange.isLog() ) {
             formatter = DatumUtil.limitLogResolutionFormatter(  getDataMinimum(), getDataMaximum(), getDLength() );
         } else {
             formatter = DatumUtil.limitResolutionFormatter( getDataMinimum(), getDataMaximum(), getDLength() );
-        }
+        } */
         
         if ( dataRange.isLog() ) {
             data= DasMath.exp10(data);
         }
         
-                
-        Datum result= Datum.create( data, dataRange.getUnits(), formatter );
-        //Datum result= Datum.create( data, dataRange.getUnits(), data_range / getDLength() );
-        
+        Datum result= Datum.create( data, dataRange.getUnits(), data_range / getDLength() );
         return result;
     }
     
@@ -1831,8 +1831,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected String tickFormatter(double tickv) {
         // TODO: label the axis with the Unit!
-        //return datumFormatter.grannyFormat(Datum.create(tickv, getUnits()),getUnits());
-        return datumFormatter.grannyFormat(Datum.create(tickv, getUnits()));
+        return datumFormatter.grannyFormat(Datum.create(tickv, getUnits()),getUnits());
+        
     }
     
     /** TODO
@@ -1925,6 +1925,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             
             this.dataRange= tempRange;
             
+            //double transitionTime= 1000; // millis
             double transitionTime= 300; // millis
             double alpha= ( System.currentTimeMillis() - t0 ) / transitionTime;
             
@@ -1936,7 +1937,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 double a0= 1-a1;
                 tempRange.setRange( min0*a0+min1*a1, max0*a0+max1*a1 );
                 //updateTickV();
-                this.paintImmediately(0,0,this.getWidth(),this.getHeight());
+                this.paintImmediately(0,0,this.getWidth(),this.getHeight());             
+                
+                if ( dasPlot!=null ) dasPlot.paintImmediately( 0,0,dasPlot.getWidth(), dasPlot.getHeight() );
+                
             }
             
             
@@ -2147,6 +2151,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         nc.put(name, axis);
         
         return axis;
+    }
+    
+    public void setPlot(DasPlot p ) {
+        dasPlot= p;
     }
     
     /** TODO
