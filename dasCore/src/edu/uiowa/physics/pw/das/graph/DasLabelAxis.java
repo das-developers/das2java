@@ -71,7 +71,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     
-    public DasLabelAxis(DatumVector labels, int orientation) {
+    public DasLabelAxis(DatumVector labels, int orientation) {        
         super( labels.get(0), labels.get(labels.getLength()-1), orientation, false );
         setLabels(labels);
         getDataRange().addpwUpdateListener(this);
@@ -172,10 +172,10 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return labels.get(iclose);
     }
     
-    public void setDataRange(Datum minimum, Datum maximum) {
-        super.setDataRange(minimum, maximum);
+    protected boolean rangeIsAcceptable( DatumRange dr ) {
+        return true;
     }
-    
+
     protected String tickFormatter(double tickv) {
         return df.format(Datum.create(tickv,labels.getUnits()));
     }
@@ -210,26 +210,6 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     
     public DasAxis createAttachedAxis(int orientation) {
         return new DasLabelAxis(labels, getDataRange(), orientation);
-    }
-    
-    public static void main( String[] args ) throws Exception {
-        EnumerationUnits units= EnumerationUnits.create("");
-        Datum x= units.createDatum(new Object());
-                
-        DatumVector labels= units.createDatumVector( new Object[] { "cat", "dog", "fish" } );
-        DasCanvas canvas= new DasCanvas(400,400);
-        DasRow row= DasRow.create(canvas);
-        DasColumn column= DasColumn.create(canvas);
-        
-        DatumVector labels2= units.createDatumVector( new String[] {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"} );
-        DasPlot p= new DasPlot( new DasLabelAxis( labels, DasAxis.HORIZONTAL ), new DasLabelAxis( labels2, DasAxis.VERTICAL ));
-        canvas.add(p, row, column);
-        
-        JFrame jframe= new JFrame();
-        jframe.setContentPane(canvas);
-        jframe.pack();
-        jframe.setVisible(true);
-        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     
     public void update(DasUpdateEvent e) {
