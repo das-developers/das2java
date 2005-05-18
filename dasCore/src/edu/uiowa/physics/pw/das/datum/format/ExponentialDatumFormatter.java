@@ -66,11 +66,11 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         double mant= x/exp;
         double tenToN= DasMath.exp10(digits);
         mant= Math.round( mant * tenToN ) / tenToN;
-        return mantFormat.format(mant)+"E"+exponent;
+        return mantFormat.format(mant)+"E"+exponent + " " + datum.getUnits();
     }
     
-    public String grannyFormat(Datum datum) {
-        String format= format(datum);
+    public String grannyFormat( Datum datum, Units units ) {
+        String format= format(datum,units);
         if ( format.indexOf("E")!=-1 ) {
             int iE= format.indexOf("E");
             StringBuffer granny = new StringBuffer(format.length() + 4);
@@ -82,6 +82,19 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         return format;
     }
     
+     public String grannyFormat( Datum datum ) {
+        String format= format(datum,datum.getUnits());
+        if ( format.indexOf("E")!=-1 ) {
+            int iE= format.indexOf("E");
+            StringBuffer granny = new StringBuffer(format.length() + 4);
+            String mant= format.substring(0,iE);
+            granny.append(mant).append("\u00d7");
+            granny.append("10").append("!A").append(format.substring(iE+1)).append("!N");
+            format = granny.toString();
+        }
+        return format + " " +datum.getUnits();
+    }
+     
     public String toString() {
         return mantFormatString + "E"+exponent;
     }
