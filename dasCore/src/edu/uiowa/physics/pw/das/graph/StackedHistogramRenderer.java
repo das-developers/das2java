@@ -155,7 +155,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         mouseAdapter.addMouseModule(ch);
         
         DasPlot p= parent;
-        mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
+        mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer(p,p.getXAxis(),p.getYAxis()), "Length" ) );
     }
     
     protected void uninstallRenderer() {
@@ -350,7 +350,6 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             
             try {
                 DataSet result;
-                
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                     DasApplication.getDefaultApplication().getLogger().fine("using rebinner "+highResRebinner);
                     result= highResRebinner.rebin( ds, x, y );
