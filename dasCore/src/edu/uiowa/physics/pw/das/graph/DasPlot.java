@@ -318,6 +318,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             rend.render(plotGraphics,xAxis,yAxis);
         }
         
+        if ( renderers.size()==0 ) {
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("dasPlot has no renderers");
+        }
+        
         graphics.setColor(getForeground());
         graphics.drawRect(x-1, y-1, xSize + 1, ySize + 1);
         
