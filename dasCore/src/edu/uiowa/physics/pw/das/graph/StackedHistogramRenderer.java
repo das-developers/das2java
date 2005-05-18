@@ -45,7 +45,6 @@ import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.*;
 import java.io.*;
@@ -279,6 +278,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             
             int littleRowHeight= yBase - yBase1;
             double zAxisMax= zAxis.getDataMaximum().doubleValue(xtysData.getZUnits());
+            double zAxisMin= zAxis.getDataMinimum().doubleValue(xtysData.getZUnits());
             
             if ( yBase1 >= row.getDMinimum() && yBase <= row.getDMaximum() ) {
                 for (int ibin=0; ibin < data.getXLength(); ibin++) {                    
@@ -308,7 +308,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                                 }
                             }
                         }                                 
-                        g.drawLine(x0, yAvg, x0, yAvg+yHeight );                                                
+                        if ( zz>=zAxisMin ) g.drawLine(x0, yAvg, x0, yAvg+yHeight );                                                
                     }
                 }
             }
