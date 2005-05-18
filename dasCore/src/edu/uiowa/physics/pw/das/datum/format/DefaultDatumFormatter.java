@@ -24,6 +24,8 @@
 package edu.uiowa.physics.pw.das.datum.format;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.util.*;
+import java.math.*;
 
 import java.text.*;
 import java.util.regex.*;
@@ -46,24 +48,39 @@ public class DefaultDatumFormatter extends DatumFormatter {
         if (formatString.equals("")) {
             this.formatString = "";
             format = null;
-        }
-        else {
+        } else {
             this.formatString = formatString;
             format = new DecimalFormat(formatString);
         }
     }
     
     public String format(Datum datum) {
-        if (format == null) {
-            return Double.toString(datum.doubleValue(datum.getUnits()));
-        }
-        else {
-            return format.format(datum.doubleValue(datum.getUnits()));
-        }
+        return format( datum, datum.getUnits() ) + " " + datum.getUnits();
     }
     
-    public String grannyFormat(Datum datum) {
-        String format= format(datum);
+    public String format(Datum datum, Units units ) {
+        double d= datum.doubleValue(units);
+        String result;
+        if (format == null) {
+            double resolution= datum.getResolution( units.getOffsetUnits() );
+            if ( resolution == 0. ) resolution= Math.max( Math.abs(d) / 10000, 0.0001 );
+            int scale= (int)Math.ceil( -1 * DasMath.log10(resolution) - 0.00001 ); // add an extra half-digit for safety
+            if ( scale>=0 ) {
+                BigDecimal bd= new BigDecimal( d );
+                bd= bd.setScale( scale, BigDecimal.ROUND_HALF_DOWN );
+                result= bd.toString();
+            } else {
+                d= Math.round( d / DasMath.exp10(-scale) ) * DasMath.exp10(-scale);
+                result= Double.toString(d);
+            }            
+        } else {
+            result= format.format(datum.doubleValue(units));
+        }
+        return result;
+    }
+    
+    public String grannyFormat( Datum datum, Units units ) {
+        String format= format( datum, units );
         if ( format.indexOf("E")!=-1 ) {
             int iE= format.indexOf("E");
             StringBuffer granny = new StringBuffer(format.length() + 4);
@@ -75,6 +92,10 @@ public class DefaultDatumFormatter extends DatumFormatter {
             format = granny.toString();
         }
         return format;
+    }
+    
+    public String grannyFormat(Datum datum) {
+        return grannyFormat(datum,datum.getUnits()) + " " + datum.getUnits();
     }
     
     public String toString() {
