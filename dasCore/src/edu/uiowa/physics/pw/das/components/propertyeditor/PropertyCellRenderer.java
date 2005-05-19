@@ -22,13 +22,18 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
     public PropertyCellRenderer() {
         super("Label");
         setFont(getFont().deriveFont(Font.PLAIN));
-        setOpaque(true);
-        setBorder(new EmptyBorder(5,5,5,5));
+        //setOpaque(true);
+        //setBorder(new EmptyBorder(5,5,5,5));
         booleanRenderer = new JCheckBox();
         booleanRenderer.setBorder(new EmptyBorder(5,5,5,5));
     }
     
+    private TableCellRenderer colorRenderer = new ColorCellRenderer();
+    
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        if (value instanceof java.awt.Color) {
+            return colorRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
         if (value instanceof Enumeration) {
             Enumeration enum = (Enumeration)value;
             setIcon(enum.getListIcon());
@@ -39,7 +44,8 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         if (value instanceof Boolean) {
             booleanRenderer.setSelected(((Boolean)value).booleanValue());
             booleanRenderer.setText(value.toString());
-            booleanRenderer.setBackground(isSelected ? Color.gray : Color.lightGray);
+//            booleanRenderer.setBackground(isSelected ? Color.gray : Color.lightGray);
+            booleanRenderer.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
             return booleanRenderer;
         }
         else if ((value instanceof Double) || (value instanceof Float)) {
@@ -50,7 +56,10 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         }
         setText(String.valueOf(value));
         setOpaque(true);
-        setBackground(isSelected ? Color.gray : Color.lightGray);
+        //setBackground(isSelected ? Color.gray : Color.lightGray);
+        if (table != null) {
+            setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+        }
         return this;
     }
     
