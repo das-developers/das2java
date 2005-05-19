@@ -14,10 +14,6 @@ public class TreeTableCellRenderer extends JTree implements TableCellRenderer {
     
     private int visibleRow;
     
-    private Color unselectedBackground = Color.LIGHT_GRAY;
-    
-    private Color selectedBackground = Color.GRAY;
-    
     public TreeTableCellRenderer(TreeModel model) {
         super(model);
     }
@@ -34,27 +30,11 @@ public class TreeTableCellRenderer extends JTree implements TableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         this.table = table;
         this.visibleRow = row;
-        setBackground(isSelected ? selectedBackground : unselectedBackground);
+        if (table != null) {
+            setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+        }
         return this;
     }
-    
-    public Color getSelectedBackground() {
-        return selectedBackground;
-    }
-    
-    public Color getUnselectedBackground() {
-        return unselectedBackground;
-    }
-    
-    public void setSelectedBackground(Color c) {
-        selectedBackground = c;
-    }
-    
-    public void setUnselectedBackground(Color c) {
-        unselectedBackground = c;
-    }
-    
-    
     
 }
 
