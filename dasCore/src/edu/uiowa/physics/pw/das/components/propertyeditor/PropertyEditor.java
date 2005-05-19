@@ -23,10 +23,11 @@
 
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
+import edu.uiowa.physics.pw.das.components.DatumEditor;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableCellRenderer;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
-import edu.uiowa.physics.pw.das.dasml.CommandBlockEditor;
-import edu.uiowa.physics.pw.das.dasml.OptionListEditor;
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.graph.PsymConnector;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -35,41 +36,69 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.Introspector;
-import java.lang.reflect.Field;
+import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.*;
-
-
-import javax.swing.table.TableCellEditor;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
+
+
 
 /**
  * This class implements a Hierarchical property editor
  *
  * @author Edward West
  */
-public class PropertyEditor extends JPanel {
+public class PropertyEditor extends JComponent {
     
-    JTable table;
+    static final Set editableTypes;
+    static {
+        HashSet set = new HashSet();
+        
+        //Primitives
+        set.add(byte.class);
+        set.add(short.class);
+        set.add(int.class);
+        set.add(long.class);
+        set.add(float.class);
+        set.add(double.class);
+        set.add(boolean.class);
+        
+        //Object types
+        set.add(String.class);
+        set.add(Datum.class);
+        set.add(Color.class);
+        //set.add(PsymConnector.class);
+        
+        editableTypes = Collections.unmodifiableSet(set);
+    }
     
-    JButton closeButton;
+    /*
+     * Set up the custom editors.
+     */
+    static {
+        PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);
+        PropertyEditorManager.registerEditor(Datum.class, DatumEditor.class);
+        PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
+        PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
+        PropertyEditorManager.registerEditor(PsymConnector.class, EnumerationEditor.class);
+    }
     
-    JDialog dialog;
+    private JTable table;
     
-    public PropertyEditor(Editable e) {
-        super(new BorderLayout());
-        PropertyTreeNode root = new PropertyTreeNode(e);
+    private JButton closeButton;
+    
+    private JDialog dialog;
+    
+    public PropertyEditor(Object bean) {
+        setLayout(new BorderLayout());
+        PropertyTreeNode root = new PropertyTreeNode(bean);
         DefaultTreeModel treeModel = new DefaultTreeModel(root, true);
         TreeTableCellRenderer tree = new TreeTableCellRenderer(treeModel);
         tree.setRootVisible(false);
-        tree.setShowsRootHandles(false);
+        tree.setShowsRootHandles(true);
         TreeTableModel model = new TreeTableModel(root, tree);
         table = new JTable(model);
         add(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
@@ -77,7 +106,8 @@ public class PropertyEditor extends JPanel {
         initButtonPanel();
 
         PropertyCellRenderer valueRenderer = new PropertyCellRenderer();
-        PropertyCellEditor editor = new PropertyCellEditor(tree);
+        //PropertyCellEditor editor = new PropertyCellEditor(tree);
+        PropertyEditorAdapter editor = new PropertyEditorAdapter();
         Component c = valueRenderer.getTableCellRendererComponent(null, "XXX", false, false,  0, 0);
         table.setRowHeight(c.getPreferredSize().height);
         tree.setRowHeight(c.getPreferredSize().height);
