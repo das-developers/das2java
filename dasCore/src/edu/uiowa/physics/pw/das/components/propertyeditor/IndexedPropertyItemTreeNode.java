@@ -26,12 +26,7 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     }
     
     public boolean getAllowsChildren() {
-        if (value instanceof Editable) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return true;
     }
     
     String getDisplayName() {
