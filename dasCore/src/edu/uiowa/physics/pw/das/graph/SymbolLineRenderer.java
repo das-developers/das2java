@@ -50,7 +50,7 @@ public class SymbolLineRenderer extends Renderer {
     private PsymConnector psymConnector = PsymConnector.SOLID;
     
     /** Holds value of property color. */
-    private SymColor color= SymColor.black;
+    private Color color= Color.BLACK;
     
     private long lastUpdateMillis;
     
@@ -113,7 +113,7 @@ public class SymbolLineRenderer extends Renderer {
         ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
         if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
         
-        graphics.setColor(color.toColor());                        
+        graphics.setColor(color);                        
         
         if (path != null) {
             psymConnector.draw(graphics, path, lineWidth);
@@ -184,10 +184,10 @@ public class SymbolLineRenderer extends Renderer {
         /* fuzz the xSampleWidth */
         xSampleWidth = xSampleWidth * 1.5;
         
-        double x0 = -Double.MAX_VALUE;
-        double y0 = -Double.MAX_VALUE;
-        double i0 = -Double.MAX_VALUE;
-        double j0 = -Double.MAX_VALUE;
+        double x0 = Double.NaN;
+        double y0 = Double.NaN;
+        double i0 = Double.NaN;
+        double j0 = Double.NaN;
         boolean skippedLast = true;
         for (int index = ixmin; index <= ixmax; index++) {
             double x = dataSet.getXTagDouble(index, xUnits);
@@ -197,7 +197,13 @@ public class SymbolLineRenderer extends Renderer {
             if ( yUnits.isFill(y) || Double.isNaN(y)) {
                 skippedLast = true;
             }
-            else if (skippedLast || Math.abs(x - x0) > xSampleWidth) {
+            else if (skippedLast) { 
+                newPath.moveTo((float)i, (float)j);
+                skippedLast = false;
+            }
+            else if (Math.abs(x - x0) > xSampleWidth) {
+                //This should put a point on an isolated data value
+                newPath.lineTo((float)i0, (float)j0);
                 newPath.moveTo((float)i, (float)j);
                 skippedLast = false;
             }
@@ -271,14 +277,14 @@ public class SymbolLineRenderer extends Renderer {
     /** Getter for property color.
      * @return Value of property color.
      */
-    public SymColor getColor() {
+    public Color getColor() {
         return color;
     }
     
     /** Setter for property color.
      * @param color New value of property color.
      */
-    public void setColor(SymColor color) {
+    public void setColor(Color color) {
         this.color= color;
         refreshImage();
     }
