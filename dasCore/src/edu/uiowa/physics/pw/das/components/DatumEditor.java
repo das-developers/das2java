@@ -28,19 +28,30 @@ import edu.uiowa.physics.pw.das.datum.format.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyEditor;
+import java.text.ParseException;
+import java.util.EventObject;
 import javax.swing.*;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.EventListenerList;
+import javax.swing.table.TableCellEditor;
 
 
 /**
  *
  * @author  Edward West
  */
-public class DatumEditor extends JComponent {
+public class DatumEditor extends JComponent implements PropertyEditor, TableCellEditor {
     
     private JTextField editor;
     private JButton unitsButton;
     private Units units = Units.dimensionless;
     private ActionListener actionListener;
+    private Datum value;
+    private EventListenerList listeners;
     
     /** Creates a new instance of DatumEditor */
     public DatumEditor() {
@@ -78,7 +89,22 @@ public class DatumEditor extends JComponent {
         editor.setColumns(columns);
     }
     
-    public void setValue(Datum datum) {
+    /**
+     * @param datum
+     * @throws IllegalArgumentException if value is not a Datum
+     */
+    public void setValue(Object value) {
+        if (value instanceof Datum) {
+            setDatum((Datum)value);
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    public void setDatum(Datum datum) {
+        Datum oldValue = value;
+        value = datum;
         if (datum.getUnits() instanceof TimeLocationUnits) {
             editor.setText(TimeDatumFormatter.DEFAULT.format(datum));
         }
@@ -86,10 +112,49 @@ public class DatumEditor extends JComponent {
             editor.setText(datum.getFormatter().format(datum));
         }
         setUnits(datum.getUnits());
+        if (oldValue != value && oldValue != null && !oldValue.equals(value)) {
+            firePropertyChange("value", oldValue, value);
+        }
     }
     
-    public Datum getValue() throws java.text.ParseException {
-        return units.parse(editor.getText());
+    public void setAsText(String text) throws IllegalArgumentException {
+        try {
+            setDatum(units.parse(editor.getText()));
+        }
+        catch (ParseException pe) {
+            IllegalArgumentException iae = new IllegalArgumentException(pe.getMessage());
+            iae.initCause(pe);
+            throw iae;
+        }
+    }
+    
+    public Object getValue() {
+        return getDatum();
+    }
+    
+    public Datum getDatum() {
+        try {
+            String text = editor.getText();
+            Datum d = units.parse(text);
+            if (!d.equals(value)) {
+                Datum oldValue = value;
+                value = d;
+                firePropertyChange("value", oldValue, value);
+            }
+            return value;
+        }
+        catch (ParseException e) {
+            return null;
+        }
+    }
+    
+    public String getAsText() {
+        String text;
+        Datum value = getDatum();
+        if (value == null) {
+            return null;
+        }
+        return editor.getText();
     }
     
     public void setUnits(Units units) {
@@ -174,7 +239,6 @@ public class DatumEditor extends JComponent {
         public void mouseExited(MouseEvent e) {}
         public void mouseClicked(MouseEvent e) {}
         public void mouseReleased(MouseEvent e) {}
-        
     }
     
     public static void main(String[] args) {
@@ -218,4 +282,127 @@ public class DatumEditor extends JComponent {
         }
     }
     
+    /** @see java.beans.PropertyEditor#supportsCustomEditor()
+     * @return true
+     */
+    public boolean supportsCustomEditor() {
+        return true;
+    }
+    
+    /** @see java.beans.PropertyEditor#getCustomEditor()
+     * @return <code>this</code>
+     */
+    public Component getCustomEditor() {
+        return this;
+    }
+    
+    /**
+     * This PropertyEditor implementation does not support generating java
+     * code.
+     * @return The string "???"
+     */
+    public String getJavaInitializationString() {
+        return "???";
+    }
+    
+    /**
+     * This PropertyEditor implementation does not support enumerated
+     * values.
+     * @return null
+     */
+    public String[] getTags() { return null; }
+    
+    /** @see java.beans.PropertyEditor#isPaintable()
+     * @return false
+     */
+    public boolean isPaintable() {
+        return false;
+    }
+    
+    /** Does nothing.
+     * @param g
+     * @param r
+     */
+    public void paintValue(Graphics g, Rectangle r) {}
+    
+    /* CellEditor stuff */
+    
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        setValue(value);
+        return this;
+    }
+    
+    /**
+     */
+    public void addCellEditorListener(CellEditorListener l) {
+        if (listeners == null) {
+            listeners = new EventListenerList();
+        }
+        listeners.add(CellEditorListener.class, l);
+    }
+    
+    /**
+     */
+    public void removeCellEditorListener(CellEditorListener l) {
+        if (listeners != null) {
+            listeners.remove(CellEditorListener.class, l);
+        }
+    }
+    
+    /** @see javax.swing.CellEditor#isCellEditable(java.util.EventObject)
+     * @return <code>true</code>
+     */
+    public boolean isCellEditable(EventObject anEvent) {
+        return true;
+    }
+    
+    /** @see javax.swing.CellEditor#shouldSelectCell(java.util.EventObject)
+     * @return <code>true</code>
+     */
+    public boolean shouldSelectCell(EventObject anEvent) {
+        return true;
+    }
+    
+    /** Returns the value stored in this editor.
+     * @return the current value being edited
+     */
+    public Object getCellEditorValue() {
+        return getDatum();
+    }
+    
+    public boolean stopCellEditing() {
+        if (getDatum() == null) {
+            return false;
+        }
+        fireEditingStopped();
+        return true;
+    }
+    
+    public void cancelCellEditing() {
+        fireEditingCanceled();
+    }
+    
+    private ChangeEvent evt;
+    
+    private void fireEditingStopped() {
+        Object[] l = listeners.getListenerList();
+        for (int i = 0; i < l.length; i+=2) {
+            if (l[i] == CellEditorListener.class) {
+                CellEditorListener cel = (CellEditorListener)l[i+1];
+                if (evt == null) { evt = new ChangeEvent(this); }
+                cel.editingStopped(evt);
+            }
+        }
+    }
+    
+    private void fireEditingCanceled() {
+        Object[] l = listeners.getListenerList();
+        for (int i = 0; i < l.length; i+=2) {
+            if (l[i] == CellEditorListener.class) {
+                CellEditorListener cel = (CellEditorListener)l[i+1];
+                if (evt == null) { evt = new ChangeEvent(this); }
+                cel.editingCanceled(evt);
+            }
+        }
+    }
 }
