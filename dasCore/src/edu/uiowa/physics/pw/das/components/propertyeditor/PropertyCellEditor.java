@@ -251,10 +251,6 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
                 DasExceptionHandler.handle(iae);
                 return currentValue;
             }
-            catch ( ParseException ex ) {
-                DasExceptionHandler.handle(ex);
-                return currentValue;
-            }
         }
         else if (editorState == COMMAND_BLOCK) {
             return commandBlockEditor.getCellEditorValue();
