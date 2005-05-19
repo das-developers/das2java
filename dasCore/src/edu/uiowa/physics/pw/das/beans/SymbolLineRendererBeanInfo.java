@@ -23,13 +23,14 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
 import java.beans.BeanInfo;
 
 public class SymbolLineRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
-        new Property("psym", AccessLevel.DASML, "getPsym", "setPsym", null),
-        new Property("psymConnector", AccessLevel.DASML, "getPsymConnector", "setPsymConnector", null),
+        new Property("psym", AccessLevel.DASML, "getPsym", "setPsym", EnumerationEditor.class),
+        new Property("psymConnector", AccessLevel.DASML, "getPsymConnector", "setPsymConnector", EnumerationEditor.class),
         new Property("histogram", AccessLevel.DASML, "isHistogram", "setHistogram", null),
         new Property("color", AccessLevel.DASML, "getColor", "setColor", null),
         new Property("lineWidth", AccessLevel.DASML, "getLineWidth", "setLineWidth", null),

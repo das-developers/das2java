@@ -23,12 +23,13 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
 import java.beans.BeanInfo;
 
 public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
-        new Property("rebinner", AccessLevel.DASML, "getRebinner", "setRebinner", null),  
+        new Property("rebinner", AccessLevel.DASML, "getRebinner", "setRebinner", EnumerationEditor.class),  
         new Property("colorBar", AccessLevel.DASML, "getColorBar", "setColorBar", null),
         new Property("sliceRebinnedData", AccessLevel.DASML, "isSliceRebinnedData", "setSliceRebinnedData", null),
     };

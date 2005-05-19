@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
 import java.beans.BeanInfo;
 
 /**
@@ -33,7 +34,7 @@ import java.beans.BeanInfo;
 public class DasColorBarBeanInfo extends AccessLevelBeanInfo {
     
     protected static final Property[] properties = {
-        new Property("type", AccessLevel.DASML, "getType", "setType", null)
+        new Property("type", AccessLevel.DASML, "getType", "setType", EnumerationEditor.class)
     };
 
     public DasColorBarBeanInfo() {
