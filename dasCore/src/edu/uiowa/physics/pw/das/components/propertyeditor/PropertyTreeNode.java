@@ -54,7 +54,28 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     }
     
     public boolean getAllowsChildren() {
-        return value instanceof Editable;
+        //No propertyDescriptor indicates the root node.
+        if (propertyDescriptor == null) {
+            return true;
+        }
+        //Properties that define an editor should not be expanded
+        else if (propertyDescriptor.getPropertyEditorClass() != null) {
+            return false;
+        }
+        else {
+            Class type;
+            if (propertyDescriptor instanceof IndexedPropertyDescriptor) {
+                IndexedPropertyDescriptor ipd = (IndexedPropertyDescriptor)propertyDescriptor;
+                type = ipd.getIndexedPropertyType();
+            }
+            else {
+                type = propertyDescriptor.getPropertyType();
+            }
+            //Types with identified as editable by PropertyEditor and
+            //types with registered PropertyEditors should not be expanded.
+            return !PropertyEditor.editableTypes.contains(type)
+                && PropertyEditorManager.findEditor(type) == null;
+        }
     }
     
     public TreeNode getChildAt(int childIndex) {
@@ -88,7 +109,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     protected void maybeLoadChildren() {
         if (children == null) {
             children = new ArrayList();
-            if (value instanceof Editable) {
+            if (getAllowsChildren()) {
                 try {
                     BeanInfo info = Introspector.getBeanInfo(value.getClass());
                     PropertyDescriptor[] properties = info.getPropertyDescriptors();
@@ -206,11 +227,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     }
     
     public boolean isCellEditable(int column) {
-        if (propertyDescriptor instanceof IndexedPropertyDescriptor) {
-            IndexedPropertyDescriptor ipd = (IndexedPropertyDescriptor)propertyDescriptor;
-            return column == 1 && !(Editable.class.isAssignableFrom(ipd.getIndexedPropertyType()));
-        }
-        return column == 1 && !(Editable.class.isAssignableFrom(propertyDescriptor.getPropertyType()));
+        return column == 1 && !(getAllowsChildren());
     }
     
     public Class getColumnClass(int columnIndex) {
