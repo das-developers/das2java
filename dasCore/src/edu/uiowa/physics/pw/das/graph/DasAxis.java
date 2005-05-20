@@ -920,6 +920,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             while ( overlap && nTicksMax>2 ) {
                                                 
                 tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
+                atick= tickV.getMajorTicks().get(0);
                 
                 granny= tickV.getFormatter().grannyFormat(atick);
                 
