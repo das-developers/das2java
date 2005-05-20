@@ -167,13 +167,15 @@ public final class DatumVector {
     }
     
     public String toString() {
+        Units units= this.getUnits();
         StringBuffer result= new StringBuffer();
         result.append("[");
         for ( int i=0; i<getLength(); i++ ) {
             if ( i>0 ) result.append(", ");
-            result.append(get(i).toString());
+            Datum d= get(i);
+            result.append(d.getFormatter().format(d,units));
         }
-        result.append("]");
+        result.append(" "+units.toString()+" ]");
         return result.toString();
     }
 }
