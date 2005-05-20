@@ -37,7 +37,7 @@ public class DasColumnBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DasColumnBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.DasDevicePosition.class);
+        super(properties, edu.uiowa.physics.pw.das.graph.DasColumn.class);
     }
     
 }
