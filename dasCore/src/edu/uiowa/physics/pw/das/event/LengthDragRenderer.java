@@ -46,19 +46,16 @@ public class LengthDragRenderer extends LabelDragRenderer {
             run= DatumUtil.asOrderOneUnits(run);
             String runString;
             if ( x0.getUnits()==run.getUnits() ) {
-                runString= x0.getFormatter().format(run) + " " +run.getUnits(); //TODO: when Datum.toString() prints units, this will break
+                runString= x0.getFormatter().format(run); 
             } else {
-                runString= run.toString() + " " +run.getUnits() ;
+                runString= run.toString();
             }
             
             Datum y0= yaxis.invTransform(p2.y+parent.getY());
+            System.out.println( y0.toString() );
             Datum rise= y0.subtract(yaxis.invTransform(p1.y+parent.getY()));
             String riseString;
-            if ( y0.getUnits()==rise.getUnits() ) {
-                riseString= y0.getFormatter().format(rise) + " " +rise.getUnits();
-            } else {
-                riseString= rise.toString() + " " +rise.getUnits();
-            }
+            riseString= rise.toString();
             
             String radString;
             if ( rise.getUnits().isConvertableTo(run.getUnits()) ) {
@@ -66,7 +63,13 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 double rised= rise.doubleValue(u);
                 double rund= run.doubleValue(u);
                 double rad= Math.sqrt( rised * rised + rund * rund );
-                radString= " " + Datum.create( rad, u ).toString();
+                double srised= rise.getResolution(u);
+                double srund= run.getResolution(u);
+                double res= rad * Math.sqrt( Math.pow( srised / Math.max(  Math.abs(rised), srised ), 2 )  + 
+                        Math.pow( srund / Math.max( Math.abs( rund ), srund ), 2 ) );
+                Datum radDatum= Datum.create( rad, u, res );
+                
+                radString= " R:" + radDatum;
             } else {
                 radString= "";
             }
