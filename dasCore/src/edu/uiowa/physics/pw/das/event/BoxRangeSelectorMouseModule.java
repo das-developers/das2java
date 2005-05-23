@@ -36,13 +36,16 @@ import javax.swing.event.EventListenerList;
  */
 public class BoxRangeSelectorMouseModule extends MouseModule {
     
-    private DasAxis xAxis;
-    private DasAxis yAxis;
+    protected DasAxis xAxis;
+    protected DasAxis yAxis;
     private DataSetConsumer consumer;
     
     /** Utility field used by event firing mechanism. */
     private EventListenerList listenerList =  new javax.swing.event.EventListenerList();
     
+    /**
+     * @param consumer is the source context of the data set selection
+     */
     public BoxRangeSelectorMouseModule(DasCanvasComponent parent, DataSetConsumer consumer, DasAxis xAxis, DasAxis yAxis) {
         super( parent, new BoxGesturesRenderer(parent), "Box Selection" );
         if (!xAxis.isHorizontal()) {
