@@ -60,13 +60,17 @@ public class ExponentialDatumFormatter extends DatumFormatter {
     }
     
     public String format(Datum datum) {
+        return format( datum, datum.getUnits() ) + " " + datum.getUnits();
+    }
+
+    public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(datum.getUnits());
         if ( x == 0. ) return "0.";
         double exp= DasMath.exp10(exponent);
         double mant= x/exp;
         double tenToN= DasMath.exp10(digits);
         mant= Math.round( mant * tenToN ) / tenToN;
-        return mantFormat.format(mant)+"E"+exponent + " " + datum.getUnits();
+        return mantFormat.format(mant)+"E"+exponent;
     }
     
     public String grannyFormat( Datum datum, Units units ) {
