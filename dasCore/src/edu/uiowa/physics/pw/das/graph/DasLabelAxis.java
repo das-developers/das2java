@@ -180,10 +180,6 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return df.format(Datum.create(tickv,labels.getUnits()));
     }
     
-    public String getLabel(double tickv) {
-        return tickFormatter(tickv);
-    }
-    
     public int getInterItemSpace() {
         return (int)Math.abs(transform(labels.get(1))-transform(labels.get(0)));
     }
