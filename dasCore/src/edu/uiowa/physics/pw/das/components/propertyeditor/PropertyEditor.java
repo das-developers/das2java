@@ -109,8 +109,9 @@ public class PropertyEditor extends JComponent {
         //PropertyCellEditor editor = new PropertyCellEditor(tree);
         PropertyEditorAdapter editor = new PropertyEditorAdapter();
         Component c = valueRenderer.getTableCellRendererComponent(null, "XXX", false, false,  0, 0);
-        table.setRowHeight(c.getPreferredSize().height);
-        tree.setRowHeight(c.getPreferredSize().height);
+        int cellHeight= 21;  // c.getPreferredSize().height;
+        table.setRowHeight( cellHeight );
+        tree.setRowHeight( cellHeight );
         tree.setCellRenderer(valueRenderer);
         table.getColumnModel().getColumn(0).setCellRenderer(tree);
         table.getColumnModel().getColumn(1).setCellRenderer(valueRenderer);
