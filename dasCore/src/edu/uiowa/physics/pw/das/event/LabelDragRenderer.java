@@ -14,10 +14,9 @@ import java.awt.*;
  *
  * @author  Jeremy
  */
-public abstract class LabelDragRenderer implements DragRenderer {
-    
-    
-    String label="";
+public class LabelDragRenderer implements DragRenderer {
+        
+    String label="Label not set";
     GrannyTextRenderer gtr;
     DasCanvasComponent parent;
     
@@ -32,6 +31,7 @@ public abstract class LabelDragRenderer implements DragRenderer {
         
     LabelDragRenderer( DasCanvasComponent parent ) {
         this.parent= parent;
+        this.dirtyBounds= new Rectangle();
         gtr= new GrannyTextRenderer();
     }
     
@@ -103,5 +103,9 @@ public abstract class LabelDragRenderer implements DragRenderer {
         g.setColor(color0);
         
         return dirtyBounds;
+    }
+
+    public void renderDrag(Graphics g, Point p1, Point p2) {        
+        dirtyBounds= paintLabel( g, p2 );
     }
 }
