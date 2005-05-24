@@ -26,7 +26,8 @@ public class LabelDragRenderer implements DragRenderer {
     int maxLabelWidth;    
     
     public void clear(Graphics g) {
-        parent.paintImmediately(dirtyBounds);        
+        if ( dirtyBounds!=null ) parent.paintImmediately(dirtyBounds);               
+        dirtyBounds= null;
     }
         
     LabelDragRenderer( DasCanvasComponent parent ) {
@@ -106,6 +107,11 @@ public class LabelDragRenderer implements DragRenderer {
     }
 
     public void renderDrag(Graphics g, Point p1, Point p2) {        
-        dirtyBounds= paintLabel( g, p2 );
+        Rectangle r= paintLabel( g, p2 );
+        if ( dirtyBounds==null ) {
+            dirtyBounds= r;
+        } else {
+            dirtyBounds.add(r);
+        }    
     }
 }
