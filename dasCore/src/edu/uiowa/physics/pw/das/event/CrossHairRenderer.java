@@ -41,7 +41,7 @@ import java.text.DecimalFormat;
  *
  * @author  eew
  */
-public class CrossHairRenderer implements DragRenderer, Editable {
+public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer, Editable {
     
     protected int xInitial;
     protected int yInitial;
@@ -61,8 +61,7 @@ public class CrossHairRenderer implements DragRenderer, Editable {
     private DatumFormatter nfz;
     
     private FontMetrics fm;
-    private int dxMax=-999999;
-    private Rectangle dirtyBounds;
+    private int dxMax=-999999;    
     private Rectangle hDirtyBounds;
     private Rectangle vDirtyBounds;
     private Point crossHairLocation=null;
@@ -80,11 +79,11 @@ public class CrossHairRenderer implements DragRenderer, Editable {
     private boolean debugging;
     
     public CrossHairRenderer(  DasPlot parent, DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
+        super( parent );
         this.XAxis= xAxis;
         this.YAxis= yAxis;
         this.parent= parent;
-        this.dataSetConsumer= dataSetConsumer;
-        dirtyBounds= new Rectangle();
+        this.dataSetConsumer= dataSetConsumer;        
         hDirtyBounds = new Rectangle();
         vDirtyBounds = new Rectangle();
     }
@@ -182,7 +181,10 @@ public class CrossHairRenderer implements DragRenderer, Editable {
                 report= "x:"+xAsString+" y:"+yAsString;
             }
             
-            fm= parent.getGraphics().getFontMetrics();
+            setLabel( report );
+            dirtyBounds= paintLabel( g, p2 );
+            
+            /* fm= parent.getGraphics().getFontMetrics();
             
             Color color0= g.getColor();
             g.setColor(new Color(255,255,255,200));
@@ -211,7 +213,8 @@ public class CrossHairRenderer implements DragRenderer, Editable {
             
             g.setColor(new Color(20,20,20));
             gtr.draw( g, xp+3, (float)( yp+gtr.getAscent() ) );
-            g.setColor(color0);
+            g.setColor(color0);*/
+            
         }
         
         drawCrossHair(g,p2);
@@ -224,48 +227,35 @@ public class CrossHairRenderer implements DragRenderer, Editable {
     
     private void drawCrossHair(Graphics g0, Point p) {
         
-        Graphics g= g0.create();
+       Graphics2D g= (Graphics2D)g0.create();
         
-        g.setColor(Color.black);
-        //g.setXORMode(Color.white);
-        
-        /*
-        if (crossHairLocation!=null) {
-            if (!crossHairLocation.equals(p)) {
-                drawCrossHair(g,crossHairLocation);
-            }
-        }
-         */
+       Color color0= Color.black;
+       
+        g.setColor(color0);
         
         Dimension d= parent.getSize();
-        hDirtyBounds.setBounds(0, p.y, d.width, 1);
-        g.drawLine( 0,  p.y,  d.width,  p.y);
-        vDirtyBounds.setBounds(p.x, 0, 1, d.height);
+        hDirtyBounds.setBounds(0, p.y-1, d.width, 3);
+                
+        Stroke stroke0= g.getStroke();
+        
+        g.setColor( ghostColor );        
+        g.setStroke(new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );        
+        g.drawLine( 0,  p.y,  d.width,  p.y );
         g.drawLine( p.x,  0,  p.x,  d.height );
         
-        /*
-        if (crossHairLocation!=null) {
-            if (crossHairLocation.equals(p)) {
-                crossHairLocation=null;
-            } else {
-                // this shouldn't happen if things are working properly
-                edu.uiowa.physics.pw.das.util.DasDie.println("Sorry about the crosshair mess!");
-                crossHairLocation=p;
-            }
-        } else {
-            crossHairLocation= p;
-        }
-         */
+        g.setColor( color0 );
+        g.setStroke( stroke0 );
+        
+        g.drawLine( 0,  p.y,  d.width,  p.y);
+        vDirtyBounds.setBounds(p.x-1, 0, 3, d.height);
+        g.drawLine( p.x,  0,  p.x,  d.height );        
         
         g.dispose();
         
     }
     
     public void clear(Graphics g) {
-        if (crossHairLocation!=null) {
-            drawCrossHair(g,crossHairLocation);
-        }
-        parent.paintImmediately(dirtyBounds);
+        super.clear(g);
         parent.paintImmediately(hDirtyBounds);
         parent.paintImmediately(vDirtyBounds);
         //sorry about that...
