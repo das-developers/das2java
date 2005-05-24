@@ -34,6 +34,9 @@ import java.awt.*;
  */
 public interface DragRenderer
 { 
+    /* use this color when drawing ghostly backgrounds for contrast */
+    public Color ghostColor= new Color(255,255,255,100);
+    
     /* draws the drag for mousing from p1 to p2 */
     public abstract void renderDrag(Graphics g, Point p1, Point p2);
     
