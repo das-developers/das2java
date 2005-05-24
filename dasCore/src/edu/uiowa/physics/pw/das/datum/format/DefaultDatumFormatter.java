@@ -60,6 +60,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
     
     public String format(Datum datum, Units units ) {
         double d= datum.doubleValue(units);
+        if ( Double.isInfinite(d) ) return ""+d;
         String result;
         if (format == null) {
             double resolution= datum.getResolution( units.getOffsetUnits() );
