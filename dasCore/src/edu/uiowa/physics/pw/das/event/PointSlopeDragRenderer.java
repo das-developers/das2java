@@ -28,7 +28,7 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         this.parent= parent;
         this.xaxis= xaxis;
         this.yaxis= yaxis;    
-        dirtyBounds= new Rectangle();
+        
         gtr= new GrannyTextRenderer();
         nf= new DecimalFormat( "0.00E0" );       
     }
@@ -37,7 +37,9 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         Graphics2D g= ( Graphics2D ) g1;        
         g1.drawLine( p1.x, p1.y, p2.x, p2.y );
         g1.drawOval(p1.x-1, p1.y-1, 3, 3 ) ;
-        dirtyBounds.setRect( p1.x-2, p1.y-2, 5, 5 );        
+        
+        dirtyBounds= new Rectangle( p1.x-2, p1.y-2, 5, 5 );
+                
         dirtyBounds.add(p2.x-2,p2.y-2);
         dirtyBounds.add(p2.x+2,p2.y+2);
         
@@ -45,8 +47,8 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         Datum rise= yaxis.invTransform(p2.y+parent.getY()).subtract(yaxis.invTransform(p1.y+parent.getY()));
             
         if ( !p1.equals(p2) ) {
-            double slope= rise.doubleValue(rise.getUnits()) / run.doubleValue(run.getUnits());
-            setLabel( nf.format(slope) );
+            Datum slope= rise.divide(run);            
+            setLabel( "m="+slope );
         } else {
             setLabel( "" );
         }
