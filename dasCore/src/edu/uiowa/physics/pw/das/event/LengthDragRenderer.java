@@ -26,8 +26,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
     public LengthDragRenderer(DasCanvasComponent parent, DasAxis xaxis, DasAxis yaxis) {
         super( parent );
         this.xaxis= xaxis;
-        this.yaxis= yaxis;
-        dirtyBounds= new Rectangle();
+        this.yaxis= yaxis;        
     }
     
     
@@ -35,6 +34,8 @@ public class LengthDragRenderer extends LabelDragRenderer {
         Graphics2D g= ( Graphics2D ) g1;
         g1.drawLine( p1.x, p1.y, p2.x, p2.y );
         g1.drawOval(p1.x-1, p1.y-1, 3, 3 ) ;
+        
+        dirtyBounds= new Rectangle();
         
         dirtyBounds.setRect( p1.x-2, p1.y-2, 5, 5 );
         dirtyBounds.add(p2.x-2,p2.y-2);
@@ -78,7 +79,8 @@ public class LengthDragRenderer extends LabelDragRenderer {
         } else {
             setLabel( "" );
         }
-        dirtyBounds.add( paintLabel( g, p2 ) ) ;
+        super.renderDrag( g, p1, p2 );
+        
     }
     
 }
