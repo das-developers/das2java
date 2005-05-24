@@ -378,10 +378,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             int yTop= parent.getRow().getDMinimum()-yOffset;
             int yBottom= parent.getRow().getDMaximum()-yOffset;
             
-            xLeftSide= e.getX()<xLeft+5;
-            xRightSide= e.getX()>xRight-5;
-            yTopSide= (e.getY()<yTop+5) && (e.getY()>=yTop);
-            yBottomSide= e.getY()>(yBottom-5);
+            xLeftSide= e.getX()<xLeft+10;
+            xRightSide= e.getX()>xRight-10;
+            yTopSide= (e.getY()<yTop+10) && (e.getY()>=yTop);
+            yBottomSide= e.getY()>(yBottom-10);
         }
         
         MouseMode result= MouseMode.idle;
