@@ -234,8 +234,9 @@ public class PropertyEditorAdapter implements TableCellEditor {
     private class CustomTableCellEditor implements EditorState, CellEditorListener {
         public Component getEditorComponent(JTable table, boolean selected, int rowIndex, int columnIndex) {
             TableCellEditor tce = (TableCellEditor)editor;
+            Component c = tce.getTableCellEditorComponent(table, editor.getValue(), selected, rowIndex, columnIndex);
             tce.addCellEditorListener(this);
-            return tce.getTableCellEditorComponent(table, editor.getValue(), selected, rowIndex, columnIndex);
+            return c;
         }
         public boolean stop() {
             TableCellEditor tce = (TableCellEditor)editor;
