@@ -14,6 +14,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import java.beans.*;
 
 /**
  *
@@ -26,14 +27,23 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
     /** Creates a new instance of MendelbrotDataSetDescriptor */    
     public MendelbrotDataSetDescriptor( DasAxis yAxis ) {
         this.yAxis= yAxis;
+        yAxis.addPropertyChangeListener(getPropertyChangeListener());
+        this.setDefaultCaching(false);
     }
     
+    private PropertyChangeListener getPropertyChangeListener() {
+        return new PropertyChangeListener() {
+            public void propertyChange( PropertyChangeEvent e ) {
+                fireDataSetUpdateEvent(new DataSetUpdateEvent(MendelbrotDataSetDescriptor.this));
+            }
+        };
+    }
     
     private float punktfarbe(double xwert, double ywert) // color value from 0.0 to 1.0 by iterations
     {
         double r = 0.0, i = 0.0, m = 0.0;
         int j = 0;
-        final int MAX=256;
+        final int MAX=100;
         
         while ((j < MAX) && (m < 4.0)) {
             j++;
@@ -58,11 +68,12 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
         yend= yAxis.getDataMaximum(Units.dimensionless);
         int _ny= yAxis.getRow().getHeight();
         yresolution= ( yend-ystart ) / _ny;        
+                
+        int ny= (int)(((yend-ystart)/yresolution));
+        int nx= (int)(((xend-xstart)/xresolution));
         
-        
-        int ny= (int)(2*((yend-ystart)/yresolution));
-        int nx= (int)(2*((xend-xstart)/xresolution));
-        
+        WritableTableDataSet result=  WritableTableDataSet.newSimple( nx, Units.dimensionless, ny, Units.dimensionless, Units.dimensionless );
+                
         double[][] z= new double[nx][ny];
         
         monitor.setTaskSize(ny);
@@ -71,22 +82,26 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
             if ( monitor.isCancelled() ) break;
             monitor.setTaskProgress(iy);
             for ( int ix=0; ix<nx; ix++ ) {
-                z[ix][iy]= (double) punktfarbe( xstart + ix*xresolution, ystart + iy*yresolution );
+                result.setDouble(ix,iy, (double)punktfarbe( xstart + ix*xresolution, ystart + iy*yresolution ),Units.dimensionless );
             }
         }
         monitor.finished();
         
         double[] xtags= new double[nx];
         for ( int ix=0; ix<nx; ix++ ) {
-            xtags[ix]= xstart + ix*xresolution;
+            // it's important that the xtag be in the center of the bin!
+            result.setXTagDouble( ix, xstart + ( ix+0.5) * xresolution, Units.dimensionless );            
         }
         
         double[] ytags= new double[ny];
         for ( int iy=0; iy<ny; iy++ ) {
-            ytags[iy]= ystart + iy*yresolution;
+            result.setYTagDouble( 0, iy, ystart + ( iy+0.5 )* yresolution, Units.dimensionless );            
         }
         
-        return DefaultTableDataSet.createSimple( xtags, ytags, z );
+        result.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, resolution.multiply(2.) );
+        result.setProperty( DataSet.PROPERTY_Y_TAG_WIDTH, Units.dimensionless.createDatum(yresolution).multiply(2.) );
+        
+        return result;
         
     }
     
