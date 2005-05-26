@@ -145,7 +145,12 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
             return value;
         }
         catch (ParseException e) {
-            return null;
+            if ( value!=null ) {
+                setDatum( value ); // cause reformat of old Datum
+                return value;
+            } else {
+                return null;
+            }
         }
     }
     
@@ -175,6 +180,7 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
     }
     
     private void fireActionPerformed() {
+        setDatum(getDatum());
         if (actionListener != null) {
             actionListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "DatumEditor"));
         }
@@ -216,7 +222,7 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
          * for VK_ENTER
          */
         public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {                
                 fireActionPerformed();
             }
             else {
