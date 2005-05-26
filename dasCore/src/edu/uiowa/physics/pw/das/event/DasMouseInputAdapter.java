@@ -366,12 +366,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         }
     }
     
+    /* This attempts to redraw just the affected portions of parent.  Presently it
+     * needs to call the parent's paintImmediately twice, because we don't know what
+     * the dragRenderer's dirty bounds will be.
+     */
     private synchronized void refresh() {
         if ( dirtyBoundses!=null ) {                                
             Rectangle[] dd= new Rectangle[dirtyBoundses.length];
             for ( int i=0; i<dd.length; i++ ) {                
                 dd[i]= new Rectangle( dirtyBoundses[i] );
-                System.out.println(dd[i]);
             }
             for ( int i=0; i<dd.length; i++ ) {                                
                 parent.paintImmediately( dd[i] );
