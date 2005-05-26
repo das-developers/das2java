@@ -139,4 +139,37 @@ public class Util {
         return newPath;
 
     }
+    
+    /**
+     * calculates the AffineTransform between two sets of x and y axes, if possible.  
+     * @returns null if no such transform exists, or the AffineTransform that transforms
+     * data located with xaxis0 and yaxis0 on xaxis1 and yaxis1.
+     */
+    public static AffineTransform calculateAT( DasAxis xaxis0, DasAxis yaxis0, DasAxis xaxis1, DasAxis yaxis1 ) {
+        AffineTransform at= new AffineTransform();
+        
+        double dmin0= xaxis1.transform(xaxis0.getDataMinimum());  // old axis in new axis space
+        double dmax0= xaxis1.transform(xaxis0.getDataMaximum());
+        double dmin1= xaxis1.transform(xaxis1.getDataMinimum());
+        double dmax1= xaxis1.transform(xaxis1.getDataMaximum());
+        
+        double scalex= ( dmin0 - dmax0 ) / ( dmin1 - dmax1 );
+        double transx= -1* dmin1 * scalex + dmin0;
+        
+        at.translate( transx, 0 );
+        at.scale( scalex, 1. );
+        
+        dmin0= yaxis1.transform(yaxis0.getDataMinimum());  // old axis in new axis space
+        dmax0= yaxis1.transform(yaxis0.getDataMaximum());
+        dmin1= yaxis1.transform(yaxis1.getDataMinimum());
+        dmax1= yaxis1.transform(yaxis1.getDataMaximum());
+        
+        double scaley= ( dmin0 - dmax0 ) / ( dmin1 - dmax1 );
+        double transy= -1* dmin1 * scaley + dmin0;
+        
+        at.translate( 0, transy );
+        at.scale( 1., scaley );
+        
+        return at;
+    }
 }
