@@ -45,7 +45,7 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
        dirtyBounds= new Rectangle();
     }
     
-    public void renderDrag(Graphics g1, Point p1, Point p2) {
+    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         
         Graphics2D g= (Graphics2D) g1;
         
@@ -84,6 +84,7 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
             dirtyBounds.setLocation(x-4,y1-2);
             dirtyBounds.add(x+4,y2+2);            
         }
+        return new Rectangle[] { dirtyBounds };
     }
     
     

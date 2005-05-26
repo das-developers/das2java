@@ -37,7 +37,6 @@ public class HorizontalSliceSelectionRenderer implements DragRenderer {
     DasCanvasComponent parent;
     Rectangle dirtyBounds;
     
-    Point crossHairLocation;
     /** Creates a new instance of HorizontalSliceSelectionRenderer */
     public HorizontalSliceSelectionRenderer( DasCanvasComponent parent ) {
         this.parent = parent;
@@ -51,39 +50,18 @@ public class HorizontalSliceSelectionRenderer implements DragRenderer {
         g.setColor(new Color(0,0,0));
         g.setXORMode(Color.white);
         
-        if (crossHairLocation!=null) {
-            if (!crossHairLocation.equals(p)) {
-                drawCrossHair(g,crossHairLocation);
-            }
-        }
-        
         Dimension d= parent.getSize();
-        g.drawLine((int)0, (int)p.y, (int)d.getWidth(), (int)p.y);
-        //g.drawLine((int)p.x, (int)0, (int)p.x, (int)d.getHeight() );
-        
-        if (crossHairLocation!=null) {
-            if (crossHairLocation.equals(p)) {
-                crossHairLocation=null;
-            } else {
-                // this shouldn't happen if things are working properly
-                edu.uiowa.physics.pw.das.util.DasDie.println("Sorry about the crosshair mess!");
-                crossHairLocation=p;
-            }
-        } else {
-            crossHairLocation= p;
-        }
-        
+        g.drawLine((int)0, (int)p.y, (int)d.getWidth(), (int)p.y);        
+                
         g.dispose();
         
     }
     
-    public void renderDrag(Graphics g, Point p1, Point p2) {
+    public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         //g.drawLine(0, p2.y, parent.getWidth(), p2.y);
-        //dirtyBounds.setRect(0,p2.y,parent.getWidth(),1);
-        if (crossHairLocation!=null) { //make sure the crosshair is erased
-            drawCrossHair(g,crossHairLocation);
-        }
+        dirtyBounds.setRect(0,p2.y,parent.getWidth(),1);
         drawCrossHair(g,p2);
+        return new Rectangle[] { dirtyBounds };
     }
     
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
@@ -91,10 +69,7 @@ public class HorizontalSliceSelectionRenderer implements DragRenderer {
     }
     
     public void clear(Graphics g) {
-        //parent.paintImmediately(dirtyBounds);
-        if (crossHairLocation!=null) { //make sure the crosshair is erased
-            drawCrossHair(g,crossHairLocation);
-        }
+        parent.paintImmediately(dirtyBounds);        
     }
     
     public boolean isXRangeSelection() {

@@ -35,8 +35,6 @@ public class VerticalSliceSelectionRenderer implements DragRenderer {
     DasCanvasComponent parent;
     Rectangle dirtyBounds;
     
-    Point crossHairLocation=null;
-    
     /** Creates a new instance of VerticalLineSelectionRenderer */
     public VerticalSliceSelectionRenderer(DasCanvasComponent parent) {
         this.parent= parent;
@@ -48,42 +46,21 @@ public class VerticalSliceSelectionRenderer implements DragRenderer {
         Graphics g= g0.create();
         
         g.setColor(new Color(0,0,0));
-        g.setXORMode(Color.white);
-        
-        if (crossHairLocation!=null) {
-            if (!crossHairLocation.equals(p)) {
-                drawCrossHair(g,crossHairLocation);
-            }
-        }
+        g.setXORMode(Color.white);        
         
         Dimension d= parent.getSize();
         //g.drawLine((int)0, (int)p.y, (int)d.getWidth(), (int)p.y);
         g.drawLine( p.x, 0, p.x, d.height );
         
-        if (crossHairLocation!=null) {
-            if (crossHairLocation.equals(p)) {
-                crossHairLocation=null;
-            } else {
-                // this shouldn't happen if things are working properly
-                edu.uiowa.physics.pw.das.util.DasDie.println("Sorry about the crosshair mess!");
-                crossHairLocation=p;
-            }
-        } else {
-            crossHairLocation= p;
-        }
-        
         g.dispose();
         
     }
     
-    public void renderDrag(Graphics g, Point p1, Point p2) {
-        
-        if (crossHairLocation!=null) { //make sure the crosshair is erased
-            drawCrossHair(g,crossHairLocation);
-        }
+    public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {        
         drawCrossHair(g,p2);
         //g.drawLine(p2.x, 0, p2.x, parent.getHeight());
-        //dirtyBounds.setRect(p2.x,0,1,parent.getHeight());
+        dirtyBounds.setRect(p2.x,0,1,parent.getHeight());
+        return new Rectangle[] { dirtyBounds };
     }
     
     
@@ -91,11 +68,8 @@ public class VerticalSliceSelectionRenderer implements DragRenderer {
         return null;
     }
     
-    public void clear(Graphics g) {
-         if (crossHairLocation!=null) {
-            drawCrossHair(g,crossHairLocation);
-        }
-        //parent.paintImmediately(dirtyBounds);
+    public void clear(Graphics g) {        
+        parent.paintImmediately(dirtyBounds);
     }
     
     public boolean isXRangeSelection() {

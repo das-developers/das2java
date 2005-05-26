@@ -74,7 +74,7 @@ public class HorizontalFrequencyDragRenderer implements DragRenderer, KeyListene
         dirtyBounds.add(bg);
     }
     
-    public void renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
+    public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         
         Graphics2D g= (Graphics2D) g1;
         int x2 = p2.x;
@@ -124,6 +124,7 @@ public class HorizontalFrequencyDragRenderer implements DragRenderer, KeyListene
         DecimalFormat df= new DecimalFormat("0.00");
         renderLabel(g1, p1, p2, "T:"+df.format(period)+" f:"+df.format(freq) );
         
+        return new Rectangle[] { dirtyBounds };
     }
     
     public boolean isPointSelection() {

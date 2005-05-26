@@ -51,7 +51,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     private MouseModule secondary=null;
     private MouseModule tertiary=null;
     
-    private Vector active=null; // array of active modules
+    private Vector active=null; // array of active modules    
     
     private Vector modules;
     
@@ -69,6 +69,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     JCheckBoxMenuItem primarySelectedItem;
     JCheckBoxMenuItem secondarySelectedItem;
+    
+    Rectangle[] dirtyBoundses;
     
     int numInserted;
     
@@ -185,8 +187,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         return new KeyAdapter() {
             public void keyPressed( KeyEvent ev ) {
                 if ( ev.getKeyCode()==27 & active!=null ) {
-                    clearSelection(graphics);
                     active=null;
+                    refresh();
                 }
             }
         };
@@ -347,23 +349,52 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         };
     }
     
-    public void renderSelection(Graphics2D g) {
+    private void renderSelection(Graphics2D g) {
+        if ( active==null ) {
+            return;
+        }
         for (int i=0; i<active.size(); i++) {
             DasCanvas canvas = parent.getCanvas();
             selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
             selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
-            ((MouseModule)active.get(i)).dragRenderer.renderDrag(g,selectionStart,selectionEnd);
+            DragRenderer dr= ((MouseModule)active.get(i)).getDragRenderer();
+            Rectangle[] dd= dr.renderDrag(g,selectionStart,selectionEnd);
+            dirtyBoundses= new Rectangle[dd.length];
+            for ( i=0; i<dd.length; i++ ) {
+                dirtyBoundses[i]= new Rectangle( dd[i] );
+            }
         }
     }
     
-    public void clearSelection(Graphics2D g) {
-        if ( active==null ) return;
-        for (int i=0; i<active.size(); i++) {
-            ((MouseModule)active.get(i)).dragRenderer.clear(g);
+    private synchronized void refresh() {
+        if ( dirtyBoundses!=null ) {                                
+            Rectangle[] dd= new Rectangle[dirtyBoundses.length];
+            for ( int i=0; i<dd.length; i++ ) {                
+                dd[i]= new Rectangle( dirtyBoundses[i] );
+                System.out.println(dd[i]);
+            }
+            for ( int i=0; i<dd.length; i++ ) {                                
+                parent.paintImmediately( dd[i] );
+            }
+            for ( int i=0; i<dirtyBoundses.length; i++ ) {                                
+                parent.paintImmediately( dirtyBoundses[i] );                
+            }            
+        } else {        
+            if ( active!=null ) {
+                parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
+            }
+        }
+        if ( active==null ) {
+            dirtyBoundses=null;
         }
     }
     
-    
+    /*
+     * Paint the drag renderer on top of parent.
+     */
+    public void paint( Graphics g ) {
+        renderSelection( (Graphics2D)g );
+    }
     
     private MouseMode activateMouseMode(MouseEvent e) {
         
@@ -526,7 +557,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                             JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(modules.get(i));
                             if (j.isSelected()) active.add(modules.get(i));
                         }
-                    }
+                    }                                        
                     
                     mouseMode= MouseMode.moduleDrag;
                     
@@ -549,11 +580,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             resizeRenderer.renderDrag(graphics,resizeStart,e.getPoint());
         } else {
             if (active!=null) {
-                clearSelection(graphics);
+                //clearSelection(graphics);
                 selectionEnd= e.getPoint();
                 dSelectionEnd= SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                
-                renderSelection(graphics);
                 
                 mousePointSelection.set((int)dSelectionEnd.getX(),(int)dSelectionEnd.getY());
                 for (int i=0; i<active.size(); i++) {
@@ -565,9 +594,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                         // Really it should be the DMM that indicates it wants updates...whoops...
                         MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
                         j.mouseRangeSelected(de);
-                    }
+                    }                    
                     j.mouseDragged(e);
                 }
+                if ( dSelectionStart.distance(dSelectionEnd)>30 && dirtyBoundses.length>0 ) {
+                    System.out.println(dirtyBoundses[0]);
+                }
+                refresh();
             }
         }
     }
@@ -605,12 +638,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         } else {
             if (e.getButton()==button) {
                 if (active!=null) {
-                    clearSelection(graphics);
+                    //clearSelection(graphics);
                     int x= e.getX();
                     int y= e.getY();
                     for (int i=0; i<active.size(); i++) {
                         MouseModule j= (MouseModule)active.get(i);
-                        try {                            
+                        try {
                             MouseDragEvent de=
                                     j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
                             j.mouseRangeSelected(de);
@@ -620,6 +653,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                         }
                     }
                     active= null;
+                    refresh();
                 }
             }
         }

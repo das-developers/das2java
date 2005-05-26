@@ -33,7 +33,7 @@ public class EmptyDragRenderer implements DragRenderer
 {
     public static final EmptyDragRenderer renderer = new EmptyDragRenderer();
     private EmptyDragRenderer(){}
-    public void renderDrag(Graphics g, Point p1, Point p2) {}
+    public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) { return new Rectangle[0]; }
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
         return null;
     }

@@ -144,17 +144,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         return result;
     }
     
-    public void renderDrag(Graphics g1, Point p1, Point p2) {
-        
+    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {        
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHints((RenderingHints)edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
-        ds= dataSetConsumer.getDataSet();
-        
-        /*
-        if (crossHairLocation!=null) { //make sure the crosshair is erased
-            drawCrossHair(g,crossHairLocation);
-        }
-         */
+        ds= dataSetConsumer.getDataSet();        
+        Rectangle[] superDirty= null;
         
         if (crossHairLocation==null) {
             
@@ -182,43 +176,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             }
             
             setLabel( report );
-            dirtyBounds= paintLabel( g, p2 );
+            super.renderDrag( g, p1, p2 );                        
+        }                
             
-            /* fm= parent.getGraphics().getFontMetrics();
-            
-            Color color0= g.getColor();
-            g.setColor(new Color(255,255,255,200));
-            
-            Dimension d= parent.getSize();
-                        
-            GrannyTextRenderer gtr= new GrannyTextRenderer();
-            gtr.setString( parent, report );
-            
-            int dx= (int)gtr.getWidth()+6;
-            if (dxMax<dx) dxMax=dx;
-            int dy= (int)gtr.getHeight();
-            int xp= p2.x+3;
-            int yp= p2.y-3-dy;
-            
-            if ( (xp+dxMax>d.width-3) && (p2.x-3-dx>0) ) {
-                xp= p2.x-3-dx;
-            }
-            
-            if (yp<13) {
-                yp= p2.y+3;
-            }
-            
-            dirtyBounds.setRect(xp,yp,gtr.getWidth()+6,gtr.getHeight()+6);            
-            g.fill(dirtyBounds);
-            
-            g.setColor(new Color(20,20,20));
-            gtr.draw( g, xp+3, (float)( yp+gtr.getAscent() ) );
-            g.setColor(color0);*/
-            
-        }
-        
         drawCrossHair(g,p2);
         
+        return new Rectangle[] { this.hDirtyBounds, this.vDirtyBounds, dirtyBounds };
     }
     
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
@@ -307,6 +270,10 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
      */
     public void setDebugging(boolean debugging) {
         this.debugging = debugging;
+    }
+
+    public Rectangle[] getDirtyBounds() {
+        return new Rectangle[] { super.dirtyBounds, this.hDirtyBounds, this.vDirtyBounds };
     }
     
 }

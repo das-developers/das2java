@@ -30,16 +30,16 @@ public class LengthDragRenderer extends LabelDragRenderer {
     }
     
     
-    public void renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
+    public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         Graphics2D g= ( Graphics2D ) g1;
         g1.drawLine( p1.x, p1.y, p2.x, p2.y );
         g1.drawOval(p1.x-1, p1.y-1, 3, 3 ) ;
         
-        dirtyBounds= new Rectangle();
+        Rectangle myDirtyBounds= new Rectangle();
         
-        dirtyBounds.setRect( p1.x-2, p1.y-2, 5, 5 );
-        dirtyBounds.add(p2.x-2,p2.y-2);
-        dirtyBounds.add(p2.x+2,p2.y+2);
+        myDirtyBounds.setRect( p1.x-2, p1.y-2, 5, 5 );
+        myDirtyBounds.add(p2.x-2,p2.y-2);
+        myDirtyBounds.add(p2.x+2,p2.y+2);
         
         if ( !p1.equals(p2) ) {
             Datum x0= xaxis.invTransform(p2.x+parent.getX());
@@ -80,7 +80,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
             setLabel( "" );
         }
         super.renderDrag( g, p1, p2 );
-        
+        return new Rectangle[] { dirtyBounds, myDirtyBounds };
     }
     
 }

@@ -48,7 +48,7 @@ public class HorizontalDragRangeRenderer implements DragRenderer {
         this.updating= updating;
     }
         
-    public void renderDrag(Graphics g1, Point p1, Point p2) {
+    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         
         Graphics2D g= (Graphics2D) g1;
         int x2 = p2.x;
@@ -77,6 +77,8 @@ public class HorizontalDragRangeRenderer implements DragRenderer {
         
         dirtyBounds.setLocation(x1-2,y+3);
         dirtyBounds.add(x2+2,y-3);
+        
+        return new Rectangle[] { dirtyBounds };
     }
     
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {

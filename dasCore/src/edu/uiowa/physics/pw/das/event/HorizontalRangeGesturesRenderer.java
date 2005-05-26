@@ -46,7 +46,7 @@ public class HorizontalRangeGesturesRenderer implements DragRenderer {
         gr= new GesturesRenderer(parent);
     }
     
-    public void renderDrag(Graphics g1, Point p1, Point p2) {
+    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         
         Graphics2D g= (Graphics2D) g1;
         
@@ -93,6 +93,7 @@ public class HorizontalRangeGesturesRenderer implements DragRenderer {
             dirtyBounds.setLocation(x1-2,y+3);
             dirtyBounds.add(x2+2,y-3);
         }
+        return new Rectangle[] { dirtyBounds };
     }
     
     

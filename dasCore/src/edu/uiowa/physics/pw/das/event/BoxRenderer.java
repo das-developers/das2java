@@ -48,7 +48,7 @@ public class BoxRenderer implements DragRenderer {
     public void clear(Graphics g) {
         parent.paintImmediately(dirtyBounds);
     }
-    public void renderDrag(Graphics g1, Point p1, Point p2) {
+    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g= (Graphics2D) g1;
         
         Rectangle r = new Rectangle(p1);
@@ -68,6 +68,7 @@ public class BoxRenderer implements DragRenderer {
         
         dirtyBounds.setLocation(r.x-2,r.y-3);
         dirtyBounds.add(r.x+r.width+2,r.y+r.height+3);
+        return new Rectangle[] { dirtyBounds };
     }
     
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {

@@ -26,10 +26,11 @@ package edu.uiowa.physics.pw.das.event;
 import java.awt.*;
 
 /** A DragRenderer provides the feedback to the human operator
- * of what his mousing is doing.  It applies constraints to the
+ * of what his or her mousing is doing.  It applies constraints to the
  * drag as well. It promotes the awt mouse events into events
  * that represent the operation, implementing for example mouse
  * gestures.
+ *
  * @author eew
  */
 public interface DragRenderer
@@ -37,10 +38,14 @@ public interface DragRenderer
     /* use this color when drawing ghostly backgrounds for contrast */
     public Color ghostColor= new Color(255,255,255,100);
     
-    /* draws the drag for mousing from p1 to p2 */
-    public abstract void renderDrag(Graphics g, Point p1, Point p2);
+    /* draws the drag for mousing from p1 to p2, and returns an array of
+     * Rectangles covering the rendering.  
+     */
+    public abstract Rectangle[] renderDrag(Graphics g, Point p1, Point p2);
     
-    /* clears whatever renderDrag rendered */
+    /* clears whatever renderDrag rendered.  This is not used by the DasMouseInputAdapter,
+     * but must still be supported for now.
+     */
     public abstract void clear(Graphics g);
     
     /* promotes the drag begin and end into a mouseDragEvent */

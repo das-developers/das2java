@@ -60,7 +60,7 @@ public class LabelDragRenderer implements DragRenderer {
         this.label= s;
     }
     
-    Rectangle paintLabel( Graphics g1, java.awt.Point p2 ) {
+    private Rectangle paintLabel( Graphics g1, java.awt.Point p2 ) {
         
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -88,7 +88,7 @@ public class LabelDragRenderer implements DragRenderer {
             yp= p2.y+3;
         }
         
-        Rectangle dirtyBounds= new Rectangle();;
+        dirtyBounds= new Rectangle();;
         
         Color color0= g.getColor();
         
@@ -106,12 +106,8 @@ public class LabelDragRenderer implements DragRenderer {
         return dirtyBounds;
     }
 
-    public void renderDrag(Graphics g, Point p1, Point p2) {        
+    public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {        
         Rectangle r= paintLabel( g, p2 );
-        if ( dirtyBounds==null ) {
-            dirtyBounds= r;
-        } else {
-            dirtyBounds.add(r);
-        }    
+        return new Rectangle[] { r };
     }
 }

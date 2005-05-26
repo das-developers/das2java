@@ -68,7 +68,7 @@ public class GesturesRenderer implements DragRenderer {
         return new MouseDragEvent(source,g);
     }
     
-    public void renderDrag(Graphics g1, Point p1, Point p2) {
+    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g= (Graphics2D) g1;
         double dx= p2.x-p1.x;
         double dy= -1* ( p2.y-p1.y );
@@ -104,10 +104,11 @@ public class GesturesRenderer implements DragRenderer {
                     g.drawLine(p1.x,p1.y,p1.x+5,p1.y);
                     g.drawLine(p1.x+5,p1.y,p1.x+3,p1.y-2);
                     g.drawLine(p1.x+5,p1.y,p1.x+3,p1.y+2);
-                }
-                dirtyBounds.setRect(p1.x-10,p1.y-10,20,20);
+                }                
             }
         }
+        dirtyBounds.setRect(p1.x-10,p1.y-10,20,20);
+        return new Rectangle[] { dirtyBounds };
     }
     
     
