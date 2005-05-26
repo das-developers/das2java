@@ -90,14 +90,14 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
         
     }
     
-    public void paint(java.awt.Graphics g1) {
+    public void paintComponent(java.awt.Graphics g1) {
         
         if ( dsd==null ) {     
             DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("null events data set descriptor");
             return;
         }
         
-        Graphics2D g= ( Graphics2D ) g1;
+        Graphics2D g= ( Graphics2D ) g1.create();
         g.translate(-getX(), -getY());
         g.setColor(Color.white);
         g.fill(getBounds());
@@ -155,6 +155,9 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
             
         } catch ( DasException e ) {
             g.drawString( "exception: "+e.getMessage(), getX(), getY()+getHeight() );
+        } finally {
+            g.dispose();
+            getMouseAdapter().paint(g1);
         }
     }
     

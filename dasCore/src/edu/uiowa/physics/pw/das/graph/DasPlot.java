@@ -292,7 +292,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected void updatePlotImage() throws DasException {}
     
     protected void paintComponent(Graphics graphics1) {
-        
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         int xSize= getColumn().getDMaximum() - x;
@@ -335,6 +334,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             gtr.draw(graphics, (float)titleX, (float)titleY);
         }
         
+        graphics.translate(getX(), getY());
+        getMouseAdapter().paint(graphics);
     }
     
     protected void drawContent(Graphics2D g) {

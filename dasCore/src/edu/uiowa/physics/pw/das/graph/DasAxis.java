@@ -1054,6 +1054,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
+        g.dispose();
+        getDasMouseInputAdapter().paint(graphics);
+        
         /* This was code was keeping axes from being printed on PC's
         if (getCanvas().isPrintingThread()) {
             g.setClip(saveClip);

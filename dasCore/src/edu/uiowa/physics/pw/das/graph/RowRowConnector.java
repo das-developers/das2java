@@ -45,7 +45,7 @@ public class RowRowConnector extends DasCanvasComponent implements java.beans.Pr
     }
     
     protected void paintComponent(Graphics g1) {        
-        Graphics2D g= (Graphics2D)g1;
+        Graphics2D g= (Graphics2D)g1.create();
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         g.translate(-getX(), -getY());
         
@@ -65,6 +65,10 @@ public class RowRowConnector extends DasCanvasComponent implements java.beans.Pr
         g.draw(new java.awt.geom.Line2D.Double(x1-hlen,yhigh1,x1,yhigh1));
         g.draw(new java.awt.geom.Line2D.Double(x2,yhigh2,x2+hlen,yhigh2));
         g.draw(new java.awt.geom.Line2D.Double(x1,yhigh1,x2,yhigh2));
+        
+        g.dispose();
+        
+        getMouseAdapter().paint(g1);
     }
     
     public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
