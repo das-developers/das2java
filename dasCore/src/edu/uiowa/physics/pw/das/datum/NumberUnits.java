@@ -66,9 +66,20 @@ public class NumberUnits extends Units {
         return DefaultDatumFormatterFactory.getInstance();
     }
     
+    /*
+     * parse the string in the context of this.  If units are not 
+     * specified, then assume units are this.  Otherwise, parse the
+     * unit and attempt to convert to this before creating the unit.
+     */
     public Datum parse(String s) throws ParseException {
         try {
-            return Datum.create(Double.parseDouble(s), this);
+            String[] ss= s.trim().split("\\s");
+            if ( ss.length==1 ) {
+                return Datum.create(Double.parseDouble(s), this);
+            } else {
+                Units u= Units.getByName(ss[1]);
+                return Datum.create( u.convertDoubleTo(this,Double.parseDouble(ss[0])), this );
+            }
         }
         catch (NumberFormatException nfe) {
             ParseException pe = new ParseException(nfe.getMessage(), 0);
