@@ -34,6 +34,8 @@ import java.text.ParseException;
  */
 public abstract class Units {
     
+    private static Map unitsMap = new HashMap();
+    
     public static final Units dimensionless= new NumberUnits("");
     public static final Units dB = new NumberUnits("dB");
     public static final Units radians= new NumberUnits("radian");
@@ -114,9 +116,8 @@ public abstract class Units {
    * as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100%.
    */
     public static final Units percent= new NumberUnits("%","Special dimensionless number, possibly useful for specifying Tag relevance on logarithmic scale");
-    
-    private static Map unitsMap = new HashMap();
-    static {
+        
+   /* static {
         unitsMap.put("mj1958", Units.mj1958);
         unitsMap.put("t1970", Units.t1970);
         unitsMap.put("t2000", Units.t2000);
@@ -131,7 +132,7 @@ public abstract class Units {
         unitsMap.put("Hz", Units.hertz);
         unitsMap.put("kHz", Units.kiloHertz);
         unitsMap.put("MHz", Units.megaHertz);
-    }
+    }*/
     
     private String id;
     private String description;
@@ -144,6 +145,7 @@ public abstract class Units {
     protected Units( String id, String description ) {
         this.id= id;
         this.description= description;
+        unitsMap.put( id, this );
     };
     
     private void registerConverter(Units toUnits, UnitsConverter converter) {
@@ -315,7 +317,7 @@ public abstract class Units {
     public static Units getByName(String s) {
         Units units = (Units)unitsMap.get(s);
         if (units == null) {
-            throw new IllegalArgumentException("Unrecognized units");
+            throw new IllegalArgumentException("Unrecognized units: "+s);
         }
         else return units;
     }
