@@ -105,13 +105,14 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
     public void setDatum(Datum datum) {
         Datum oldValue = value;
         value = datum;
+        Units u= datum.getUnits();
         if (datum.getUnits() instanceof TimeLocationUnits) {
-            editor.setText(TimeDatumFormatter.DEFAULT.format(datum));
+            editor.setText(TimeDatumFormatter.DEFAULT.format(datum,u));
         }
         else {
-            editor.setText(datum.getFormatter().format(datum));
+            editor.setText(datum.getFormatter().format(datum,u));
         }
-        setUnits(datum.getUnits());
+        setUnits(u);
         if (oldValue != value && oldValue != null && !oldValue.equals(value)) {
             firePropertyChange("value", oldValue, value);
         }
@@ -239,38 +240,6 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
         public void mouseExited(MouseEvent e) {}
         public void mouseClicked(MouseEvent e) {}
         public void mouseReleased(MouseEvent e) {}
-    }
-    
-    public static void main(String[] args) {
-        
-        DatumEditor de1 = new DatumEditor();
-        de1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("actionPerformed");
-            }
-        });
-        de1.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        de1.setValue(TimeUtil.now());
-        
-        DatumEditor de2 = new DatumEditor();
-        de2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("actionPerformed");
-            }
-        });
-        de2.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        de2.setValue(Datum.create(1.0, Units.celcius));
-        
-        JPanel content = new JPanel();
-        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.add(de1);
-        content.add(de2);
-        
-        JFrame frame = new JFrame("The Window");
-        frame.setContentPane(content);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
     }
     
     public String getToolTipText(MouseEvent event) {
