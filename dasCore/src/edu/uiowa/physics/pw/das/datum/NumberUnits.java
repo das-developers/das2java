@@ -77,8 +77,17 @@ public class NumberUnits extends Units {
             if ( ss.length==1 ) {
                 return Datum.create(Double.parseDouble(s), this);
             } else {
-                Units u= Units.getByName(ss[1]);
-                return Datum.create( u.convertDoubleTo(this,Double.parseDouble(ss[0])), this );
+                String unitsString= ss[1]; 
+                for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
+                Units u;
+                try { 
+                    u= Units.getByName(unitsString);
+                } catch ( IllegalArgumentException e ) {
+                    ParseException t= new ParseException(s, ss[0].length()+1 );                    
+                    t.initCause(e);
+                    throw t;
+                }
+                return Datum.create( u.convertDoubleTo(this,Double.parseDouble(ss[0])), this );                
             }
         }
         catch (NumberFormatException nfe) {
