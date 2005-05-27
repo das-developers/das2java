@@ -207,6 +207,7 @@ public class TickCurveRenderer extends Renderer {
         
     }
 
+    // TODO: it's likely this fails to meet the contract of animation interactive
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
         Graphics2D g= (Graphics2D)g1;
         g.setStroke( stroke );
@@ -244,9 +245,6 @@ public class TickCurveRenderer extends Renderer {
         
         tickLabeller.finished();
         
-    }
-    
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis) {
     }
     
     private static String lineToString( Line2D line ) {
@@ -314,10 +312,7 @@ public class TickCurveRenderer extends Renderer {
             }
         }        
     }
-    
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
-    }
-    
+        
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
         throw new UnsupportedOperationException();
     }    

@@ -44,6 +44,7 @@ import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.beans.*;
@@ -116,14 +117,23 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
        
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+        AffineTransform at= getAffineTransform( xAxis, yAxis );
+        if ( at==null ) return;
+        Graphics2D g2= (Graphics2D)g.create();
+        if ( !at.isIdentity() ) {
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
+            g2.transform( at );
+        }
+        
         if (getDataSet()==null && lastException!=null ) {
-            renderException(g,xAxis,yAxis,lastException);
+            renderException(g2,xAxis,yAxis,lastException);
         }
         else if (plotImage!=null) {
             int x = xAxis.getColumn().getDMinimum();
             int y = yAxis.getRow().getDMinimum();
-            g.drawImage( plotImage,x,y, getParent() );
+            g2.drawImage( plotImage,x,y, getParent() );
         }
+        g2.dispose();
     }
     
     protected void installRenderer() {
@@ -196,7 +206,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     
     synchronized public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, DasProgressMonitor monitor ) throws DasException {
-        
+        super.updatePlotImage( xAxis, yAxis_1, monitor );
         final Color BAR_COLOR= Color.BLACK;
         
         Component parent= getParent();

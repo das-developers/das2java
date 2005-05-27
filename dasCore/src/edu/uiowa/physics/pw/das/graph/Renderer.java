@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.system.*;
+import java.awt.geom.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,9 +50,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     
     private boolean fullResolution = false;
     
+    /** These store the axes used for the last updatePlotImage, for the convenience of the
+     * implementing subclasses.  Be sure to call super.updatePlotImage so that these are
+     * set properly, and use getAffineTransform to get the AT that transforms from the old
+     * axes to the new axes.
+     */
+    private DasAxis xaxis0, yaxis0;
+    
     DasPlot parent;
     
-    private DasProgressPanel progressPanel;
+    protected DasProgressPanel progressPanel;
     private DataRequestThread drt;
     
     protected Exception lastException;
@@ -193,13 +201,33 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         return dsd.getDataSetID();
     }
     
+    /*
+     * returns the AffineTransform to transform data from the last updatePlotImage call
+     * axes (if super.updatePlotImage was called), or null if the transform is not possible.
+     */
+    protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
+        if ( xaxis0==null ) {
+            DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
+                .info( "unable to calculate AT, because xaxis0 is not defined." );
+            return null;
+        } else {
+            AffineTransform at= Util.calculateAT( xaxis0, yaxis0, xAxis, yAxis );
+            if ( at==null ) {
+                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
+                .info( "calculate AT returns null." );            
+                return null;
+            } else {
+                return at;
+            }
+        }
+    }
     
     /** Render is called whenever the image needs to be refreshed or the content
      * has changed.  This operation should occur with an animation-interactive
      * time scale, and an image should be cached when this is not possible.
      */
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
-    
+        
     public void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
         int x= xAxis.getColumn().getDMiddle();
         int y= yAxis.getRow().getDMiddle();
@@ -257,15 +285,15 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             return;
         }
         
-        /* cancel any previous active operation */       
+        /* cancel any previous active operation */
         if ( progressPanel!=null ) {
             progressPanel.cancel();
             ((Container)(parent.getCanvas().getGlassPane())).remove(progressPanel);
-        }        
+        }
         
         progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
         
-        //Give the user something pretty (and consistent with the axes) to look at.
+    /*    //Give the user something pretty (and consistent with the axes) to look at.
         //This will scale the current data, or move it off screen
         //as a sort of preview.
         try {
@@ -273,13 +301,15 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             updatePlotImage(xAxis, yAxis, null);
         } catch (DasException de) {
             //We don't care if this throws an exception.
-        }
-
+        } */
+        
+        parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
+        
         lastException=null;
         
         DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+xAxis.getDatumRange()+" @ "+resolution);
-        dsd.requestDataSet( xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel, getParent().getCanvas() );                                
-        // the request will come back with a DataSetUpdated event        
+        dsd.requestDataSet( xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel, getParent().getCanvas() );
+        // the request will come back with a DataSetUpdated event
         
     }
     
@@ -288,9 +318,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * time scale.  This is an opportunity to create a cache
      * image of the data with the current axis state, when the render
      * operation cannot operation on an animation interactive time scale.
-     *
+     * When subclassing this method be sure to call super.updatePlotImage
+     * if you intend to use the affineTransform.  Codes can no longer assume
+     * that the xAxis sent to render will be in the same state as it was when
+     * updatePlotImage was called!
      */
-    public abstract void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException ;
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
+        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).warning("updatePlotImage");
+        xaxis0= (DasAxis)xAxis.clone();
+        yaxis0= (DasAxis)yAxis.clone();        
+    }
     
     protected void refreshImage() {
         if ( getParent()!=null ) {

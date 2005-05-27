@@ -68,7 +68,8 @@ public class SymbolLineRenderer extends Renderer {
         super(dsd);
     }
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {               
+        
         long timer0= System.currentTimeMillis();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
@@ -76,7 +77,12 @@ public class SymbolLineRenderer extends Renderer {
             return;
         }
         
-        Graphics2D graphics= (Graphics2D) g;
+        Graphics2D graphics= (Graphics2D) g.create();
+        
+        AffineTransform at= getAffineTransform( xAxis, yAxis );
+        if ( at==null ) return;
+        
+        graphics.transform(at);
         
         RenderingHints hints0= graphics.getRenderingHints();
         if ( antiAliased ) {
@@ -84,13 +90,20 @@ public class SymbolLineRenderer extends Renderer {
         } else {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
+                
+        graphics.setColor(color);                        
+        
+        // draw the stored path that we calculated in updatePlotImage
+        if (path != null) {
+            psymConnector.draw(graphics, path, lineWidth);
+        }
         
         Dimension d;
         
         double xmin, xmax, ymin, ymax;
         
         edu.uiowa.physics.pw.das.datum.Units xUnits= xAxis.getUnits();
-        edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();
+        edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();        
         
         Rectangle r= g.getClipBounds();
         
@@ -111,13 +124,7 @@ public class SymbolLineRenderer extends Renderer {
         ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
         if ( ixmin>0 ) ixmin--;
         ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
-        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
-        
-        graphics.setColor(color);                        
-        
-        if (path != null) {
-            psymConnector.draw(graphics, path, lineWidth);
-        }
+        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;        
 
         for (int index = ixmin; index <= ixmax; index++) {
             if ( ! yUnits.isFill(dataSet.getDouble(index,yUnits)) ) {
@@ -126,7 +133,8 @@ public class SymbolLineRenderer extends Renderer {
                 if ( Double.isNaN(j) ) {
                     //DasApplication.getDefaultApplication().getDebugLogger().warning("got NaN");
                 } else {
-                    psym.draw( graphics, i, j, (float)symSize );
+                    // note g is in the original space, not the AT space.
+                    psym.draw( g, i, j, (float)symSize );
                 }
             }
         }
@@ -135,10 +143,16 @@ public class SymbolLineRenderer extends Renderer {
         DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
         lastUpdateMillis= milli;
         
-        graphics.setRenderingHints(hints0);
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
+        try {
+            super.updatePlotImage( xAxis, yAxis, monitor );
+        } catch ( DasException e ) {
+            // it doesn't throw DasException, but interface requires exception, jbf 5/26/2005
+            throw new RuntimeException(e);            
+        }
+        
         boolean histogram = this.histogram;
         GeneralPath newPath = new GeneralPath();
         
@@ -360,7 +374,7 @@ public class SymbolLineRenderer extends Renderer {
             if (getParent() != null && getParent().getCanvas() != null) {
                 new Runnable() {
                     {RequestProcessor.invokeLater(this, getParent().getCanvas());}
-                    public void run() {
+                    public void run() {                        
                         updatePlotImage(getParent().getXAxis(), getParent().getYAxis(), null);
                     }
                 };

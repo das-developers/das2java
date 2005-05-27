@@ -38,8 +38,10 @@ import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.util.DasDie;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import java.awt.*;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.geom.*;
 import java.awt.image.MemoryImageSource;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -159,14 +161,27 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+        Graphics2D g2= (Graphics2D)g.create();
+        
+        AffineTransform at= getAffineTransform( xAxis, yAxis );
+        
+        if ( at==null ) {
+            return; // TODO: consider throwing exception            
+        }
+        if ( !at.isIdentity() ) {
+            g2.transform(at);
+            g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
+        }
+            
         if (getDataSet()==null && lastException!=null ) {
-            renderException(g,xAxis,yAxis,lastException);
+            renderException(g2,xAxis,yAxis,lastException);
         }
         else if (plotImage!=null) {
             int x = xAxis.getColumn().getDMinimum();
             int y = yAxis.getRow().getDMinimum();
-            g.drawImage( plotImage,x,y, getParent() );
+            g2.drawImage( plotImage,x,y, getParent() );
         }
+        g2.dispose();
     }
     
     int count = 0;
@@ -174,7 +189,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private boolean sliceRebinnedData= true;
     
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
-        
+        super.updatePlotImage( xAxis, yAxis, monitor );
         try {
             TableDataSet rebinData;
             

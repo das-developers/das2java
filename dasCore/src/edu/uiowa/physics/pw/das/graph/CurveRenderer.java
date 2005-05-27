@@ -83,13 +83,23 @@ public class CurveRenderer extends Renderer {
          VectorDataSet xds= (VectorDataSet)dataSet.getPlanarView(xplane);
          VectorDataSet yds= (VectorDataSet)dataSet.getPlanarView(yplane);
         
-        Graphics2D graphics= (Graphics2D) g1;
+         AffineTransform at= getAffineTransform( xAxis, yAxis );
+         if ( at==null ) return;
+         
+        Graphics2D graphics= (Graphics2D) g1.create();
+        graphics.transform( at );
         
         RenderingHints hints0= graphics.getRenderingHints();
         if ( antiAliased ) {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         } else {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        }
+                
+        graphics.setColor(color.toColor());
+        
+        if (path != null) {
+            psymConnector.draw(graphics, path, (float)lineWidth);
         }
         
         Dimension d;
@@ -113,11 +123,6 @@ public class CurveRenderer extends Renderer {
             ymax= yAxis.invTransform((int)(r.getY()+r.getHeight())).doubleValue(yUnits);
         }                                
         
-        graphics.setColor(color.toColor());
-        
-        if (path != null) {
-            psymConnector.draw(graphics, path, (float)lineWidth);
-        }
         
         for (int index = 0; index < xds.getXLength(); index++) {
             if ( ! yUnits.isFill(yds.getDouble(index,yUnits)) ) {
@@ -126,7 +131,7 @@ public class CurveRenderer extends Renderer {
                 if ( Double.isNaN(j) ) {
                     //DasApplication.getDefaultApplication().getDebugLogger().warning("got NaN");
                 } else {
-                    psym.draw( graphics, i, j, (float)symSize );
+                    psym.draw( g1, i, j, (float)symSize );
                 }
             }
         }
@@ -162,6 +167,8 @@ public class CurveRenderer extends Renderer {
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
+        super.updatePlotImage( xAxis, yAxis, monitor );
+        
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         
         if (dataSet == null || dataSet.getXLength() == 0) {
