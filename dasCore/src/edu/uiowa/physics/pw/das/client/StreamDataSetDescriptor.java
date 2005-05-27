@@ -280,6 +280,19 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         catch (IOException ioe) {
             throw new DasIOException(ioe);
         }
+        catch ( StreamException se ) {
+            /* kludge for when an InterruptedIOException is caused by the user's cancel.
+             * TODO: This is danger code, because it masks the condition where the 
+             * interruption happened for some other reason the user isn't aware of.
+             */
+            if ( se.getCause() instanceof InterruptedIOException ) {
+                DasException e= new CancelledOperationException();
+                e.initCause(se);
+                throw e;   
+            } else {
+                throw se;
+            }
+        }
         finally {
             try { pin.close(); } catch (IOException ioe) {}
         }
