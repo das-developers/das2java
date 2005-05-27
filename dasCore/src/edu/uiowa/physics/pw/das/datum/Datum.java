@@ -212,7 +212,7 @@ public class Datum {
     
     public String toString() {
         if (formatter==null) {
-            return ""+value+" "+units;
+            return units.getDatumFormatterFactory().defaultFormatter().format(this);
         } else {
             return formatter.format(this);
         }
