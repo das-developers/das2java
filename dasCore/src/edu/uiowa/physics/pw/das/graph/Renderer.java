@@ -411,8 +411,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         try {
             ds= e.getDataSet();
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset: "+ds);
-            if ( ds!=null ) DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("  ds range: "+DataSetUtil.xRange(ds) );
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset: "+ds);            
+            if ( ds!=null ) {
+                if ( ds.getXLength()>0 ) {
+                    DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("  ds range: "+DataSetUtil.xRange(ds) );
+                } else {
+                    DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("  ds range: (empty)" );
+                }
+            }
             if (progressPanel != null) {
                 progressPanel.setLabel("Rebinning data set");
             }
