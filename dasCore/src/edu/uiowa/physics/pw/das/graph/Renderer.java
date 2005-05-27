@@ -387,8 +387,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 DasExceptionHandler.handle(exception);
             }
             lastException= exception;
-            
-            /*
+                        
             if (!(exception instanceof InterruptedIOException) &&
                     !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
@@ -397,7 +396,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 if ( !( exception instanceof NoDataInIntervalException || exception instanceof CancelledOperationException )  ) {
                     DasExceptionHandler.handle(exception);
                 }
-            }*/
+            }
         } else if ( e.getDataSet()==null ) {
             // this indicates that the DataSetDescriptor has changed, and that the
             // renderer needs to reread the data.  Cause this by invalidating the
