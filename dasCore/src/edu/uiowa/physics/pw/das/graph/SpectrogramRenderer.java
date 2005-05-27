@@ -325,6 +325,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     
                     DasPlot p= parent;
                     mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
+                    
+                    mouseAdapter.addMouseModule( new BoxZoomMouseModule( p, this, p.getXAxis(), p.getYAxis() ) );
+
                 }
             }
         }
