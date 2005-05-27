@@ -70,7 +70,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     JCheckBoxMenuItem primarySelectedItem;
     JCheckBoxMenuItem secondarySelectedItem;
     
-    Rectangle[] dirtyBoundses;
+    Rectangle[] dirtyBoundsList;
     
     int numInserted;
     
@@ -359,9 +359,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
             DragRenderer dr= ((MouseModule)active.get(i)).getDragRenderer();
             Rectangle[] dd= dr.renderDrag(g,selectionStart,selectionEnd);
-            dirtyBoundses= new Rectangle[dd.length];
+            dirtyBoundsList= new Rectangle[dd.length];
             for ( i=0; i<dd.length; i++ ) {
-                dirtyBoundses[i]= new Rectangle( dd[i] );
+                dirtyBoundsList[i]= new Rectangle( dd[i] );
             }
         }
     }
@@ -371,16 +371,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
      * the dragRenderer's dirty bounds will be.
      */
     private synchronized void refresh() {
-        if ( dirtyBoundses!=null ) {                                
-            Rectangle[] dd= new Rectangle[dirtyBoundses.length];
+        if ( dirtyBoundsList!=null ) {                                
+            Rectangle[] dd= new Rectangle[dirtyBoundsList.length];
             for ( int i=0; i<dd.length; i++ ) {                
-                dd[i]= new Rectangle( dirtyBoundses[i] );
+                dd[i]= new Rectangle( dirtyBoundsList[i] );
             }
             for ( int i=0; i<dd.length; i++ ) {                                
                 parent.paintImmediately( dd[i] );
             }
-            for ( int i=0; i<dirtyBoundses.length; i++ ) {                                
-                parent.paintImmediately( dirtyBoundses[i] );                
+            for ( int i=0; i<dirtyBoundsList.length; i++ ) {                                
+                parent.paintImmediately( dirtyBoundsList[i] );                
             }            
         } else {        
             if ( active!=null ) {
@@ -388,7 +388,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             }
         }
         if ( active==null ) {
-            dirtyBoundses=null;
+            dirtyBoundsList=null;
         }
     }
     
@@ -599,9 +599,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                         j.mouseRangeSelected(de);
                     }                    
                     j.mouseDragged(e);
-                }
-                if ( dSelectionStart.distance(dSelectionEnd)>30 && dirtyBoundses.length>0 ) {
-                    System.out.println(dirtyBoundses[0]);
                 }
                 refresh();
             }
