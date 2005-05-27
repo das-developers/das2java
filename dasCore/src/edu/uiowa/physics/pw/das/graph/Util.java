@@ -155,9 +155,13 @@ public class Util {
         
         double scalex= ( dmin0 - dmax0 ) / ( dmin1 - dmax1 );
         double transx= -1* dmin1 * scalex + dmin0;
-        
+                
         at.translate( transx, 0 );
         at.scale( scalex, 1. );
+        
+        if ( at.getDeterminant() == 0.000 ) {            
+            return null;
+        }
         
         dmin0= yaxis1.transform(yaxis0.getDataMinimum());  // old axis in new axis space
         dmax0= yaxis1.transform(yaxis0.getDataMaximum());
