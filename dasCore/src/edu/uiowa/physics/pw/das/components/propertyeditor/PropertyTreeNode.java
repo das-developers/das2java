@@ -122,20 +122,20 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                         }
                     }
                     
+                    HashMap nameMap= new HashMap();
+                    for ( int i=0; i<properties.length; i++ ) {
+                        nameMap.put( properties[i].getName(), properties[i] );
+                    }
+                    
                     for (int j = 0; j < propertyNameList.length; j++) {
-                        int i;
-                        // TODO: surely there is a better way to code this.--jbf
-                        for ( i=0; i< properties.length; i++ ) if ( properties[i].getName().equals(propertyNameList[j]) ) break;
-                        if ( i==properties.length ) {
-                            throw new IllegalArgumentException( "property not found: "+propertyNameList[i] );
-                        }
-                                                    
-                        if (properties[i].getReadMethod() != null) {
-                            if (properties[i] instanceof IndexedPropertyDescriptor) {
-                                children.add(new IndexedPropertyTreeNode(this, (IndexedPropertyDescriptor)properties[i]));
+                        PropertyDescriptor pd= (PropertyDescriptor)nameMap.get( propertyNameList[j] );
+                        if ( pd==null ) throw new IllegalArgumentException( "property not found: "+propertyNameList[j] );
+                            if (pd.getReadMethod() != null) {
+                            if (pd instanceof IndexedPropertyDescriptor) {
+                                children.add( new IndexedPropertyTreeNode(this, (IndexedPropertyDescriptor)pd) );
                             }
                             else {
-                                children.add(new PropertyTreeNode(this, properties[i]));
+                                children.add( new PropertyTreeNode(this, pd));
                             }
                         }
                     }
