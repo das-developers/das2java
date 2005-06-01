@@ -35,8 +35,8 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
             return colorRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
         if (value instanceof Enumeration) {
-            Enumeration enum = (Enumeration)value;
-            setIcon(enum.getListIcon());
+            Enumeration enm = (Enumeration)value;
+            setIcon(enm.getListIcon());
         }
         else {
             setIcon(null);
