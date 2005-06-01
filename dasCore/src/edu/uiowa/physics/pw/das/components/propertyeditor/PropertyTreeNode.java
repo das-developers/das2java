@@ -1,5 +1,6 @@
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
+import edu.uiowa.physics.pw.das.beans.*;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableNode;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.beans.*;
@@ -113,7 +114,22 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                 try {
                     BeanInfo info = Introspector.getBeanInfo(value.getClass());
                     PropertyDescriptor[] properties = info.getPropertyDescriptors();
-                    for (int i = 0; i < properties.length; i++) {
+                    String[] propertyNameList= BeanInfoUtil.getPropertyNames(value.getClass());
+                    if ( propertyNameList==null ) {
+                        propertyNameList= new String[ properties.length ];
+                        for ( int i=0; i<properties.length; i++ ) {
+                            propertyNameList[i]= properties[i].getName();
+                        }
+                    }
+                    
+                    for (int j = 0; j < propertyNameList.length; j++) {
+                        int i;
+                        // TODO: surely there is a better way to code this.--jbf
+                        for ( i=0; i< properties.length; i++ ) if ( properties[i].getName().equals(propertyNameList[j]) ) break;
+                        if ( i==properties.length ) {
+                            throw new IllegalArgumentException( "property not found: "+propertyNameList[i] );
+                        }
+                                                    
                         if (properties[i].getReadMethod() != null) {
                             if (properties[i] instanceof IndexedPropertyDescriptor) {
                                 children.add(new IndexedPropertyTreeNode(this, (IndexedPropertyDescriptor)properties[i]));
