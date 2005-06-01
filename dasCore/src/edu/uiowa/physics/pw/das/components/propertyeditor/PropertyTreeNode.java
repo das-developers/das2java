@@ -114,7 +114,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                 try {
                     BeanInfo info = Introspector.getBeanInfo(value.getClass());
                     PropertyDescriptor[] properties = info.getPropertyDescriptors();
-                    String[] propertyNameList= BeanInfoUtil.getPropertyNames(value.getClass());
+                    String[] propertyNameList= BeansUtil.getPropertyNames(value.getClass());
                     if ( propertyNameList==null ) {
                         propertyNameList= new String[ properties.length ];
                         for ( int i=0; i<properties.length; i++ ) {
