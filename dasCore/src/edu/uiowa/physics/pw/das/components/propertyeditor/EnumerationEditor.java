@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
+import java.awt.*;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -24,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.*;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -244,11 +246,16 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
     }
     
     private class Renderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean hasFocus) {
-            String s = (String)valueMap.get(value);
-            return super.getListCellRendererComponent(list, s, index, isSelected, hasFocus);
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean hasFocus) {                        
+            if ( value instanceof Enumeration ) {
+                JLabel result= new JLabel( value.toString() );
+                result.setIcon(((Enumeration)value).getListIcon());
+                return result;
+            } else {
+                String s = (String)valueMap.get(value);
+                return super.getListCellRendererComponent(list, s, index, isSelected, hasFocus);
+            }            
         }
-        
     }
     
     private class Model extends AbstractListModel implements ComboBoxModel {
