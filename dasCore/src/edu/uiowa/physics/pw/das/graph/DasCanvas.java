@@ -947,13 +947,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
         for (int index = 0; index < components.length; index++) {
-            if (components[index] instanceof DasSpectrogramPlot) {
-                DasSpectrogramPlot plot = (DasSpectrogramPlot)components[index];
-                elementMap.remove(plot.getXAxis().getDasName());
-                elementMap.remove(plot.getYAxis().getDasName());
-                elementMap.remove(plot.getColorBar().getDasName());
-                elementMap.put(plot.getDasName(), plot.getDOMElement(document));
-            } else if (components[index] instanceof DasPlot) {
+            if (components[index] instanceof DasPlot) {
                 DasPlot plot = (DasPlot)components[index];
                 elementMap.remove(plot.getXAxis().getDasName());
                 elementMap.remove(plot.getYAxis().getDasName());
@@ -1026,10 +1020,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         DasColorBar colorbar
                                 = DasColorBar.processColorbarElement((Element)node, form);
                         canvas.add(colorbar);
-                    } else if (tagName.equals("spectrogram")) {
-                        DasSpectrogramPlot spectrogram
-                                = DasSpectrogramPlot.processSpectrogramElement((Element)node, form);
-                        canvas.add(spectrogram);
                     } else if (tagName.equals("plot")) {
                         DasPlot plot = DasPlot.processPlotElement((Element)node, form);
                         canvas.add(plot);
