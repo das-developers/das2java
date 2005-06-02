@@ -146,20 +146,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private DasPlot dasPlot;
     
-    /** TODO
-     * @param data
-     * @param units
-     * @param row
-     * @param column
-     * @param orientation
-     * @param isLog
-     * @return
-     */
-    public static DasAxis create( double [] data, Units units, int orientation, boolean isLog ) {
-        DasAxis result= new DasAxis(Datum.create(0,units),Datum.create(0,units),orientation,isLog);
-        result.setDataRange(data);
-        return result;
-    }
     
     /** TODO
      * @param min
@@ -411,27 +397,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
         }
     }
-    
-    /** TODO
-     * @param data
-     */
-    public void setDataRange(double[] data) {
-        double min=data[0];
-        double max=data[0];
-        for (int i=1; i<data.length; i++) {
-            min= min<data[i]?min:data[i];
-            max= max>data[i]?max:data[i];
-        }
-        double range=max-min;
-        if (isLog()) {
-            setDataRange(Datum.create(min,getUnits()), Datum.create(max,getUnits()));
-        } else {
-            Datum minDatum= Datum.create(min-range*0.05,getUnits());
-            Datum maxDatum= Datum.create(max+range*0.05,getUnits());
-            setDataRange(minDatum, maxDatum);
-        }
-    }
-    
+
     /** TODO */
     public void setDataRangePrev() {
         double min0= dataRange.getMinimum();
