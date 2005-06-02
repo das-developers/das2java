@@ -64,16 +64,19 @@ public class DefaultDatumFormatter extends DatumFormatter {
         String result;
         if (format == null) {
             double resolution= datum.getResolution( units.getOffsetUnits() );
-            if ( resolution == 0. ) resolution= Math.max( Math.abs(d) / 10000, 0.0001 );
-            int scale= (int)Math.ceil( -1 * DasMath.log10(resolution) - 0.00001 ); // add an extra half-digit for safety
-            if ( scale>=0 ) {
-                BigDecimal bd= new BigDecimal( d );
-                bd= bd.setScale( scale, BigDecimal.ROUND_HALF_DOWN );
-                result= bd.toString();
-            } else {
-                d= Math.round( d / DasMath.exp10(-scale) ) * DasMath.exp10(-scale);
-                result= Double.toString(d);
-            }            
+            if ( resolution>0 ) {                
+                int scale= (int)Math.ceil( -1 * DasMath.log10(resolution) - 0.00001 ); 
+                if ( scale>=0 ) {
+                    BigDecimal bd= new BigDecimal( d );
+                    bd= bd.setScale( scale, BigDecimal.ROUND_HALF_DOWN );
+                    result= bd.toString();
+                } else {
+                    d= Math.round( d / DasMath.exp10(-scale) ) * DasMath.exp10(-scale);
+                    result= Double.toString(d);
+                }
+            } else {                
+                result=  Double.toString(d);
+            }
         } else {
             result= format.format(datum.doubleValue(units));
         }
