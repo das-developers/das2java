@@ -27,7 +27,6 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
-import edu.uiowa.physics.pw.das.graph.DasSpectrogramPlot;
 import javax.swing.event.EventListenerList;
 
 
@@ -112,9 +111,6 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
      * @param event The event to be fired
      */
     private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event) {
-        if ( parent instanceof DasSpectrogramPlot ) {
-            event.setDataSet(((DasSpectrogramPlot)parent).getData());
-        }
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
