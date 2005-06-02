@@ -40,13 +40,14 @@ public class Datum {
     public static class Double extends Datum {
         
         Double( Number value, Units units ) {
-            super(value,units);
+            super( value, units, 0. );
         }
+            
         Double( double value, Units units ) {
-            this(new java.lang.Double(value),units);
+            super( new java.lang.Double(value), units, 0. );
         }
         Double( double value ) {
-            this( value, Units.dimensionless );
+            super( new java.lang.Double(value), Units.dimensionless, 0. );
         }        
         Double( double value, Units units, double resolution ) {
             super( new java.lang.Double(value), units, units.getDatumFormatterFactory().defaultFormatter(), resolution );
@@ -54,8 +55,8 @@ public class Datum {
         
     }
     
-    private Datum(Number value, Units units) {
-        this( value, units, units.getDatumFormatterFactory().defaultFormatter(), 0. );
+    private Datum(Number value, Units units, double resolution ) {
+        this( value, units, units.getDatumFormatterFactory().defaultFormatter(), resolution );
     }
     
     private Datum(Number value, Units units, DatumFormatter formatter, double resolution ) {
@@ -226,7 +227,7 @@ public class Datum {
         return units.createDatum( value );
     }
     
-    public static Datum create(double value, Units units, DatumFormatter formatter) {
+    public static Datum create( double value, Units units, DatumFormatter formatter ) {
         Datum result= create( value, units);
         result.formatter= formatter;
         return result;
