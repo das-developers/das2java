@@ -27,30 +27,10 @@ public class Legend extends DasCanvasComponent {
         Icon getIcon() {
             return icon;
         }
-        private Icon createIconFor( Psym psym, PsymConnector connector, Color color ) {
-            Image i= new BufferedImage(15,10,BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g= (Graphics2D)i.getGraphics();
-            g.setRenderingHints(DasProperties.getRenderingHints());
-            g.setColor(new Color( 0,0,0, 0 ));
-            g.fillRect(0,0,15,10);
-            g.setColor(color);
-            Stroke stroke0= g.getStroke();
-            connector.drawLine( g, 2, 3, 13, 7, 1.5f );
-            g.setStroke(stroke0);
-            psym.draw( g, 7, 5, 3.f );        
-            return  new ImageIcon(i);
-        }
-        
-        LegendElement( Psym psym, PsymConnector psymConnector, Color color, String label ) {
-            this.psym= psym;
-            this.psymConnector= psymConnector;
-            this.color= color;
-            icon= createIconFor( psym, psymConnector, color );
-            this.label= label;
-        }
         
         LegendElement( SymbolLineRenderer rend, String label ) {
-            this( rend.getPsym(), rend.getPsymConnector(), rend.getColor(), label );
+            this.icon= rend.getListIcon();
+            this.label= label;
         }
         
     }
@@ -65,12 +45,6 @@ public class Legend extends DasCanvasComponent {
         LegendElement e= new LegendElement( rend, label );
         elements.add(e);
     }
-    
-    public void add( Psym psym, PsymConnector psymConnector, String label, Color color ) {
-        LegendElement e= new LegendElement( psym, psymConnector, color, label );
-        elements.add(e);
-    }
-    
     
     public void resize() {
         setBounds( DasRow.toRectangle(getRow(), getColumn()) );
