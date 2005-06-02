@@ -24,11 +24,14 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.system.*;
 import edu.uiowa.physics.pw.das.util.*;
+import java.awt.image.*;
+import javax.swing.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -40,7 +43,7 @@ import java.awt.geom.Line2D;
  *
  * @author  jbf
  */
-public class SymbolLineRenderer extends Renderer {
+public class SymbolLineRenderer extends Renderer implements Enumeration {
     
     private Psym psym = Psym.NONE;
     private double symSize = 1.0; // radius in pixels
@@ -68,12 +71,12 @@ public class SymbolLineRenderer extends Renderer {
         super(dsd);
     }
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {               
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         
         long timer0= System.currentTimeMillis();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
-        if (dataSet == null || dataSet.getXLength() == 0) {            
+        if (dataSet == null || dataSet.getXLength() == 0) {
             return;
         }
         
@@ -90,8 +93,8 @@ public class SymbolLineRenderer extends Renderer {
         } else {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
-                
-        graphics.setColor(color);                        
+        
+        graphics.setColor(color);
         
         // draw the stored path that we calculated in updatePlotImage
         if (path != null) {
@@ -103,7 +106,7 @@ public class SymbolLineRenderer extends Renderer {
         double xmin, xmax, ymin, ymax;
         
         edu.uiowa.physics.pw.das.datum.Units xUnits= xAxis.getUnits();
-        edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();        
+        edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();
         
         Rectangle r= g.getClipBounds();
         
@@ -124,8 +127,8 @@ public class SymbolLineRenderer extends Renderer {
         ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
         if ( ixmin>0 ) ixmin--;
         ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
-        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;        
-
+        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
+        
         for (int index = ixmin; index <= ixmax; index++) {
             if ( ! yUnits.isFill(dataSet.getDouble(index,yUnits)) ) {
                 double i = xAxis.transform(dataSet.getXTagDouble(index,xUnits),xUnits);
@@ -150,14 +153,14 @@ public class SymbolLineRenderer extends Renderer {
             super.updatePlotImage( xAxis, yAxis, monitor );
         } catch ( DasException e ) {
             // it doesn't throw DasException, but interface requires exception, jbf 5/26/2005
-            throw new RuntimeException(e);            
+            throw new RuntimeException(e);
         }
         
         boolean histogram = this.histogram;
         GeneralPath newPath = new GeneralPath();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
-        if (dataSet == null || dataSet.getXLength() == 0) {            
+        if (dataSet == null || dataSet.getXLength() == 0) {
             return;
         }
         Dimension d;
@@ -182,15 +185,13 @@ public class SymbolLineRenderer extends Renderer {
         if (dataSet.getProperty("xTagWidth") != null) {
             Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xTagWidth");
             xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
-        }
-        else {
+        } else {
             //Try to load the legacy sample-width property.
             String xSampleWidthString = (String)dataSet.getProperty("x_sample_width");
             if (xSampleWidthString != null) {
                 double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
                 xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
-            }
-            else {
+            } else {
                 xSampleWidth = 1e31;
             }
         }
@@ -210,25 +211,21 @@ public class SymbolLineRenderer extends Renderer {
             double j = yAxis.transform(y, yUnits);
             if ( yUnits.isFill(y) || Double.isNaN(y)) {
                 skippedLast = true;
-            }
-            else if (skippedLast) { 
+            } else if (skippedLast) {
                 newPath.moveTo((float)i, (float)j);
                 skippedLast = false;
-            }
-            else if (Math.abs(x - x0) > xSampleWidth) {
+            } else if (Math.abs(x - x0) > xSampleWidth) {
                 //This should put a point on an isolated data value
                 newPath.lineTo((float)i0, (float)j0);
                 newPath.moveTo((float)i, (float)j);
                 skippedLast = false;
-            }
-            else {
+            } else {
                 if (histogram) {
                     double i1 = (i0 + i)/2;
                     newPath.lineTo((float)i1, (float)j0);
                     newPath.lineTo((float)i1, (float)j);
                     newPath.lineTo((float)i, (float)j);
-                }
-                else {
+                } else {
                     newPath.lineTo((float)i, (float)j);
                 }
                 skippedLast = false;
@@ -253,14 +250,14 @@ public class SymbolLineRenderer extends Renderer {
         psymConnector = p;
         refreshImage();
     }
-
+    
     /** Getter for property psym.
      * @return Value of property psym.
      */
     public Psym getPsym() {
         return this.psym;
     }
-        
+    
     
     /** Setter for property psym.
      * @param psym New value of property psym.
@@ -327,8 +324,7 @@ public class SymbolLineRenderer extends Renderer {
         float lineWidth = Float.parseFloat(element.getAttribute("lineWidth"));
         try {
             renderer.setDataSetID(dataSetID);
-        }
-        catch (edu.uiowa.physics.pw.das.DasException de) {
+        } catch (edu.uiowa.physics.pw.das.DasException de) {
             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(de);
         }
         renderer.setPsym(psym);
@@ -374,11 +370,25 @@ public class SymbolLineRenderer extends Renderer {
             if (getParent() != null && getParent().getCanvas() != null) {
                 new Runnable() {
                     {RequestProcessor.invokeLater(this, getParent().getCanvas());}
-                    public void run() {                        
+                    public void run() {
                         updatePlotImage(getParent().getXAxis(), getParent().getYAxis(), null);
                     }
                 };
             }
         }
+    }
+    
+    public javax.swing.Icon getListIcon() {
+        Image i= new BufferedImage(15,10,BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g= (Graphics2D)i.getGraphics();
+        g.setRenderingHints(DasProperties.getRenderingHints());
+        g.setColor(new Color( 0,0,0, 0 ));
+        g.fillRect(0,0,15,10);
+        g.setColor(color);
+        Stroke stroke0= g.getStroke();
+        getPsymConnector().drawLine( g, 2, 3, 13, 7, 1.5f );
+        g.setStroke(stroke0);
+        psym.draw( g, 7, 5, 3.f );
+        return new ImageIcon(i);
     }
 }
