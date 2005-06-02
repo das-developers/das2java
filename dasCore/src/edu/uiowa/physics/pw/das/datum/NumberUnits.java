@@ -24,6 +24,8 @@
 package edu.uiowa.physics.pw.das.datum;
 
 import edu.uiowa.physics.pw.das.datum.format.*;
+import edu.uiowa.physics.pw.das.util.*;
+import java.math.*;
 
 import java.util.*;
 import java.text.ParseException;
@@ -42,7 +44,7 @@ public class NumberUnits extends Units {
     }
     
     public Datum createDatum( double value ) {
-        return new Datum.Double( new Double(value), this );
+        return new Datum.Double( value, this, 0. );
     }
     
     public Datum createDatum( double value, double resolution ) {
@@ -50,11 +52,11 @@ public class NumberUnits extends Units {
     }
     
     public Datum createDatum( int value ) {
-        return new Datum.Double( new Double(value), this );
+        return new Datum.Double( value, this );
     }
     
     public Datum createDatum( long value ) {
-        return new Datum.Double( new Double(value), this );
+        return new Datum.Double( value, this );
     }
     
     public Datum createDatum( Number value ) {
@@ -75,7 +77,9 @@ public class NumberUnits extends Units {
         try {
             String[] ss= s.trim().split("\\s");
             if ( ss.length==1 ) {
-                return Datum.create(Double.parseDouble(s), this);
+                BigDecimal dd= new BigDecimal(s);
+                double resolution= DasMath.exp10( -1*dd.scale() );
+                return Datum.create(Double.parseDouble(s), this, resolution );
             } else {
                 String unitsString= ss[1]; 
                 for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
