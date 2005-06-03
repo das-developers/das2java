@@ -67,9 +67,10 @@ public class DefaultDatumFormatter extends DatumFormatter {
             if ( resolution>0 ) {                
                 int scale= (int)Math.ceil( -1 * DasMath.log10(resolution) - 0.00001 ); 
                 if ( scale>=0 ) {
-                    BigDecimal bd= new BigDecimal( d );
-                    bd= bd.setScale( scale, BigDecimal.ROUND_HALF_DOWN );
-                    result= bd.toString();
+                    DecimalFormat f = new DecimalFormat();
+                    f.setMinimumFractionDigits(scale);
+                    f.setMaximumFractionDigits(scale);
+                    result= f.format(d);
                 } else {
                     d= Math.round( d / DasMath.exp10(-scale) ) * DasMath.exp10(-scale);
                     result= Double.toString(d);
