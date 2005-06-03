@@ -355,8 +355,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param maximum
      */
     public void setDataRange(Datum minimum, Datum maximum) {
-        
-        if ( ! rangeIsAcceptable( new DatumRange( minimum, maximum ) ) ) {
+        DatumRange newRange= new DatumRange( minimum, maximum ); 
+        if ( ! rangeIsAcceptable( newRange ) ) {
             DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).warning( "invalid range ignored" );
             return;
         }
@@ -382,7 +382,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         animateChange( min0, max0, min, max );
         
-        dataRange.setRange( min, max );
+        dataRange.setRange( newRange );
         update();
         createAndFireRangeSelectionEvent();
     }
@@ -429,7 +429,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double delta= t2-t1;
         double min= t1-delta/2;
         double max= t2+delta/2;
-        animateChange(t1,t2,min,max);
+        animateChange(t1,t2,min,max);        
         dataRange.setRange(min,max);
     }
     
@@ -493,18 +493,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param max
      */
-    public void setDataMaximum(Datum max) {
-        double dd= max.doubleValue(getUnits());
-        dataRange.setMaximum( dataRange.isLog() ? DasMath.log10(dd) : dd );
+    public void setDataMaximum(Datum max) {        
+        dataRange.setMaximum( max );
         update();
     }
     
     /** TODO
      * @param min
      */
-    public void setDataMinimum(Datum min) {
-        double dd= min.doubleValue(getUnits());
-        dataRange.setMinimum( dataRange.isLog() ? DasMath.log10(dd) : dd );
+    public void setDataMinimum(Datum min) {        
+        dataRange.setMinimum( min );
         update();
     }
     
