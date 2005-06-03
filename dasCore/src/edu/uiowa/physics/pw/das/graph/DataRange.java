@@ -41,9 +41,15 @@ public class DataRange implements Cloneable {
     
     private Units units;
     
+    /* minimum, possibly with log applied */
     private double minimum;
     
+    /* maximum, possibly with log applied */
     private double maximum;
+    
+    /* range is the min and max, not in the log space.  This is the range that controls the DataRange, as opposed
+       to minimum and maximum, which are simply to implement it. */
+    private DatumRange range;
     
     private boolean log;
     
@@ -77,6 +83,7 @@ public class DataRange implements Cloneable {
             minimum = min.doubleValue(units);
             maximum = max.doubleValue(units);
         }
+        this.range= new DatumRange( min, max );
         this.log = log;
         history = new Stack();
         forwardHistory = new Stack();
@@ -92,8 +99,13 @@ public class DataRange implements Cloneable {
      */
     public void resetRange( DatumRange range ) {
         this.units= range.getUnits();
+        this.range= range;
         this.minimum= range.min().doubleValue(this.units);
         this.maximum= range.max().doubleValue(this.units);
+        if ( isLog() ) {
+            this.minimum= DasMath.log10( this.minimum );
+            this.maximum= DasMath.log10( this.maximum );
+        }
         fireUpdate();
     }
     
@@ -131,9 +143,20 @@ public class DataRange implements Cloneable {
     
     public double getMaximum() { return maximum; }
     
+    /* @returns the floating point index within the range, where 0.0 indicates
+     * @param value is equal to minimum and 1.0 means it is equal to maximum,
+     * with log/lin/??? curvature considered.
+     */
+    public final double findex( double value ) {
+        if ( log ) {
+            value= DasMath.log10(value);
+        }
+        return ( value-minimum ) / ( maximum - minimum );
+    }
+    
     public Units getUnits() { return units; }
     
-    public DatumRange getDatumRange() { return new DatumRange( minimum, maximum, units ); }
+    public DatumRange getDatumRange() { return range; }
     
     public void setUnits(Units newUnits) {
         if (units.equals(newUnits)) {
@@ -148,19 +171,18 @@ public class DataRange implements Cloneable {
         
     }
     
-    public void setMinimum(double min) {
-        setRange(min, maximum);
+    public void setMinimum( Datum min) {
+        setRange( new DatumRange( min, this.range.max() ) );
     }
     
-    public void setMaximum(double max) {
-        setRange(minimum, max);
+    public void setMaximum( Datum max) {
+        setRange( new DatumRange( this.range.min(), max ) );
     }
     
     private void reportHistory() {
         edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
         for ( int i=0; i<history.size(); i++ ) {
-            edu.uiowa.physics.pw.das.util.DasDie.print("   "+((Object[])history.get(i))[0]+" - ");
-            edu.uiowa.physics.pw.das.util.DasDie.println("   "+((Object[])history.get(i))[1]);
+            edu.uiowa.physics.pw.das.util.DasDie.println("   "+history.get(i));
         }
         edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
         edu.uiowa.physics.pw.das.util.DasDie.println("-------------");
@@ -171,74 +193,65 @@ public class DataRange implements Cloneable {
         forwardHistory.removeAllElements();
     }
     
+    public void setRange( DatumRange range ) {
+        setRange( range, true );
+    }
+    
     public void setRange( double min, double max ) {
-        boolean pushStack= true;
+        DatumRange newRange;
+        if ( log ) {
+            newRange= new DatumRange( DasMath.exp10( min ), DasMath.exp10( max ), units );
+        } else {
+            newRange= new DatumRange( min, max, units );
+        }
+        setRange( newRange, true );
+    }
+    
+    private void setRange( DatumRange range, boolean pushHistory ) {
         
-        if ( pushStack ) {
-            Datum h[] = new Datum[2];
-            if (minimum!=maximum) {  //  kludge for create() method
-                h[0] = Datum.create(minimum,units);
-                h[1] = Datum.create(maximum,units);
-                history.push(h);
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( "push history: "+h[0]+" "+h[1] );
-                //                reportHistory();
-            }
+        if ( range.getUnits()!=this.units ) {
+            throw new IllegalArgumentException("units may not be changed");
+        }
+        
+        if ( pushHistory ) {
+            history.push(this.range);
+            DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( "push history: "+range );
             forwardHistory.removeAllElements();
         }
+        
+        this.range= range;        
         
         double oldMin = minimum;
         double oldMax = maximum;
         
-        minimum = min;
-        maximum = max;
+        minimum = range.min().doubleValue( units );
+        maximum = range.max().doubleValue( units );
+        if ( log ) {
+            minimum= DasMath.log10( minimum );
+            maximum= DasMath.log10( maximum );
+        }
+        
         fireUpdate();
         if (minimum != oldMin) firePropertyChange("minimum", oldMin, minimum);
         if (maximum != oldMax) firePropertyChange("maximum", oldMax, maximum);
     }
     
     public void setRangePrev() {
-        double oldMin = minimum;
-        double oldMax = maximum;
         reportHistory();
         if (!history.isEmpty()) {
-            forwardHistory.push( new Datum [] {Datum.create(minimum,units), Datum.create(maximum,units)} );
-            Datum [] h= (Datum[]) history.pop();
-            
-            if (h[0].getUnits()!=units) {
-                h[0]= h[0].convertTo(units);
-                h[1]= h[1].convertTo(units);
-            }
-            minimum = h[0].doubleValue(units);
-            maximum = h[1].doubleValue(units);
-            
-            fireUpdate();
+            forwardHistory.push( range );
+            DatumRange newRange= (DatumRange) history.pop();
+            setRange( newRange, false );
         }
-        if (minimum != oldMin) firePropertyChange("minimum", oldMin, minimum);
-        if (maximum != oldMax) firePropertyChange("maximum", oldMax, maximum);
-        reportHistory();
     }
     
     public void setRangeForward() {
-        double oldMin = minimum;
-        double oldMax = maximum;
         reportHistory();
         if (!forwardHistory.isEmpty()) {
-            history.push( new Datum [] {Datum.create(minimum,units), Datum.create(maximum,units)} );
-            Datum [] h= (Datum[]) forwardHistory.pop();
-            
-            if (h[0].getUnits()!=units) {
-                h[0]= h[0].convertTo(units);
-                h[1]= h[1].convertTo(units);
-            }
-            minimum = h[0].doubleValue(units);
-            maximum = h[1].doubleValue(units);
-            
-            fireUpdate();
+            history.push( range );
+            DatumRange h= (DatumRange) forwardHistory.pop();
+            setRange( h, false );
         }
-        reportHistory();
-        if (minimum != oldMin) firePropertyChange("minimum", oldMin, minimum);
-        if (maximum != oldMax) firePropertyChange("maximum", oldMax, maximum);
-        reportHistory();
     }
     
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
@@ -285,17 +298,26 @@ public class DataRange implements Cloneable {
         }
     }
     
+    /* @returns a dummy DataRange that simply holds min, max.  So that no one is
+     * listening to the changes and no history.
+     */
+    public static class Animation extends DataRange {
+        private double minimum, maximum;
+        public Animation( DatumRange range, boolean log ) {
+            super( null, range.min(), range.max(), log );
+        }
+        protected void fireUpdate() {};
+        public void setRange( double min, double max ) {
+            minimum= min;
+            maximum= max;
+        }
+        public double getMinimum() { return minimum; }
+        public double getMaximum() { return maximum; }
+    }
+    
+    
     public static DataRange getAnimationDataRange( DatumRange range, boolean log ) {
-        return new DataRange( (DasAxis)null, range.min(), range.max(), log ) {
-            private double minimum, maximum;
-            protected void fireUpdate() {};
-            public void setRange( double min, double max ) {
-                minimum= min;
-                maximum= max;
-            }
-            public double getMinimum() { return minimum; }
-            public double getMaximum() { return maximum; }
-        };
+        return new DataRange.Animation( range, log );
     }
     
     
