@@ -43,7 +43,7 @@ import java.awt.geom.Line2D;
  *
  * @author  jbf
  */
-public class SymbolLineRenderer extends Renderer implements Enumeration {
+public class SymbolLineRenderer extends Renderer implements Displayable {
     
     private Psym psym = Psym.NONE;
     private double symSize = 1.0; // radius in pixels
@@ -378,11 +378,21 @@ public class SymbolLineRenderer extends Renderer implements Enumeration {
         }
     }
     
+    public String getListLabel() {
+        return this.getDataSetDescriptor().toString();
+    }
+    
     public javax.swing.Icon getListIcon() {
         Image i= new BufferedImage(15,10,BufferedImage.TYPE_INT_ARGB);
         Graphics2D g= (Graphics2D)i.getGraphics();
         g.setRenderingHints(DasProperties.getRenderingHints());
-        g.setColor(new Color( 0,0,0, 0 ));
+        
+        // leave transparent if not white
+        if ( color.equals( Color.white ) ) {
+            g.setColor( Color.GRAY );
+        } else {
+            g.setColor( new Color( 0,0,0,0 ) );
+        }        
         g.fillRect(0,0,15,10);
         g.setColor(color);
         Stroke stroke0= g.getStroke();
