@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import java.beans.BeanInfo;
 
 /**
@@ -34,7 +35,7 @@ public class StackedHistogramRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties  = {
         new Property("ZAxis", AccessLevel.DASML, "getZAxis", "setZAxis", null),
-        new Property("PeaksIndicator", AccessLevel.DASML, "getPeaksIndicator", "setPeaksIndicator", null),
+        new Property("PeaksIndicator", AccessLevel.DASML, "getPeaksIndicator", "setPeaksIndicator", EnumerationEditor.class ),
         new Property("sliceRebinnedData", AccessLevel.DASML, "isSliceRebinnedData", "setSliceRebinnedData", null),
     };
     
