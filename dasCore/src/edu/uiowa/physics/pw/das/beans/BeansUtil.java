@@ -22,28 +22,50 @@ public class BeansUtil {
      */
     public static String[] getPropertyNames( Class c ) {
         try {
+            
+            // goal: get BeanInfo for the class, the AccessLevelBeanInfo if it exists.
+            BeanInfo beanInfo= null;
+                    
             String s= c.getName().substring(c.getPackage().getName().length()+1);
             
             Class maybeClass=null;
             try {
                 maybeClass= Class.forName( c.getPackage() + "." + s + "BeanInfo" );
             } catch ( ClassNotFoundException e ) {
-                maybeClass= Class.forName( "edu.uiowa.physics.pw.das.beans."+  s + "BeanInfo" );
+                try {
+                    maybeClass= Class.forName( "edu.uiowa.physics.pw.das.beans."+  s + "BeanInfo" );
+                } catch ( ClassNotFoundException e2 ) {
+                    beanInfo= Introspector.getBeanInfo(c);
+                }
             }
-            
-            Object object= maybeClass.newInstance();
-            BeanInfo beanInfo= (BeanInfo)maybeClass.newInstance();
+                        
+            if ( beanInfo==null ) beanInfo= (BeanInfo)maybeClass.newInstance();
             
             List propertyList= new ArrayList();
             
             PropertyDescriptor[] pdthis= beanInfo.getPropertyDescriptors();
-            propertyList.addAll( Arrays.asList(pdthis) );
-                        
+            for ( int i=0; i<pdthis.length; i++ ) {                
+                boolean isWriteable= pdthis[i].getWriteMethod()!=null;
+                boolean isReadable= pdthis[i].getReadMethod()!=null;
+                if ( isReadable || ( pdthis[i] instanceof IndexedPropertyDescriptor ) ) {                
+                    propertyList.add( pdthis[i] );
+                } else {
+                    System.err.println("read/only property: "+pdthis[i].getName());
+                }
+            }
+            
             if ( beanInfo.getAdditionalBeanInfo()!=null ) {
                 List additionalBeanInfo= new ArrayList( Arrays.asList( beanInfo.getAdditionalBeanInfo() ) );
                 while( additionalBeanInfo.size()>0 ) {
                     BeanInfo aBeanInfo= (BeanInfo)additionalBeanInfo.remove(0);
-                    propertyList.addAll( Arrays.asList( aBeanInfo.getPropertyDescriptors() ) );
+                    pdthis=  aBeanInfo.getPropertyDescriptors();
+                    for ( int i=0; i<pdthis.length; i++ ) {
+                        boolean isWriteable= pdthis[i].getWriteMethod()!=null;
+                        boolean isReadable= pdthis[i].getReadMethod()!=null;
+                        if ( isReadable || ( pdthis[i] instanceof IndexedPropertyDescriptor  )) {                        
+                            propertyList.add( pdthis[i] );
+                        }
+                    }                    
                     if ( aBeanInfo.getAdditionalBeanInfo()!=null ) {
                         additionalBeanInfo.addAll( Arrays.asList( aBeanInfo.getAdditionalBeanInfo() ) );
                     }
@@ -56,10 +78,9 @@ public class BeansUtil {
             }
             return result;
             
-            
-        } catch ( InstantiationException e ) {
+        } catch ( IntrospectionException e ) {
             return null;
-        } catch ( ClassNotFoundException e ) {
+        } catch ( InstantiationException e ) {
             return null;
         } catch ( IllegalAccessException e ) {
             return null;
