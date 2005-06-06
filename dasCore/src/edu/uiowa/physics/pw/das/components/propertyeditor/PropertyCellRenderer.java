@@ -34,10 +34,10 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         if (value instanceof java.awt.Color) {
             return colorRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
-        if (value instanceof Enumeration) {
-            Enumeration enm = (Enumeration)value;
+        if (value instanceof Displayable) {
+            Displayable enm = (Displayable)value;
             setIcon(enm.getListIcon());
-        }
+        }        
         else {
             setIcon(null);
         }
@@ -54,7 +54,11 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
                 value = expFormat.format(doubleValue);
             }
         }
-        setText(String.valueOf(value));
+        if ( value instanceof Displayable ) {
+            setText( ((Displayable)value).getListLabel() );
+        } else {
+            setText(String.valueOf(value));
+        }
         setOpaque(true);
         //setBackground(isSelected ? Color.gray : Color.lightGray);
         if (table != null) {
@@ -94,14 +98,15 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
      *
      */
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        if (value instanceof Enumeration) {
-            Enumeration enum = (Enumeration)value;
-            setIcon(enum.getListIcon());
+        if (value instanceof Displayable ) {
+            Displayable enm = (Displayable)value;
+            setIcon(enm.getListIcon());
+            setText(enm.getListLabel());
         }
         else {
             setIcon(null);
-        }
-        setText(String.valueOf(value));
+            setText(String.valueOf(value));
+        }        
         setOpaque(true);
         setBackground(isSelected ? Color.gray : Color.lightGray);
         return this;
