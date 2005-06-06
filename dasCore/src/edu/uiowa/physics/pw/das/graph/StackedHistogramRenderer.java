@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.event.HorizontalSlicerMouseModule;
@@ -57,7 +58,7 @@ import org.w3c.dom.*;
  *
  * @author  jbf
  */
-public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Renderer implements TableDataSetConsumer, PropertyChangeListener  {
+public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Renderer implements TableDataSetConsumer, PropertyChangeListener, Displayable  {
     
     private DasLabelAxis yAxis= null;
     private DasAxis zAxis= null;
@@ -73,7 +74,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     Image plotImage;
     
-    public static class PeaksIndicator implements Enumeration {
+    public static class PeaksIndicator implements Enumeration, Displayable {
         
         String id;
         
@@ -84,11 +85,15 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         public String toString() {
             return this.id;
         }
-        
+                
         public static final PeaksIndicator NoPeaks= new PeaksIndicator("None");
         public static final PeaksIndicator GrayPeaks= new PeaksIndicator("Gray Peaks");
         public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");        
         public static final PeaksIndicator MaxLines= new PeaksIndicator("Lines");
+        
+        public String getListLabel() {
+            return this.id;
+        }
         
         public javax.swing.Icon getListIcon() {
             return null;
@@ -436,6 +441,14 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             DasExceptionHandler.handle(de);
         }
         return renderer;
+    }
+
+    public String getListLabel() {
+        return "stacked histogram";
+    }
+
+    public Icon getListIcon() {
+        return null;
     }
     
 }
