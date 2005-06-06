@@ -64,18 +64,38 @@ public class DefaultDatumFormatter extends DatumFormatter {
         String result;
         if (format == null) {
             double resolution= datum.getResolution( units.getOffsetUnits() );
-            if ( resolution>0 ) {                
-                int scale= (int)Math.ceil( -1 * DasMath.log10(resolution) - 0.00001 ); 
+            if ( resolution>0 ) {
+                int scale= (int)Math.ceil( -1 * DasMath.log10(resolution) - 0.00001 );
+                int exp;
+                if ( d != 0. ) {
+                    exp= (int)DasMath.log10( Math.abs(d) );
+                } else {
+                    exp= 0;
+                }
                 if ( scale>=0 ) {
-                    DecimalFormat f = new DecimalFormat();
-                    f.setMinimumFractionDigits(scale);
-                    f.setMaximumFractionDigits(scale);
+                    DecimalFormat f;
+                    if ( exp<=-5 || exp >=5 ) {
+                        f= new DecimalFormat( "0E0" );
+                        f.setMinimumFractionDigits(scale+exp-1);
+                        f.setMaximumFractionDigits(scale+exp-1);
+                    } else {
+                        f = new DecimalFormat();
+                        f.setMinimumFractionDigits(scale);
+                        f.setMaximumFractionDigits(scale);
+                    }
                     result= f.format(d);
                 } else {
-                    d= Math.round( d / DasMath.exp10(-scale) ) * DasMath.exp10(-scale);
-                    result= Double.toString(d);
+                    DecimalFormat f;
+                    if ( exp<=-5 || exp >=5 ) {
+                        f= new DecimalFormat( "0E0" );
+                        f.setMinimumFractionDigits(scale+exp+1);
+                        f.setMaximumFractionDigits(scale+exp+1);
+                    } else {
+                        f = new DecimalFormat();
+                    }
+                    result= f.format(d);
                 }
-            } else {                
+            } else {
                 result=  Double.toString(d);
             }
         } else {
