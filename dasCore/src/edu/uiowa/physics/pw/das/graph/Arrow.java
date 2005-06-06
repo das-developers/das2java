@@ -34,7 +34,7 @@ public class Arrow extends DasCanvasComponent {
     }    
   
     protected void paintComponent(Graphics g1) {
-        Graphics2D g= (Graphics2D) g1;
+        Graphics2D g= (Graphics2D) g1.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
         g.translate(-getX(),-getY());
@@ -64,6 +64,9 @@ public class Arrow extends DasCanvasComponent {
         g.fill( p );             
                 
         g.draw( p );
+        g.dispose();
+        
+        getMouseAdapter().paint(g1);
     }    
  
     
