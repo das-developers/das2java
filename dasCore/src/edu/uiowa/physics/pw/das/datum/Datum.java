@@ -30,7 +30,7 @@ import edu.uiowa.physics.pw.das.datum.format.*;
  *
  * @author  jbf
  */
-public class Datum {
+public class Datum implements Comparable {
     
     private Units units;
     private Number value;
