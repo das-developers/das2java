@@ -43,7 +43,6 @@ public class BeansUtil {
                 List additionalBeanInfo= new ArrayList( Arrays.asList( beanInfo.getAdditionalBeanInfo() ) );
                 while( additionalBeanInfo.size()>0 ) {
                     BeanInfo aBeanInfo= (BeanInfo)additionalBeanInfo.remove(0);
-                    System.out.println(aBeanInfo);
                     propertyList.addAll( Arrays.asList( aBeanInfo.getPropertyDescriptors() ) );
                     if ( aBeanInfo.getAdditionalBeanInfo()!=null ) {
                         additionalBeanInfo.addAll( Arrays.asList( aBeanInfo.getAdditionalBeanInfo() ) );
