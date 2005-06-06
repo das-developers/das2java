@@ -42,12 +42,14 @@ import java.awt.*;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.geom.*;
+import java.awt.image.*;
 import java.awt.image.MemoryImageSource;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.*;
 import javax.swing.Icon;
 import org.w3c.dom.*;
 
@@ -55,7 +57,7 @@ import org.w3c.dom.*;
  *
  * @author  jbf
  */
-public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer {
+public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, edu.uiowa.physics.pw.das.components.propertyeditor.Displayable {
     
     private DasColorBar colorBar;
     Image plotImage;
@@ -434,6 +436,23 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setSliceRebinnedData(boolean sliceRebinnedData) {
         this.sliceRebinnedData = sliceRebinnedData;
+    }
+
+    public String getListLabel() {
+        return "spectrogram";
+    }
+
+    public Icon getListIcon() {
+        Image i= new BufferedImage(15,10,BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g= (Graphics2D)i.getGraphics();
+        g.setRenderingHints(DasProperties.getRenderingHints());
+        
+        if ( plotImage!=null ) {
+            g.drawImage( plotImage, 0, 0, 15, 10, parent );
+            return new ImageIcon(i);
+        } else {
+            return null;
+        }
     }
     
 }
