@@ -447,20 +447,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */
     public Datum getDataMinimum() {
-        double dd= dataRange.isLog() ? DasMath.exp10( dataRange.getMinimum() ) : dataRange.getMinimum() ;
-        Datum result= Datum.create( dd, dataRange.getUnits() );
-        // We're going to want to add a decimal place or two here
-        return result;
+        return dataRange.getDatumRange().min();                
     }
     
     /** TODO
      * @return
      */
     public Datum getDataMaximum() {
-        double dd= dataRange.isLog() ? DasMath.exp10( dataRange.getMaximum() ) : dataRange.getMaximum() ;
-        Datum result= Datum.create( dd, dataRange.getUnits() );
-        // We're going to want to add a decimal place or two here
-        return result;
+        return dataRange.getDatumRange().max();
     }
     
     /*
@@ -471,7 +465,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return a DatumRange indicating the range of the axis.
      */
     public DatumRange getRange() {
-        return new DatumRange( getDataMinimum(), getDataMaximum() );
+        return dataRange.getDatumRange();
     }
     
     /** TODO
