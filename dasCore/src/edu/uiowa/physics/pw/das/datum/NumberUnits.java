@@ -69,32 +69,67 @@ public class NumberUnits extends Units {
     }
     
     /*
-     * parse the string in the context of this.  If units are not 
+     * @returns double[2], [0] is number, [1] is the resolution
+     */
+    private double[] parseDecimal( String s ) {
+        s= s.trim();
+        BigDecimal bd= new BigDecimal(s);
+        
+        if ( bd.scale()>0 ) {
+            double resolution= DasMath.exp10( -1*bd.scale() );
+            return new double[] { Double.parseDouble(s), resolution };
+        } else {
+            int ie= s.indexOf( 'E' );
+            if ( ie==-1 ) ie= s.indexOf('e');
+            String mant;
+            if ( ie==-1 ) {
+                int id= s.indexOf('.');
+                double[] dd= new double[2];
+                dd[0]= Double.parseDouble(s);
+                if ( id==-1 ) {
+                    dd[1]= 1.;
+                } else {
+                    int scale= s.length()-id-1;
+                    dd[1]= DasMath.exp10(-1*scale);
+                }
+                return dd;
+            } else {
+                mant= s.substring(0,ie);
+                double[] dd= parseDecimal( mant );
+                int exp= Integer.parseInt( s.substring(ie+1) );
+                dd[0]= dd[0] * DasMath.exp10(exp);
+                dd[1]= dd[1] * DasMath.exp10(exp);
+                return dd;
+            }
+        }        
+    }
+    
+    /*
+     * parse the string in the context of this.  If units are not
      * specified, then assume units are this.  Otherwise, parse the
      * unit and attempt to convert to this before creating the unit.
      */
     public Datum parse(String s) throws ParseException {
         try {
             String[] ss= s.trim().split("\\s");
-            if ( ss.length==1 ) {
-                BigDecimal dd= new BigDecimal(s);
-                double resolution= DasMath.exp10( -1*dd.scale() );
-                return Datum.create(Double.parseDouble(s), this, resolution );
+            double[] dd= parseDecimal(ss[0]);
+            if ( ss.length==1 ) {                                                
+                return Datum.create( dd[0], this, dd[1] );
             } else {
-                String unitsString= ss[1]; 
+                String unitsString= ss[1];
                 for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
                 Units u;
-                try { 
+                try {
                     u= Units.getByName(unitsString);
                 } catch ( IllegalArgumentException e ) {
-                    ParseException t= new ParseException(s, ss[0].length()+1 );                    
+                    ParseException t= new ParseException(s, ss[0].length()+1 );
                     t.initCause(e);
                     throw t;
                 }
-                return Datum.create( u.convertDoubleTo(this,Double.parseDouble(ss[0])), this );                
+                UnitsConverter uc= u.getConverter(this);
+                return Datum.create( uc.convert(dd[0]), this, uc.convert(dd[1]) );
             }
-        }
-        catch (NumberFormatException nfe) {
+        } catch (NumberFormatException nfe) {
             ParseException pe = new ParseException(nfe.getMessage(), 0);
             pe.initCause(nfe);
             throw pe;
@@ -166,6 +201,6 @@ public class NumberUnits extends Units {
             if ( uc==null ) throw new IllegalArgumentException("Only division by dimensionless or convertable Datums is supported");
             return Units.dimensionless.createDatum( divide( a, uc.convert(b) ) );
         }
-    }   
+    }
     
 }
