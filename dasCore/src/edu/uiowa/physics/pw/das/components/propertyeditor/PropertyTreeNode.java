@@ -154,10 +154,10 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         return value;
     }
     
-    Object getDisplayValue() {    
+    Object getDisplayValue() {        
         if ( value instanceof Displayable ) {
             return value;
-        }
+        }        
         if (getAllowsChildren()) {
             return "<html><i text=\"#a0a0a0\">Click to expand/collapse</i></html>";
         }
@@ -246,7 +246,8 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     }
     
     public boolean isCellEditable(int column) {
-        return column == 1 && !(getAllowsChildren());
+        boolean isWritable= propertyDescriptor.getWriteMethod()!=null;
+        return isWritable && column == 1 && !(getAllowsChildren());
     }
     
     public Class getColumnClass(int columnIndex) {
