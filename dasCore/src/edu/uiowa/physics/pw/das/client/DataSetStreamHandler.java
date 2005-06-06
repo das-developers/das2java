@@ -180,7 +180,7 @@ public class DataSetStreamHandler implements StreamHandler {
         }
         
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-            DasApplication.getDefaultApplication().getDebugLogger().fine("got packet descriptor: "+pd);
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("got packet descriptor: "+pd);
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(),y.getUnits());
