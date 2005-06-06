@@ -24,7 +24,7 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.DasProperties;
 import edu.uiowa.physics.pw.das.components.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 
 /** Type-safe enumeration class for the psym property of
  * a <code>DasSymbolPlot</code>.
@@ -36,7 +36,7 @@ import java.awt.geom.*;
 import java.awt.geom.Line2D;
 import java.awt.image.*;
 
-public class Psym implements Enumeration {
+public class Psym implements Enumeration, Displayable {
     
     private static final String[] NAMES = {
         "none",     //0
@@ -79,6 +79,10 @@ public class Psym implements Enumeration {
     }
     
     public String toString() {
+        return NAMES[nameIndex];
+    }
+    
+    public String getListLabel() {
         return NAMES[nameIndex];
     }
     
