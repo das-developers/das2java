@@ -30,7 +30,7 @@ import edu.uiowa.physics.pw.das.DasPropertyException;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -443,16 +443,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     public Icon getListIcon() {
-        Image i= new BufferedImage(15,10,BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g= (Graphics2D)i.getGraphics();
-        g.setRenderingHints(DasProperties.getRenderingHints());
-        
-        if ( plotImage!=null ) {
-            g.drawImage( plotImage, 0, 0, 15, 10, parent );
-            return new ImageIcon(i);
-        } else {
-            return null;
-        }
+        return null;
     }
     
 }
