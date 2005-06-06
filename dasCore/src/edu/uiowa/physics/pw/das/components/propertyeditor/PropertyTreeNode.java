@@ -154,9 +154,12 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         return value;
     }
     
-    Object getDisplayValue() {
+    Object getDisplayValue() {    
+        if ( value instanceof Displayable ) {
+            return value;
+        }
         if (getAllowsChildren()) {
-            return "Click to expand/collapse";
+            return "<html><i text=\"#a0a0a0\">Click to expand/collapse</i></html>";
         }
         else {
             return value;
@@ -257,7 +260,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return "Propety name";
+                return "Property Name";
             case 1:
                 return "Value";
             default: throw new IllegalArgumentException("No such column: " + columnIndex);
