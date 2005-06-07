@@ -49,7 +49,8 @@ public final class DasExceptionHandler {
         "\"Show Details\" button then click the \"Save to file\" button to save" +
         " all the relevant error messages to a file.\n";
     
-    private DasExceptionHandler() {
+    /* this is public so that the AWT thread can create it */
+    public DasExceptionHandler() {
     }
     
     public static void handle(Throwable t) {
