@@ -32,6 +32,7 @@ public class RendererBeanInfo extends AccessLevelBeanInfo {
         new Property("fullResolution", AccessLevel.DASML, "isFullResolution", "setFullResolution", null),
         new Property("dumpDataSet", AccessLevel.DASML, "isDumpDataSet", "setDumpDataSet", null),
         new Property("reloadDataSet", AccessLevel.DASML, "isReloadDataSet", "setReloadDataSet", null),
+        new Property("dataSetDescriptor", AccessLevel.DASML, "getDataSetDescriptor", "setDataSetDescriptor", null),
     };
     
     public RendererBeanInfo() {
