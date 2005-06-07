@@ -42,6 +42,9 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         this.parent = parent;
         this.propertyDescriptor = propertyDescriptor;
         try {
+            if ( propertyDescriptor.getReadMethod()==null ) {
+                throw new RuntimeException("read method not defined for "+propertyDescriptor.getName());
+            }            
             value = propertyDescriptor.getReadMethod().invoke(parent.value, NULL_ARGS);
         }
         catch (IllegalAccessException iae) {
