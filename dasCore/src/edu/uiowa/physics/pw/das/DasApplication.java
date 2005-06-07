@@ -26,6 +26,8 @@ package edu.uiowa.physics.pw.das;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetCache;
 import edu.uiowa.physics.pw.das.dataset.LimitCountDataSetCache;
+import edu.uiowa.physics.pw.das.system.*;
+import edu.uiowa.physics.pw.das.util.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.logging.*;
@@ -41,39 +43,15 @@ public class DasApplication {
     private static final DasApplication DEFAULT = new DasApplication();
     
     private JFrame mainFrame;
+            
+    static {
+        String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans" };
+        java.beans.Introspector.setBeanInfoSearchPath(beanInfoSearchPath);
+    }
     
-    public static class LoggerId {
-        private String name;
-        private Logger logger;
-        private LoggerId( String name ) {
-            this.name= name;
-            this.logger= Logger.getLogger(name);            
-            this.logger.fine( name +" logging at "+this.logger.getLevel() );
-        }
-        public String toString() {
-            return this.name;
-        }
-        Logger getLogger() {
-            return this.logger;
-        }
-    }
-            
-    {
-        try {
-            java.net.URL logConfigURL;
-            
-            File localLogConfig= new File( getDas2UserDirectory(), "logging.properties" );            
-            if ( localLogConfig.exists() ) {
-                Logger.getLogger("").info("using "+localLogConfig);
-                logConfigURL= localLogConfig.toURL();
-            } else {
-                logConfigURL= DasApplication.class.getResource("logging.properties");
-            }
-            LogManager.getLogManager().readConfiguration( logConfigURL.openStream() );
-        } catch ( Exception e ) {            
-            System.out.println(e);
-        }
-    }
+    private NameContext nameContext;
+    
+    private DataSetCache dataSetCache;
     
     /* messages having to do with the application-specific Das 2 Application */
     public static final LoggerId APPLICATION_LOG= new LoggerId( "" );
@@ -93,15 +71,13 @@ public class DasApplication {
     /* internet transactions, file I/O */
     public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( "das2.dataTransfer" );
     
-    static {
-        String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans" };
-        java.beans.Introspector.setBeanInfoSearchPath(beanInfoSearchPath);
+    public Logger getLogger() {
+        return DasLogger.getLogger();
     }
     
-    private NameContext nameContext;
-    private Logger debugLogger;
-    
-    private DataSetCache dataSetCache;
+    public Logger getLogger( LoggerId id ) {
+        return DasLogger.getLogger(id);
+    }
     
     /** Creates a new instance of DasApplication */
     private DasApplication() {
@@ -210,7 +186,7 @@ public class DasApplication {
         frame.setVisible(true);
         return frame;
     }
-    
+        
     public JFrame createMainFrame() {
         mainFrame= new JFrame("Das2");
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
@@ -226,28 +202,13 @@ public class DasApplication {
             }
         } );
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        System.setProperty( "sun.awt.exception.handler", DasExceptionHandler.class.getName() );
         return mainFrame;
-    }
-    
+    }        
+        
     public JFrame getMainFrame() {            
         return this.mainFrame;
     }
     
-    /**
-     * logger for messages to end users
-     */
-    public Logger getLogger() {
-        return DasProperties.getLogger();
-    }
-    
-    public Logger getLogger( LoggerId loggerId ) {
-        return loggerId.getLogger();
-    }
-    
-    /**
-     * logger for messages to developers
-     */
-    public synchronized Logger getDebugLogger() {
-        return Logger.getLogger("debug");
-    }
 }
