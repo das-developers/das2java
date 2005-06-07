@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.util.*;
@@ -55,7 +56,7 @@ import javax.swing.event.*;
  *
  * @author jbf
  */
-public abstract class DataSetDescriptor {
+public abstract class DataSetDescriptor implements Displayable {
     /* defaultCaching means that the abstract DataSetDescriptor is allowed to handle
      * repeat getDataSet calls by returning a cached dataset.  If a dataSetUpdate event
      * is thrown, the defaultCache is reset.
@@ -316,6 +317,14 @@ public abstract class DataSetDescriptor {
      */
     public Object getProperty(String name) {
         return properties.get(name);
+    }
+
+    public javax.swing.Icon getListIcon() {
+        return null;
+    }
+
+    public String getListLabel() {
+        return this.dataSetID;
     }
     
     
