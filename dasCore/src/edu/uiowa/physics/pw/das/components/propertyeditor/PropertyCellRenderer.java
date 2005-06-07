@@ -18,7 +18,7 @@ import javax.swing.tree.TreeCellRenderer;
 class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCellRenderer, ListCellRenderer {
     
     private static DecimalFormat expFormat = new DecimalFormat("0.#######E0");
-
+    
     JCheckBox booleanRenderer;
     
     public PropertyCellRenderer() {
@@ -45,17 +45,15 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         Component c;
         if (value instanceof java.awt.Color) {
             c = colorRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-        else if (value instanceof Boolean) {
+        } else if (value instanceof Boolean) {
             booleanRenderer.setSelected(((Boolean)value).booleanValue());
             booleanRenderer.setText(value.toString());
             booleanRenderer.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
             c = booleanRenderer;
-        }
-        else {
+        } else {
             if ((value instanceof Double) || (value instanceof Float)) {
                 double doubleValue = ((Number)value).doubleValue();
-                if (doubleValue < 0.01 || doubleValue >= 100.0) {
+                if (doubleValue < 0.0001 || doubleValue >= 10000.0) {
                     value = expFormat.format(doubleValue);
                 }
             }
@@ -72,14 +70,15 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
                 Displayable enm = (Displayable)value;
                 setIcon(enm.getListIcon());
                 setDisabledIcon(enm.getListIcon());
-            }        
-            else {
+            } else {
                 setIcon(null);
             }
             c = this;
+            
         }
+        
         c.setEnabled(writable);
-        return c;
+        return c;        
     }
     
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected, boolean isExpanded, boolean isLeaf, int row, boolean hasFocus) {
@@ -118,11 +117,10 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
             Displayable enm = (Displayable)value;
             setIcon(enm.getListIcon());
             setText(enm.getListLabel());
-        }
-        else {
+        } else {
             setIcon(null);
             setText(String.valueOf(value));
-        }        
+        }
         setOpaque(true);
         setBackground(isSelected ? Color.gray : Color.lightGray);
         return this;
