@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.util.*;
 
@@ -32,7 +33,7 @@ import java.text.ParseException;
  *
  * @author  jbf
  */
-public abstract class Units {
+public abstract class Units implements Displayable {
     
     private static Map unitsMap = new HashMap();
     
@@ -334,5 +335,13 @@ public abstract class Units {
         System.out.println("Hz: " + Hz);
         System.out.println("kHz: " + kHz);
         System.out.println("MHz: " + MHz);
+    }
+
+    public javax.swing.Icon getListIcon() {
+        return null;
+    }
+
+    public String getListLabel() {
+        return this.id;
     }
 }
