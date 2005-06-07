@@ -33,7 +33,10 @@ public class DasColumnBeanInfo extends AccessLevelBeanInfo {
     private static Property[] properties = {
         new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
         new Property("minimum", AccessLevel.DASML, "getMinimum", "setMinimum", null),
-        new Property("maximum", AccessLevel.DASML, "getMaximum", "setMaximum", null)
+        new Property("maximum", AccessLevel.DASML, "getMaximum", "setMaximum", null),
+        new Property("Dminimum", AccessLevel.DASML, "getDMinimum", "setDMinimum", null),
+        new Property("Dmaximum", AccessLevel.DASML, "getDMaximum", "setDMaximum", null), 
+
     };
     
     public DasColumnBeanInfo() {
