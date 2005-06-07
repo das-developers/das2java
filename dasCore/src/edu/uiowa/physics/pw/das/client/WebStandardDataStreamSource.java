@@ -168,6 +168,11 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 }
             }
             
+            boolean redirect=false;
+            if ( redirect ) {
+                formData+= "&redirect=1";
+            } 
+            
             URL serverURL= this.server.getURL(formData);
             DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("opening "+serverURL.toString());
             
