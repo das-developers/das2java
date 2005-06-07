@@ -1,9 +1,11 @@
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
+import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.beans.PropertyDescriptor;
 import java.text.DecimalFormat;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -30,47 +32,61 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
     
     private TableCellRenderer colorRenderer = new ColorCellRenderer();
     
+    private boolean isWritable(JTable table, int row) {
+        TreeTableModel model = (TreeTableModel)table.getModel();
+        PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(row);
+        PropertyDescriptor pd = node.getPropertyDescriptor();
+        return pd.getWriteMethod() != null;
+    }
+    
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        boolean writable = table == null || isWritable(table, row);
+        setEnabled(writable);
+        Component c;
         if (value instanceof java.awt.Color) {
-            return colorRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            c = colorRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
-        if (value instanceof Displayable) {
-            Displayable enm = (Displayable)value;
-            setIcon(enm.getListIcon());
-        }        
-        else {
-            setIcon(null);
-        }
-        if (value instanceof Boolean) {
+        else if (value instanceof Boolean) {
             booleanRenderer.setSelected(((Boolean)value).booleanValue());
             booleanRenderer.setText(value.toString());
-//            booleanRenderer.setBackground(isSelected ? Color.gray : Color.lightGray);
             booleanRenderer.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-            return booleanRenderer;
+            c = booleanRenderer;
         }
-        else if ((value instanceof Double) || (value instanceof Float)) {
-            double doubleValue = ((Number)value).doubleValue();
-            if (doubleValue < 0.01 || doubleValue >= 100.0) {
-                value = expFormat.format(doubleValue);
+        else {
+            if ((value instanceof Double) || (value instanceof Float)) {
+                double doubleValue = ((Number)value).doubleValue();
+                if (doubleValue < 0.01 || doubleValue >= 100.0) {
+                    value = expFormat.format(doubleValue);
+                }
             }
+            if ( value instanceof Displayable ) {
+                setText( ((Displayable)value).getListLabel() );
+            } else {
+                setText(String.valueOf(value));
+            }
+            setOpaque(true);
+            if (table != null) {
+                setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+            }
+            if (value instanceof Displayable) {
+                Displayable enm = (Displayable)value;
+                setIcon(enm.getListIcon());
+                setDisabledIcon(enm.getListIcon());
+            }        
+            else {
+                setIcon(null);
+            }
+            c = this;
         }
-        if ( value instanceof Displayable ) {
-            setText( ((Displayable)value).getListLabel() );
-        } else {
-            setText(String.valueOf(value));
-        }
-        setOpaque(true);
-        //setBackground(isSelected ? Color.gray : Color.lightGray);
-        if (table != null) {
-            setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-        }
-        return this;
+        c.setEnabled(writable);
+        return c;
     }
     
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected, boolean isExpanded, boolean isLeaf, int row, boolean hasFocus) {
         setText(String.valueOf(value));
         setIcon(null);
         setOpaque(false);
+        setEnabled(true);
         return this;
     }
     
