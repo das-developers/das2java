@@ -21,11 +21,17 @@ public class BeansUtil {
      * at the end of the list.
      */
     public static String[] getPropertyNames( Class c ) {
+        Set excludePropertyNames;    
+        excludePropertyNames= new HashSet();
+        excludePropertyNames.add("class");
+        excludePropertyNames.add("listLabel");
+        excludePropertyNames.add("listIcon");
+    
         try {
             
             // goal: get BeanInfo for the class, the AccessLevelBeanInfo if it exists.
             BeanInfo beanInfo= null;
-                    
+                        
             String s= c.getName().substring(c.getPackage().getName().length()+1);
             
             Class maybeClass=null;
@@ -43,15 +49,19 @@ public class BeansUtil {
             
             List propertyList= new ArrayList();
             
-            PropertyDescriptor[] pdthis= beanInfo.getPropertyDescriptors();
+            PropertyDescriptor[] pdthis;
+            try {
+              pdthis=   beanInfo.getPropertyDescriptors();
+            } catch ( IllegalStateException e ) {
+                throw new RuntimeException(e);
+            }
+            
             for ( int i=0; i<pdthis.length; i++ ) {                
                 boolean isWriteable= pdthis[i].getWriteMethod()!=null;
-                boolean isReadable= pdthis[i].getReadMethod()!=null;
-                if ( isReadable || ( pdthis[i] instanceof IndexedPropertyDescriptor ) ) {                
+                boolean isUseable= pdthis[i].getReadMethod()!=null && !excludePropertyNames.contains(pdthis[i].getName());
+                if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor ) ) {                
                     propertyList.add( pdthis[i] );
-                } else {
-                    System.err.println("read/only property: "+pdthis[i].getName());
-                }
+                } 
             }
             
             if ( beanInfo.getAdditionalBeanInfo()!=null ) {
@@ -60,9 +70,9 @@ public class BeansUtil {
                     BeanInfo aBeanInfo= (BeanInfo)additionalBeanInfo.remove(0);
                     pdthis=  aBeanInfo.getPropertyDescriptors();
                     for ( int i=0; i<pdthis.length; i++ ) {
-                        boolean isWriteable= pdthis[i].getWriteMethod()!=null;
-                        boolean isReadable= pdthis[i].getReadMethod()!=null;
-                        if ( isReadable || ( pdthis[i] instanceof IndexedPropertyDescriptor  )) {                        
+                        boolean isWriteable= pdthis[i].getWriteMethod()!=null;                        
+                        boolean isUseable= pdthis[i].getReadMethod()!=null && !excludePropertyNames.contains(pdthis[i].getName());
+                        if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor  )) {                        
                             propertyList.add( pdthis[i] );
                         }
                     }                    
