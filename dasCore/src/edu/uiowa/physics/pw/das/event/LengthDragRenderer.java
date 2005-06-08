@@ -53,7 +53,6 @@ public class LengthDragRenderer extends LabelDragRenderer {
             }
             
             Datum y0= yaxis.invTransform(p2.y+parent.getY());
-            System.out.println( y0.toString() );
             Datum rise= y0.subtract(yaxis.invTransform(p1.y+parent.getY()));
             String riseString;
             riseString= rise.toString();
