@@ -24,6 +24,9 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
     /* we store the yaxis to kludge in the yresolution, range */
     DasAxis yAxis;
     
+    int limit=200;
+    int overSampleFactor= 1;    
+    
     /** Creates a new instance of MendelbrotDataSetDescriptor */    
     public MendelbrotDataSetDescriptor( DasAxis yAxis ) {
         this.yAxis= yAxis;
@@ -43,7 +46,7 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
     {
         double r = 0.0, i = 0.0, m = 0.0;
         int j = 0;
-        final int MAX=100;
+        final int MAX=limit;
         
         while ((j < MAX) && (m < 4.0)) {
             j++;
@@ -61,13 +64,13 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
         double xstart, xend, xresolution;
         xstart= start.doubleValue(Units.dimensionless);
         xend= end.doubleValue(Units.dimensionless);
-        xresolution= resolution.doubleValue(Units.dimensionless);
+        xresolution= resolution.doubleValue(Units.dimensionless) / overSampleFactor;
         
         double ystart, yend, yresolution;        
         ystart= yAxis.getDataMinimum(Units.dimensionless);        
         yend= yAxis.getDataMaximum(Units.dimensionless);
         int _ny= yAxis.getRow().getHeight();
-        yresolution= ( yend-ystart ) / _ny;        
+        yresolution= ( yend-ystart ) / ( _ny * overSampleFactor ); 
                 
         int ny= (int)(((yend-ystart)/yresolution));
         int nx= (int)(((xend-xstart)/xresolution));
@@ -109,4 +112,33 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
         return Units.dimensionless;
     }
     
+    public void setLimit( int limit ) {
+        if ( this.limit!=limit ) {
+            this.limit= limit;
+            fireDataSetUpdateEvent( new DataSetUpdateEvent( this ) );
+        }
+    }
+    
+    public int getLimit() {
+        return this.limit;
+    }    
+
+    /**
+     * Getter for property overSampleFactor.
+     * @return Value of property overSampleFactor.
+     */
+    public int getOverSampleFactor() {
+        return this.overSampleFactor;
+    }
+
+    /**
+     * Setter for property overSampleFactor.
+     * @param overSampleFactor New value of property overSampleFactor.
+     */
+    public void setOverSampleFactor(int overSampleFactor) {
+        if ( this.overSampleFactor!=overSampleFactor ) {
+            this.overSampleFactor = overSampleFactor;
+            fireDataSetUpdateEvent( new DataSetUpdateEvent( this ) );
+        }
+    }
 }
