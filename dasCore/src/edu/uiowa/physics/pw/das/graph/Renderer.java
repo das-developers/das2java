@@ -127,7 +127,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                     setDumpDataSet(false);
                     throw new DasException("data set is null");
                 } else {
-                    System.out.println("Dumping data set");
                     JFileChooser chooser= new JFileChooser();
                     int xx= chooser.showSaveDialog(this.getParent());
                     if ( xx==JFileChooser.APPROVE_OPTION ) {
