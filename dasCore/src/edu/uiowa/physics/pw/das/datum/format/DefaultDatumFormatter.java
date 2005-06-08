@@ -79,7 +79,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
                         f.setMinimumFractionDigits(scale+exp-1);
                         f.setMaximumFractionDigits(scale+exp-1);
                     } else {
-                        f = new DecimalFormat();
+                        f = new DecimalFormat("0");
                         f.setMinimumFractionDigits(scale);
                         f.setMaximumFractionDigits(scale);
                     }
