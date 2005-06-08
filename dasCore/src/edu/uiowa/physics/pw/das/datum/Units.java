@@ -83,6 +83,8 @@ public abstract class Units implements Displayable {
         days.registerConverter(seconds, new UnitsConverter.ScaleOffset(8.64e4, 0.0));
     }
     
+    public static final Units bytesPerSecond= new NumberUnits("bytes/s");
+    
     public static final Units hertz= new NumberUnits("Hz");
     public static final Units kiloHertz = new NumberUnits("kHz");
     public static final Units megaHertz = new NumberUnits("MHz");
