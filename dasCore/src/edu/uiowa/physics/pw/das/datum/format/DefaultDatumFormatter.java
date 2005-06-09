@@ -85,13 +85,15 @@ public class DefaultDatumFormatter extends DatumFormatter {
                     }
                     result= f.format(d);
                 } else {
+                    double round= DasMath.exp10( scale+exp+1 );
+                    d= Math.round( d / round ) * round;
                     DecimalFormat f;
                     if ( exp<=-5 || exp >=5 ) {
                         f= new DecimalFormat( "0E0" );
                         f.setMinimumFractionDigits(scale+exp+1);
                         f.setMaximumFractionDigits(scale+exp+1);
                     } else {
-                        f = new DecimalFormat();
+                        f = new DecimalFormat("0");
                     }
                     result= f.format(d);
                 }
