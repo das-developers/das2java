@@ -327,5 +327,8 @@ public abstract class DataSetDescriptor implements Displayable {
         return this.dataSetID;
     }
     
+    public DataSetCache getDataSetCache() {
+        return this.dataSetCache;
+    }
     
 }

@@ -32,6 +32,7 @@ public class DataSetDescriptorBeanInfo extends AccessLevelBeanInfo {
     
     private static Property[] properties = {   
         new Property("dataSetID", AccessLevel.DASML, "getDataSetID", null, null),
+        new Property("dataSetCache", AccessLevel.DASML, "getDataSetCache", null, null),
     };
     
     public DataSetDescriptorBeanInfo() {
