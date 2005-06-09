@@ -336,7 +336,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
      * @param compress New value of property compress.
      */
     public void setCompress(boolean compress) {
-        
         this.compress = compress;
     }
     
