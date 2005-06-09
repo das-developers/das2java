@@ -41,16 +41,32 @@ public class MeteredInputStream extends InputStream {
     
     /** Creates a new instance of MeteredInputStream */
     public MeteredInputStream(InputStream in) {
-        this.in= in;
-        this.totalBytesRead=0;
-        this.birthTimeMilli= System.currentTimeMillis();
-        this.deathTimeMilli= -1;
         this.speedLimit=0;
+        this.deathTimeMilli=0; // -1 indicates metering is in progress.
+        setInputStream(in);
+    }
+    
+    public void reset() {
+        this.totalBytesRead= 0;
+        this.birthTimeMilli= System.currentTimeMillis();
+        this.deathTimeMilli= -1;        
+    }
+    
+    public void stop() {
+        this.deathTimeMilli= System.currentTimeMillis();        
+    }
+    
+    public void setInputStream( InputStream in ) {
+        if ( this.in!=null ) {
+            throw new IllegalArgumentException( "already metering another inputStream." );
+        }
+        this.in= in;
+        reset();
     }
     
     public int read( byte[] b, int off, int len ) throws IOException {
         int bytesRead= in.read(b,off,len);
-        totalBytesRead+= bytesRead;
+        if ( deathTimeMilli==-1 ) totalBytesRead+= bytesRead;
         if ( speedLimit>0 ) {
             try {
                 while ( calcTransmitSpeed() > speedLimit ) {
@@ -71,10 +87,13 @@ public class MeteredInputStream extends InputStream {
     public void close() throws IOException {
         deathTimeMilli= System.currentTimeMillis();
         in.close();
+        this.in= null;
     }
     
-    public double calcTransmitSpeed() {
-        // return speed in bytes/second.
+    /**
+     * @return the transmit speed in bytes/second.
+     */
+    public double calcTransmitSpeed() {       
         long timeElapsed;
         if ( deathTimeMilli>-1 ) {
             timeElapsed= deathTimeMilli-birthTimeMilli;
@@ -82,7 +101,7 @@ public class MeteredInputStream extends InputStream {
             timeElapsed= System.currentTimeMillis()-birthTimeMilli;
         }
         if ( timeElapsed==0 ) return Double.POSITIVE_INFINITY;
-        return 1000 * totalBytesRead / timeElapsed;
+        return 1000. * totalBytesRead / timeElapsed;
     }
     
     public double calcTransmitTime() {

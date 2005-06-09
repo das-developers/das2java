@@ -48,17 +48,12 @@ import java.util.Properties;
 
 /** */
 public class WebStandardDataStreamSource implements StandardDataStreamSource {
-        
+    
     private DasServer server;
     private MeteredInputStream min;
     private boolean legacyStream = true;
     private String extraParameters;
-
-    /**
-     * Holds value of property transferRate.
-     */
-    private double transferRate;
-
+    
     /**
      * Holds value of property compress.
      */
@@ -70,6 +65,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         if (query.length >= 2) {
             extraParameters = query[1];
         }
+        min= new MeteredInputStream(null);
     }
     
     public boolean isLegacyStream() {
@@ -100,7 +96,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             formData.append("server=compactdataset");
             StreamYScanDescriptor y = (StreamYScanDescriptor)dsd.getDefaultPacketDescriptor().getYDescriptors().get(0);
             formData.append("&nitems=").append(y.getNItems() + 1);
-            if (timeResolution != null) {   
+            if (timeResolution != null) {
                 formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
             }
         } else if ( "x_multi_y".equals(form) && dsd.getProperty("items") != null) {
@@ -118,14 +114,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         if (extraParameters != null) {
             formData.append("&params=").append(extraParameters);  //Should already be url encoded.
         }
-                
-        if ( min!=null ) {
-            transferRate= min.calcTransmitSpeed();
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "last transfer speed (byte/sec)= "+transferRate);
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "   time to transfer (sec)= "+min.calcTransmitTime());
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.DEBUG, "   total kbytes transferred= "+min.totalBytesTransmitted()/1024);            
-        }
-        
+                        
         //if ( min!=null && min.calcTransmitSpeed()>30000 ) {
         //    compress= false;
         //}
@@ -136,7 +125,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         }
         
         InputStream in= openURLConnection( dsd, start, end, formData );
-        min= new MeteredInputStream(in);
+        min.setInputStream(in);
         
         return min;
         
@@ -171,7 +160,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             boolean redirect=false;
             if ( redirect ) {
                 formData+= "&redirect=1";
-            } 
+            }
             
             URL serverURL= this.server.getURL(formData);
             DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("opening "+serverURL.toString());
@@ -181,7 +170,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             
             String contentType = urlConnection.getContentType();
             
-            if (!contentType.equalsIgnoreCase("application/octet-stream")) {                
+            if (!contentType.equalsIgnoreCase("application/octet-stream")) {
                 BufferedReader bin = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String line = bin.readLine();
                 String message = "";
@@ -196,8 +185,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             
             if (isLegacyStream()) {
                 return processLegacyStream(in);
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException();
             }
         } catch (IOException e) {
@@ -226,7 +214,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 int index2= serverResponse.indexOf("</"+errorTag+">");
                 
                 String error= serverResponse.substring( errorTag.length()+2,
-                serverResponse.length()-(errorTag.length()+3));
+                        serverResponse.length()-(errorTag.length()+3));
                 
                 edu.uiowa.physics.pw.das.util.DasDie.println("error="+error);
                 
@@ -235,7 +223,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 throw new NoKeyProvidedException("");
                 }
                 
-                if (error.equals("<accessDenied/>")) {    
+                if (error.equals("<accessDenied/>")) {
                     /* the server says the key used does not have access to the resouce requested. Allow the user to reauthenticate */
                     server.setKey(null);
                     server.getKey("");
@@ -286,7 +274,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             
             if ( new String(data,0,14,"UTF-8").equals("<"+das2ResponseTag+">")) {
                 while ( new String( data,0,offset,"UTF-8" ).indexOf("</"+das2ResponseTag+">")==-1 &&
-                offset<4096 ) {
+                        offset<4096 ) {
                     offset+= bytesRead;
                     bytesRead= in.read(data,offset,4096-offset);
                 }
@@ -322,31 +310,33 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         Key key= authenticator.authenticate();
         if ( key!=null ) server.setKey(key);
     }
-
+    
     /**
      * Getter for property transferRate.
      * @return Value of property transferRate.
      */
-    public double getTransferRate() {
-
-        return this.transferRate;
+    public Datum getTransferRate() {
+        return Units.bytesPerSecond.createDatum( min.calcTransmitSpeed(), 100 );
     }
-
+    
+    public Datum getTransferTime() {
+        return Units.seconds.createDatum( min.calcTransmitTime() );
+    }
+    
     /**
      * Getter for property compress.
      * @return Value of property compress.
      */
-    public boolean isCompress() {
-
+    public boolean isCompress() {        
         return this.compress;
     }
-
+    
     /**
      * Setter for property compress.
      * @param compress New value of property compress.
      */
     public void setCompress(boolean compress) {
-
+        
         this.compress = compress;
     }
     
