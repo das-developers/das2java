@@ -96,7 +96,7 @@ public class NumberUnits extends Units {
             } else {
                 mant= s.substring(0,ie);
                 double[] dd= parseDecimal( mant );
-                int exp= Integer.parseInt( s.substring(ie+1) );
+                int exp= (int)Double.parseDouble( s.substring(ie+1) );
                 dd[0]= dd[0] * DasMath.exp10(exp);
                 dd[1]= dd[1] * DasMath.exp10(exp);
                 return dd;
