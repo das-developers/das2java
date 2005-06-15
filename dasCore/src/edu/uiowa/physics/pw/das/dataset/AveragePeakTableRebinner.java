@@ -42,9 +42,15 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException();
         }
+        
         TableDataSet tds = (TableDataSet)ds;
+        
+        if ( ddY==null && tds.tableCount()==0 ) {
+            throw new IllegalArgumentException( "empty table and null RebinDescriptor for Y, so result YTags are undefined." );
+        }
+        
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
-        TableDataSet peaks = (TableDataSet)ds.getPlanarView("peaks");                            
+        TableDataSet peaks = (TableDataSet)ds.getPlanarView("peaks");
         
         long timer= System.currentTimeMillis();
         
