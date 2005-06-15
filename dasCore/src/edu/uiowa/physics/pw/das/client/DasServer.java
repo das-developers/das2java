@@ -252,7 +252,7 @@ public class DasServer {
                     }
                     else {
                         throw new DasStreamFormatException();
-                    }
+                    } 
                 }
                 else {
                     reader.unread(four);
