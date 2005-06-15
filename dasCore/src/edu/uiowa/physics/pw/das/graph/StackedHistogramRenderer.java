@@ -246,8 +246,14 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         
         TableDataSet xtysData= (TableDataSet)getDataSet();
         
-        if ( xtysData==null ) {
-            renderException( g, xAxis, yAxis, new DasException("null data set" ) );
+        if ( xtysData==null ) {            
+            this.setLastException( new DasException("null data set" ) );            
+            return;
+        }
+        
+        if ( xtysData.tableCount()==0 ) {
+            this.setLastException( new DasException("empty data set") );
+            this.ds= null;
             return;
         }
         
