@@ -58,6 +58,11 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
      * Holds value of property compress.
      */
     private boolean compress;
+
+    /**
+     * Holds value of property lastRequestURL.
+     */
+    private String lastRequestURL;
     
     public WebStandardDataStreamSource(DasServer server, URL url) {
         this.server = server;
@@ -163,6 +168,9 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             }
             
             URL serverURL= this.server.getURL(formData);
+            
+            this.lastRequestURL= String.valueOf( serverURL );
+            
             DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("opening "+serverURL.toString());
             
             URLConnection urlConnection = serverURL.openConnection();
@@ -337,6 +345,17 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
      */
     public void setCompress(boolean compress) {
         this.compress = compress;
+    }
+
+    /**
+     * Getter for property lastRequestURL.
+     * @return Value of property lastRequestURL.
+     */
+    public String getLastRequestURL() {
+        return this.lastRequestURL;
+    }
+    
+    public void setLastRequestURL( String url ) {
     }
     
 }
