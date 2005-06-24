@@ -1078,7 +1078,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
                 }
                 if (topTickLabels) {
-                    drawLabel(g, tick1, i, tickPosition, topPosition - tickLength);
+                    drawLabel(g, tick1, i, tickPosition, topPosition - tickLength + 1);
                 }
             }
         }
