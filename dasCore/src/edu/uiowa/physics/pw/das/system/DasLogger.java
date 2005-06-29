@@ -15,10 +15,10 @@ import java.util.logging.*;
  */
 public class DasLogger {
     
-    {
+    static {
         try {
             java.net.URL logConfigURL;
-            
+                        
             File local;
             if ( System.getProperty("user.name").equals("Web") ) {
                 local= new File("/tmp");
