@@ -90,14 +90,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final String SCAN_NEXT_LABEL = "scan >>";
     
     /* GENERAL AXIS INSTANCE MEMBERS */
-    protected DataRange dataRange;
+    protected DataRange dataRange;    
+    
     private int orientation;
     private int tickDirection=1;  // 1=down or left, -1=up or right
     protected String axisLabel = "";
     protected TickVDescriptor tickV;
     private boolean ticksVisible = true;
     private boolean tickLabelsVisible = true;
-    private boolean oppositeAxisVisible;
+    private boolean oppositeAxisVisible= false;
     protected DatumFormatter datumFormatter = DefaultDatumFormatterFactory.getInstance().defaultFormatter();
     
     private MouseModule zoom=null;
@@ -791,7 +792,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double dMaxTick= DasMath.roundNFractionalDigits(DasMath.log10(max),4);
         int maxTick= (int)Math.floor(dMaxTick);
         
-        GrannyTextRenderer idlt= new GrannyTextRenderer();
+        GrannyTextRenderer idlt= new GrannyTextRenderer( );
         idlt.setString(this, "10!U-10");
         
         int nTicksMax;
