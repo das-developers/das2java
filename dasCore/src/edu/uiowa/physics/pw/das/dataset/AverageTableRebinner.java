@@ -50,8 +50,11 @@ public class AverageTableRebinner implements DataSetRebinner {
     }
     
     public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, DasException {
+        if (ds == null) {
+            throw new NullPointerException("null data set");
+        }
         if (!(ds instanceof TableDataSet)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Data set must be an instanceof TableDataSet: " + ds.getClass().getName());
         }
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
