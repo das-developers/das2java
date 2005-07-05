@@ -28,6 +28,7 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasNameException;
 import edu.uiowa.physics.pw.das.DasPropertyException;
 import edu.uiowa.physics.pw.das.NameContext;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
@@ -305,9 +306,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     public static final Action ABOUT_ACTION = new CanvasAction("About") {
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showConfirmDialog( currentCanvas, "release version " + Splash.getVersion(), "about das2", JOptionPane.PLAIN_MESSAGE );
+            String dasVersion= Splash.getVersion();
+            String javaVersion= System.getProperty("java.version");
+            
+            String aboutContent= "<html>release version: "+dasVersion+"<br>java version: "+javaVersion+"<br></html>";
+            
+            JOptionPane.showConfirmDialog( currentCanvas, aboutContent, "about das2", JOptionPane.PLAIN_MESSAGE );
             currentCanvas.setSize(currentCanvas.getWidth()+1, currentCanvas.getHeight()+1);
             currentCanvas.setSize(currentCanvas.getWidth(), currentCanvas.getHeight());
+        }
+    };
+    
+    public final Action PROPERTIES_ACTION= new CanvasAction("properties") {
+        public void actionPerformed( ActionEvent e ) {
+            PropertyEditor editor = new PropertyEditor( DasCanvas.this);
+            editor.showDialog( DasCanvas.this );
         }
     };
     
@@ -391,9 +404,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         popup.addSeparator();
         
+        JMenuItem props= new JMenuItem(PROPERTIES_ACTION);
+        popup.add(props);
+        
         JMenuItem close = new JMenuItem("close");
         close.setToolTipText("close this popup");
-        popup.add(close);
+        popup.add(close);        
         
         return popup;
     }
@@ -800,6 +816,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     /** This methods adds the specified <code>DasCanvasComponent</code> to this canvas.
      * @param c the component to be added to this canvas
+     * Note that the canvas will need to be revalidated after the component
+     * is added.
      */
     public void add(DasCanvasComponent c, DasRow row, DasColumn column) {
         if (c.getRow() == DasRow.NULL
@@ -1398,7 +1416,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private HashSet horizontalLineSet = new HashSet();
     private HashSet verticalLineSet = new HashSet();
     private HashSet cellSet = new HashSet();
-    
+
+
     /** TODO
      * @param x
      * @param y
@@ -1733,6 +1752,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             deregisterComponent();
             throw dne;
         }
+    }
+
+   public DasCanvasComponent getCanvasComponents( int index ) {        
+        return (DasCanvasComponent)getComponent(index+1);        
+    }
+    
+    public DasCanvasComponent[] getCanvasComponents() {
+        int n= getComponentCount()-1;
+        DasCanvasComponent[] result= new DasCanvasComponent[n];
+        for ( int i=0; i<n; i++ ) {
+            result[i]= getCanvasComponents(i);
+        }
+        return result;
     }
     
     /** TODO */
