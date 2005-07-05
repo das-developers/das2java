@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
+import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.components.DatumEditor;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableCellRenderer;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
@@ -79,11 +80,7 @@ public class PropertyEditor extends JComponent {
      * Set up the custom editors.
      */
     static {
-        PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);
-        PropertyEditorManager.registerEditor(Datum.class, DatumEditor.class);
-        PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
-        PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
-        PropertyEditorManager.registerEditor(PsymConnector.class, EnumerationEditor.class);
+        BeansUtil.registerPropertyEditors();
     }
     
     private JTable table;
