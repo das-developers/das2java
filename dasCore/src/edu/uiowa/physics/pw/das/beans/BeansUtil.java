@@ -6,6 +6,11 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
+import edu.uiowa.physics.pw.das.components.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
+import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.graph.*;
+import java.awt.Color;
 import java.beans.*;
 import java.lang.reflect.*;
 import java.util.*;
@@ -15,6 +20,21 @@ import java.util.*;
  * @author Jeremy
  */
 public class BeansUtil {
+    
+    /**
+     * See that the known editors are registered with the PropertyEditorManager
+     */
+    public static void registerPropertyEditors() {
+        PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);
+        PropertyEditorManager.registerEditor(Datum.class, DatumEditor.class);
+        PropertyEditorManager.registerEditor(Units.class, UnitsEditor.class );
+        PropertyEditorManager.registerEditor(NumberUnits.class, UnitsEditor.class );
+        PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
+        PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
+        PropertyEditorManager.registerEditor(PsymConnector.class, EnumerationEditor.class);
+    }
+    
+    
     /**
      * Use reflection to get a list of all the property names for the class.
      * The properties are returned in the order specified, and put inherited properties
