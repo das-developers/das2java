@@ -316,8 +316,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * the data is completed.  This operation should occur on an interactive
      * time scale.  This is an opportunity to create a cache
      * image of the data with the current axis state, when the render
-     * operation cannot operation on an animation interactive time scale.
-     * When subclassing this method be sure to call super.updatePlotImage
+     * operation cannot operate on an animation interactive time scale.
+     * When subclassing this method, be sure to call super.updatePlotImage
      * if you intend to use the affineTransform.  Codes can no longer assume
      * that the xAxis sent to render will be in the same state as it was when
      * updatePlotImage was called!
