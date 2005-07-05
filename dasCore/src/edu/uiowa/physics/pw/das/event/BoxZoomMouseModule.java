@@ -23,6 +23,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     DatumRange xrange, yrange;
     JDialog dialog;
     JLabel xrangeLabel, yrangeLabel;
+    JCheckBox autoUpdateCB, constrainProportionsCB;
     boolean autoUpdate= false;
     boolean constrainProportions= false;
     
@@ -60,21 +61,25 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
             b.add(zoomButtonPanel);
             
             final JCheckBox cb= new JCheckBox( "auto box zoom" );
+            cb.setSelected( autoUpdate );
             b.add( cb );
             cb.addActionListener( new ActionListener() {
                 public void actionPerformed( ActionEvent e ) {
                     autoUpdate= cb.isSelected();
                 }
             } );
+            autoUpdateCB= cb;
             
             if ( xAxis.getUnits()==yAxis.getUnits() ) {
                 final JCheckBox cp= new JCheckBox( "constrain proportions" );
+                cp.setSelected(constrainProportions);
                 b.add(cp);
                 cp.addActionListener( new ActionListener() {
                     public void actionPerformed( ActionEvent e ) {
                         constrainProportions= cp.isSelected();
                     }
-                } );                
+                } );
+                constrainProportionsCB= cp;
             }
             dialog.pack();
         }
@@ -161,6 +166,41 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
             }
         }
         
+    }
+
+    /**
+     * Getter for property autoUpdate.
+     * @return Value of property autoUpdate.
+     */
+    public boolean isAutoUpdate() {
+
+        return this.autoUpdate;
+    }
+
+    /**
+     * Setter for property autoUpdate.
+     * @param autoUpdate New value of property autoUpdate.
+     */
+    public void setAutoUpdate(boolean autoUpdate) {
+        if ( autoUpdateCB!=null ) autoUpdateCB.setSelected( autoUpdate );
+        this.autoUpdate = autoUpdate;
+    }
+
+    /**
+     * Getter for property constrainProportions.
+     * @return Value of property constrainProportions.
+     */
+    public boolean isConstrainProportions() {
+        return this.constrainProportions;
+    }
+
+    /**
+     * Setter for property constrainProportions.
+     * @param constrainProportions New value of property constrainProportions.
+     */
+    public void setConstrainProportions(boolean constrainProportions) {        
+        if ( constrainProportionsCB!=null ) constrainProportionsCB.setSelected(constrainProportions);
+        this.constrainProportions = constrainProportions;
     }
     
     
