@@ -120,7 +120,7 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
     
     public void setAsText(String text) throws IllegalArgumentException {
         try {
-            setDatum(units.parse(editor.getText()));
+            setDatum(units.parse(text));
         }
         catch (ParseException pe) {
             IllegalArgumentException iae = new IllegalArgumentException(pe.getMessage());
