@@ -96,9 +96,9 @@ public class NumberUnits extends Units {
             } else {
                 mant= s.substring(0,ie);
                 double[] dd= parseDecimal( mant );
-                int exp= (int)Double.parseDouble( s.substring(ie+1) );
-                dd[0]= dd[0] * DasMath.exp10(exp);
-                dd[1]= dd[1] * DasMath.exp10(exp);
+                double exp= DasMath.exp10( Double.parseDouble( s.substring(ie+1) ) );
+                dd[0]= dd[0] * exp;
+                dd[1]= dd[1] * exp;
                 return dd;
             }
         }        
