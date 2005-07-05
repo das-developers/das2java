@@ -43,9 +43,15 @@ public class GrannyTextRenderer {
     private String str;
     private String[] tokens;
     private int alignment = LEFT_ALIGNMENT;        
+    private Component parent;
+            
+    /**
+     * Holds value of property fontSize.
+     */
+    private float fontSize;
     
-    public GrannyTextRenderer() {
-        
+    public GrannyTextRenderer( ) {
+        this.fontSize= 12.0f;
     }
     
     public Rectangle getBounds() {
@@ -89,7 +95,12 @@ public class GrannyTextRenderer {
         return bounds.getHeight() + bounds.getY();
     }
     
+    /**
+     * reset the current string for the GTR to draw, calculating the boundaries 
+     * of the string.  
+     */
     public void setString(Component c, String str) {
+        this.parent= c;
         bounds = null;
         lineBounds = new ArrayList();
         this.str = str;
@@ -172,10 +183,10 @@ public class GrannyTextRenderer {
         
         Font baseFont;
         if (draw) {
-            baseFont = g.getFont();
+            baseFont = g.getFont().deriveFont( fontSize );
         }
         else {
-            baseFont = c.getFont();
+            baseFont = c.getFont().deriveFont( fontSize );
         }
         
         int lineNum=1;
@@ -381,6 +392,23 @@ public class GrannyTextRenderer {
             Rectangle rc = (Rectangle)i.next();
             g.drawRect(rc.x + ix, rc.y + iy, rc.width, rc.height);
         }
+    }
+
+    /**
+     * Getter for property fontSize.
+     * @return Value of property fontSize.
+     */
+    public float getFontSize() {
+        return this.fontSize;
+    }
+
+    /**
+     * Setter for property fontSize.
+     * @param fontSize New value of property fontSize.
+     */
+    public void setFontSize(float fontSize) {
+        this.fontSize = fontSize;
+        if ( this.parent!=null ) setString( parent, this.str );
     }
         
 }
