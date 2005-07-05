@@ -34,7 +34,8 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
     private static Property[] properties = {
         new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
         new Property("width", AccessLevel.DASML, "getWidth", "setPreferredWidth", null),
-        new Property("height", AccessLevel.DASML, "getHeight", "setPreferredHeight", null)
+        new Property("height", AccessLevel.DASML, "getHeight", "setPreferredHeight", null),
+        new Property("components", AccessLevel.DASML, "getCanvasComponents", null, "getCanvasComponents", null, null ), 
     };
     
     private static MethodDescriptor[] methods;
