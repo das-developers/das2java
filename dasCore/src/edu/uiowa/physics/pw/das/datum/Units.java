@@ -84,6 +84,9 @@ public abstract class Units implements Displayable {
     }
     
     public static final Units bytesPerSecond= new NumberUnits("bytes/s");
+    public static final Units kiloBytesPerSecond= new NumberUnits("KBytes/s");
+    public static final Units bytes= new NumberUnits( "bytes" );
+    public static final Units kiloBytes= new NumberUnits( "KBytes" );
     
     public static final Units hertz= new NumberUnits("Hz");
     public static final Units kiloHertz = new NumberUnits("kHz");
@@ -317,6 +320,11 @@ public abstract class Units implements Displayable {
     public abstract Datum multiply( Number a, Number b, Units bUnits );
     public abstract Datum divide( Number a, Number b, Units bUnits );
     
+    /**
+     * returns a Units object with the given string representation that is stored in the unitsMap.
+     *
+     * @throws IllegalArgumentException if the unit is not recognized.
+     */
     public static Units getByName(String s) {
         Units units = (Units)unitsMap.get(s);
         if (units == null) {
