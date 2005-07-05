@@ -323,7 +323,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * updatePlotImage was called!
      */
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).warning("updatePlotImage");
         xaxis0= (DasAxis)xAxis.clone();
         yaxis0= (DasAxis)yAxis.clone();        
     }
