@@ -47,6 +47,9 @@ public class DataRange implements Cloneable {
     /* maximum, possibly with log applied */
     private double maximum;
     
+    /* storage for values of temporary invalid states during state transition.*/
+    private Datum pendingMin=null, pendingMax=null;
+    
     /* range is the min and max, not in the log space.  This is the range that controls the DataRange, as opposed
        to minimum and maximum, which are simply to implement it. */
     private DatumRange range;
@@ -171,12 +174,22 @@ public class DataRange implements Cloneable {
         
     }
     
-    public void setMinimum( Datum min) {
-        setRange( new DatumRange( min, this.range.max() ) );
+    public void setMinimum( Datum min ) {
+        Datum max= pendingMax!=null ? pendingMax : this.range.max();
+        if ( min.le( max ) ) {
+            setRange( new DatumRange( min, max ) );
+        } else {            
+            this.pendingMin= min;
+        }
     }
     
-    public void setMaximum( Datum max) {
-        setRange( new DatumRange( this.range.min(), max ) );
+    public void setMaximum( Datum max ) {
+        Datum min= pendingMin!=null ? pendingMin : this.range.min();
+        if ( min.le( max ) ) {
+            setRange( new DatumRange( min, max ) );
+        } else {            
+            this.pendingMax= max;
+        }        
     }
     
     private void reportHistory() {
@@ -194,6 +207,8 @@ public class DataRange implements Cloneable {
     }
     
     public void setRange( DatumRange range ) {
+        pendingMin= null;
+        pendingMax= null;
         setRange( range, true );
     }
     
