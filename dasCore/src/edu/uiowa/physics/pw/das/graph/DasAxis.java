@@ -1897,7 +1897,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             while ( alpha < 1.0 ) {
                 alpha= ( System.currentTimeMillis() - t0 ) / transitionTime;
                 
-                double t= -3 + 6 * alpha;
+                double t= -2 + 3 * alpha;
                 double a1= (DasMath.tanh(t)+1)/2;
                 double a0= 1-a1;
                 tempRange.setRange( min0*a0+min1*a1, max0*a0+max1*a1 );
