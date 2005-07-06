@@ -428,10 +428,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double t1= dataRange.getMinimum();
         double t2= dataRange.getMaximum();
         double delta= t2-t1;
-        double min= t1-delta/2;
-        double max= t2+delta/2;
+        double min= t1-delta;
+        double max= t2+delta;
         animateChange(t1,t2,min,max);        
         dataRange.setRange(min,max);
+        update();
+        createAndFireRangeSelectionEvent();
     }
     
     /** TODO
