@@ -50,6 +50,8 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JProgressBar progressBar;
     private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
+    private int cancelCheckFailures= 0; // number of times client codes failed to check cancelled before setTaskProgress.
+    private boolean cancelChecked= false;  
     private String label;
     private static final int hideInitiallyMilliSeconds= 1500;
     private long lastTaskTime;
@@ -196,11 +198,16 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         if ( position!=0 && position<currentTaskPosition ) {
             DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finest( "progress position goes backwards" );
         }
-        
-        if (isCancelled) {
-            DasApplication.getDefaultApplication().getLogger().fine("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
-            throw new IllegalStateException("Operation cancelled: developers: check isCancelled before calling setTaskProgress");
+
+        if (!cancelChecked) {
+            cancelCheckFailures++;
+            if ( cancelCheckFailures>10 ) {
+                DasApplication.getDefaultApplication().getLogger().fine("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
+                throw new IllegalStateException("Operation cancelled: developers: check isCancelled before calling setTaskProgress");
+            }
         }
+        cancelChecked= false;  // reset for next time, isCancelled will set true.
+        
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
         if ( elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
             setVisible(true);
@@ -291,6 +298,8 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     }
     
     public boolean isCancelled() {
+        cancelCheckFailures=0;
+        cancelChecked= true;
         return isCancelled;
     }
     
