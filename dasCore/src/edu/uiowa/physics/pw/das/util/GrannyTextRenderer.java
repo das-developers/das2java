@@ -183,10 +183,12 @@ public class GrannyTextRenderer {
         
         Font baseFont;
         if (draw) {
-            baseFont = g.getFont().deriveFont( fontSize );
+        //    baseFont = g.getFont().deriveFont( fontSize );
+            baseFont= g.getFont();
         }
         else {
-            baseFont = c.getFont().deriveFont( fontSize );
+        //    baseFont = c.getFont().deriveFont( fontSize );
+            baseFont= c.getFont();
         }
         
         int lineNum=1;
