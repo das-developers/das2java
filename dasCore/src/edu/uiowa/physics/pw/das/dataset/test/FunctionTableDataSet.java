@@ -49,7 +49,7 @@ public abstract class FunctionTableDataSet implements TableDataSet {
         data= new double[nx*ny];
         for ( int i=0; i<nx; i++ ) {
             for ( int j=0; j<ny; j++ ) {
-                int idx= i+j*xtags;            
+                int idx= i*ytags+j;            
                 data[idx]= getDoubleImpl(i,j,Units.dimensionless);
             }
         }
@@ -59,14 +59,14 @@ public abstract class FunctionTableDataSet implements TableDataSet {
         data= new double[xtags*ytags];
         for ( int i=0; i<xtags; i++ ) {
             for ( int j=0; j<ytags; j++ ) {
-                int idx= i+j*xtags;            
+                int idx= i*ytags+j;            
                 data[idx]= getDoubleImpl(i,j,Units.dimensionless);
             }
         }
     }
     
     public double getDouble( int i, int j, Units units ) {
-        int idx= i+j*xtags;
+        int idx= i*ytags+j;
         return data[idx];
     }
     
