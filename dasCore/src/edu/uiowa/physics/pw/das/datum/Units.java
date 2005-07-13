@@ -96,6 +96,12 @@ public abstract class Units implements Displayable {
         hertz.registerConverter(megaHertz, UnitsConverter.MEGA);
     }
     
+    public static final Units meters = new NumberUnits("m");
+    public static final Units kiloMeters = new NumberUnits("km");
+    static {
+        meters.registerConverter(kiloMeters, UnitsConverter.KILO);
+    }
+    
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
     public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
     public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
@@ -277,18 +283,18 @@ public abstract class Units implements Displayable {
     
     public abstract Datum createDatum( double value, double resolution );
     
-    private static double FILL_DOUBLE= -1e31;
-    private static float FILL_FLOAT= -1e31f;
-    private static int FILL_INT= Integer.MAX_VALUE;
-    private static long FILL_LONG= Long.MAX_VALUE;
+    private final static double FILL_DOUBLE= -1e31;
+    private final static float FILL_FLOAT= -1e31f;
+    private final static int FILL_INT= Integer.MAX_VALUE;
+    private final static long FILL_LONG= Long.MAX_VALUE;
     
     public double getFillDouble() { return FILL_DOUBLE; }
     public float getFillFloat() { return FILL_FLOAT; }
     public int getFillInt() { return FILL_INT; }
     public long getFillLong() { return FILL_LONG; }
     
-    public boolean isFill( double value ) {  return Math.abs(( value-FILL_DOUBLE )/value ) < 0.00001; }
-    public boolean isFill( float value ) { return Math.abs(( value-FILL_FLOAT )/value ) < 0.00001; }
+    public boolean isFill( double value ) {  return value<FILL_DOUBLE/10; }
+    public boolean isFill( float value ) { return value<FILL_FLOAT/10; }
     public boolean isFill( long value ) { return value==FILL_LONG; }
     public boolean isFill( int value ) { return value==FILL_INT; }
     public boolean isFill( Number value ) {
