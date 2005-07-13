@@ -49,6 +49,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     private Units[] zUnits;
     
     private double[][] yTags;
+    final int tableCount;
     
     private int[] tableOffsets;
     
@@ -58,10 +59,10 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
      * table geometry changes, and the DataSet contains multiple planes.
      */
     public DefaultTableDataSet(double[] xTags, Units xUnits,
-    double[][] yTags, Units yUnits,
-    double[][][] zValues, Units zUnits,
-    Map zValuesMap, Map zUnitsMap,
-    Map properties) {
+            double[][] yTags, Units yUnits,
+            double[][][] zValues, Units zUnits,
+            Map zValuesMap, Map zUnitsMap,
+            Map properties) {
         super(xTags, xUnits, yUnits, zUnits, properties);
         if (zValuesMap == null ^ zUnitsMap == null) {
             throw new IllegalArgumentException("zValuesMap == null ^ zUnitsMap == null");
@@ -80,6 +81,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         this.tableData = new double[planeCount][][];
         this.tableData[0] = flatten(zValues);
         this.yTags = copy(yTags);
+        this.tableCount= yTags.length;
         this.zUnits = new Units[planeCount];
         this.zUnits[0] = zUnits;
         this.planeIDs = new String[planeCount];
@@ -129,19 +131,20 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     /** Creates a DefaultTableDataSet when the table geometry changes. */
     public DefaultTableDataSet(double[] xTags, Units xUnits,
-    double[] yTags, Units yUnits,
-    double[][] zValues, Units zUnits,
-    Map properties) {
+            double[] yTags, Units yUnits,
+            double[][] zValues, Units zUnits,
+            Map properties) {
         this(xTags, xUnits, new double[][]{yTags}, yUnits, new double[][][]{zValues}, zUnits, null, null, properties);
     }
     
     DefaultTableDataSet(double[] xTags, Units xUnits,
-    double[][] yTags, Units yUnits,
-    double[][][] zValues, Units[] zUnits,
-    String[] planeIDs, int[] tableOffsets,
-    Map properties) {
+            double[][] yTags, Units yUnits,
+            double[][][] zValues, Units[] zUnits,
+            String[] planeIDs, int[] tableOffsets,
+            Map properties) {
         super(xTags, xUnits, yUnits, zUnits[0], properties);
         this.yTags = yTags;
+        this.tableCount= yTags.length;
         this.tableData = zValues;
         this.zUnits = zUnits;
         this.planeIDs = planeIDs;
@@ -179,25 +182,24 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         int yLength = yTags[table].length;
         if (i < 0 || i >= tableData[0].length) {
             IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
-            ("x index is out of bounds: " + i + " xLength: " + getXLength());
+                    ("x index is out of bounds: " + i + " xLength: " + getXLength());
             Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.throwing(DefaultTableDataSet.class.getName(),
-            "getDatum(int,int)", ioobe);
+                    "getDatum(int,int)", ioobe);
             throw ioobe;
         }
         if (j < 0 || j >= this.yTags[table].length) {
             IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
-            ("y index is out of bounds: " + i + " yLength(" + table + "): " + getYLength(table));
+                    ("y index is out of bounds: " + i + " yLength(" + table + "): " + getYLength(table));
             Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.throwing(DefaultTableDataSet.class.getName(),
-            "getDatum(int,int)", ioobe);
+                    "getDatum(int,int)", ioobe);
             throw ioobe;
         }
         try {
             double value = tableData[0][i][j];
             return Datum.create(value, zUnits[0]);
-        }
-        catch (ArrayIndexOutOfBoundsException aioobe) {
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
             throw aioobe; //This is just here so developers can put a breakpoint
             //here if ArrayIndexOutOfBoundsException is thrown.
         }
@@ -207,17 +209,16 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         int table = tableOfIndex(i);
         if (i < 0 || i >= tableData[0].length) {
             IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
-            ("x index is out of bounds: " + i + " xLength: " + getXLength());
+                    ("x index is out of bounds: " + i + " xLength: " + getXLength());
             Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.throwing(DefaultTableDataSet.class.getName(),
-            "getDatum(int,int)", ioobe);
+                    "getDatum(int,int)", ioobe);
             throw ioobe;
         }
         try {
             double[] values = tableData[0][i];
             return DatumVector.newDatumVector(values, 0, getYLength(table), zUnits[0]);
-        }
-        catch (ArrayIndexOutOfBoundsException aioobe) {
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
             throw aioobe; //This is just here so developers can put a breakpoint
             //here if ArrayIndexOutOfBoundsException is thrown.
         }
@@ -240,8 +241,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         double[] retValues = new double[yLength];
         if (units == getZUnits()) {
             System.arraycopy(values, 0, retValues, 0, yLength);
-        }
-        else {
+        } else {
             UnitsConverter uc = zUnits[0].getConverter(units);
             for (int j = 0; j < yLength; j++) {
                 retValues[j] = uc.convert(values[j]);
@@ -263,8 +263,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
         if (planeIndex == -1) {
             return null;
-        }
-        else {
+        } else {
             return new PlanarViewDataSet(planeIndex);
         }
     }
@@ -307,21 +306,26 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     public int tableEnd(int table) {
         if (table == tableOffsets.length - 1) {
             return getXLength();
-        }
-        else {
+        } else {
             return tableOffsets[table + 1];
         }
     }
     
     public int tableOfIndex(int i) {
-        int table = Arrays.binarySearch(tableOffsets, i);
-        if (i >= getXLength()) {
-            throw new IndexOutOfBoundsException(i + " > " + getXLength());
+        if ( yTags.length>5 ) {
+            int table = Arrays.binarySearch(tableOffsets, i);
+            if (i >= getXLength()) {
+                throw new IndexOutOfBoundsException(i + " > " + getXLength());
+            }
+            if (table < 0) {
+                table = (~table) - 1;
+            }
+            return table;
+        } else {
+            int result= tableCount()-1;
+            while ( result>=0 && tableOffsets[result]>i ) result--;
+            return result;
         }
-        if (table < 0) {
-            table = (~table) - 1;
-        }
-        return table;
     }
     
     public int tableStart(int table) {
@@ -330,7 +334,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     public void dump(java.io.PrintStream out) {
         MessageFormat tableFormat = new MessageFormat(
-        "        {0,number,00}. Y Length: {1,number,000}, Start: {2,number,000}, End: {3,number,000}");
+                "        {0,number,00}. Y Length: {1,number,000}, Start: {2,number,000}, End: {3,number,000}");
         MessageFormat planeFormat = new MessageFormat("        ID: {0}, Z Units: ''{1}''");
         out.println("============================================================");
         out.println(getClass().getName());
@@ -434,8 +438,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             double[] retValues = new double[yLength];
             if (units == getZUnits()) {
                 System.arraycopy(values, 0, retValues, 0, yLength);
-            }
-            else {
+            } else {
                 UnitsConverter uc = zUnits[index].getConverter(units);
                 for (int j = 0; j < yLength; j++) {
                     retValues[j] = uc.convert(values[j]);
@@ -448,17 +451,16 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             int table = tableOfIndex(i);
             if (i < 0 || i >= tableData[0].length) {
                 IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
-                ("x index is out of bounds: " + i + " xLength: " + getXLength());
+                        ("x index is out of bounds: " + i + " xLength: " + getXLength());
                 Logger logger = DasApplication.getDefaultApplication().getLogger();
                 logger.throwing(DefaultTableDataSet.class.getName(),
-                "getDatum(int,int)", ioobe);
+                        "getDatum(int,int)", ioobe);
                 throw ioobe;
             }
             try {
                 double[] values = tableData[index][i];
                 return DatumVector.newDatumVector(values, 0, getYLength(table), zUnits[index]);
-            }
-            catch (ArrayIndexOutOfBoundsException aioobe) {
+            } catch (ArrayIndexOutOfBoundsException aioobe) {
                 throw aioobe; //This is just here so developers can put a breakpoint
                 //here if ArrayIndexOutOfBoundsException is thrown.
             }
@@ -515,9 +517,9 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         public Object getProperty(String name) {
             Object result= DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
             if ( result==null ) result= DefaultTableDataSet.this.getProperty(name);
-            return result;        
-        }        
-            
+            return result;
+        }
+        
         public DatumVector getYTags(int table) {
             return DefaultTableDataSet.this.getYTags(table);
         }
