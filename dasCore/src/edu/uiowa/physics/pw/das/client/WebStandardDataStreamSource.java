@@ -358,4 +358,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     public void setLastRequestURL( String url ) {
     }
     
+    public DasServer getDasServer() {
+        return this.server;
+    }
 }
