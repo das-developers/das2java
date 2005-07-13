@@ -18,16 +18,18 @@ import java.util.Map;
  */
 public class WritableTableDataSet implements TableDataSet {
     
-    double[][] z;
+    double[] z;
     double[] x;
     double[] y;
+    final int nx;
+    final int ny;
     Units xunits;
     Units yunits;
     Units zunits;
     Map properties;    
     
     public static WritableTableDataSet newSimple( int nx, Units xunits, int ny, Units yunits, Units zunits ) {
-        double [][] z= new double[nx][ny];
+        double [] z= new double[nx*ny];
         double [] x= new double[nx];
         double [] y= new double[ny];
         return new WritableTableDataSet( x, xunits, y, yunits, z, zunits, new HashMap() );
@@ -67,30 +69,36 @@ public class WritableTableDataSet implements TableDataSet {
         return result;
     }
     
-    private WritableTableDataSet( double[] x, Units xunits, double [] y, Units yunits, double[][] z, Units zunits, Map properties ) {
+    private WritableTableDataSet( double[] x, Units xunits, double [] y, Units yunits, double[] z, Units zunits, Map properties ) {
         this.z= z;
         this.x= x;
         this.y= y;
+        this.nx= x.length;
+        this.ny= y.length;
         this.zunits= zunits;
         this.yunits= yunits;
         this.xunits= xunits;
         this.properties= properties;
     }
     
+    private final int indexOf( int i, int j ) {
+        return i*ny + j;
+    }
+    
     public Datum getDatum(int i, int j) {
-        return Datum.create( z[i][j], zunits );
+        return Datum.create( z[indexOf(i,j)], zunits );
     }
     
     public void setDatum( int i, int j, Datum datum ) {        
-        z[i][j]= datum.doubleValue( zunits );
+        z[indexOf(i,j)]= datum.doubleValue( zunits );
     }
     
     public double getDouble(int i, int j, Units units) {
-        return zunits.convertDoubleTo(units,z[i][j]);
+        return zunits.convertDoubleTo(units,z[indexOf(i,j)]);
     }
     
     public void setDouble( int i, int j, double zvalue, Units units ) {
-        z[i][j]= units.convertDoubleTo(zunits,zvalue);
+        z[indexOf(i,j)]= units.convertDoubleTo(zunits,zvalue);
     }
     
     public double[] getDoubleScan(int i, Units units) {
