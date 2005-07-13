@@ -207,13 +207,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
         if ( xaxis0==null ) {
             DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
-                .info( "unable to calculate AT, because xaxis0 is not defined." );
+            .info( "unable to calculate AT, because xaxis0 is not defined." );
             return null;
         } else {
             AffineTransform at= Util.calculateAT( xaxis0, yaxis0, xAxis, yAxis );
             if ( at==null ) {
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
-                .info( "calculate AT returns null." );            
+                .info( "calculate AT returns null." );
                 return null;
             } else {
                 return at;
@@ -226,7 +226,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * time scale, and an image should be cached when this is not possible.
      */
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
-        
+    
     public void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
         int x= xAxis.getColumn().getDMiddle();
         int y= yAxis.getRow().getDMiddle();
@@ -285,22 +285,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         }
         
         /* cancel any previous active operation */
-        if ( progressPanel!=null ) {
+        if ( progressPanel!=null && progressPanel instanceof Component ) {
             progressPanel.cancel();
-            ((Container)(parent.getCanvas().getGlassPane())).remove(progressPanel);
+            ((Container)(parent.getCanvas().getGlassPane())).remove((Component)progressPanel);
         }
         
         progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
-        
-    /*    //Give the user something pretty (and consistent with the axes) to look at.
-        //This will scale the current data, or move it off screen
-        //as a sort of preview.
-        try {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("preview image");
-            updatePlotImage(xAxis, yAxis, null);
-        } catch (DasException de) {
-            //We don't care if this throws an exception.
-        } */
         
         parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
         
@@ -317,14 +307,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * time scale.  This is an opportunity to create a cache
      * image of the data with the current axis state, when the render
      * operation cannot operate on an animation interactive time scale.
-     * When subclassing this method, be sure to call super.updatePlotImage
-     * if you intend to use the affineTransform.  Codes can no longer assume
-     * that the xAxis sent to render will be in the same state as it was when
-     * updatePlotImage was called!
+     * Codes can no longer assume that the xAxis sent to render will be in 
+     * the same state as it was when updatePlotImage was called, so use
+     * the getAffineTransform method.  Only Renderer should call this method!
      */
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
-        xaxis0= (DasAxis)xAxis.clone();
-        yaxis0= (DasAxis)yAxis.clone();        
+    protected void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
     }
     
     protected void refreshImage() {
@@ -385,7 +372,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 DasExceptionHandler.handle(exception);
             }
             lastException= exception;
-                        
+            
             if (!(exception instanceof InterruptedIOException) &&
                     !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
                 if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
@@ -408,7 +395,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         
         try {
             ds= e.getDataSet();
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset: "+ds);            
+            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset: "+ds);
             if ( ds!=null ) {
                 if ( ds.getXLength()>0 ) {
                     DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("  ds range: "+DataSetUtil.xRange(ds) );
@@ -416,10 +403,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                     DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("  ds range: (empty)" );
                 }
             }
-            if (progressPanel != null) {
-                progressPanel.setLabel("Rebinning data set");
+            if (progressPanel != null && progressPanel instanceof DasProgressPanel ) {
+                ((DasProgressPanel)progressPanel).setLabel("Rebinning data set");
             }
             DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("update plot image");
+            xaxis0= (DasAxis)parent.getXAxis().clone();
+            yaxis0= (DasAxis)parent.getYAxis().clone();
             updatePlotImage(parent.getXAxis(), parent.getYAxis(), progressPanel);
             if (parent != null) {
                 DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("repaint");
