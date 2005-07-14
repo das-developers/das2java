@@ -53,6 +53,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     private Vector active=null; // array of active modules    
     
+    private boolean pinned= false;
+    
     private Vector modules;
     
     private HashMap primaryActionButtonMap;
@@ -189,6 +191,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 if ( ev.getKeyCode()==27 & active!=null ) {
                     active=null;
                     refresh();
+                } else if ( ev.getKeyChar()=='p' ) {
+                    pinned= true;
                 }
             }
         };
@@ -506,6 +510,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mousePressed(MouseEvent e) {
+        if ( pinned ) {
+            active=null;
+            refresh();
+        }
+        pinned= false;
         Point l= parent.getLocation();
         parent.requestFocus();
         xOffset= l.x;
@@ -637,7 +646,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             performResize(e);
         } else {
             if (e.getButton()==button) {
-                if (active!=null) {
+                if ( active!=null ) {
                     //clearSelection(graphics);
                     int x= e.getX();
                     int y= e.getY();
@@ -652,8 +661,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                             j.mouseReleased(e);
                         }
                     }
-                    active= null;
-                    refresh();
+                    if ( !pinned ) {
+                        active= null;
+                        refresh();
+                    }
                 }
             }
         }
