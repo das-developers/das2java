@@ -1891,15 +1891,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             this.dataRange= tempRange;
             
             //double transitionTime= 3000; // millis
-            double transitionTime= 400; // millis
+            double transitionTime= 300; // millis
             double alpha= ( System.currentTimeMillis() - t0 ) / transitionTime;
             
             while ( alpha < 1.0 ) {
                 alpha= ( System.currentTimeMillis() - t0 ) / transitionTime;
                 
-                double t= -2 + 3 * alpha;
+                /*double t= -2 + 3 * alpha;
                 double a1= (DasMath.tanh(t)+1)/2;
+                double a0= 1-a1;*/
+                
+                final double[] aa= new double[] { 0.0, 0.3, 0.85, 1.0 };
+                final double[] aa1= new double[] { 0.0, 0.05, 0.90, 1.0 }; 
+                
+                double f1= DasMath.findex( aa, alpha, 0 );                 
+                double a1= DasMath.interpolate( aa1, f1 );
                 double a0= 1-a1;
+                
                 tempRange.setRange( min0*a0+min1*a1, max0*a0+max1*a1 );
                 //updateTickV();
                 this.paintImmediately(0,0,this.getWidth(),this.getHeight());             
