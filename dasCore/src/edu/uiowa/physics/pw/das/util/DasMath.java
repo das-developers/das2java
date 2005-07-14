@@ -77,6 +77,8 @@ public class DasMath {
         int index= (int)findex;
         double alpha= findex - index;
         double result;
+        if ( findex<0. ) return datay[0];
+        if ( findex>datay.length-1. ) return datay[datay.length-1];
         if ( alpha == 0. ) { // optimization and handle findex=(data.length-1);
             result= datay[index];
         } else {
@@ -107,11 +109,18 @@ public class DasMath {
         double[] result= new double[x.length];
         int index= 0;
         for ( int i=0; i<result.length; i++ ) {
-            while ( index<datax.length && datax[index+1]<x[i] ) index++;
-            while ( index>0 && datax[index]>x[i] ) index--;
-            result[i]= index + ( x[i] - datax[index] ) / ( datax[index+1] - datax[index] );
+            result[i]= findex( datax, x[i], index );
+            index= (int) result[i];
         }
         return result;
+    }
+    
+    public final static double findex( double[] datax, double x, int guess ) {
+        int index= guess;
+        while ( index<datax.length-1 && datax[index+1]<x ) index++;
+        while ( index>0 && datax[index]>x ) index--;
+        if ( index==datax.length-1 ) index--;
+        return index + ( x - datax[index] ) / ( datax[index+1] - datax[index] );        
     }
     
     public static void main(String[] args) {
