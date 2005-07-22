@@ -82,7 +82,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
 
     public boolean supportsCustomEditor() { return true; }
     
-    public String getAsText() { return null; }
+    public String getAsText() { return editorSupport.getAsText(); }
     
     public Component getCustomEditor() {
         Color c = (Color)getValue();
@@ -122,7 +122,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     }
 
     public void setAsText(String str) throws IllegalArgumentException {
-        throw new IllegalArgumentException(str);
+        editorSupport.setAsText(str);
     }
 
     public void setValue(Object obj) {
