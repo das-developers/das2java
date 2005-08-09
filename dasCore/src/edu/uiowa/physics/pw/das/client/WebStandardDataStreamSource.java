@@ -197,7 +197,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 throw new UnsupportedOperationException();
             }
         } catch (IOException e) {
-            throw new DasIOException(e.getMessage());
+            throw new DasIOException(e);
         }
     }
     
