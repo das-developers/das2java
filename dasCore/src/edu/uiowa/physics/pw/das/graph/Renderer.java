@@ -180,6 +180,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             setDataSetDescriptor(null);
         } else {
             setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
+            this.ds= ds;
         }
     }
     
