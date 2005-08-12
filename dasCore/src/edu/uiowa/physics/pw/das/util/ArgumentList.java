@@ -201,12 +201,12 @@ public class ArgumentList {
                 boolean haveValue=false;
                 for ( i=0;i<keys.length;i++ ) {
                     if ( !values.get(keys[i]).equals(UNSPECIFIED) &
-                        !values.get(keys[i]).equals(UNDEFINED_SWITCH) &
-                        !values.get(keys[i]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
-                }                
+                            !values.get(keys[i]).equals(UNDEFINED_SWITCH) &
+                            !values.get(keys[i]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
+                }
                 if ( !haveValue ) {
                     StringBuffer list= new StringBuffer( (String)reverseNames.get( keys[0] ) );
-                    for ( i=1;i<keys.length;i++ ) list.append(", "+(String)reverseNames.get( keys[0] ) );      
+                    for ( i=1;i<keys.length;i++ ) list.append(", "+(String)reverseNames.get( keys[0] ) );
                     errorList.add("One of the following needs to be specified: "+list.toString());
                 }
             }
@@ -227,8 +227,68 @@ public class ArgumentList {
         return new HashMap( values );
     }
     
+    /**
+     * returns a Map of optional arguments that were specified
+     */
+    public Map getOptions() {
+        HashMap result= new HashMap();
+        List exclude= Arrays.asList( positionKeys );
+        for ( Iterator i=values.keySet().iterator(); i.hasNext(); ) {
+            Object key= (String)i.next();
+            if( !exclude.contains(key) && formUsed.containsKey(key) ) {
+                result.put( key, values.get(key) );
+            }
+        }
+        return result;
+    }
+    
+    private int processSwitch( String[] args, int i ) {
+        String key;
+        if ( args[i].startsWith("--") ) {
+            String name= args[i].substring(2);
+            if ( name.indexOf('=') != -1 ) {
+                name= name.substring(0,name.indexOf('='));
+            }
+            key= (String)names.get(name);
+        } else {
+            // TODO: should support several abbrevs: e.g.,  -xvf (Throw exception if ambiguous)
+            String abbrev= args[i].substring(1);
+            if ( abbrev.indexOf('=') != -1 ) {
+                abbrev= abbrev.substring(0,abbrev.indexOf('='));
+            }
+            key= (String)abbrevs.get(abbrev);
+        }
+        
+        if ( key==null ) {
+            key= args[i];
+            values.put( key, this.UNDEFINED_SWITCH );
+            formUsed.put( key, args[i] );
+            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("undefined switch: "+key);
+        } else {
+            String value;
+            formUsed.put( key,args[i] );
+            if ( values.get(key) == this.FALSE || values.get(key) == this.TRUE ) { // is boolean
+                values.put( key, TRUE );
+            } else {
+                if ( args[i].indexOf('=') != -1 ) {
+                    value= args[i].substring( args[i].indexOf('=')+1 );
+                } else {
+                    if ( i+1 < args.length && ( ! args[i+1].startsWith("-") ) ) {
+                        value= args[i+1];
+                        i= i+1;
+                    } else {
+                        value= this.REFERENCEWITHOUTVALUE;
+                    }
+                }
+                DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("switch key: "+key+"="+value);
+                values.put( key, value );
+            }
+        }
+        return i;
+    }
+    
     public void process(String[] args) {
-                
+        
         StringBuffer sb= new StringBuffer();
         for ( int i=0; i<args.length; i++ ) {
             sb.append(args[i]);
@@ -236,50 +296,13 @@ public class ArgumentList {
         }
         DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("args: "+sb.toString());
         int iposition=0;
-        String value;
-        for ( int i=0; i<args.length; i++ ) {
-            String key;
+        
+        for ( int i=0; i<args.length; i++ ) {            
             if ( args[i].startsWith("-") ) {
-                if ( args[i].startsWith("--") ) {
-                    String name= args[i].substring(2);
-                    if ( name.indexOf('=') != -1 ) {
-                        name= name.substring(0,name.indexOf('='));
-                    }
-                    key= (String)names.get(name);
-                } else {
-                    // TODO: should support several abbrevs: e.g.,  -xvf (Throw exception if ambiguous)
-                    String abbrev= args[i].substring(1);
-                    if ( abbrev.indexOf('=') != -1 ) {
-                        abbrev= abbrev.substring(0,abbrev.indexOf('='));
-                    }
-                    key= (String)abbrevs.get(abbrev);
-                }
-                                
-                if ( key==null ) {
-                    key= args[i];
-                    values.put( key, this.UNDEFINED_SWITCH );
-                    formUsed.put( key, args[i] );    
-                    DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("undefined switch: "+key);
-                } else {
-                    formUsed.put( key,args[i] );
-                    if ( values.get(key) == this.FALSE || values.get(key) == this.TRUE ) { // is boolean
-                        values.put( key, TRUE );
-                    } else {
-                        if ( args[i].indexOf('=') != -1 ) {
-                            value= args[i].substring( args[i].indexOf('=')+1 );
-                        } else {
-                            if ( i+1 < args.length && ( ! args[i+1].startsWith("-") ) ) {
-                                value= args[i+1];
-                                i= i+1;
-                            } else {
-                                value= this.REFERENCEWITHOUTVALUE;
-                            }
-                        }
-                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("switch key: "+key+"="+value);
-                        values.put( key, value );
-                    }
-                }
+                i= processSwitch( args, i );
             } else {
+                String key;
+                String value;
                 key= this.positionKeys[iposition];
                 DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("position key: "+key+"="+args[i]);
                 values.put( key, args[i] );
