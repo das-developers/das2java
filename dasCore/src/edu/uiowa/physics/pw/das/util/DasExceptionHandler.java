@@ -71,7 +71,7 @@ public final class DasExceptionHandler {
         }
     }
 
-    private static void showExceptionDialog(Throwable t, String extraInfo) {
+    private static void showExceptionDialog(final Throwable t, String extraInfo) {
         String errorMessage = extraInfo + t.getClass().getName() + "\n"
             + (t.getMessage() == null ? "" : t.getMessage());        
         final JDialog dialog = new JDialog( DasApplication.getDefaultApplication().getMainFrame() );        
@@ -113,8 +113,10 @@ public final class DasExceptionHandler {
         JPanel buttonPanel2 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel2.setBorder(new javax.swing.border.EmptyBorder(10, 0, 0, 0));
         JButton dump = new JButton("Dump to STDERR");
+        JButton save = new JButton("Save to file");
         buttonPanel2.add(dump);
-        stackPane.add(dump, BorderLayout.SOUTH);
+        buttonPanel2.add(save);
+        stackPane.add(buttonPanel2, BorderLayout.SOUTH);
         Dimension size = message.getPreferredSize();
         size.width = stackPane.getPreferredSize().width;
         message.setPreferredSize(size);
@@ -147,7 +149,6 @@ public final class DasExceptionHandler {
             }
         });
 
-        /*
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -155,7 +156,9 @@ public final class DasExceptionHandler {
                     int result = chooser.showSaveDialog(dialog);
                     if (result == chooser.APPROVE_OPTION) {
                         File selected = chooser.getSelectedFile();
-                        FileWriter writer = new FileWriter(selected);
+                        PrintWriter out = new PrintWriter(new FileOutputStream(selected));
+                        t.printStackTrace(out);
+                        out.close();
                     }
                 }
                 catch (IOException ioe) {
@@ -163,7 +166,6 @@ public final class DasExceptionHandler {
                 }
             }
         });
-         */
         
         dialog.pack();
         dialog.setLocationRelativeTo(null);
