@@ -78,6 +78,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
      */
     private boolean debugging;
     
+    /**
+     * <code>snapping = true</code> means that the cross-hair digitizer will only
+     * display x and y values that are valid tags in the data set.
+     */
+    private boolean snapping;
+    
     public CrossHairRenderer(  DasPlot parent, DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
         super( parent );
         this.XAxis= xAxis;
@@ -104,10 +110,15 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         return DefaultDatumFormatterFactory.getInstance().newFormatter( result );
     }
     
-    private String getZString( TableDataSet tds, Datum x, Datum y ) {
+    private String getZString( TableDataSet tds, Datum x, Datum y, int[] ij) {
         int i= DataSetUtil.closestColumn( tds, x );
         int j= TableUtil.closestRow( tds, tds.tableOfIndex(i), y );
         Datum zValue= tds.getDatum(i,j);
+        
+        if (ij != null) {
+            ij[0] = i;
+            ij[1] = j;
+        }
         
         try {
             if ( dataSetConsumer instanceof TableDataSetConsumer ) {
@@ -169,7 +180,20 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             
             if (ds instanceof TableDataSet) {
                 TableDataSet tds= (TableDataSet)ds;
-                String zAsString= getZString(tds,x,y);
+                String zAsString;
+                if (snapping) {
+                    int[] ij = new int[2];
+                    zAsString= getZString(tds,x,y, ij);
+                    x = tds.getXTagDatum(ij[0]);
+                    nfx = x.getFormatter();
+                    xAsString = nfx.format(x);
+                    y = tds.getYTagDatum(tds.tableOfIndex(ij[0]), ij[1]);
+                    nfy = y.getFormatter();
+                    yAsString = nfy.format(y);
+                }
+                else {
+                    zAsString= getZString(tds,x,y, null);
+                }
                 report= "x:"+xAsString+" y:"+yAsString+" z:"+zAsString;
             } else {
                 report= "x:"+xAsString+" y:"+yAsString;
@@ -276,4 +300,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         return new Rectangle[] { super.dirtyBounds, this.hDirtyBounds, this.vDirtyBounds };
     }
     
+    public boolean isSnapping() {
+        return snapping;
+    }
+    
+    public void setSnapping(boolean b) {
+        snapping = b;
+    }
 }

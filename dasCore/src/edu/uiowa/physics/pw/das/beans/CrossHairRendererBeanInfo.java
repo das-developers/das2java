@@ -30,6 +30,7 @@ public class CrossHairRendererBeanInfo extends AccessLevelBeanInfo {
     private static final Property[] properties = {
         new Property("debugging", AccessLevel.DASML, "isDebugging", "setDebugging", null),
         new Property("allPlanesReport", AccessLevel.DASML, "isAllPlanesReport", "setAllPlanesReport", null),
+        new Property("snapping", AccessLevel.DASML, "isSnapping", "setSnapping", null),
     };
     
     public CrossHairRendererBeanInfo() {
