@@ -185,10 +185,8 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                     int[] ij = new int[2];
                     zAsString= getZString(tds,x,y, ij);
                     x = tds.getXTagDatum(ij[0]);
-                    nfx = x.getFormatter();
                     xAsString = nfx.format(x);
                     y = tds.getYTagDatum(tds.tableOfIndex(ij[0]), ij[1]);
-                    nfy = y.getFormatter();
                     yAsString = nfy.format(y);
                 }
                 else {
