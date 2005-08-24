@@ -7,6 +7,10 @@ public class CacheTag {
     DatumRange range;    
     Datum resolution;
     
+    /**
+     * appends two CacheTags, when possible.  New range covers the ranges, and the resolution is the lower of the two.
+     * @throws IllegalArgumentException when the tags are not adjecent or overlapping.
+     */
     public static CacheTag append( CacheTag tag1, CacheTag tag2 ) {
         Datum res;
         if ( tag1.resolution==null && tag2.resolution==null ) {
