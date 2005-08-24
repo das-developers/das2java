@@ -129,8 +129,32 @@ public class TableDataSetBuilder {
         }
     }
     
+    
+    private void appendProperties( Map properties ) {
+        for ( Iterator i=properties.keySet().iterator(); i.hasNext(); ) {
+            Object key= i.next();
+            if ( this.properties.containsKey(key) ) {
+                if ( key.equals( DataSet.PROPERTY_SIZE_BYTES ) ) {
+                    // this is reset anyway
+                } else if ( key.equals( DataSet.PROPERTY_CACHE_TAG ) ) {
+                    CacheTag tag= (CacheTag)this.properties.get(key);
+                    CacheTag appendTag= (CacheTag)properties.get(key);
+                    try {
+                        this.properties.put( key, CacheTag.append( tag, appendTag ) );
+                    } catch ( IllegalArgumentException e ) {
+                        System.err.println("ignoring unequal property: append: "+key+"="+properties.get(key)+" to "+this.properties.get(key ) ); 
+                    }
+                } else if ( !this.properties.get(key).equals(properties.get(key)) ) {
+                    System.err.println( "ignoring unequal property: append: "+key+"="+properties.get(key)+" to "+this.properties.get(key ) ); 
+                }
+            } else {
+                this.properties.put( key, properties.get(key) );
+            }
+        }
+    }
+    
     public void append(TableDataSet tds) {        
-       // TODO: consider copying the properties
+        appendProperties( tds.getProperties() );
         String[] planeIDs = (String[])this.planeIDs.toArray(new String[this.planeIDs.size()]);
         TableDataSet[] planes = new TableDataSet[planeIDs.length];
         planes[0] = tds;
