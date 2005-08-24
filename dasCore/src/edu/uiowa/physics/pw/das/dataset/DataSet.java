@@ -48,6 +48,31 @@ public interface DataSet {
     /* Datum, see xTagWidth */
     final static String PROPERTY_Y_TAG_WIDTH= "yTagWidth";    
     
+    /* DatumRange useful for setting scales
+     */
+    final static String PROPERTY_X_RANGE="xRange";
+    
+    /* DatumRange useful for setting scales
+     */
+    final static String PROPERTY_Y_RANGE="yRange";
+    
+    /* DatumRange useful for setting scales
+     */
+    final static String PROPERTY_Z_RANGE="zRange";
+    
+    /* String "log" or "linear" 
+     */
+    final static String PROPERTY_Y_SCALETYPE="yScaleType";
+        
+    /* String "log" or "linear" 
+     */
+    final static String PROPERTY_Z_SCALETYPE="zScaleType";
+        
+    final static String PROPERTY_X_LABEL="xLabel";
+    
+    final static String PROPERTY_Y_LABEL="yLabel";
+    
+    final static String PROPERTY_Z_LABEL="zLabel";
     
     /** Returns the property value associated with the string <code>name</code>
      * @param name the name of the property requested
