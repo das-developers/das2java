@@ -146,12 +146,17 @@ public class DataSetUtil {
         }
         long t0= System.currentTimeMillis();
         int result= Arrays.binarySearch( xx, x );
-        if ( result<0 ) result= -1 - result; // usually this is the case
-        if ( result<xx.length-2 ) {
-            result= ( ( x-xx[result] ) / ( xx[result+1] - xx[result] ) < 0.5 ? result : result+1 );
+        if (result == -1) {
+            result = 0; //insertion point is 0
         }
-        if ( result >= xx.length ) {
-            result= xx.length-1;            
+        else if (result < 0) {
+            result= ~result; // usually this is the case
+            if ( result >= xx.length-1 ) {
+                result= xx.length-1;            
+            }
+            else {
+                result= ( ( x-xx[result-1] ) / ( xx[result] - xx[result-1] ) < 0.5 ? result-1 : result );
+            }
         }
         return result;
     }
