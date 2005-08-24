@@ -101,9 +101,6 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
         
-        /* TODO: handle xTagWidth yTagWidth properties.  Pass on unrelated properties on to the
-         * new dataset.
-         */
         Units resultXUnits= ddX==null ? tds.getXUnits() : ddX.getUnits();
         Units resultYUnits= ddY==null ? tds.getYUnits() : ddY.getUnits();
         
@@ -127,7 +124,12 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", "weights"};
         
-        TableDataSet result= new DefaultTableDataSet( xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        Map properties= ds.getProperties();
+        
+        if ( ddX!=null ) properties.put( DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum() );
+        if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
+        
+        TableDataSet result= new DefaultTableDataSet( xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, properties );
         
         return result;
     }
@@ -384,7 +386,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         final int ny = ddY.numberOfBins();
         final int[] i1= new int[ny];
         final int[] i2= new int[ny];
-        final double [] y_temp= new double[ddY.numberOfBins()];
+        final double [] yTagTemp= new double[ddY.numberOfBins()];
         float a1;
         float a2;
         
@@ -393,33 +395,26 @@ public class AverageTableRebinner implements DataSetRebinner {
         final boolean log= ddY.isLog();
                 
         if (log) {
-            for (int j=0; j<ny; j++) y_temp[j]= Math.log(yTags[j]);
+            for (int j=0; j<ny; j++) yTagTemp[j]= Math.log(yTags[j]);
         } else {
-            for (int j=0; j<ny; j++) y_temp[j]= yTags[j];
+            for (int j=0; j<ny; j++) yTagTemp[j]= yTags[j];
         }
         
-        double[] ySampleWidth= new double[ny];
+        double ySampleWidth;
         double fudge= 2.0;
         if ( yTagWidth==null ) {
             double d= Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
-            for ( int j=0; j<ny; j++ ) {
-                ySampleWidth[j]= d;
-            }
+            ySampleWidth= d;
         } else {
-            if ( yTagWidth.getUnits()==Units.percent ) {
-                double perc= yTagWidth.doubleValue(Units.percent);
-                for ( int j=0; j<ny; j++ ) {
-                    ySampleWidth[j]= yTags[j] * perc / 100 * fudge;
-                }
+            if ( yTagWidth.getUnits().isConvertableTo(Units.logERatio ) ) {
+                double p= yTagWidth.doubleValue(Units.logERatio);                
+                ySampleWidth= p;
             } else {
                 double d= yTagWidth.doubleValue(yTagUnits.getOffsetUnits());
-                for ( int j=0; j<ny; j++ ) {
-                    ySampleWidth[j]= d * fudge;
-                }
+                ySampleWidth= d * fudge;
             }
         }
-        
-        
+                    
         for (int i = 0; i < nx; i++) {
             int ii1= -1;
             int ii2= -1;
@@ -450,9 +445,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
             
             
-            for (int j = 0; j < ny; j++) {
-                if ( (i1[j] != -1) && ( ( yTags[i2[j]] - yTags[i1[j]] ) < ySampleWidth[j] ) ) {
-                    a2 = (float)((y_temp[j] - y_temp[i1[j]]) / (y_temp[i2[j]] - y_temp[i1[j]]));
+            for (int j = 0; j < ny; j++) {                
+                if ( (i1[j] != -1) && ( ( yTagTemp[i2[j]] - yTagTemp[i1[j]] ) < ySampleWidth ) ) {
+                    a2 = (float)((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
                     a1 = 1.f - a2;
                     data[i][j] = data[i][i1[j]] * a1 + data[i][i2[j]] * a2;
                     weights[i][j] = weights[i][i1[j]] * a1 + weights[i][i2[j]] * a2; //approximate

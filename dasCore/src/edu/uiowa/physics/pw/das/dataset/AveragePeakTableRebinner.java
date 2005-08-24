@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import java.util.Map;
 
 /**
  *
@@ -101,12 +102,17 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
             PeakTableRebinner.peaks(peaks, peakData, ddX, ddY);
         }
         
+        Map properties= ds.getProperties();
+        
+        if ( ddX!=null ) properties.put( DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum() );
+        if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
+          
         int[] tableOffsets = {0};
         String[] planeIDs =     {"",               "peaks",          "weights"};
         double[][][] zValues =  {averageData,      peakData,         averageWeights};
         Units[] zUnits =        {tds.getZUnits(),  tds.getZUnits(),  Units.dimensionless};
         
-        return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, properties );
     }
     
     /**
