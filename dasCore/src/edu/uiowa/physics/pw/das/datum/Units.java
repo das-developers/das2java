@@ -123,12 +123,38 @@ public abstract class Units implements Displayable {
         Units.spacecraft.createDatum( "Cluster Tango" );
     }
     
-  /**
-   * Units.percent might be useful for specifying logarithmic spacing.  Define percent space between two numbers a, b where a<b
-   * as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100%.
-   */
-    public static final Units percent= new NumberUnits("%","Special dimensionless number, possibly useful for specifying Tag relevance on logarithmic scale");
-        
+    /**
+     * Units.percent might be useful for specifying logarithmic spacing.  Define percent space between two numbers a, b where a<b
+     * as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100%.  See also logERatio, log10Ratio and google for "fold change."
+     */
+    public static final Units percent= new NumberUnits("%","");
+
+    public static final Units percentIncrease= new NumberUnits("% diff","Special dimensionless number, useful for expressing on logarithmic scale.  100% indicates a doubling");    
+    public static final Units log10Ratio= new NumberUnits("log10Ratio", "Special dimensionless number, useful for expressing distances on a log10 scale" );
+    public static final Units logERatio= new NumberUnits("logERatio", "Special dimensionless number, useful for expressing distances on a logE scale" );
+    private static class PercentRatioConverter extends UnitsConverter {
+        public double convert(double value) {
+            return ( Math.exp(value) - 1.0 ) * 100;
+        }
+        public UnitsConverter getInverse() {
+            if (inverse == null) {
+                inverse = new UnitsConverter() {
+                    public double convert(double value) {
+                        return Math.log( value / 100 + 1. );
+                    }
+                    public UnitsConverter getInverse() {
+                        return PercentRatioConverter.this;
+                    }
+                };
+            }
+            return inverse;
+        }
+    }
+    static {
+        log10Ratio.registerConverter( logERatio, new UnitsConverter.ScaleOffset( Math.log(10), 0. ) );
+        logERatio.registerConverter( percentIncrease, new PercentRatioConverter() );
+    }
+    
    /* static {
         unitsMap.put("mj1958", Units.mj1958);
         unitsMap.put("t1970", Units.t1970);
@@ -140,7 +166,7 @@ public abstract class Units implements Displayable {
         unitsMap.put("microseconds", Units.microseconds);
         unitsMap.put("", Units.dimensionless);
         unitsMap.put("dB", Units.dB);
-        
+    
         unitsMap.put("Hz", Units.hertz);
         unitsMap.put("kHz", Units.kiloHertz);
         unitsMap.put("MHz", Units.megaHertz);
@@ -169,7 +195,7 @@ public abstract class Units implements Displayable {
     }
     
     public Units[] getConvertableUnits() {
-        Set result= new HashSet();                
+        Set result= new HashSet();
         LinkedList queue = new LinkedList();
         queue.add(this);
         while (!queue.isEmpty()) {
@@ -177,7 +203,7 @@ public abstract class Units implements Displayable {
             for (Iterator i = current.conversionMap.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry)i.next();
                 Units next = (Units)entry.getKey();
-                if (!result.contains(next)) {                    
+                if (!result.contains(next)) {
                     queue.add(next);
                     result.add(next);
                 }
@@ -196,10 +222,10 @@ public abstract class Units implements Displayable {
     }
     
     /**
-     * 
-     * @param fromUnits 
-     * @param toUnits 
-     * @return 
+     *
+     * @param fromUnits
+     * @param toUnits
+     * @return
      * @throws IllegalArgumentException when the conversion is not possible.
      */
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
@@ -251,9 +277,9 @@ public abstract class Units implements Displayable {
     }
     
     /**
-     * 
-     * @param toUnits 
-     * @return 
+     *
+     * @param toUnits
+     * @return
      * @throws IllegalArgumentException if conversion between units is not possible
      */
     public UnitsConverter getConverter( Units toUnits ) {
@@ -276,7 +302,7 @@ public abstract class Units implements Displayable {
         return this;
     }
     
-    public abstract Datum createDatum( double value );    
+    public abstract Datum createDatum( double value );
     public abstract Datum createDatum( int value );
     public abstract Datum createDatum( long value );
     public abstract Datum createDatum( Number value );
@@ -335,8 +361,7 @@ public abstract class Units implements Displayable {
         Units units = (Units)unitsMap.get(s);
         if (units == null) {
             throw new IllegalArgumentException("Unrecognized units: "+s);
-        }
-        else return units;
+        } else return units;
     }
     
     public static void main( String[] args ) throws java.text.ParseException {
@@ -352,11 +377,11 @@ public abstract class Units implements Displayable {
         System.out.println("kHz: " + kHz);
         System.out.println("MHz: " + MHz);
     }
-
+    
     public javax.swing.Icon getListIcon() {
         return null;
     }
-
+    
     public String getListLabel() {
         return this.id;
     }
