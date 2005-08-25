@@ -328,8 +328,8 @@ public final class DatumUtil {
             double nn = Math.abs(n.doubleValue());
             
             double score;
-            if (nn > 10)
-                score = 10/nn;
+            if (nn > 20)
+                score = 20/nn;
             else
                 score = nn;
             
