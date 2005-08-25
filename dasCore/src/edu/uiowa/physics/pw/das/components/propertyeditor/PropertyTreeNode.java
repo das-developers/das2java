@@ -160,8 +160,13 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     Object getDisplayValue() {        
         if ( value instanceof Displayable ) {
             return value;
-        }        
-        if (getAllowsChildren()) {
+        }      
+        boolean allowsChildren= getAllowsChildren();
+        String ss= String.valueOf(value);
+        if ( ss.length()<50 && allowsChildren ) {
+            return ss;
+        }
+        if ( allowsChildren ) {
             return "<html><i text=\"#a0a0a0\">Click to expand/collapse</i></html>";
         }
         else {
