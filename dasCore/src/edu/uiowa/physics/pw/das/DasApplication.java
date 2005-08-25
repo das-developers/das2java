@@ -171,10 +171,12 @@ public class DasApplication {
         }
     }
     
+
     public DataSetCache getDataSetCache() {
         if ( dataSetCache==null ) {
             //dataSetCache= new SimpleDataSetCache();
-            dataSetCache= new LimitCountDataSetCache(10);
+            //dataSetCache= new LimitCountDataSetCache(10);
+            dataSetCache= new LimitSizeBytesDataSetCache(10000000);
         }
         return dataSetCache;
     }
@@ -209,6 +211,29 @@ public class DasApplication {
         
     public JFrame getMainFrame() {            
         return this.mainFrame;
+    }
+
+    /**
+     * Holds value of property interactive.
+     */
+    private boolean interactive=true;
+
+    /**
+     * Getter for property interactive.
+     * @return Value of property interactive.
+     */
+    public boolean isInteractive() {
+
+        return this.interactive;
+    }
+
+    /**
+     * Setter for property interactive.
+     * @param interactive New value of property interactive.
+     */
+    public void setInteractive(boolean interactive) {
+
+        this.interactive = interactive;
     }
     
 }
