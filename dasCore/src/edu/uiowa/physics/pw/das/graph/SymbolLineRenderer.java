@@ -28,6 +28,11 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.event.BoxZoomMouseModule;
+import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
+import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
+import edu.uiowa.physics.pw.das.event.MouseModule;
+import edu.uiowa.physics.pw.das.stream.Das1ToDas2;
 import edu.uiowa.physics.pw.das.system.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.*;
@@ -37,7 +42,7 @@ import org.w3c.dom.Element;
 
 import java.awt.*;
 import java.awt.geom.*;
-import java.awt.geom.Line2D;
+
 
 /**
  *
@@ -77,8 +82,11 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         if (dataSet == null || dataSet.getXLength() == 0) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
             return;
         }
+        
+        DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set "+dataSet);        
         
         Graphics2D graphics= (Graphics2D) g.create();
         
@@ -310,6 +318,11 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     protected void installRenderer() {
+        DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
+        DasPlot p= parent;
+        mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
+        
+        mouseAdapter.addMouseModule( new BoxZoomMouseModule( p, this, p.getXAxis(), p.getYAxis() ) );
     }
     
     protected void uninstallRenderer() {
@@ -392,7 +405,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             g.setColor( Color.GRAY );
         } else {
             g.setColor( new Color( 0,0,0,0 ) );
-        }        
+        }
         g.fillRect(0,0,15,10);
         g.setColor(color);
         Stroke stroke0= g.getStroke();
