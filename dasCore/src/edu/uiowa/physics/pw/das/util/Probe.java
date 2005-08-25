@@ -28,6 +28,11 @@ public class Probe {
     
     HashMap agents;
     
+    boolean ignoring=false;
+    String triggerName=null;
+    double triggerMin;
+    double triggerMax;
+    
     //DasPlot plot;
     Legend legend;
     Leveler leveler;
@@ -67,6 +72,7 @@ public class Probe {
         SymbolLineRenderer renderer;
         DasPlot plot;
         DatumRange xrange, yrange;
+        boolean yrangeSet= false;
         boolean histogram= false;
         
         int hits;
@@ -79,6 +85,7 @@ public class Probe {
             this.name= name;
             xrange= new DatumRange( Datum.create(0), Datum.create(1) );
             yrange= DatumRangeUtil.newDimensionless(0,0.000001);
+            
             
             DasAxis thisXAxis;
             if ( index==0 ) {
@@ -140,12 +147,17 @@ public class Probe {
                     throw new IllegalStateException();
                 }
             }
+
+            if ( !yrangeSet ) {
+                yrange= new DatumRange( value, value+1e-7, Units.dimensionless );
+                yrangeSet= true;
+            }
             if ( !yrange.contains( Units.dimensionless.createDatum(value) ) ) {
                 yrange= include( yrange, Units.dimensionless.createDatum(value) );
                 if ( !yrange.width().isFinite() ) {
                     throw new IllegalStateException();
                 }
-            }
+            }            
             
             needUpdate=true;
         }
@@ -284,8 +296,22 @@ public class Probe {
    
     } */
     
+    private void checkTrigger( String name, double value ) {
+        if ( this.triggerName==null ) return;
+        if ( this.triggerName.equals(name) ) {
+            boolean notIgnoring= this.triggerMin < value && value < this.triggerMax;
+            ignoring= !notIgnoring;
+        }
+    }
+        
+    public boolean isTriggered() {
+        return !ignoring;
+    }
+    
     public synchronized void add( String name, int value ) {
         if ( isNull ) return;
+        checkTrigger( name, value );
+        if ( ignoring ) return;
         if ( Double.isInfinite(value) ) {
             throw new IllegalStateException("value is not finite: "+name);
         }
@@ -306,6 +332,8 @@ public class Probe {
     
     public synchronized void add( String name, double value ) {
         if ( isNull ) return;
+        checkTrigger( name, value );
+        if ( ignoring ) return;
         if ( Double.isInfinite(value) ) {
             throw new IllegalStateException("value is not finite: "+name);
         }        
@@ -324,6 +352,8 @@ public class Probe {
     
     public synchronized void addOverplot( String overplotName, String underplotName, double value ) {
         if ( isNull ) return;
+        checkTrigger( overplotName, value );
+        if ( ignoring ) return;
         if ( Double.isInfinite(value) ) {
             throw new IllegalStateException("value is not finite: "+overplotName);
         }
@@ -347,6 +377,8 @@ public class Probe {
     
     public synchronized void addOverplot( String overplotName, String underplotName, int value ) {
         if ( isNull ) return;
+        checkTrigger( overplotName, value );
+        if ( ignoring ) return;        
         VectorDataSetBuilder builder;
         Agent a;
         if ( ! agents.containsKey(overplotName) ) {
@@ -363,6 +395,15 @@ public class Probe {
         }
         
         a.add(value);
+    }
+    
+    public void setTrigger( String name, double min, double max ) {
+        if ( name!=this.triggerName || min!=this.triggerMin || max!=this.triggerMax ) {
+            this.triggerName= name;
+            this.triggerMin= min;
+            this.triggerMax= max; 
+            this.ignoring= true;
+        }
     }
     
     private void startUpdateThread() {
