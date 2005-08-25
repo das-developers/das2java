@@ -34,6 +34,7 @@ import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
@@ -664,15 +665,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
         try {
             encoder.write((BufferedImage)image, out);
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).info("write png file "+filename);
         } catch (IOException ioe) {} finally {
             try { out.close(); } catch (IOException ioe) { throw new RuntimeException(ioe); }
         }
-        
+                
     }
     
     public void writeToPDF(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "edu.uiowa.physics.pw.das.util.awt.PdfGraphicsOutput");
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).info("write pdf file "+filename);
         } catch (NoClassDefFoundError cnfe) {
             DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
         } catch (ClassNotFoundException cnfe) {
@@ -705,6 +708,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public void writeToSVG(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "edu.uiowa.physics.pw.das.util.awt.SvgGraphicsOutput");
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).info("write svg file "+filename);
         } catch (ClassNotFoundException cnfe) {
             DasExceptionHandler.handle(new RuntimeException("SVG output is not available", cnfe));
         } catch (InstantiationException ie) {
