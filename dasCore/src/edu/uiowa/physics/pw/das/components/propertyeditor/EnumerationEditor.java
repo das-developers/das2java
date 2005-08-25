@@ -58,6 +58,7 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
     /** Creates a new instance of EnumerationEditor */
     public EnumerationEditor() {
         guessType = true;
+        pcSupport = new PropertyChangeSupport(this);
     }
     
     protected EnumerationEditor(Class c) {
