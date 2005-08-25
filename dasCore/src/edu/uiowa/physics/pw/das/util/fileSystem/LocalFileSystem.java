@@ -6,6 +6,8 @@
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.fileSystem.FileSystem.FileSystemOfflineException;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -20,10 +22,11 @@ public class LocalFileSystem extends FileSystem {
     File localRoot;    
         
     protected LocalFileSystem(URL root) throws FileSystemOfflineException {
+        super( root );
         if ( !("file".equals(root.getProtocol()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
-        localRoot= new File( root.getFile() );
+        localRoot= new File( root.toString().substring("file:/".length() ) );
         if ( !localRoot.exists() ) {
             File[] roots= File.listRoots();
             if ( Arrays.asList(roots).contains(localRoot) ) {
@@ -33,11 +36,7 @@ public class LocalFileSystem extends FileSystem {
             }
         }
     }
-    
-    public FileObject getFile(String filename) {        
-        return new LocalFileObject( this, localRoot, filename );
-    }
-    
+        
     public boolean isDirectory(String filename) {
         return new File( localRoot, filename ).isDirectory();
     }
@@ -68,6 +67,10 @@ public class LocalFileSystem extends FileSystem {
     
     public String toString() {
         return "lfs "+localRoot;
+    }
+
+    public FileObject getFile(String filename) {
+        return new LocalFileObject( this, localRoot, filename );
     }
     
 }

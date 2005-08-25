@@ -5,8 +5,6 @@
  */
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
-
-import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.net.*;
@@ -23,6 +21,8 @@ import java.net.*;
 
 public abstract class FileSystem  {   
         
+    URL root;
+    
     public class FileSystemOfflineException extends IOException {        
     }
     
@@ -30,17 +30,35 @@ public abstract class FileSystem  {
      * Creates a FileSystem by parsing the URL and creating the correct FS type.
      * Presently, only "file://" and "http://" are supported.
      */
-    public static FileSystem create( URL root ) throws FileSystemOfflineException {        
+    public static FileSystem create( URL root ) throws FileSystemOfflineException {                
         if ( "file".equals(root.getProtocol()) ) {
             return new LocalFileSystem( root );
         } else if ( "http".equals( root.getProtocol() ) ) {
             return HttpFileSystem.createHttpFileSystem( root );
+        } else if ( "ftp".equals( root.getProtocol() ) ) {
+            return new FTPFileSystem(root);
         } else {
             throw new IllegalArgumentException( "unsupported protocol: "+root );
         }
-    }        
-
-    public static String getRegexFromGlob( String glob ) {
+    }
+    
+    protected FileSystem( URL root ) {
+        if ( !root.toString().endsWith("/" ) ) {
+            String s= root.toString();
+            try {
+                root= new URL( s+"/" );
+            } catch ( MalformedURLException e ) {
+                throw new RuntimeException(e);
+            }
+        }        
+        this.root= root;
+    }
+    
+    public URL getRootURL() {
+        return root;
+    }
+    
+    private static String getRegexFromGlob( String glob ) {
         final String regex= glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");     
         return regex;
     }
@@ -63,7 +81,10 @@ public abstract class FileSystem  {
     }
     
     abstract public FileObject getFile( String filename );
+    
     abstract public boolean isDirectory( String filename );
+    
     abstract public String[] listDirectory( String directory );
     abstract public String[] listDirectory( String directory, String pattern );
+    
 }

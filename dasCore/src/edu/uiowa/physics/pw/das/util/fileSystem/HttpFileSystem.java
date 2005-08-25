@@ -22,30 +22,11 @@ import javax.swing.*;
  *
  * @author  Jeremy
  */
-public class HttpFileSystem extends FileSystem {
-    
-    final File localRoot;
-    final URL root;    
+public class HttpFileSystem extends WebFileSystem {
     
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URL root, File localRoot) {
-        /*try {
-            root.openConnection().getContentLength();            
-        } catch ( FileNotFoundException e ) {
-            throw new RuntimeException( "URL doesn't appear to exist: "+root );
-        } catch ( IOException e ) {
-            throw new RuntimeException( e );
-        }*/
-        if ( !root.toString().endsWith("/" ) ) {
-            String s= root.toString();
-            try {
-                root= new URL( s+"/" );
-            } catch ( MalformedURLException e ) {
-                throw new RuntimeException(e);
-            }
-        }
-        this.root= root;
-        this.localRoot= localRoot;          
+        super( root, localRoot );
     }
     
     public static HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {        
@@ -62,35 +43,28 @@ public class HttpFileSystem extends FileSystem {
         return new HttpFileSystem( root, local );
     }
     
-    protected void transferFile( String filename, File f ) throws IOException {
+    protected void transferFile( String filename, File f, DasProgressMonitor monitor ) throws IOException {
         DasApplication.getDefaultApplication().getLogger().fine("create file "+filename);
         URL remoteURL= new URL( root.toString()+filename );
-        InputStream in= remoteURL.openStream();
+        
+        URLConnection urlc = remoteURL.openConnection();
+        monitor.setTaskSize( urlc.getContentLength() );
+        
+        InputStream in= urlc.getInputStream();
+        
         if ( !f.getParentFile().exists() ) {
             f.getParentFile().mkdirs();
         }
         if ( f.createNewFile() ) {
-            FileOutputStream out= new FileOutputStream( f );
-            byte[] buf= new byte[2048];
-            int br= in.read(buf);
             DasApplication.getDefaultApplication().getLogger().fine("transferring file "+filename);
-            while ( br!=-1 ) {
-                out.write( buf, 0, br );
-                br= in.read(buf);
-            }
+            FileOutputStream out= new FileOutputStream( f );            
+            copyStream( in, out, monitor );
+            monitor.finished();
             out.close();
         } else {
             handleException( new RuntimeException( "couldn't create local file: "+f ) );
         }
         in.close();
-    }
-    
-    protected File getLocalRoot() {
-        return this.localRoot;
-    }
-    
-    protected URL getRoot() {
-        return this.root;
     }
     
     public boolean isDirectory( String filename ) {
@@ -101,7 +75,7 @@ public class HttpFileSystem extends FileSystem {
             if ( filename.endsWith("/") ) {
                 return true;
             } else {
-                try {
+                try {                    
                     File parentFile= f.getParentFile();
                     URL[] urls= HtmlUtil.getDirectoryListing( getURL( getLocalName( parentFile ) ) );
                     URL remoteUrl;
@@ -170,50 +144,6 @@ public class HttpFileSystem extends FileSystem {
             handleException(e);
             return new String[0];
         }
-    }
-    
-    public URL getURL( String filename ) {
-        try {
-            filename= FileSystem.toCanonicalFilename(filename);
-            return new URL( root+filename.substring(1) );
-        } catch ( MalformedURLException e ) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    public String getLocalName( File file ) {
-        if ( !file.toString().startsWith(localRoot.toString() ) ) {
-            throw new IllegalArgumentException( "file \""+file+"\"is not of this web file system" );
-        }
-        String filename= file.toString().substring(localRoot.toString().length() );
-        filename= filename.replaceAll( "\\\\", "/" );
-        return filename;
-    }
-    
-    public String getLocalName( URL url ) {
-        if ( !url.toString().startsWith(root.toString() ) ) {
-            throw new IllegalArgumentException( "url \""+url+"\"is not of this web file system" );
-        }
-        String filename= FileSystem.toCanonicalFilename( url.toString().substring(root.toString().length() ) );
-        return filename;
-    }
-    
-    public FileObject getFile( String filename ) {
-        HttpFileObject f= new HttpFileObject( this, filename, new Date(System.currentTimeMillis()) );        
-        if ( f.canRead() ) {
-            return f;
-        } else {
-            try {
-                transferFile( filename, f.getLocalFile() );
-                return f;
-            } catch ( Exception e ) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-    
-    public String toString() {
-        return "wfs "+root;
     }
     
 }

@@ -6,13 +6,14 @@
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.io.*;
 
 /**
  *
  * @author  Jeremy
  */
-public class LocalFileObject implements FileObject {
+public class LocalFileObject extends FileObject {
     
     File localFile;
     File localRoot;
@@ -37,7 +38,7 @@ public class LocalFileObject implements FileObject {
         return result;
     }
     
-    public java.io.InputStream getInputStream() throws java.io.FileNotFoundException {
+    public java.io.InputStream getInputStream( DasProgressMonitor monitor ) throws java.io.FileNotFoundException {
         return new FileInputStream( localFile );
     }
     
@@ -85,8 +86,17 @@ public class LocalFileObject implements FileObject {
         return "["+lfs+"]"+getNameExt();
     }
     
-    public java.nio.channels.Channel getChannel() throws FileNotFoundException {
-        return ((FileInputStream)getInputStream()).getChannel();
+    public java.nio.channels.Channel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException {
+        return ((FileInputStream)getInputStream( monitor )).getChannel();
     }
+
+    public File getFile() throws FileNotFoundException {
+        return getFile( DasProgressMonitor.NULL );
+    }
+
+    public File getFile(edu.uiowa.physics.pw.das.util.DasProgressMonitor monitor) throws FileNotFoundException {        
+        return localFile;
+    }
+    
     
 }
