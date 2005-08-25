@@ -300,7 +300,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     }
     
     public int tableCount() {
-        return yTags.length;
+        return tableCount;
     }
     
     public int tableEnd(int table) {
@@ -322,7 +322,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             }
             return table;
         } else {
-            int result= tableCount()-1;
+            int result= tableCount-1;
             while ( result>=0 && tableOffsets[result]>i ) result--;
             return result;
         }
