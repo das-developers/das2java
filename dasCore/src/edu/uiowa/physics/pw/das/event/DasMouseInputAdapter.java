@@ -30,6 +30,7 @@ import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import edu.uiowa.physics.pw.das.system.*;
 import java.awt.*;
 
 import javax.swing.*;
@@ -493,6 +494,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     private void showPopup( JPopupMenu menu, Point p ) {
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("showPopup");
         HashMap map=null;
         if ( menu==primaryPopup ) {
             map= primaryActionButtonMap;
@@ -510,6 +512,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mousePressed(MouseEvent e) {
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePressed");
         if ( pinned ) {
             active=null;
             refresh();
@@ -587,6 +590,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseDragged(MouseEvent e) {
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseDragged");
         if (mouseMode==MouseMode.resize) {
             resizeRenderer.clear(graphics);
             resizeRenderer.renderDrag(graphics,resizeStart,e.getPoint());
@@ -600,11 +604,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 for (int i=0; i<active.size(); i++) {
                     MouseModule j= (MouseModule)active.get(i);
                     if (j.dragRenderer.isPointSelection()) {
+                        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePointSelected");
                         j.mousePointSelected(mousePointSelection);
                     }
                     if (j.dragRenderer.isUpdatingDragSelection()) {
                         // Really it should be the DMM that indicates it wants updates...whoops...
                         MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
+                        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseRangeSelected");
                         j.mouseRangeSelected(de);
                     }                    
                     j.mouseDragged(e);
@@ -642,6 +648,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseReleased(MouseEvent e) {
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseReleased");
         if (mouseMode==MouseMode.resize) {
             performResize(e);
         } else {
