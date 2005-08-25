@@ -24,10 +24,43 @@ public class DataSetUtil {
         return new CacheTag( start, end, resolution );
     }
     
-    public static DasAxis guessYAxis( DataSet ds ) {
-        Units yunits= ds.getYUnits();
-        return new DasAxis( yunits.createDatum(-20),
-                yunits.createDatum(20), DasAxis.LEFT );
+    public static DasAxis guessYAxis( DataSet dsz ) {
+        boolean log= false;
+        
+        if ( dsz.getProperty( DataSet.PROPERTY_Y_SCALETYPE )!=null ) {
+            if ( dsz.getProperty( DataSet.PROPERTY_Y_SCALETYPE ).equals("log") ) {
+                log= true;
+            }
+        }
+        
+        DasAxis result;
+        
+        if ( dsz instanceof TableDataSet ) {
+            TableDataSet ds= (TableDataSet)dsz;
+            Units yunits= ds.getYUnits();
+            Datum min, max;            
+            
+            DatumRange yrange= yRange(dsz);
+            Datum dy= TableUtil.guessYTagWidth( ds );
+            if ( dy.getUnits().isConvertableTo( Units.logERatio ) ) log=true;
+            
+            result= new DasAxis( yrange.min(), yrange.max(), DasAxis.LEFT, log );
+            
+        } else if ( dsz instanceof VectorDataSet ) {
+            VectorDataSet ds= ( VectorDataSet ) dsz;
+            Units yunits= ds.getYUnits();
+            
+            DatumRange range= yRange( dsz );
+                        
+            result= new DasAxis( range.min(), range.max(), DasAxis.LEFT, log );
+        } else {
+            throw new IllegalArgumentException( "not supported: "+dsz );
+        }
+
+        if ( dsz.getProperty( DataSet.PROPERTY_Y_LABEL )!=null ) {
+            result.setLabel( (String)dsz.getProperty( DataSet.PROPERTY_Y_LABEL ) );
+        }
+        return result;
     }
     
     public static DasAxis guessXAxis( DataSet ds ) {
@@ -36,7 +69,33 @@ public class DataSetUtil {
         return new DasAxis( min, max, DasAxis.BOTTOM );
     }
     
-    public static DasPlot guessPlot(DataSet ds ) {
+    public static DasAxis guessZAxis( DataSet dsz ) {
+        if ( !(dsz instanceof TableDataSet) ) throw new IllegalArgumentException("only TableDataSet supported");
+        
+        TableDataSet ds= (TableDataSet)dsz;
+        Units zunits= ds.getZUnits();        
+            
+        DatumRange range= zRange(ds);
+        
+        boolean log= false;
+         if ( dsz.getProperty( DataSet.PROPERTY_Z_SCALETYPE )!=null ) {
+            if ( dsz.getProperty( DataSet.PROPERTY_Z_SCALETYPE ).equals("log") ) {
+                log= true;
+                if ( range.min().doubleValue( range.getUnits() ) <= 0 ) { // kludge for VALIDMIN
+                    double max= range.max().doubleValue(range.getUnits());                    
+                    range= new DatumRange( max/1000, max, range.getUnits() );
+                }
+            }
+        }
+        
+        DasAxis result= new DasAxis( range.min(), range.max(), DasAxis.LEFT, log );
+        if ( dsz.getProperty( DataSet.PROPERTY_Z_LABEL )!=null ) {
+            result.setLabel( (String)dsz.getProperty( DataSet.PROPERTY_Z_LABEL ) );
+        }
+        return result;
+    }
+    
+    public static DasPlot guessPlot( DataSet ds ) {
         DasAxis xaxis= guessXAxis( ds );
         DasAxis yaxis= guessYAxis( ds );
         DasPlot plot= new DasPlot( xaxis, yaxis );
@@ -45,7 +104,9 @@ public class DataSetUtil {
             plot.addRenderer(rend);
         } else if (ds instanceof TableDataSet ) {
             Units zunits= ((TableDataSet)ds).getZUnits();
-            DasColorBar colorbar= new DasColorBar( zunits.createDatum( -20 ), zunits.createDatum(20), false );
+            DasAxis zaxis= guessZAxis(ds);
+            DasColorBar colorbar= new DasColorBar( zaxis.getDataMinimum(), zaxis.getDataMaximum(), zaxis.isLog() );
+            colorbar.setLabel( zaxis.getLabel() );
             edu.uiowa.physics.pw.das.graph.Renderer rend= new SpectrogramRenderer( new ConstantDataSetDescriptor(ds), colorbar );
             plot.addRenderer(rend);
         }
@@ -75,6 +136,7 @@ public class DataSetUtil {
     }
     
     public static DatumRange yRange( DataSet ds ) {
+        if ( ds.getProperty(DataSet.PROPERTY_Y_RANGE)!=null ) return (DatumRange)ds.getProperty(DataSet.PROPERTY_Y_RANGE);
         if ( ds instanceof VectorDataSet ) {
             VectorDataSet vds= ( VectorDataSet ) ds;
             DatumRange result= null;
@@ -96,6 +158,19 @@ public class DataSetUtil {
         } else throw new IllegalArgumentException("unsupported: "+ds);
     }
     
+    public static DasPlot visualize( DataSet ds ) {
+        
+        JFrame jframe= new JFrame("DataSetUtil.visualize");
+        DasCanvas canvas= new DasCanvas(400,400);
+        jframe.getContentPane().add( canvas );
+        DasPlot result= guessPlot( ds );
+        canvas.add( result, DasRow.create(canvas), DasColumn.create( canvas ) );
+        
+        jframe.pack();
+        jframe.setVisible(true);
+        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        return result;
+    }
     
     public static DasPlot visualize( DataSet ds, boolean ylog ) {
         DatumRange xRange= xRange( ds );
@@ -121,7 +196,7 @@ public class DataSetUtil {
     }
     
     /**
-     * Provide a reasonable xTagWidth either by returning the specified xTagWidth property, 
+     * Provide a reasonable xTagWidth either by returning the specified xTagWidth property,
      * or by statistically looking at the X tags.
      */
     public static Datum guessXTagWidth( DataSet table ) {
@@ -169,12 +244,12 @@ public class DataSetUtil {
         double [] xx= getXTagArrayDouble( table, units );
         return closest( xx, x );
     }
-
+    
     public static int closestColumn( DataSet table, Datum xdatum, int guessIndex ) {
         int result= guessIndex;
         int len= table.getXLength();
         if ( result>=len ) result=len-1;
-        if ( result<0 ) result=0;    
+        if ( result<0 ) result=0;
         Units units= xdatum.getUnits();
         double x= xdatum.doubleValue(units);
         while ( result<(len-1) && table.getXTagDouble(result,units)<x ) result++;
@@ -186,7 +261,7 @@ public class DataSetUtil {
         }
         return result;
     }
-
+    
     public static int getPreviousColumn( DataSet ds, Datum datum ) {
         int i= closestColumn( ds, datum );
         if ( i>0 && ds.getXTagDatum(i).ge(datum) ) {
@@ -220,10 +295,15 @@ public class DataSetUtil {
         return DatumVector.newDatumVector(data,ds.getXUnits());
     }
     
-    public static DatumRange zRange( DataSet ds ) {
+    public static DatumRange zRange( DataSet ds ) {        
         if ( !( ds instanceof TableDataSet ) ) {
             throw new UnsupportedOperationException("only TableDataSets supported");
         }
+        
+        if ( ds.getProperty(DataSet.PROPERTY_Z_RANGE)!=null ) {
+            return (DatumRange)ds.getProperty(DataSet.PROPERTY_Z_RANGE);
+        }
+        
         TableDataSet tds= (TableDataSet)ds;
         
         double max= Double.NEGATIVE_INFINITY;
@@ -254,9 +334,9 @@ public class DataSetUtil {
     
     /* Give an estimate of the size of the data set, or PROPERTY_SIZE_BYTES if available.
      * Generally this would be used as a penalty against the dataset, and it's probably
-     * better to overestimate the dataset size. 
+     * better to overestimate the dataset size.
      */
-    public static long guessSizeBytes( DataSet ds ) { 
+    public static long guessSizeBytes( DataSet ds ) {
         Long o= (Long)ds.getProperty( DataSet.PROPERTY_SIZE_BYTES );
         if ( o != null ) {
             return o.longValue();
@@ -266,14 +346,28 @@ public class DataSetUtil {
             long sizeXTags= ds.getXLength() * datumBytes;
             if ( ds instanceof TableDataSet ) {
                 TableDataSet tds= (TableDataSet)ds;
-                long sizeBytes=0;                
+                long sizeBytes=0;
                 for ( int i=0; i<tds.tableCount(); i++ ) {
                     sizeBytes+= ( tds.tableEnd(i)-tds.tableStart(i) ) * tds.getYLength(i) * planeCount * datumBytes;
                 }
                 return sizeBytes + sizeXTags;
             } else {
                 return ds.getXLength() * planeCount * datumBytes + sizeXTags;
-            }                 
+            }
+        }
+    }
+    
+    public static DataSet append( DataSet ds1, DataSet ds2 ) {
+        if ( ds1 instanceof TableDataSet ) {
+            TableDataSetBuilder builder= new TableDataSetBuilder( ds1.getXUnits(), ds1.getYUnits(), ((TableDataSet)ds1).getZUnits() );
+            if ( ds1!=null ) builder.append( (TableDataSet) ds1 );
+            if ( ds2!=null ) builder.append( (TableDataSet) ds2 );
+            return builder.toTableDataSet();
+        } else {
+            VectorDataSetBuilder builder= new VectorDataSetBuilder( ds1.getXUnits(), ds2.getYUnits() );
+            if ( ds1!=null ) builder.append( (VectorDataSet) ds1 );
+            if ( ds2!=null ) builder.append( (VectorDataSet) ds2 );
+            return builder.toVectorDataSet();
         }
     }
 }
