@@ -76,7 +76,7 @@ public class TableUtil {
         int n= table.getYLength(0)-1;
         double yn= table.getYTagDouble( 0, n, table.getYUnits() );
         if ( (yn-y0) / ( (y1-y0 ) * n ) > 10. ) {
-            return Units.percent.createDatum( ( (y1/y0) - 1.0 ) * 100 );
+            return Units.log10Ratio.createDatum( DasMath.log10(y1/y0) );
         } else {
             return table.getYUnits().createDatum(y1-y0);
         }
