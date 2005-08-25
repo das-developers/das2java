@@ -123,12 +123,16 @@ public abstract class Units implements Displayable {
         Units.spacecraft.createDatum( "Cluster Tango" );
     }
     
-    /**
-     * Units.percent might be useful for specifying logarithmic spacing.  Define percent space between two numbers a, b where a<b
-     * as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100%.  See also logERatio, log10Ratio and google for "fold change."
-     */
     public static final Units percent= new NumberUnits("%","");
 
+    /**
+     * Define a set of units to describe ratiometric (logarythmic) spacing.  Note that Units.percent
+     * is no longer the defacto ratiometric spacing, and Units.percentIncrease takes its place.  
+     * Note the log10Ratio is the preferred method for expressing spacing, but all are convertable
+     * See logERatio, log10Ratio and google for "fold change."
+     */
+
+    /* percentIncrease is defined as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100 % diff.  */
     public static final Units percentIncrease= new NumberUnits("% diff","Special dimensionless number, useful for expressing on logarithmic scale.  100% indicates a doubling");    
     public static final Units log10Ratio= new NumberUnits("log10Ratio", "Special dimensionless number, useful for expressing distances on a log10 scale" );
     public static final Units logERatio= new NumberUnits("logERatio", "Special dimensionless number, useful for expressing distances on a logE scale" );
