@@ -36,19 +36,22 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
     
     double x1,y1,p1;
     double x2,y2,p2;
+    int nx,ny;
     
     public RipplesDataSetDescriptor( ) {
-        this( 14, 17, 10, 20, 60, 15 );
+        this( 14, 17, 10, 20, 60, 15 , 100, 100 );
     }
     
     /** Creates a new instance of RipplesDataSetDescriptor */
-    public RipplesDataSetDescriptor( double x1, double y1, double p1, double x2, double y2, double p2 ) {
+    public RipplesDataSetDescriptor( double x1, double y1, double p1, double x2, double y2, double p2 , int nx, int ny ) {
         this.x1= x1;
         this.y1= y1;
         this.p1= p1;
         this.x2= x2;
         this.y2= y2;
         this.p2= p2;
+        this.nx= nx;
+        this.ny= ny;
     }
     
     public Units getXUnits() {
@@ -64,8 +67,6 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
     }
     
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
-        int nx=100;
-        int ny=100;
         
         double[] x= new double[nx];
         double[] y= new double[ny];
@@ -78,9 +79,10 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
             x[i]= (float)i;
             for (int j=0; j<y.length; j++) {
                 double rad1= Math.sqrt((i-x1)*(i-x1)+(j-y1)*(j-y1));
-                double exp1= Math.exp(-rad1/p1)*Math.cos(Math.PI*p1*rad1);
-                double rad2= Math.sqrt((i-nx*2/3)*(i-nx*2/3)+(j-ny*2/3)*(j-ny*2/3));
-                double exp2= Math.exp(-rad2/p2)*Math.cos(Math.PI*p2*rad2);
+                double exp1= Math.exp(-rad1/p1)*Math.cos(Math.PI*rad1/p1);
+                double rad2= Math.sqrt((i-x2)*(i-x2)+(j-y2)*(j-y2));
+                double exp2= Math.exp(-rad2/p2)*Math.cos(Math.PI*rad2/p2);                
+                
                 z[i][j]= (exp1+exp2);
                 if (22<i && i<24) z[i][j]=-1e31f;
             }
@@ -91,9 +93,9 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
             y[j]= (double)j;
         }
         
-        z[50][50]=-1.0f;
+        /*z[50][50]=-1.0f;
         z[0][0]= 1.0f;
-        z[25][25]= -.5f;
+        z[25][25]= -.5f;*/
         
         return DefaultTableDataSet.createSimple( x, y, z );
     }
