@@ -51,8 +51,6 @@ import java.text.ParseException;
 import java.util.Collections;
 import javax.swing.Icon;
 import org.w3c.dom.*;
-import testNew.graph.ColorBarTest;
-
 
 /**
  *
