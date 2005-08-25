@@ -774,7 +774,7 @@ public class DatumRangeUtil {
         boolean isYearBoundry2= isMonthBoundry2 && ts2.month == 1;
         
         //String toDelim= " \u2013 ";
-        String toDelim= " to ";
+        String toDelim= " through ";
         if ( isYearBoundry1 && isYearBoundry2 ) {  // no need to indicate month
             if (  ts2.year-ts1.year == 1 ) {
                 return "" + ts1.year;
