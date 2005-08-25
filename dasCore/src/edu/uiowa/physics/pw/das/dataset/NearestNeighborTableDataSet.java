@@ -68,13 +68,9 @@ public class NearestNeighborTableDataSet implements TableDataSet {
                         for ( int j=0; j<jmap[itable].length; j++ ) {
                             jmap[itable][j]= TableUtil.closestRow(source,itable,yy[j], ddY.getUnits());
                             Units yunits= yTagWidth.getUnits();
-                            if ( yunits==Units.percent ) {
-                                double yclose= source.getYTagDouble(itable, jmap[itable][j],ddY.getUnits() );
-                                if ( yy[j]>yclose ) {
-                                    if ( (yy[j]-yclose)*100/yclose > yTagWidth.doubleValue(Units.percent) ) jmap[itable][j]=-1;
-                                } else {
-                                    if ( (yclose-yy[j])*100/yy[j] > yTagWidth.doubleValue(Units.percent) ) jmap[itable][j]=-1;
-                                }
+                            if ( yunits.isConvertableTo( Units.logERatio ) ) {
+                                double yclose= source.getYTagDouble(itable, jmap[itable][j], ddY.getUnits() );
+                                if ( Math.abs( Math.log( yy[j] / yclose ) ) > yTagWidth.doubleValue(Units.logERatio) ) jmap[itable][j]=-1;
                             } else {
                                 Datum yclose= source.getYTagDatum( itable, jmap[itable][j] );
                                 if ( Math.abs( yclose.subtract(yy[j],ddY.getUnits()).doubleValue(yunits)) > yTagWidth.doubleValue(yunits) ) {
