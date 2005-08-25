@@ -67,9 +67,19 @@ public class Leveler {
             return (int)( getMaximum()*getDeviceSize() );
         }
         
-        public void setDPosition(double minimum,double maximum) {
-            lev.setMaximum(this,maximum/getDeviceSize());
-            lev.setMinimum(this,minimum/getDeviceSize());
+        public void setDPosition( int minimum, int maximum) {
+            lev.setMaximum(this,maximum/(float)getDeviceSize());
+            lev.setMinimum(this,minimum/(float)getDeviceSize());
+        }
+
+        public void setDMinimum(int minimum) {
+
+            super.setDMinimum(minimum);
+        }
+
+        public void setDMaximum(int maximum) {
+
+            super.setDMaximum(maximum);
         }
     }
     
