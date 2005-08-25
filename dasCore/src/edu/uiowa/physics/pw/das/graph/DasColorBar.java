@@ -27,7 +27,9 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
+import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.datum.*;
+import java.awt.image.IndexColorModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -35,6 +37,8 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.WritableRaster;
 
 /**
  *
@@ -44,6 +48,9 @@ public class DasColorBar extends DasAxis {
     
     private BufferedImage image;
     private DasColorBar.Type type;
+    private int fillColor;
+    private int fillColorIndex;
+    private int ncolor;
     
     public DasColorBar( Datum min, Datum max, boolean isLog) {
         this(min, max, RIGHT, isLog);
@@ -53,19 +60,36 @@ public class DasColorBar extends DasAxis {
         super(min, max, orientation, isLog);
         setLayout(new ColorBarLayoutManager());
         setType(DasColorBar.Type.COLOR_WEDGE);
+        fillColorIndex= getType().getColorCount();
+        fillColor= getType().getRGB(fillColorIndex);
     }
     
-    public int itransform(double x, Units units) {
-        int ncolor = type.getColorCount();
+    
+    public int rgbTransform(double x, Units units) {
         int icolor= (int)transform(x,units,0, ncolor);
         
         if ( units.isFill(x) ) {
-            return Color.LIGHT_GRAY.getRGB();
+            return fillColor;
         } else {
             icolor= (icolor<0)?0:icolor;
             icolor= (icolor>=ncolor)?(ncolor-1):icolor;
             return type.getRGB(icolor);
         }
+    }
+    
+    public int indexColorTransform( double x, Units units ) {
+        int icolor= (int)transform(x,units,0,ncolor);
+        if ( units.isFill(x) ) {
+            return fillColorIndex;
+        } else {
+            icolor= (icolor<0)?0:icolor;
+            icolor= (icolor>=ncolor)?(ncolor-1):icolor;
+            return icolor;
+        }
+    }
+    
+    public IndexColorModel getIndexColorModel() {
+        return new IndexColorModel( 8, type.getColorCount()+1, type.colorTable, 0, false, -1, DataBuffer.TYPE_BYTE );
     }
     
     public DasColorBar.Type getType() {
@@ -78,6 +102,7 @@ public class DasColorBar extends DasAxis {
         }
         DasColorBar.Type oldValue = this.type;
         this.type = type;
+        this.ncolor= type.getColorCount();
         image = null;
         markDirty();
         update();
@@ -92,8 +117,7 @@ public class DasColorBar extends DasAxis {
         if (image == null || image.getWidth() != width || image.getHeight() != height) {
             if (isHorizontal()) {
                 image = type.getHorizontalScaledImage(width, height);
-            }
-            else {
+            } else {
                 image = type.getVerticalScaledImage(width, height);
             }
         }
@@ -143,8 +167,7 @@ public class DasColorBar extends DasAxis {
             String max = element.getAttribute("dataMaximum");
             dataMinimum = (min == null || min.equals("") ? TimeUtil.create("1979-02-26") : TimeUtil.create(min));
             dataMaximum = (max == null || max.equals("") ? TimeUtil.create("1979-02-27") : TimeUtil.create(max));
-        }
-        else {
+        } else {
             Units units = Units.getByName(unitStr);
             String min = element.getAttribute("dataMinimum");
             String max = element.getAttribute("dataMaximum");
@@ -152,7 +175,7 @@ public class DasColorBar extends DasAxis {
             dataMaximum = (max == null || max.equals("") ? Datum.create(10.0, units) : Datum.create(Double.parseDouble(max), units));
         }
         int orientation = parseOrientationString(element.getAttribute("orientation"));
-
+        
         DasColorBar cb = new DasColorBar(dataMinimum, dataMaximum, orientation, log);
         
         String rowString = element.getAttribute("row");
@@ -170,7 +193,7 @@ public class DasColorBar extends DasAxis {
         cb.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         cb.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
         cb.setType(DasColorBar.Type.parse(element.getAttribute("type")));
-
+        
         cb.setDasName(name);
         DasApplication app = form.getDasApplication();
         NameContext nc = app.getNameContext();
@@ -185,11 +208,11 @@ public class DasColorBar extends DasAxis {
         element.setAttribute("dataMinimum", minimumStr);
         String maximumStr = getDataMaximum().toString();
         element.setAttribute("dataMaximum", maximumStr);
-
+        
         element.setAttribute("name", getDasName());
         element.setAttribute("row", getRow().getDasName());
         element.setAttribute("column", getColumn().getDasName());
-
+        
         element.setAttribute("label", getLabel());
         element.setAttribute("log", Boolean.toString(isLog()));
         element.setAttribute("tickLabelsVisible", Boolean.toString(areTickLabelsVisible()));
@@ -197,7 +220,7 @@ public class DasColorBar extends DasAxis {
         element.setAttribute("animated", Boolean.toString(isAnimated()));
         element.setAttribute("orientation", orientationToString(getOrientation()));
         element.setAttribute("type", getType().toString());
-
+        
         return element;
     }
     
@@ -208,8 +231,7 @@ public class DasColorBar extends DasAxis {
         }
         try {
             cb.setDasName(name);
-        }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
+        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
         }
         return cb;
@@ -283,9 +305,10 @@ public class DasColorBar extends DasAxis {
             return desc;
         }
         
+        /* It's understood that the colors indeces from 0 to getColorCount()-1 are the color wedge, and getColorCount() is the fill color. */
         public int getColorCount() {
             maybeInitializeColorTable();
-            return colorTable.length;
+            return colorTable.length-1;
         }
         
         public int getRGB(int index) {
@@ -297,10 +320,10 @@ public class DasColorBar extends DasAxis {
             maybeInitializeImage();
             BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             AffineTransform at = new AffineTransform();
-            at.scale((double)width / (double)colorTable.length, (double)height);
+            at.scale((double)width / (double)getColorCount(), (double)height);
             at.rotate(-Math.PI/2.0);
             at.translate(-1.0, 0.0);
-            AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+            AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
             op.filter(image, scaled);
             return scaled;
         }
@@ -309,9 +332,9 @@ public class DasColorBar extends DasAxis {
             maybeInitializeImage();
             BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             AffineTransform at = new AffineTransform();
-            at.scale((double)width, -(double)height / (double)colorTable.length);
-            at.translate(0.0, -(double)colorTable.length);
-            AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+            at.scale((double)width, -(double)height / (double)getColorCount());
+            at.translate(0.0, -(double)getColorCount());
+            AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
             op.filter(image, scaled);
             return scaled;
         }
@@ -319,23 +342,42 @@ public class DasColorBar extends DasAxis {
         private void maybeInitializeImage() {
             if (image == null) {
                 maybeInitializeColorTable();
-                image = new BufferedImage(1, colorTable.length, BufferedImage.TYPE_INT_RGB);
-                image.setRGB(0, 0, 1, colorTable.length, colorTable, 0, 1);
+                image = new BufferedImage(1, getColorCount(), BufferedImage.TYPE_INT_RGB);
+                image.setRGB(0, 0, 1, getColorCount(), colorTable, 0, 1);
             }
+        }
+        
+        // returns a color table with interpolated colors for the wedge from 0 to ncolor-1, and at ncolor, the fill color.
+        private static int[] makeColorTable( int [] index, int[] red, int[] green, int[] blue, int ncolor ) {
+            // index should go from 0-255.
+            if ( ncolor>255 ) throw new IllegalArgumentException("no more than 255 colors, since we use an 8 bit color model");
+            int[] colorTable = new int[ncolor+1];
+            
+            int ii= 0;
+            for (int i = 0; i < ncolor; i++) {
+                float comp= i * 255 / ncolor;
+                if ( comp > index[ii + 1]) {
+                    ii++;
+                }
+                double a= (comp-index[ii]) / (double)(index[ii+1]-index[ii]);
+                double rr= (red[ii]*(1-a) + red[ii+1]*a)/(double)255.;
+                double gg= (green[ii]*(1-a) + green[ii+1]*a)/(double)255.;
+                double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
+                colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
+            }
+            colorTable[ncolor]= Color.LIGHT_GRAY.getRGB();
+            return colorTable;
         }
         
         private void maybeInitializeColorTable() {
             if (colorTable == null) {
                 if (this == COLOR_WEDGE) {
                     initializeColorWedge();
-                }
-                else if (this == GRAYSCALE) {
+                } else if (this == GRAYSCALE) {
                     initializeGrayScale();
-                }
-                else if (this == INVERSE_GRAYSCALE) {
+                } else if (this == INVERSE_GRAYSCALE) {
                     initializeInverseGrayScale();
-                }
-                else if (this == WRAPPED_COLOR_WEDGE) {
+                } else if (this == WRAPPED_COLOR_WEDGE) {
                     initializeWrappedColorWedge();
                 }
             }
@@ -346,19 +388,7 @@ public class DasColorBar extends DasAxis {
             int[] red =   {   0,    0,    0,   0, 255, 255, 255, 255 };
             int[] green = {   0,    0,  255, 255, 255, 185,  84, 0 };
             int[] blue =  { 137,  255,  255,   0,   0,   0,   0, 0 };
-            colorTable = new int[256];
-
-            int ii= 0;
-            for (int i = 0; i < colorTable.length; i++) {
-                if (i > index[ii + 1]) {
-                    ii++;
-                }
-                double a= (i-index[ii]) / (double)(index[ii+1]-index[ii]);
-                double rr= (red[ii]*(1-a) + red[ii+1]*a)/(double)255.;
-                double gg= (green[ii]*(1-a) + green[ii+1]*a)/(double)255.;
-                double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
-                colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
-            }
+            colorTable = makeColorTable( index, red, green, blue, 240 );            
             colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
         }
         
@@ -367,47 +397,33 @@ public class DasColorBar extends DasAxis {
             int[] red =   { 225,    0,    0,   0, 255, 255, 255, 255, 255, };
             int[] green = {   0,    0,  255, 255, 255, 185,  84,   0,   0, };
             int[] blue =  { 225,  255,  255,   0,   0,   0,   0,   0, 255, };
-            colorTable = new int[256];
-
-            int ii= 0;
-            for (int i = 0; i < colorTable.length; i++) {
-                if (i > index[ii + 1]) {
-                    ii++;
-                }
-                double a= (i-index[ii]) / (double)(index[ii+1]-index[ii]);
-                double rr= (red[ii]*(1-a) + red[ii+1]*a)/(double)255.;
-                double gg= (green[ii]*(1-a) + green[ii+1]*a)/(double)255.;
-                double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
-                colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
-            }
-            //colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
+            colorTable = makeColorTable( index, red, green, blue, 240 );
         }
         
         private void initializeInverseGrayScale() {
-            colorTable = new int[256];
-            for (int i = 0; i < 256; i++) {
-                colorTable[i] = 0xff000000 | (i << 16) | (i << 8) | i;
-            }
+            int [] index= { 0, 255 };
+            int [] red= { 0, 255 };
+            int [] green= { 0, 255 };
+            int [] blue= { 0, 255 };
+            colorTable = makeColorTable( index, red, green, blue, 240 );
         }
         
-        private void initializeGrayScale() {
-            colorTable = new int[256];
-            for (int i = 255; i >= 0; i--) {
-                colorTable[255 - i] = 0xff000000 | (i << 16) | (i << 8) | i;
-            }
+        private void initializeGrayScale() {            
+            int [] index= { 0, 255 };
+            int [] red= { 255, 0 };
+            int [] green= { 255, 0 };
+            int [] blue= { 255, 0 };
+            colorTable = makeColorTable( index, red, green, blue, 240 );
         }
         
         public static Type parse(String s) {
             if (s.equals("color_wedge")) {
                 return COLOR_WEDGE;
-            }
-            else if (s.equals("grayscale")) {
+            } else if (s.equals("grayscale")) {
                 return GRAYSCALE;
-            }
-            else if (s.equals("inverse_grayscale")) {
+            } else if (s.equals("inverse_grayscale")) {
                 return INVERSE_GRAYSCALE;
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("invalid DasColorBar.Type string: " + s);
             }
         }

@@ -42,16 +42,17 @@ import java.awt.*;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.geom.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.awt.image.MemoryImageSource;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
-import javax.swing.*;
 import javax.swing.Icon;
 import org.w3c.dom.*;
+import testNew.graph.ColorBarTest;
+
 
 /**
  *
@@ -61,9 +62,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private DasColorBar colorBar;
     Image plotImage;
+    BufferedImage plotImage2;
     
     protected class RebinListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
+            SpectrogramRenderer.this.plotImage= null;
+            SpectrogramRenderer.this.plotImage2= null;            
             update();
         }
     }
@@ -168,17 +172,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         AffineTransform at= getAffineTransform( xAxis, yAxis );
         
         if ( at==null ) {
-            return; // TODO: consider throwing exception            
+            return; // TODO: consider throwing exception
         }
         if ( !at.isIdentity() ) {
             g2.transform(at);
             g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
         }
-            
+        
         if (getDataSet()==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
-        }
-        else if (plotImage!=null) {
+        } else if (plotImage!=null) {
             int x = xAxis.getColumn().getDMinimum();
             int y = yAxis.getRow().getDMinimum();
             g2.drawImage( plotImage,x,y, getParent() );
@@ -190,16 +193,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private boolean sliceRebinnedData= true;
     
-    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
-        super.updatePlotImage( xAxis, yAxis, monitor );
+    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {        
         try {
             TableDataSet rebinData;
             
             if (monitor != null) {
                 if (monitor.isCancelled()) {
                     return;
-                }
-                else {
+                } else {
                     monitor.setTaskSize(-1);
                     monitor.started();
                 }
@@ -212,9 +213,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 DasDie.println("canvas not useable!!!");
                 return;
             }
-            
-            int[] pix= new int[ w * h ];
-            Arrays.fill(pix, 0x00000000);
             
             if ( getDataSet() == null) {
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "got null dataset, setting image to null" );
@@ -229,33 +227,47 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 rebinData= null;
                 getParent().repaint();
                 return;
-            } else {
+                
+            } else {                
+
                 RebinDescriptor xRebinDescriptor;
                 xRebinDescriptor = new RebinDescriptor(
-                xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-                w,
-                xAxis.isLog());
+                        xAxis.getDataMinimum(), xAxis.getDataMaximum(),
+                        w,
+                        xAxis.isLog());
                 
                 RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-                h,
-                yAxis.isLog());
+                        yAxis.getDataMinimum(), yAxis.getDataMaximum(),
+                        h,
+                        yAxis.isLog());
                 
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "rebinning to pixel resolution" );
+                
                 DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
-                                
+                //rebinner= new NewAverageTableRebinner();
+                
+                long t0;
+                
+                t0= System.currentTimeMillis();
+                
                 rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
+//3                SpectrogramRendererDemo.probe.add( "rebin", System.currentTimeMillis()-t0);
+                
+                /*t0= System.currentTimeMillis();
+                
+                int[] pix= new int[ w * h ];
+                Arrays.fill(pix, 0x00000000);
                 
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "converting to pixel map" );
-                //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+                
                 int itable=0;
                 int ny= rebinData.getYLength(itable);
                 int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
-                                
+                
                 for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
                     for (int j=0; j<rebinData.getYLength(0); j++) {
                         int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
-                        pix[index]= colorBar.itransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
+                        pix[index]= colorBar.rgbTransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
                     }
                 }
                 
@@ -263,6 +275,21 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 
                 MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
                 plotImage = getParent().createImage(mis);
+                
+                //long t= System.currentTimeMillis() - t0;
+                                
+//3                System.out.println("old way: "+t);
+//3            SpectrogramRendererDemo.probe.add("old",t); 
+                */
+ //3               t0=  System.currentTimeMillis();
+                plotImage2= (BufferedImage)ColorBarTest.transformSimpleTableDataSet( rebinData, colorBar, plotImage2 );
+//3                long t2= System.currentTimeMillis() - t0;
+                
+//3                System.out.println("new way: "+t2);            
+//3                SpectrogramRendererDemo.probe.addOverplot("new","old",t2);
+                //System.out.println("     speedup:"+(t-t2)*100/t); 
+                
+             plotImage= plotImage2;
                 
                 if ( isSliceRebinnedData() ) {
                     DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine("slicing rebin data");
@@ -274,8 +301,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             if (monitor != null) {
                 if (monitor.isCancelled()) {
                     return;
-                }
-                else {
+                } else {
                     monitor.finished();
                 }
             }
@@ -289,21 +315,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             if (colorBar != null) {
                 if (colorBar.getColumn() == DasColumn.NULL ) {
                     DasColumn column = parent.getColumn();
-                    double columnWidth = column.getMaximum() - column.getMinimum();
-                    double cbMin = column.getMaximum() + columnWidth/5.0;
-                    double cbMax = cbMin + columnWidth/10.0;
-                    if (cbMax > (1.0 - columnWidth/5.0)) {
-                        double cbWidth = (1.0 - column.getMaximum())/3.0;
-                        cbMin = column.getMaximum() + cbWidth/2.0;
-                        cbMax = cbMin + cbWidth;
-                    }
-                    colorBar.setColumn(new DasColumn(parent.getCanvas(), cbMin, cbMax));
+                    colorBar.setColumn( column.createAttachedColumn( 1.05, 1.10 ) );
                 }
                 parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
                 if (!"true".equals(System.getProperty("java.awt.headless"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer=
-                    VerticalSpectrogramSlicer.createSlicer(parent, this);
+                            VerticalSpectrogramSlicer.createSlicer(parent, this);
                     VerticalSlicerMouseModule vsl = VerticalSlicerMouseModule.create(this);
                     vsl.addDataPointSelectionListener(vSlicer);
                     mouseAdapter.addMouseModule(vsl);
@@ -329,7 +347,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
                     
                     mouseAdapter.addMouseModule( new BoxZoomMouseModule( p, this, p.getXAxis(), p.getYAxis() ) );
-
+                    
                 }
             }
         }
@@ -356,8 +374,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if (colorbar == null) {
             try {
                 colorbar = (DasColorBar)form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
-            }
-            catch (DasPropertyException dpe) {
+            } catch (DasPropertyException dpe) {
                 dpe.setPropertyName("colorbar");
                 throw dpe;
             }
@@ -366,8 +383,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         SpectrogramRenderer renderer = new SpectrogramRenderer(parent, null, colorbar);
         try {
             renderer.setDataSetID(dataSetID);
-        }
-        catch (DasException de) {
+        } catch (DasException de) {
             DasExceptionHandler.handle(de);
         }
         return renderer;
@@ -437,11 +453,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     public void setSliceRebinnedData(boolean sliceRebinnedData) {
         this.sliceRebinnedData = sliceRebinnedData;
     }
-
+    
     public String getListLabel() {
         return "spectrogram";
     }
-
+    
     public Icon getListIcon() {
         return null;
     }
