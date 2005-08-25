@@ -30,6 +30,7 @@ import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.system.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -161,7 +162,7 @@ extends DasPlot implements DataPointSelectionListener {
         VectorDataSet sliceDataSet= tds.getXSlice( DataSetUtil.closestColumn( tds, e.getX() ) );
                       
         renderer.setDataSet(sliceDataSet);
-        
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
             showPopup();
         }
