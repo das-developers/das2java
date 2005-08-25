@@ -24,7 +24,10 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasApplication;
+import edu.uiowa.physics.pw.das.components.propertyeditor.*;
+import edu.uiowa.physics.pw.das.datum.*;
 import java.text.*;
+import java.util.*;
 /**
  * Keeps keep track of cache statistics and to give consistent
  * log messages, and provides the Entry class.
@@ -33,7 +36,7 @@ import java.text.*;
  */
 public abstract class AbstractDataSetCache implements DataSetCache {
     
-    protected class Entry {
+    protected class Entry implements Displayable {
         
         protected DataSetDescriptor dsd;
         protected CacheTag cacheTag;
@@ -41,7 +44,7 @@ public abstract class AbstractDataSetCache implements DataSetCache {
         protected int nhits;
         protected long birthTime;
         protected long lastAccess;
-        
+
         Entry() {
             this( null, null, null );
         }
@@ -55,7 +58,11 @@ public abstract class AbstractDataSetCache implements DataSetCache {
             this.lastAccess= birthTime;
         }
         
+        /*
+         * returns the dataSet attached to the Entry, and updates the lastAccess time
+         */
         protected DataSet getData() {
+            this.lastAccess= System.currentTimeMillis();
             return data;
         }
         
@@ -71,10 +78,24 @@ public abstract class AbstractDataSetCache implements DataSetCache {
             String sizeBytesString= " ("+NumberFormat.getIntegerInstance().format(sizeBytes)+" bytes)";
             return dsd.toString() + " " + cacheTag + " ["+nhits+" hits]"+sizeBytesString;
         }
+
+        public javax.swing.Icon getListIcon() {
+            return null;
+        }
+
+        public String getListLabel() {
+            return toString();
+        }
+
+        public CacheTag getCacheTag() {
+            return this.cacheTag;            
+        }
+
     }
         
     public int hits=0;
     public int misses=0;    
+
     
     abstract public void store( DataSetDescriptor dsd, CacheTag cacheTag, DataSet data );
     
@@ -92,11 +113,74 @@ public abstract class AbstractDataSetCache implements DataSetCache {
         return result;
     }
     
+    /**
+     * return a measure of the utility of the entry, presumably so that it may be
+     * swapped out when a resource limit is met.
+     */    
+    protected long cacheValue( Entry e ) {
+        return e.nhits;
+    }
+        
     abstract DataSet retrieveImpl( DataSetDescriptor dsd, CacheTag cacheTag );
     
     public DataSet retrieve( DataSetDescriptor dsd, CacheTag cacheTag ) {
         return retrieveImpl( dsd, cacheTag );
     }
     
+    /**
+     * reset the internal state of the cache 
+     */
     abstract public void reset();
+    
+    /**
+     * return the DataSet described by the set of DataSets if possible.  
+     * @throws IllegalArgumentException if a subset is not continous, 
+     * non-overlapping, and of the same resolution.  Removes 
+     * elements from the list that are not needed for the set.
+     */
+    public DataSet coalese( List result ) {
+       Collections.sort( result, new Comparator() {
+            public int compare( Object o1, Object o2 ) {
+                return ((Entry)o1).cacheTag.range.compareTo( ((Entry)o2).cacheTag.range );
+            }
+        } );
+        
+        Entry e0= (Entry)result.get(0);
+        CacheTag ct= e0.cacheTag;
+        Datum t1= ct.range.max();        
+        Datum resolution= ct.resolution;
+
+        DataSet ds= e0.data;
+
+        // check for continuity and non-overlap
+        for ( int i=1; i<result.size(); i++ ) {
+            Entry entryTest= (Entry)result.get(i);
+            CacheTag ctTest= entryTest.cacheTag;
+            if ( ctTest.range.min().equals(t1) && 
+                 ( ( ct.resolution==null && ctTest.resolution==null ) || 
+                    ct.resolution.equals( ctTest.resolution ) ) ) {
+                ds= DataSetUtil.append( ds, entryTest.data );
+                t1= ctTest.range.max();
+            }
+        }
+        
+        return ds;
+    }
+
+    /**
+     * Getter for property resetCache.
+     * @return Value of property resetCache.
+     */
+    public boolean isResetCache() {        
+        return false;
+    }
+
+    /**
+     * Setter for property resetCache.
+     * @param resetCache New value of property resetCache.
+     */
+    public void setResetCache(boolean resetCache) {
+        if ( resetCache ) this.reset();        
+    }
+    
 }
