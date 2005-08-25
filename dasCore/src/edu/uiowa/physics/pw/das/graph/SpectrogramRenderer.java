@@ -43,11 +43,11 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.MemoryImageSource;
+import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.Icon;
 import org.w3c.dom.*;
@@ -67,7 +67,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     protected class RebinListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
             SpectrogramRenderer.this.plotImage= null;
-            SpectrogramRenderer.this.plotImage2= null;            
+            SpectrogramRenderer.this.plotImage2= null;
             update();
         }
     }
@@ -193,7 +193,45 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private boolean sliceRebinnedData= true;
     
-    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {        
+    private static Image transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb, BufferedImage image ) {
+        
+        if ( rebinData.tableCount() > 1 ) throw new IllegalArgumentException("TableDataSet contains more than one table");
+        DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "converting to pixel map" );
+        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+        int itable=0;
+        int ny= rebinData.getYLength(itable);
+        int h= ny;
+        int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
+        int w= nx;
+        int icolor;
+        
+        Units units= cb.getUnits();
+        int ncolor= cb.getType().getColorCount();
+        
+        byte[] pix= new byte[ nx * ny ];
+        
+        for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
+            for (int j=0; j<ny; j++) {
+                int index= (i-0) + ( ny - j - 1 ) * nx;
+                icolor= (int)cb.indexColorTransform(rebinData.getDouble(i,j,units), units );
+                pix[index]= (byte) icolor;
+            }
+        }
+        
+        if ( image==null || image.getWidth()!=w || image.getHeight()!=h ) {
+            IndexColorModel model= cb.getIndexColorModel();
+            image= new BufferedImage( w, h, BufferedImage.TYPE_BYTE_INDEXED, model );
+        }
+        
+        WritableRaster r= image.getRaster();
+        
+        r.setDataElements( 0,0,w,h,pix);
+        
+        return image;
+    }
+    
+    
+    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
         try {
             TableDataSet rebinData;
             
@@ -228,8 +266,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 getParent().repaint();
                 return;
                 
-            } else {                
-
+            } else {
+                
                 RebinDescriptor xRebinDescriptor;
                 xRebinDescriptor = new RebinDescriptor(
                         xAxis.getDataMinimum(), xAxis.getDataMaximum(),
@@ -251,45 +289,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 t0= System.currentTimeMillis();
                 
                 rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
-//3                SpectrogramRendererDemo.probe.add( "rebin", System.currentTimeMillis()-t0);
                 
-                /*t0= System.currentTimeMillis();
+                plotImage2= (BufferedImage)transformSimpleTableDataSet( rebinData, colorBar, plotImage2 );                
                 
-                int[] pix= new int[ w * h ];
-                Arrays.fill(pix, 0x00000000);
-                
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "converting to pixel map" );
-                
-                int itable=0;
-                int ny= rebinData.getYLength(itable);
-                int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
-                
-                for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
-                    for (int j=0; j<rebinData.getYLength(0); j++) {
-                        int index= (i-rebinData.tableStart(itable)) + ( ny - j - 1 ) * nx;
-                        pix[index]= colorBar.rgbTransform(rebinData.getDouble(i,j,rebinData.getZUnits()),rebinData.getZUnits());
-                    }
-                }
-                
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "creating MemoryImageSource" );
-                
-                MemoryImageSource mis = new MemoryImageSource( w, h, pix, 0, w );
-                plotImage = getParent().createImage(mis);
-                
-                //long t= System.currentTimeMillis() - t0;
-                                
-//3                System.out.println("old way: "+t);
-//3            SpectrogramRendererDemo.probe.add("old",t); 
-                */
- //3               t0=  System.currentTimeMillis();
-                plotImage2= (BufferedImage)ColorBarTest.transformSimpleTableDataSet( rebinData, colorBar, plotImage2 );
-//3                long t2= System.currentTimeMillis() - t0;
-                
-//3                System.out.println("new way: "+t2);            
-//3                SpectrogramRendererDemo.probe.addOverplot("new","old",t2);
-                //System.out.println("     speedup:"+(t-t2)*100/t); 
-                
-             plotImage= plotImage2;
+                plotImage= plotImage2;
                 
                 if ( isSliceRebinnedData() ) {
                     DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine("slicing rebin data");
