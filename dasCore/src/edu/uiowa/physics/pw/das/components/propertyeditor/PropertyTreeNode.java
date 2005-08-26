@@ -102,6 +102,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     }
     
     public boolean isLeaf() {
+        if ( value==null ) return true;
         maybeLoadChildren();
         return children.isEmpty();
     }
