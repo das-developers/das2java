@@ -391,8 +391,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         }
     }
     
-    public String getListLabel() {
-        return this.getDataSetDescriptor().toString();
+    public String getListLabel() {        
+        return String.valueOf( this.getDataSetDescriptor() );
     }
     
     public javax.swing.Icon getListIcon() {
