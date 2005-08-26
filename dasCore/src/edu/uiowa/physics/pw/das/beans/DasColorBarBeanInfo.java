@@ -43,8 +43,7 @@ public class DasColorBarBeanInfo extends AccessLevelBeanInfo {
 
     public BeanInfo[] getAdditionalBeanInfo() {
 	BeanInfo[] additional = {
-            new DasAxisBeanInfo(),
-	    new DasCanvasComponentBeanInfo()
+            new DasAxisBeanInfo(),	    
 	};
 	return additional;
     }
