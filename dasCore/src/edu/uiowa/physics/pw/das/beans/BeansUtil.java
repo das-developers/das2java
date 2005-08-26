@@ -5,15 +5,16 @@
  */
 
 package edu.uiowa.physics.pw.das.beans;
-
 import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.beans.*;
-import java.lang.reflect.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  *
@@ -32,6 +33,8 @@ public class BeansUtil {
         PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
         PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
         PropertyEditorManager.registerEditor(PsymConnector.class, EnumerationEditor.class);
+       // PropertyEditorManager.registerEditor(Rectangle.class, RectangleEditor.class);
+        //PropertyEditorManager.registerEditor(DasServer.class, DasServerEditor.class);
     }
     
     
@@ -45,9 +48,10 @@ public class BeansUtil {
         excludePropertyNames= new HashSet();
         excludePropertyNames.add("class");
         excludePropertyNames.add("listLabel");
-        excludePropertyNames.add("listIcon");
+        excludePropertyNames.add("listIcon");        
     
         try {
+            Logger log= DasLogger.getLogger(DasLogger.SYSTEM_LOG);
             
             // goal: get BeanInfo for the class, the AccessLevelBeanInfo if it exists.
             BeanInfo beanInfo= null;
@@ -55,17 +59,26 @@ public class BeansUtil {
             String s= c.getName().substring(c.getPackage().getName().length()+1);
             
             Class maybeClass=null;
+            String beanInfoClassName=null;
+            
             try {
-                maybeClass= Class.forName( c.getPackage() + "." + s + "BeanInfo" );
+                beanInfoClassName= c.getPackage() + "." + s + "BeanInfo";
+                maybeClass= Class.forName( beanInfoClassName );
             } catch ( ClassNotFoundException e ) {
                 try {
-                    maybeClass= Class.forName( "edu.uiowa.physics.pw.das.beans."+  s + "BeanInfo" );
-                } catch ( ClassNotFoundException e2 ) {
+                    beanInfoClassName= "edu.uiowa.physics.pw.das.beans."+  s + "BeanInfo";
+                    maybeClass= Class.forName( beanInfoClassName );
+                } catch ( ClassNotFoundException e2 ) {                    
                     beanInfo= Introspector.getBeanInfo(c);
+                    beanInfoClassName= beanInfo.getClass().getName();
                 }
             }
-                        
-            if ( beanInfo==null ) beanInfo= (BeanInfo)maybeClass.newInstance();
+            
+            log.finer( "using BeanInfo "+beanInfoClassName+" for "+c.getName() );
+            
+            if ( beanInfo==null ) {
+                beanInfo= (BeanInfo)maybeClass.newInstance();                
+            } 
             
             List propertyList= new ArrayList();
             
