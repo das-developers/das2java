@@ -244,9 +244,10 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         int xDMax= column.getDMaximum();
         int xDMin= column.getDMinimum();
         
-        TableDataSet xtysData= (TableDataSet)getDataSet();
+        TableDataSet xtysData= (TableDataSet)getDataSet();        
         
         if ( xtysData==null ) {            
+            this.plotImage= null;
             this.setLastException( new DasException("null data set" ) );            
             return;
         }
