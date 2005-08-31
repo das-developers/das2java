@@ -76,7 +76,7 @@ public class SerializeUtil {
             
             for ( int i=0; i<propertyNameList.length; i++ ) {
                 String propertyName= propertyNameList[i];
-                
+                       
                 log.fine( "serializing property "+propertyName + " of "+elementName );
                 
                 PropertyDescriptor pd= (PropertyDescriptor)nameMap.get(propertyName);
@@ -269,7 +269,7 @@ public class SerializeUtil {
             for ( int i=0; i<children.getLength(); i++ ) {
                 Node node= children.item(i);
                 
-                log.finer( node.getNodeType() +"  "+node.getNodeName() );
+                //log.finest( "got node: "+node.getNodeName() + " " + node.getNodeType() +"  "+node.getNodeName() );
                 if ( node.getNodeType()!=Node.ELEMENT_NODE ) continue;
                 
                 processNode( node, object, elementName, nameMap );
