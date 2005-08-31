@@ -57,6 +57,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      */
     private DasAxis xaxis0, yaxis0;
     
+    /** Add to above documentation: Now we just store the AffineTransform for the axes.  See 
+     * DasAxis.getAffineTransform.  at0 is xAxis.getAffineTransform.concatenate( yAxis.getAffineTransform ).
+     */
+//    private AffineTransform at0;
+    private DasAxis.Memento xmemento;
+    private DasAxis.Memento ymemento;
+            
     DasPlot parent;
     
     protected DasProgressPanel progressPanel;
@@ -201,26 +208,50 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         return dsd.getDataSetID();
     }
     
+    
+    
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.
      */
-    protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
-        if ( xaxis0==null ) {
+    protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {        
+        if ( xmemento==null ) {
             DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
-            .info( "unable to calculate AT, because xaxis0 is not defined." );
+            .fine( "unable to calculate AT, because old transform is not defined." );
             return null;
         } else {
-            AffineTransform at= Util.calculateAT( xaxis0, yaxis0, xAxis, yAxis );
-            if ( at==null ) {
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
-                .info( "calculate AT returns null." );
-                return null;
-            } else {
-                return at;
-            }
+            AffineTransform at= new AffineTransform();
+            at= xAxis.getAffineTransform(xmemento,at);
+            at= yAxis.getAffineTransform(ymemento,at);            
+            return at;
         }
     }
+    
+    /*
+     * returns the AffineTransform to transform data from the last updatePlotImage call
+     * axes (if super.updatePlotImage was called), or null if the transform is not possible.
+     */
+   /* protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
+        if ( at0==null ) {
+            DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
+            .info( "unable to calculate AT, because old transform is not defined." );
+            return null;
+        } else {
+            AffineTransform at= xAxis.getAffineTransform();
+            if ( at==null ) return null;
+            AffineTransform yat= yAxis.getAffineTransform();
+            if ( yat==null ) return null;            
+            at.concatenate( yat );   
+            
+            try {
+                at.concatenate( at0.createInverse() );
+                return at;
+            } catch ( NoninvertibleTransformException e ) {
+                DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).info( "unable to invert last transform" );
+                return null;
+            }
+        }
+    }*/
     
     /** Render is called whenever the image needs to be refreshed or the content
      * has changed.  This operation should occur with an animation-interactive
@@ -292,6 +323,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         }
         
         progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
+        //progressPanel = DasProgressPanel.createFramed("Loading data set");
         
         parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
         
@@ -408,9 +440,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
                 ((DasProgressPanel)progressPanel).setLabel("Rebinning data set");
             }
             DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("update plot image");
-            xaxis0= (DasAxis)parent.getXAxis().clone();
-            yaxis0= (DasAxis)parent.getYAxis().clone();
-            updatePlotImage(parent.getXAxis(), parent.getYAxis(), progressPanel);
+            
+            xmemento= parent.getXAxis().getMemento();
+            ymemento= parent.getYAxis().getMemento();
+            
+            updatePlotImage( parent.getXAxis(), parent.getYAxis(), progressPanel );
             if (parent != null) {
                 DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("repaint");
                 parent.repaint();
