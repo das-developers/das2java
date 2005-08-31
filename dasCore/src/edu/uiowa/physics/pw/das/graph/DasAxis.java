@@ -37,6 +37,7 @@ import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.border.*;
 import org.w3c.dom.Document;
@@ -90,7 +91,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final String SCAN_NEXT_LABEL = "scan >>";
     
     /* GENERAL AXIS INSTANCE MEMBERS */
-    protected DataRange dataRange;    
+    protected DataRange dataRange;
     
     private int orientation;
     private int tickDirection=1;  // 1=down or left, -1=up or right
@@ -347,16 +348,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @returns true is the range is acceptible, false otherwise.  This method
      * is overriden by DasLabelAxis.
      */
-    protected boolean rangeIsAcceptable( DatumRange dr ) {        
-       return dr.min().lt( dr.max() );
-    }    
-            
+    protected boolean rangeIsAcceptable( DatumRange dr ) {
+        return dr.min().lt( dr.max() );
+    }
+    
     /** TODO
      * @param minimum
      * @param maximum
      */
     public void setDataRange(Datum minimum, Datum maximum) {
-        DatumRange newRange= new DatumRange( minimum, maximum ); 
+        DatumRange newRange= new DatumRange( minimum, maximum );
         if ( ! rangeIsAcceptable( newRange ) ) {
             DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).warning( "invalid range ignored" );
             return;
@@ -398,7 +399,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             fireTimeRangeSelectionListenerTimeRangeSelected(e);
         }
     }
-
+    
     /** TODO */
     public void setDataRangePrev() {
         double min0= dataRange.getMinimum();
@@ -430,7 +431,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double delta= t2-t1;
         double min= t1-delta;
         double max= t2+delta;
-        animateChange(t1,t2,min,max);        
+        animateChange(t1,t2,min,max);
         dataRange.setRange(min,max);
         update();
         createAndFireRangeSelectionEvent();
@@ -450,7 +451,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */
     public Datum getDataMinimum() {
-        return dataRange.getDatumRange().min();                
+        return dataRange.getDatumRange().min();
     }
     
     /** TODO
@@ -490,7 +491,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param max
      */
-    public void setDataMaximum(Datum max) {        
+    public void setDataMaximum(Datum max) {
         dataRange.setMaximum( max );
         update();
     }
@@ -498,7 +499,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param min
      */
-    public void setDataMinimum(Datum min) {        
+    public void setDataMinimum(Datum min) {
         dataRange.setMinimum( min );
         update();
     }
@@ -879,7 +880,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             
             boolean overlap= true;
             while ( overlap && nTicksMax>2 ) {
-                                                
+                
                 tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
                 atick= tickV.getMajorTicks().get(0);
                 
@@ -922,7 +923,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             updateTickVLog();
         } else {
             updateTickVLinear();
-        }        
+        }
     }
     
     private double pixelSizeData() {
@@ -945,7 +946,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g.translate(-getX(), -getY());
-                
+        
         /* Debugging code */
         /* The compiler will optimize it out if DEBUG_GRAPHICS == false */
         if (DEBUG_GRAPHICS) {
@@ -1051,7 +1052,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double dataMax= dataRange.getMaximum();
         double dataMin= dataRange.getMinimum();
         
-        TickVDescriptor ticks= getTickV();        
+        TickVDescriptor ticks= getTickV();
         
         double[] tickv= ticks.tickV;
         
@@ -1148,8 +1149,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         double dataMax= dataRange.getMaximum();
         double dataMin= dataRange.getMinimum();
-                
-        TickVDescriptor ticks= getTickV();       
+        
+        TickVDescriptor ticks= getTickV();
         
         double[] tickv= ticks.tickV;
         
@@ -1343,6 +1344,73 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         // TODO: whah?--jbf
     }
     
+    public class Memento {
+        private DatumRange range;
+        private int dmin, dmax;
+        private boolean log;
+        private DasAxis axis;
+    }
+    
+    public Memento getMemento() {
+        Memento result= new Memento();
+        result.range= this.getDatumRange();
+        result.dmin= (int)transform( getDataMinimum() );
+        result.dmax= (int)transform( getDataMaximum() );
+        result.log= this.isLog();
+        result.axis= this;
+        return result;
+    }
+    
+    /**
+     * return the AffineTransform, or null.  The transform will be applyed after the input
+     * transform is applied.  So to just get the transform, pass in identity.
+     */
+    public AffineTransform getAffineTransform( Memento memento, AffineTransform at ) {
+        if ( at==null ) return null;
+        if ( memento.log!=isLog() ) return null;
+        
+        double dmin0= transform(memento.range.min());  // old axis in new axis space        
+        double dmax0= transform(memento.range.max());
+                
+        if ( this.orientation==VERTICAL ) {
+            double dmin1= getRow().getDMaximum();
+            double dmax1= getRow().getDMinimum();     
+            double scaley= ( dmin0 - dmax0 ) / ( dmin1 - dmax1 );
+            double transy= -1* dmin1 * scaley + dmin0;
+            at.translate( 0., transy );
+            at.scale( 1., scaley );
+            
+            scaley= ( dmin1 - dmax1 ) / ( memento.dmin - memento.dmax );            
+            transy= -1* memento.dmin * scaley + dmin1;
+
+            at.translate( 0., transy );
+            at.scale( 1., scaley );
+            
+        } else {            
+            double dmin1= getColumn().getDMinimum();
+            double dmax1= getColumn().getDMaximum();
+            
+            double scalex= ( dmin0 - dmax0 ) / ( dmin1 - dmax1 );
+            double transx= -1* dmin1 * scalex + dmin0;
+            at.translate( transx, 0 );
+            at.scale( scalex, 1. );
+            
+            scalex= ( dmin1 - dmax1 ) / ( memento.dmin - memento.dmax );            
+            transx= -1* memento.dmin * scalex + dmin1;
+            
+            at.translate( transx, 0 );
+            at.scale( scalex, 1. );
+            
+        }
+        
+        if ( at.getDeterminant() == 0.000 ) {
+            return null;
+        } else {
+            return at;
+        }
+        
+    }
+        
     /** TODO
      * @return
      */
@@ -1902,20 +1970,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 double a0= 1-a1;*/
                 
                 final double[] aa= new double[] { 0.0, 0.3, 0.85, 1.0 };
-                final double[] aa1= new double[] { 0.0, 0.05, 0.90, 1.0 }; 
+                final double[] aa1= new double[] { 0.0, 0.05, 0.90, 1.0 };
                 
-                double f1= DasMath.findex( aa, alpha, 0 );                 
+                double f1= DasMath.findex( aa, alpha, 0 );
                 double a1= DasMath.interpolate( aa1, f1 );
                 double a0= 1-a1;
                 
                 tempRange.setRange( min0*a0+min1*a1, max0*a0+max1*a1 );
                 //updateTickV();
-                this.paintImmediately(0,0,this.getWidth(),this.getHeight());             
-                
+                this.paintImmediately(0,0,this.getWidth(),this.getHeight());
+                                
                 if ( dasPlot!=null ) dasPlot.paintImmediately( 0,0,dasPlot.getWidth(), dasPlot.getHeight() );
                 
             }
-            
             
             setDrawTca(drawTca0);
             
@@ -2220,7 +2287,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void timeRangeSelected(TimeRangeSelectionEvent e) {
         if ( e.getSource()!=this && !e.equals(lastProcessedEvent)) {
             setDatumRange(e.getRange()); // setDatumRange fires the event
-            lastProcessedEvent= e;            
+            lastProcessedEvent= e;
         }
     }
     
