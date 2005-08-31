@@ -33,9 +33,10 @@ import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.event.*;
-import edu.uiowa.physics.pw.das.util.DasDie;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.awt.*;
@@ -48,7 +49,6 @@ import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
-import java.util.Collections;
 import javax.swing.Icon;
 import org.w3c.dom.*;
 
@@ -61,6 +61,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private DasColorBar colorBar;
     Image plotImage;
     BufferedImage plotImage2;
+    DatumRange imageXRange;
+    DatumRange imageYRange;
     
     protected class RebinListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
@@ -167,22 +169,33 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         Graphics2D g2= (Graphics2D)g.create();
         
+        // TODO: This seems to work as long as the upper-left hand corner of the image doesn't move!!!
+        //   works fine for resize of lower-right and range changes.
         AffineTransform at= getAffineTransform( xAxis, yAxis );
         
         if ( at==null ) {
             return; // TODO: consider throwing exception
         }
-        if ( !at.isIdentity() ) {
-            g2.transform(at);
-            g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
-        }
         
         if (getDataSet()==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
         } else if (plotImage!=null) {
-            int x = xAxis.getColumn().getDMinimum();
-            int y = yAxis.getRow().getDMinimum();
-            g2.drawImage( plotImage,x,y, getParent() );
+            Point2D p;
+            if ( !at.isIdentity() ) {
+                try {
+                    g2.transform(at);
+                    g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
+                    p= new Point2D.Double( xAxis.transform(imageXRange.min()), yAxis.transform(imageYRange.max()) );
+                    p= at.inverseTransform( p, p );
+                } catch ( NoninvertibleTransformException e ) {
+                    return;
+                }
+            } else {
+                p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );                
+            }            
+
+            g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
+            
         }
         g2.dispose();
     }
@@ -246,21 +259,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
             
             if (getParent()==null  || w<=1 || h<=1 ) {
-                DasDie.println("canvas not useable!!!");
+                DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).finest("canvas not useable!!!");
                 return;
             }
             
             if ( getDataSet() == null) {
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "got null dataset, setting image to null" );
-                Units xUnits = getParent().getXAxis().getUnits();
-                Units yUnits = getParent().getYAxis().getUnits();
-                Units zUnits = getColorBar().getUnits();
-                double[] xTags, yTags;
-                xTags = yTags = new double[0];
-                double[][] zValues = {yTags};
-                rebinData = new DefaultTableDataSet(xTags, xUnits, yTags, yUnits, zValues, zUnits, Collections.EMPTY_MAP);
                 plotImage= null;
                 rebinData= null;
+                imageXRange= null;
+                imageYRange= null;
                 getParent().repaint();
                 return;
                 
@@ -277,6 +285,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         h,
                         yAxis.isLog());
                 
+                imageXRange= xAxis.getDatumRange();
+                imageYRange= yAxis.getDatumRange();
+                
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "rebinning to pixel resolution" );
                 
                 DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
@@ -288,12 +299,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 
                 rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
                 
-                plotImage2= (BufferedImage)transformSimpleTableDataSet( rebinData, colorBar, plotImage2 );                
+                plotImage2= (BufferedImage)transformSimpleTableDataSet( rebinData, colorBar, plotImage2 );
                 
                 plotImage= plotImage2;
                 
                 if ( isSliceRebinnedData() ) {
-                    DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine("slicing rebin data");
+                    DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine("slicing rebin data");
                     super.ds= rebinData;
                 }
             }
