@@ -91,6 +91,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final String SCAN_NEXT_LABEL = "scan >>";
     
     /* GENERAL AXIS INSTANCE MEMBERS */
+    
     protected DataRange dataRange;
     
     private int orientation;
@@ -1349,9 +1350,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         private int dmin, dmax;
         private boolean log;
         private DasAxis axis;
+        private boolean equals( Memento m ) {  // TODO: this doesn't seem to work            
+            return this==m || (
+                    this.range.equals(m.range) && 
+                    this.dmin==m.dmin &&
+                    this.dmax==m.dmax &&
+                    this.log==m.log &&
+                    this.axis==m.axis );
+        }
     }
     
-    public Memento getMemento() {
+    
+    public Memento getMemento() {        
         Memento result= new Memento();
         result.range= this.getDatumRange();
         result.dmin= (int)transform( getDataMinimum() );
