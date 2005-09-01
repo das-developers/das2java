@@ -227,7 +227,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
             for (int j=0; j<ny; j++) {
-                if ( weights.getDouble(i, j,Units.dimensionless) > 0. ) {
+                if ( weights==null || weights.getDouble(i, j,Units.dimensionless) > 0. ) {
                     int index= (i-0) + ( ny - j - 1 ) * nx;
                     icolor= (int)cb.indexColorTransform(rebinData.getDouble(i,j,units), units );
                     pix[index]= (byte) icolor;
