@@ -28,20 +28,16 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
-import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.event.HorizontalSlicerMouseModule;
 import edu.uiowa.physics.pw.das.event.VerticalSlicerMouseModule;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dasml.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
@@ -49,7 +45,6 @@ import java.awt.geom.*;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.beans.*;
-import java.io.*;
 import java.text.*;
 import javax.swing.*;
 import org.w3c.dom.*;
@@ -124,7 +119,10 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         AffineTransform at= getAffineTransform( xAxis, yAxis );
-        if ( at==null ) return;
+        if ( at==null ) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("at is null");
+            return;
+        }
         Graphics2D g2= (Graphics2D)g.create();
         
         Point2D p;
