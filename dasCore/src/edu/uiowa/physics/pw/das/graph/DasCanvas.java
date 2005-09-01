@@ -475,6 +475,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setPreferredSize(new Dimension(width, height));
     }
     
+    public DasApplication getApplication() {
+        return DasApplication.getDefaultApplication();
+    }
+    
     /** TODO
      * @return
      */
