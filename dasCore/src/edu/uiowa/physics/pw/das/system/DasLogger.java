@@ -36,8 +36,12 @@ public class DasLogger {
             } else {
                 logConfigURL= DasLogger.class.getResource("logging.properties");
             }
-            System.err.println( "reading log configuration from "+logConfigURL );
-            LogManager.getLogManager().readConfiguration( logConfigURL.openStream() );
+            if ( logConfigURL==null ) {
+                System.err.println("unable to locate logging properties file logging.properties, using defaults");
+            } else {
+                System.err.println( "reading log configuration from "+logConfigURL );
+                LogManager.getLogManager().readConfiguration( logConfigURL.openStream() );
+            }            
         } catch ( MalformedURLException e ) {
             throw new RuntimeException(e); // this shouldn't happen
         }
