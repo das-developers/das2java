@@ -49,6 +49,7 @@ import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
+import java.util.Arrays;
 import javax.swing.Icon;
 import org.w3c.dom.*;
 
@@ -219,13 +220,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         Units units= cb.getUnits();
         int ncolor= cb.getType().getColorCount();
         
+        TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+        
         byte[] pix= new byte[ nx * ny ];
+        Arrays.fill( pix, (byte)cb.getFillColorIndex() );
         
         for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
             for (int j=0; j<ny; j++) {
-                int index= (i-0) + ( ny - j - 1 ) * nx;
-                icolor= (int)cb.indexColorTransform(rebinData.getDouble(i,j,units), units );
-                pix[index]= (byte) icolor;
+                if ( weights.getDouble(i, j,Units.dimensionless) > 0. ) {
+                    int index= (i-0) + ( ny - j - 1 ) * nx;
+                    icolor= (int)cb.indexColorTransform(rebinData.getDouble(i,j,units), units );
+                    pix[index]= (byte) icolor;
+                }
             }
         }
         
@@ -300,7 +306,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
                 
                 plotImage2= (BufferedImage)transformSimpleTableDataSet( rebinData, colorBar, plotImage2 );
-                
+                rebinData.getDouble(0,0, rebinData.getZUnits());
                 plotImage= plotImage2;
                 
                 if ( isSliceRebinnedData() ) {
