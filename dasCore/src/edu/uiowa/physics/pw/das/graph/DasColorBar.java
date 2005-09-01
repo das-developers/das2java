@@ -92,6 +92,10 @@ public class DasColorBar extends DasAxis {
         return new IndexColorModel( 8, type.getColorCount()+1, type.colorTable, 0, false, -1, DataBuffer.TYPE_BYTE );
     }
     
+    public int getFillColorIndex() {
+        return fillColorIndex;
+    }
+    
     public DasColorBar.Type getType() {
         return type;
     }
