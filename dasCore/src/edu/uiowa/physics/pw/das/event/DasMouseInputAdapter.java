@@ -157,7 +157,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         } else {
             MouseModule preExisting= getModuleByLabel(module.getLabel());
             if (preExisting!=null) {
-                edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.INFORM,"Replacing mouse module "+module.getLabel()+".");
+                DasLogger.getLogger( DasLogger.GUI_LOG ).info( "Replacing mouse module "+module.getLabel()+"." );
                 replaceMouseModule(preExisting,module);
                 
             } else {
