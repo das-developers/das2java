@@ -427,5 +427,15 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         updateTickPositions();
         update();
     }
+
+    public java.awt.geom.AffineTransform getAffineTransform(Memento memento, java.awt.geom.AffineTransform at) {
+        return at;
+        //equals doesn't seem to work
+        /*if ( this.getMemento().equals( memento ) ) {
+            return at;
+        } else {
+            return null;
+        }*/  
+    }
     
 }
