@@ -153,7 +153,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     public void addMouseModule(MouseModule module) {
         
         if ( DasApplication.getDefaultApplication().isHeadless() ) {
-            DasApplication.getDefaultApplication().getLogger().fine("not adding module since headless is true");
+            DasLogger.getLogger( DasLogger.GUI_LOG ).info( "not adding module since headless is true" );
         } else {
             MouseModule preExisting= getModuleByLabel(module.getLabel());
             if (preExisting!=null) {
