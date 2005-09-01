@@ -49,11 +49,11 @@ public class MeteredInputStream extends InputStream {
     public void reset() {
         this.totalBytesRead= 0;
         this.birthTimeMilli= System.currentTimeMillis();
-        this.deathTimeMilli= -1;        
+        this.deathTimeMilli= -1;
     }
     
     public void stop() {
-        this.deathTimeMilli= System.currentTimeMillis();        
+        this.deathTimeMilli= System.currentTimeMillis();
     }
     
     public void setInputStream( InputStream in ) {
@@ -65,35 +65,46 @@ public class MeteredInputStream extends InputStream {
     }
     
     public int read( byte[] b, int off, int len ) throws IOException {
-        int bytesRead= in.read(b,off,len);
-        if ( deathTimeMilli==-1 ) totalBytesRead+= bytesRead;
-        if ( speedLimit>0 ) {
-            try {
-                while ( calcTransmitSpeed() > speedLimit ) {
-                    Thread.sleep(50);
-                }
-            } catch ( InterruptedException ex ) {
+        try {
+            int bytesRead= in.read(b,off,len);
+            if ( deathTimeMilli==-1 ) totalBytesRead+= bytesRead;
+            if ( speedLimit>0 ) {
+                try {
+                    while ( calcTransmitSpeed() > speedLimit ) {
+                        Thread.sleep(50);
+                    }
+                } catch ( InterruptedException ex ) { }
             }
-        }        
-        return bytesRead;
+            return bytesRead;
+        } catch ( IOException e ) {
+            this.in= null;
+            throw e;
+        }
     }
     
     public int read() throws IOException {
-        int byteRead= in.read();
-        totalBytesRead++;
-        return byteRead;
+        try {
+            int byteRead= in.read();
+            totalBytesRead++;
+            return byteRead;
+        } catch ( IOException e ) {
+            this.in= null;
+            throw e;
+        }
     }
     
     public void close() throws IOException {
         deathTimeMilli= System.currentTimeMillis();
-        in.close();
+        InputStream in= this.in;
         this.in= null;
+        in.close();
+
     }
     
     /**
      * @return the transmit speed in bytes/second.
      */
-    public double calcTransmitSpeed() {       
+    public double calcTransmitSpeed() {
         long timeElapsed;
         if ( deathTimeMilli>-1 ) {
             timeElapsed= deathTimeMilli-birthTimeMilli;
@@ -120,7 +131,7 @@ public class MeteredInputStream extends InputStream {
     
     public double getSpeedLimit() {
         return this.speedLimit;
-    }    
+    }
     
     public void setSpeedLimit(double speedLimit) {
         this.speedLimit = speedLimit;
