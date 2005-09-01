@@ -94,7 +94,21 @@ public class DasApplication {
     
     private boolean headless= false;
     
-    private static boolean isApplet() {
+    public boolean isApplet() {
+        return false;
+    }
+    
+    public void setReloadLoggingProperties( boolean v ) {
+        if ( v ) {
+            try {
+                DasLogger.reload();
+            } catch ( IOException e ) {
+                DasExceptionHandler.handle(e);
+            }
+        }
+    }
+    
+    public boolean getReloadLoggingProperties() {
         return false;
     }
     
@@ -223,7 +237,6 @@ public class DasApplication {
      * @return Value of property interactive.
      */
     public boolean isInteractive() {
-
         return this.interactive;
     }
 
@@ -232,8 +245,11 @@ public class DasApplication {
      * @param interactive New value of property interactive.
      */
     public void setInteractive(boolean interactive) {
-
         this.interactive = interactive;
     }
     
+    public String getDas2Version() {
+        return Splash.getVersion();
+    }
+        
 }
