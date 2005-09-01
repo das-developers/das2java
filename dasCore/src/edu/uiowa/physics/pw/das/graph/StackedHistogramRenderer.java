@@ -73,6 +73,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     private boolean sliceRebinnedData;
     
     Image plotImage;
+    DatumRange imageXRange, imageYRange;
     
     public static class PeaksIndicator implements Enumeration, Displayable {
         
@@ -85,10 +86,10 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         public String toString() {
             return this.id;
         }
-                
+        
         public static final PeaksIndicator NoPeaks= new PeaksIndicator("None");
         public static final PeaksIndicator GrayPeaks= new PeaksIndicator("Gray Peaks");
-        public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");        
+        public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");
         public static final PeaksIndicator MaxLines= new PeaksIndicator("Lines");
         
         public String getListLabel() {
@@ -119,24 +120,32 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         
         setDataSetDescriptor( dsd );
     }
-       
+    
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         AffineTransform at= getAffineTransform( xAxis, yAxis );
         if ( at==null ) return;
         Graphics2D g2= (Graphics2D)g.create();
-        if ( !at.isIdentity() ) {
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
-            g2.transform( at );
-        }
         
+        Point2D p;
         if (getDataSet()==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
-        }
-        else if (plotImage!=null) {
-            int x = xAxis.getColumn().getDMinimum();
-            int y = yAxis.getRow().getDMinimum();
-            g2.drawImage( plotImage,x,y, getParent() );
+        } else if (plotImage!=null) {
+            if ( !at.isIdentity() ) {
+                try {
+                    g2.transform( at );
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
+                    p= new Point2D.Double( xAxis.transform(imageXRange.min()), yAxis.transform(imageYRange.max()) );
+                    p= at.inverseTransform( p, p );
+                } catch ( NoninvertibleTransformException e ) {
+                    return;
+                }
+            } else {
+                p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
+            }
+            
+            g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
+            
         }
         g2.dispose();
     }
@@ -237,18 +246,21 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         Dimension d;
         
         double iMin= column.getDMinimum();
-        double jMin= row.getDMinimum();       
+        double jMin= row.getDMinimum();
         
         RebinDescriptor xbins= new RebinDescriptor(xAxis.getDataMinimum(), xAxis.getDataMaximum(), (int)(Math.abs(column.getWidth())/1)+1, (xAxis.isLog()));
+        
+        imageXRange= xAxis.getDatumRange();
+        imageYRange= yAxis.getDatumRange();
         
         int xDMax= column.getDMaximum();
         int xDMin= column.getDMinimum();
         
-        TableDataSet xtysData= (TableDataSet)getDataSet();        
+        TableDataSet xtysData= (TableDataSet)getDataSet();
         
-        if ( xtysData==null ) {            
+        if ( xtysData==null ) {
             this.plotImage= null;
-            this.setLastException( new DasException("null data set" ) );            
+            this.setLastException( new DasException("null data set" ) );
             return;
         }
         
@@ -303,7 +315,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             double zAxisMin= zAxis.getDataMinimum().doubleValue(xtysData.getZUnits());
             
             if ( yBase1 >= row.getDMinimum() && yBase <= row.getDMaximum() ) {
-                for (int ibin=0; ibin < data.getXLength(); ibin++) {                    
+                for (int ibin=0; ibin < data.getXLength(); ibin++) {
                     int x0= (int)xAxis.transform(binStarts[ibin],xbins.getUnits());
                     int x1;
                     x1=x0+1; // 1 pixel wide
@@ -315,7 +327,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                         //yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
                             double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
-                            if (peakValue <= zAxisMax) {                                
+                            if (peakValue <= zAxisMax) {
                                 int yMax= (int)zAxis.transform( peakValue, data.getZUnits(), yBase, yBase1 );
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
                                 if (peaksIndicator==PeaksIndicator.MaxLines) {
@@ -324,17 +336,17 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                                     g.setColor(Color.lightGray);
                                     g.drawLine(x0,yMax,x0,y0);
                                     g.setColor(BAR_COLOR);
-                                } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {                                    
+                                } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
                                     g.setColor(BAR_COLOR);
-                                    g.drawLine(x0,yMax,x0,y0);                                                                        
+                                    g.drawLine(x0,yMax,x0,y0);
                                 }
                             }
-                        }                                 
-                        if ( zz>=zAxisMin ) g.drawLine(x0, yAvg, x0, yAvg+yHeight );                                                
+                        }
+                        if ( zz>=zAxisMin ) g.drawLine(x0, yAvg, x0, yAvg+yHeight );
                     }
                 }
             }
-        }                
+        }
         
         g.dispose();
         this.plotImage = plotImage;
@@ -366,7 +378,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
             if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
             Units rdUnits= x.getUnits();
-            if ( rdUnits instanceof LocationUnits ) {                
+            if ( rdUnits instanceof LocationUnits ) {
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
             
@@ -443,17 +455,16 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         Renderer renderer = new StackedHistogramRenderer( parent, (DataSetDescriptor)null, (DasAxis)null, (DasLabelAxis)parent.getYAxis() );
         try {
             renderer.setDataSetID(dataSetID);
-        }
-        catch (DasException de) {
+        } catch (DasException de) {
             DasExceptionHandler.handle(de);
         }
         return renderer;
     }
-
+    
     public String getListLabel() {
         return "stacked histogram";
     }
-
+    
     public Icon getListIcon() {
         return null;
     }
