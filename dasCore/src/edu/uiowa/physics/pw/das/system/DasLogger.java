@@ -7,6 +7,7 @@
 package edu.uiowa.physics.pw.das.system;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.util.logging.*;
 
 /**
@@ -15,10 +16,10 @@ import java.util.logging.*;
  */
 public class DasLogger {
     
-    static {
+    public static void reload() throws IOException {
         try {
             java.net.URL logConfigURL;
-                        
+            
             File local;
             if ( System.getProperty("user.name").equals("Web") ) {
                 local= new File("/tmp");
@@ -37,6 +38,14 @@ public class DasLogger {
             }
             System.err.println( "reading log configuration from "+logConfigURL );
             LogManager.getLogManager().readConfiguration( logConfigURL.openStream() );
+        } catch ( MalformedURLException e ) {
+            throw new RuntimeException(e); // this shouldn't happen
+        }
+    }
+    
+    static {
+        try {
+            reload();
         } catch ( Exception e ) {
             System.out.println(e);
         }
