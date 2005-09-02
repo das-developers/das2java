@@ -124,7 +124,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", "weights"};
         
-        Map properties= ds.getProperties();
+        Map properties= new HashMap(ds.getProperties());
         
         if ( ddX!=null ) properties.put( DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum() );
         if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
