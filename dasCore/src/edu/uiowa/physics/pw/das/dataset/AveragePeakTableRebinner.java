@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -102,7 +103,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
             PeakTableRebinner.peaks(peaks, peakData, ddX, ddY);
         }
         
-        Map properties= ds.getProperties();
+        Map properties= new HashMap( ds.getProperties() );
         
         if ( ddX!=null ) properties.put( DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum() );
         if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
