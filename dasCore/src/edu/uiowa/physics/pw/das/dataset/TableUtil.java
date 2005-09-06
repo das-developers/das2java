@@ -250,8 +250,12 @@ public class TableUtil {
             DataTransferType xTransferType;
             
             if ( asciiTransferTypes ) {
-                zTransferType= DataTransferType.getByName("ascii10");
-                xTransferType= DataTransferType.getByName("ascii24");
+                if ( tds.getXUnits().isConvertableTo(Units.us2000) ) {
+                    xTransferType= DataTransferType.getByName("time24");
+                } else {
+                    xTransferType= DataTransferType.getByName("ascii24");
+                }
+                zTransferType= DataTransferType.getByName("ascii10");                
             } else {
                 zTransferType= DataTransferType.getByName("sun_real4");
                 xTransferType= DataTransferType.getByName("sun_real8");

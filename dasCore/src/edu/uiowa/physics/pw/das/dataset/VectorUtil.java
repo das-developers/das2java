@@ -167,7 +167,11 @@ public class VectorUtil {
             DataTransferType yTransferType;
             
             if ( asciiTransferTypes ) {
-                xTransferType= DataTransferType.getByName("ascii24");
+                if ( vds.getXUnits().isConvertableTo(Units.us2000) ) {
+                    xTransferType= DataTransferType.getByName("time24");
+                } else {
+                    xTransferType= DataTransferType.getByName("ascii24");
+                }
                 yTransferType= DataTransferType.getByName("ascii10");
             } else {
                 xTransferType= DataTransferType.getByName("sun_real8");
