@@ -63,8 +63,13 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         else {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
-        String unitsString = element.getAttribute("units");
-        units = Units.getByName(unitsString);
+        if ( type instanceof DataTransferType.Time ) {
+            units= ((DataTransferType.Time)type).getUnits();
+        } else {
+            String unitsString = element.getAttribute("units");
+            units = Units.getByName(unitsString);
+        }
+           
         String baseString = element.getAttribute("base");
         if (baseString != null && !baseString.equals("")) {
             if (baseUnits instanceof TimeLocationUnits) {
