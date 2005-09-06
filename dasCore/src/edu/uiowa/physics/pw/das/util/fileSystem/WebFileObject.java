@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.io.*;
 import java.util.*;
@@ -100,7 +101,7 @@ public class WebFileObject extends FileObject {
             return true;
         } else {
             try {
-                System.err.println("This implementation is not optimal");
+                DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).info("This implementation of WebFileObject.exists() is not optimal");
                 wfs.transferFile( pathname,localFile, DasProgressMonitor.NULL );
                 return localFile.exists();
             } catch ( FileNotFoundException e ) {
