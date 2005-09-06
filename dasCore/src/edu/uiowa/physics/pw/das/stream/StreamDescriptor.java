@@ -383,6 +383,8 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
     
     public Element getDOMElement(Document document) {
         HashMap typesMap= new HashMap();
+        
+        // TODO: other types
         typesMap.put( Datum.class, "Datum" );
         typesMap.put( Integer.class, "int" );
         
