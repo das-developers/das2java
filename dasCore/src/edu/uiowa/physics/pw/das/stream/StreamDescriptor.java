@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.DasIOException;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.IDLParser;
@@ -381,6 +382,10 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
     }
     
     public Element getDOMElement(Document document) {
+        HashMap typesMap= new HashMap();
+        typesMap.put( Datum.class, "Datum" );
+        typesMap.put( Integer.class, "int" );
+        
         Element element = document.createElement("stream");
         if (compression != null && !compression.equals("")) {
             element.setAttribute("compression", compression);
@@ -391,6 +396,9 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
                 Map.Entry entry = (Map.Entry)i.next();
                 String key = (String)entry.getKey();
                 Object value = entry.getValue();
+                if ( typesMap.containsKey(value.getClass() ) ) {
+                    key= (String)typesMap.get( value.getClass() ) + ":" + key;
+                }
                 propertiesElement.setAttribute(key, value.toString());
             }
             element.appendChild(propertiesElement);
