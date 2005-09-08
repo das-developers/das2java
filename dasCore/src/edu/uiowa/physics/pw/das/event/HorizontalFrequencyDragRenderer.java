@@ -84,19 +84,37 @@ public class HorizontalFrequencyDragRenderer implements DragRenderer, KeyListene
         int y = p2.y;
         
         Color color0= g.getColor();
-        g.setColor(new Color(255,255,255,100));
+        g.setColor(new Color(255,255,255,128));
+        //g.setColor(Color.WHITE);
         g.setStroke(new BasicStroke( 3.0f,
         BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
         
+        internalRender(g, dirtyBounds, x1, x2, y);
+        
+        /*
         if ( width > 6 )
             g.drawLine(x1+3, y, x2-3, y);
         g.drawLine(x1, y+2, x1, y-2 ); //serifs
         g.drawLine(x2, y+2, x2, y-2 );
-        
+         */
         
         g.setStroke(new BasicStroke());
         g.setColor(color0);
         
+        internalRender(g, dirtyBounds, x1, x2, y);
+        
+        Datum periodDatum= axis.invTransform( x2 ) . subtract( axis.invTransform( x1 ) );
+        double period= periodDatum.doubleValue( periodDatum.getUnits() );
+        double freq= ncycles / period;
+        
+        DecimalFormat df= new DecimalFormat("0.00");
+        renderLabel(g1, p1, p2, "T:"+df.format(period)+" f:"+df.format(freq) );
+        
+        return new Rectangle[] { dirtyBounds };
+    }
+    
+    private void internalRender(Graphics2D g, Rectangle dirtyBounds, int x1, int x2, int y) {
+        double width = x2 - x1;
         if ( width > 6 )
             g.drawLine(x1+3, y, x2-3, y);
         g.drawLine(x1, y+2, x1, y-2 ); //serifs
@@ -116,15 +134,6 @@ public class HorizontalFrequencyDragRenderer implements DragRenderer, KeyListene
                 dirtyBounds.add((int)ii-2,y-5);
             }
         }
-        
-        Datum periodDatum= axis.invTransform( x2 ) . subtract( axis.invTransform( x1 ) );
-        double period= periodDatum.doubleValue( periodDatum.getUnits() );
-        double freq= ncycles / period;
-        
-        DecimalFormat df= new DecimalFormat("0.00");
-        renderLabel(g1, p1, p2, "T:"+df.format(period)+" f:"+df.format(freq) );
-        
-        return new Rectangle[] { dirtyBounds };
     }
     
     public boolean isPointSelection() {
