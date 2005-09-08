@@ -10,6 +10,8 @@ import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.text.*;
 
 /**
@@ -25,6 +27,9 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
     DasAxis axis;
     int ncycles;
     private boolean horizontal;
+    double period;
+    
+    private PropertyChangeSupport pcs;
     
     /** Creates a new instance of HorizontalFrequencyDragRenderer */
     public FrequencyDragRenderer( DasCanvasComponent parent, DasAxis axis ) {
@@ -110,7 +115,9 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
         else {
             periodDatum= axis.invTransform( y2 ) . subtract( axis.invTransform( y1 ) );
         }
-        double period= periodDatum.doubleValue( periodDatum.getUnits() );
+        double oldPeriod = period;
+        period= periodDatum.doubleValue( periodDatum.getUnits() );
+        fireChange(oldPeriod, period);
         double freq= ncycles / period;
         
         DecimalFormat df= new DecimalFormat("0.00");
@@ -202,6 +209,29 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
     }
     
     public void keyTyped(KeyEvent e) {
+    }
+    
+    private void fireChange(final double oldPeriod, final double newPeriod) {
+        if (pcs != null) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    pcs.firePropertyChange("period", new Double(oldPeriod), new Double(newPeriod));
+                }
+            });
+        }
+    }
+    
+    public void addPropertyChangeListener(String p, PropertyChangeListener l) {
+        if (pcs == null) {
+            pcs = new PropertyChangeSupport(this);
+        }
+        pcs.addPropertyChangeListener(p, l);
+    }
+    
+    public void removePropertyChangeListener(String p, PropertyChangeListener l) {
+        if (pcs != null) {
+            pcs.removePropertyChangeListener(p, l);
+        }
     }
     
 }
