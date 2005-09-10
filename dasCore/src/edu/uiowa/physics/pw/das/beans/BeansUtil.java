@@ -33,29 +33,28 @@ public class BeansUtil {
         PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
         PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
         PropertyEditorManager.registerEditor(PsymConnector.class, EnumerationEditor.class);
-       // PropertyEditorManager.registerEditor(Rectangle.class, RectangleEditor.class);
+        // PropertyEditorManager.registerEditor(Rectangle.class, RectangleEditor.class);
         //PropertyEditorManager.registerEditor(DasServer.class, DasServerEditor.class);
     }
-    
     
     /**
      * Use reflection to get a list of all the property names for the class.
      * The properties are returned in the order specified, and put inherited properties
      * at the end of the list.
      */
-    public static String[] getPropertyNames( Class c ) {
-        Set excludePropertyNames;    
+    public static PropertyDescriptor[] getPropertyDescriptors( Class c ) {
+        Set excludePropertyNames;
         excludePropertyNames= new HashSet();
         excludePropertyNames.add("class");
         excludePropertyNames.add("listLabel");
-        excludePropertyNames.add("listIcon");        
-    
+        excludePropertyNames.add("listIcon");
+        
         try {
             Logger log= DasLogger.getLogger(DasLogger.SYSTEM_LOG);
             
             // goal: get BeanInfo for the class, the AccessLevelBeanInfo if it exists.
             BeanInfo beanInfo= null;
-                        
+            
             String s= c.getName().substring(c.getPackage().getName().length()+1);
             
             Class maybeClass=null;
@@ -68,7 +67,7 @@ public class BeansUtil {
                 try {
                     beanInfoClassName= "edu.uiowa.physics.pw.das.beans."+  s + "BeanInfo";
                     maybeClass= Class.forName( beanInfoClassName );
-                } catch ( ClassNotFoundException e2 ) {                    
+                } catch ( ClassNotFoundException e2 ) {
                     beanInfo= Introspector.getBeanInfo(c);
                     beanInfoClassName= beanInfo.getClass().getName();
                 }
@@ -77,24 +76,24 @@ public class BeansUtil {
             log.finer( "using BeanInfo "+beanInfoClassName+" for "+c.getName() );
             
             if ( beanInfo==null ) {
-                beanInfo= (BeanInfo)maybeClass.newInstance();                
-            } 
+                beanInfo= (BeanInfo)maybeClass.newInstance();
+            }
             
             List propertyList= new ArrayList();
             
             PropertyDescriptor[] pdthis;
             try {
-              pdthis=   beanInfo.getPropertyDescriptors();
+                pdthis=   beanInfo.getPropertyDescriptors();
             } catch ( IllegalStateException e ) {
                 throw new RuntimeException(e);
             }
             
-            for ( int i=0; i<pdthis.length; i++ ) {                
+            for ( int i=0; i<pdthis.length; i++ ) {
                 boolean isWriteable= pdthis[i].getWriteMethod()!=null;
                 boolean isUseable= pdthis[i].getReadMethod()!=null && !excludePropertyNames.contains(pdthis[i].getName());
-                if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor ) ) {                
+                if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor ) ) {
                     propertyList.add( pdthis[i] );
-                } 
+                }
             }
             
             if ( beanInfo.getAdditionalBeanInfo()!=null ) {
@@ -103,23 +102,19 @@ public class BeansUtil {
                     BeanInfo aBeanInfo= (BeanInfo)additionalBeanInfo.remove(0);
                     pdthis=  aBeanInfo.getPropertyDescriptors();
                     for ( int i=0; i<pdthis.length; i++ ) {
-                        boolean isWriteable= pdthis[i].getWriteMethod()!=null;                        
+                        boolean isWriteable= pdthis[i].getWriteMethod()!=null;
                         boolean isUseable= pdthis[i].getReadMethod()!=null && !excludePropertyNames.contains(pdthis[i].getName());
-                        if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor  )) {                        
+                        if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor  )) {
                             propertyList.add( pdthis[i] );
                         }
-                    }                    
+                    }
                     if ( aBeanInfo.getAdditionalBeanInfo()!=null ) {
                         additionalBeanInfo.addAll( Arrays.asList( aBeanInfo.getAdditionalBeanInfo() ) );
                     }
                 }
             }
             
-            String[] result= new String[ propertyList.size() ];
-            for ( int i=0; i<result.length; i++ ) {
-                result[i]= ((PropertyDescriptor)propertyList.get(i)).getName();
-            }
-            return result;
+            return (PropertyDescriptor[])propertyList.toArray(new PropertyDescriptor[ propertyList.size() ] );
             
         } catch ( IntrospectionException e ) {
             return null;
@@ -130,5 +125,23 @@ public class BeansUtil {
         }
     }
     
+    public static String[] getPropertyNames( PropertyDescriptor[] propertyList ) {
+        String[] result= new String[ propertyList.length ];
+        for ( int i=0; i<result.length; i++ ) {
+            result[i]= ((PropertyDescriptor)propertyList[i]).getName();
+        }
+        return result;
+    }
     
+    /**
+     * Use reflection to get a list of all the property names for the class.
+     * The properties are returned in the order specified, and put inherited properties
+     * at the end of the list.
+     */
+    public static String[] getPropertyNames( Class c ) {
+        PropertyDescriptor[] propertyList= getPropertyDescriptors( c );
+        return getPropertyNames( propertyList );
+    }
+    
+
 }
