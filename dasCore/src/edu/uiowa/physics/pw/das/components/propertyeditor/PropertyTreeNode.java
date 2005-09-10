@@ -44,10 +44,9 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         try {
             if ( propertyDescriptor.getReadMethod()==null ) {
                 throw new RuntimeException("read method not defined for "+propertyDescriptor.getName());
-            }            
+            }
             value = propertyDescriptor.getReadMethod().invoke(parent.value, NULL_ARGS);
-        }
-        catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
         }
     }
@@ -65,20 +64,18 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         //Properties that define an editor should not be expanded
         else if (propertyDescriptor.getPropertyEditorClass() != null) {
             return false;
-        }
-        else {
+        } else {
             Class type;
             if (propertyDescriptor instanceof IndexedPropertyDescriptor) {
                 IndexedPropertyDescriptor ipd = (IndexedPropertyDescriptor)propertyDescriptor;
                 type = ipd.getIndexedPropertyType();
-            }
-            else {
+            } else {
                 type = propertyDescriptor.getPropertyType();
             }
             //Types with identified as editable by PropertyEditor and
             //types with registered PropertyEditors should not be expanded.
             return !PropertyEditor.editableTypes.contains(type)
-                && PropertyEditorManager.findEditor(type) == null;
+            && PropertyEditorManager.findEditor(type) == null;
         }
     }
     
@@ -113,12 +110,12 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     
     protected void maybeLoadChildren() {
         if (children == null) {
-            children = new ArrayList();
+            ArrayList children = new ArrayList();
             if (getAllowsChildren()) {
                 try {
-                    BeanInfo info = Introspector.getBeanInfo(value.getClass());
-                    PropertyDescriptor[] properties = info.getPropertyDescriptors();
-                    String[] propertyNameList= BeansUtil.getPropertyNames(value.getClass());
+                    //BeanInfo info = Introspector.getBeanInfo(value.getClass());
+                    PropertyDescriptor[] properties = BeansUtil.getPropertyDescriptors( value.getClass() );
+                    String[] propertyNameList= BeansUtil.getPropertyNames(properties);
                     if ( propertyNameList==null ) {
                         propertyNameList= new String[ properties.length ];
                         for ( int i=0; i<properties.length; i++ ) {
@@ -133,24 +130,22 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                     
                     for (int j = 0; j < propertyNameList.length; j++) {
                         PropertyDescriptor pd= (PropertyDescriptor)nameMap.get( propertyNameList[j] );
-                        if ( pd==null ) throw new IllegalArgumentException( "property not found: "+propertyNameList[j] );
-                            if (pd.getReadMethod() != null) {
+                        if ( pd==null ) {
+                            throw new IllegalArgumentException( "property not found: "+propertyNameList[j] );
+                        }
+                        if (pd.getReadMethod() != null) {
                             if (pd instanceof IndexedPropertyDescriptor) {
                                 children.add( new IndexedPropertyTreeNode(this, (IndexedPropertyDescriptor)pd) );
-                            }
-                            else {
+                            } else {
                                 children.add( new PropertyTreeNode(this, pd));
                             }
                         }
                     }
-                }
-                catch (IntrospectionException ie) {
-                    throw new RuntimeException(ie);
-                }
-                catch (InvocationTargetException ite) {
+                } catch (InvocationTargetException ite) {
                     DasExceptionHandler.handle(ite.getCause());
                 }
             }
+            this.children= children;
         }
     }
     
@@ -158,10 +153,10 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         return value;
     }
     
-    Object getDisplayValue() {        
+    Object getDisplayValue() {
         if ( value instanceof Displayable ) {
             return value;
-        }      
+        }
         boolean allowsChildren= getAllowsChildren();
         String ss= String.valueOf(value);
         if ( ss.length()<50 && allowsChildren ) {
@@ -169,8 +164,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         }
         if ( allowsChildren ) {
             return "<html><i text=\"#a0a0a0\">Click to expand/collapse</i></html>";
-        }
-        else {
+        } else {
             return value;
         }
     }
@@ -185,11 +179,9 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     void setValue(Object obj) {
         if (obj == value) {
             return;
-        }
-        else if (obj != null && obj.equals(value)) {
+        } else if (obj != null && obj.equals(value)) {
             return;
-        }
-        else {
+        } else {
             value = obj;
             setDirty();
         }
@@ -209,8 +201,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                 }
                 childDirty = false;
             }
-        }
-        catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
         }
     }
