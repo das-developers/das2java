@@ -38,7 +38,7 @@ public class DataSetUtil {
         if ( dsz instanceof TableDataSet ) {
             TableDataSet ds= (TableDataSet)dsz;
             Units yunits= ds.getYUnits();
-            Datum min, max;            
+            Datum min, max;
             
             DatumRange yrange= yRange(dsz);
             Datum dy= TableUtil.guessYTagWidth( ds );
@@ -51,12 +51,12 @@ public class DataSetUtil {
             Units yunits= ds.getYUnits();
             
             DatumRange range= yRange( dsz );
-                        
+            
             result= new DasAxis( range.min(), range.max(), DasAxis.LEFT, log );
         } else {
             throw new IllegalArgumentException( "not supported: "+dsz );
         }
-
+        
         if ( dsz.getProperty( DataSet.PROPERTY_Y_LABEL )!=null ) {
             result.setLabel( (String)dsz.getProperty( DataSet.PROPERTY_Y_LABEL ) );
         }
@@ -73,16 +73,16 @@ public class DataSetUtil {
         if ( !(dsz instanceof TableDataSet) ) throw new IllegalArgumentException("only TableDataSet supported");
         
         TableDataSet ds= (TableDataSet)dsz;
-        Units zunits= ds.getZUnits();        
-            
+        Units zunits= ds.getZUnits();
+        
         DatumRange range= zRange(ds);
         
         boolean log= false;
-         if ( dsz.getProperty( DataSet.PROPERTY_Z_SCALETYPE )!=null ) {
+        if ( dsz.getProperty( DataSet.PROPERTY_Z_SCALETYPE )!=null ) {
             if ( dsz.getProperty( DataSet.PROPERTY_Z_SCALETYPE ).equals("log") ) {
                 log= true;
                 if ( range.min().doubleValue( range.getUnits() ) <= 0 ) { // kludge for VALIDMIN
-                    double max= range.max().doubleValue(range.getUnits());                    
+                    double max= range.max().doubleValue(range.getUnits());
                     range= new DatumRange( max/1000, max, range.getUnits() );
                 }
             }
@@ -223,26 +223,70 @@ public class DataSetUtil {
         int result= Arrays.binarySearch( xx, x );
         if (result == -1) {
             result = 0; //insertion point is 0
-        }
-        else if (result < 0) {
+        } else if (result < 0) {
             result= ~result; // usually this is the case
             if ( result >= xx.length-1 ) {
-                result= xx.length-1;            
-            }
-            else {
+                result= xx.length-1;
+            } else {
                 result= ( ( x-xx[result-1] ) / ( xx[result] - xx[result-1] ) < 0.5 ? result-1 : result );
             }
         }
         return result;
     }
     
+    /**
+     * returns the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>.  (See Arrays.binarySearch)
+     */
+    public static int xTagBinarySearch( DataSet ds, Datum datum, int low, int high ) {        
+        Units units= datum.getUnits();
+        double key= datum.doubleValue(units);
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            double midVal = ds.getXTagDouble(mid,units);            
+            int cmp;
+            if (midVal < key) {
+                cmp = -1;   // Neither val is NaN, thisVal is smaller
+            } else if (midVal > key) {
+                cmp = 1;    // Neither val is NaN, thisVal is larger
+            } else {
+                long midBits = Double.doubleToLongBits(midVal);
+                long keyBits = Double.doubleToLongBits(key);
+                cmp = (midBits == keyBits ?  0 : // Values are equal
+                    (midBits < keyBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
+                        1));                     // (0.0, -0.0) or (NaN, !NaN)
+            }
+            
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else
+                return mid; // key found
+        }
+        return -(low + 1);  // key not found.
+    }
+    
+    
     public static int closestColumn( DataSet table, Datum datum ) {
-        return closestColumn( table, datum.doubleValue(datum.getUnits()), datum.getUnits() );
+        int result= xTagBinarySearch( table, datum, 0, table.getXLength()-1 );
+        if (result == -1) {
+            result = 0; //insertion point is 0
+        } else if (result < 0) {
+            result= ~result; // usually this is the case
+            if ( result >= table.getXLength()-1 ) {
+                result= table.getXLength()-1;
+            } else {
+                double x= datum.doubleValue( datum.getUnits() );
+                double x0= table.getXTagDouble(result-1, datum.getUnits() );
+                double x1= table.getXTagDouble(result, datum.getUnits() );
+                result= ( ( x-x0 ) / ( x1 - x0 ) < 0.5 ? result-1 : result );
+            }
+        }
+        return result;
     }
     
     public static int closestColumn( DataSet table, double x, Units units ) {
-        double [] xx= getXTagArrayDouble( table, units );
-        return closest( xx, x );
+        return closestColumn( table, units.createDatum(x) );
     }
     
     public static int closestColumn( DataSet table, Datum xdatum, int guessIndex ) {
@@ -295,7 +339,7 @@ public class DataSetUtil {
         return DatumVector.newDatumVector(data,ds.getXUnits());
     }
     
-    public static DatumRange zRange( DataSet ds ) {        
+    public static DatumRange zRange( DataSet ds ) {
         if ( !( ds instanceof TableDataSet ) ) {
             throw new UnsupportedOperationException("only TableDataSets supported");
         }
