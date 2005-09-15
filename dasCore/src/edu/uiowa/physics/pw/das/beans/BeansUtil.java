@@ -55,29 +55,41 @@ public class BeansUtil {
             // goal: get BeanInfo for the class, the AccessLevelBeanInfo if it exists.
             BeanInfo beanInfo= null;
             
-            String s= c.getName().substring(c.getPackage().getName().length()+1);
-            
-            Class maybeClass=null;
-            String beanInfoClassName=null;
-            
-            try {
-                beanInfoClassName= c.getPackage() + "." + s + "BeanInfo";
-                maybeClass= Class.forName( beanInfoClassName );
-            } catch ( ClassNotFoundException e ) {
+            if ( c.getPackage()==null ) { // e.g. String array
+                beanInfo= Introspector.getBeanInfo(c);
+                log.finer( "using BeanInfo "+ beanInfo.getClass().getName()+" for "+c.getName() );
+            } else {
+                
+                String s;
                 try {
-                    beanInfoClassName= "edu.uiowa.physics.pw.das.beans."+  s + "BeanInfo";
+                    s= c.getName().substring(c.getPackage().getName().length()+1);
+                } catch ( Exception e ) {
+                    throw new RuntimeException(e);
+                }
+                
+                Class maybeClass=null;
+                String beanInfoClassName=null;
+                
+                try {
+                    beanInfoClassName= c.getPackage() + "." + s + "BeanInfo";
                     maybeClass= Class.forName( beanInfoClassName );
-                } catch ( ClassNotFoundException e2 ) {
-                    beanInfo= Introspector.getBeanInfo(c);
-                    beanInfoClassName= beanInfo.getClass().getName();
+                } catch ( ClassNotFoundException e ) {
+                    try {
+                        beanInfoClassName= "edu.uiowa.physics.pw.das.beans."+  s + "BeanInfo";
+                        maybeClass= Class.forName( beanInfoClassName );
+                    } catch ( ClassNotFoundException e2 ) {
+                        beanInfo= Introspector.getBeanInfo(c);
+                        beanInfoClassName= beanInfo.getClass().getName();
+                    }
+                }
+                
+                log.finer( "using BeanInfo "+beanInfoClassName+" for "+c.getName() );
+                
+                if ( beanInfo==null ) {
+                    beanInfo= (BeanInfo)maybeClass.newInstance();
                 }
             }
             
-            log.finer( "using BeanInfo "+beanInfoClassName+" for "+c.getName() );
-            
-            if ( beanInfo==null ) {
-                beanInfo= (BeanInfo)maybeClass.newInstance();
-            }
             
             List propertyList= new ArrayList();
             
@@ -108,9 +120,11 @@ public class BeansUtil {
                             propertyList.add( pdthis[i] );
                         }
                     }
-                    if ( aBeanInfo.getAdditionalBeanInfo()!=null ) {
-                        additionalBeanInfo.addAll( Arrays.asList( aBeanInfo.getAdditionalBeanInfo() ) );
-                    }
+                   /* This is commented to mimic the behavior of the Introspector, which doesn't climb up the bean inheritance
+                     tree unless the additional are specified via the Introspector. */
+                   // if ( aBeanInfo.getAdditionalBeanInfo()!=null ) {
+                   //     additionalBeanInfo.addAll( Arrays.asList( aBeanInfo.getAdditionalBeanInfo() ) );
+                   // }
                 }
             }
             
@@ -136,12 +150,14 @@ public class BeansUtil {
     /**
      * Use reflection to get a list of all the property names for the class.
      * The properties are returned in the order specified, and put inherited properties
-     * at the end of the list.
+     * at the end of the list.  This is motivated by the arbitary order that the 
+     * Introspector presents the properties, which is in conflict with our desire to control
+     * the property order.
      */
     public static String[] getPropertyNames( Class c ) {
         PropertyDescriptor[] propertyList= getPropertyDescriptors( c );
         return getPropertyNames( propertyList );
     }
     
-
+    
 }
