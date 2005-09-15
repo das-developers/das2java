@@ -23,8 +23,13 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
+import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo.AccessLevel;
+import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo.Property;
 import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
+import edu.uiowa.physics.pw.das.graph.DasAxis;
 import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 
 /**
  * BeanInfo class for DasColorBar
@@ -36,16 +41,26 @@ public class DasColorBarBeanInfo extends AccessLevelBeanInfo {
     protected static final Property[] properties = {
         new Property("type", AccessLevel.DASML, "getType", "setType", EnumerationEditor.class)
     };
-
+    
     public DasColorBarBeanInfo() {
-	super(properties, edu.uiowa.physics.pw.das.graph.DasColorBar.class);
+        super(properties, edu.uiowa.physics.pw.das.graph.DasColorBar.class);
     }
-
+    
     public BeanInfo[] getAdditionalBeanInfo() {
-	BeanInfo[] additional = {
-            new DasAxisBeanInfo(),	    
-	};
-	return additional;
+        BeanInfo[] additional = {
+            new DasAxisBeanInfo(),
+            new DasCanvasComponentBeanInfo(), 
+        };
+        return additional;
+        
+        /*try {
+            BeanInfo[] additional = {
+                Introspector.getBeanInfo( DasAxis.class ),
+            };
+            return additional;
+        } catch ( IntrospectionException e ) {
+            throw new RuntimeException(e);
+        }*/
     }
-
+    
 }
