@@ -11,6 +11,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -210,12 +211,19 @@ public class Probe {
     
     private DatumRange include( DatumRange dr, Datum d ) {
         if ( dr.contains(d) ) {
+            return dr;            
+        } 
+        
+        Datum w= dr.width();
+        if ( w.doubleValue( w.getUnits() ) == 0. ) {
+            dr= dr.include(d);
             return dr;
         } else if ( d.lt(dr.min()) ) {
             while ( !dr.contains(d) ) dr= dr.rescale(-1,1);
         } else {
             while ( !dr.contains(d) ) dr= dr.rescale(0,2);
         }
+        DasLogger.getLogger( DasLogger.SYSTEM_LOG ).info( "dr="+dr );
         return dr;
     }
     
