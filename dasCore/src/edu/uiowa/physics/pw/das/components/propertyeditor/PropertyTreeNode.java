@@ -9,8 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Enumeration;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeNode;
 
 class PropertyTreeNode implements TreeNode, TreeTableNode {
@@ -113,9 +111,9 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
             ArrayList children = new ArrayList();
             if (getAllowsChildren()) {
                 try {
-                    //BeanInfo info = Introspector.getBeanInfo(value.getClass());
-                    PropertyDescriptor[] properties = BeansUtil.getPropertyDescriptors( value.getClass() );
-                    String[] propertyNameList= BeansUtil.getPropertyNames(properties);
+                    BeanInfo info = Introspector.getBeanInfo(value.getClass());
+                    PropertyDescriptor[] properties= info.getPropertyDescriptors();
+                    String[] propertyNameList= BeansUtil.getPropertyNames(value.getClass());
                     if ( propertyNameList==null ) {
                         propertyNameList= new String[ properties.length ];
                         for ( int i=0; i<properties.length; i++ ) {
@@ -143,6 +141,8 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                     }
                 } catch (InvocationTargetException ite) {
                     DasExceptionHandler.handle(ite.getCause());
+                } catch (IntrospectionException ie) {
+                    throw new RuntimeException(ie);
                 }
             }
             this.children= children;
