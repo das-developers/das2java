@@ -68,6 +68,10 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     /** The 'image' of the data */
     private GeneralPath path;
     
+    public SymbolLineRenderer() {
+        super();
+    }
+    
     public SymbolLineRenderer(DataSet ds) {
         super(ds);
     }
