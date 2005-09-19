@@ -234,7 +234,10 @@ public class PropertyEditor extends JComponent {
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //TODO:  implement this.
+                TreeTableModel model = (TreeTableModel)table.getModel();
+                PropertyTreeNode root = (PropertyTreeNode)model.getRoot();
+                root.refresh();
+                model.fireTableDataChanged();
             }
         });
         
