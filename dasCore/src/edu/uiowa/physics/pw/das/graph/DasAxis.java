@@ -52,6 +52,9 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.*;
 
+import edu.uiowa.physics.pw.das.system.DasLogger;
+import java.util.logging.Logger;
+
 /** TODO
  * @author eew
  */
@@ -149,6 +152,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private DasPlot dasPlot;
     
+    private Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
     
     /** TODO
      * @param min
@@ -1350,13 +1354,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         private int dmin, dmax;
         private boolean log;
         private DasAxis axis;
-        private boolean equals( Memento m ) {  // TODO: this doesn't seem to work            
+        public boolean equals( Object o ) { 
+            Memento m= (Memento)o;
             return this==m || (
                     this.range.equals(m.range) && 
                     this.dmin==m.dmin &&
                     this.dmax==m.dmax &&
                     this.log==m.log &&
                     this.axis==m.axis );
+        }
+        public String toString() {
+            return ( log ? "log " : "" ) + range.toString()+" "+(dmax-dmin)+" pixels";
         }
     }
     
@@ -1962,14 +1970,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             setDrawTca(false);
             
             long t0= System.currentTimeMillis();
+            long frames=0;
             
             DataRange dataRange0= dataRange;
             DataRange tempRange= DataRange.getAnimationDataRange( dataRange.getDatumRange(),dataRange.isLog() );
             
             this.dataRange= tempRange;
             
-            //double transitionTime= 3000; // millis
             double transitionTime= 300; // millis
+            //double transitionTime= 300; // millis
             double alpha= ( System.currentTimeMillis() - t0 ) / transitionTime;
             
             while ( alpha < 1.0 ) {
@@ -1987,9 +1996,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 this.paintImmediately(0,0,this.getWidth(),this.getHeight());
                                 
                 if ( dasPlot!=null ) dasPlot.paintImmediately( 0,0,dasPlot.getWidth(), dasPlot.getHeight() );
-                
+                frames++;
             }
             
+            logger.fine( "animation frames/sec= "+( 1000.*frames/transitionTime ) ) ;
             setDrawTca(drawTca0);
             
             this.dataRange= dataRange0;
