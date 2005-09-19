@@ -271,5 +271,58 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     public String toString() {
         return getDisplayName();
     }
+    
+    public void refresh() {
+        if (getAllowsChildren()) {
+            if (children != null) {
+                for (Iterator i = children.iterator(); i.hasNext();) {
+                    PropertyTreeNode child = (PropertyTreeNode)i.next();
+                    child.refresh();
+                }
+            }
+        }
+        else {
+            Object newValue = read();
+            if (newValue != value && newValue != null && !newValue.equals(value)) {
+                value = newValue;
+                //TODO: update table somehow.
+            }
+        }
+    }
+    
+    private Object read() {
+        if (propertyDescriptor == null) {
+            return value;
+        }
+        else {
+            Method readMethod = propertyDescriptor.getReadMethod();
+            if (readMethod == null) {
+                String pName = propertyDescriptor.getName();
+                String pId = value.getClass().getName() + "#" + pName;
+                throw new IllegalStateException(
+                        "Null read method for: " + pId);
+            }
+            try {
+                return readMethod.invoke(parent.value, null);
+            }
+            catch (IllegalAccessException iae) {
+                Error err = new IllegalAccessError(iae.getMessage());
+                err.initCause(iae);
+                throw err;
+            }
+            catch (InvocationTargetException ite) {
+                Throwable cause = ite.getCause();
+                if (cause instanceof Error) {
+                    throw (Error)cause;
+                }
+                else if (cause instanceof RuntimeException) {
+                    throw (RuntimeException)cause;
+                }
+                else {
+                    throw new RuntimeException(cause);
+                }
+            }
+        }
+    }
 }
 

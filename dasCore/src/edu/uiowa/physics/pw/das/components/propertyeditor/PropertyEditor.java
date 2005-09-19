@@ -230,6 +230,16 @@ public class PropertyEditor extends JComponent {
         };
         apply.addActionListener(al);
         closeButton.addActionListener(al);
+        
+        JButton refresh = new JButton("Refresh");
+        refresh.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //TODO:  implement this.
+            }
+        });
+        
+        buttonPanel.add(refresh);
+        buttonPanel.add(Box.createHorizontalGlue());
         buttonPanel.add(apply);
         buttonPanel.add(closeButton);
         add(buttonPanel, BorderLayout.SOUTH);
