@@ -82,15 +82,15 @@ public class TableUtil {
         }
     }
     
-    public static double tableMax( TableDataSet tds ) {
+    public static double tableMax( TableDataSet tds, Units units ) {
         double result= Double.NEGATIVE_INFINITY;
         
         for ( int itable=0; itable<tds.tableCount(); itable++ ) {
             int ny= tds.getYLength(itable);
             for (int i=tds.tableStart(itable); i<tds.tableEnd(itable); i++) {
                 for (int j=0; j<ny; j++) {
-                    if ( tds.getDouble(i,j,tds.getZUnits()) > result ) {
-                        result= tds.getDouble(i,j,tds.getZUnits());
+                    if ( tds.getDouble(i,j,units) > result ) {
+                        result= tds.getDouble(i,j,units);
                     }
                 }
             }
