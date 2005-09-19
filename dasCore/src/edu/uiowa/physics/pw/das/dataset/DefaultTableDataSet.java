@@ -225,8 +225,19 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     }
     
     public double getDouble(int i, int j, Units units) {
-        int table = tableOfIndex(i);
-        int yLength = yTags[table].length;
+        int table;
+        int yLength;
+        
+        if (i < 0 || i >= getXLength()) {
+            throw new IndexOutOfBoundsException("i: " + i + ", xLength: " + getXLength());
+        }
+        
+        table = tableOfIndex(i);
+        yLength = yTags[table].length;
+        
+        if (j < 0 || j >= yLength) {
+            throw new IndexOutOfBoundsException("j: " + j + ", yLength: " + yLength);
+        }
         double value = tableData[0][i][j];
         if (units == getZUnits()) {
             return value;
