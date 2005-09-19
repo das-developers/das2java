@@ -17,7 +17,8 @@ public class NBConsoleFormatter extends Formatter {
     
     public String format( LogRecord rec ) {
         StackTraceElement[] st= new Throwable().getStackTrace();
-        return rec.getLoggerName()+"\n"+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n\tat "+st[7]+"\n\tat "+st[8]+"\n";
+        String result= rec.getLoggerName()+"\n"+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n\tat "+st[7]+"\n\tat "+st[8]+"\n";
+        return result;
     }
         
     public NBConsoleFormatter() {
