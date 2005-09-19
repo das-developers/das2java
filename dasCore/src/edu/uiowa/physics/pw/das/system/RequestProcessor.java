@@ -25,7 +25,9 @@ package edu.uiowa.physics.pw.das.system;
 
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.util.*;
+import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.logging.Logger;
 
 /** Utility class for synchronous execution.
  * This class maintains a pool of threads that are used to execute arbitrary
@@ -64,9 +66,29 @@ public final class RequestProcessor {
     
     private RequestProcessor() {}
     
+    private static void setJob(Runnable job) {
+        RequestThread thread = (RequestThread)Thread.currentThread();
+        thread.setJob(job);
+    }
+    
+    private static class RequestThread extends Thread {
+        private WeakReference job;
+        private RequestThread(Runnable run, String name) {
+            super(run, name);
+        }
+        private void setJob(Runnable job) {
+            this.job = new WeakReference(job);
+        }
+        private Runnable getJob() {
+            return (Runnable)job.get();
+        }
+    }
+    
     private static void newThread() {
         String name = "RequestProcessor[" + (threadOrdinal++) + "]";
-        new Thread(runner, name).start();
+        RequestThread t = new RequestThread(runner, name);
+        t.setPriority(Thread.NORM_PRIORITY);
+        t.start();
     }
     
     /** Executes run.run() asynchronously on a thread from the thread pool.
@@ -174,6 +196,7 @@ public final class RequestProcessor {
                         Runnable run = queue.remove();
                         DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("running "+run);
                         if (run != null) {
+                            setJob(run);
                             run.run();
                             DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("completed "+run);
                         }                             
@@ -218,23 +241,26 @@ public final class RequestProcessor {
         public void run() {
             Runnable run = null;
             RequestEntry entry = null;
+            Logger logger = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
             while (run == null) {
                 synchronized (this) {
-                    entry = (RequestEntry)list.removeFirst();
+                    //entry = (RequestEntry)list.removeFirst();
+                    entry = (RequestEntry)list.getFirst();
                     if (entry.async && readCount == 0 && writer == null) {
+                        list.removeFirst();
                         writer = entry;
                         run = entry.run;
                     }
                     else if (!entry.async && writer == null) {
+                        list.removeFirst();
                         readCount++;
                         run = entry.run;
                     }
-                    else {
-                        list.addFirst(entry);
-                    }
                 }
             }
+            logger.fine("Starting :" + run);
             run.run();
+            logger.fine("Finished :" + run);
             synchronized (this) {
                 if (entry.async) {
                     writer = null;
