@@ -25,12 +25,12 @@ package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
-import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.system.*;
+import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.awt.*;
 
 import javax.swing.*;
@@ -52,7 +52,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     private MouseModule secondary=null;
     private MouseModule tertiary=null;
     
-    private Vector active=null; // array of active modules    
+    private Vector active=null; // array of active modules
     
     private boolean pinned= false;
     
@@ -376,18 +376,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
      * the dragRenderer's dirty bounds will be.
      */
     private synchronized void refresh() {
-        if ( dirtyBoundsList!=null ) {                                
+        if ( dirtyBoundsList!=null ) {
             Rectangle[] dd= new Rectangle[dirtyBoundsList.length];
-            for ( int i=0; i<dd.length; i++ ) {                
+            for ( int i=0; i<dd.length; i++ ) {
                 dd[i]= new Rectangle( dirtyBoundsList[i] );
             }
-            for ( int i=0; i<dd.length; i++ ) {                                
+            for ( int i=0; i<dd.length; i++ ) {
                 parent.paintImmediately( dd[i] );
             }
-            for ( int i=0; i<dirtyBoundsList.length; i++ ) {                                
-                parent.paintImmediately( dirtyBoundsList[i] );                
-            }            
-        } else {        
+            for ( int i=0; i<dirtyBoundsList.length; i++ ) {
+                parent.paintImmediately( dirtyBoundsList[i] );
+            }
+        } else {
             if ( active!=null ) {
                 parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
             }
@@ -572,7 +572,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                             JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(modules.get(i));
                             if (j.isSelected()) active.add(modules.get(i));
                         }
-                    }                                        
+                    }
                     
                     mouseMode= MouseMode.moduleDrag;
                     
@@ -612,7 +612,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                         MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
                         DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseRangeSelected");
                         j.mouseRangeSelected(de);
-                    }                    
+                    }
                     j.mouseDragged(e);
                 }
                 refresh();
@@ -663,6 +663,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                             MouseDragEvent de=
                                     j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
                             j.mouseRangeSelected(de);
+                        } catch ( RuntimeException ex ) {
+                            DasExceptionHandler.handle(ex);
                         } finally {
                             button=0;
                             j.mouseReleased(e);
@@ -675,6 +677,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 }
             }
         }
+        
     }
     
     public void removeMouseModule(MouseModule module) {
