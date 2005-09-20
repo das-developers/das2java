@@ -47,6 +47,19 @@ public class DasLogger {
         }
     }
     
+    public static void printStatus() {
+        String[] loggers= new String[] { "",  "das2.system", "das2.gui",  "das2.graphics",  "das2.dataOperations", "das2.dataTransfer", };
+        for ( int i=0; i<loggers.length; i++ ) {
+            Logger logger= Logger.getLogger(loggers[i]);
+            Level l= logger.getLevel();
+            while ( l==null ) {
+                logger= logger.getParent();
+                l=logger.getLevel();
+            }
+            System.err.println( loggers[i]+" logging at "+l );
+        }
+    }    
+    
     static {
         try {
             reload();
