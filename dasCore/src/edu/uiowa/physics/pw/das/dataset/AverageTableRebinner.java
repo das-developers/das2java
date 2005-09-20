@@ -22,13 +22,10 @@
  */
 
 package edu.uiowa.physics.pw.das.dataset;
-
-import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.*;
-import java.io.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.util.*;
-import java.util.Collections;
 import java.util.logging.*;
 
 /**
@@ -37,7 +34,7 @@ import java.util.logging.*;
  */
 public class AverageTableRebinner implements DataSetRebinner {
     
-    private static Logger logger = DasApplication.getDefaultApplication().getLogger();
+    private static Logger logger = DasLogger.getLogger( DasLogger.DATA_OPERATIONS_LOG );
     
     /**
      * Holds value of property interpolate.
@@ -50,6 +47,8 @@ public class AverageTableRebinner implements DataSetRebinner {
     }
     
     public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, DasException {
+        logger.finest("enter AverageTableRebinner.rebin");
+        
         if (ds == null) {
             throw new NullPointerException("null data set");
         }
@@ -118,6 +117,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         } else if (enlargePixels) {
             enlargePixels( rebinData, rebinWeights );
         }
+        
         double[][][] zValues = {rebinData,rebinWeights};
         
         int[] tableOffsets = {0};
@@ -130,7 +130,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
         
         TableDataSet result= new DefaultTableDataSet( xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, properties );
-        
+        logger.finest("done, AverageTableRebinner.rebin");
         return result;
     }
     
@@ -393,7 +393,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         final double[] yTags= ddY.binCenters();
         final Units yTagUnits= ddY.getUnits();
         final boolean log= ddY.isLog();
-                
+        
         if (log) {
             for (int j=0; j<ny; j++) yTagTemp[j]= Math.log(yTags[j]);
         } else {
@@ -407,14 +407,14 @@ public class AverageTableRebinner implements DataSetRebinner {
             ySampleWidth= d;
         } else {
             if ( yTagWidth.getUnits().isConvertableTo(Units.logERatio ) ) {
-                double p= yTagWidth.doubleValue(Units.logERatio);                
+                double p= yTagWidth.doubleValue(Units.logERatio);
                 ySampleWidth= p;
             } else {
                 double d= yTagWidth.doubleValue(yTagUnits.getOffsetUnits());
                 ySampleWidth= d * fudge;
             }
         }
-                    
+        
         for (int i = 0; i < nx; i++) {
             int ii1= -1;
             int ii2= -1;
@@ -445,7 +445,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
             
             
-            for (int j = 0; j < ny; j++) {                
+            for (int j = 0; j < ny; j++) {
                 if ( (i1[j] != -1) && ( ( yTagTemp[i2[j]] - yTagTemp[i1[j]] ) < ySampleWidth ) ) {
                     a2 = (float)((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
                     a1 = 1.f - a2;
