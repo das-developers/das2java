@@ -102,6 +102,7 @@ public class DasApplication {
         if ( v ) {
             try {
                 DasLogger.reload();
+                DasLogger.printStatus();
             } catch ( IOException e ) {
                 DasExceptionHandler.handle(e);
             }
