@@ -41,6 +41,8 @@ public abstract class FunctionTableDataSet implements TableDataSet {
     
     double[] data;        
     
+    HashMap properties;
+    
     public abstract double getDoubleImpl(int i, int j, Units units);
     
     public FunctionTableDataSet( int nx, int ny ) {
@@ -53,6 +55,9 @@ public abstract class FunctionTableDataSet implements TableDataSet {
                 data[idx]= getDoubleImpl(i,j,Units.dimensionless);
             }
         }
+        properties= new HashMap();
+        properties.put( TableDataSet.PROPERTY_X_TAG_WIDTH, Datum.create(1) );
+        properties.put( TableDataSet.PROPERTY_Y_TAG_WIDTH, Datum.create(1) );
     }
 
     protected void fillCache() {
@@ -99,12 +104,12 @@ public abstract class FunctionTableDataSet implements TableDataSet {
         return new String[0];
     }
     
-    public Object getProperty(String name) {
-        return null;
+    public Object getProperty(String name) {        
+        return properties.get(name);
     }
     
     public Map getProperties() {
-        return new HashMap();
+        return properties;
     }
     
     public int getXLength() {
