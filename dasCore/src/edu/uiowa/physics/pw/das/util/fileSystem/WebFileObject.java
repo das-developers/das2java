@@ -107,7 +107,7 @@ public class WebFileObject extends FileObject {
             } catch ( FileNotFoundException e ) {
                 return false;
             } catch ( IOException e ) {
-                wfs.handleException(e);
+                // I'm going to assume that it's because the file was not found. 404's from pw's server end up here
                 return false;
             }
         }
