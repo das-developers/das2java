@@ -17,25 +17,21 @@ public class DataSetUpdateEvent extends DasEvent {
     private DataSet dataSet;
     private Exception exception;
     
-    public DataSetUpdateEvent(DataSetDescriptor source) {
+    public DataSetUpdateEvent( Object source) {
         // null indicates that the state has changed and the consumer needs to read.
         super(source);
     }
     
     /** Creates a new instance of DataSetUpdateEvent */
-    public DataSetUpdateEvent(DataSetDescriptor source, DataSet dataSet) {
+    public DataSetUpdateEvent( Object source, DataSet dataSet) {
         super(source);
         this.dataSet = dataSet;
     }
     
-    public DataSetUpdateEvent(DataSetDescriptor source, Exception exception) {
+    public DataSetUpdateEvent( Object source, Exception exception) {
         super(source);
         this.exception = exception;
-    }
-    
-    public DataSetDescriptor getDataSetDescriptor() {
-        return (DataSetDescriptor)getSource();
-    }
+    }    
     
     public DataSet getDataSet() {
         return dataSet;
