@@ -197,20 +197,6 @@ public class CurveRenderer extends Renderer {
         this.lineWidth = (float)lineWidth;
     }
     
-    public DataSet getDataSet() {
-        DataSetDescriptor dsd= getDataSetDescriptor();
-        if ( ! ( dsd instanceof ConstantDataSetDescriptor )) {
-            throw new IllegalStateException( "only ConstantDataSetDescriptors for now!" );
-        } else {
-            try {
-                return dsd.getDataSet(null, null, null, null );
-            } catch ( DasException e ) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-    
-    
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
         throw new UnsupportedOperationException();
     }
