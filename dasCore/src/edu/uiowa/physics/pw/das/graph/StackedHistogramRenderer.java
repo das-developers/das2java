@@ -262,7 +262,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         
         if ( xtysData==null ) {
             this.plotImage= null;
-            this.setLastException( new DasException("null data set" ) );
+            if ( lastException==null ) this.setLastException( new DasException("null data set" ) );
             return;
         }
         
@@ -415,17 +415,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     public void setPeaksIndicator(PeaksIndicator peaksIndicator) {
         this.peaksIndicator= peaksIndicator;
         refreshImage();
-    }
-    
-    //public void dataSetUpdated(DataSetUpdateEvent e) {
-    //     getParent().markDirty();
-    //     getParent().repaint();
-    // }
-    
-    public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
-        super.setDataSetDescriptor(dataSetDescriptor);
-        if ( dataSetDescriptor!=null) dataSetDescriptor.addDataSetUpdateListener( this );
-    }
+    }    
     
     /** Getter for property sliceRebinnedData.
      * @return Value of property sliceRebinnedData.
