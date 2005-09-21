@@ -60,8 +60,6 @@ public class DasColorBar extends DasAxis {
         super(min, max, orientation, isLog);
         setLayout(new ColorBarLayoutManager());
         setType(DasColorBar.Type.COLOR_WEDGE);
-        fillColorIndex= getType().getColorCount();
-        fillColor= getType().getRGB(fillColorIndex);
     }
     
     
@@ -108,6 +106,8 @@ public class DasColorBar extends DasAxis {
         this.type = type;
         this.ncolor= type.getColorCount();
         image = null;
+        fillColorIndex= getType().getColorCount();
+        fillColor= getType().getRGB(fillColorIndex);
         markDirty();
         update();
         firePropertyChange("type", oldValue, type);
