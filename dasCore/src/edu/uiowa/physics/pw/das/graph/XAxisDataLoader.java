@@ -68,7 +68,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     /* requests a reload of data, indicating its current data set in case it's
      * suitable.
      */
-    public void loadDataSet( DasAxis xAxis, DasAxis yAxis ) {
+    private void loadDataSet( DasAxis xAxis, DasAxis yAxis ) {
         DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine( "render requests dataset for x:"+xAxis.getMemento() + " y:"+yAxis.getMemento());
         if ( xaxis==null ) this.xaxis= xAxis;
         if ( dsd==null ) {

@@ -110,7 +110,7 @@ public class MendelbrotDataLoader extends DataLoader {
         }
     }
     
-    protected DataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, DasProgressMonitor monitor) throws DasException {
+    private DataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, DasProgressMonitor monitor) throws DasException {
         
         double xstart, xend, xresolution;
         xstart= ddx.binCenter(0, Units.dimensionless );
