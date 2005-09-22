@@ -408,7 +408,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         } else {
             if ( yTagWidth.getUnits().isConvertableTo(Units.logERatio ) ) {
                 double p= yTagWidth.doubleValue(Units.logERatio);
-                ySampleWidth= p;
+                ySampleWidth= p * fudge;
             } else {
                 double d= yTagWidth.doubleValue(yTagUnits.getOffsetUnits());
                 ySampleWidth= d * fudge;
