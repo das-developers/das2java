@@ -100,7 +100,12 @@ public class DataSetUtil {
         DasAxis yaxis= guessYAxis( ds );
         DasPlot plot= new DasPlot( xaxis, yaxis );
         if ( ds instanceof VectorDataSet ) {
-            edu.uiowa.physics.pw.das.graph.Renderer rend= new SymbolLineRenderer( ds );
+            edu.uiowa.physics.pw.das.graph.Renderer rend;
+            if ( ds.getXLength() > 10000 ) {
+                rend= new ImageVectorDataSetRenderer(new ConstantDataSetDescriptor(ds));
+            } else {
+                rend= new SymbolLineRenderer( ds );
+            }
             plot.addRenderer(rend);
         } else if (ds instanceof TableDataSet ) {
             Units zunits= ((TableDataSet)ds).getZUnits();
@@ -237,12 +242,12 @@ public class DataSetUtil {
     /**
      * returns the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>.  (See Arrays.binarySearch)
      */
-    public static int xTagBinarySearch( DataSet ds, Datum datum, int low, int high ) {        
+    public static int xTagBinarySearch( DataSet ds, Datum datum, int low, int high ) {
         Units units= datum.getUnits();
         double key= datum.doubleValue(units);
         while (low <= high) {
             int mid = (low + high) >> 1;
-            double midVal = ds.getXTagDouble(mid,units);            
+            double midVal = ds.getXTagDouble(mid,units);
             int cmp;
             if (midVal < key) {
                 cmp = -1;   // Neither val is NaN, thisVal is smaller
