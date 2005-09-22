@@ -76,11 +76,11 @@ public class TickCurveRenderer extends Renderer {
         
     }
     
-    /** The dataset descriptor should return a Vector data set with planes identified
+    /** The dataset be a Vector data set with planes identified
      *  by xplane and yplane.
      */
-    public TickCurveRenderer(DataSetDescriptor dsd, String xplane, String yplane, TickVDescriptor tickv) {
-        super(dsd);        
+    public TickCurveRenderer( DataSet ds, String xplane, String yplane, TickVDescriptor tickv) {
+        super(ds);        
     
         setTickStyle( TickCurveRenderer.TickStyle.outer );
         setLineWidth( 1.0f );
@@ -299,19 +299,7 @@ public class TickCurveRenderer extends Renderer {
     public void setTickLength(float tickLength) {
         this.tickLength = tickLength;
     }
-    
-    public DataSet getDataSet() {
-        DataSetDescriptor dsd= getDataSetDescriptor();
-	if ( ! ( dsd instanceof ConstantDataSetDescriptor )) {
-            throw new IllegalStateException( "only ConstantDataSetDescriptors for now!" );
-        } else {
-            try {
-                return dsd.getDataSet(null, null, null, null );
-            } catch ( DasException e ) {
-                throw new RuntimeException(e);
-            }
-        }        
-    }
+
         
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
         throw new UnsupportedOperationException();
