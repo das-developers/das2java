@@ -108,7 +108,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
         parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
         
         DatumRange loadRange= xAxis.getDatumRange();
-        if ( renderer.isOverloading() ) loadRange= loadRange.rescale(-1,2);
+        //if ( renderer.isOverloading() ) loadRange= loadRange.rescale(-1,2);
         DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+loadRange+" @ "+resolution);
         
         currentRequest= new Request( progressMonitor, xAxis.getMemento(), yAxis.getMemento() );
