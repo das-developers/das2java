@@ -38,7 +38,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
     
     private Units baseUnits = Units.us2000;
     
-    private Units units = Units.seconds;
+    private Units units = null;
     
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
     
@@ -105,12 +105,17 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         return units;
     }
     
+    /* Units must be set now!!! */
     public void setUnits(Units units) {
         this.units = units;
     }
     
     public void setDataTransferType(DataTransferType transferType) {
         this.transferType = transferType;
+        if ( transferType instanceof DataTransferType.Time ) {
+            if ( units==null ) throw new IllegalArgumentException("please set the units first!!!");
+            ((DataTransferType.Time)transferType).units= units;
+        }
     }
     
     public DataTransferType getDataTransferType() {
