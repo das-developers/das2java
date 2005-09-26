@@ -56,7 +56,7 @@ public class TableUtil {
         double [] xx= getYTagArrayDouble( table, itable, units );
         return DataSetUtil.closest( xx, x );
     }
-
+    
     public static Datum closestDatum( TableDataSet table, Datum x, Datum y ) {
         int i= DataSetUtil.closestColumn( table, x );
         int j= closestRow( table, table.tableOfIndex(i), y );
@@ -69,19 +69,22 @@ public class TableUtil {
         return itable;
     }
     
-    public static Datum guessYTagWidth( TableDataSet table ) {
+    public static Datum guessYTagWidth( TableDataSet table ) {        
+        return guessYTagWidth( table, 0 );
+    }
+    
+    public static Datum guessYTagWidth( TableDataSet table, int itable ) {
         // cheat and check for logarithmic scale.  If logarithmic, then return YTagWidth as percent.
-        double y0= table.getYTagDouble( 0, 0, table.getYUnits());
-        double y1= table.getYTagDouble( 0, 1, table.getYUnits());
+        double y0= table.getYTagDouble( itable, 0, table.getYUnits());
+        double y1= table.getYTagDouble( itable, 1, table.getYUnits());
         int n= table.getYLength(0)-1;
-        double yn= table.getYTagDouble( 0, n, table.getYUnits() );
+        double yn= table.getYTagDouble( itable, n, table.getYUnits() );
         if ( (yn-y0) / ( (y1-y0 ) * n ) > 10. ) {
             return Units.log10Ratio.createDatum( DasMath.log10(y1/y0) );
         } else {
             return table.getYUnits().createDatum(y1-y0);
         }
     }
-    
     public static double tableMax( TableDataSet tds, Units units ) {
         double result= Double.NEGATIVE_INFINITY;
         
@@ -128,7 +131,7 @@ public class TableUtil {
     }
     
     public static String toString(TableDataSet tds) {
-        StringBuffer buffer= new StringBuffer();        
+        StringBuffer buffer= new StringBuffer();
         if ( tds.tableCount()>0 ) buffer.append( tds.getYLength(0) );
         int tableCountLimit=3;
         for ( int i=1; i<tds.tableCount() && i<tableCountLimit; i++ ) {
@@ -237,12 +240,10 @@ public class TableUtil {
         try {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
-            sd.setProperty("start", tds.getXTagDatum(0).toString());
-            sd.setProperty("end", tds.getXTagDatum(tds.getXLength()-1));
             
             Map properties= tds.getProperties();
             for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
-                String key= (String)i.next();
+                String key= (String)i.next();                
                 sd.setProperty(key, properties.get(key));
             }
             
@@ -251,11 +252,11 @@ public class TableUtil {
             
             if ( asciiTransferTypes ) {
                 if ( tds.getXUnits().isConvertableTo(Units.us2000) ) {
-                    xTransferType= DataTransferType.getByName("time24");
+                    xTransferType= DataTransferType.getByName("time24");                  
                 } else {
                     xTransferType= DataTransferType.getByName("ascii24");
                 }
-                zTransferType= DataTransferType.getByName("ascii10");                
+                zTransferType= DataTransferType.getByName("ascii10");
             } else {
                 zTransferType= DataTransferType.getByName("sun_real4");
                 xTransferType= DataTransferType.getByName("sun_real8");
@@ -265,8 +266,8 @@ public class TableUtil {
             DatumVector[] zValues = new DatumVector[1];
             for (int table = 0; table < tds.tableCount(); table++) {
                 StreamXDescriptor xDescriptor = new StreamXDescriptor();
-                xDescriptor.setDataTransferType(xTransferType);
                 xDescriptor.setUnits(tds.getXUnits());
+                xDescriptor.setDataTransferType(xTransferType);                
                 StreamYScanDescriptor yDescriptor = new StreamYScanDescriptor();
                 yDescriptor.setDataTransferType(zTransferType);
                 yDescriptor.setZUnits(tds.getZUnits());
