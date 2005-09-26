@@ -228,9 +228,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     whist.setDouble( i,j, histMax*floorFactor, Units.dimensionless );
             }
         }  */
-        
-        DasColorBar cb= new DasColorBar( Units.dimensionless.createDatum(0.),Units.dimensionless.createDatum(saturationHitCount), false );
-        cb.setType( DasColorBar.Type.GRAYSCALE );
+                
         
         int h= ddy.numberOfBins();
         int w= ddx.numberOfBins();
