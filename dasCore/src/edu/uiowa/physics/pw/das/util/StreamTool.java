@@ -38,9 +38,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.InflaterInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -79,7 +78,7 @@ public class StreamTool {
         boolean notDone=true;
         
         int unreadOffset=-99999;
-        int unreadLength=-99999;               
+        int unreadLength=-99999;
         
         int totalBytesRead=0;
         int offset=0;  // offset within byte[4096]
@@ -93,9 +92,9 @@ public class StreamTool {
                 notDone=false;
                 
             } else {
-            
+                
                 data[offset]= (byte)byteRead;
-            
+                
                 if ( delim[bytesMatched]==byteRead ) {
                     bytesMatched++;
                 } else {
@@ -136,7 +135,7 @@ public class StreamTool {
      * following the XML terminator.  Processing is done with as little interpretation
      * as possible, so invalid XML will cause problems with little feedback about
      * what's wrong.
-     */    
+     */
     public static byte[] readXML(PushbackInputStream in) throws IOException {
         ReadableByteChannel channel = Channels.newChannel(in);
         byte[] back = new byte[4096];
@@ -158,7 +157,7 @@ public class StreamTool {
             }
         }
     }
-
+    
     public static ByteBuffer readXML(ByteBuffer input) throws IOException {
         int gtCount= 0;
         int tagCount= 0;
@@ -170,31 +169,29 @@ public class StreamTool {
         int b;
         ByteBuffer buffer = input.duplicate();
         buffer.mark();
-
+        
         eatWhiteSpace(buffer);
         
         b = 0xFF & buffer.get();
-
+        
         if ( ((char)b) != '<' ) {
             throw new IOException("found '" + ((char)b) + "', expected '<' at offset=" + buffer.position() + ".\n");
         } else {
             gtCount++;
             tagContainsSlash = false;
         }
-
+        
         while ( buffer.hasRemaining() && ( gtCount > 0 || tagCount > 0 ) ) {
             lastChar = (char)b;
             b = 0xFF & buffer.get();
-
+            
             if ( inQuotes && ((char)b) == '"' && lastChar != '\\') {
                 inQuotes = false;
-            }
-            else if ( ((char)b) == '<' ) {
+            } else if ( ((char)b) == '<' ) {
                 gtCount++;
                 inTag = true;
                 tagContainsSlash = false; /* until proven otherwise */
-            }
-            else if ( b==(int)'>' ) {
+            } else if ( b==(int)'>' ) {
                 gtCount--;
                 inTag = false;
                 if ( lastChar != '/' ) {
@@ -212,13 +209,13 @@ public class StreamTool {
                 inQuotes = true;
             }
         }
-
+        
         if ( b==-1 ) {
             throw new IOException("unexpected end of file before xml termination\n");
         }
-
+        
         eatWhiteSpace(buffer);
-
+        
         int limit = buffer.limit();
         buffer.limit(buffer.position());
         buffer.reset();
@@ -257,12 +254,10 @@ public class StreamTool {
                 struct.bigBuffer.compact();
             }
             handler.streamClosed(sd);
-        }
-        catch (StreamException se) {
+        } catch (StreamException se) {
             handler.streamException(se);
             throw se;
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             StreamException se = new StreamException(ioe);
             handler.streamException(se);
             throw se;
@@ -291,15 +286,12 @@ public class StreamTool {
                 StreamDescriptor sd = new StreamDescriptor(doc.getDocumentElement());
                 struct.bigBuffer.clear();
                 return sd;
-            }
-            else if (root.getTagName().equals("exception")) {
+            } else if (root.getTagName().equals("exception")) {
                 throw exception(root);
-            }
-            else {
+            } else {
                 throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
             }
-        }
-        else {
+        } else {
             throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(struct.four, 0, 4) + "'");
         }
     }
@@ -328,8 +320,7 @@ public class StreamTool {
                 temp.flip();
                 struct.bigBuffer = temp;
                 return false;
-            }
-            else if (struct.bigBuffer.remaining() < contentLength) {
+            } else if (struct.bigBuffer.remaining() < contentLength) {
                 struct.bigBuffer.reset();
                 return false;
             }
@@ -339,17 +330,14 @@ public class StreamTool {
                 PacketDescriptor pd = new PacketDescriptor( doc.getDocumentElement() );
                 struct.handler.packetDescriptor(pd);
                 struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
-            }
-            else if (root.getTagName().equals("exception")) {
+            } else if (root.getTagName().equals("exception")) {
                 throw exception(root);
             } else if ( root.getTagName().equals("comment")) {
                 struct.handler.streamComment( new StreamComment(doc.getDocumentElement()) );
-            }
-            else {
+            } else {
                 throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
             }
-        }
-        else if (isPacketHeader(struct.four)) {
+        } else if (isPacketHeader(struct.four)) {
             String key = asciiBytesToString(struct.four, 1, 2);
             PacketDescriptor pd = (PacketDescriptor)struct.descriptors.get(key);
             int contentLength = pd.getSizeBytes();
@@ -364,8 +352,7 @@ public class StreamTool {
                 vectors[i] = pd.getYDescriptor(i).read(struct.bigBuffer);
             }
             struct.handler.packet(pd, xTag, vectors);
-        }
-        else {
+        } else {
             throw new StreamException("Expected four byte header, found '" + new String(struct.four) + "'");
         }
         return true;
@@ -380,8 +367,7 @@ public class StreamTool {
     private static String asciiBytesToString(byte[] bytes, int offset, int length) {
         try {
             return new String(bytes, offset, length, "US-ASCII");
-        }
-        catch (UnsupportedEncodingException uee) {
+        } catch (UnsupportedEncodingException uee) {
             //All JVM implementations are required to support US-ASCII
             throw new RuntimeException(uee);
         }
@@ -389,23 +375,23 @@ public class StreamTool {
     
     private static boolean isStreamDescriptorHeader(byte[] four) {
         return four[0] == (byte)'[' && four[1] == (byte)'0'
-            && four[2] == (byte)'0' && four[3] == (byte)']';
+                && four[2] == (byte)'0' && four[3] == (byte)']';
     }
     
     private static boolean isPacketDescriptorHeader(byte[] four) {
         return four[0] == (byte)'[' && four[3] == (byte)']'
-            && ( Character.isDigit((char)four[1])
-                 && Character.isDigit((char)four[2]) 
-                 || (char)four[1]=='x'  
-                 && (char)four[2]=='x' ); 
+                && ( Character.isDigit((char)four[1])
+                && Character.isDigit((char)four[2])
+                || (char)four[1]=='x'
+                && (char)four[2]=='x' );
     }
     
     private static boolean isPacketHeader(byte[] four) {
         return four[0] == (byte)':' && four[3] == (byte)':'
-            && Character.isDigit((char)four[1])
-            && Character.isDigit((char)four[2]);
+                && Character.isDigit((char)four[1])
+                && Character.isDigit((char)four[2]);
     }
-
+    
     private static Document getXMLDocument(ByteBuffer buffer, int contentLength) throws StreamException, IOException {
         ByteBuffer xml = buffer.duplicate();
         xml.limit(xml.position() + contentLength);
@@ -430,7 +416,7 @@ public class StreamTool {
         }
         return contentLength;
     }
-
+    
     public static Document parseHeader(Reader header) throws StreamException {
         try {
             /*
@@ -455,14 +441,11 @@ public class StreamTool {
             InputSource source = new InputSource(header);
             Document document= builder.parse(source);
             return document;
-        }
-        catch ( ParserConfigurationException ex ) {
+        } catch ( ParserConfigurationException ex ) {
             throw new RuntimeException(ex.getMessage());
-        }
-        catch ( SAXException ex ) {
+        } catch ( SAXException ex ) {
             throw new StreamException(ex);
-        }
-        catch ( IOException ex) {
+        } catch ( IOException ex) {
             throw new StreamException(ex);
         }
     }
@@ -472,8 +455,7 @@ public class StreamTool {
             OutputFormat format = new OutputFormat(Method.XML, "US-ASCII", true);
             XMLSerializer serializer = new XMLSerializer(writer, format);
             serializer.serialize(document);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             throw new StreamException(ioe);
         }
     }
@@ -492,23 +474,42 @@ public class StreamTool {
                 String[] split = name.split(":");
                 if (split.length == 1) {
                     map.put(name, attr.getValue());
-                }
-                else if (split.length == 2) {
+                } else if (split.length == 2) {
                     PropertyType type = PropertyType.getByName(split[0]);
                     Object value = type.parse(attr.getValue());
                     map.put(split[1], value);
-                }
-                else {
+                } else {
                     throw new IllegalArgumentException("Invalid typed name: " + name);
                 }
             }
             return map;
-        }
-        catch (ParseException pe) {
+        } catch (ParseException pe) {
             StreamException se = new StreamException(pe.getMessage());
             se.initCause(pe);
             throw se;
         }
+    }
+    
+    private static HashMap typesMap;
+    static {
+        typesMap= new HashMap();
+        typesMap.put( Datum.class, "Datum" );
+        typesMap.put( Datum.Double.class, "Datum" );                
+        typesMap.put( Integer.class, "int" );
+    }
+    
+    public static Element processPropertiesMap( Document document, Map properties ) {
+        Element propertiesElement = document.createElement("properties");
+        for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
+            Map.Entry entry = (Map.Entry)i.next();
+            String key = (String)entry.getKey();
+            Object value = entry.getValue();
+            if ( typesMap.containsKey(value.getClass() ) ) {
+                key= (String)typesMap.get( value.getClass() ) + ":" + key;
+            }
+            propertiesElement.setAttribute(key, value.toString());
+        }
+        return propertiesElement;
     }
     
     private static ReadableByteChannel getInflaterChannel(ReadableByteChannel channel) throws IOException {
