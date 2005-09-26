@@ -67,8 +67,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected double [] psym_x;
     protected double [] psym_y;
     
-    protected Image plotImage;
-    
     protected RebinListener rebinListener = new RebinListener();
     
     DnDSupport dndSupport;
@@ -213,10 +211,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     protected void updateImmediately() {       
-        if (dataSetDescriptor==null) {
-        } else {
-            loadDataSet();
-        }
         for (int i=0; i<renderers.size(); i++) {
             Renderer rend= (Renderer)renderers.get(i);
             rend.update();
@@ -339,12 +333,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     protected void drawContent(Graphics2D g) {
-        //if (plotImage==null) updateImmediately();
-        if (plotImage!=null) {
-            int x = getColumn().getDMinimum();
-            int y = getRow().getDMinimum();
-            g.drawImage(plotImage, x, y+1,this);
-        }
+        // override me to add to the axes.
     }
     
     public void resize() {
