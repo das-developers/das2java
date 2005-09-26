@@ -19,7 +19,6 @@ import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import edu.uiowa.physics.pw.apps.auralization.*;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.util.logging.Logger;
@@ -58,8 +57,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
     private void renderGhostly( java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
         Graphics2D g2= (Graphics2D)g1.create();
         
-        // TODO: This seems to work as long as the upper-left hand corner of the image doesn't move!!!
-        //   works fine for resize of lower-right and range changes.
         AffineTransform at= getAffineTransform( xAxis, yAxis );
         
         if ( at==null ) {
@@ -70,7 +67,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             renderException(g2,xAxis,yAxis,lastException);
         } else if (plotImage!=null) {
             Point2D p;
-            //  if ( !at.isIdentity() ) {
+
             try {
                 g2.transform(at);
                 //g2.setRenderingHint( RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED );
@@ -80,10 +77,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             } catch ( NoninvertibleTransformException e ) {
                 return;
             }
-            //  } else {
-            //      p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
-            //  }
-            
+
             g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
             
         }
@@ -92,27 +86,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     
     
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
-        renderGhostly( g1, xAxis, yAxis );
-        /* long t0= System.currentTimeMillis();
-        Graphics2D g= (Graphics2D)g1.create();
-         
-        AffineTransform at= getAffineTransform(xAxis,yAxis);
-        if ( at==null ) {
-            return;
-        }
-         
-        g.transform(at);
-         
-        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-        Stroke s= new BasicStroke( 1.f );
-         
-        if (path != null) {
-            g.draw(path);
-        }
-        g.dispose();
-         
-        System.err.println( "time to render: "+( System.currentTimeMillis()-t0 ) );*/
-        
+        renderGhostly( g1, xAxis, yAxis );        
     }
     
     private void ghostlyImage2( DasAxis xAxis, DasAxis yAxis, VectorDataSet ds ) {
@@ -132,13 +106,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
         g.translate( -xAxis.getColumn().getDMinimum(), -yAxis.getRow().getDMinimum() );
         
-        log.fine("calculate path");
-        //GeneralPath path= calcPathConnect( xAxis, yAxis, ds );
-        
-        log.fine( "draw path" );
-        //g.draw(path);
-        
-        
         DatumRange visibleRange= xAxis.getDatumRange();
         //if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
         
@@ -150,6 +117,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
         int state= STATE_MOVETO;
         
+        
+        // TODO: data breaks
         int ix0=0, iy0=0;
         for ( int i=firstIndex; i<=lastIndex; i++ ) {
             int iy= (int)yAxis.transform( ds.getDatum(i) );
@@ -252,70 +221,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
         imageXRange= xrange;
         imageYRange= yrange;
-    }
-    
-    private GeneralPath calcPathConnect( DasAxis xAxis, DasAxis yAxis, VectorDataSet ds ) {
-        
-        final int STATE_LINETO= -991;
-        final int STATE_MOVETO= -992;
-        
-        int state= STATE_MOVETO;
-        
-        DatumRange visibleRange= xAxis.getDatumRange();
-        //if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
-        
-        int firstIndex= DataSetUtil.getPreviousColumn( ds, visibleRange.min() );
-        int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );
-        
-        GeneralPath newPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 110 * ( lastIndex - firstIndex ) / 100 );
-        
-        for ( int i=firstIndex; i<=lastIndex; i++ ) {
-            int iy= (int)yAxis.transform( ds.getDatum(i) );
-            int ix= (int)xAxis.transform( ds.getXTagDatum(i) );
-            switch( state ) {
-                case STATE_MOVETO: newPath.moveTo( ix, iy );
-                case STATE_LINETO: newPath.lineTo( ix, iy );
-            }
-            state= STATE_LINETO;
-        }
-        return newPath;
-    }
-    
-    private GeneralPath calcPathMinMax( DasAxis xAxis, DasAxis yAxis, VectorDataSet ds ) throws DasException {
-        DataSetRebinner rebinner= new RangeRebinner();
-        
-        DatumRange visibleRange= xAxis.getDatumRange();
-        // if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
-        
-        RebinDescriptor xRebinDescriptor = new RebinDescriptor(
-                visibleRange.min(), visibleRange.max(),
-                xAxis.getDLength()*3,
-                xAxis.isLog());
-        
-        DataSet renderDs= rebinner.rebin( ds, xRebinDescriptor, null );
-        
-        if ( renderDs.getXLength()==0 ) {
-            return null;
-            
-        } else {
-            VectorDataSet minDs= (VectorDataSet)renderDs.getPlanarView("min");
-            VectorDataSet maxDs= (VectorDataSet)renderDs.getPlanarView("max");
-            Units yUnits= minDs.getYUnits();
-            Units xUnits= minDs.getXUnits();
-            
-            GeneralPath newPath = new GeneralPath();
-            
-            for ( int i=0; i<renderDs.getXLength(); i++ ) {
-                int iy0= (int)yAxis.transform( minDs.getDatum(i) );
-                int iy1= (int)yAxis.transform( maxDs.getDatum(i) );
-                int x= (int)xAxis.transform( minDs.getXTagDatum(i) );
-                newPath.moveTo( x, iy0 );
-                newPath.lineTo( x, iy1 );
-            }
-            
-            return newPath;
-        }
-    }
+    }    
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, edu.uiowa.physics.pw.das.util.DasProgressMonitor monitor) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
