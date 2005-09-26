@@ -41,14 +41,14 @@ import javax.swing.event.*;
 /**
  * DataSetDescriptors are a source from where datasets are produced.  These uniquely identify a data set
  * that is parameteric.  Typically, the parameter is time, so for example, there might be a DataSetDescriptor
- * for "discharge of the Iowa River measured at Iowa City."  Clients of the class get 
- * DataSets from the DataSetDescriptor via the getDataSet( Start, End, Resolution ) method.  So for 
+ * for "discharge of the Iowa River measured at Iowa City."  Clients of the class get
+ * DataSets from the DataSetDescriptor via the getDataSet( Start, End, Resolution ) method.  So for
  * example, you might ask what is the discharge from June 1 to August 31st, 2005, at a resolution of
- * 1 day.  Presently it's implicit that this means to give bin averages of the data.  
- * 
+ * 1 day.  Presently it's implicit that this means to give bin averages of the data.
+ *
  * DataSetDescriptors are identified with a URL-like string:
  * http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy
- * 
+ *
  * The protocol of the string indicates how the DataSetDescriptor is to be constructed, and presently
  * there are:
  *   http     a das2Server provides the specification of the datasetdescriptor.
@@ -97,7 +97,7 @@ public abstract class DataSetDescriptor implements Displayable {
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
             final DasProgressMonitor monitor, Object lockObject ) {
-
+        
         /*
         CacheTag tag= new CacheTag( start, end, resolution );
         if ( dataSetCache.haveStored( this, tag ) ) {
@@ -126,12 +126,11 @@ public abstract class DataSetDescriptor implements Displayable {
             }
         };
         DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("submit data request");
-
+        
         CacheTag tag= new CacheTag( start, end, resolution );
         if ( dataSetCache.haveStored( this, tag ) ) {
             request.run();
-        }
-        else {
+        } else {
             RequestProcessor.invokeLater( request, lockObject );
         }
         
@@ -182,10 +181,13 @@ public abstract class DataSetDescriptor implements Displayable {
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
         if ( monitor==null ) monitor=DasProgressMonitor.NULL;
         monitor.started();
-                        
-        CacheTag tag= new CacheTag( start, end, resolution );
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getDataSet "+tag);
-                
+        
+        CacheTag tag=null;
+        if ( defaultCaching ) {
+            tag= new CacheTag( start, end, resolution );
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getDataSet "+tag);
+        }
+        
         if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {
             monitor.finished();
             return dataSetCache.retrieve( this, tag );
@@ -213,8 +215,12 @@ public abstract class DataSetDescriptor implements Displayable {
         dataSetCache.reset();
     }
     
-    protected void setDefaultCaching( boolean value ) {
-        defaultCaching= value;
+    /*
+     * Use caution when using this.  Note that caching may only be turned off
+     * with this call.
+     */
+    public void setDefaultCaching( boolean value ) {
+        if ( value==false ) defaultCaching= value;
     }
     
     public void addDataSetUpdateListener( DataSetUpdateListener listener ) {
@@ -318,11 +324,11 @@ public abstract class DataSetDescriptor implements Displayable {
     public Object getProperty(String name) {
         return properties.get(name);
     }
-
+    
     public javax.swing.Icon getListIcon() {
         return null;
     }
-
+    
     public String getListLabel() {
         return this.dataSetID;
     }
