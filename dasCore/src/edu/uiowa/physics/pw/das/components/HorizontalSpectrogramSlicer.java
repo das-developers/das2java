@@ -46,7 +46,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
     private HorizontalSpectrogramSlicer(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
         super(xAxis, yAxis);
         parentPlot = plot;
-        renderer= new SymbolLineRenderer((DataSetDescriptor)null);
+        renderer= new SymbolLineRenderer((DataSet)null);
         addRenderer(renderer);
     }
     
@@ -165,6 +165,9 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         g.drawLine(ix-3,iy0,ix,iy0+3);
         g.drawLine(ix+3,iy1,ix,iy1-3);
         g.drawLine(ix-3,iy1,ix,iy1-3);
+        
+        g.setColor( new Color(230,230,230) );
+        g.drawLine( ix, iy0+4, ix, iy1-4 );
     }
     
     protected void uninstallComponent() {
