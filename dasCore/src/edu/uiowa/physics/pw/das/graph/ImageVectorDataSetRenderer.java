@@ -128,7 +128,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
         g.setColor(Color.black);
-        g.setStroke( new BasicStroke( .1f ) );
+        g.setStroke( new BasicStroke( 1.f/saturationHitCount ) );
         
         g.translate( -xAxis.getColumn().getDMinimum(), -yAxis.getRow().getDMinimum() );
         
@@ -228,7 +228,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     whist.setDouble( i,j, histMax*floorFactor, Units.dimensionless );
             }
         }  */
-                
+        
         
         int h= ddy.numberOfBins();
         int w= ddx.numberOfBins();
@@ -239,9 +239,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
             for (int j=0; j<h; j++) {
                 int index= (i-0) + ( h - j - 1 ) * w;
                 int alpha= 255 - ( 256 * (int)hist.getDouble(i,j,Units.dimensionless) / saturationHitCount );
-                if ( alpha > 255 ) alpha=255;
+                if ( alpha < 0 ) alpha= 0;
+                
                 int icolor= ( alpha << 16 ) + ( alpha << 8 ) + alpha;
-                if ( i==0 ) System.out.println(Integer.toHexString(icolor));
                 raster[index]=icolor;
             }
         }
@@ -323,24 +323,20 @@ public class ImageVectorDataSetRenderer extends Renderer {
         long t0= System.currentTimeMillis();
         VectorDataSet ds= (VectorDataSet)getDataSet();
         if ( ds==null ) return;
-        
-        //ghostlyImage2( xAxis, yAxis, ds );
-        ghostlyImage( xAxis, yAxis, ds );
-        /*
-        Datum pixelWidth= xAxis.invTransform(1).subtract(xAxis.invTransform(0));
-         
-        long t1= System.currentTimeMillis();
-         
-        if ( xTagWidth==null ) xTagWidth= DataSetUtil.guessXTagWidth( ds );
-        System.err.println( "time to guess: "+( System.currentTimeMillis()-t1 ) );
-         
-        double samplesPerPixel= pixelWidth.divide( xTagWidth ).doubleValue( Units.dimensionless );
-        if ( samplesPerPixel > 10 ) {
-            this.path= calcPathMinMax( xAxis, yAxis, ds );
+                
+        DatumRange visibleRange= xAxis.getDatumRange();        
+        int firstIndex= DataSetUtil.getPreviousColumn( ds, visibleRange.min() );
+        int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );
+                
+        if ( ( lastIndex-firstIndex ) > 20 * xAxis.getColumn().getWidth() ) {
+            logger.info("rendering with histogram");
+            ghostlyImage( xAxis, yAxis, ds );
         } else {
-            this.path= calcPathConnect( xAxis, yAxis, ds );
+            logger.info("rendinging with lines");
+            ghostlyImage2( xAxis, yAxis, ds );
         }
-        System.err.println( "time to update: "+( System.currentTimeMillis()-t0 ) );*/
+        logger.info( "done updatePlotImage" );
+        
     }
     
     int saturationHitCount= 5;
