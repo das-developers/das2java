@@ -27,18 +27,23 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
+import edu.uiowa.physics.pw.das.event.HorizontalSliceSelectionRenderer;
+import edu.uiowa.physics.pw.das.event.MouseModule;
+import edu.uiowa.physics.pw.das.event.MousePointSelectionEvent;
+import edu.uiowa.physics.pw.das.event.VerticalRangeSelectorMouseModule;
 import java.awt.image.IndexColorModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
-import java.awt.image.WritableRaster;
+import javax.swing.event.EventListenerList;
 
 /**
  *
@@ -51,6 +56,8 @@ public class DasColorBar extends DasAxis {
     private int fillColor;
     private int fillColorIndex;
     private int ncolor;
+    
+    private static final int COLORTABLE_SIZE=240;
     
     public DasColorBar( Datum min, Datum max, boolean isLog) {
         this(min, max, RIGHT, isLog);
@@ -118,13 +125,13 @@ public class DasColorBar extends DasAxis {
         int y = (int)Math.round(getRow().getDMinimum());
         int width = (int)Math.round(getColumn().getDMaximum()) - x;
         int height = (int)Math.round(getRow().getDMaximum()) - y;
-        if (image == null || image.getWidth() != width || image.getHeight() != height) {
-            if (isHorizontal()) {
-                image = type.getHorizontalScaledImage(width, height);
-            } else {
-                image = type.getVerticalScaledImage(width, height);
-            }
+        //if (image == null || image.getWidth() != width || image.getHeight() != height) {
+        if (isHorizontal()) {
+            image = type.getHorizontalScaledImage(width, height);
+        } else {
+            image = type.getVerticalScaledImage(width, height);
         }
+        //}
         g.translate(-getX(), -getY());
         if (!isHorizontal()) {
             y++;
@@ -352,72 +359,85 @@ public class DasColorBar extends DasAxis {
         }
         
         // returns a color table with interpolated colors for the wedge from 0 to ncolor-1, and at ncolor, the fill color.
-        private static int[] makeColorTable( int [] index, int[] red, int[] green, int[] blue, int ncolor ) {
+        private static int[] makeColorTable( int [] index, int[] red, int[] green, int[] blue, int ncolor, int top ) {
             // index should go from 0-255.
-            if ( ncolor>255 ) throw new IllegalArgumentException("no more than 255 colors, since we use an 8 bit color model");
-            int[] colorTable = new int[ncolor+1];
+            // truncate when ncolor>COLORTABLE_SIZE
+            int[] colorTable = new int[ncolor];
             
             int ii= 0;
-            for (int i = 0; i < ncolor; i++) {
-                float comp= i * 255 / ncolor;
+            for (int i = 0; i < ncolor-1; i++) {
+                float comp= i * 255 / top;
                 if ( comp > index[ii + 1]) {
                     ii++;
                 }
-                double a= (comp-index[ii]) / (double)(index[ii+1]-index[ii]);
+                
+                double a;
+                if ( ii>=(index.length-1) ) {
+                    a= 1;
+                    ii= index.length-2;
+                } else {
+                    a= (comp-index[ii]) / (double)(index[ii+1]-index[ii]);
+                }
+                if ( a>1. ) a=1.;
+                if ( a<0. ) a=0.;
                 double rr= (red[ii]*(1-a) + red[ii+1]*a)/(double)255.;
                 double gg= (green[ii]*(1-a) + green[ii+1]*a)/(double)255.;
                 double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
                 colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
             }
-            colorTable[ncolor]= Color.LIGHT_GRAY.getRGB();
+            colorTable[ncolor-1]= Color.LIGHT_GRAY.getRGB();
             return colorTable;
         }
         
         private void maybeInitializeColorTable() {
             if (colorTable == null) {
-                if (this == COLOR_WEDGE) {
-                    initializeColorWedge();
-                } else if (this == GRAYSCALE) {
-                    initializeGrayScale();
-                } else if (this == INVERSE_GRAYSCALE) {
-                    initializeInverseGrayScale();
-                } else if (this == WRAPPED_COLOR_WEDGE) {
-                    initializeWrappedColorWedge();
-                }
+                initializeColorTable(COLORTABLE_SIZE,COLORTABLE_SIZE);
             }
         }
         
-        private void initializeColorWedge() {
+        private void initializeColorTable( int size, int top ) {
+            if (this == COLOR_WEDGE) {
+                initializeColorWedge(size, top);
+            } else if (this == GRAYSCALE) {
+                initializeGrayScale(size, top);
+            } else if (this == INVERSE_GRAYSCALE) {
+                initializeInverseGrayScale(size, top);
+            } else if (this == WRAPPED_COLOR_WEDGE) {
+                initializeWrappedColorWedge(size, top);
+            }
+        }
+        
+        private void initializeColorWedge( int size, int top ) {
             int[] index = {   0,   30,   63, 126, 162, 192, 221, 255 };
             int[] red =   {   0,    0,    0,   0, 255, 255, 255, 255 };
             int[] green = {   0,    0,  255, 255, 255, 185,  84, 0 };
             int[] blue =  { 137,  255,  255,   0,   0,   0,   0, 0 };
-            colorTable = makeColorTable( index, red, green, blue, 240 );            
+            colorTable = makeColorTable( index, red, green, blue, size, top );
             colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
         }
         
-        private void initializeWrappedColorWedge() {
+        private void initializeWrappedColorWedge( int size, int top ) {
             int[] index = {   0,   32,   64,  96, 128, 160, 192, 224, 255, };
             int[] red =   { 225,    0,    0,   0, 255, 255, 255, 255, 255, };
             int[] green = {   0,    0,  255, 255, 255, 185,  84,   0,   0, };
             int[] blue =  { 225,  255,  255,   0,   0,   0,   0,   0, 255, };
-            colorTable = makeColorTable( index, red, green, blue, 240 );
+            colorTable = makeColorTable( index, red, green, blue, size, top );
         }
         
-        private void initializeInverseGrayScale() {
+        private void initializeInverseGrayScale( int size, int top ) {
             int [] index= { 0, 255 };
             int [] red= { 0, 255 };
             int [] green= { 0, 255 };
             int [] blue= { 0, 255 };
-            colorTable = makeColorTable( index, red, green, blue, 240 );
+            colorTable = makeColorTable( index, red, green, blue, size, top );
         }
         
-        private void initializeGrayScale() {            
+        private void initializeGrayScale( int size, int top ) {
             int [] index= { 0, 255 };
             int [] red= { 255, 0 };
             int [] green= { 255, 0 };
             int [] blue= { 255, 0 };
-            colorTable = makeColorTable( index, red, green, blue, 240 );
+            colorTable = makeColorTable( index, red, green, blue, size, top );
         }
         
         public static Type parse(String s) {
@@ -431,6 +451,114 @@ public class DasColorBar extends DasAxis {
                 throw new IllegalArgumentException("invalid DasColorBar.Type string: " + s);
             }
         }
+        
+    }
+    
+    public MouseModule getRepaletteMouseModule( Renderer r ) {
+        return new ColorBarRepaletteMouseModule( r, this );
+    }
+    
+    public class ColorBarRepaletteMouseModule extends MouseModule {
+        
+        DasColorBar colorBar;
+        Renderer parent;
+        DatumRange range0;
+        int lastTopColor;
+        boolean animated0;
+        int state;
+        int STATE_IGNORE=300;
+        int STATE_TOP=200;
+        int STATE_BOTTOM=100;    // not supported yet
+        
+        /** Utility field used by event firing mechanism. */
+        private EventListenerList listenerList =  null;
+        
+        public String getLabel() { return "Repalette"; };
+        
+        public ColorBarRepaletteMouseModule( Renderer parent, DasColorBar colorBar ) {
+            if (colorBar.isHorizontal()) {
+                throw new IllegalArgumentException("Axis orientation is not vertical");
+            }
+            this.parent= parent;
+            //  this.dragRenderer= (DragRenderer)HorizontalRangeRenderer.renderer;
+            this.dragRenderer= new HorizontalSliceSelectionRenderer(parent.getParent());
+            this.colorBar= colorBar;
+        }
+        
+        private void setColorBar( int y ) {
+            if ( state!=STATE_IGNORE ) {                
+                DatumRange dr;
+                DasRow row= colorBar.getRow();
+                
+                double alpha=  ( row.getDMaximum() - y ) / (1.*row.getHeight());                
+                lastTopColor= Math.max( COLORTABLE_SIZE / 20 + 1, (int)( COLORTABLE_SIZE * alpha ) );
+                colorBar.type.initializeColorTable( COLORTABLE_SIZE, lastTopColor );
+                
+                colorBar.image= null;
+                colorBar.type.image= null;
+                colorBar.repaint();
+                parent.refreshImage();
+            }
+        }
+        
+        public void mouseReleased( MouseEvent e ) {
+            if ( state!=STATE_IGNORE ) {
+                colorBar.setAnimated(animated0);
+                int lastTopColor= this.lastTopColor;
+                setColorBar( colorBar.getRow().getDMinimum() );
+                DatumRange dr= range0.rescale( 0, lastTopColor / ( 1.*COLORTABLE_SIZE) );
+                colorBar.type.initializeColorTable( COLORTABLE_SIZE, COLORTABLE_SIZE );
+                colorBar.setDatumRange( dr );
+            }
+        }
+        
+        public void mousePointSelected(MousePointSelectionEvent e) {
+            setColorBar( e.getY() );
+        }
+        
+        /** Registers DataRangeSelectionListener to receive events.
+         * @param listener The listener to register.
+         */
+        public synchronized void addDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
+            if (listenerList == null ) {
+                listenerList = new EventListenerList();
+            }
+            listenerList.add(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
+        }
+        
+        /** Removes DataRangeSelectionListener from the list of listeners.
+         * @param listener The listener to remove.
+         */
+        public synchronized void removeDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
+            listenerList.remove(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
+        }
+        
+        /** Notifies all registered listeners about the event.
+         *
+         * @param event The event to be fired
+         */
+        private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event) {
+            if (listenerList == null) return;
+            Object[] listeners = listenerList.getListenerList();
+            for (int i = listeners.length-2; i>=0; i-=2) {
+                if (listeners[i]==edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class) {
+                    ((edu.uiowa.physics.pw.das.event.DataRangeSelectionListener)listeners[i+1]).DataRangeSelected(event);
+                }
+            }
+        }
+        
+        public void mousePressed(java.awt.event.MouseEvent e) {
+            super.mousePressed(e);
+            if ( DasColorBar.this.getColumn().contains(e.getX()+DasColorBar.this.getX()) ) {
+                state= STATE_TOP;
+                animated0= colorBar.isAnimated();
+                colorBar.setAnimated(false);
+                range0= colorBar.getDatumRange();
+            } else {
+                state= STATE_IGNORE;
+            }
+        }
+        
     }
     
 }
