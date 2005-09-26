@@ -382,27 +382,12 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
     }
     
     public Element getDOMElement(Document document) {
-        HashMap typesMap= new HashMap();
-        
-        // TODO: other types
-        typesMap.put( Datum.class, "Datum" );
-        typesMap.put( Integer.class, "int" );
-        
         Element element = document.createElement("stream");
         if (compression != null && !compression.equals("")) {
             element.setAttribute("compression", compression);
         }
-        if (!properties.isEmpty()) {
-            Element propertiesElement = document.createElement("properties");
-            for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry)i.next();
-                String key = (String)entry.getKey();
-                Object value = entry.getValue();
-                if ( typesMap.containsKey(value.getClass() ) ) {
-                    key= (String)typesMap.get( value.getClass() ) + ":" + key;
-                }
-                propertiesElement.setAttribute(key, value.toString());
-            }
+        if (!properties.isEmpty()) {            
+            Element propertiesElement = StreamTool.processPropertiesMap( document, properties );
             element.appendChild(propertiesElement);
         }
         return element;
