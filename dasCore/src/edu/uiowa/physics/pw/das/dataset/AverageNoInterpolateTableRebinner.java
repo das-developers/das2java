@@ -12,6 +12,7 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.stream.StreamUtil;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasMath;
 import java.util.ArrayList;
@@ -37,12 +38,15 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         int[] outputBins; // where to put it
         double[] weights; // what weight to apply
         public String toString() {
-            StringBuffer result= new StringBuffer();
-            for ( int i=0; i<length; i++ ) {
+            StringBuffer result= new StringBuffer();            
+            int ll= length < 30 ? length : 30;
+            for ( int i=0; i<ll; i++ ) {
                 result.append( ""+inputBins[i]+" * "+weights[i]+" -> "+outputBins[i]+"\n" );
-            }
+            }            
             if ( length==0 ) {
                 result.append( "(no rebinning)\n" );
+            } else if ( length>30 ) {
+                result.append( "("+(length-30)+" more)" );
             }
             return result.toString();
         }
@@ -59,7 +63,7 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
     }
     
     private static DatumRange[] getLogYTagRanges( TableDataSet ds, int itable ) {
-        Datum tagWidth= TableUtil.guessYTagWidth(ds);
+        Datum tagWidth= TableUtil.guessYTagWidth(ds,itable);
         double ratio= DasMath.exp10( tagWidth.doubleValue( Units.log10Ratio ) / 2. );
         Units units= ds.getYUnits();
         DatumRange[] result= new DatumRange[ ds.getYLength(itable) ];
@@ -72,7 +76,7 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
     }
     
     private static DatumRange[] getYTagRanges( TableDataSet ds, int itable ) {
-        Datum tagWidth= TableUtil.guessYTagWidth(ds).divide(2);
+        Datum tagWidth= TableUtil.guessYTagWidth(ds, itable).divide(2);
         boolean isLog= tagWidth.getUnits().isConvertableTo(Units.log10Ratio);
         if ( isLog ) return getLogYTagRanges( ds, itable );
         DatumRange[] result= new DatumRange[ ds.getYLength(itable) ];
@@ -193,7 +197,6 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
             
             BinDescriptor ybd;
             if ( ddy!=null ) {
-                if ( itable>1 ) throw new IllegalArgumentException( "null yRebinDescriptor not allowed for non-simple table datasets." );
                 inRanges= getYTagRanges( tds, itable );
                 
                 logger.finest("get Y RebinDescriptor ranges");
@@ -203,6 +206,7 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
                 ybd= calcBinDescriptor( inRanges, outRanges );
                 
             } else {
+                if ( itable>1 ) throw new IllegalArgumentException( "null yRebinDescriptor not allowed for non-simple table datasets." );
                 ybd= getIdentityBinDescriptor( tds.getYLength(itable) );
             }
             logger.finest("apply rebinning");
@@ -220,7 +224,7 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
                         if ( w*w2 > weights[xbd.outputBins[i]][ybd.outputBins[j]] ) {
                             sum[xbd.outputBins[i]][ybd.outputBins[j]]= z;
                             weights[xbd.outputBins[i]][ybd.outputBins[j]]= w * w2;
-                        }
+                        }                       
                     }
                 }
             } else {
@@ -297,16 +301,5 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         this.nearestNeighbor= v;
     }
     
-    public static void main( String[] args ) {
-        RebinDescriptor ddx1= new RebinDescriptor( 0,10,Units.seconds,10, false );
-        //  RebinDescriptor ddx2= new RebinDescriptor( 0.5,10.5,Units.seconds,10, false );
-        //  RebinDescriptor ddx2= new RebinDescriptor( 0,10,Units.seconds,2, false );
-        //  RebinDescriptor ddx2= new RebinDescriptor( 10,20,Units.seconds,10, false );
-        //RebinDescriptor ddx2= new RebinDescriptor( -10,0,Units.seconds,10, false );
-        RebinDescriptor ddx2= new RebinDescriptor( -10,20,Units.seconds,10, false );
-        DatumRange[] dr1= getBinRanges( ddx1 );
-        DatumRange[] dr2= getBinRanges( ddx2 );
-        BinDescriptor bd= calcBinDescriptor( dr1, dr2 );
-        System.err.println(bd);
-    }
+
 }
