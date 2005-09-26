@@ -168,9 +168,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             throw new RuntimeException(e);
         }
         
+        DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine( "entering updatePlotImage" );
         boolean histogram = this.histogram;
-        GeneralPath newPath = new GeneralPath();
-        
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         if (dataSet == null || dataSet.getXLength() == 0) {
             return;
@@ -183,15 +182,19 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         Units xUnits= xAxis.getUnits();
         Units yUnits= yAxis.getUnits();
         
-        xmax= xAxis.getDataMaximum().doubleValue(xUnits);
-        xmin= xAxis.getDataMinimum().doubleValue(xUnits);
+        DatumRange visibleRange= xAxis.getDatumRange();
+       // if ( isOverloading() ) {
+       //     visibleRange= visibleRange.rescale(-1,2);
+       // }
+        xmax= visibleRange.min().doubleValue(xUnits);
+        xmin= visibleRange.max().doubleValue(xUnits);
         ymax= yAxis.getDataMaximum().doubleValue(yUnits);
         ymin= yAxis.getDataMinimum().doubleValue(yUnits);
         
-        ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
-        if ( ixmin>0 ) ixmin--;
-        ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
-        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
+        ixmin= DataSetUtil.getPreviousColumn( dataSet, visibleRange.min() );        
+        ixmax= DataSetUtil.getNextColumn( dataSet, visibleRange.max() );
+        
+        GeneralPath newPath = new GeneralPath( GeneralPath.WIND_NON_ZERO, 110 * ( ixmax - ixmin ) / 100 );        
         
         double xSampleWidth;
         if (dataSet.getProperty("xTagWidth") != null) {
@@ -251,6 +254,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         if (getParent() != null) {
             getParent().repaint();
         }
+        DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine( "done updatePlotImage" );
     }
     
     
