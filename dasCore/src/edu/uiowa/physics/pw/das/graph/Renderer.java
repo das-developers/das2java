@@ -26,29 +26,25 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
-import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.util.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.system.*;
 import java.awt.geom.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.io.InterruptedIOException;
+import java.util.logging.Logger;
 import org.w3c.dom.*;
 
-public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpdateListener {
+public abstract class Renderer implements DataSetConsumer, Editable {
     
     // dsd reloads ds when plot params change.
-    private DataSetDescriptor dsd;
+    //  private DataSetDescriptor dsd;
+    String dataSetId;
     
     // avoid get/set methods unless you know what you're doing.
     protected DataSet ds;
-    
-    private boolean fullResolution = false;
     
     /** These store the axes used for the last updatePlotImage, for the convenience of the
      * implementing subclasses.  Be sure to call super.updatePlotImage so that these are
@@ -57,56 +53,36 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      */
     private DasAxis xaxis0, yaxis0;
     
-    /** Add to above documentation: Now we just store the AffineTransform for the axes.  See 
+    /** Add to above documentation: Now we just store the AffineTransform for the axes.  See
      * DasAxis.getAffineTransform.  at0 is xAxis.getAffineTransform.concatenate( yAxis.getAffineTransform ).
      */
 //    private AffineTransform at0;
     private DasAxis.Memento xmemento;
     private DasAxis.Memento ymemento;
-            
+    
     DasPlot parent;
+    DataLoader loader;
     
     protected DasProgressPanel progressPanel;
     private DataRequestThread drt;
     
     protected Exception lastException;
     
-    protected Renderer(DataSetDescriptor dsd) {
-        this.dsd = dsd;
-        if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
+    protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
+    
+    protected Renderer( DataSetDescriptor dsd ) {
+        // this.dsd = dsd;                
+        this.loader= new XAxisDataLoader( this, dsd );        
+        this.dataSetId= dsd==null ? "" : dsd.getDataSetID();
     }
     
-    protected Renderer(DataSet ds) {
-        this((ds == null ? (DataSetDescriptor)null : new ConstantDataSetDescriptor(ds)));
+    protected Renderer( DataSet ds ) {
+        this.ds= ds;
+        this.loader= null;
     }
     
     protected Renderer() {
         this((DataSetDescriptor)null);
-    }
-    
-    /** Creates a new instance of Renderer
-     * @deprecated use {@line #Renderer(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor)}
-     */
-    protected Renderer(DasPlot parent, DataSetDescriptor dsd) {
-        this(dsd);
-        this.parent= parent;
-    }
-    
-    /**
-     * @deprecated use {@link #Renderer(edu.uiowa.physics.pw.das.dataset.DataSet)}
-     */
-    protected Renderer(DasPlot parent, DataSet ds) {
-        this((ds == null ? (DataSetDescriptor)null : new ConstantDataSetDescriptor(ds)));
-        this.parent = parent;
-    }
-    
-    public boolean isFullResolution() {
-        return fullResolution;
-    }
-    
-    public void setFullResolution(boolean b) {
-        if (fullResolution == b) return;
-        fullResolution = b;
     }
     
     public DasPlot getParent() { return this.parent; }
@@ -155,25 +131,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         }
     }
     
-    // reloadDataSet is a dummy property that is Jeremy's way of telling the thing to
-    // reload through the property editor.  calling setReloadDataSet(true) causes the
-    // dataset to reload and the image to be redrawn.
-    private boolean reloadDataSet;
-    public void setReloadDataSet( boolean reloadDataSet ) {
-        if ( reloadDataSet ) {
-            this.ds= null;
-            this.dsd.reset();
-            parent.markDirty();
-            parent.update();
-            
-        }
-        reloadDataSet= false;
-    }
-    
-    public boolean isReloadDataSet() {
-        return this.reloadDataSet;
-    }
-    
     public void setLastException( Exception e ) {
         this.lastException= e;
     }
@@ -183,12 +140,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     }
     
     public void setDataSet(DataSet ds) {
-        if (ds == null) {
-            setDataSetDescriptor(null);
-        } else {
-            setDataSetDescriptor(new ConstantDataSetDescriptor(ds));
-            this.ds= ds;
-        }
+        this.ds= ds;
+        refresh();
+    }
+    
+    public void setException( Exception e ) {
+        this.lastException= e;        
+        refresh();
     }
     
     public void setDataSetID(String id) throws edu.uiowa.physics.pw.das.DasException {
@@ -202,10 +160,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     }
     
     public String getDataSetID() {
-        if (dsd == null) {
-            return "";
-        }
-        return dsd.getDataSetID();
+        return dataSetId;
     }
     
     
@@ -214,7 +169,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.
      */
-    protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {        
+    protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
         if ( xmemento==null ) {
             DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
             .fine( "unable to calculate AT, because old transform is not defined." );
@@ -222,36 +177,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         } else {
             AffineTransform at= new AffineTransform();
             at= xAxis.getAffineTransform(xmemento,at);
-            at= yAxis.getAffineTransform(ymemento,at);            
+            at= yAxis.getAffineTransform(ymemento,at);
             return at;
         }
     }
-    
-    /*
-     * returns the AffineTransform to transform data from the last updatePlotImage call
-     * axes (if super.updatePlotImage was called), or null if the transform is not possible.
-     */
-   /* protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
-        if ( at0==null ) {
-            DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
-            .info( "unable to calculate AT, because old transform is not defined." );
-            return null;
-        } else {
-            AffineTransform at= xAxis.getAffineTransform();
-            if ( at==null ) return null;
-            AffineTransform yat= yAxis.getAffineTransform();
-            if ( yat==null ) return null;            
-            at.concatenate( yat );   
-            
-            try {
-                at.concatenate( at0.createInverse() );
-                return at;
-            } catch ( NoninvertibleTransformException e ) {
-                DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).info( "unable to invert last transform" );
-                return null;
-            }
-        }
-    }*/
     
     /** Render is called whenever the image needs to be refreshed or the content
      * has changed.  This operation should occur with an animation-interactive
@@ -294,53 +223,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
         g.setColor(color0);
     }
     
-    protected void loadDataSet(final DasAxis xAxis, final DasAxis yAxis) {
-        
-        if (parent == null || !parent.isDisplayable() || dsd == null) {
-            if ( dsd==null ) DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("dsd is null, nothing to do");
-            return;
-        }
-        
-        Datum resolution;
-        Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-        
-        double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-        if (fullResolution) {
-            resolution = null;
-        } else {
-            resolution =  dataRange1.divide(deviceRange);
-        }
-        
-        if ( deviceRange==0.0 ) {
-            // this condition occurs sometimes at startup, it's not known why
-            return;
-        }
-        
-        /* cancel any previous active operation */
-        if ( progressPanel!=null && progressPanel instanceof Component ) {
-            progressPanel.cancel();
-            ((Container)(parent.getCanvas().getGlassPane())).remove((Component)progressPanel);
-        }
-        
-        progressPanel = DasProgressPanel.createComponentPanel(parent,"Loading data set");
-        //progressPanel = DasProgressPanel.createFramed("Loading data set");
-        
-        parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
-        
-        lastException=null;
-        
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+xAxis.getDatumRange()+" @ "+resolution);
-        dsd.requestDataSet( xAxis.getDataMinimum(), xAxis.getDataMaximum(), resolution, progressPanel, getParent().getCanvas() );
-        // the request will come back with a DataSetUpdated event
-        
-    }
-    
     /** updatePlotImage is called once the expensive operation of loading
      * the data is completed.  This operation should occur on an interactive
      * time scale.  This is an opportunity to create a cache
      * image of the data with the current axis state, when the render
      * operation cannot operate on an animation interactive time scale.
-     * Codes can no longer assume that the xAxis sent to render will be in 
+     * Codes can no longer assume that the xAxis sent to render will be in
      * the same state as it was when updatePlotImage was called, so use
      * the getAffineTransform method.  Only Renderer should call this method!
      */
@@ -356,101 +244,53 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     }
     
     public void update() {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("update");
+        logger.fine("update");
         if (parent != null) {
-            // if ( EventQueue.isDispatchThread() ) {
-            //     updateImmediately();
-            // } else {
             java.awt.EventQueue eventQueue =
                     Toolkit.getDefaultToolkit().getSystemEventQueue();
             DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
             eventQueue.postEvent(drue);
-            // }
         } else {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("update but parent was null");
+            logger.fine("update but parent was null");
         }
     }
     
+    /* WHAT IS UPDATE IMMEDIATELY MEAN!?!?! */
     protected void updateImmediately() {
-        DasAxis xAxis = parent.getXAxis();
-        DasAxis yAxis = parent.getYAxis();
-        loadDataSet(xAxis,yAxis);
-    }
-    
-    /*
-     * If an exception is handled by the Renderer putting the exception in place of the data,
-     * then return true here.  If the exception is more exceptional and we really need to get
-     * user's attention, return false.
-     */
-    private boolean rendererHandlesException( Exception e ) {
-        boolean result=
-                e instanceof InterruptedIOException ||
-                e instanceof NoDataInIntervalException ||
-                e instanceof CancelledOperationException ;
-        return result;
-    }
-    
-    public void dataSetUpdated( DataSetUpdateEvent e ) {
-        //updateImmediately();
-        
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update:"+e);
-        // TODO make sure Exception is cleared--what if data set is non-null but Exception is as well?
-        if ( e.getException()!=null && e.getDataSet()!=null ) {
-            throw new IllegalStateException("both exception and data set");
-        }
-        if (e.getException() != null) {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update exception: "+e.getException());
-            Exception exception = e.getException();
-            if ( !rendererHandlesException(exception) ) {
-                DasExceptionHandler.handle(exception);
-            }
-            lastException= exception;
-            
-            if (!(exception instanceof InterruptedIOException) &&
-                    !( ( exception instanceof StreamException) && (!( ((StreamException)exception).getCause() instanceof InterruptedIOException ) ) ) ) {
-                if (exception instanceof edu.uiowa.physics.pw.das.DasException ) {
-                    lastException= exception;
-                }
-                if ( !( exception instanceof NoDataInIntervalException || exception instanceof CancelledOperationException )  ) {
-                    DasExceptionHandler.handle(exception);
-                }
-            }
-        } else if ( e.getDataSet()==null ) {
-            // this indicates that the DataSetDescriptor has changed, and that the
-            // renderer needs to reread the data.  Cause this by invalidating the
-            // component.
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update notification (no dataset).");
-            parent.markDirty();
-            parent.update();
-            parent.repaint();
+        if (parent == null || !parent.isDisplayable() ) {
             return;
         }
+        if ( loader!=null ) {
+            loader.update();
+        } 
+        refresh();      
         
+    }    
+
+    
+    /*
+     * recalculate the plot image and repaint
+     */
+    protected void refresh() {
+        logger.fine("entering Renderer.refresh");
+        if ( parent==null ) {
+            logger.fine("null parent in refresh");
+            return;
+        }
+        if ( !parent.isDisplayable() ) {
+            logger.fine("parent not displayable");
+            return;
+        }
+        if (progressPanel != null && progressPanel instanceof DasProgressPanel ) {
+            ((DasProgressPanel)progressPanel).setLabel("Rebinning data set");
+        }
+        logger.fine("update plot image");
         try {
-            ds= e.getDataSet();
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("got dataset update w/dataset: "+ds);
-            if ( ds!=null ) {
-                if ( ds.getXLength()>0 ) {
-                    DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("  ds range: "+DataSetUtil.xRange(ds) );
-                } else {
-                    DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("  ds range: (empty)" );
-                }
-            }
-            if (progressPanel != null && progressPanel instanceof DasProgressPanel ) {
-                ((DasProgressPanel)progressPanel).setLabel("Rebinning data set");
-            }
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("update plot image");
-            
+            updatePlotImage( parent.getXAxis(), parent.getYAxis(), progressPanel );
             xmemento= parent.getXAxis().getMemento();
             ymemento= parent.getYAxis().getMemento();
-            
-            updatePlotImage( parent.getXAxis(), parent.getYAxis(), progressPanel );
-            if (parent != null) {
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("repaint");
-                parent.repaint();
-            }
-        } catch (DasException de) {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).warning("exception: "+de);
+        } catch ( DasException de ) {
+            logger.warning("exception: "+de);
             ds = null;
             lastException = de;
         } catch (RuntimeException re) {
@@ -458,25 +298,53 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
             throw re;
         } finally {
             if (progressPanel != null) {
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).fine("progressPanel.finished()");
+                logger.fine("progressPanel.finished()");
                 progressPanel.finished();
             }
         }
+        
+        logger.fine("repaint");
+        parent.repaint();
     }
     
+       
     public void setDataSetDescriptor(DataSetDescriptor dsd) {
-        if ( this.dsd!=null ) this.dsd.removeDataSetUpdateListener(this);
-        this.dsd = dsd;
-        if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
-        if (parent != null) {
-            parent.markDirty();
-            parent.update();
+        if ( loader==null ) {
+            logger.warning("installing loader--danger!");
+            loader= new XAxisDataLoader( this, dsd );
         }
-        ds = null;
+        if ( loader instanceof XAxisDataLoader ) {
+            ((XAxisDataLoader)loader).setDataSetDescriptor(dsd);
+            if (parent != null) {
+                parent.markDirty();
+                parent.update();
+            }
+            ds = null;
+        } else {
+            throw new RuntimeException("loader is not based on DataSetDescriptor");
+        }
+        
+    }
+    
+    public DataLoader getDataLoader() {
+        return this.loader;
+    }
+    
+    public void setDataSetLoader( DataLoader loader ) {
+        this.loader= loader;
+        loader.update();
     }
     
     public DataSetDescriptor getDataSetDescriptor() {
-        return this.dsd;
+        if ( loader==null ) {
+            return null;
+        } else { 
+            if ( this.loader instanceof XAxisDataLoader ) {
+                return ((XAxisDataLoader)loader).getDataSetDescriptor();
+            } else {
+                return null;
+            }
+        }
     }
     
     protected abstract void installRenderer();
@@ -484,5 +352,15 @@ public abstract class Renderer implements DataSetConsumer, Editable, DataSetUpda
     protected abstract void uninstallRenderer();
     
     protected abstract Element getDOMElement( Document document );
+    
+    private boolean overloading=false;
+    
+    public boolean isOverloading() {
+        return this.overloading;
+    }
+    public void setOverloading(boolean overloading) {
+        this.overloading = overloading;
+        update();
+    }
     
 }
