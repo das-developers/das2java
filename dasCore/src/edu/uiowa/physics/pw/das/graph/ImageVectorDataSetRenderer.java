@@ -1,10 +1,10 @@
 /*
  * ImageVectorDataSetRenderer.java
  *
- * This renderer can handle vector data sets with tens of thousands of points 
- * by histogramming the points and then creating a greyscale spectrogram of 
+ * This renderer can handle vector data sets with tens of thousands of points
+ * by histogramming the points and then creating a greyscale spectrogram of
  * the histogram.  The property "saturationHitCount" defines the number of pixel
- * hits that will make the pixel black.  In the future, this may be modified to 
+ * hits that will make the pixel black.  In the future, this may be modified to
  * support color, alpha channel, and connected psyms.
  *
  * Created on April 14, 2005, 8:45 PM
@@ -198,18 +198,18 @@ public class ImageVectorDataSetRenderer extends Renderer {
         RebinDescriptor ddx;
         
         DatumRange xrange=xAxis.getDatumRange();
-        if ( isOverloading() ) {
+       /* if ( isOverloading() ) {
             xrange= xrange.rescale(-1,2);
             ddx= new RebinDescriptor(
                     xrange.min(), xrange.max(),
                     xAxis.getColumn().getWidth()*3,
                     xAxis.isLog());
-        } else {
-            ddx= new RebinDescriptor(
-                    xrange.min(), xrange.max(),
-                    xAxis.getColumn().getWidth(),
-                    xAxis.isLog());
-        }
+        } else { */
+        ddx= new RebinDescriptor(
+                xrange.min(), xrange.max(),
+                xAxis.getColumn().getWidth(),
+                xAxis.isLog());
+        /* } */
         
         DatumRange yrange= yAxis.getDatumRange();
         RebinDescriptor ddy = new RebinDescriptor(
@@ -218,7 +218,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 yAxis.isLog());
         
         TableDataSet hist= histogram( ddx, ddy, ds );
-        WritableTableDataSet whist= (WritableTableDataSet)hist;
+        //WritableTableDataSet whist= (WritableTableDataSet)hist;
         
        /* double histMax= TableUtil.tableMax(hist, Units.dimensionless);
         for ( int i=0; i<whist.getXLength(); i++ ) {
@@ -232,16 +232,25 @@ public class ImageVectorDataSetRenderer extends Renderer {
         DasColorBar cb= new DasColorBar( Units.dimensionless.createDatum(0.),Units.dimensionless.createDatum(saturationHitCount), false );
         cb.setType( DasColorBar.Type.GRAYSCALE );
         
-        byte[] raster= SpectrogramRenderer.transformSimpleTableDataSet( whist, cb );
-        
         int h= ddy.numberOfBins();
         int w= ddx.numberOfBins();
         
-        IndexColorModel model= cb.getIndexColorModel();
-        plotImage= new BufferedImage( w, h, BufferedImage.TYPE_BYTE_INDEXED, model );
+        int[] raster= new int[ h*w ];
         
-        WritableRaster r= plotImage.getRaster();        
-        r.setDataElements( 0,0,w,h,raster);                
+        for (int i=0; i<w; i++) {
+            for (int j=0; j<h; j++) {
+                int index= (i-0) + ( h - j - 1 ) * w;
+                int alpha= 255 - ( 256 * (int)hist.getDouble(i,j,Units.dimensionless) / saturationHitCount );
+                if ( alpha > 255 ) alpha=255;
+                int icolor= ( alpha << 16 ) + ( alpha << 8 ) + alpha;
+                if ( i==0 ) System.out.println(Integer.toHexString(icolor));
+                raster[index]=icolor;
+            }
+        }
+        
+        plotImage= new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+        WritableRaster r= plotImage.getRaster();
+        r.setDataElements( 0,0,w,h,raster);
         
         imageXRange= xrange;
         imageYRange= yrange;
@@ -255,7 +264,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int state= STATE_MOVETO;
         
         DatumRange visibleRange= xAxis.getDatumRange();
-        if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
+        //if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
         
         int firstIndex= DataSetUtil.getPreviousColumn( ds, visibleRange.min() );
         int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );
@@ -278,7 +287,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         DataSetRebinner rebinner= new RangeRebinner();
         
         DatumRange visibleRange= xAxis.getDatumRange();
-        if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
+        // if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
         
         RebinDescriptor xRebinDescriptor = new RebinDescriptor(
                 visibleRange.min(), visibleRange.max(),
