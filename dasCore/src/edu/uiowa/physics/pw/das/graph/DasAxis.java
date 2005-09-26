@@ -258,6 +258,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String command = e.getActionCommand();
+                DasLogger.getLogger(DasLogger.GUI_LOG).info("event "+command);
                 if (command.equals(SCAN_PREVIOUS_LABEL)) {
                     scanPrevious();
                 } else if (command.equals(SCAN_NEXT_LABEL)) {
