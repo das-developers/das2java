@@ -45,11 +45,13 @@ import java.awt.Image;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Hashtable;
 import javax.swing.Icon;
 import org.w3c.dom.*;
 
@@ -62,13 +64,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private DasColorBar colorBar;
     Image plotImage;
     BufferedImage plotImage2;
+    byte[] raster;
     DatumRange imageXRange;
     DatumRange imageYRange;
+    DasAxis.Memento xmemento, ymemento, cmemento;
     
     protected class RebinListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
-            SpectrogramRenderer.this.plotImage= null;
-            SpectrogramRenderer.this.plotImage2= null;
             update();
         }
     }
@@ -86,6 +88,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.rebinner= rebinner;
             this.label= label;
         }
+        
+        
         public static final RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
         public static final RebinnerEnum nearestNeighbor= new RebinnerEnum(new NearestNeighborTableRebinner(),"nearestNeighbor");
         public static final RebinnerEnum binAverageNoInterpolate;
@@ -100,6 +104,22 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner.setEnlargePixels(false);
             binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
         }
+        
+        /*public static final RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
+        public static final RebinnerEnum nearestNeighbor;
+        public static final RebinnerEnum binAverageNoInterpolate= new RebinnerEnum(new AverageNoInterpolateTableRebinner(),"noInterpolate");
+        public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
+        static {
+            AverageNoInterpolateTableRebinner rebin= new AverageNoInterpolateTableRebinner();
+            rebin.setNearestNeighbor(true);
+            nearestNeighbor= new RebinnerEnum(rebin, "nearestNeighbor");
+            AverageTableRebinner rebinner;
+            rebinner = new AverageTableRebinner();
+            rebinner.setInterpolate(false);
+            rebinner.setEnlargePixels(false);
+            binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
+        }*/
+        
         public Icon getListIcon() {
             return null;
         }
@@ -192,9 +212,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     return;
                 }
             } else {
-                p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );                
-            }            
-
+                p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
+            }
+            
             g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
             
         }
@@ -205,7 +225,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private boolean sliceRebinnedData= true;
     
-    private static Image transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb, BufferedImage image ) {
+    /**
+     * transforms the simpleTableDataSet into a Raster byte array.  The rows of 
+     * the table are adjacent in the output byte array.
+     */
+    private static byte[] transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb ) {
         
         if ( rebinData.tableCount() > 1 ) throw new IllegalArgumentException("TableDataSet contains more than one table");
         DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "converting to pixel map" );
@@ -235,95 +259,90 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             }
         }
         
-        if ( image==null || image.getWidth()!=w || image.getHeight()!=h ) {
-            IndexColorModel model= cb.getIndexColorModel();
-            image= new BufferedImage( w, h, BufferedImage.TYPE_BYTE_INDEXED, model );
-        }
-        
-        WritableRaster r= image.getRaster();
-        
-        r.setDataElements( 0,0,w,h,pix);
-        
-        return image;
+        return pix;
     }
     
     
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
         try {
-            TableDataSet rebinData;
-            
-            if (monitor != null) {
-                if (monitor.isCancelled()) {
-                    return;
-                } else {
-                    monitor.setTaskSize(-1);
-                    monitor.started();
-                }
-            }
-            
             int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
             int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
             
-            if (getParent()==null  || w<=1 || h<=1 ) {
-                DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).finest("canvas not useable!!!");
-                return;
-            }
-            
-            if ( getDataSet() == null) {
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "got null dataset, setting image to null" );
-                plotImage= null;
-                rebinData= null;
-                imageXRange= null;
-                imageYRange= null;
-                getParent().repaint();
-                return;
+            if ( plotImage2!=null && xmemento!=null && ymemento!=null
+                    && xAxis.getMemento().equals( xmemento ) && yAxis.getMemento().equals( ymemento )
+                    && colorBar.getMemento().equals( cmemento ) ) {
+                logger.fine("same xaxis, yaxis, reusing raster");
                 
             } else {
                 
-                RebinDescriptor xRebinDescriptor;
-                xRebinDescriptor = new RebinDescriptor(
-                        xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-                        w,
-                        xAxis.isLog());
+                TableDataSet rebinData;
                 
-                RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                        yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-                        h,
-                        yAxis.isLog());
+                if (getParent()==null  || w<=1 || h<=1 ) {
+                    DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).finest("canvas not useable!!!");
+                    return;
+                }
                 
-                imageXRange= xAxis.getDatumRange();
-                imageYRange= yAxis.getDatumRange();
-                
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "rebinning to pixel resolution" );
-                
-                DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
-                //rebinner= new NewAverageTableRebinner();
-                
-                long t0;
-                
-                t0= System.currentTimeMillis();
-                
-                rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
-                
-                plotImage2= (BufferedImage)transformSimpleTableDataSet( rebinData, colorBar, plotImage2 );
-                rebinData.getDouble(0,0, rebinData.getZUnits());
-                plotImage= plotImage2;
+                if ( getDataSet() == null) {
+                    DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "got null dataset, setting image to null" );
+                    plotImage= null;
+                    rebinData= null;
+                    imageXRange= null;
+                    imageYRange= null;
+                    getParent().repaint();
+                    return;
+                    
+                } else {
+                    
+                    RebinDescriptor xRebinDescriptor;
+                    xRebinDescriptor = new RebinDescriptor(
+                            xAxis.getDataMinimum(), xAxis.getDataMaximum(),
+                            w,
+                            xAxis.isLog());
+                    
+                    RebinDescriptor yRebinDescriptor = new RebinDescriptor(
+                            yAxis.getDataMinimum(), yAxis.getDataMaximum(),
+                            h,
+                            yAxis.isLog());
+                    
+                    imageXRange= xAxis.getDatumRange();
+                    imageYRange= yAxis.getDatumRange();
+                    
+                    DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "rebinning to pixel resolution" );
+                    
+                    DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
+                    //rebinner= new NewAverageTableRebinner();
+                    
+                    long t0;
+                    
+                    t0= System.currentTimeMillis();
+                    
+                    rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
+                    
+                    xmemento= xAxis.getMemento();
+                    ymemento= yAxis.getMemento();
+                    cmemento= colorBar.getMemento();
+                    
+                    raster= transformSimpleTableDataSet( rebinData, colorBar );
+                    
+                }
                 
                 if ( isSliceRebinnedData() ) {
                     DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine("slicing rebin data");
                     super.ds= rebinData;
                 }
+                
             }
+            
+            IndexColorModel model= colorBar.getIndexColorModel();
+            plotImage2= new BufferedImage( w, h, BufferedImage.TYPE_BYTE_INDEXED, model );
+            
+            WritableRaster r= plotImage2.getRaster();
+            
+            r.setDataElements( 0,0,w,h,raster);
+            
+            plotImage= plotImage2;
             
         } finally {
-            if (monitor != null) {
-                if (monitor.isCancelled()) {
-                    return;
-                } else {
-                    monitor.finished();
-                }
-            }
-            
             getParent().repaint();
         }
     }
@@ -453,6 +472,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setRebinner( RebinnerEnum rebinnerEnum) {
         this.rebinnerEnum = rebinnerEnum;
+        this.plotImage2= null;
+        this.plotImage= null;
         refreshImage();
     }
     
@@ -470,6 +491,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setSliceRebinnedData(boolean sliceRebinnedData) {
         this.sliceRebinnedData = sliceRebinnedData;
+        this.plotImage2= null;
+        this.plotImage= null;
+        this.setDataSet(null);
+        refreshImage();
     }
     
     public String getListLabel() {
@@ -478,6 +503,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     public Icon getListIcon() {
         return null;
+    }
+    
+    public void setDataSet(DataSet ds) {
+        this.plotImage2= null;
+        this.plotImage= null;
+        super.setDataSet(ds);
+        
     }
     
 }
