@@ -30,3 +30,36 @@ eew> Agreed plane identifiers
 	 peaks - peaks
 	 weights - rebinning weights (always dimensionless)
 	 uncertainty - errors plane
+
+
+Vector
+   get(i)->Datum
+   getDouble(i,Units)->double
+   getUnits()->Units
+
+Table
+   get(i,j)->Datum
+   getDouble(i,j,Units)->double
+   length(index)->int
+   getUnits()->Units
+
+HyperTable    // arbitrary rank
+   rank()->int
+   get(i,j,k,l)->Datum
+   getDouble(i,j,k,l,Units)->double
+   length(index)->int
+   getUnits()->Units
+
+TableDataSet
+   tableCount()->int
+   getData(i)->Table
+   getDepend(index)->String[]
+   getTags(String,i)->Vector
+   getPlane(name)->DataSet
+
+VectorDataSet
+   getData->Vector
+   getDepend()->String[]
+   getTags(String)->Vector
+   getPlane(name)->DataSet
+
