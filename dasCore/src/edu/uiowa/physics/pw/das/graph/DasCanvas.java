@@ -369,8 +369,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setBackground(Color.white);
         this.setDoubleBuffered(true);
         glassPane = new GlassPane();
-        add(glassPane, GLASS_PANE_LAYER);
-        
+        add(glassPane, GLASS_PANE_LAYER);        
         if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
             popup= createPopupMenu();
             this.addMouseListener(createMouseInputAdapter());
@@ -1773,6 +1772,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             result[i]= getCanvasComponents(i);
         }
         return result;
+    }
+    
+    public String toString() {
+        return "[DasCanvas "+this.getWidth()+"x"+this.getHeight()+" "+this.getDasName()+"]";
     }
     
     /** TODO */
