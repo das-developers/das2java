@@ -125,9 +125,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int ix= (int)xAxis.transform( ds.getXTagDatum(i) );
             switch( state ) {
                 case STATE_MOVETO:
+                    g.fillRect( ix, iy, 1, 1 ); 
                     ix0= ix; iy0=iy; break;
                 case STATE_LINETO:
                     g.draw( new Line2D.Float( ix0, iy0, ix, iy ) );
+                    g.fillRect( ix, iy, 1, 1 );
                     ix0= ix; iy0=iy;
                     break;
             }
