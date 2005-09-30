@@ -5,19 +5,13 @@
  */
 
 package edu.uiowa.physics.pw.das.dataset.test;
-
-import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.math.fft.*;
 import java.io.*;
-import java.net.*;
 import java.nio.*;
-import java.nio.channels.*;
+import java.nio.channels.FileChannel.MapMode;
 import javax.sound.sampled.*;
-import javax.sound.sampled.spi.*;
-import edu.uiowa.physics.pw.das.graph.ImageVectorDataSetRenderer;
+
 
 /**
  *
@@ -36,7 +30,7 @@ public abstract class WavVectorDataSet implements VectorDataSet {
     float sampleRate;
     int frameSize;
     boolean unsigned;
-        
+    
     // note that the dataBuf should have the position at the beginning of the wav data, after the header.
     //  The limit marks the end of the data set.
     private WavVectorDataSet( ByteBuffer dataBuf, AudioFormat format ) throws IOException {
@@ -139,7 +133,18 @@ public abstract class WavVectorDataSet implements VectorDataSet {
         }
     }
     
-    public abstract double getDouble(int i, Units units);
+    public static WavVectorDataSet createFromFile( File wavFile ) throws FileNotFoundException, IOException {
+        try {
+            AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(wavFile);
+            AudioFormat audioFormat= fileFormat.getFormat();
+            FileInputStream fin= new FileInputStream( wavFile );
+            ByteBuffer buf= fin.getChannel().map( MapMode.READ_ONLY, 64, wavFile.length()-64 );
+            return createWavVectorDataSet( buf, audioFormat );
+        } catch ( UnsupportedAudioFileException e ) {
+            // it's supposed to be a wav file.
+            throw new RuntimeException(e);
+        }
+    }
     
     public int getXLength() {
         return frameCount;
