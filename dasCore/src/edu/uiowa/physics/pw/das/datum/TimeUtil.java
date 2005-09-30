@@ -356,19 +356,8 @@ public final class TimeUtil {
     }
     
     public static Datum now() {
-        Calendar cal= new GregorianCalendar();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        int hour= cal.get(Calendar.HOUR_OF_DAY);
-        int minute= cal.get(Calendar.MINUTE);
-        int second= cal.get(Calendar.SECOND);
-        int year= cal.get(Calendar.YEAR);
-        int doy= cal.get(Calendar.DAY_OF_YEAR);
-        java.text.DecimalFormat doyFormat = new java.text.DecimalFormat("000");
-        try {
-            return TimeUtil.create(year+"//"+doyFormat.format(doy)+" "+hour+":"+minute+":"+second);
-        } catch ( java.text.ParseException ex ) {
-            throw new IllegalStateException(ex.getMessage());
-        }
+        double us2000= ( System.currentTimeMillis() - 946684800e3 ) * 1000;
+        return Units.us2000.createDatum(us2000);
     }
     
     /** 
