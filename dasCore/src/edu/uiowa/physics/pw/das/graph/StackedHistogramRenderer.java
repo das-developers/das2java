@@ -166,8 +166,9 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         
         DasMouseInputAdapter mouseAdapter = parent.getMouseAdapter();
         
+        //TODO: consider delaying construction of slicers until first event
         VerticalSpectrogramSlicer vSlicer = VerticalSpectrogramSlicer.createSlicer( parent, this );
-        VerticalSlicerMouseModule vsl = VerticalSlicerMouseModule.create(this);
+        VerticalSlicerMouseModule vsl = VerticalSlicerMouseModule.create(this);        
         vsl.addDataPointSelectionListener(vSlicer);
         mouseAdapter.addMouseModule(vsl);
         
