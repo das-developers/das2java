@@ -28,12 +28,14 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.event.EventListenerList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 public class DataRange implements Cloneable {
     
@@ -193,12 +195,13 @@ public class DataRange implements Cloneable {
     }
     
     private void reportHistory() {
-        edu.uiowa.physics.pw.das.util.DasDie.println("history: "+history.size());
+        Logger log= DasLogger.getLogger( DasLogger.GUI_LOG );
+        log.finest("history: "+history.size());
         for ( int i=0; i<history.size(); i++ ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("   "+history.get(i));
+            log.finest("   "+history.get(i));
         }
-        edu.uiowa.physics.pw.das.util.DasDie.println("forwardHistory: "+forwardHistory.size());
-        edu.uiowa.physics.pw.das.util.DasDie.println("-------------");
+        log.finest("forwardHistory: "+forwardHistory.size());
+        log.finest("-------------");
     }
     
     protected void clearHistory() {
