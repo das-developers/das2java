@@ -23,10 +23,10 @@
 package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.DasProperties;
-import edu.uiowa.physics.pw.das.client.DasServer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.net.*;
 import java.util.Properties;
 
@@ -74,6 +74,19 @@ public class Authenticator extends JPanel {
         feedbackLabel= new JLabel("",JLabel.LEFT);
         add(feedbackLabel);        
         
+        String lockingKeyWarning= "";
+        if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_CAPS_LOCK ) ) {
+            lockingKeyWarning+= ", CAPS LOCK is on";
+        }
+
+        if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_NUM_LOCK ) ) {
+            lockingKeyWarning+= ", NUM LOCK is on";
+        }
+        
+        if ( !"".equals( lockingKeyWarning ) ) {
+            feedbackLabel.setText(lockingKeyWarning.substring(2));
+        }
+
     }
     
     public Key authenticate() {
