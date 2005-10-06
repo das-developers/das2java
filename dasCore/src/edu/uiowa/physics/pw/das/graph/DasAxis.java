@@ -95,7 +95,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /* GENERAL AXIS INSTANCE MEMBERS */
     
-    protected DataRange dataRange;
+    protected DataRange dataRange;    
     
     private int orientation;
     private int tickDirection=1;  // 1=down or left, -1=up or right
@@ -216,7 +216,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         maybeInitializeInputPanels();
         maybeInitializeScanButtons();
         add(primaryInputPanel);
-        add(secondaryInputPanel);
+        add(secondaryInputPanel);        
     }
     
     /* PRIVATE INITIALIZATION FUNCTIONS */
@@ -1372,9 +1372,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public Memento getMemento() {        
         Memento result= new Memento();
-        result.range= this.getDatumRange();
-        result.dmin= (int)transform( getDataMinimum() );
-        result.dmax= (int)transform( getDataMaximum() );
+        result.range= this.getDatumRange();        
+        if ( isHorizontal() ) {
+            if ( getColumn()!=DasColumn.NULL ) {
+                result.dmin= getColumn().getDMinimum();
+                result.dmax= getColumn().getDMaximum();
+            } else {
+                result.dmin= 0;
+                result.dmax= 0;
+            }
+        } else {
+            if ( getRow()!=DasRow.NULL ) {
+                result.dmin= getRow().getDMaximum();
+                result.dmax= getRow().getDMinimum();
+            } else {
+                result.dmin= 0;
+                result.dmax= 0;
+            }
+        }            
         result.log= this.isLog();
         result.axis= this;
         return result;
@@ -1817,8 +1832,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param units the units of the given data value.
      * @return Horizontal or vertical position on the canvas.
      */
-    double transform( double data, Units units ) {
+    double transform( double data, Units units ) {        
         DasDevicePosition range;
+        // TODO: consider optimization here 
         if (isHorizontal()) {
             range= getColumn();
             return transform( data, units, range.getDMinimum(), range.getDMaximum() );
