@@ -84,7 +84,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         DataSetRebinner rebinner;
         String label;
         
-        private RebinnerEnum(DataSetRebinner rebinner, String label) {
+        public RebinnerEnum(DataSetRebinner rebinner, String label) {
             this.rebinner= rebinner;
             this.label= label;
         }
