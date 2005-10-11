@@ -11,8 +11,8 @@ package edu.uiowa.physics.pw.das.dataset;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.stream.StreamUtil;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasMath;
 import java.util.ArrayList;
@@ -38,11 +38,11 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         int[] outputBins; // where to put it
         double[] weights; // what weight to apply
         public String toString() {
-            StringBuffer result= new StringBuffer();            
+            StringBuffer result= new StringBuffer();
             int ll= length < 30 ? length : 30;
             for ( int i=0; i<ll; i++ ) {
                 result.append( ""+inputBins[i]+" * "+weights[i]+" -> "+outputBins[i]+"\n" );
-            }            
+            }
             if ( length==0 ) {
                 result.append( "(no rebinning)\n" );
             } else if ( length>30 ) {
@@ -52,11 +52,11 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         }
     }
     
-    private static DatumRange[] getXTagRanges( DataSet ds ) {
+    private static DatumRange[] getXTagRanges( DataSet ds, int i0, int i1 ) {
         Datum tagWidth= DataSetUtil.guessXTagWidth(ds).divide(2);
-        DatumRange[] result= new DatumRange[ ds.getXLength() ];
-        for ( int i=0; i<ds.getXLength(); i++ ) {
-            Datum d= ds.getXTagDatum(i);
+        DatumRange[] result= new DatumRange[ i1-i0 ];
+        for ( int i=0; i<i1-i0; i++ ) {
+            Datum d= ds.getXTagDatum(i+i0);
             result[i]= new DatumRange( d.subtract(tagWidth), d.add( tagWidth ) );
         }
         return result;
@@ -170,14 +170,8 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         logger= DasLogger.getLogger( DasLogger.DATA_OPERATIONS_LOG );
         logger.finest("enter AverageNoInterpolateTableRebinner.rebin");
         
-        logger.finest("get xtag ranges");
-        DatumRange[] inRanges= getXTagRanges(ds);
-        
         logger.finest("get RebinDescriptor ranges");
-        DatumRange[] outRanges= getBinRanges(ddx);
-        
-        logger.finest("calc X bin descriptor");
-        BinDescriptor xbd= calcBinDescriptor( inRanges, outRanges );
+        DatumRange[] xoutRanges= getBinRanges(ddx);
         
         TableDataSet tds= (TableDataSet)ds;
         TableDataSet wds = (TableDataSet)ds.getPlanarView("weights");
@@ -190,20 +184,38 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         double[][] sum= new double[nx][ny];
         double[][] weights= new double[nx][ny];
         
-        logger.finest("xbd.length="+xbd.length);
+        HashMap ybinDescriptors= new HashMap();
+        
+        DatumRange[] youtRanges=null;
+        
+        if ( ddy!=null ) {
+            logger.finest("get Y RebinDescriptor ranges");
+            youtRanges= getBinRanges( ddy );            
+        } 
         
         for ( int itable=0; itable<tds.tableCount(); itable++ ) {
-            logger.finest("get YTag Ranges");
             
+            logger.finest("get xtag ranges");
+            DatumRange[] inRanges= getXTagRanges( tds, tds.tableStart(itable), tds.tableEnd(itable) );
+            
+            if ( itable ==153 ) {
+                System.err.println("itable="+itable);
+            }
+            logger.finest("calc X bin descriptor");
+            BinDescriptor xbd= calcBinDescriptor( inRanges, xoutRanges );
+            
+            logger.finest("get YTag Ranges");
             BinDescriptor ybd;
             if ( ddy!=null ) {
-                inRanges= getYTagRanges( tds, itable );
-                
-                logger.finest("get Y RebinDescriptor ranges");
-                outRanges= getBinRanges( ddy );
-                
-                logger.finest("calc Y bin descriptor");
-                ybd= calcBinDescriptor( inRanges, outRanges );
+                DatumVector dv= tds.getYTags(itable);
+                if ( ybinDescriptors.containsKey( dv ) ) {
+                    ybd= ( BinDescriptor ) ybinDescriptors.get(dv);
+                } else {
+                    inRanges= getYTagRanges( tds, itable );
+                                
+                    logger.finest("calc Y bin descriptor");
+                    ybd= calcBinDescriptor( inRanges, youtRanges );
+                }
                 
             } else {
                 if ( itable>1 ) throw new IllegalArgumentException( "null yRebinDescriptor not allowed for non-simple table datasets." );
@@ -213,30 +225,35 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
             
             logger.finest("ybd.length="+ybd.length);
             
+            int x0= tds.tableStart(itable);
             if ( nearestNeighbor ) {
                 for ( int i=0; i<xbd.length; i++ ) {
                     for ( int j=0; j<ybd.length; j++ ) {
-                        double z= tds.getDouble( xbd.inputBins[i],ybd.inputBins[j],units );
+                        double z= tds.getDouble( xbd.inputBins[i]+x0,ybd.inputBins[j],units );
                         double w= xbd.weights[i] * ybd.weights[j];
                         double w2 = wds == null
                                 ? (units.isFill(z) ? 0. : 1.)
-                                :  wds.getDouble( xbd.inputBins[i],ybd.inputBins[j],Units.dimensionless );
+                                :  wds.getDouble( xbd.inputBins[i]+x0,ybd.inputBins[j],Units.dimensionless );
                         if ( w*w2 > weights[xbd.outputBins[i]][ybd.outputBins[j]] ) {
                             sum[xbd.outputBins[i]][ybd.outputBins[j]]= z;
                             weights[xbd.outputBins[i]][ybd.outputBins[j]]= w * w2;
-                        }                       
+                        }
                     }
                 }
             } else {
                 for ( int i=0; i<xbd.length; i++ ) {
                     for ( int j=0; j<ybd.length; j++ ) {
-                        double z= tds.getDouble( xbd.inputBins[i],ybd.inputBins[j],units );
+                        double z= tds.getDouble( xbd.inputBins[i]+x0,ybd.inputBins[j],units );
                         double w= xbd.weights[i] * ybd.weights[j];
                         double w2 = wds == null
                                 ? (units.isFill(z) ? 0. : 1.)
-                                :  wds.getDouble( xbd.inputBins[i],ybd.inputBins[j],Units.dimensionless );
-                        sum[xbd.outputBins[i]][ybd.outputBins[j]]+= w * w2 * z;
-                        weights[xbd.outputBins[i]][ybd.outputBins[j]]+= w * w2;
+                                :  wds.getDouble( xbd.inputBins[i]+x0,ybd.inputBins[j],Units.dimensionless );
+                        try{
+                            sum[xbd.outputBins[i]][ybd.outputBins[j]]+= w * w2 * z;
+                            weights[xbd.outputBins[i]][ybd.outputBins[j]]+= w * w2;
+                        } catch ( ArrayIndexOutOfBoundsException e ) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
@@ -301,5 +318,5 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         this.nearestNeighbor= v;
     }
     
-
+    
 }
