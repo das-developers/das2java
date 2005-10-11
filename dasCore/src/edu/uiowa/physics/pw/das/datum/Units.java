@@ -96,6 +96,10 @@ public abstract class Units implements Displayable {
         hertz.registerConverter(megaHertz, UnitsConverter.MEGA);
     }
     
+    public static final Units eV= new NumberUnits("eV");
+    public static final Units pcm3= new NumberUnits("cm^-3");    
+    public static final Units kelvin= new NumberUnits("K");
+    public static final Units cmps= new NumberUnits("cm/s");
     public static final Units meters = new NumberUnits("m");
     public static final Units kiloMeters = new NumberUnits("km");
     static {
