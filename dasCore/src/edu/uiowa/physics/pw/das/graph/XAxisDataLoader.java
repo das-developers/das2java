@@ -42,9 +42,6 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     DasProgressMonitor progressMonitor;
     Logger logger;
     
-    // TODO: verify bug in DataSetUpdate event.  For example, try MendelBrotDSD in SpectrogramDemo with higher oversample.
-    // TODO: XYLoader (again for SpectrogramDemo) doesn't work properly.  It's very jumpy and gets in bad states w/the AT.
-    
     Request currentRequest;
     List unsolicitedRequests;
     
@@ -59,9 +56,13 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     public void update() {
         if ( isActive() ) {
             DasPlot p= getRenderer().getParent();
-            DasAxis xAxis = p.getXAxis();
-            DasAxis yAxis = p.getYAxis();
-            loadDataSet( xAxis, yAxis );
+            if ( p==null ) {
+                DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("plot is null, no need to load");
+            } else {
+                DasAxis xAxis = p.getXAxis();
+                DasAxis yAxis = p.getYAxis();
+                loadDataSet( xAxis, yAxis );
+            }
         }
     }
     
@@ -188,9 +189,11 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     
     
     public void setDataSetDescriptor( DataSetDescriptor dsd ) {
+        DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("set dsd: "+dsd);
         if ( this.dsd!=null ) this.dsd.removeDataSetUpdateListener(this);
         this.dsd = dsd;
         if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
+        update();
     }
     
     public DataSetDescriptor getDataSetDescriptor() {
