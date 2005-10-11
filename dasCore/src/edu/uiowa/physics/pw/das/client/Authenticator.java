@@ -39,12 +39,12 @@ public class Authenticator extends JPanel {
     
     DasServer dasServer;
     
-    public Authenticator(DasServer dasServer) { 
+    public Authenticator(DasServer dasServer) {
         this( dasServer, "" );
     }
     
     public Authenticator(DasServer dasServer, String restrictedResourceLabel ) {
-
+        
         this.dasServer= dasServer;
         
         setLayout( new BoxLayout(this,BoxLayout.Y_AXIS));
@@ -72,33 +72,37 @@ public class Authenticator extends JPanel {
         add(tfPass);
         
         feedbackLabel= new JLabel("",JLabel.LEFT);
-        add(feedbackLabel);        
+        add(feedbackLabel);
         
-        String lockingKeyWarning= "";
-        if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_CAPS_LOCK ) ) {
-            lockingKeyWarning+= ", CAPS LOCK is on";
-        }
-
-        if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_NUM_LOCK ) ) {
-            lockingKeyWarning+= ", NUM LOCK is on";
+        try {
+            String lockingKeyWarning= "";
+            if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_CAPS_LOCK ) ) {
+                lockingKeyWarning+= ", CAPS LOCK is on";
+            }
+            
+            if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_NUM_LOCK ) ) {
+                lockingKeyWarning+= ", NUM LOCK is on";
+            }
+            
+            if ( !"".equals( lockingKeyWarning ) ) {
+                feedbackLabel.setText(lockingKeyWarning.substring(2));
+            }
+        } catch ( UnsupportedOperationException e ) {
+            //  I sure hope they don't have caps lock on!
         }
         
-        if ( !"".equals( lockingKeyWarning ) ) {
-            feedbackLabel.setText(lockingKeyWarning.substring(2));
-        }
-
     }
     
     public Key authenticate() {
         
         Key result=null;
         int okayCancel=JOptionPane.OK_OPTION;
-                
-        while ( okayCancel==JOptionPane.OK_OPTION && result==null ) {
-            okayCancel=       
-                JOptionPane.showConfirmDialog(null,this,"Authenticator",
-                        JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
         
+        while ( okayCancel==JOptionPane.OK_OPTION && result==null ) {
+            okayCancel=
+                    JOptionPane.showConfirmDialog(null,this,"Authenticator",
+                    JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+            
             if (okayCancel==JOptionPane.OK_OPTION) {
                 char[] ipass= tfPass.getPassword();
                 String pass= String.valueOf(tfPass.getPassword());
@@ -132,8 +136,7 @@ public class Authenticator extends JPanel {
         try {
             Authenticator a= new Authenticator(DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das-test/das2ServerEEW")));
             edu.uiowa.physics.pw.das.util.DasDie.println(a.authenticate());
-        }
-        catch (MalformedURLException mue) {
+        } catch (MalformedURLException mue) {
             mue.printStackTrace();
         }
         
