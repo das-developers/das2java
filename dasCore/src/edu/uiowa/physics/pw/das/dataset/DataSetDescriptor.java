@@ -98,16 +98,6 @@ public abstract class DataSetDescriptor implements Displayable {
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
             final DasProgressMonitor monitor, Object lockObject ) {
         
-        /*
-        CacheTag tag= new CacheTag( start, end, resolution );
-        if ( dataSetCache.haveStored( this, tag ) ) {
-            DataSet ds= dataSetCache.retrieve( this, tag );
-            DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
-            fireDataSetUpdateEvent(dsue);
-            return;
-        }
-         */
-        
         Runnable request = new Runnable() {
             public void run() {
                 DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("requestDataSet: "+start+" "+end+" "+resolution);
