@@ -332,7 +332,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     
     public void setDataSetLoader( DataLoader loader ) {
         this.loader= loader;
-        if ( loader!=null ) loader.update();
+        if ( loader!=null ) loader.update(); 
     }
     
     public DataSetDescriptor getDataSetDescriptor() {
