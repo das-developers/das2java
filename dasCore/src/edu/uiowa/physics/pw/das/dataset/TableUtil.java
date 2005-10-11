@@ -77,7 +77,7 @@ public class TableUtil {
         // cheat and check for logarithmic scale.  If logarithmic, then return YTagWidth as percent.
         double y0= table.getYTagDouble( itable, 0, table.getYUnits());
         double y1= table.getYTagDouble( itable, 1, table.getYUnits());
-        int n= table.getYLength(0)-1;
+        int n= table.getYLength(itable)-1;
         double yn= table.getYTagDouble( itable, n, table.getYUnits() );
         if ( (yn-y0) / ( (y1-y0 ) * n ) > 10. ) {
             return Units.log10Ratio.createDatum( DasMath.log10(y1/y0) );
