@@ -42,6 +42,14 @@ public final class DatumVector {
     
     /** T0DO: check offset and length for out of bounds condition */
     private DatumVector(double[] array, int offset, int length, Units units, double resolution, boolean copy) {
+        //<editor-fold defaultstate="collapsed" desc="parameter checking">
+        if (array == null) {
+            throw new NullPointerException("array is null");
+        }
+        if (units == null) {
+            throw new NullPointerException("units is null");
+        }
+        //</editor-fold>
         if (copy) {
             this.store = new double[length];
             for (int i = 0; i < length; i++) {
