@@ -50,7 +50,7 @@ public class GrannyTickLabeller implements TickLabeller {
     
     public Rectangle labelMajorTick(Graphics g, int tickNumber, java.awt.geom.Line2D tickLine) {
         GrannyTextRenderer gtr= new GrannyTextRenderer();
-        String grannyString= getLabel( tickNumber, Datum.create( ticks.tickV[tickNumber], ticks.units ) );
+        String grannyString= getLabel( tickNumber, ticks.tickV.get(tickNumber) );
         gtr.setString(parent, grannyString );
         Rectangle bounds= gtr.getBounds();
         

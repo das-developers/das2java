@@ -647,7 +647,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     private void updateDataSet() {
         if (!drawTca || dataset.equals("") || dsd==null) return;
-        double [] tickV = getTickV().tickV;
+        double [] tickV = getTickV().tickV.toDoubleArray(getUnits());
         Datum data_minimum;
         Datum data_maximum;
         Datum iinterval;
@@ -1060,8 +1060,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         TickVDescriptor ticks= getTickV();
         
-        double[] tickv= ticks.tickV;
-        
         if (bottomLine) {
             g.drawLine(DMin,bottomPosition,DMax,bottomPosition);
         }
@@ -1073,8 +1071,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int tickLengthMinor = tickLengthMajor / 2;
         int tickLength;
         
-        for ( int i=0; i<ticks.tickV.length; i++ ) {
-            double tick1= ticks.tickV[i];
+        for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
+            double tick1= ticks.tickV.doubleValue(i, getUnits());
             int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 tickLength= tickLengthMajor;
@@ -1093,8 +1091,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
-        for ( int i=0; i<ticks.minorTickV.length; i++ ) {
-            double tick1= ticks.minorTickV[i];
+        for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
+            double tick1= ticks.minorTickV.doubleValue(i, getUnits());
             int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 tickLength= tickLengthMinor;
@@ -1158,8 +1156,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         TickVDescriptor ticks= getTickV();
         
-        double[] tickv= ticks.tickV;
-        
         if (leftLine) {
             g.drawLine(leftPosition,DMin,leftPosition,DMax);
         }
@@ -1171,8 +1167,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int tickLengthMinor = tickLengthMajor / 2;
         int tickLength;
         
-        for ( int i=0; i<ticks.tickV.length; i++ ) {
-            double tick1= ticks.tickV[i];
+        for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
+            double tick1= ticks.tickV.doubleValue(i, getUnits());
             int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 
@@ -1192,9 +1188,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
-        for ( int i=0; i<ticks.minorTickV.length; i++ ) {
+        for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
             tickLength= tickLengthMinor;
-            double tick1= ticks.minorTickV[i];
+            double tick1= ticks.minorTickV.doubleValue(i, getUnits());
             int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 tickLength= tickLengthMinor;
@@ -1474,10 +1470,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected int getMaxLabelWidth(FontMetrics fm) {
         TickVDescriptor ticks = getTickV();
-        double[] tickv = ticks.tickV;
+        DatumVector tickv = ticks.tickV;
         int size = Integer.MIN_VALUE;
-        for (int i = 0; i < tickv.length; i++) {
-            String label = tickFormatter(tickv[i]);
+        for (int i = 0; i < tickv.getLength(); i++) {
+            String label = tickFormatter(tickv.doubleValue(i, getUnits()));
             GrannyTextRenderer idlt = new GrannyTextRenderer();
             idlt.setString(this, label);
             int labelSize = (int)Math.round(idlt.getWidth());
@@ -1911,30 +1907,35 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     private Datum findTickLog( Datum xDatum, double direction, boolean minor ) {
-        double x= xDatum.doubleValue(tickV.units);
+        Units units = getUnits();
+        double x= xDatum.doubleValue(units);
         double result;
+        DatumVector ticks = tickV.tickV;
         if ( direction>0 ) { //find the smallest tick that is bigger than x.
-            result= tickV.tickV[tickV.tickV.length-1] * 10;
-            for (int i=tickV.tickV.length-1; i>=0; i--) {
-                if ( x<tickV.tickV[i] ) result= tickV.tickV[i];
+            result= ticks.doubleValue(ticks.getLength()-1, units) * 10;
+            for (int i=ticks.getLength()-1; i>=0; i--) {
+                double d = ticks.doubleValue(i, units);
+                if ( x<d ) result= d;
             }
         } else if ( direction<0) { // find the biggest tick that is smaller than x.
-            result= tickV.tickV[0] / 10;
-            for (int i=0; i<tickV.tickV.length; i++) {
-                if ( x>tickV.tickV[i] ) result= tickV.tickV[i];
+            result= ticks.doubleValue(0, units) / 10;
+            for (int i=0; i<ticks.getLength(); i++) {
+                double d = ticks.doubleValue(i, units);
+                if ( x>d ) result= d;
             }
         } else {
             result= -999;
             double closestDistance= Double.MAX_VALUE;
-            for (int i=0; i<tickV.tickV.length; i++) {
-                double dist= Math.abs( Math.log(x) - Math.log(tickV.tickV[i]) );
+            for (int i=0; i<ticks.getLength(); i++) {
+                double d = ticks.doubleValue(i, units);
+                double dist= Math.abs( Math.log(x) - Math.log(d) );
                 if ( dist < closestDistance ) {
-                    result= tickV.tickV[i];
+                    result= d;
                     closestDistance= dist;
                 }
             }
         }
-        return Datum.create(result,xDatum.getUnits());
+        return Datum.create(result,units);
     }
     
     /** TODO
@@ -1944,16 +1945,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
+        int majorLen;
+        int minorLen;
+        double[] ticks;
+        Units units = getUnits();
+        
         // direction<0 nearest left, direction>0 nearest right, direction=0 nearest.
         if (tickV==null) return xDatum;
         
-        double[] ticks= new double[ tickV.tickV.length + tickV.minorTickV.length ];
-        for ( int i=0; i<tickV.tickV.length; i++ ) ticks[i]= tickV.tickV[i];
-        for ( int i=0; i<tickV.minorTickV.length; i++ ) ticks[i+tickV.tickV.length]= tickV.minorTickV[i];
+        majorLen = tickV.tickV.getLength();
+        minorLen = tickV.minorTickV.getLength();
+        ticks= new double[ majorLen + minorLen ];
+        for ( int i=0; i<majorLen; i++ ) {
+            ticks[i]= tickV.tickV.doubleValue(i, units);
+        }
+        for ( int i=0; i<minorLen; i++ ) {
+            ticks[i+majorLen]= tickV.minorTickV.doubleValue(i, units);
+        }
         
         int iclose=0; double close=Double.MAX_VALUE;
         
-        double x= xDatum.doubleValue(tickV.units);
+        double x= xDatum.doubleValue(units);
         
         for ( int i=0; i<ticks.length; i++ ) {
             if ( direction<0 && ticks[i] < x && x-ticks[i] < close ) {
@@ -1969,7 +1981,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
-        return Datum.create(ticks[iclose],tickV.units);
+        return Datum.create(ticks[iclose],units);
         
     }
     

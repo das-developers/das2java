@@ -229,17 +229,17 @@ public class TickCurveRenderer extends Renderer {
         }
         
         double[] findex;
-        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.minorTickV );
+        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.minorTickV.toDoubleArray(xds.getXUnits()) );
 
         tickLabeller= new GrannyTickLabeller( xAxis ); // xAxis is a convenient Component
         tickLabeller.init( tickv );
         
-        for ( int i=0; i<tickv.minorTickV.length; i++ ) {
+        for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
             drawTick( g, findex[i] );
         }
 
-        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.tickV );
-        for ( int i=0; i<tickv.tickV.length; i++ ) {            
+        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.tickV.toDoubleArray(xds.getXUnits()) );
+        for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
             drawLabelTick( g, findex[i], i );            
         }
         
