@@ -511,6 +511,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         menu.show( parent, p.x, p.y);
     }
     
+    public void setPinned(boolean b) {
+        pinned = b;
+    }
+    
     public void mousePressed(MouseEvent e) {
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePressed");
         if ( pinned ) {
