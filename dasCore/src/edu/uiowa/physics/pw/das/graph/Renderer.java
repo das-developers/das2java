@@ -362,5 +362,27 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         this.overloading = overloading;
         update();
     }
+
+    /**
+     * Holds value of property active.
+     */
+    private boolean active= true;
+
+    /**
+     * Getter for property active.
+     * @return Value of property active.
+     */
+    public boolean isActive() {
+        return this.active;
+    }
+
+    /**
+     * Setter for property active.
+     * @param active New value of property active.
+     */
+    public void setActive(boolean active) {
+        this.active = active;
+        update();
+    }
     
 }
