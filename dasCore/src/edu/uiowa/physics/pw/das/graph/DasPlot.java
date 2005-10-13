@@ -94,12 +94,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (!"true".equals(System.getProperty("java.awt.headless"))) {
             
             HorizontalRangeSelectorMouseModule hrs=
-            new HorizontalRangeSelectorMouseModule(this, xAxis);
-            mouseAdapter.addMouseModule(hrs);            
+                    new HorizontalRangeSelectorMouseModule(this, xAxis);
+            mouseAdapter.addMouseModule(hrs);
             hrs.addDataRangeSelectionListener(xAxis);
             
             VerticalRangeSelectorMouseModule vrs=
-            new VerticalRangeSelectorMouseModule(this,yAxis);
+                    new VerticalRangeSelectorMouseModule(this,yAxis);
             mouseAdapter.addMouseModule(vrs);
             vrs.addDataRangeSelectionListener(yAxis);
             
@@ -123,12 +123,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                             DataSet ds = renderer.getDataSet();
                             if (ds instanceof TableDataSet) {
                                 TableUtil.dumpToAsciiStream((TableDataSet)ds, out);
-                            }
-                            else if (ds instanceof VectorDataSet) {
+                            } else if (ds instanceof VectorDataSet) {
                                 VectorUtil.dumpToAsciiStream((VectorDataSet)ds, out);
                             }
-                        }
-                        catch (IOException ioe) {
+                        } catch (IOException ioe) {
                             DasExceptionHandler.handle(ioe);
                         }
                     }
@@ -210,7 +208,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         g.dispose();
     }
     
-    protected void updateImmediately() {       
+    protected void updateImmediately() {
         for (int i=0; i<renderers.size(); i++) {
             Renderer rend= (Renderer)renderers.get(i);
             rend.update();
@@ -258,8 +256,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 Data = ds;
                 try {
                     updatePlotImage();
-                }
-                catch (DasException de) {
+                } catch (DasException de) {
                     DasExceptionHandler.handle(de);
                 }
                 if (parent != null) {
@@ -277,8 +274,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             } catch ( DasException de ) {
                 DasExceptionHandler.handle(de);
             }
-        }
-        catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
             DasExceptionHandler.handle(ie);
         }
     }
@@ -306,13 +302,26 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         drawContent(plotGraphics);
         
+        boolean noneActive=true;
         for ( int i=0; i<renderers.size(); i++ ) {
             Renderer rend= (Renderer)renderers.get(i);
-            rend.render(plotGraphics,xAxis,yAxis);
+            if ( rend.isActive() ) {
+                rend.render(plotGraphics,xAxis,yAxis);
+                noneActive= false;
+            }
         }
         
+        if ( noneActive && renderers.size()>0 ) {
+            graphics.setColor(Color.gray);
+            String s= "(no active renderers)";
+            graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+            
+        }
         if ( renderers.size()==0 ) {
+            graphics.setColor(Color.gray);
+            String s= "(no renderers)";
             DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("dasPlot has no renderers");
+            graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
         }
         
         graphics.setColor(getForeground());
@@ -497,8 +506,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (node instanceof Element) {
                 if (node.getNodeName().equals("xAxis")) {
                     xAxis = processXAxisElement((Element)node, row, column, form);
-                }
-                else if (node.getNodeName().equals("yAxis")) {
+                } else if (node.getNodeName().equals("yAxis")) {
                     yAxis = processYAxisElement((Element)node, row, column, form);
                 }
             }
@@ -544,15 +552,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                         axis.setOrientation(DasAxis.HORIZONTAL);
                     }
                     return axis;
-                }
-                else if (node.getNodeName().equals("timeaxis")) {
+                } else if (node.getNodeName().equals("timeaxis")) {
                     DasAxis axis = DasAxis.processTimeaxisElement(e, form);
                     if (!axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.HORIZONTAL);
                     }
                     return axis;
-                }
-                else if (node.getNodeName().equals("attachedaxis")) {
+                } else if (node.getNodeName().equals("attachedaxis")) {
                     DasAxis axis = DasAxis.processAttachedaxisElement(e, form);
                     if (!axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.HORIZONTAL);
@@ -576,15 +582,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                         axis.setOrientation(DasAxis.VERTICAL);
                     }
                     return axis;
-                }
-                else if (node.getNodeName().equals("timeaxis")) {
+                } else if (node.getNodeName().equals("timeaxis")) {
                     DasAxis axis = DasAxis.processTimeaxisElement(e, form);
                     if (axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.VERTICAL);
                     }
                     return axis;
-                }
-                else if (node.getNodeName().equals("attachedaxis")) {
+                } else if (node.getNodeName().equals("attachedaxis")) {
                     DasAxis axis = DasAxis.processAttachedaxisElement(e, form);
                     if (axis.isHorizontal()) {
                         axis.setOrientation(DasAxis.VERTICAL);
@@ -603,8 +607,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (node instanceof Element) {
                 if (node.getNodeName().equals("spectrogram")) {
                     parent.addRenderer(SpectrogramRenderer.processSpectrogramElement((Element)node, parent, form));
-                }
-                else if (node.getNodeName().equals("lineplot")) {
+                } else if (node.getNodeName().equals("lineplot")) {
                     parent.addRenderer(SymbolLineRenderer.processLinePlotElement((Element)node, parent, form));
                 }
             }
@@ -665,8 +668,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         try {
             plot.setDasName(name);
-        }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
+        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
         }
         return plot;
@@ -700,10 +702,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 addRenderer(r);
                 revalidate();
                 success = true;
-            }
-            catch (UnsupportedFlavorException ufe) {
-            }
-            catch (IOException ioe) {
+            } catch (UnsupportedFlavorException ufe) {
+            } catch (IOException ioe) {
             }
             return success;
         }
@@ -751,14 +751,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             DasRendererUpdateEvent e2 = (DasRendererUpdateEvent)newEvent;
             if (e1.getRenderer() == e2.getRenderer()) {
                 return existingEvent;
-            }
-            else {
+            } else {
                 return null;
             }
         }
         return super.coalesceEvents(existingEvent, newEvent);
     }
-
+    
     /** Processes events occurring on this component. By default this
      * method calls the appropriate
      * <code>process&lt;event&nbsp;type&gt;Event</code>
@@ -783,8 +782,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             DasRendererUpdateEvent drue = (DasRendererUpdateEvent)e;
             drue.getRenderer().updateImmediately();
             repaint();
-        }
-        else {
+        } else {
             super.processEvent(e);
         }
     }
