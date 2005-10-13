@@ -128,6 +128,9 @@ public class DatumRange implements Comparable {
      * @return
      */
     public boolean equals( Object o ) {
+        if (!(o instanceof DatumRange)) {
+            return false;
+        }
         return ( this==o ) || 0==compareTo(o);
     }
     
@@ -138,6 +141,9 @@ public class DatumRange implements Comparable {
      * @return
      */
     public int compareTo(Object o) {
+        if ( o == null) {
+            throw new NullPointerException("Cannot compare to null");
+        }
         if ( !(o instanceof DatumRange) ) {
             throw new IllegalArgumentException("argument is not a DatumRange");
         }
