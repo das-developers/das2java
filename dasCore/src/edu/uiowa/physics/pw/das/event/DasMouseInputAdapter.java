@@ -425,23 +425,25 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         
         MouseMode result= MouseMode.idle;
         Cursor cursor= new Cursor(Cursor.DEFAULT_CURSOR);
-        
+                
         if ( !(parent instanceof DasAxis) ) {
-            if ( xLeftSide ) {
-                if ( yTopSide ) {
-                    result= MouseMode.resize;
-                    cursor= new Cursor(Cursor.NW_RESIZE_CURSOR);
-                } else if ( yBottomSide ) {
-                    result= MouseMode.resize;
-                    cursor= new Cursor(Cursor.SW_RESIZE_CURSOR);
-                }
-            } else if ( xRightSide ) {
-                if ( yTopSide ) {
-                    result= MouseMode.resize;
-                    cursor= new Cursor(Cursor.NE_RESIZE_CURSOR);
-                } else if  ( yBottomSide ) {
-                    result= MouseMode.resize;
-                    cursor= new Cursor(Cursor.SE_RESIZE_CURSOR);
+            if ( ( e.getModifiersEx()&MouseEvent.SHIFT_DOWN_MASK ) == MouseEvent.SHIFT_DOWN_MASK ) {
+                if ( xLeftSide ) {
+                    if ( yTopSide ) {
+                        result= MouseMode.resize;
+                        cursor= new Cursor(Cursor.NW_RESIZE_CURSOR);
+                    } else if ( yBottomSide ) {
+                        result= MouseMode.resize;
+                        cursor= new Cursor(Cursor.SW_RESIZE_CURSOR);
+                    }
+                } else if ( xRightSide ) {
+                    if ( yTopSide ) {
+                        result= MouseMode.resize;
+                        cursor= new Cursor(Cursor.NE_RESIZE_CURSOR);
+                    } else if  ( yBottomSide ) {
+                        result= MouseMode.resize;
+                        cursor= new Cursor(Cursor.SE_RESIZE_CURSOR);
+                    }
                 }
             }
         }
@@ -516,7 +518,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mousePressed(MouseEvent e) {
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePressed");
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePressed "+mouseMode);
         if ( pinned ) {
             active=null;
             refresh();
@@ -526,7 +528,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         parent.requestFocus();
         xOffset= l.x;
         yOffset= l.y;
-        if (mouseMode==MouseMode.resize) {
+                
+        if ( mouseMode==MouseMode.resize ) {
             resizeStart= new Point(0,0);
             graphics= (Graphics2D) getGlassPane().getGraphics();
             graphics.translate(parent.getX(),parent.getY());
@@ -594,7 +597,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseDragged(MouseEvent e) {
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseDragged");
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseDragged in "+mouseMode);
         if (mouseMode==MouseMode.resize) {
             resizeRenderer.clear(graphics);
             resizeRenderer.renderDrag(graphics,resizeStart,e.getPoint());
