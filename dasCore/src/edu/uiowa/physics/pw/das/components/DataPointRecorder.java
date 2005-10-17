@@ -169,9 +169,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             String[] s= line.split("\t");
             for ( int i=0;i<s.length-1;i++ ) {
                 Datum x;
-                if ( TimeUtil.isValidTime(s[0]) ) x= TimeUtil.createValid(s[0]); else x=DatumUtil.createValid(s[0]);
+                if ( TimeUtil.isValidTime(s[0]) ) x= TimeUtil.createValid(s[0]); else x=DatumUtil.parseValid(s[0]);
                 Datum y;
-                if ( TimeUtil.isValidTime(s[1]) ) y= TimeUtil.createValid(s[1]); else y=DatumUtil.createValid(s[1]);
+                if ( TimeUtil.isValidTime(s[1]) ) y= TimeUtil.createValid(s[1]); else y=DatumUtil.parseValid(s[1]);
                 String comment="";
                 if ( s.length>2 ) {
                     comment= s[2];
