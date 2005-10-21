@@ -32,7 +32,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     protected ArrayList dataPoints;
     protected Units[] unitsArray;
     protected DatumFormatter[] formatterArray;
-    protected AbstractTableModel myTableModel;    
+    protected AbstractTableModel myTableModel;
     
     protected class DataPoint {
         double[] data;
@@ -114,7 +114,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         public void fireUpdate() {
             fireDataSetUpdateEvent( new DataSetUpdateEvent(this) );
         }
-
+        
         protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, DasProgressMonitor monitor) throws DasException {
             if ( dataPoints.size()==0 ) {
                 return null;
@@ -134,11 +134,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         
     }
     private MyDataSetDescriptor dataSetDescriptor;
-        
+    
     public DataSetDescriptor getDataSetDescriptor() {
         if ( dataSetDescriptor==null ) {
             dataSetDescriptor= new MyDataSetDescriptor();
-        } 
+        }
         return dataSetDescriptor;
     }
     
@@ -167,29 +167,28 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         dataPoints.clear();
         for ( String line= r.readLine(); line!=null; line= r.readLine() ) {
             String[] s= line.split("\t");
-            for ( int i=0;i<s.length-1;i++ ) {
-                Datum x;
-                if ( TimeUtil.isValidTime(s[0]) ) x= TimeUtil.createValid(s[0]); else x=DatumUtil.parseValid(s[0]);
-                Datum y;
-                if ( TimeUtil.isValidTime(s[1]) ) y= TimeUtil.createValid(s[1]); else y=DatumUtil.parseValid(s[1]);
-                String comment="";
-                if ( s.length>2 ) {
-                    comment= s[2];
-                    Pattern p= Pattern.compile("\"(.*)\".*");
-                    Matcher m= p.matcher(comment);
-                    if ( m.matches() ) {
-                        comment= m.group(1);
-                    }
+            
+            Datum x;
+            if ( TimeUtil.isValidTime(s[0]) ) x= TimeUtil.createValid(s[0]); else x=DatumUtil.parseValid(s[0]);
+            Datum y;
+            if ( TimeUtil.isValidTime(s[1]) ) y= TimeUtil.createValid(s[1]); else y=DatumUtil.parseValid(s[1]);
+            String comment="";
+            if ( s.length>2 ) {
+                comment= s[2];
+                Pattern p= Pattern.compile("\"(.*)\".*");
+                Matcher m= p.matcher(comment);
+                if ( m.matches() ) {
+                    comment= m.group(1);
                 }
-                
-                DataPointSelectionEvent e;
-                if ( comment.equals("") ) {
-                    e= new DataPointSelectionEvent(this, x, y );
-                } else {
-                    e= CommentDataPointSelectionEvent.create( new DataPointSelectionEvent(this, x, y), comment );
-                }
-                DataPointSelected(e);
             }
+            
+            DataPointSelectionEvent e;
+            if ( comment.equals("") ) {
+                e= new DataPointSelectionEvent(this, x, y );
+            } else {
+                e= CommentDataPointSelectionEvent.create( new DataPointSelectionEvent(this, x, y), comment );
+            }
+            DataPointSelected(e);
         }
         DasProperties.getInstance().put("components.DataPointRecorder.lastFileLoad",  file.toString());
         
@@ -292,12 +291,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         controlPanel.add(saveButton);
         controlPanel.add(loadButton);
         
-        JButton updateButton= new JButton("Update");        
+        JButton updateButton= new JButton("Update");
         updateButton.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // what if no one is listening? 
+                // what if no one is listening?
                 if ( dataSetDescriptor!=null ) {
-                   dataSetDescriptor.fireUpdate();
+                    dataSetDescriptor.fireUpdate();
                 }
             }
         } );
@@ -334,7 +333,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     protected void update() {
         myTableModel.fireTableDataChanged();
         JScrollBar scrollBar= scrollPane.getVerticalScrollBar();
-        if ( scrollBar!=null ) scrollBar.setValue(scrollBar.getMaximum());        
+        if ( scrollBar!=null ) scrollBar.setValue(scrollBar.getMaximum());
     }
     
     public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
