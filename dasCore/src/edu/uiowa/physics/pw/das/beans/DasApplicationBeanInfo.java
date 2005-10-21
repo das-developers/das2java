@@ -36,6 +36,7 @@ public class DasApplicationBeanInfo extends AccessLevelBeanInfo {
         new Property("reloadLoggingProperties", AccessLevel.DASML, "isReloadLoggingProperties", "setReloadLoggingProperties", null),
         new Property("headless", AccessLevel.DASML, "isHeadless", null, null),
         new Property("applet", AccessLevel.DASML, "isApplet", null, null),
+        new Property("dataSetCache", AccessLevel.DASML, "getDataSetCache", null, null),                        
         new Property("das2Version", AccessLevel.DASML, "getDas2Version", null, null),        
     };
     
