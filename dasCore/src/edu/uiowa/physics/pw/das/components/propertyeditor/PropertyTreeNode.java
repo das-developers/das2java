@@ -2,6 +2,7 @@ package edu.uiowa.physics.pw.das.components.propertyeditor;
 
 import edu.uiowa.physics.pw.das.beans.*;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableNode;
+import edu.uiowa.physics.pw.das.graph.Renderer;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.beans.*;
 import java.beans.IndexedPropertyDescriptor;
@@ -70,6 +71,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
             } else {
                 type = propertyDescriptor.getPropertyType();
             }
+                        
             //Types with identified as editable by PropertyEditor and
             //types with registered PropertyEditors should not be expanded.
             return !PropertyEditor.editableTypes.contains(type)
@@ -105,6 +107,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     PropertyDescriptor getPropertyDescriptor() {
         return propertyDescriptor;
     }
+    
     
     protected void maybeLoadChildren() {
         if (children == null) {
@@ -158,12 +161,14 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
             return value;
         }
         boolean allowsChildren= getAllowsChildren();
-        String ss= String.valueOf(value);
-        if ( ss.length()<50 && allowsChildren ) {
-            return ss;
-        }
+        
         if ( allowsChildren ) {
-            return "<html><i text=\"#a0a0a0\">Click to expand/collapse</i></html>";
+            String ss= String.valueOf(value);
+            if ( ss.length()<100 ) {
+                return ss;
+            } else {
+                return ss.substring(0,100) + "...";
+            }            
         } else {
             return value;
         }
