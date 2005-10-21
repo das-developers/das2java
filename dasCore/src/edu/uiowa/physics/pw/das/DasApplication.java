@@ -43,6 +43,7 @@ public class DasApplication {
     private static final DasApplication DEFAULT = new DasApplication();
     
     private JFrame mainFrame;
+    private boolean applet;
             
     static {
         String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans" };
@@ -82,6 +83,8 @@ public class DasApplication {
     /** Creates a new instance of DasApplication */
     private DasApplication() {
         nameContext = new NameContext();
+	//applet= Thread.currentThread().getContextClassLoader().getClass().getName().contains("plugin");
+        applet= false;
     }
     
     public NameContext getNameContext() {
@@ -94,8 +97,8 @@ public class DasApplication {
     
     private boolean headless= false;
     
-    public boolean isApplet() {
-        return false;
+    public final boolean isApplet() {
+        return applet;
     }
     
     public void setReloadLoggingProperties( boolean v ) {
@@ -191,7 +194,7 @@ public class DasApplication {
         if ( dataSetCache==null ) {
             //dataSetCache= new SimpleDataSetCache();
             //dataSetCache= new LimitCountDataSetCache(10);
-            dataSetCache= new LimitSizeBytesDataSetCache(10000000);
+            dataSetCache= new LimitSizeBytesDataSetCache(30000000);
         }
         return dataSetCache;
     }
