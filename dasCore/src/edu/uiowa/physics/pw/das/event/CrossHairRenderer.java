@@ -178,6 +178,8 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             
             String report;
             
+            String nl= multiLine ? "!c" : " ";
+            
             if (ds instanceof TableDataSet) {
                 TableDataSet tds= (TableDataSet)ds;
                 String zAsString;
@@ -192,9 +194,9 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                 else {
                     zAsString= getZString(tds,x,y, null);
                 }
-                report= "x:"+xAsString+" y:"+yAsString+" z:"+zAsString;
+                report= "x:"+xAsString + nl + "y:"+yAsString + nl + "z:"+zAsString;
             } else {
-                report= "x:"+xAsString+" y:"+yAsString;
+                report= "x:"+xAsString + nl + "y:"+yAsString;
             }
             
             setLabel( report );
@@ -304,5 +306,28 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     
     public void setSnapping(boolean b) {
         snapping = b;
+    }
+
+    /**
+     * Holds value of property multiLine.
+     */
+    private boolean multiLine= false;
+
+    /**
+     * Getter for property multiLine.
+     * @return Value of property multiLine.
+     */
+    public boolean isMultiLine() {
+
+        return this.multiLine;
+    }
+
+    /**
+     * Setter for property multiLine.
+     * @param multiLine New value of property multiLine.
+     */
+    public void setMultiLine(boolean multiLine) {
+
+        this.multiLine = multiLine;
     }
 }
