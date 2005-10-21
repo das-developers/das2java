@@ -123,7 +123,9 @@ public class Psym implements Enumeration, Displayable {
             case 2: //CIRCLES
                 Color color0= g.getColor();
                 ellipse.setFrame(x - size, y - size, size * 2, size * 2);
-                g.setColor(Color.lightGray);
+                
+                Color backgroundColor= Color.white;
+                g.setColor(backgroundColor);
                 if (g instanceof Graphics2D) {
                     g2.fill(ellipse);
                 }
