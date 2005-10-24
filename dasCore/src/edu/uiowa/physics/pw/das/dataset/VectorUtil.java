@@ -181,8 +181,8 @@ public class VectorUtil {
             producer.streamDescriptor(sd);
             
             StreamXDescriptor xDescriptor = new StreamXDescriptor();
-            xDescriptor.setDataTransferType(xTransferType);
             xDescriptor.setUnits(vds.getXUnits());
+            xDescriptor.setDataTransferType(xTransferType);
             
             PacketDescriptor pd = new PacketDescriptor();
             pd.setXDescriptor(xDescriptor);
