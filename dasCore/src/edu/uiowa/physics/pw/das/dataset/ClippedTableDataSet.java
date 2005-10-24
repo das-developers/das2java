@@ -161,7 +161,9 @@ public class ClippedTableDataSet implements TableDataSet {
     }
     
     public VectorDataSet getXSlice(int i) {
-        return source.getXSlice( i+xoffset );
+        int itable= source.tableOfIndex(i+xoffset);
+        DatumRange dr= new DatumRange( source.getYTagDatum(itable,yoffsets[itable]), source.getYTagDatum(itable,yoffsets[itable]+ylengths[itable]) );
+        return new ClippedVectorDataSet( source.getXSlice( i+xoffset ), dr );
     }
     
     public Datum getXTagDatum(int i) {
