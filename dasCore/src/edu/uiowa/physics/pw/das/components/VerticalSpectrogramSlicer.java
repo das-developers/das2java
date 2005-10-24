@@ -42,17 +42,21 @@ extends DasPlot implements DataPointSelectionListener {
     
     private JDialog popupWindow;
     private DasPlot parentPlot;
-    private Datum yValue;    
+    protected Datum yValue;    
     private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     
-    private VerticalSpectrogramSlicer(DasPlot parent, DasAxis xAxis, DasAxis yAxis) {
+    protected VerticalSpectrogramSlicer(DasPlot parent, DasAxis xAxis, DasAxis yAxis) {
         super( xAxis, yAxis);
         this.parentPlot = parent;
         renderer= new SymbolLineRenderer((DataSet)null);
         addRenderer(renderer);                
     }
-    
+        
+    protected void setDataSet( VectorDataSet ds ) {
+       renderer.setDataSet(ds);
+    }
+            
     public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceYAxis = plot.getYAxis();
         DasAxis sourceZAxis = dataSetConsumer.getZAxis();
