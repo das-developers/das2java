@@ -32,7 +32,6 @@ import edu.uiowa.physics.pw.das.event.BoxZoomMouseModule;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
-import edu.uiowa.physics.pw.das.stream.Das1ToDas2;
 import edu.uiowa.physics.pw.das.system.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.*;
@@ -42,6 +41,7 @@ import org.w3c.dom.Element;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.util.logging.Logger;
 
 
 /**
@@ -68,6 +68,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     /** The 'image' of the data */
     private GeneralPath path;
     
+    private Logger log= DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+    
     public SymbolLineRenderer() {
         super();
     }
@@ -92,6 +94,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         
         DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set "+dataSet);        
         
+        g.setColor(color);
+        
         Graphics2D graphics= (Graphics2D) g.create();
         
         AffineTransform at= getAffineTransform( xAxis, yAxis );
@@ -106,7 +110,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
         
-        graphics.setColor(color);
+        log.finest("drawing pym in "+color);
         
         // draw the stored path that we calculated in updatePlotImage
         if (path != null) {
@@ -149,6 +153,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
                     //DasApplication.getDefaultApplication().getDebugLogger().warning("got NaN");
                 } else {
                     // note g is in the original space, not the AT space.
+                    ((Graphics2D)g).setStroke(new BasicStroke(lineWidth));
                     psym.draw( g, i, j, (float)symSize );
                 }
             }
