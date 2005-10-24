@@ -97,9 +97,10 @@ public abstract class Units implements Displayable {
     }
     
     public static final Units eV= new NumberUnits("eV");
-    public static final Units pcm3= new NumberUnits("cm^-3");    
+    public static final Units pcm3= new NumberUnits("cm!a-3!n");    
     public static final Units kelvin= new NumberUnits("K");
     public static final Units cmps= new NumberUnits("cm/s");
+    public static final Units v2pm2Hz= new NumberUnits("V!a2!nm!a-2!nHz!a-1");
     public static final Units meters = new NumberUnits("m");
     public static final Units kiloMeters = new NumberUnits("km");
     static {
@@ -326,6 +327,7 @@ public abstract class Units implements Displayable {
     public float getFillFloat() { return FILL_FLOAT; }
     public int getFillInt() { return FILL_INT; }
     public long getFillLong() { return FILL_LONG; }
+    public Datum getFillDatum() { return this.createDatum(FILL_DOUBLE); }
     
     public boolean isFill( double value ) {  return value<FILL_DOUBLE/10; }
     public boolean isFill( float value ) { return value<FILL_FLOAT/10; }
