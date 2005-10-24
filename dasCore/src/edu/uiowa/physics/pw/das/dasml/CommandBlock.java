@@ -22,6 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.dasml;
 
+import edu.uiowa.physics.pw.das.DasPropertyException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -190,7 +191,11 @@ public class CommandBlock {
         }
         
         public void execute(FormBase form)throws edu.uiowa.physics.pw.das.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException, edu.uiowa.physics.pw.das.DasNameException {
-            form.getDasApplication().getNameContext().set(id, value);
+            try {
+                form.getDasApplication().getNameContext().set(id, value);
+            } catch ( DasPropertyException e ) {
+                throw new RuntimeException( "Error executing command: "+id+"="+value, e );
+            }
         }
         
         public Element getDOMElement(Document document) {
