@@ -56,8 +56,7 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     DataSet retrieveImpl(DataSetDescriptor dsd, CacheTag cacheTag) {
         Entry entry= findStored( dsd, cacheTag );
         if ( entry!=null ) {
-            entry.nhits++;
-            entry.lastAccess= System.currentTimeMillis();
+            entry.nhits++;            
             return entry.getData();
         } else {
             throw new IllegalArgumentException("not found in cache");
