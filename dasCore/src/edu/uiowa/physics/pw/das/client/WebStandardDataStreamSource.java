@@ -49,8 +49,7 @@ import java.util.Properties;
 /** */
 public class WebStandardDataStreamSource implements StandardDataStreamSource {
     
-    private DasServer server;
-    private MeteredInputStream min;
+    private DasServer server;    
     private boolean legacyStream = true;
     private String extraParameters;
     
@@ -58,19 +57,18 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
      * Holds value of property compress.
      */
     private boolean compress;
-
+    
     /**
      * Holds value of property lastRequestURL.
      */
     private String lastRequestURL;
     
-    public WebStandardDataStreamSource(DasServer server, URL url) {
+    public WebStandardDataStreamSource(DasServer server, URL url) {        
         this.server = server;
         String[] query = url.getQuery() == null ? new String[0] : url.getQuery().split("&");
         if (query.length >= 2) {
             extraParameters = query[1];
         }
-        min= new MeteredInputStream(null);
     }
     
     public boolean isLegacyStream() {
@@ -85,9 +83,8 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         formData.append("server=").append(serverType);
         
         InputStream in= openURLConnection( dsd, start, end, formData );
-        MeteredInputStream min= new MeteredInputStream(in);
-        min.setSpeedLimit(3300);
-        return min;
+        in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
+        return in;
         
     }
     
@@ -119,7 +116,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         if (extraParameters != null) {
             formData.append("&params=").append(extraParameters);  //Should already be url encoded.
         }
-                        
+        
         //if ( min!=null && min.calcTransmitSpeed()>30000 ) {
         //    compress= false;
         //}
@@ -128,11 +125,12 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         if (compress) {
             formData.append("&compress=true");
         }
-        
+                
         InputStream in= openURLConnection( dsd, start, end, formData );
-        min.setInputStream(in);
+                
+        in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
         
-        return min;
+        return in;
         
     }
     
@@ -320,22 +318,10 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     }
     
     /**
-     * Getter for property transferRate.
-     * @return Value of property transferRate.
-     */
-    public Datum getTransferRate() {
-        return Units.bytesPerSecond.createDatum( min.calcTransmitSpeed(), 100 );
-    }
-    
-    public Datum getTransferTime() {
-        return Units.seconds.createDatum( min.calcTransmitTime() );
-    }
-    
-    /**
      * Getter for property compress.
      * @return Value of property compress.
      */
-    public boolean isCompress() {        
+    public boolean isCompress() {
         return this.compress;
     }
     
@@ -346,7 +332,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     public void setCompress(boolean compress) {
         this.compress = compress;
     }
-
+    
     /**
      * Getter for property lastRequestURL.
      * @return Value of property lastRequestURL.
