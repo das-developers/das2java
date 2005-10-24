@@ -90,6 +90,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
@@ -1008,6 +1009,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public static DasCanvas processCanvasElement(Element element, FormBase form)
     throws DasPropertyException, DasNameException, DasException, ParsedExpressionException, java.text.ParseException {
         try {
+            Logger log= DasLogger.getLogger(DasLogger.DASML_LOG);
             
             String name = element.getAttribute("name");
             int width = Integer.parseInt(element.getAttribute("width"));
@@ -1020,8 +1022,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             
             NodeList children = element.getChildNodes();
             int childCount = children.getLength();
-            for (int index = 0; index < childCount; index++) {
+            for (int index = 0; index < childCount; index++) {                
                 Node node = children.item(index);
+                log.fine("node="+node.getNodeName());
                 if (node instanceof Element) {
                     String tagName = node.getNodeName();
                     if (tagName.equals("row")) {
@@ -1048,7 +1051,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     } else if (tagName.equals("plot")) {
                         DasPlot plot = DasPlot.processPlotElement((Element)node, form);
                         canvas.add(plot);
+                    } else if (tagName.equals("spectrogram")) {
+                        DasPlot plot = DasPlot.processPlotElement((Element)node, form);
+                        canvas.add(plot);
                     }
+
                 }
             }
             canvas.setDasName(name);
