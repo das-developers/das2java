@@ -23,9 +23,9 @@
 
 package edu.uiowa.physics.pw.das;
 
+import edu.uiowa.physics.pw.das.client.InputStreamMeter;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetCache;
-import edu.uiowa.physics.pw.das.dataset.LimitCountDataSetCache;
 import edu.uiowa.physics.pw.das.system.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.event.*;
@@ -112,7 +112,7 @@ public class DasApplication {
         }
     }
     
-    public boolean getReloadLoggingProperties() {
+    public boolean isReloadLoggingProperties() {
         return false;
     }
     
@@ -197,6 +197,14 @@ public class DasApplication {
             dataSetCache= new LimitSizeBytesDataSetCache(30000000);
         }
         return dataSetCache;
+    }
+    
+    InputStreamMeter meter;
+    public InputStreamMeter getInputStreamMeter() {
+        if ( meter==null ) {
+            meter= new InputStreamMeter();
+        }
+        return meter;
     }
         
     public JFrame createMainFrame( java.awt.Container canvas ) {
