@@ -94,8 +94,7 @@ public abstract class AbstractDataSetCache implements DataSetCache {
     }
         
     public int hits=0;
-    public int misses=0;    
-
+    public int misses=0;
     
     abstract public void store( DataSetDescriptor dsd, CacheTag cacheTag, DataSet data );
     
@@ -118,7 +117,7 @@ public abstract class AbstractDataSetCache implements DataSetCache {
      * swapped out when a resource limit is met.
      */    
     protected long cacheValue( Entry e ) {
-        return e.nhits;
+        return e.lastAccess;
     }
         
     abstract DataSet retrieveImpl( DataSetDescriptor dsd, CacheTag cacheTag );
