@@ -69,6 +69,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     DatumRange imageYRange;
     DasAxis.Memento xmemento, ymemento, cmemento;
     
+    private TableDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
+    
     protected class RebinListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
             update();
@@ -198,7 +200,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             return; // TODO: consider throwing exception
         }
         
-        if (getDataSet()==null && lastException!=null ) {
+        if ( this.ds==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
         } else if (plotImage!=null) {
             Point2D p;
@@ -275,17 +277,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 
             } else {
                 
-                TableDataSet rebinData;
-                
                 if (getParent()==null  || w<=1 || h<=1 ) {
                     DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).finest("canvas not useable!!!");
                     return;
                 }
                 
-                if ( getDataSet() == null) {
+                if ( this.ds == null) {
                     DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "got null dataset, setting image to null" );
                     plotImage= null;
-                    rebinData= null;
+                    rebinDataSet= null;
                     imageXRange= null;
                     imageYRange= null;
                     getParent().repaint();
@@ -316,20 +316,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     
                     t0= System.currentTimeMillis();
                     
-                    rebinData = (TableDataSet)rebinner.rebin( getDataSet(),xRebinDescriptor, yRebinDescriptor );
+                    rebinDataSet = (TableDataSet)rebinner.rebin( this.ds, xRebinDescriptor, yRebinDescriptor );
                     
                     xmemento= xAxis.getMemento();
                     ymemento= yAxis.getMemento();
                     cmemento= colorBar.getMemento();
                     
-                    raster= transformSimpleTableDataSet( rebinData, colorBar );
+                    raster= transformSimpleTableDataSet( rebinDataSet, colorBar );
                     
                 }
                 
-                if ( isSliceRebinnedData() ) {
-                    DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine("slicing rebin data");
-                    super.ds= rebinData;
-                }
                 
             }
             
@@ -491,10 +487,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setSliceRebinnedData(boolean sliceRebinnedData) {
         this.sliceRebinnedData = sliceRebinnedData;
-        this.plotImage2= null;
-        this.plotImage= null;
-        this.setDataSet(null);
-        refreshImage();
     }
     
     public String getListLabel() {
@@ -503,6 +495,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     public Icon getListIcon() {
         return null;
+    }
+    
+    public DataSet getDataSet() {
+        if ( sliceRebinnedData ) {
+            return rebinDataSet;
+        } else {
+            return this.ds;
+        }
     }
     
     public void setDataSet(DataSet ds) {
