@@ -85,6 +85,10 @@ public class DasLogger {
     
     /* internet transactions, file I/O */
     public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( "das2.dataTransfer" );
+
+    /* das2 application description files */
+    public static final LoggerId DASML_LOG= new LoggerId( "das2.dasml" );
+    
     
     /**
      * logger for messages to end users
