@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.util.DasMath;
 import java.util.*;
 import javax.swing.*;
 
@@ -418,5 +419,15 @@ public class DataSetUtil {
             if ( ds2!=null ) builder.append( (VectorDataSet) ds2 );
             return builder.toVectorDataSet();
         }
+    }
+    
+    public static VectorDataSet log10( VectorDataSet ds ) {
+        VectorDataSetBuilder builder= new VectorDataSetBuilder( ds.getXUnits(), Units.dimensionless );
+        Units yunits= ds.getYUnits();
+        Units xunits= ds.getXUnits();
+        for ( int i=0; i<ds.getXLength(); i++ ) {
+            builder.insertY( ds.getXTagDouble(i,xunits), DasMath.log10(ds.getDouble(i,yunits)) );
+        }
+        return builder.toVectorDataSet();
     }
 }
