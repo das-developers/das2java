@@ -719,7 +719,7 @@ public class DatumRangeUtil {
             ts.day--;
         }
         
-        timeString= ""+ts.hour;
+        timeString= ""+ts.hour+":";
         
         Datum[] times= new Datum[] { time, time2 };
         for ( int i=0;i<times.length;i++ ) {
@@ -733,7 +733,7 @@ public class DatumRangeUtil {
         
         int[] arr= TimeUtil.toTimeArray(time);
         if ( stopRes>3 ) {
-            timeString+=":"+ ( arr[4] < 10 ? "0" : "" ) + arr[4];
+            timeString+= ( arr[4] < 10 ? "0" : "" ) + arr[4];
             if ( stopRes>4 ) {
                 int second= arr[5];
                 timeString+=":"+ ( second < 10 ? "0" : "" ) + second;
