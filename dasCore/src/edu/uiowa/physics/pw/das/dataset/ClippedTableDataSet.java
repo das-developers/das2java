@@ -141,7 +141,13 @@ public class ClippedTableDataSet implements TableDataSet {
     }
     
     public DataSet getPlanarView(String planeID) {
-        return new ClippedTableDataSet((TableDataSet)source.getPlanarView(planeID),xoffset,xlength,yoffsets,ylengths,tableOffset,tableCount);
+        TableDataSet sourcePlane= (TableDataSet)source.getPlanarView(planeID);
+        if (sourcePlane==null) {
+            return null;
+        } else {
+            return new ClippedTableDataSet(sourcePlane,
+                    xoffset,xlength,yoffsets,ylengths,tableOffset,tableCount);
+        }
     }    
     
     public String[] getPlaneIds() {
