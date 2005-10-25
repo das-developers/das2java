@@ -45,12 +45,11 @@ public class InputStreamMeter {
     private class MeteredInputStream extends InputStream {
         
         InputStream in;
-        InputStreamMeter meter;
-        long lastTimeMilli;
+        InputStreamMeter meter;        
         
-        /** Creates a new instance of MeteredInputStream */
-        public MeteredInputStream( InputStream in, InputStreamMeter meter ) {
-            this.lastTimeMilli= System.currentTimeMillis();
+        /** Creates a new instance of MeteredInputStream
+         */
+        private MeteredInputStream( InputStream in, InputStreamMeter meter ) {            
             this.meter= meter;
             this.in= in;
         }
@@ -59,12 +58,7 @@ public class InputStreamMeter {
             try {
                 int bytesRead= in.read(b,off,len);                
                 meter.addBytes(bytesRead,this);
-                meter.governSpeed(this);
-                long t= System.currentTimeMillis()-lastTimeMilli;
-                if ( t>100 ) {
-                    meter.addMillis(t, this);
-                    lastTimeMilli += t;
-                }
+                meter.governSpeed(this);                
                 return bytesRead;
             } catch ( IOException e ) {
                 meter.exception(this);
@@ -85,7 +79,6 @@ public class InputStreamMeter {
         }
         
         public void close() throws IOException {
-            meter.addMillis( System.currentTimeMillis()-lastTimeMilli, this );
             meter.closing(this);
             in.close();
         }
@@ -104,11 +97,10 @@ public class InputStreamMeter {
     }
     
     /* limit total speed, possibly balancing load btw streams */
-    final protected void governSpeed( MeteredInputStream mis ) {
+    private void governSpeed( MeteredInputStream mis ) {
         if ( speedLimit>0 ) {
             if ( calcTransmitSpeed() > speedLimit ) {
-                long targetMillis= (long) ( ( totalBytesRead ) / ( speedLimit / 1000. ) );
-                System.out.println( "target: " +  targetMillis + " have: " + calcMillisElapsed() );
+                long targetMillis= (long) ( ( totalBytesRead ) / ( speedLimit / 1000. ) );                
                 long waitMs= Math.min( 1000, targetMillis - calcMillisElapsed() );
                 DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).fine("limiting speed by waiting "+waitMs+" ms");
                 try { Thread.sleep(waitMs); } catch ( InterruptedException ex ) { }
@@ -117,14 +109,12 @@ public class InputStreamMeter {
     }
     
     /* add these bytes to the meter, on behalf of mis. */
-    final protected void addBytes( long bytes, MeteredInputStream mis ) {
+    private void addBytes( long bytes, MeteredInputStream mis ) {
         totalBytesRead+= bytes;
     }
     
-    final protected void addMillis( long millis, MeteredInputStream mis ) {
-    }
     
-    final protected void closing( MeteredInputStream mis ) {
+    private void closing( MeteredInputStream mis ) {
         meterCount--;
         if ( meterCount==0 ) {
             this.millisElapsed+= System.currentTimeMillis() - startTime;
@@ -132,7 +122,7 @@ public class InputStreamMeter {
         }
     }
     
-    final protected void exception( MeteredInputStream mis ) {
+    private void exception( MeteredInputStream mis ) {
         meterCount--;
         if ( meterCount==0 ) {
             this.millisElapsed+= System.currentTimeMillis() - startTime;
