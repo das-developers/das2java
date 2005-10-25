@@ -34,6 +34,7 @@ import edu.uiowa.physics.pw.das.util.*;
 import javax.swing.event.EventListenerList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.*;
 import java.util.Stack;
 import java.util.logging.Logger;
 
@@ -63,6 +64,8 @@ public class DataRange implements Cloneable {
     private Stack history;
     
     private Stack forwardHistory;
+    
+    private List favorites;
     
     private PropertyChangeSupport propertyChangeDelegate;
     
@@ -180,7 +183,7 @@ public class DataRange implements Cloneable {
         Datum max= pendingMax!=null ? pendingMax : this.range.max();
         if ( min.le( max ) ) {
             setRange( new DatumRange( min, max ) );
-        } else {            
+        } else {
             this.pendingMin= min;
         }
     }
@@ -189,9 +192,9 @@ public class DataRange implements Cloneable {
         Datum min= pendingMin!=null ? pendingMin : this.range.min();
         if ( min.le( max ) ) {
             setRange( new DatumRange( min, max ) );
-        } else {            
+        } else {
             this.pendingMax= max;
-        }        
+        }
     }
     
     private void reportHistory() {
@@ -205,8 +208,36 @@ public class DataRange implements Cloneable {
     }
     
     protected void clearHistory() {
+        ArrayList oldHistory= new ArrayList( history );
         history.removeAllElements();
         forwardHistory.removeAllElements();
+        firePropertyChange("history", oldHistory, history );
+    }
+    
+    public void addToFavorites( DatumRange range ) {
+        if (favorites==null) favorites= new ArrayList();
+        List oldFavorites= new ArrayList(favorites);
+        favorites.add( range );
+        firePropertyChange("favorites", oldFavorites, favorites );
+    }
+    
+    public List getFavorites() {
+        if ( favorites==null ) {
+            return new ArrayList();
+        } else {
+            return new ArrayList( favorites );
+        }
+    }
+    
+    public List getHistory() {
+        if ( history==null ) {
+            return new ArrayList();
+        } else {
+            List result= new ArrayList( history );
+            Collections.reverse(result);
+            return result.subList(0,Math.min(result.size(),10));
+        }
+        
     }
     
     public void setRange( DatumRange range ) {
@@ -232,12 +263,14 @@ public class DataRange implements Cloneable {
         }
         
         if ( pushHistory ) {
+            List oldHistory= new ArrayList( history );
             history.push(this.range);
             DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( "push history: "+range );
             forwardHistory.removeAllElements();
+            firePropertyChange( "history", new ArrayList(), new ArrayList(history) );
         }
         
-        this.range= range;        
+        this.range= range;
         
         double oldMin = minimum;
         double oldMax = maximum;
@@ -257,18 +290,21 @@ public class DataRange implements Cloneable {
     public void setRangePrev() {
         reportHistory();
         if (!history.isEmpty()) {
-            forwardHistory.push( range );
+            forwardHistory.push( range );            
             DatumRange newRange= (DatumRange) history.pop();
             setRange( newRange, false );
+            firePropertyChange( "history", null, new ArrayList(history) );
         }
     }
     
     public void setRangeForward() {
         reportHistory();
         if (!forwardHistory.isEmpty()) {
+            List oldHistory= new ArrayList( history );
             history.push( range );
             DatumRange h= (DatumRange) forwardHistory.pop();
             setRange( h, false );
+            firePropertyChange("history",oldHistory,history);
         }
     }
     
@@ -292,11 +328,11 @@ public class DataRange implements Cloneable {
         propertyChangeDelegate.firePropertyChange(propertyName, oldValue, newValue);
     }
     
-    public void addpwUpdateListener(DasUpdateListener l) {
+    public void addUpdateListener(DasUpdateListener l) {
         listenerList.add(DasUpdateListener.class, l);
     }
     
-    public void removepwUpdateListener(DasUpdateListener l) {
+    public void removeUpdateListener(DasUpdateListener l) {
         listenerList.remove(DasUpdateListener.class, l);
     }
     
@@ -310,10 +346,13 @@ public class DataRange implements Cloneable {
         }
     }
     
-    public void popHistory() {
-        if (!history.empty()) {
+    /**
+     * pop ipop items off the history list.  This is used by the history menu 
+     */
+    protected void popHistory( int ipop ) {
+        for ( int i=0; i<ipop; i++ ) {
             history.pop();
-        }
+        }        
     }
     
     /* @returns a dummy DataRange that simply holds min, max.  So that no one is
