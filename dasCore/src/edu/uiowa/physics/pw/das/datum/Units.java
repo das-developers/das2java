@@ -72,10 +72,12 @@ public abstract class Units implements Displayable {
     public static final Units hours= new NumberUnits("hr");
     public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
+    public static final Units milliseconds= new NumberUnits("ms");
     public static final Units microseconds= new NumberUnits("microseconds");
     public static final Units nanoseconds= new NumberUnits("nanoseconds");
     public static final Units days= new NumberUnits("days");
     static {
+        seconds.registerConverter(milliseconds, UnitsConverter.MILLI);
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
         seconds.registerConverter(nanoseconds,UnitsConverter.NANO);
         hours.registerConverter(seconds, new UnitsConverter.ScaleOffset( 3600.,0.0));
