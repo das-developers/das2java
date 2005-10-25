@@ -185,6 +185,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.addPropertyChangeListener("history", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("favorites", dataRangePropertyListener);
         copyFavorites();
+        copyHistory();
     }
     
     /** TODO
@@ -199,6 +200,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
+        dataRange.addPropertyChangeListener("history", dataRangePropertyListener);
+        dataRange.addPropertyChangeListener("favorites", dataRangePropertyListener);
         copyFavorites();
         copyHistory();
     }
