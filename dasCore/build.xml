@@ -66,13 +66,19 @@
     nbproject/build-impl.xml file. 
 
     -->
-    <target name="-post-jar">
+    <target name="no-pass" unless="keystore.pass">
+        <echo>
+The property keystore.pass is not set.  No signed jar file will be created.
+        </echo>
+    </target>
+    <target name="signjar" if="keystore.pass">
         <basename property="signed.jar.name" file="${dist.jar}"/>
         <property name="signed.jar.dir" location="${dist.dir}/signed"/>
         <mkdir dir="${signed.jar.dir}"/>
         <copy file="${dist.jar}" todir="${signed.jar.dir}"/>
         <signjar jar="${signed.jar.dir}/${signed.jar.name}"
                 alias="das2"
-                storepass="${signed.jar.pass}"/>
+                storepass="${keystore.pass}"/>
     </target>
+    <target name="-post-jar" depends="no-pass,signjar"/>
 </project>
