@@ -67,14 +67,14 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     protected DasLabelAxis(DatumVector labels, DataRange dataRange, int orientation) {
         super( dataRange, orientation );
         setLabels(labels);
-        getDataRange().addpwUpdateListener(this);
+        getDataRange().addUpdateListener(this);
     }
     
     
     public DasLabelAxis(DatumVector labels, int orientation) {        
         super( labels.get(0), labels.get(labels.getLength()-1), orientation, false );
         setLabels(labels);
-        getDataRange().addpwUpdateListener(this);
+        getDataRange().addUpdateListener(this);
     }
     
     
