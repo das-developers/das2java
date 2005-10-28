@@ -425,7 +425,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         
         MouseMode result= MouseMode.idle;
         Cursor cursor= new Cursor(Cursor.DEFAULT_CURSOR);
-                
+        
         if ( !(parent instanceof DasAxis) ) {
             if ( ( e.getModifiersEx()&MouseEvent.SHIFT_DOWN_MASK ) == MouseEvent.SHIFT_DOWN_MASK ) {
                 if ( xLeftSide ) {
@@ -528,7 +528,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         parent.requestFocus();
         xOffset= l.x;
         yOffset= l.y;
-                
+        
         if ( mouseMode==MouseMode.resize ) {
             resizeStart= new Point(0,0);
             graphics= (Graphics2D) getGlassPane().getGraphics();
@@ -609,18 +609,22 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 
                 mousePointSelection.set((int)dSelectionEnd.getX(),(int)dSelectionEnd.getY());
                 for (int i=0; i<active.size(); i++) {
-                    MouseModule j= (MouseModule)active.get(i);
-                    if (j.dragRenderer.isPointSelection()) {
-                        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePointSelected");
-                        j.mousePointSelected(mousePointSelection);
+                    try {
+                        MouseModule j= (MouseModule)active.get(i);
+                        if (j.dragRenderer.isPointSelection()) {
+                            DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePointSelected");
+                            j.mousePointSelected(mousePointSelection);
+                        }
+                        if (j.dragRenderer.isUpdatingDragSelection()) {
+                            // Really it should be the DMM that indicates it wants updates...whoops...
+                            MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
+                            DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseRangeSelected");
+                            j.mouseRangeSelected(de);
+                        }
+                        j.mouseDragged(e);
+                    } catch ( RuntimeException except ) {
+                        DasExceptionHandler.handle(except);
                     }
-                    if (j.dragRenderer.isUpdatingDragSelection()) {
-                        // Really it should be the DMM that indicates it wants updates...whoops...
-                        MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
-                        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseRangeSelected");
-                        j.mouseRangeSelected(de);
-                    }
-                    j.mouseDragged(e);
                 }
                 refresh();
             }
