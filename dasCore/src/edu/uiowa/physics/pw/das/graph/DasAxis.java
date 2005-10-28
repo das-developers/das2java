@@ -1940,17 +1940,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double maximum= dataRange.getMaximum();
         double data_range = maximum-minimum;
         data= data_range*alpha + minimum;
-      /*  if ( dataRange.isLog() ) {
-            formatter = DatumUtil.limitLogResolutionFormatter(  getDataMinimum(), getDataMaximum(), getDLength() );
-        } else {
-            formatter = DatumUtil.limitResolutionFormatter( getDataMinimum(), getDataMaximum(), getDLength() );
-        } */
-        
+
         if ( dataRange.isLog() ) {
             data= DasMath.exp10(data);
         }
         
         Datum result= Datum.create( data, dataRange.getUnits(), data_range / getDLength() );
+        
         return result;
     }
     
