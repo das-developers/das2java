@@ -22,8 +22,6 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
-
-import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
@@ -54,6 +52,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
         this.dataSetConsumer= dataSetConsumer;
         this.xaxis= xaxis;
         this.yaxis= yaxis;
+        //TODO: this is silly, just create a new one each time...
         this.de= new DataPointSelectionEvent(this,null,null);
     }
     
