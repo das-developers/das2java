@@ -93,6 +93,12 @@ public class DasColumn extends DasDevicePosition {
         return new DasColumn(parent,0.1,0.8);
     }
     
+    public static DasColumn create( DasCanvas parent, int iplot, int nplot ) {
+        double min= 0.1 + iplot * ( 0.7 ) / nplot;
+        double max= 0.099 + ( iplot + 1 ) * ( 0.7 ) / nplot;
+        return new DasColumn( parent, min, max );
+    }
+    
     public DasColumn createAttachedColumn(double pleft, double pright) {
         return new AttachedColumn(this,pleft,pright);
     }

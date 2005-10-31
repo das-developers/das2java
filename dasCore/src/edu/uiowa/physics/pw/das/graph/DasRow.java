@@ -92,6 +92,12 @@ public class DasRow extends DasDevicePosition {
         return new DasRow(parent,0.1,0.9);
     }
     
+    public static DasRow create( DasCanvas parent, int iplot, int nplot ) {
+        double min= 0.1 + iplot * ( 0.8 ) / nplot;
+        double max= 0.099 + ( iplot + 1 ) * ( 0.8 ) / nplot;
+        return new DasRow( parent, min, max );
+    }
+    
     public DasRow createAttachedRow(double ptop, double pbottom) {
         return new AttachedRow(this,ptop,pbottom);
     }
