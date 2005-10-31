@@ -148,7 +148,7 @@ public class InputStreamMeter {
     }
     
     public Datum getTransmitSpeed() {
-        return Units.bytesPerSecond.createDatum( calcTransmitSpeed(), 100 );
+        return Units.bytesPerSecond.createDatum( calcTransmitSpeed(), 10 );
     }
     
     public long getBytesTransmitted() {
