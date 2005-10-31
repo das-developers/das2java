@@ -98,13 +98,13 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         String formatString= nfz.toString();
         String result;
         if ( formatString.indexOf('E')==-1 ) {
-            result= formatString+"0";
+            result= formatString+"00";
         } else {
             String[] ss= formatString.split("E");
             if ( ss[0].indexOf('.')==-1 ) {
-                result= ss[0]+".0"+"E0";
+                result= ss[0]+".00"+"E0";
             } else {
-                result= ss[0]+"0"+"E0";
+                result= ss[0]+"00"+"E0";
             }
         }
         return DefaultDatumFormatterFactory.getInstance().newFormatter( result );
@@ -125,7 +125,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                 nfz= ((TableDataSetConsumer)dataSetConsumer).getZAxis().getDatumFormatter();
                 nfz = addResolutionToFormat(nfz);
             } else  {
-                nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.00");
+                nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.000");
             }
         }
         catch (java.text.ParseException pe) {
