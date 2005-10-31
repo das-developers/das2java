@@ -73,6 +73,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         setOpaque(false);
+        
         this.renderers= new ArrayList();
         this.xAxis = xAxis;
         if (xAxis != null) {
@@ -498,6 +499,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         DasAxis xAxis = null;
         DasAxis yAxis = null;
+        DasColorBar colorbar=null;
         
         //Get the axes
         NodeList children = element.getChildNodes();
@@ -508,7 +510,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     xAxis = processXAxisElement((Element)node, row, column, form);
                 } else if (node.getNodeName().equals("yAxis")) {
                     yAxis = processYAxisElement((Element)node, row, column, form);
+                } else if (node.getNodeName().equals("zAxis")) {
+                    colorbar = processZAxisElement((Element)node, row, column, form);
                 }
+
             }
         }
         
@@ -520,6 +525,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         
         DasPlot plot = new DasPlot(xAxis, yAxis);
+        
+        if ( element.getNodeName().equals("spectrogram") ) {
+            SpectrogramRenderer rend= new SpectrogramRenderer( null, colorbar );
+            plot.addRenderer(rend);
+        }
+        
         plot.setTitle(element.getAttribute("title"));
         plot.setDasName(name);
         plot.setRow(row);
@@ -600,6 +611,20 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
     
+        
+    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException, java.text.ParseException {
+        NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node node = children.item(i);
+            if (node instanceof Element) {
+                if (node.getNodeName().equals("colorbar")) {
+                    return DasColorBar.processColorbarElement((Element)node, form);
+                }
+            }
+        }
+        return null;
+    }
+
     private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int index = 0; index < children.getLength(); index++) {
