@@ -369,8 +369,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         addComponentListener(createResizeListener());
         setBackground(Color.white);
         this.setDoubleBuffered(true);
+        //setFont( new Font( "dialog.bolditalic", Font.PLAIN, 12 ) );
+        //setFont( new Font( "Zapf Elliptical 711 Italic BT", Font.PLAIN, 12 ) );
+        //setFont( new Font( "croobie", Font.PLAIN, 12 ) );
+        //setFont( new Font( "Planet Benson 2", Font.PLAIN, 12 ) );
+        //setFont( new Font( "Rockwell Condensed Bold", Font.PLAIN, 12 ) );
+        //setFont( new Font( "Pristina", Font.PLAIN, 12 ) );
         glassPane = new GlassPane();
-        add(glassPane, GLASS_PANE_LAYER);        
+        add(glassPane, GLASS_PANE_LAYER);
         if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
             popup= createPopupMenu();
             this.addMouseListener(createMouseInputAdapter());
@@ -410,7 +416,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         JMenuItem close = new JMenuItem("close");
         close.setToolTipText("close this popup");
-        popup.add(close);        
+        popup.add(close);
         
         return popup;
     }
@@ -490,7 +496,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param g
      */
     protected void paintComponent(Graphics g) {
-        if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {            
+        if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
             g.setColor(getBackground());
             //g.fillRect(0, 0, getWidth(), getHeight());
             Graphics2D g2= ( Graphics2D )g;
@@ -673,7 +679,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         } catch (IOException ioe) {} finally {
             try { out.close(); } catch (IOException ioe) { throw new RuntimeException(ioe); }
         }
-                
+        
     }
     
     public void writeToPDF(String filename) throws IOException {
@@ -889,36 +895,51 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setPreferredSize(pref);
     }
     
+    private Font baseFont= null;
+    
     /** TODO
      * @return
      */
     public Font getBaseFont() {
-        return getFont();
+        if ( baseFont==null ) { baseFont=getFont(); }
+        return this.baseFont;
+    }
+    
+    public void setBaseFont( Font font ) {
+        this.baseFont= font;
+        setFont( getFontForSize( getWidth(), getHeight() ) ); 
+        repaint();
     }
     
     private static final int R_1024_X_768 = 1024 * 768;
     private static final int R_800_X_600 = 800 * 600;
     private static final int R_640_X_480 = 640 * 480;
     private static final int R_320_X_240 = 320 * 240;
+    
+    private Font getFontForSize( int width, int height ) {
+        int area = width*height;
+        Font f;
+        
+        float baseFontSize= getBaseFont().getSize2D();
+        
+        if (area >= (R_1024_X_768 - R_800_X_600) / 2 + R_800_X_600) {
+            f = getBaseFont().deriveFont(baseFontSize/12f*18f); //new Font("Serif", Font.PLAIN, 18);
+        } else if (area >= (R_800_X_600 - R_640_X_480) / 2 + R_640_X_480) {
+            f = getBaseFont().deriveFont(baseFontSize/12f*14f); //new Font("Serif", Font.PLAIN, 14);
+        } else if (area >= (R_640_X_480 - R_320_X_240) / 2 + R_320_X_240) {
+            f = getBaseFont().deriveFont(baseFontSize/12f*12f); //new Font("Serif", Font.PLAIN, 12);
+        } else if (area >= (R_320_X_240) / 2) {
+            f = getBaseFont().deriveFont(baseFontSize/12f*8f); //new Font("Serif", Font.PLAIN, 8);
+        } else {
+            f = getBaseFont().deriveFont(baseFontSize/12f*6f); //new Font("Serif", Font.PLAIN, 6);
+        }
+        return f;
+    }
+    
     private ComponentListener createResizeListener() {
         return new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
-                int width = getWidth();
-                int height = getHeight();
-                int area = width*height;
-                Font f;
-                if (area >= (R_1024_X_768 - R_800_X_600) / 2 + R_800_X_600) {
-                    f = getFont().deriveFont(18f); //new Font("Serif", Font.PLAIN, 18);
-                } else if (area >= (R_800_X_600 - R_640_X_480) / 2 + R_640_X_480) {
-                    f = getFont().deriveFont(14f); //new Font("Serif", Font.PLAIN, 14);
-                } else if (area >= (R_640_X_480 - R_320_X_240) / 2 + R_320_X_240) {
-                    f = getFont().deriveFont(12f); //new Font("Serif", Font.PLAIN, 12);
-                } else if (area >= (R_320_X_240) / 2) {
-                    f = getFont().deriveFont(8f); //new Font("Serif", Font.PLAIN, 8);
-                } else {
-                    f = getFont().deriveFont(6f); //new Font("Serif", Font.PLAIN, 6);
-                }
-                setFont(f);
+                setFont( getFontForSize( getWidth(), getHeight() ) ); 
             }
         };
     }
@@ -1022,7 +1043,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             
             NodeList children = element.getChildNodes();
             int childCount = children.getLength();
-            for (int index = 0; index < childCount; index++) {                
+            for (int index = 0; index < childCount; index++) {
                 Node node = children.item(index);
                 log.fine("node="+node.getNodeName());
                 if (node instanceof Element) {
@@ -1055,7 +1076,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         DasPlot plot = DasPlot.processPlotElement((Element)node, form);
                         canvas.add(plot);
                     }
-
+                    
                 }
             }
             canvas.setDasName(name);
@@ -1430,8 +1451,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private HashSet horizontalLineSet = new HashSet();
     private HashSet verticalLineSet = new HashSet();
     private HashSet cellSet = new HashSet();
-
-
+    
+    
     /** TODO
      * @param x
      * @param y
@@ -1767,9 +1788,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             throw dne;
         }
     }
-
-   public DasCanvasComponent getCanvasComponents( int index ) {        
-        return (DasCanvasComponent)getComponent(index+1);        
+    
+    public DasCanvasComponent getCanvasComponents( int index ) {
+        return (DasCanvasComponent)getComponent(index+1);
     }
     
     public DasCanvasComponent[] getCanvasComponents() {
@@ -1943,4 +1964,4 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
     }
     
-    }
+}
