@@ -22,9 +22,9 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
-
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import java.util.HashMap;
 
 /**
  *
@@ -32,23 +32,33 @@ import edu.uiowa.physics.pw.das.datum.Datum;
  */
 public class DataPointSelectionEvent extends DasEvent {
     
-    private edu.uiowa.physics.pw.das.datum.Datum x;
-    private edu.uiowa.physics.pw.das.datum.Datum y;
+    private Datum x;
+    private Datum y;
+    private HashMap planes;
     
     public long birthMilli;
     
-    private edu.uiowa.physics.pw.das.dataset.DataSet ds=null;
+    private DataSet ds=null;
     
     private Object source;
     
     /** Creates a new instance of DataPointSelectionEvent */
-    public DataPointSelectionEvent(Object source, edu.uiowa.physics.pw.das.datum.Datum x, edu.uiowa.physics.pw.das.datum.Datum y ) {
+    public DataPointSelectionEvent(Object source, 
+            Datum x, 
+            Datum y,
+            HashMap planes ) {
         super(source);
         this.birthMilli= System.currentTimeMillis();
         this.x= x;
         this.y= y;
-        this.ds= null;        
+        this.ds= null;
     }
+    
+    public DataPointSelectionEvent(Object source, 
+            Datum x, 
+            Datum y ) {
+        this( source, x, y, null );        
+    }    
     
     public edu.uiowa.physics.pw.das.datum.Datum getX() {
         return x;
@@ -58,7 +68,15 @@ public class DataPointSelectionEvent extends DasEvent {
         return y;
     }
     
-    public void set(edu.uiowa.physics.pw.das.datum.Datum x, edu.uiowa.physics.pw.das.datum.Datum y) {
+    public Object getPlane( String plane ) {
+        return planes.get(plane);
+    }
+    
+    public String[] getPlaneIds() {
+        return (String[])planes.keySet().toArray( new String[ planes.keySet().size() ] );        
+    }
+    
+    public void set( Datum x,  Datum y) {
         this.x= x;
         this.y= y;
     }
