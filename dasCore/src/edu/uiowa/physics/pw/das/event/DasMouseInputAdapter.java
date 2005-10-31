@@ -40,6 +40,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 /**
@@ -74,6 +75,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     JCheckBoxMenuItem secondarySelectedItem;
     
     Rectangle[] dirtyBoundsList;
+    
+    Logger log= DasLogger.getLogger(DasLogger.GUI_LOG);
     
     int numInserted;
     
@@ -189,6 +192,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     public KeyAdapter getKeyAdapter() {
         return new KeyAdapter() {
             public void keyPressed( KeyEvent ev ) {
+                log.finest( "keyPressed " );
                 if ( ev.getKeyCode()==27 & active!=null ) {
                     active=null;
                     refresh();
@@ -483,6 +487,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseMoved(MouseEvent e) {
+        log.finest("mouseMoved");
         Point l= parent.getLocation();
         xOffset= l.x;
         yOffset= l.y;
@@ -496,7 +501,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     private void showPopup( JPopupMenu menu, Point p ) {
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("showPopup");
+        log.finest("showPopup");
         HashMap map=null;
         if ( menu==primaryPopup ) {
             map= primaryActionButtonMap;
@@ -518,7 +523,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mousePressed(MouseEvent e) {
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePressed "+mouseMode);
+        log.finest("mousePressed "+mouseMode);
         if ( pinned ) {
             active=null;
             refresh();
@@ -597,7 +602,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseDragged(MouseEvent e) {
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseDragged in "+mouseMode);
+        log.finest("mouseDragged in "+mouseMode);
         if (mouseMode==MouseMode.resize) {
             resizeRenderer.clear(graphics);
             resizeRenderer.renderDrag(graphics,resizeStart,e.getPoint());
@@ -612,13 +617,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                     try {
                         MouseModule j= (MouseModule)active.get(i);
                         if (j.dragRenderer.isPointSelection()) {
-                            DasLogger.getLogger(DasLogger.GUI_LOG).finest("mousePointSelected");
+                            log.finest("mousePointSelected");
                             j.mousePointSelected(mousePointSelection);
                         }
                         if (j.dragRenderer.isUpdatingDragSelection()) {
                             // Really it should be the DMM that indicates it wants updates...whoops...
                             MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
-                            DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseRangeSelected");
+                            log.finest("mouseRangeSelected");
                             j.mouseRangeSelected(de);
                         }
                         j.mouseDragged(e);
@@ -659,7 +664,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseReleased(MouseEvent e) {
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("mouseReleased");
+        log.finest("mouseReleased");
         if (mouseMode==MouseMode.resize) {
             performResize(e);
         } else {
