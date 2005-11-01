@@ -8,9 +8,9 @@
 
 package edu.uiowa.physics.pw.das.event;
 import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.dataset.AverageTableRebinner;
 import edu.uiowa.physics.pw.das.dataset.ClippedTableDataSet;
+import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
 import edu.uiowa.physics.pw.das.dataset.DataSetRebinner;
 import edu.uiowa.physics.pw.das.dataset.DataSetUpdateEvent;
@@ -116,7 +116,8 @@ public class CutoffMouseModule extends MouseModule {
             }
         }
         
-        builder.setProperty("comment","ondrej");
+        builder.setProperty("comment","Ondrej");
+        builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, this.xResolution );
         VectorDataSet vds= builder.toVectorDataSet();
         
         fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent( this,vds ) );
