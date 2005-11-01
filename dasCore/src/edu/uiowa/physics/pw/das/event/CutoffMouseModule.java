@@ -55,9 +55,20 @@ public class CutoffMouseModule extends MouseModule {
     
     public void mouseRangeSelected(MouseDragEvent event) {
         MouseBoxEvent e= (MouseBoxEvent)event;
+        
+        DatumRange xrange0= xrange;
+        DatumRange yrange0= yrange;
+        
         xrange= new DatumRange( xaxis.invTransform(e.getXMinimum()), xaxis.invTransform(e.getXMaximum()) );
         yrange= new DatumRange( yaxis.invTransform(e.getYMaximum()), yaxis.invTransform(e.getYMinimum()) );
-        recalculate();
+        
+        try {
+            recalculate();
+        } catch ( RuntimeException ex ) {
+            xrange= xrange0;
+            yrange= yrange0;
+            throw ex;
+        }
     }
     
     /**
@@ -145,11 +156,11 @@ public class CutoffMouseModule extends MouseModule {
             ave[0]= cumul[k-1]/k;
             for ( int j=0; j<nfr-k; j++ ) {
                 ave[j+1]= ( cumul[j+k] - cumul[j] ) / k;
-                levelBuilder.insertY( ds.getXTagDatum(j+1), units.createDatum(ave[j+1]) );                
+                levelBuilder.insertY( ds.getXTagDatum(j+1), units.createDatum(ave[j+1]) );
             }
             for ( int j=k; j<nfr-k; j++ ) {
                 double slopeTest= ( ave[j+1]-ave[j-k] ) / k;
-                slopeBuilder.insertY( ds.getXTagDatum(j+1), units.createDatum(slopeTest) );                
+                slopeBuilder.insertY( ds.getXTagDatum(j+1), units.createDatum(slopeTest) );
                 if ( slopeTest*mult <= slope ) icof[j]= false;
                 double uave= mult>0 ? ave[j+k] :  ave[j];
                 if ( uave <= level ) icof[j]=false;
@@ -200,7 +211,7 @@ public class CutoffMouseModule extends MouseModule {
             DasRow row2= DasRow.create( canvas, 1, 3 );
             DasRow row3= DasRow.create( canvas, 2, 3 );
             
-            DasPlot plot= new CutoffDasPlot( xaxis, new DasAxis( new DatumRange( -8,0,Units.dimensionless ), DasAxis.VERTICAL ) );            
+            DasPlot plot= new CutoffDasPlot( xaxis, new DasAxis( new DatumRange( -8,0,Units.dimensionless ), DasAxis.VERTICAL ) );
             plot.getYAxis().setLabel("level");
             plot.getXAxis().setTickLabelsVisible(false);
             levelRenderer= new SymbolLineRenderer();
@@ -229,13 +240,13 @@ public class CutoffMouseModule extends MouseModule {
             slopeRenderer= new SymbolLineRenderer();
             plot.addRenderer(slopeRenderer);
             canvas.add( plot, row2, col );
-
+            
             plot= new CutoffDasPlot( xaxis.createAttachedAxis(), new DasAxis( new DatumRange( -0.3,1.3,Units.dimensionless ), DasAxis.VERTICAL )  );
             plot.getYAxis().setLabel("icof");
             icofRenderer= new SymbolLineRenderer();
             plot.addRenderer(icofRenderer);
             canvas.add( plot, row3, col );
-
+            
         }
         
         private void recalculate( ) {
@@ -246,7 +257,6 @@ public class CutoffMouseModule extends MouseModule {
             this.lastSelectedPoint= event;
             TableDataSet tds= (TableDataSet)dataSetConsumer.getDataSet();
             
-            System.err.println("here event:"+event );
             this.xValue= event.getX();
             this.yValue= event.getY();
             
@@ -270,12 +280,12 @@ public class CutoffMouseModule extends MouseModule {
             this.xValue= tds.getXTagDatum(i);
             topPlot.setTitle( "" +  xValue + " " + yValue);
             
-                        
+            
             VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
             
             int icutoff= cutoff( spec, slopeMin, nave, 1, levelMin );
             cutoff= spec.getXTagDatum(icutoff);
-                        
+            
             showPopup();
         }
         
@@ -283,13 +293,13 @@ public class CutoffMouseModule extends MouseModule {
             if ( !frame.isVisible() ) frame.setVisible(true);
         }
         
-        class CutoffDasPlot extends DasPlot {            
+        class CutoffDasPlot extends DasPlot {
             CutoffDasPlot( DasAxis x, DasAxis y ) {
                 super(x,y);
             }
-            protected void drawContent(java.awt.Graphics2D g) {                
+            protected void drawContent(java.awt.Graphics2D g) {
                 super.drawContent(g);
-                                
+                
                 int iy;
                 
                 iy= (int)getYAxis().transform( levelMin );
