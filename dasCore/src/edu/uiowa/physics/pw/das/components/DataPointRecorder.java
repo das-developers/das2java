@@ -40,6 +40,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     protected AbstractTableModel myTableModel;
     private File saveFile;
     private JLabel messageLabel;
+    private Datum xTagWidth;
     
     protected class DataPoint implements Comparable {
         Datum[] data;
@@ -179,6 +180,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 DataPoint dp= (DataPoint)dataPoints.get(irow);
                 builder.insertY(dp.get(0), dp.get(1));
             }
+            if ( this.xTagWidth!=null ) {
+                builder.setProperty( "xTagWidth", xTagWidth );
+            }
             return builder.toVectorDataSet();
         }
     }
@@ -196,6 +200,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 int irow= selectedRows[i];
                 DataPoint dp= (DataPoint)dataPoints.get(irow);
                 builder.insertY(dp.get(0), dp.get(1));
+            }
+            if ( this.xTagWidth!=null ) {
+                builder.setProperty( "xTagWidth", xTagWidth );
             }
             return builder.toVectorDataSet();
         }
@@ -471,6 +478,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     comment= (String)ds.getProperty("comment");
                 } else {
                     comment= "";
+                }
+                if ( ds.getProperty("xTagWidth")!=null ) {
+                    DataPointRecorder.this.xTagWidth= (Datum)ds.getProperty("xTagWidth");
                 }
                 String[] planes= ds.getPlaneIds();
                 if ( ds!=null ) {
