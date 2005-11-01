@@ -32,12 +32,14 @@ import javax.swing.table.*;
  */
 public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
     protected JTable table;
-    protected JScrollPane scrollPane;
-    protected DataPointReporter reporter;
+    protected JScrollPane scrollPane;    
     protected List dataPoints;
+    private int selectRow; // this row needs to be selected after the update.
     protected Units[] unitsArray;
     protected DatumFormatter[] formatterArray;
     protected AbstractTableModel myTableModel;
+    private File saveFile;
+    private JLabel messageLabel;
     
     protected class DataPoint implements Comparable {
         Datum[] data;
@@ -301,7 +303,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 int status= jj.showSaveDialog(DataPointRecorder.this);
                 if ( status==JFileChooser.APPROVE_OPTION ) {
                     try {
-                        saveToFile(jj.getSelectedFile());
+                        DataPointRecorder.this.saveFile= jj.getSelectedFile();
+                        saveToFile(saveFile);
+                        //messageLabel.setText("saved data to "+saveFile);
                     } catch ( IOException e1 ) {
                         DasExceptionHandler.handle(e1);
                     }
@@ -342,7 +346,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         table= new JTable(myTableModel);
         
         table.getTableHeader().setReorderingAllowed(false);
-        
+                
+        table.setRowSelectionAllowed(true);
         table.addMouseListener(new DataPointRecorder.MyMouseAdapter(table));
         table.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -358,6 +363,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         
         scrollPane= new JScrollPane(table);
         this.add(scrollPane,BorderLayout.CENTER);
+        
+        JPanel controlStatusPanel= new JPanel();
+        controlStatusPanel.setLayout( new BoxLayout( controlStatusPanel, BoxLayout.Y_AXIS ) );
         
         final JPanel controlPanel= new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel,BoxLayout.X_AXIS));
@@ -380,8 +388,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         } );
         
         controlPanel.add(updateButton);
-        
-        this.add(controlPanel,BorderLayout.SOUTH);
+        controlStatusPanel.add(controlPanel);
+        //messageLabel= new JLabel("ready");
+        //messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        //controlStatusPanel.add( messageLabel );
+        this.add(controlStatusPanel,BorderLayout.SOUTH);
     }
     
     public static DataPointRecorder createFramed() {
@@ -391,31 +402,42 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         frame.getContentPane().add(result);
         frame.pack();
         frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         return result;
     }
     
-    
-    protected void update() {
+    /**
+     * update fires off the TableDataChanged, and sets the current selected 
+     * row if necessary.
+     */
+    private void update() {
         myTableModel.fireTableDataChanged();
-        JScrollBar scrollBar= scrollPane.getVerticalScrollBar();
-        if ( scrollBar!=null ) scrollBar.setValue(scrollBar.getMaximum());
+        if ( selectRow!=-1 ) {
+            table.setRowSelectionInterval(selectRow,selectRow);
+            table.scrollRectToVisible( table.getCellRect( selectRow, 0, true ) );
+            selectRow= -1;
+        }
     }
     
     private void insertInternal( DataPoint newPoint ) {
+        int newSelect;
         if ( sorted ) {
             int index = Collections.binarySearch(dataPoints, newPoint);
             if (index < 0) {
                 dataPoints.add(~index, newPoint);
+                newSelect= ~index;
             } else {
                 dataPoints.set(index, newPoint);
+                newSelect= index;
             }
         } else {
             dataPoints.add(newPoint);
+            newSelect= dataPoints.size()-1;
         }
+        selectRow= newSelect;
     }
     
-    private void addDataPoint( Datum x, Datum y, HashMap planes ) {
+     private void addDataPoint( Datum x, Datum y, HashMap planes ) {
         if ( dataPoints.size()==0 ) {
             Datum[] datums= new Datum[] { x, y };
             unitsArray= new Units[] { x.getUnits(), y.getUnits() };
