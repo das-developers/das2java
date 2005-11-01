@@ -22,10 +22,9 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
-
-import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
+
 
 /**
  *
@@ -37,25 +36,21 @@ public class CrossHairMouseModule extends MouseModule {
     DasAxis yaxis;
     
     protected DataPointSelectionEvent de;
-
+    
     edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer;
     
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
     
-    /** Creates a new instance of CrossHairMouseModule */
-    private CrossHairMouseModule() {
-    }
-    
     public CrossHairMouseModule(DasPlot parent, DasAxis xaxis, DasAxis yaxis) {
         this( parent, parent, xaxis, yaxis );
-    }    
+    }
     
     public CrossHairMouseModule( DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
         super(parent,new CrossHairRenderer(parent,dataSetConsumer,xAxis,yAxis),"Crosshair Digitizer");
         this.dataSetConsumer= dataSetConsumer;
         this.xaxis= xAxis;
-        this.yaxis= yAxis;              
+        this.yaxis= yAxis;
         this.de= new DataPointSelectionEvent(this,null,null);
     }
     
@@ -63,18 +58,18 @@ public class CrossHairMouseModule extends MouseModule {
         DasAxis xaxis= parent.getXAxis();
         DasAxis yaxis= parent.getYAxis();
         return new CrossHairMouseModule(parent,xaxis,yaxis);
-    }       
+    }
     
     protected DataPointSelectionEvent getDataPointSelectionEvent(MousePointSelectionEvent e) {
         de.setDataSet(dataSetConsumer.getDataSet());
         de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
         return de;
-    }        
-        
-    public void mousePointSelected(MousePointSelectionEvent e) {        
+    }
+    
+    public void mousePointSelected(MousePointSelectionEvent e) {
         fireDataPointSelectionListenerDataPointSelected(getDataPointSelectionEvent(e));
     }
-
+    
     /** Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
@@ -105,5 +100,5 @@ public class CrossHairMouseModule extends MouseModule {
             }
         }
     }
-        
+    
 }
