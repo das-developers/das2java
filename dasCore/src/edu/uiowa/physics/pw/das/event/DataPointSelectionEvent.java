@@ -52,6 +52,7 @@ public class DataPointSelectionEvent extends DasEvent {
         this.x= x;
         this.y= y;
         this.ds= null;
+        this.planes= planes;
     }
     
     public DataPointSelectionEvent(Object source, 
@@ -69,7 +70,7 @@ public class DataPointSelectionEvent extends DasEvent {
     }
     
     public Object getPlane( String plane ) {
-        return planes.get(plane);
+        return planes==null ? null : planes.get(plane);
     }
     
     public String[] getPlaneIds() {
