@@ -219,13 +219,19 @@ public class CutoffMouseModule extends MouseModule {
             plot.addRenderer(levelRenderer);
             topPlot= plot;
             
-            VerticalSlicerMouseModule tweakSlicer= new VerticalSlicerMouseModule( topPlot, levelRenderer, topPlot.getXAxis(), topPlot.getYAxis() );
+            KeyboardCrossHairMouseModule tweakSlicer= new KeyboardCrossHairMouseModule( topPlot, levelRenderer, topPlot.getXAxis(), topPlot.getYAxis() );            
+//            VerticalSlicerMouseModule tweakSlicer= new VerticalSlicerMouseModule( topPlot, levelRenderer, topPlot.getXAxis(), topPlot.getYAxis() );
             tweakSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
                 public void DataPointSelected( DataPointSelectionEvent e ) {
                     Datum x= e.getX();
                     VectorDataSetBuilder builder= new VectorDataSetBuilder( xValue.getUnits(), x.getUnits() );
+                    if ( e.getPlane("keyChar")!=null ) {
+                        builder.setProperty("comment",e.getPlane("keyChar"));
+                    } else {
+                        builder.setProperty("comment","tweak");
+                    }
                     builder.insertY( xValue, x );
-                    builder.setProperty("comment","tweak");
+                    
                     fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this,builder.toVectorDataSet()) );
                 }
             } );
