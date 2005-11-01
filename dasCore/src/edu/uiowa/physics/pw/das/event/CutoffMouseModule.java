@@ -267,7 +267,9 @@ public class CutoffMouseModule extends MouseModule {
             }
             
             int i= DataSetUtil.closestColumn( tds, event.getX() );
-            topPlot.setTitle( "" +  tds.getXTagDatum(i) + " " + yValue);
+            this.xValue= tds.getXTagDatum(i);
+            topPlot.setTitle( "" +  xValue + " " + yValue);
+            
                         
             VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
             
