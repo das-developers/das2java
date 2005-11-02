@@ -18,7 +18,9 @@ public class CommentDataPointSelectionEvent extends DataPointSelectionEvent {
     String comment;
     
     public static CommentDataPointSelectionEvent create( DataPointSelectionEvent e, String comment ) {
-        return new CommentDataPointSelectionEvent( e.getSource(), e.getX(), e.getY(), comment );
+        CommentDataPointSelectionEvent ce =  new CommentDataPointSelectionEvent( e.getSource(), e.getX(), e.getY(), comment );
+        ce.setDataSet(e.getDataSet());
+        return ce;
     }
     
     /** Creates a new instance of DataTupleSelectionEvent */
