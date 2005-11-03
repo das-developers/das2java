@@ -74,7 +74,11 @@ public class DataPointSelectionEvent extends DasEvent {
     }
     
     public String[] getPlaneIds() {
-        return (String[])planes.keySet().toArray( new String[ planes.keySet().size() ] );        
+        if ( planes==null ) {
+            return new String[0];
+        } else {
+            return (String[])planes.keySet().toArray( new String[ planes.keySet().size() ] );
+        }
     }
     
     public void set( Datum x,  Datum y) {
