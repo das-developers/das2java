@@ -17,6 +17,7 @@ import edu.uiowa.physics.pw.das.dataset.DataSetUpdateEvent;
 import edu.uiowa.physics.pw.das.dataset.DataSetUtil;
 import edu.uiowa.physics.pw.das.dataset.DefaultVectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
+import edu.uiowa.physics.pw.das.dataset.SingleVectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
@@ -29,8 +30,8 @@ import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
-import edu.uiowa.physics.pw.das.graph.Renderer;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
+import java.awt.Color;
 import java.util.HashMap;
 import javax.swing.JFrame;
 
@@ -193,9 +194,10 @@ public class CutoffMouseModule extends MouseModule {
         Datum cutoff;
         Datum yValue;
         Datum xValue;
-        Renderer levelRenderer;
-        Renderer slopeRenderer;
-        Renderer icofRenderer;
+        SymbolLineRenderer levelRenderer;
+        SymbolLineRenderer contextLevelRenderer;
+        SymbolLineRenderer slopeRenderer;
+        SymbolLineRenderer icofRenderer;
         DasPlot topPlot;
         JFrame frame;
         
@@ -216,28 +218,48 @@ public class CutoffMouseModule extends MouseModule {
             plot.getYAxis().setLabel("level");
             plot.getXAxis().setTickLabelsVisible(false);
             levelRenderer= new SymbolLineRenderer();
+            contextLevelRenderer= new SymbolLineRenderer();
+            contextLevelRenderer.setColor( Color.GRAY );
+            
+            plot.addRenderer(contextLevelRenderer);
             plot.addRenderer(levelRenderer);
+            
             topPlot= plot;
             
-            KeyboardCrossHairMouseModule tweakSlicer= new KeyboardCrossHairMouseModule( topPlot, levelRenderer, topPlot.getXAxis(), topPlot.getYAxis() );            
-//            VerticalSlicerMouseModule tweakSlicer= new VerticalSlicerMouseModule( topPlot, levelRenderer, topPlot.getXAxis(), topPlot.getYAxis() );
+            DataPointSelectorMouseModule tweakSlicer=
+                    new DataPointSelectorMouseModule( topPlot, levelRenderer,
+                    new VerticalSliceSelectionRenderer(topPlot), "tweak cutoff" );
+            tweakSlicer.setDragEvents(false); // only key events fire
             tweakSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
                 public void DataPointSelected( DataPointSelectionEvent e ) {
                     Datum x= e.getX();
-                    VectorDataSetBuilder builder= new VectorDataSetBuilder( xValue.getUnits(), x.getUnits() );
+                    HashMap properties= new HashMap();
                     if ( e.getPlane("keyChar")!=null ) {
-                        builder.setProperty("comment",e.getPlane("keyChar"));
+                        properties.put("comment",e.getPlane("keyChar"));
                     } else {
-                        builder.setProperty("comment","tweak");
+                        properties.put("comment","tweak");
                     }
-                    builder.insertY( xValue, x );
-                    
-                    fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this,builder.toVectorDataSet()) );
+                    fireDataSetUpdateListenerDataSetUpdated(
+                            new DataSetUpdateEvent(this,
+                            new SingleVectorDataSet( xValue, e.getX(), properties ) ) );
                 }
             } );
-            tweakSlicer.setLabel("tweak cutoff");
             topPlot.addMouseModule( tweakSlicer );
             topPlot.getMouseAdapter().setPrimaryModule(tweakSlicer);
+            
+            DataPointSelectorMouseModule levelSlicer=
+                    new DataPointSelectorMouseModule( topPlot, levelRenderer,
+                    new HorizontalSliceSelectionRenderer(topPlot), "cutoff level" );
+            levelSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
+                public void DataPointSelected( DataPointSelectionEvent e ) {
+                    Datum y= e.getY();
+                    CutoffMouseModule.this.setLevelMin( y );                    
+                }
+            } );
+            levelSlicer.setDragEvents(false);
+            levelSlicer.setKeyEvents(false);
+            levelSlicer.setReleaseEvents(true);
+            topPlot.addMouseModule( levelSlicer );
             
             canvas.add( plot, row1, col );
             
@@ -246,6 +268,25 @@ public class CutoffMouseModule extends MouseModule {
             plot.getXAxis().setTickLabelsVisible(false);
             slopeRenderer= new SymbolLineRenderer();
             plot.addRenderer(slopeRenderer);
+            
+            // TODO: here's a bug mode to check into (topPlot should be plot):
+            //DataPointSelectorMouseModule slopeSlicer=
+            //        new DataPointSelectorMouseModule( topPlot, levelRenderer,
+            //        new HorizontalSliceSelectionRenderer( topPlot ), "slope level" );
+            DataPointSelectorMouseModule slopeSlicer=
+                    new DataPointSelectorMouseModule( plot, levelRenderer,
+                    new HorizontalSliceSelectionRenderer( plot ), "slope level" );
+            slopeSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
+                public void DataPointSelected( DataPointSelectionEvent e ) {
+                    Datum y= e.getY();
+                    CutoffMouseModule.this.setSlopeMin( y );                    
+                }
+            } );
+            slopeSlicer.setDragEvents(false);
+            slopeSlicer.setKeyEvents(false);
+            slopeSlicer.setReleaseEvents(true);
+            plot.addMouseModule( slopeSlicer );
+            
             canvas.add( plot, row2, col );
             
             plot= new CutoffDasPlot( xaxis.createAttachedAxis(), new DasAxis( new DatumRange( -0.3,1.3,Units.dimensionless ), DasAxis.VERTICAL )  );
@@ -269,8 +310,6 @@ public class CutoffMouseModule extends MouseModule {
             
             if ( xrange==null ) return;
             
-            tds= new ClippedTableDataSet( tds, DataSetUtil.xRange(tds), yrange );
-            
             // average the data down to xResolution
             DataSetRebinner rebinner= new AverageTableRebinner();
             
@@ -284,9 +323,14 @@ public class CutoffMouseModule extends MouseModule {
             }
             
             int i= DataSetUtil.closestColumn( tds, event.getX() );
+            
+            VectorDataSet contextDs= tds.getXSlice(i);
+            contextLevelRenderer.setDataSet( DataSetUtil.log10( contextDs ) );
+            
+            tds= new ClippedTableDataSet( tds, DataSetUtil.xRange(tds), yrange );
+            
             this.xValue= tds.getXTagDatum(i);
             topPlot.setTitle( "" +  xValue + " " + yValue);
-            
             
             VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
             
@@ -309,6 +353,8 @@ public class CutoffMouseModule extends MouseModule {
                 
                 int iy;
                 
+                g.setColor( Color.GRAY );
+                
                 iy= (int)getYAxis().transform( levelMin );
                 g.drawLine( 0, iy, getWidth(), iy );
                 
@@ -317,6 +363,12 @@ public class CutoffMouseModule extends MouseModule {
                 
                 int ix= (int)getXAxis().transform( cutoff );
                 g.drawLine( ix, 0, ix, getHeight() );
+                
+                g.setColor( Color.pink );
+                ix= (int)getXAxis().transform( yValue );
+                g.drawLine( ix, 0, ix, getHeight() );
+                
+                
             }
         }
     }
@@ -402,7 +454,7 @@ public class CutoffMouseModule extends MouseModule {
      * Setter for property slopeMin.
      * @param slopeMin New value of property slopeMin.
      */
-    public void setSlopeMin(Datum slopeMin) {
+    public void setSlopeMin(Datum slopeMin) {        
         this.slopeMin = slopeMin;
         recalculate();
     }
