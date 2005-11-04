@@ -7,14 +7,15 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.BorderLayout;
 import java.awt.event.*;
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,15 +33,15 @@ import javax.swing.table.*;
  */
 public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
     protected JTable table;
-    protected JScrollPane scrollPane;    
+    protected JScrollPane scrollPane;
     protected List dataPoints;
     private int selectRow; // this row needs to be selected after the update.
     protected Units[] unitsArray;
-    protected DatumFormatter[] formatterArray;
+    protected String[] planesArray;
     protected AbstractTableModel myTableModel;
     private File saveFile;
     private JLabel messageLabel;
-    private Datum xTagWidth;
+    private boolean active= true; // false means don't fire updates
     
     protected class DataPoint implements Comparable {
         Datum[] data;
@@ -84,27 +85,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         
         public int getColumnCount() {
             if ( unitsArray==null ) {
-                return 3;
+                return 2;
             } else {
-                return unitsArray.length+1;  // +1 is for the comment column
+                return planesArray.length;
             }
         }
         
         public String getColumnName(int j) {
-            if ( j+1 == getColumnCount() ) {
-                return "comment";
-            } else {
-                if ( unitsArray!=null ) {
-                    Units unit= unitsArray[j];
-                    if ( unit instanceof TimeLocationUnits ) {
-                        return ((TimeLocationUnits)unit).getTimeZone();
-                    } else {
-                        return unitsArray[j].toString();
-                    }
-                }  else {
-                    return ""+j;
-                }
-            }
+            String result= planesArray[j];
+            if ( unitsArray[j]!=null ) result+= "("+unitsArray[j]+")";
+            return result;
         }
         
         public int getRowCount() {
@@ -118,7 +108,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             if ( j<x.data.length ) {
                 return x.get(j).toString(); // formerly one formatter was use for the whole column
             } else {
-                return x.getPlane("comment");
+                return x.getPlane(planesArray[j]);
             }
         }
         
@@ -212,15 +202,28 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         FileOutputStream out= new FileOutputStream( file );
         BufferedWriter r= new BufferedWriter(new OutputStreamWriter(out));
         
+        StringBuffer header= new StringBuffer();
+        header.append("## ");
+        for ( int j=0; j<planesArray.length; j++ ) {
+            header.append( myTableModel.getColumnName(j) + "\t" );
+        }
+        r.write(header.toString());
+        r.newLine();
         for ( int i=0; i<dataPoints.size(); i++ ) {
             DataPoint x= (DataPoint)dataPoints.get(i);
             StringBuffer s= new StringBuffer();
-            for ( int j=0; j<unitsArray.length; j++ ) {
-                s.append(formatterArray[j].format( x.get(j) ) + "\t");
+            for ( int j=0; j<2; j++ ) {
+                s.append( String.valueOf(x.get(j)) + "\t");
             }
-            String comment= (String)x.getPlane("comment");
-            if ( comment==null ) comment="";
-            s.append( "\""+comment+"\"" );
+            for ( int j=2; j<planesArray.length; j++ ) {
+                Object o= x.getPlane(planesArray[j]);
+                if ( unitsArray[j]==null ) {
+                    if ( o==null ) o="";
+                    s.append( "\"" + o +"\"\t" );
+                } else {
+                    s.append( o+"\t" );
+                }
+            }
             r.write(s.toString());
             r.newLine();
             DasProperties.getInstance().put("components.DataPointRecorder.lastFileSave",  file.toString());
@@ -230,34 +233,116 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     public void loadFromFile( File file ) throws IOException {
+        active= false; 
+        
         FileInputStream in= new FileInputStream( file );
         BufferedReader r= new BufferedReader(new InputStreamReader(in));
-        dataPoints.clear();
+        
+        int lineCount=0;
         for ( String line= r.readLine(); line!=null; line= r.readLine() ) {
-            String[] s= line.split("\t");
-            
-            Datum x;
-            if ( TimeUtil.isValidTime(s[0]) ) x= TimeUtil.createValid(s[0]); else x=DatumUtil.parseValid(s[0]);
-            Datum y;
-            if ( TimeUtil.isValidTime(s[1]) ) y= TimeUtil.createValid(s[1]); else y=DatumUtil.parseValid(s[1]);
-            String comment="";
-            if ( s.length>2 ) {
-                comment= s[2];
-                Pattern p= Pattern.compile("\"(.*)\".*");
-                Matcher m= p.matcher(comment);
-                if ( m.matches() ) {
-                    comment= m.group(1);
-                }
-            }
-            
-            DataPointSelectionEvent e;
-            if ( comment.equals("") ) {
-                e= new DataPointSelectionEvent(this, x, y );
-            } else {
-                e= CommentDataPointSelectionEvent.create( new DataPointSelectionEvent(this, x, y), comment );
-            }
-            DataPointSelected(e);
+            lineCount++;
         }
+        r.close();
+        
+        in= new FileInputStream( file );
+        r= new BufferedReader(new InputStreamReader(in));
+        
+        dataPoints.clear();
+        String[] planesArray= null;
+        Units[] unitsArray= null;
+        
+        Datum x;
+        Datum y;
+        HashMap planes= new HashMap();
+        
+        DasProgressMonitor mon;
+        if ( lineCount > 500 ) {
+            mon= DasProgressPanel.createFramed("reading file");
+        } else {
+            mon= DasProgressMonitor.NULL;
+        }
+        
+        mon.setTaskSize( lineCount );
+        int linenum=0;
+        for ( String line= r.readLine(); line!=null; line= r.readLine() ) {
+            linenum++;
+            if ( mon.isCancelled() ) break;
+            mon.setTaskProgress(linenum);
+            if ( line.startsWith("## ") ) {
+                line= line.substring(3);
+                String[] s= line.split("\t");
+                Pattern p= Pattern.compile("(.+)\\((.*)\\)");
+                planesArray= new String[s.length];
+                unitsArray= new Units[s.length];
+                for ( int i=0; i<s.length; i++ ) {
+                    Matcher m= p.matcher(s[i]);
+                    if ( m.matches() ) {
+                        planesArray[i]= m.group(1);
+                        try {
+                            unitsArray[i]= Units.getByName(m.group(2));
+                        } catch ( IndexOutOfBoundsException e ) {
+                            System.err.println(e);
+                        }
+                    } else {
+                        planesArray[i]= s[i];
+                        unitsArray[i]= null;
+                    }
+                }
+                continue;
+            }
+            String[] s= line.split("\t");
+            if ( unitsArray==null ) {
+                // support for legacy files
+                unitsArray= new Units[s.length];
+                for ( int i=0; i<s.length; i++ ) {
+                    if ( s[i].charAt(0)=='"' ) {
+                        unitsArray[i]= null;
+                    } else if ( TimeUtil.isValidTime(s[i]) ) {
+                        unitsArray[i]= Units.us2000;
+                    } else {
+                        unitsArray[i]= DatumUtil.parseValid(s[i]).getUnits();
+                    }
+                }
+                planesArray= new String[] { "X", "Y", "comment" };
+            }
+            
+            try {
+                
+                x= unitsArray[0].parse(s[0]);
+                y= unitsArray[1].parse(s[1]);
+                
+                planes= new HashMap();
+                
+                for ( int i=2; i<s.length; i++ ) {
+                    if ( unitsArray[i]==null ) {
+                        Pattern p= Pattern.compile("\"(.*)\".*");
+                        Matcher m= p.matcher(s[i]);
+                        if ( m.matches() ) {
+                            planes.put( planesArray[i], m.group(1) );
+                        } else {
+                            throw new ParseException( "parse error, expected \"\"", 0 );
+                        }
+                    } else {
+                        try {
+                            planes.put( planesArray[i], unitsArray[i].parse(s[i]) );
+                        } catch ( ParseException e ) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                
+                DataPointSelectionEvent e;
+                e= new DataPointSelectionEvent(this, x, y, planes );
+                DataPointSelected(e);
+            } catch ( ParseException e ) {
+                throw new RuntimeException(e);
+            }
+            
+        }
+        mon.finished();
+        
+        active= true;
+        update();
         DasProperties.getInstance().put("components.DataPointRecorder.lastFileLoad",  file.toString());
         fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
     }
@@ -322,7 +407,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     private Action getLoadAction() {
-        return new AbstractAction( "Load..." ) {        
+        return new AbstractAction( "Load..." ) {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser jj= new JFileChooser();
                 String lastFileString= (String)DasProperties.getInstance().get("components.DataPointRecorder.lastFileLoad");
@@ -334,12 +419,40 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
                 int status= jj.showOpenDialog(DataPointRecorder.this);
                 if ( status==JFileChooser.APPROVE_OPTION ) {
-                    try {
-                        loadFromFile(jj.getSelectedFile());
-                    } catch ( IOException e1 ) {
-                        DasExceptionHandler.handle(e1);
-                    }
+                    final File loadFile= jj.getSelectedFile();
+                    
+                    Runnable run= new Runnable() {
+                        public void run( ) {
+                            try {
+                                loadFromFile(loadFile);
+                            } catch ( IOException e ) {
+                                DasExceptionHandler.handle(e);
+                            }
+                        }
+                    };
+                    new Thread( run ).start();
                 }
+            }
+        };
+    }
+    
+    private Action getPropertiesAction() {
+        return new AbstractAction( "Properties" ) {
+            public void actionPerformed(ActionEvent e) {
+                new PropertyEditor( DataPointRecorder.this ).showDialog(DataPointRecorder.this);
+            }
+        };
+    }
+    
+    private Action getUpdateAction() {
+        return new AbstractAction("Update"){
+            public void actionPerformed(ActionEvent e) {
+                // what if no one is listening?
+                if ( dataSetDescriptor!=null ) {
+                    dataSetDescriptor.fireUpdate();
+                }
+                fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
             }
         };
     }
@@ -350,15 +463,19 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         dataPoints= new ArrayList();
         myTableModel= new MyTableModel();
         this.setLayout(new BorderLayout());
+        
+        planesArray= new String[] { "X", "Y" };
+        unitsArray= new Units[] { null, null };
+        
         table= new JTable(myTableModel);
         
         table.getTableHeader().setReorderingAllowed(false);
-                
+        
         table.setRowSelectionAllowed(true);
         table.addMouseListener(new DataPointRecorder.MyMouseAdapter(table));
         table.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                fireSelectedDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(DataPointRecorder.this) );                                
+                fireSelectedDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(DataPointRecorder.this) );
                 int selected= table.getSelectedRow(); // we could do a better job here
                 if ( selected>-1 ) {
                     DataPoint dp= (DataPoint)dataPoints.get(selected);
@@ -382,17 +499,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         controlPanel.add(saveButton);
         controlPanel.add(loadButton);
         
-        JButton updateButton= new JButton("Update");
-        updateButton.addActionListener( new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // what if no one is listening?
-                if ( dataSetDescriptor!=null ) {
-                    dataSetDescriptor.fireUpdate();
-                }
-                fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
-                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
-            }
-        } );
+        controlPanel.add(new JButton(getPropertiesAction()));
+        
+        JButton updateButton= new JButton(getUpdateAction());
         
         controlPanel.add(updateButton);
         controlStatusPanel.add(controlPanel);
@@ -414,15 +523,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     /**
-     * update fires off the TableDataChanged, and sets the current selected 
+     * update fires off the TableDataChanged, and sets the current selected
      * row if necessary.
      */
     private void update() {
-        myTableModel.fireTableDataChanged();
-        if ( selectRow!=-1 ) {
-            table.setRowSelectionInterval(selectRow,selectRow);
-            table.scrollRectToVisible( table.getCellRect( selectRow, 0, true ) );
-            selectRow= -1;
+        if ( active ) {
+            myTableModel.fireTableDataChanged();
+            if ( selectRow!=-1 ) {
+                table.setRowSelectionInterval(selectRow,selectRow);
+                table.scrollRectToVisible( table.getCellRect( selectRow, 0, true ) );
+                selectRow= -1;
+            }
         }
     }
     
@@ -444,15 +555,26 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         selectRow= newSelect;
     }
     
-     private void addDataPoint( Datum x, Datum y, HashMap planes ) {
+    private void addDataPoint( Datum x, Datum y, HashMap planes ) {
         if ( dataPoints.size()==0 ) {
             Datum[] datums= new Datum[] { x, y };
-            unitsArray= new Units[] { x.getUnits(), y.getUnits() };
-            formatterArray= new DatumFormatter[] { x.getFormatter(), y.getFormatter() };
-            for ( int j=0; j<unitsArray.length; j++ ) {
-                if ( unitsArray[j] instanceof TimeLocationUnits ) {
-                    formatterArray[j]= TimeDatumFormatterFactory.getInstance().defaultFormatter();
+            unitsArray= new Units[2+planes.size()];
+            unitsArray[0]= x.getUnits();
+            unitsArray[1]= y.getUnits();
+            planesArray= new String[2+planes.size()];
+            planesArray[0]="x";
+            planesArray[1]="y";
+            int index=2;
+            for ( Iterator i= planes.keySet().iterator(); i.hasNext(); ) {
+                Object key= i.next();
+                planesArray[index]= String.valueOf(key);
+                Object value= planes.get(key);
+                if ( value instanceof String ) {
+                    unitsArray[index]= null;
+                } else {
+                    unitsArray[index]= ((Datum)value).getUnits();
                 }
+                index++;
             }
             myTableModel.fireTableStructureChanged();
         }
@@ -463,7 +585,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             throw new RuntimeException( "inconvertable units: "+y+" expected "+unitsArray[1] );
         }
         insertInternal( new DataPoint( x, y, planes ) );
-        fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
+        if ( active ) fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
     }
     
     /**
@@ -487,7 +609,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     for ( int i=0; i<ds.getXLength(); i++ ) {
                         HashMap planesMap= new HashMap();
                         for ( int j=0; j<planes.length; j++ ) {
-                            planesMap.put( planes[j], ((VectorDataSet)ds.getPlanarView(planes[j])).getDatum(i) );
+                            if ( !planes[j].equals("") ) {
+                                planesMap.put( planes[j], ((VectorDataSet)ds.getPlanarView(planes[j])).getDatum(i) );
+                            }
                         }
                         planesMap.put("comment", comment);
                         addDataPoint( ds.getXTagDatum(i), ds.getDatum(i), planesMap );
@@ -502,12 +626,30 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
         String comment="";
+        HashMap planesMap;
         if ( e instanceof CommentDataPointSelectionEvent ) {
             comment= ((CommentDataPointSelectionEvent)e).getComment();
+            planesMap= new HashMap();
+            planesMap.put( "comment", comment );
+        } else {
+            String[] x= e.getPlaneIds();
+            planesMap= new HashMap();
+            for ( int i=0; i<x.length; i++ ) {
+                planesMap.put( x[i], e.getPlane(x[i]) );
+            }
         }
-        HashMap planesMap= new HashMap();
-        planesMap.put( "comment", comment );
-        addDataPoint( e.getX(), e.getY(), planesMap );
+        
+        // if a point exists within xTagWidth of the point, then have this point replace
+        Datum x= e.getX();
+        if ( snapToGrid && xTagWidth!=null && dataPoints.size()>0 ) {
+            DataSet ds= getDataSet();
+            int i= DataSetUtil.closestColumn( ds, e.getX() );
+            Datum diff= e.getX().subtract(ds.getXTagDatum(i));
+            if ( Math.abs(diff.divide(xTagWidth).doubleValue(Units.dimensionless))<0.5 ) {
+                x= ds.getXTagDatum(i);
+            }
+        }
+        addDataPoint( x, e.getY(), planesMap );
         update();
     }
     
@@ -579,41 +721,87 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         
         this.sorted = sorted;
     }
-
+    
     /**
      * Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
     public synchronized void addDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
-
+        
         if (listenerList == null ) {
             listenerList = new javax.swing.event.EventListenerList();
         }
-        listenerList.add (edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+        listenerList.add(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
     }
-
+    
     /**
      * Removes DataPointSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
     public synchronized void removeDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
-
-        listenerList.remove (edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+        
+        listenerList.remove(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
     }
-
+    
     /**
      * Notifies all registered listeners about the event.
-     * 
+     *
      * @param event The event to be fired
      */
     private void fireDataPointSelectionListenerDataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
-
+        
         if (listenerList == null) return;
-        Object[] listeners = listenerList.getListenerList ();
+        Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).DataPointSelected (event);
+                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).DataPointSelected(event);
             }
         }
+    }
+    
+    
+    /**
+     * Holds value of property xTagWidth.
+     */
+    private Datum xTagWidth;
+    
+    /**
+     * Getter for property xTagWidth.
+     * @return Value of property xTagWidth.
+     */
+    public Datum getXTagWidth() {
+        return this.xTagWidth;
+    }
+    
+    /**
+     * Setter for property xTagWidth.
+     * @param xTagWidth New value of property xTagWidth.
+     */
+    public void setXTagWidth(Datum xTagWidth) {
+        
+        this.xTagWidth = xTagWidth;
+    }
+    
+    /**
+     * Holds value of property snapToGrid.
+     */
+    private boolean snapToGrid= false;
+    
+    /**
+     * Getter for property fuzzyOverwrite.
+     * @return Value of property fuzzyOverwrite.
+     */
+    public boolean isSnapToGrid()  {
+        
+        return this.snapToGrid;
+    }
+    
+    /**
+     * Setter for property fuzzyOverwrite.
+     * @param fuzzyOverwrite New value of property fuzzyOverwrite.
+     */
+    public void setSnapToGrid(boolean snapToGrid)  {
+        
+        this.snapToGrid = snapToGrid;
     }
 }
