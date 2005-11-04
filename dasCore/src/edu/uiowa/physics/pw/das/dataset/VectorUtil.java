@@ -160,8 +160,6 @@ public class VectorUtil {
         try {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
-            sd.setProperty("start", vds.getXTagDatum(0).toString());
-            sd.setProperty("end", vds.getXTagDatum(vds.getXLength()-1));
             
             DataTransferType xTransferType;
             DataTransferType yTransferType;
@@ -170,7 +168,7 @@ public class VectorUtil {
                 if ( vds.getXUnits().isConvertableTo(Units.us2000) ) {
                     xTransferType= DataTransferType.getByName("time24");
                 } else {
-                    xTransferType= DataTransferType.getByName("ascii24");
+                    xTransferType= DataTransferType.getByName("ascii10");
                 }
                 yTransferType= DataTransferType.getByName("ascii10");
             } else {
