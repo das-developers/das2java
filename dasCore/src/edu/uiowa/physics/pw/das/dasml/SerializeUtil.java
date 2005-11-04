@@ -100,6 +100,11 @@ public class SerializeUtil {
                 
                 value= readMethod.invoke( object, new Object[0] );
                 
+                if ( value==null ) {
+                    log.info( "skipping property "+propertyName+" of "+elementName+", value is null." );
+                    continue;
+                }
+                
                 java.beans.PropertyEditor editor= PropertyEditorManager.findEditor( pd.getPropertyType() );
                 
                 String textValue= null;
@@ -242,7 +247,8 @@ public class SerializeUtil {
             log.fine("handling "+elementName);           
             
             if ( !object.getClass().getName().equals( elementName ) ) {
-                throw new IllegalArgumentException("class name doesn't match!!!");
+                throw new IllegalArgumentException("class name doesn't match: expected "+
+                        object.getClass().getName()+", got "+elementName );
             }
             
             BeanInfo info = Introspector.getBeanInfo(object.getClass());
