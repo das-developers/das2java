@@ -138,6 +138,18 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             ymax= yAxis.invTransform((int)(r.getY()+r.getHeight())).doubleValue(yUnits);
         }
         
+        //Support flipped axes
+        if (xmax < xmin) {
+            double tmp = xmax;
+            xmax = xmin;
+            xmin = tmp;
+        }
+        if (ymax < ymin) {
+            double tmp = ymax;
+            ymax = ymin;
+            ymin = tmp;
+        }
+        
         int ixmax, ixmin;
         
         ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
