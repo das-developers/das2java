@@ -38,7 +38,7 @@ import java.util.Vector;
  * given time.
  * @author jbf
  */
-public class MouseModule implements Editable, Displayable {
+public class MouseModule implements Editable, Displayable, KeyListener {
     
     //protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
@@ -109,5 +109,14 @@ public class MouseModule implements Editable, Displayable {
 
     public String getListLabel() {
         return getLabel();
+    }
+
+    public void keyPressed(KeyEvent keyEvent) {
+    }
+
+    public void keyReleased(KeyEvent keyEvent) {
+    }
+
+    public void keyTyped(KeyEvent keyEvent) {
     }
 }

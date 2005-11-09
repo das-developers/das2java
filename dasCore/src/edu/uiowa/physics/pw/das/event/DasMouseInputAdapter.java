@@ -196,10 +196,30 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 if ( ev.getKeyCode()==27 & active!=null ) {
                     active=null;
                     refresh();
+                    ev.consume();
                 } else if ( ev.getKeyChar()=='p' ) {
                     pinned= true;
+                    ev.consume();
+                } else {
+                    if ( active==null ) return;
+                    for ( int i=0; i<active.size(); i++ ) {
+                        ((MouseModule)active.get(i)).keyPressed(ev);
+                    }
                 }
             }
+            public void keyReleased( KeyEvent ev ) {
+                if ( active==null ) return;
+                for ( int i=0; i<active.size(); i++ ) {
+                    ((MouseModule)active.get(i)).keyReleased(ev);
+                }
+            }
+            public void keyTyped( KeyEvent ev ) {
+                if ( active==null ) return;
+                for ( int i=0; i<active.size(); i++ ) {
+                    ((MouseModule)active.get(i)).keyTyped(ev);
+                }
+            }
+            
         };
     }
     
