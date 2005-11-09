@@ -16,10 +16,10 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 
 /**
- * General purpose mouse module for getting data point selections.  The client 
+ * General purpose mouse module for getting data point selections.  The client
  * provides the DragRenderer, generally a vertical line, horizontal line or a
  * crosshair.
- * 
+ *
  * Three properties control when DataPointSelectionEvents are to be fired:
  *   dragEvents     as the mouse is dragged,
  *   keyEvents      when a key is pressed.  (The key is the "keyChar" plane of the event)
@@ -40,7 +40,6 @@ public class DataPointSelectorMouseModule extends MouseModule {
         this.xaxis= parent.getXAxis();
         this.yaxis= parent.getYAxis();
         this.dataSetConsumer= consumer;
-        parent.addKeyListener(getKeyListener());
     }
     
     private DataPointSelectionEvent getDataPointSelectionEvent(MousePointSelectionEvent e) {
@@ -56,54 +55,44 @@ public class DataPointSelectorMouseModule extends MouseModule {
         if ( dragEvents ) fireDataPointSelectionListenerDataPointSelected(getDataPointSelectionEvent(e));
     }
     
-    private KeyListener getKeyListener() {
-        return new KeyListener() {
-            public void keyPressed(KeyEvent e) {
-                int keyCode= e.getKeyCode();
-                
-                if ( lastMousePoint!=null ) {
-                    if ( keyCode==KeyEvent.VK_LEFT || keyCode==KeyEvent.VK_RIGHT || keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_DOWN ) {
-                        int x=0;
-                        int y=0;
-                        try {
-                            int xOff= parent.getLocationOnScreen().x-parent.getX();
-                            int yOff= parent.getLocationOnScreen().y-parent.getY();
-                            final java.awt.Robot robot= new java.awt.Robot();
-                            switch ( keyCode ) {
-                                case KeyEvent.VK_LEFT:
-                                    robot.mouseMove(lastMousePoint.getX()+xOff-1, lastMousePoint.getY()+yOff);
-                                    break;
-                                case KeyEvent.VK_RIGHT:
-                                    robot.mouseMove(lastMousePoint.getX()+xOff+1, lastMousePoint.getY()+yOff);
-                                    break;
-                                case KeyEvent.VK_UP:
-                                    robot.mouseMove(lastMousePoint.getX()+xOff, lastMousePoint.getY()+yOff-1);
-                                    break;
-                                case KeyEvent.VK_DOWN:
-                                    robot.mouseMove(lastMousePoint.getX()+xOff, lastMousePoint.getY()+yOff+1);
-                                    break;
-                            }
-                        } catch ( java.awt.AWTException e1 ) {
-                            edu.uiowa.physics.pw.das.util.DasDie.println(e1.getMessage());
-                        }
-                        
-                    } else {
-                        
-                        DataPointSelectionEvent dpse= getDataPointSelectionEvent(lastMousePoint);
-                        HashMap planes= new HashMap();
-                        planes.put( "keyChar", String.valueOf( e.getKeyChar() ) );
-                        dpse= new DataPointSelectionEvent( this, dpse.getX(), dpse.getY(), planes );
-                        fireDataPointSelectionListenerDataPointSelected( dpse );
+    public void keyPressed(KeyEvent e) {
+        int keyCode= e.getKeyCode();
+        
+        if ( lastMousePoint!=null ) {
+            if ( keyCode==KeyEvent.VK_LEFT || keyCode==KeyEvent.VK_RIGHT || keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_DOWN ) {
+                int x=0;
+                int y=0;
+                try {
+                    int xOff= parent.getLocationOnScreen().x-parent.getX();
+                    int yOff= parent.getLocationOnScreen().y-parent.getY();
+                    final java.awt.Robot robot= new java.awt.Robot();
+                    switch ( keyCode ) {
+                        case KeyEvent.VK_LEFT:
+                            robot.mouseMove(lastMousePoint.getX()+xOff-1, lastMousePoint.getY()+yOff);
+                            break;
+                        case KeyEvent.VK_RIGHT:
+                            robot.mouseMove(lastMousePoint.getX()+xOff+1, lastMousePoint.getY()+yOff);
+                            break;
+                        case KeyEvent.VK_UP:
+                            robot.mouseMove(lastMousePoint.getX()+xOff, lastMousePoint.getY()+yOff-1);
+                            break;
+                        case KeyEvent.VK_DOWN:
+                            robot.mouseMove(lastMousePoint.getX()+xOff, lastMousePoint.getY()+yOff+1);
+                            break;
                     }
+                } catch ( java.awt.AWTException e1 ) {
+                    edu.uiowa.physics.pw.das.util.DasDie.println(e1.getMessage());
                 }
+                
+            } else {
+                
+                DataPointSelectionEvent dpse= getDataPointSelectionEvent(lastMousePoint);
+                HashMap planes= new HashMap();
+                planes.put( "keyChar", String.valueOf( e.getKeyChar() ) );
+                dpse= new DataPointSelectionEvent( this, dpse.getX(), dpse.getY(), planes );
+                fireDataPointSelectionListenerDataPointSelected( dpse );
             }
-            
-            public void keyReleased(KeyEvent e) {
-            }
-            
-            public void keyTyped(KeyEvent e) {
-            }
-        };
+        }
     }
     
     /** Registers DataPointSelectionListener to receive events.
@@ -180,34 +169,34 @@ public class DataPointSelectorMouseModule extends MouseModule {
         
         this.keyEvents = keyEvents;
     }
-
+    
     public void mouseReleased(java.awt.event.MouseEvent e) {
         super.mouseReleased(e);
         if ( releaseEvents ) {
             fireDataPointSelectionListenerDataPointSelected(getDataPointSelectionEvent(lastMousePoint));
         }
     }
-
+    
     /**
      * Holds value of property releaseEvents.
      */
     private boolean releaseEvents= false;
-
+    
     /**
      * Getter for property releaseEvents.
      * @return Value of property releaseEvents.
      */
     public boolean isReleaseEvents() {
-
+        
         return this.releaseEvents;
     }
-
+    
     /**
      * Setter for property releaseEvents.
      * @param releaseEvents New value of property releaseEvents.
      */
     public void setReleaseEvents(boolean releaseEvents) {
-
+        
         this.releaseEvents = releaseEvents;
     }
     
