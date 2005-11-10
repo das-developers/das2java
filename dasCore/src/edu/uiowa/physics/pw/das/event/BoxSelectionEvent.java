@@ -24,52 +24,91 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
+import java.util.HashMap;
 
 /**
+ * This is the range anolog to the DataPointSelectionEvent.  The DPSE is a point,
+ * and this is a box.
+ *
+ * Note that it's acceptible to have null xrange and yrange, so that the same
+ * code can support a variety of applications.  It's left to the programmer to
+ * see that these are used consistently.
  *
  * @author  jbf
  */
 public class BoxSelectionEvent extends DasEvent {
     
-    private Datum xMin;
-    private Datum xMax;
-    private Datum yMin;
-    private Datum yMax;
+    private DatumRange xrange;
+    private DatumRange yrange;
     private DataSet ds;
+    private HashMap planes;
        
+    /**
+     * @deprecated  use BoxSelectionEvent( Object, DatumRange, DatumRange );
+     */
     public BoxSelectionEvent(Object source, edu.uiowa.physics.pw.das.datum.Datum xMin, edu.uiowa.physics.pw.das.datum.Datum xMax, edu.uiowa.physics.pw.das.datum.Datum yMin, edu.uiowa.physics.pw.das.datum.Datum yMax) {
-        super(source);
-        if (xMin.gt(xMax)) {
-            edu.uiowa.physics.pw.das.datum.Datum t=xMin;
-            xMin=xMax;
-            xMax=t;
-        }        
-        if (yMin.gt(yMax)) {
-            edu.uiowa.physics.pw.das.datum.Datum t=yMin;
-            yMin=yMax;
-            yMax=t;
-        }        
-        this.xMin= xMin;
-        this.xMax= xMax;        
-        this.yMin= yMin;
-        this.yMax= yMax;        
+        this( source, xMin.le(xMax) ? new DatumRange( xMin, xMax ) : new DatumRange( xMax, xMin ),
+                yMin.le(yMax) ? new DatumRange( yMin, yMax ) : new DatumRange( yMax, yMin ) );
     }
     
+    public BoxSelectionEvent( Object source, DatumRange xrange, DatumRange yrange ) {
+        this( source, xrange, yrange, null );
+    }
+    
+    public BoxSelectionEvent( Object source, DatumRange xrange, DatumRange yrange, HashMap planes ) {
+        super( source );
+        this.xrange= xrange;
+        this.yrange= yrange;
+        this.planes= planes;
+    }
+        
+    /**
+     * @deprecated  use getXRange().min();
+     */
     public edu.uiowa.physics.pw.das.datum.Datum getXMinimum() {
-        return xMin;
+        if ( xrange!=null ) return xrange.min(); else return null;
     }
     
+    /**
+     * @deprecated  use getXRange().max();
+     */
     public edu.uiowa.physics.pw.das.datum.Datum getXMaximum() {
-        return xMax; 
+        if ( xrange!=null ) return xrange.max(); else return null;
     }
     
+    /**
+     * @deprecated  use getYRange().min();
+     */    
     public edu.uiowa.physics.pw.das.datum.Datum getYMinimum() {
-        return yMin;
+        if ( yrange!=null ) return yrange.min(); else return null;
     }
     
+    /**
+     * @deprecated  use getYRange().max();
+     */
     public edu.uiowa.physics.pw.das.datum.Datum getYMaximum() {
-        return yMax; 
+        if ( yrange!=null ) return yrange.max(); else return null;
+    }
+    
+    public DatumRange getXRange() {
+        return xrange;
+    }
+    
+    public DatumRange getYRange() {
+        return yrange;
+    }
+    
+    public Object getPlane( String plane ) {
+        return planes==null ? null : planes.get(plane);
+    }
+    
+    public String[] getPlaneIds() {
+        if ( planes==null ) {
+            return new String[0];
+        } else {
+            return (String[])planes.keySet().toArray( new String[ planes.keySet().size() ] );
+        }
     }
     
     public void setDataSet(DataSet ds) {
@@ -81,7 +120,7 @@ public class BoxSelectionEvent extends DasEvent {
     }
     
     public String toString() {
-        return "[BoxSelectionEvent x: "+xMin+" - "+xMax+", y: "+yMin+" - "+yMax+"]";
+        return "[BoxSelectionEvent x: "+xrange+", y: "+yrange+"]";
     }
         
 }
