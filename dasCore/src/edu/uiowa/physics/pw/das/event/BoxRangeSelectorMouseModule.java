@@ -31,7 +31,7 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
 import javax.swing.event.EventListenerList;
 
 /**
- *
+ * @depricated  used BoxSelectorMouseModule 
  * @author  jbf
  */
 public class BoxRangeSelectorMouseModule extends MouseModule {
