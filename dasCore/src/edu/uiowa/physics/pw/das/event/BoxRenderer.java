@@ -38,11 +38,18 @@ public class BoxRenderer implements DragRenderer {
     Rectangle dirtyBounds;
     DasCanvasComponent parent;
     
-    public BoxRenderer(DasCanvasComponent parent) {
+    boolean updating;
+    
+    public BoxRenderer(DasCanvasComponent parent, boolean updating ) {
         this.parent= parent;
         dirtyBounds= new Rectangle();
         xRangeSelection= true;
         yRangeSelection= true;
+        this.updating= updating;
+    }
+    
+    public BoxRenderer( DasCanvasComponent parent ) {
+        this( parent, false );
     }
     
     public void clear(Graphics g) {
@@ -88,7 +95,7 @@ public class BoxRenderer implements DragRenderer {
     }
     
     public boolean isUpdatingDragSelection() {
-        return false;
+        return updating;
     }
     
 }
