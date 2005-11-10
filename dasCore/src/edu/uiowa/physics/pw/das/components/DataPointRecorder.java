@@ -198,6 +198,25 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
     }
     
+    /**
+     * Selects all the points within the DatumRange
+     */
+    public void select( DatumRange xrange, DatumRange yrange ) {
+        List selectMe= new ArrayList();
+        for ( int i=0; i<dataPoints.size(); i++ ) {
+            DataPoint p= (DataPoint)dataPoints.get(i);
+            if ( xrange.contains( p.data[0] ) 
+            && yrange.contains( p.data[1]  ) ) {
+                selectMe.add(new Integer(i));
+            }
+        }
+        table.getSelectionModel().clearSelection();
+        for ( int i=0; i<selectMe.size(); i++ ) {
+            int iselect= ((Integer)selectMe.get(i)).intValue();
+            table.getSelectionModel().addSelectionInterval( iselect, iselect );
+        }
+    }
+    
     public void saveToFile( File file ) throws IOException {
         FileOutputStream out= new FileOutputStream( file );
         BufferedWriter r= new BufferedWriter(new OutputStreamWriter(out));
@@ -584,36 +603,37 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         if ( !y.getUnits().isConvertableTo(unitsArray[1]) ) {
             throw new RuntimeException( "inconvertable units: "+y+" expected "+unitsArray[1] );
         }
-        insertInternal( new DataPoint( x, y, planes ) );
+        insertInternal( new DataPoint( x, y, new HashMap(planes) ) );
         if ( active ) fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
     }
     
     /**
-     * this adds all the points in the DataSet to the list
+     * this adds all the points in the DataSet to the list.  This will also check the dataset for the special
+     * property "comment" and add it as a comment.
      */
     public DataSetUpdateListener getAppendDataSetUpListener() {
         return new DataSetUpdateListener() {
             public void dataSetUpdated( DataSetUpdateEvent e ) {
                 VectorDataSet ds= (VectorDataSet)e.getDataSet();
                 String comment;
+                
+                HashMap planesMap= new HashMap();
+                
                 if ( ds.getProperty("comment")!=null ) {
-                    comment= (String)ds.getProperty("comment");
-                } else {
-                    comment= "";
-                }
+                    planesMap.put( "comment", ds.getProperty("comment") );
+                } 
+                
                 if ( ds.getProperty("xTagWidth")!=null ) {
                     DataPointRecorder.this.xTagWidth= (Datum)ds.getProperty("xTagWidth");
                 }
                 String[] planes= ds.getPlaneIds();
                 if ( ds!=null ) {
-                    for ( int i=0; i<ds.getXLength(); i++ ) {
-                        HashMap planesMap= new HashMap();
+                    for ( int i=0; i<ds.getXLength(); i++ ) {                        
                         for ( int j=0; j<planes.length; j++ ) {
                             if ( !planes[j].equals("") ) {
                                 planesMap.put( planes[j], ((VectorDataSet)ds.getPlanarView(planes[j])).getDatum(i) );
                             }
-                        }
-                        planesMap.put("comment", comment);
+                        }                        
                         addDataPoint( ds.getXTagDatum(i), ds.getDatum(i), planesMap );
                     }
                     update();
