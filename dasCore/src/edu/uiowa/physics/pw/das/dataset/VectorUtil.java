@@ -219,4 +219,28 @@ public class VectorUtil {
     public static String toString( VectorDataSet ds ) {        
         return "[VectorDataSet "+ds.getXLength()+" xTags ]";
     }
+    
+    /**
+     * Return the finite difference derivative of the dataset, between elements that
+     * are n steps apart.
+     * Because we don't have a general-purpose way to divide units, the units returned
+     * are dimensionless.
+     */
+    public static VectorDataSet finiteDerivative( VectorDataSet ds, int n ) { 
+        VectorDataSetBuilder builder= new VectorDataSetBuilder( ds.getXUnits(), Units.dimensionless );
+        Units xunits= ds.getXUnits();
+        Units yunits= ds.getYUnits();
+        for ( int i=n; i<ds.getXLength(); i++ ) {
+            double dx= ds.getXTagDouble( i, xunits ) - ds.getXTagDouble( i-n, xunits );
+            double dy= ds.getDouble( i, yunits ) - ds.getDouble( i-n, yunits );            
+            builder.insertY( ds.getXTagDouble(i-n, xunits) + dx / 2 , dy / dx );                    
+        } 
+        
+        for ( Iterator i=ds.getProperties().keySet().iterator(); i.hasNext(); ) {
+            String key= (String)i.next();
+            builder.setProperty( key, ds.getProperty(key) );
+        }
+        
+        return builder.toVectorDataSet();
+    }
 }
