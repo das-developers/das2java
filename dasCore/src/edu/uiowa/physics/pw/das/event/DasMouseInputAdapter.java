@@ -703,7 +703,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                             DasExceptionHandler.handle(ex);
                         } finally {
                             button=0;
-                            j.mouseReleased(e);
+                            try {
+                                j.mouseReleased(e);
+                            } catch ( RuntimeException ex2 ) {
+                                DasExceptionHandler.handle(ex2);
+                            }
                         }
                     }
                     if ( !pinned ) {
