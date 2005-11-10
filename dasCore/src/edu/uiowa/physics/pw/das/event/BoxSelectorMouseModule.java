@@ -76,8 +76,7 @@ public class BoxSelectorMouseModule extends MouseModule {
         return evt;
     }
     
-    public void mouseRangeSelected( MouseDragEvent e) {
-        System.err.println(e);
+    public void mouseRangeSelected( MouseDragEvent e) {        
         lastMouseEvent= e;
         if ( keyEvents ) parent.requestFocus();
         if ( dragEvents ) fireBoxSelectionListenerBoxSelected( getBoxSelectionEvent(e) );
