@@ -1,12 +1,13 @@
 /*
- * CutoffMouseModule.java
+ * Cutoff2MouseModule.java
  *
- * Created on October 18, 2005, 4:04 PM
+ * Created on November 10, 2005, 1:41 PM
  *
  *
  */
 
 package edu.uiowa.physics.pw.das.event;
+
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.AverageTableRebinner;
 import edu.uiowa.physics.pw.das.dataset.ClippedTableDataSet;
@@ -22,6 +23,7 @@ import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
+import edu.uiowa.physics.pw.das.dataset.VectorUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -39,29 +41,32 @@ import javax.swing.JFrame;
  *
  * @author Jeremy
  */
-public class CutoffMouseModule extends MouseModule {
-    
+public class CutoffMouseModule extends BoxSelectorMouseModule {
+        
     DasAxis xaxis, yaxis;
     DataSetConsumer dataSetConsumer;
     DatumRange xrange;
     DatumRange yrange;
+    String lastComment;
     CutoffSlicer cutoffSlicer;
     
-    public CutoffMouseModule( DasPlot parent, DataSetConsumer renderer ) {
-        super( parent, new BoxRenderer(parent), "Cutoff" );
-        this.dataSetConsumer= renderer;
-        this.xaxis= parent.getXAxis();
-        this.yaxis= parent.getYAxis();
-    }
-    
-    public void mouseRangeSelected(MouseDragEvent event) {
-        MouseBoxEvent e= (MouseBoxEvent)event;
+     public CutoffMouseModule( DasPlot parent, DataSetConsumer consumer ) {
+         super( parent, parent.getXAxis(), parent.getYAxis(), consumer, new BoxRenderer(parent,true), "Cutoff" );
+         this.dataSetConsumer= consumer;
+     }
+
+    protected void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
         
         DatumRange xrange0= xrange;
         DatumRange yrange0= yrange;
         
-        xrange= new DatumRange( xaxis.invTransform(e.getXMinimum()), xaxis.invTransform(e.getXMaximum()) );
-        yrange= new DatumRange( yaxis.invTransform(e.getYMaximum()), yaxis.invTransform(e.getYMinimum()) );
+        xrange= event.getXRange();
+        yrange= event.getYRange();
+        if ( event.getPlane("keyChar")!=null ) {
+            lastComment= (String)event.getPlane("keyChar");
+        } else {
+            lastComment= null;
+        }
         
         try {
             recalculate();
@@ -117,7 +122,11 @@ public class CutoffMouseModule extends MouseModule {
             }
         }
         
-        builder.setProperty("comment","Ondrej");
+        String comment= "Ondrej:"+levelMin+":"+slopeMin+":"+nave;
+        if ( lastComment!=null ) {
+            comment= lastComment + " "+comment;
+        }
+        builder.setProperty("comment",comment);
         builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, this.xResolution );
         VectorDataSet vds= builder.toVectorDataSet();
         
@@ -193,10 +202,12 @@ public class CutoffMouseModule extends MouseModule {
         DataPointSelectionEvent lastSelectedPoint;
         Datum cutoff;
         Datum yValue;
-        Datum xValue;
+        Datum xValue;        
+        
         SymbolLineRenderer levelRenderer;
         SymbolLineRenderer contextLevelRenderer;
         SymbolLineRenderer slopeRenderer;
+        SymbolLineRenderer contextSlopeRenderer;
         SymbolLineRenderer icofRenderer;
         DasPlot topPlot;
         JFrame frame;
@@ -229,7 +240,7 @@ public class CutoffMouseModule extends MouseModule {
             DataPointSelectorMouseModule tweakSlicer=
                     new DataPointSelectorMouseModule( topPlot, levelRenderer,
                     new VerticalSliceSelectionRenderer(topPlot), "tweak cutoff" );
-            tweakSlicer.setDragEvents(false); // only key events fire
+            tweakSlicer.setDragEvents(true); // only key events fire
             tweakSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
                 public void DataPointSelected( DataPointSelectionEvent e ) {
                     Datum x= e.getX();
@@ -267,6 +278,9 @@ public class CutoffMouseModule extends MouseModule {
             plot.getYAxis().setLabel("slope");
             plot.getXAxis().setTickLabelsVisible(false);
             slopeRenderer= new SymbolLineRenderer();
+            contextSlopeRenderer= new SymbolLineRenderer();
+            contextSlopeRenderer.setColor( Color.GRAY );
+            plot.addRenderer(contextSlopeRenderer);
             plot.addRenderer(slopeRenderer);
             
             // TODO: here's a bug mode to check into (topPlot should be plot):
@@ -327,6 +341,9 @@ public class CutoffMouseModule extends MouseModule {
             VectorDataSet contextDs= tds.getXSlice(i);
             contextLevelRenderer.setDataSet( DataSetUtil.log10( contextDs ) );
             
+            //VectorDataSet slopeDs= VectorUtil.finiteDerivative( contextDs, nave );
+            //contextSlopeRenderer.setDataSet( slopeDs );
+            
             tds= new ClippedTableDataSet( tds, DataSetUtil.xRange(tds), yrange );
             
             this.xValue= tds.getXTagDatum(i);
@@ -378,7 +395,7 @@ public class CutoffMouseModule extends MouseModule {
         DasAxis sourceZAxis = consumer.getZAxis();
         
         DatumRange range= sourceYAxis.getDatumRange();
-        DasAxis xAxis = new DasAxis( range.min(), range.max(), DasAxis.HORIZONTAL, sourceYAxis.isLog() );
+        DasAxis xAxis = sourceYAxis.createAttachedAxis( DasAxis.HORIZONTAL );
         cutoffSlicer= new CutoffSlicer( plot, xAxis );
         return cutoffSlicer;
         
@@ -440,7 +457,7 @@ public class CutoffMouseModule extends MouseModule {
     /**
      * Holds value of property slopeMin.
      */
-    private Datum slopeMin= Units.dimensionless.createDatum( 0.266692 );
+    private Datum slopeMin= Units.dimensionless.createDatum( 0.26 );
     
     /**
      * Getter for property slopeMin.
@@ -512,4 +529,5 @@ public class CutoffMouseModule extends MouseModule {
     public void setXResolution(Datum xResolution) {
         this.xResolution = xResolution;
     }
+     
 }
