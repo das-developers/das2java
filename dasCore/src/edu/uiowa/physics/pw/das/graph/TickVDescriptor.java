@@ -153,9 +153,19 @@ public class TickVDescriptor {
             Datum logMaxD= units.createDatum(DasMath.log10(max));
             TickVDescriptor linTicks= bestTickVLinear( logMinD, logMaxD, nTicksMin, nTicksMax );
             double[] tickV = linTicks.tickV.toDoubleArray(linTicks.units);
+
+            // copy over the ticks into the linear space, but cull the fractional ones
+            int i2=0;
             for ( int i=0; i<tickV.length; i++ ) {
-                tickV[i]= DasMath.exp10( tickV[i] );
+                if ( tickV[i] % 1. == 0. ) {
+                    tickV[i2++]= DasMath.exp10( tickV[i] );
+                }
             }
+            double[] t= tickV;
+            tickV= new double[i2];
+            for ( int i=0; i<i2; i++ ) { tickV[i]=t[i]; }
+                    
+            // now fill in the minor ticks, if there's room
             int idx=0;
             double[] minorTickV;
             if ( ( tickV[1]/tickV[0] ) <= 10.00001 ) {
