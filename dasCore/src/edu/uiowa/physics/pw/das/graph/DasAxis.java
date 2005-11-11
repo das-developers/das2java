@@ -1914,7 +1914,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double result;
         
         if ( dataRange.isLog() ) {
-            data= DasMath.log10(data);
+            if ( data<=0. ) { 
+                data= -1e38;
+            } else {
+                data= DasMath.log10(data);
+            }
         }
         
         double minimum= dataRange.getMinimum();
