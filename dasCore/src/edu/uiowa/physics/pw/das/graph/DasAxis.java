@@ -1915,7 +1915,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         if ( dataRange.isLog() ) {
             if ( data<=0. ) { 
-                data= -1e38;
+                data= -1e308;
             } else {
                 data= DasMath.log10(data);
             }
