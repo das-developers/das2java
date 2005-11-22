@@ -166,10 +166,15 @@ public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpd
     }
     
     public void setDataSetDescriptor( DataSetDescriptor dsd ) {
+        if ( this.dsd!=null ) this.dsd.removeDataSetUpdateListener(this);
         this.dsd= dsd;
-        this.dsd.addDataSetUpdateListener(this);
+        if ( dsd!=null ) this.dsd.addDataSetUpdateListener(this);
         markDirty();
         update();
+    }
+    
+    public DataSetDescriptor getDataSetDescriptor( ) {
+        return this.dsd;
     }
     
     public void dataSetUpdated(DataSetUpdateEvent e) {
