@@ -20,6 +20,10 @@ import javax.swing.event.*;
 /**
  *
  * @author  Jeremy
+ *
+ * The DasEventsIndicator takes a DataSetDescriptor that produces VectorDataSets with a plane
+ * "xTagWidth."  This plane should consist of Datums with the same Units as the xAxis offset Units.
+ * The y values of the DataSet will be toString'ed and this value will be the tooltip of the bar.
  */
 public class DasEventsIndicator extends DasCanvasComponent implements DataSetUpdateListener {
     DasAxis axis;
