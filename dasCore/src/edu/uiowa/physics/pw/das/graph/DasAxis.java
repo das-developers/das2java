@@ -1975,7 +1975,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             resolution= data * ( DasMath.exp10(resolution) - 1 );
         }
         
-        Datum result= Datum.create( data, dataRange.getUnits(), resolution );
+        Datum result= Datum.create( data, dataRange.getUnits(), resolution ); 
         
         return result;
     }
