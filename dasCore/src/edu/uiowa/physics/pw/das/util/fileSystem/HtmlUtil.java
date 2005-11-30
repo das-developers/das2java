@@ -57,7 +57,7 @@ public class HtmlUtil {
         }
         urlStream.close();
         
-        System.err.println("read listing data in "+( System.currentTimeMillis() - t0 )+" millis" );
+        // System.err.println("read listing data in "+( System.currentTimeMillis() - t0 )+" millis" );
         String content= contentBuffer.toString();
         
         String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
