@@ -363,11 +363,35 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             ((HorizontalRangeSelectorMouseModule)zoom).addDataRangeSelectionListener(this);
             mouseAdapter.addMouseModule(zoom);
             mouseAdapter.setPrimaryModule(zoom);
+            BoxSelectorMouseModule zoomOut= new BoxSelectorMouseModule( this, this, null, null, new BoxRenderer(this), "Zoom Out" );
+            zoomOut.addBoxSelectionListener( new BoxSelectionListener() {
+                public void BoxSelected( BoxSelectionEvent event ) {
+                    System.out.println(event.getXRange());
+                    DatumRange outerRange= getDatumRange();
+                    DatumRange range= event.getXRange();
+                    DatumRange newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
+                    setDatumRange( newRange );
+                }
+            } );
+            mouseAdapter.addMouseModule(zoomOut);
+            mouseAdapter.setSecondaryModule(zoomOut);
         } else {
             zoom= new VerticalRangeSelectorMouseModule(this,this);
             ((VerticalRangeSelectorMouseModule)zoom).addDataRangeSelectionListener(this);
             mouseAdapter.addMouseModule(zoom);
             mouseAdapter.setPrimaryModule(zoom);
+            BoxSelectorMouseModule zoomOut= new BoxSelectorMouseModule( this, null, this, null, new BoxRenderer(this), "Zoom Out" );
+            zoomOut.addBoxSelectionListener( new BoxSelectionListener() {
+                public void BoxSelected( BoxSelectionEvent event ) {
+                    System.out.println(event.getYRange());
+                    DatumRange outerRange= getDatumRange();
+                    DatumRange range= event.getYRange();
+                    DatumRange newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
+                    setDatumRange( newRange );
+                }
+            } );
+            mouseAdapter.addMouseModule(zoomOut);
+            mouseAdapter.setSecondaryModule(zoomOut);
         }
     }
     
@@ -1945,11 +1969,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double data_range = maximum-minimum;
         data= data_range*alpha + minimum;
 
+        double resolution=  data_range / getDLength();
         if ( dataRange.isLog() ) {
             data= DasMath.exp10(data);
+            resolution= data * ( DasMath.exp10(resolution) - 1 );
         }
         
-        Datum result= Datum.create( data, dataRange.getUnits(), data_range / getDLength() );
+        Datum result= Datum.create( data, dataRange.getUnits(), resolution );
         
         return result;
     }
