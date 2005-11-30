@@ -127,7 +127,7 @@ public class HttpFileSystem extends WebFileSystem {
         try {
             Pattern pattern= Pattern.compile(regex);
             URL[] list= HtmlUtil.getDirectoryListing( getURL(directory ) );
-            if ( list.length>100 ) {
+            if ( list.length>10000 ) {
                 throw new IllegalStateException( "URL list is very long, refusing to transfer" );
             }
             ArrayList result= new ArrayList();
