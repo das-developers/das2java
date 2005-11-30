@@ -8,8 +8,9 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import java.io.*;
 import java.net.*;
-import java.text.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -31,42 +32,43 @@ public class HtmlUtil {
         
         ArrayList urlList= new ArrayList();
         
-        URLConnection urlConnection = url.openConnection();
-        
+        long t0= System.currentTimeMillis();
+        URLConnection urlConnection = url.openConnection();        
         urlConnection.setAllowUserInteraction(false);
+        
+        int contentLength=10000;
+        
+        //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
         
         InputStream urlStream = url.openStream();
         
         // search the input stream for links
         // first, read in the entire URL
-        byte b[] = new byte[1000];
+        byte b[] = new byte[10000];
         int numRead = urlStream.read(b);
-        String content = new String(b, 0, numRead); // TODO: use StringBuffer
+        StringBuffer contentBuffer = new StringBuffer( contentLength ); 
+        contentBuffer.append( new String( b, 0, numRead ) );
         while (numRead != -1) {
             numRead = urlStream.read(b);
             if (numRead != -1) {
                 String newContent = new String(b, 0, numRead);
-                content += newContent;
+                contentBuffer.append( newContent );
             }
         }
         urlStream.close();
         
-        String lowerCaseContent = content.toLowerCase();
+        System.err.println("read listing data in "+( System.currentTimeMillis() - t0 )+" millis" );
+        String content= contentBuffer.toString();
         
-        int index = 0;
-        while ((index = lowerCaseContent.indexOf("<a", index)) != -1) {
-            if ((index = lowerCaseContent.indexOf("href", index)) == -1)
-                break;
-            if ((index = lowerCaseContent.indexOf("=", index)) == -1)
-                break;
+        String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
+        Pattern hrefPattern= Pattern.compile( hrefRegex );
+        
+        Matcher matcher= hrefPattern.matcher( content );
+                
+        while ( matcher.find() ) {
+            String strLink= matcher.group(2);
+            URL urlLink= null;
             
-            index++;
-            String remaining = content.substring(index);
-            
-            StringTokenizer st = new StringTokenizer(remaining, "\t\n\r\">#");
-            String strLink = st.nextToken();
-            
-            URL urlLink=null;
             try {
                 urlLink = new URL(url, strLink);
                 strLink = urlLink.toString();
@@ -77,41 +79,10 @@ public class HtmlUtil {
             
             if ( urlLink.toString().startsWith(url.toString()) && null==urlLink.getQuery() ) {
                 urlList.add( urlLink );
-            }
-            
-            /*String lowerCaseRemaining= remaining.toLowerCase();
-            int index2= lowerCaseRemaining.indexOf("</a>");
-            
-            remaining= remaining.substring(index2+4);
-            
-            st= new StringTokenizer( remaining );
-            System.out.print(""+urlLink);
-            try {
-                String dateStr= st.nextToken("\\s");                
-                Date d= DateFormat.getInstance().parse( dateStr.trim().substring(0,17) );                
-            } catch ( NoSuchElementException e ) {
-                e.printStackTrace();
-            } catch ( ParseException e ) {
-                e.printStackTrace();
-            }*/
+            }            
         }
         
         return (URL[]) urlList.toArray( new URL[urlList.size()] );
     }
     
-    public static void htmlUtilTest() throws Exception {
-        //URL[] urls= HtmlUtil.getDirectoryListing( new URL( "http://www-pw.physics.uiowa.edu/voyager/local1/DATA/" ) );
-        
-        /* This one fails because of Larry's cross links */
-        URL[] urls= HtmlUtil.getDirectoryListing( new URL( "http://www-pw.physics.uiowa.edu/voyager/local2/DATA/FULL/" ) );
-        
-        //URL[] urls= HtmlUtil.getDirectoryListing( new URL( "http://www.sarahandjeremy.net/~jbf" ) );
-        for ( int i=0; i<urls.length; i++ ) {
-            System.out.println(""+urls[i]);
-        }
-    }
-    
-    public static void main( String[] args ) throws Exception {
-        htmlUtilTest();
-    }
 }
