@@ -65,6 +65,9 @@ public class DefaultDatumFormatter extends DatumFormatter {
         if (format == null) {
             double resolution= datum.getResolution( units.getOffsetUnits() );
             if ( resolution>0 ) {
+                // 28 -->   scale = -1
+                // 2.8 -->  scale = 0 
+                
                 int scale= (int)Math.ceil( -1 * DasMath.log10(resolution) - 0.00001 );
                 int exp;
                 if ( d != 0. ) {
@@ -85,7 +88,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
                     }
                     result= f.format(d);
                 } else {
-                    double round= DasMath.exp10( scale+exp+1 );
+                    double round= DasMath.exp10( -1*scale );
                     d= Math.round( d / round ) * round;
                     DecimalFormat f;
                     if ( exp<=-5 || exp >=5 ) {
