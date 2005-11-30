@@ -64,6 +64,10 @@ public class DefaultDatumFormatter extends DatumFormatter {
         String result;
         if (format == null) {
             double resolution= datum.getResolution( units.getOffsetUnits() );
+            if ( resolution==0. && Double.toString(d).length()>7 ) {
+                // make the default resolution be 0.01%.
+                resolution= d / 10000;
+            }
             if ( resolution>0 ) {
                 // 28 -->   scale = -1
                 // 2.8 -->  scale = 0 
