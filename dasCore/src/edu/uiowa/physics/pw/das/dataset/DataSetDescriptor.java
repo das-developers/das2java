@@ -188,12 +188,12 @@ public abstract class DataSetDescriptor implements Displayable {
                     if ( ds.getProperty( "cacheTag" )!=null ) tag= (CacheTag)ds.getProperty( "cacheTag" );
                     if ( defaultCaching ) dataSetCache.store( this, tag, ds );
                 }
-                if (monitor != null) {
-                    monitor.finished();
-                }
+                monitor.finished();
                 return ds;
             } catch ( DasException e ) {
                 throw e;
+            } finally {
+                monitor.finished();
             }
         }
     }
