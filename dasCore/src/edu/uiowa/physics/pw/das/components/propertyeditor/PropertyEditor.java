@@ -312,7 +312,7 @@ public class PropertyEditor extends JComponent {
             public void actionPerformed(ActionEvent e) {
                 TreeTableModel model = (TreeTableModel)table.getModel();
                 PropertyTreeNode root = (PropertyTreeNode)model.getRoot();
-                root.refresh(model.getTreeModelListener());
+                root.refresh();
                 model.fireTableDataChanged();
             }
         });

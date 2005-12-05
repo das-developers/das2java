@@ -78,7 +78,7 @@ class IndexedPropertyTreeNode extends PropertyTreeNode {
         return false;
     }
     
-    public void refresh( TreeModelListener listener ) {
+    public void refresh( ) {
         Object newValue = read();
         
         value= newValue;
@@ -94,7 +94,7 @@ class IndexedPropertyTreeNode extends PropertyTreeNode {
         if (children != null) {
             for (Iterator i = children.iterator(); i.hasNext();) {
                 PropertyTreeNode child = (PropertyTreeNode)i.next();
-                child.refresh( listener );
+                child.refresh( );
             }
         }
         

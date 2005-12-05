@@ -54,7 +54,7 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
         return parentValue[this.index];
     }
     
-    public void refresh( TreeModelListener listener ) {
+    public void refresh( ) {
         Object newValue = read();
         boolean foldMe= false;
         if ( newValue!=value ) {
@@ -68,13 +68,13 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
         }
         if ( foldMe ) {
             children= null;
-            listener.treeStructureChanged( new TreeModelEvent( this, getTreePath() ) );
+            treeModel.nodeStructureChanged( this );
         } else {
             if (getAllowsChildren()) {
                 if (children != null) {
                     for (Iterator i = children.iterator(); i.hasNext();) {
                         PropertyTreeNode child = (PropertyTreeNode)i.next();
-                        child.refresh( listener );
+                        child.refresh( );
                     }
                 }
             }

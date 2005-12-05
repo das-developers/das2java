@@ -21,6 +21,7 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
         this.root = root;
         this.tree = tree;
         tree.addTreeExpansionListener(new TreeTableTreeListener());
+        TreeModelListener treeModelListener= new TreeTableTreeModelListener();
         tree.getModel().addTreeModelListener(new TreeTableTreeModelListener());
     }
     
@@ -61,6 +62,14 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
         }
     }
     
+    public void expand( int rowIndex ) {
+        if ( tree.isCollapsed(rowIndex) ) tree.expandRow(rowIndex);
+    }
+    
+    public void collapse( int rowIndex ) {
+        if ( tree.isExpanded(rowIndex) ) tree.collapseRow(rowIndex);
+    }
+    
     public TreeTableNode getNodeForRow(int rowIndex) {
         TreePath path = tree.getPathForRow(rowIndex);
         return (TreeTableNode)path.getLastPathComponent();
@@ -76,7 +85,7 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
         }
         tree.setModel(new DefaultTreeModel(node, true));
     }
-
+    
     private class TreeTableTreeModelListener implements TreeModelListener {
         
         public void treeNodesChanged(TreeModelEvent e) {
@@ -90,7 +99,7 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
         }
         
         public void treeNodesInserted(TreeModelEvent e) {
-            TreePath path = new TreePath(e.getPath());
+            TreePath path = e.getTreePath();
             int row = tree.getRowForPath(path);
             if (row != -1 && tree.isExpanded(row)) {
                 int[] indices = e.getChildIndices();
@@ -102,7 +111,7 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
         }
         
         public void treeNodesRemoved(TreeModelEvent e) {
-            TreePath path = new TreePath(e.getPath());
+            TreePath path = e.getTreePath();
             int row = tree.getRowForPath(path);
             if (row != -1 && tree.isExpanded(row)) {
                 int[] indices = e.getChildIndices();

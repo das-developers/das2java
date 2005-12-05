@@ -316,12 +316,12 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         return getDisplayName();
     }
     
-    public void refresh( TreeModelListener listener ) {
+    public void refresh( ) {
         if (getAllowsChildren()) {
             if (children != null) {
                 for (Iterator i = children.iterator(); i.hasNext();) {
                     PropertyTreeNode child = (PropertyTreeNode)i.next();
-                    child.refresh( listener );
+                    child.refresh( );
                 }
             }
         } else {
