@@ -181,6 +181,13 @@ public class DatumRange implements Comparable {
         return new DatumRange( s1.add( w.multiply(min) ), s1.add( w.multiply(max) ) );
     }
     
+    /**
+     * returns the position within this, where 0. is the minimum, and 1. is the maximum
+     */
+    public double normalize( Datum d ) {
+        return d.subtract(s1).divide(width()).doubleValue(Units.dimensionless);
+    }
+    
     public Datum min() {
         return s1;
     }
