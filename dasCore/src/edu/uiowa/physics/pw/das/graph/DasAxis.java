@@ -365,10 +365,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             mouseAdapter.setPrimaryModule(zoom);
             BoxSelectorMouseModule zoomOut= new BoxSelectorMouseModule( this, this, null, null, new BoxRenderer(this), "Zoom Out" );
             zoomOut.addBoxSelectionListener( new BoxSelectionListener() {
-                public void BoxSelected( BoxSelectionEvent event ) {
-                    System.out.println(event.getXRange());
+                public void BoxSelected( BoxSelectionEvent event ) {                    
                     DatumRange outerRange= getDatumRange();
                     DatumRange range= event.getXRange();
+                    range= getTickV().enclosingRange( range, true );
                     DatumRange newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
                     setDatumRange( newRange );
                 }
@@ -386,6 +386,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     System.out.println(event.getYRange());
                     DatumRange outerRange= getDatumRange();
                     DatumRange range= event.getYRange();
+                    range= getTickV().enclosingRange( range, true );
                     DatumRange newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
                     setDatumRange( newRange );
                 }
@@ -1997,83 +1998,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         this.setDataRange(e.getMinimum(),e.getMaximum());
     }
     
-    private Datum findTickLog( Datum xDatum, double direction, boolean minor ) {
-        Units units = getUnits();
-        double x= xDatum.doubleValue(units);
-        double result;
-        DatumVector ticks = tickV.tickV;
-        if ( direction>0 ) { //find the smallest tick that is bigger than x.
-            result= ticks.doubleValue(ticks.getLength()-1, units) * 10;
-            for (int i=ticks.getLength()-1; i>=0; i--) {
-                double d = ticks.doubleValue(i, units);
-                if ( x<d ) result= d;
-            }
-        } else if ( direction<0) { // find the biggest tick that is smaller than x.
-            result= ticks.doubleValue(0, units) / 10;
-            for (int i=0; i<ticks.getLength(); i++) {
-                double d = ticks.doubleValue(i, units);
-                if ( x>d ) result= d;
-            }
-        } else {
-            result= -999;
-            double closestDistance= Double.MAX_VALUE;
-            for (int i=0; i<ticks.getLength(); i++) {
-                double d = ticks.doubleValue(i, units);
-                double dist= Math.abs( Math.log(x) - Math.log(d) );
-                if ( dist < closestDistance ) {
-                    result= d;
-                    closestDistance= dist;
-                }
-            }
-        }
-        return Datum.create(result,units);
-    }
     
     /** TODO
      * @param xDatum
      * @param direction
      * @param minor
      * @return
+     *
+     * @depricated. Use getTickVDescriptor.findTick
      */
-    public Datum findTick(Datum xDatum, double direction, boolean minor) {
-        int majorLen;
-        int minorLen;
-        double[] ticks;
-        Units units = getUnits();
-        
-        // direction<0 nearest left, direction>0 nearest right, direction=0 nearest.
-        if (tickV==null) return xDatum;
-        
-        majorLen = tickV.tickV.getLength();
-        minorLen = tickV.minorTickV.getLength();
-        ticks= new double[ majorLen + minorLen ];
-        for ( int i=0; i<majorLen; i++ ) {
-            ticks[i]= tickV.tickV.doubleValue(i, units);
-        }
-        for ( int i=0; i<minorLen; i++ ) {
-            ticks[i+majorLen]= tickV.minorTickV.doubleValue(i, units);
-        }
-        
-        int iclose=0; double close=Double.MAX_VALUE;
-        
-        double x= xDatum.doubleValue(units);
-        
-        for ( int i=0; i<ticks.length; i++ ) {
-            if ( direction<0 && ticks[i] < x && x-ticks[i] < close ) {
-                iclose=i;
-                close= x-ticks[i];
-            } else if ( direction>0 && x < ticks[i] && ticks[i]-x < close ) {
-                iclose=i;
-                close= ticks[i]-x;
-            }
-            if ( direction==0 && Math.abs(ticks[i]-x) < close ) {
-                iclose= i;
-                close= Math.abs(ticks[i]-x);
-            }
-        }
-        
-        return Datum.create(ticks[iclose],units);
-        
+    public Datum findTick(Datum xDatum, double direction, boolean minor) {        
+        return getTickV().findTick( xDatum, direction, minor );
     }
     
     /** TODO

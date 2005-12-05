@@ -51,6 +51,71 @@ public class TickVDescriptor {
         return this.datumFormatter;
     }
     
+    /**
+     * Locates the next or previous tick starting at xDatum.
+     *
+     * @param xDatum  find the tick closest to this.
+     * @param direction  -1 previous, 1 next, 0 closest
+     * @param minor  find closest minor tick, major if false.
+     * @return
+     */
+    public Datum findTick(Datum xDatum, double direction, boolean minor) {
+        int majorLen;
+        int minorLen;
+        double[] ticks;
+        
+        // direction<0 nearest left, direction>0 nearest right, direction=0 nearest.
+        if (tickV==null) return xDatum;
+        
+        majorLen = tickV.getLength();
+        minorLen = minorTickV.getLength();
+        ticks= new double[ majorLen + minorLen ];
+        for ( int i=0; i<majorLen; i++ ) {
+            ticks[i]= tickV.doubleValue(i, units);
+        }
+        for ( int i=0; i<minorLen; i++ ) {
+            ticks[i+majorLen]= minorTickV.doubleValue(i, units);
+        }
+        
+        int iclose=0; double close=Double.MAX_VALUE;
+        
+        double x= xDatum.doubleValue(units);
+        
+        for ( int i=0; i<ticks.length; i++ ) {
+            if ( direction<0 && ticks[i] < x && x-ticks[i] < close ) {
+                iclose=i;
+                close= x-ticks[i];
+            } else if ( direction>0 && x < ticks[i] && ticks[i]-x < close ) {
+                iclose=i;
+                close= ticks[i]-x;
+            }
+            if ( direction==0 && Math.abs(ticks[i]-x) < close ) {
+                iclose= i;
+                close= Math.abs(ticks[i]-x);
+            }
+        }
+        
+        return Datum.create(ticks[iclose],units);
+        
+    }
+    
+    /**
+     * Defining method for getting the range close to the given range,
+     * but containing at least one minor(or major) tick interval.
+     *
+     * @param minor  find the range from the minor ticks.
+     */
+    public DatumRange enclosingRange( DatumRange dr, boolean minor ) {
+        Datum s1= findTick( dr.min(), 0, minor );
+        Datum s2= findTick( dr.max(), 0, minor );        
+        DatumRange result;
+        if (s1.equals(s2)) {
+            s1= findTick(dr.min(),-1,true);
+            s2= findTick(dr.max(),1,true);
+        } 
+        return new DatumRange( s1, s2 );
+    }
+    
     public void setFormatter(DatumFormatter datumFormatter) {
         this.datumFormatter = datumFormatter;
     }
@@ -59,9 +124,9 @@ public class TickVDescriptor {
      * @return a String representation of the TickVDescriptor.
      *
      */
-    public String toString() {        
-        String s="tickV=" + getMajorTicks();        
-        s+=",minor=" + getMinorTicks();                
+    public String toString() {
+        String s="tickV=" + getMajorTicks();
+        s+=",minor=" + getMinorTicks();
         return s;
     }
     
@@ -110,7 +175,7 @@ public class TickVDescriptor {
         int ilast= 2*nTicks/3;
         
         res.datumFormatter = DatumUtil.bestFormatter( res.units.createDatum(result[ifirst]),
-        res.units.createDatum(result[ilast]), ilast-ifirst );
+                res.units.createDatum(result[ilast]), ilast-ifirst );
         
         double firstMinor= minor * Math.ceil( ( minimum - axisLengthData ) / minor );
         double lastMinor= minor * Math.floor( ( maximum + axisLengthData ) / minor );
@@ -130,8 +195,7 @@ public class TickVDescriptor {
             DatumFormatterFactory factory
                     =DefaultDatumFormatterFactory.getInstance();
             DEFAULT_LOG_FORMATTER= factory.newFormatter("0E0");
-        }
-        catch (ParseException pe) {
+        } catch (ParseException pe) {
             throw new RuntimeException(pe);
         }
     }
@@ -153,7 +217,7 @@ public class TickVDescriptor {
             Datum logMaxD= units.createDatum(DasMath.log10(max));
             TickVDescriptor linTicks= bestTickVLinear( logMinD, logMaxD, nTicksMin, nTicksMax );
             double[] tickV = linTicks.tickV.toDoubleArray(linTicks.units);
-
+            
             // copy over the ticks into the linear space, but cull the fractional ones
             int i2=0;
             for ( int i=0; i<tickV.length; i++ ) {
@@ -164,7 +228,7 @@ public class TickVDescriptor {
             double[] t= tickV;
             tickV= new double[i2];
             for ( int i=0; i<i2; i++ ) { tickV[i]=t[i]; }
-                    
+            
             // now fill in the minor ticks, if there's room
             int idx=0;
             double[] minorTickV;
@@ -221,7 +285,7 @@ public class TickVDescriptor {
             }
         }
         ticks.minorTickV = DatumVector.newDatumVector(minorTickV, ticks.units);
-
+        
         for ( int i=0; i<major.length; i++ ) {
             major[i]= DasMath.exp10( major[i] );
         }
@@ -250,24 +314,24 @@ public class TickVDescriptor {
             TickVDescriptor result= TickVDescriptor.newTickVDescriptor( majorTicks, minorTicks );
             result.datumFormatter= DatumUtil.bestFormatter( majorTicks );
             return result;
-        } 
+        }
         
         if ( maxD.subtract(minD).gt( Datum.create(10*365,Units.days)) ) {
             int yearMin= TimeUtil.toTimeStruct(minD).year;
             int yearMax= TimeUtil.toTimeStruct(maxD).year;
-            TickVDescriptor yearTicks= bestTickVLinear( Units.dimensionless.createDatum(yearMin), 
-                Units.dimensionless.createDatum(yearMax), nTicksMin, nTicksMax );
+            TickVDescriptor yearTicks= bestTickVLinear( Units.dimensionless.createDatum(yearMin),
+                    Units.dimensionless.createDatum(yearMax), nTicksMin, nTicksMax );
             yearTicks.units= minD.getUnits();
             double[] tickV = yearTicks.tickV.toDoubleArray(Units.dimensionless);
             for ( int i=0; i<tickV.length; i++ ) {
-                int iyear= (int)tickV[i];                
+                int iyear= (int)tickV[i];
                 tickV[i]= TimeUtil.convert( iyear, 1, 1, 0, 0, 0, (TimeLocationUnits)yearTicks.units );
             }
             yearTicks.tickV = DatumVector.newDatumVector(tickV, yearTicks.units);
             double[] minorTickV = yearTicks.minorTickV.toDoubleArray(Units.dimensionless);
             for ( int i=0; i<minorTickV.length; i++ ) {
-                int iyear= (int)minorTickV[i];                
-                minorTickV[i]= TimeUtil.convert( iyear, 1, 1, 0, 0, 0, (TimeLocationUnits)yearTicks.units );                
+                int iyear= (int)minorTickV[i];
+                minorTickV[i]= TimeUtil.convert( iyear, 1, 1, 0, 0, 0, (TimeLocationUnits)yearTicks.units );
             }
             yearTicks.minorTickV = DatumVector.newDatumVector(minorTickV, yearTicks.units);
             Datum t1= yearTicks.getMajorTicks().get(0);
@@ -286,22 +350,22 @@ public class TickVDescriptor {
         
         double[] mags12= {
             0.001, 0.002, 0.005,
-            0.01, 0.02, 0.05,
-            0.1, 0.2, 0.5,
-            1, 2, 5, 10, 30,
-            60, 120, 300, 600, 1200,
-            3600, 7200, 10800, 14400, 21600, 28800, 43200, //1hr, 2hr, 3hr, 4hr, 6hr, 8hr, 12hr
-            86400, 172800, 86400*5, 86400*10
+                    0.01, 0.02, 0.05,
+                    0.1, 0.2, 0.5,
+                    1, 2, 5, 10, 30,
+                    60, 120, 300, 600, 1200,
+                    3600, 7200, 10800, 14400, 21600, 28800, 43200, //1hr, 2hr, 3hr, 4hr, 6hr, 8hr, 12hr
+                    86400, 172800, 86400*5, 86400*10
         };
         
         int[] nminor= {
             4, 4, 5,
-            4, 4, 5,
-            4, 4, 5,
-            4, 4, 5, 5, 3,
-            6, 4, 5, 5, 4,
-            4, 4, 3, 4, 3, 4, 6,
-            4, 2, 5, 10
+                    4, 4, 5,
+                    4, 4, 5,
+                    4, 4, 5, 5, 3,
+                    6, 4, 5, 5, 4,
+                    4, 4, 3, 4, 3, 4, 6,
+                    4, 2, 5, 10
         };
         
         double mag_keep=-1;
