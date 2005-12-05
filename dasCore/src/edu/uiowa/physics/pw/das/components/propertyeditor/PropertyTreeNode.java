@@ -2,7 +2,7 @@ package edu.uiowa.physics.pw.das.components.propertyeditor;
 
 import edu.uiowa.physics.pw.das.beans.*;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableNode;
-import edu.uiowa.physics.pw.das.graph.Renderer;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.beans.*;
 import java.beans.IndexedPropertyDescriptor;
@@ -10,6 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Enumeration;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
 class PropertyTreeNode implements TreeNode, TreeTableNode {
@@ -27,19 +29,34 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     
     protected PropertyDescriptor propertyDescriptor;
     
+    protected DefaultTreeModel treeModel;
+    
     protected Object value;
     
     protected boolean dirty;
     
     protected boolean childDirty;
     
-    PropertyTreeNode(Object value) {
+    PropertyTreeNode( Object value ) {
         this.value = value;
     }
+
+    /**
+     * Used to put the tree model into the root tree node so that it can be 
+     * passed down into the tree.
+     */
+    protected void setTreeModel( DefaultTreeModel treeModel ) {
+        if ( this.treeModel!=null ) throw new IllegalArgumentException("Improper use, see documentation");
+        this.treeModel= treeModel;
+    }
     
-    PropertyTreeNode(PropertyTreeNode parent, PropertyDescriptor propertyDescriptor) throws InvocationTargetException {
+     PropertyTreeNode(PropertyTreeNode parent, PropertyDescriptor propertyDescriptor ) throws InvocationTargetException {
         this.parent = parent;
         this.propertyDescriptor = propertyDescriptor;
+        this.treeModel= parent.treeModel;
+        if ( treeModel==null ) {
+            throw new IllegalArgumentException("null treeModel in parent");
+        }
         try {
             if ( propertyDescriptor.getReadMethod()==null ) {
                 throw new RuntimeException("read method not defined for "+propertyDescriptor.getName());
@@ -56,6 +73,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
     }
     
     public boolean getAllowsChildren() {
+        
         //No propertyDescriptor indicates the root node.
         if (propertyDescriptor == null) {
             return true;
@@ -71,7 +89,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
             } else {
                 type = propertyDescriptor.getPropertyType();
             }
-                        
+            
             //Types with identified as editable by PropertyEditor and
             //types with registered PropertyEditors should not be expanded.
             return !PropertyEditor.editableTypes.contains(type)
@@ -138,7 +156,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                             if (pd instanceof IndexedPropertyDescriptor) {
                                 children.add( new IndexedPropertyTreeNode(this, (IndexedPropertyDescriptor)pd) );
                             } else {
-                                children.add( new PropertyTreeNode(this, pd));
+                                children.add( new PropertyTreeNode(this, pd ));
                             }
                         }
                     }
@@ -168,7 +186,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
                 return ss;
             } else {
                 return ss.substring(0,100) + "...";
-            }            
+            }
         } else {
             return value;
         }
@@ -192,9 +210,30 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         }
     }
     
+    protected String absPropertyName() {
+        if ( this.propertyDescriptor==null ) {
+            return "";
+        } else {
+            String s= parent.absPropertyName();
+            return ( s=="" ? "" : s+"." ) + propertyDescriptor.getName();
+        }
+    }
+    
+    protected Object[] getTreePath( ) {
+        ArrayList list= new ArrayList();
+        list.add(this);
+        TreeNode node= this.getParent();
+        while ( node!=null ) {
+            list.add( 0, node );
+            node= node.getParent();
+        }        
+        return (Object[]) list.toArray( new Object[list.size()] );
+    }
+    
     void flush() throws InvocationTargetException {
         try {
             if (dirty) {
+                DasLogger.getLogger( DasLogger.DASML_LOG).fine("flushing property "+absPropertyName()+"="+value );
                 Method writeMethod = propertyDescriptor.getWriteMethod();
                 writeMethod.invoke(parent.value, new Object[]{value} );
                 dirty = false;
@@ -277,16 +316,15 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         return getDisplayName();
     }
     
-    public void refresh() {
+    public void refresh( TreeModelListener listener ) {
         if (getAllowsChildren()) {
             if (children != null) {
                 for (Iterator i = children.iterator(); i.hasNext();) {
                     PropertyTreeNode child = (PropertyTreeNode)i.next();
-                    child.refresh();
+                    child.refresh( listener );
                 }
             }
-        }
-        else {
+        } else {
             Object newValue = read();
             if (newValue != value && newValue != null && !newValue.equals(value)) {
                 value = newValue;
@@ -295,11 +333,10 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         }
     }
     
-    private Object read() {
+    protected Object read() {        
         if (propertyDescriptor == null) {
             return value;
-        }
-        else {
+        } else {
             Method readMethod = propertyDescriptor.getReadMethod();
             if (readMethod == null) {
                 String pName = propertyDescriptor.getName();
@@ -309,21 +346,17 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
             }
             try {
                 return readMethod.invoke(parent.value, null);
-            }
-            catch (IllegalAccessException iae) {
+            } catch (IllegalAccessException iae) {
                 Error err = new IllegalAccessError(iae.getMessage());
                 err.initCause(iae);
                 throw err;
-            }
-            catch (InvocationTargetException ite) {
+            } catch (InvocationTargetException ite) {
                 Throwable cause = ite.getCause();
                 if (cause instanceof Error) {
                     throw (Error)cause;
-                }
-                else if (cause instanceof RuntimeException) {
+                } else if (cause instanceof RuntimeException) {
                     throw (RuntimeException)cause;
-                }
-                else {
+                } else {
                     throw new RuntimeException(cause);
                 }
             }

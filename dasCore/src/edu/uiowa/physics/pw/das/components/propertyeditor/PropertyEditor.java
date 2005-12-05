@@ -29,10 +29,14 @@ import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
 import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -50,7 +54,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -109,19 +116,31 @@ public class PropertyEditor extends JComponent {
     
     private Object bean;
     
+    /* row of the last mouse click.  This object is the fellow who is edited when
+     * applying properties to a group
+     */
+    private int focusRow=0;
+    private JPopupMenu popupMenu;
+    
+    private Logger logger= DasLogger.getLogger(DasLogger.GUI_LOG);
+    
     public PropertyEditor( Object bean ) {
         setLayout(new BorderLayout());
         this.bean= bean;
         PropertyTreeNode root = new PropertyTreeNode(bean);
-        DefaultTreeModel treeModel = new DefaultTreeModel(root, true);
+        DefaultTreeModel treeModel = new DefaultTreeModel(root, true);        
+        root.setTreeModel(treeModel);
         TreeTableCellRenderer tree = new TreeTableCellRenderer(treeModel);
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         TreeTableModel model = new TreeTableModel(root, tree);
         table = new JTable(model);
+        table.setAutoCreateColumnsFromModel(false);
+        
         add(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
         
         initButtonPanel( bean instanceof DasCanvas );
+        initPopupMenu();
         
         PropertyCellRenderer valueRenderer = new PropertyCellRenderer();
         //PropertyCellEditor editor = new PropertyCellEditor(tree);
@@ -134,6 +153,47 @@ public class PropertyEditor extends JComponent {
         table.getColumnModel().getColumn(1).setCellRenderer(valueRenderer);
         table.setDefaultEditor(Object.class, editor);
         table.addMouseListener(new PropertyTableMouseListener());
+        table.setSurrendersFocusOnKeystroke(true);
+        table.addKeyListener( getKeyListener() );
+        addActions( table );
+        table.getSelectionModel().addListSelectionListener( getListSelectionListener() );
+    }
+    
+    private void addActions( final JTable table ) {
+        table.getActionMap().put( "MY_EDIT", new AbstractAction() {
+            public void actionPerformed( ActionEvent e ) {
+                table.editCellAt(focusRow,1);
+            }
+        } );
+        table.getInputMap().put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false),
+                "MY_EDIT");
+    }
+    
+    private ListSelectionListener getListSelectionListener() {
+        return new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                focusRow= table.getSelectedRow(); // we could do a better job here
+                logger.fine("focusRow="+focusRow);
+            }
+        };
+    }
+    
+    private KeyListener getKeyListener() {
+        KeyAdapter ka;
+        return new KeyAdapter() {
+            public void keyReleased( KeyEvent event ) {
+                logger.fine( String.valueOf( event ) );
+                if ( event.getKeyCode()==KeyEvent.VK_RIGHT ) {
+                    TreeTableModel model = (TreeTableModel)table.getModel();
+                    model.expand(focusRow);
+                } else if ( event.getKeyCode()==KeyEvent.VK_LEFT ) {
+                    TreeTableModel model = (TreeTableModel)table.getModel();
+                    model.collapse(focusRow);
+                } 
+            }
+            
+        };
     }
     
     private Action createSaveAction( final Object bean ) {
@@ -178,7 +238,7 @@ public class PropertyEditor extends JComponent {
         Document document= builder.parse(source);
         return document;
     }
-       
+    
     private Action createLoadAction( final Object bean ) {
         return new AbstractAction("Load") {
             public void actionPerformed( ActionEvent ev ) {
@@ -209,13 +269,29 @@ public class PropertyEditor extends JComponent {
             }
         };
     }
+    
+    private Action getEditSelectedAction() {
+        return new AbstractAction( "Edit Selected" ) {
+            public void actionPerformed( ActionEvent e ) {
+                TreeTableModel model = (TreeTableModel)table.getModel();
+                PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(focusRow);
+                PropertyEditor p= new PropertyEditor(node.getValue());
+                p.showDialog(PropertyEditor.this);
+            }
+        };
+    }
+    private void initPopupMenu() {
+        popupMenu= new JPopupMenu();
+        popupMenu.add( getEditSelectedAction() );
+    }
+    
     private void initButtonPanel( boolean saveLoadButton ) {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));        
-        if ( false ) { //saveLoadButton ) {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        if ( saveLoadButton ) {
             JButton saveButton=new JButton(createSaveAction(this.bean));
             buttonPanel.add(saveButton);
             JButton loadButton=new JButton(createLoadAction(this.bean));
-            buttonPanel.add(loadButton);            
+            buttonPanel.add(loadButton);
         }
         final JButton apply = new JButton("Apply Changes");
         closeButton = new JButton("Dismiss");
@@ -236,7 +312,7 @@ public class PropertyEditor extends JComponent {
             public void actionPerformed(ActionEvent e) {
                 TreeTableModel model = (TreeTableModel)table.getModel();
                 PropertyTreeNode root = (PropertyTreeNode)model.getRoot();
-                root.refresh();
+                root.refresh(model.getTreeModelListener());
                 model.fireTableDataChanged();
             }
         });
@@ -314,14 +390,26 @@ public class PropertyEditor extends JComponent {
     
     class PropertyTableMouseListener extends MouseAdapter {
         
-        public void mouseClicked(MouseEvent e) {
-            Point p = e.getPoint();
+        public void mouseClicked( MouseEvent event ) {
+            Point p = event.getPoint();
             int row = table.rowAtPoint(p);
             int column = table.columnAtPoint(p);
             TreeTableModel model = (TreeTableModel)table.getModel();
             PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(row);
-            if (!node.isLeaf()) {
+            
+            focusRow= row;
+            int modifiers= event.getModifiers() & ( MouseEvent.SHIFT_MASK | MouseEvent.CTRL_MASK );
+            
+            if (event.getButton()==MouseEvent.BUTTON1&& modifiers==0 && !node.isLeaf() ) {
                 model.toggleExpanded(row);
+            }
+        }
+        
+        public void mousePressed( MouseEvent event ) {
+            Point p = event.getPoint();
+            focusRow = table.rowAtPoint(p);
+            if ( event.getButton()==MouseEvent.BUTTON3 ) {
+                popupMenu.show( PropertyEditor.this, event.getX(), event.getY() );
             }
         }
         

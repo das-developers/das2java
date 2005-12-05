@@ -1,7 +1,4 @@
 package edu.uiowa.physics.pw.das.components.propertyeditor;
-
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import java.beans.*;
 import java.beans.IndexedPropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -9,7 +6,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeNode;
 
 class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     
@@ -19,6 +15,7 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     
     IndexedPropertyItemTreeNode(PropertyTreeNode parent, IndexedPropertyDescriptor indexedPropertyDescriptor, int index) {
         super(Array.get(parent.value, index));
+        setTreeModel(parent.treeModel);
         this.index = index;
         this.parent = parent;
         this.propertyDescriptor = indexedPropertyDescriptor;
@@ -26,7 +23,7 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     }
     
     public boolean getAllowsChildren() {
-        return true;
+        return indexedPropertyDescriptor.getPropertyEditorClass() == null;
     }
     
     String getDisplayName() {
@@ -47,10 +44,42 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
                 }
                 childDirty = false;
             }
-        }
-        catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
         }
+    }
+    
+    protected Object read() {
+        Object[] parentValue= (Object[])parent.read();
+        return parentValue[this.index];
+    }
+    
+    public void refresh( TreeModelListener listener ) {
+        Object newValue = read();
+        boolean foldMe= false;
+        if ( newValue!=value ) {
+            boolean allowsChildren= getAllowsChildren();
+            if ( allowsChildren ) {
+                foldMe= true;
+            }
+        }
+        if (newValue != value && newValue != null && !newValue.equals(value)) {
+            value = newValue;
+        }
+        if ( foldMe ) {
+            children= null;
+            listener.treeStructureChanged( new TreeModelEvent( this, getTreePath() ) );
+        } else {
+            if (getAllowsChildren()) {
+                if (children != null) {
+                    for (Iterator i = children.iterator(); i.hasNext();) {
+                        PropertyTreeNode child = (PropertyTreeNode)i.next();
+                        child.refresh( listener );
+                    }
+                }
+            }
+        }
+        
     }
     
 }
