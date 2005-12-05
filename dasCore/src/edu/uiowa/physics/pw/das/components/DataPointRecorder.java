@@ -300,7 +300,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         try {
                             unitsArray[i]= Units.getByName(m.group(2));
                         } catch ( IndexOutOfBoundsException e ) {
-                            System.err.println(e);
+                            throw e;
                         }
                     } else {
                         planesArray[i]= s[i];
