@@ -306,4 +306,32 @@ public class TableUtil {
             return i;
         }
     }
+    
+    public static VectorDataSet collapse( TableDataSet ds, int offset, int length ) {
+        int itable= ds.tableOfIndex(offset);
+        if ( ds.tableOfIndex(offset+length-1) != itable ) {
+            throw new IllegalArgumentException( "collapse can't span multiple tables!" );
+        }
+        int n= ds.getYLength(itable);
+        
+        Units zunits= ds.getZUnits();
+        Units yunits= ds.getYUnits();
+        
+        VectorDataSetBuilder builder= new VectorDataSetBuilder( ds.getYUnits(), ds.getZUnits() );
+        
+        TableDataSet weights= WeightsTableDataSet.create(ds);
+       
+        for ( int j=0; j<n; j++ ) {
+            double avg=0.;
+            double weight=0.;            
+            for ( int i=offset; i<offset+length; i++ ) {
+                double w= weights.getDouble( i, j, Units.dimensionless );
+                avg+= ds.getDouble(i, j, zunits ) * w;
+                weight+= w;
+            }
+            double d=  ( weight==0 ? zunits.getFillDouble() : avg / weight );
+            builder.insertY( ds.getYTagDouble( itable, j, yunits ), d );
+        }
+        return builder.toVectorDataSet();
+    }
 }
