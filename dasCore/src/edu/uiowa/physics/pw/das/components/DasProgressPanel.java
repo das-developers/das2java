@@ -22,9 +22,8 @@
  */
 
 package edu.uiowa.physics.pw.das.components;
-
-import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,6 +32,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  *
@@ -56,8 +56,11 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private static final int hideInitiallyMilliSeconds= 1500;
     private long lastTaskTime;
     private boolean running = false;
+    private boolean finished= false;
     private long lastRefreshTime;
     private ArrayList refreshTimeQueue;
+
+    private Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
     
     /**
      * Holds value of property showProgressRate.
@@ -76,6 +79,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         lastTaskTime= Integer.MAX_VALUE;
         lastRefreshTime= Integer.MIN_VALUE;
         showProgressRate= true;
+        isCancelled= false;
     }
     
     public static DasProgressPanel createComponentPanel( DasCanvasComponent component, String initialMessage ) {
@@ -183,6 +187,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void finished() {
         running = false;
+        finished= true;
         lastTaskTime= System.currentTimeMillis()-taskStartedTime;
         if ( jframe==null ) {
             setVisible(false);
@@ -193,16 +198,16 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finest( "progressPosition="+position );
+        logger.finest( "progressPosition="+position );
         
         if ( position!=0 && position<currentTaskPosition ) {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finest( "progress position goes backwards" );
+            logger.finest( "progress position goes backwards" );
         }
 
         if (!cancelChecked) {
             cancelCheckFailures++;
-            if ( cancelCheckFailures>10 ) {
-                DasApplication.getDefaultApplication().getLogger().fine("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
+            if ( cancelCheckFailures>2 ) {
+                logger.fine("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
                 throw new IllegalStateException("Operation cancelled: developers: check isCancelled before calling setTaskProgress");
             }
         }
@@ -238,7 +243,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }        
         
         long tnow;
-        if ( (tnow=System.currentTimeMillis()) - lastRefreshTime > 100 ) {            
+        if ( (tnow=System.currentTimeMillis()) - lastRefreshTime > 30 ) {
             if (Toolkit.getDefaultToolkit().getSystemEventQueue().isDispatchThread()) {
                 paintImmediately(0, 0, getWidth(), getHeight());
             }
@@ -257,6 +262,10 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         return currentTaskPosition;
     }
     
+    public long getTaskSize( ) {
+        return maximumTaskPosition;
+    }
+    
     public void setTaskSize(long taskSize) {
         if (taskSize == -1) {
             progressBar.setIndeterminate(true);            
@@ -270,10 +279,9 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void started() {
         taskStartedTime= System.currentTimeMillis();
-        isCancelled = false;
         running = true;
-        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("lastTaskTime="+lastTaskTime);
-        setTaskProgress(0);
+        logger.fine("lastTaskTime="+lastTaskTime);
+        
         if ( lastTaskTime>hideInitiallyMilliSeconds*2.0 ) {
             setVisible(true);
         } else {
@@ -284,12 +292,15 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
                         Thread.sleep(hideInitiallyMilliSeconds);
                     } catch ( InterruptedException e ) { };
                     if (running) {
-                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("hide time="+(System.currentTimeMillis()-taskStartedTime) );
+                        logger.fine("hide time="+(System.currentTimeMillis()-taskStartedTime) );
                         setTaskProgress(getTaskProgress());
                     }
                 }
             } ).start();
         }
+        // cancel() might have been called before we got here, so check it.
+        if ( isCancelled ) return;
+        setTaskProgress(0);
     }
     
     public void cancel() {
@@ -327,5 +338,18 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     public void setShowProgressRate(boolean showProgressRate) {
         this.showProgressRate = showProgressRate;
     }
+    
+    public String toString() {
+        if ( isCancelled ){
+            return "cancelled";
+        } else if ( finished ) {
+            return "finished";
+        } else if ( running ) {
+            return ""+currentTaskPosition + " of "+ this.maximumTaskPosition;
+        } else {
+            return "waiting for start";
+        }
+    }
+    
     
 }
