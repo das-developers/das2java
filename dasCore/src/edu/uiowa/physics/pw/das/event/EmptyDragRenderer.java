@@ -41,16 +41,8 @@ public class EmptyDragRenderer implements DragRenderer
     public void clear(Graphics g) {
     }
     
-    public boolean isXRangeSelection() {
-        return false;
-    }
-    
-    public boolean isYRangeSelection() {
-        return false;
-    }
-    
     public boolean isPointSelection() {
-        return false;
+        return true;
     }
 
     public boolean isUpdatingDragSelection() {
