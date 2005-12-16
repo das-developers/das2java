@@ -103,14 +103,6 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
         parent.paintImmediately(dirtyBounds);
     }
     
-    public boolean isXRangeSelection() {
-        return false;
-    }
-        
-    public boolean isYRangeSelection() {
-        return true;
-    }
-    
     public boolean isPointSelection() {
         return false;
     }

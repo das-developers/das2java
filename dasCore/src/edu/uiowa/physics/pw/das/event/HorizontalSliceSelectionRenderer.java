@@ -72,14 +72,6 @@ public class HorizontalSliceSelectionRenderer implements DragRenderer {
         parent.paintImmediately(dirtyBounds);        
     }
     
-    public boolean isXRangeSelection() {
-        return false;
-    }
-    
-    public boolean isYRangeSelection() {
-        return false;
-    }
-    
     public boolean isPointSelection() {
         return true;
     }

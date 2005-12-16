@@ -113,19 +113,11 @@ public class HorizontalRangeGesturesRenderer implements DragRenderer {
     public void clear(Graphics g) {
         parent.paintImmediately(dirtyBounds);
     }
-    
-    public boolean isXRangeSelection() {
-        return true;
-    }
-    
+        
     public boolean isPointSelection() {
         return false;
     }
-    
-    public boolean isYRangeSelection() {
-        return false;
-    }
-    
+        
     public boolean isUpdatingDragSelection() {
         return false;
     }
