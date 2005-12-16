@@ -28,6 +28,7 @@ package edu.uiowa.physics.pw.das.beans;
 public class RendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
+        new Property("active", AccessLevel.DASML, "isActive", "setActive", null),
         new Property("dataSetID", AccessLevel.DASML, "getDataSetID", "setDataSetID", null),
         new Property("dumpDataSet", AccessLevel.DASML, "isDumpDataSet", "setDumpDataSet", null),        
         new Property("dataSet", AccessLevel.DASML, "getDataSet", null, null),
