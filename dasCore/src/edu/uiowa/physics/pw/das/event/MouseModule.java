@@ -61,11 +61,17 @@ public class MouseModule implements Editable, Displayable, KeyListener {
         this.label= label;
     }
     
-    /** returns a string that identifies the module */    
+    /** 
+     * returns a string that identifies the module 
+     */    
     public String getLabel() {
         return label;
     }
     
+    /**
+     * No longer used
+     * @depricated.  No longer supported
+     */
     public Vector getHotSpots() {
         return null;
     }
@@ -82,11 +88,11 @@ public class MouseModule implements Editable, Displayable, KeyListener {
         return dragRenderer;
     }
     
-    /** Action to take when a mouse range has been selected. */    
+    /** Action to take when a mouse range (click, drag, release) has been selected. */    
     public void mouseRangeSelected(MouseDragEvent e) {
     }
     
-    /** Action to take when a point is selected. */    
+    /** Action to take when a point (click or drag) is selected. */    
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
