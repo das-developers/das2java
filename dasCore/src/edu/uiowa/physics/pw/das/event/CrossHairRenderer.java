@@ -208,9 +208,6 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         return new Rectangle[] { this.hDirtyBounds, this.vDirtyBounds, dirtyBounds };
     }
     
-    public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
-        return null;
-    }
     
     private void drawCrossHair(Graphics g0, Point p) {
         
@@ -244,16 +241,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     public void clear(Graphics g) {
         super.clear(g);
         parent.paintImmediately(hDirtyBounds);
-        parent.paintImmediately(vDirtyBounds);
-        //sorry about that...
-    }
-    
-    public boolean isXRangeSelection() {
-        return false;
-    }
-    
-    public boolean isYRangeSelection() {
-        return false;
+        parent.paintImmediately(vDirtyBounds);        
     }
     
     public boolean isPointSelection() {
