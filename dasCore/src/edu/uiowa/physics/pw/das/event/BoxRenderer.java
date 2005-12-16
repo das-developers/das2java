@@ -32,9 +32,6 @@ import java.awt.*;
  */
 public class BoxRenderer implements DragRenderer {
     
-    boolean xRangeSelection;
-    boolean yRangeSelection;
-    
     Rectangle dirtyBounds;
     DasCanvasComponent parent;
     
@@ -43,8 +40,6 @@ public class BoxRenderer implements DragRenderer {
     public BoxRenderer(DasCanvasComponent parent, boolean updating ) {
         this.parent= parent;
         dirtyBounds= new Rectangle();
-        xRangeSelection= true;
-        yRangeSelection= true;
         this.updating= updating;
     }
     
@@ -84,14 +79,6 @@ public class BoxRenderer implements DragRenderer {
     
     public boolean isPointSelection() {
         return false;
-    }
-    
-    public boolean isXRangeSelection() {
-        return xRangeSelection;
-    }
-    
-    public boolean isYRangeSelection() {
-        return yRangeSelection;
     }
     
     public boolean isUpdatingDragSelection() {
