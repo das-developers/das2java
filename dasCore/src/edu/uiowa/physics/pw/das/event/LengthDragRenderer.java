@@ -10,6 +10,8 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.text.*;
 
 /**
@@ -32,12 +34,15 @@ public class LengthDragRenderer extends LabelDragRenderer {
     
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         Graphics2D g= ( Graphics2D ) g1;
-        g1.drawLine( p1.x, p1.y, p2.x, p2.y );
-        g1.drawOval(p1.x-1, p1.y-1, 3, 3 ) ;
+        double atan= Math.atan2( p2.y-p1.y, p2.x-p1.x );
+        
+        Line2D line= new Line2D.Double( p1.x + (int)(3.0 * Math.cos(atan)), (int)(p1.y + 3.0*Math.sin(atan)), p2.x, p2.y );
+        g.draw( line );
+        g.draw( new Ellipse2D.Double( p1.x-3, p1.y-3, 6, 6 ) );
         
         Rectangle myDirtyBounds= new Rectangle();
         
-        myDirtyBounds.setRect( p1.x-2, p1.y-2, 5, 5 );
+        myDirtyBounds.setRect( p1.x-3, p1.y-3, 7, 7 );
         myDirtyBounds.add(p2.x-2,p2.y-2);
         myDirtyBounds.add(p2.x+2,p2.y+2);
         
