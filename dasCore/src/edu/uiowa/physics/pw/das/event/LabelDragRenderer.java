@@ -7,36 +7,55 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
+import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 
 /**
  *
  * @author  Jeremy
  */
 public class LabelDragRenderer implements DragRenderer {
-        
+    
     String label="Label not set";
     GrannyTextRenderer gtr;
     DasCanvasComponent parent;
+    InfoLabel infoLabel;
+    
+    int labelPositionX=1; // 1=right, -1=left
+    int labelPositionY=-1; // 1=below, -1=above
     
     /* the implementing class is responsible for setting this */
     Rectangle dirtyBounds;
     
-    int maxLabelWidth;    
+    Logger logger= DasLogger.getLogger(DasLogger.GUI_LOG);
+    
+    int maxLabelWidth;
     
     public void clear(Graphics g) {
-        if ( dirtyBounds!=null ) parent.paintImmediately(dirtyBounds);               
+        if ( dirtyBounds!=null ) parent.paintImmediately(dirtyBounds);
         dirtyBounds= null;
     }
-        
-    LabelDragRenderer( DasCanvasComponent parent ) {
+    
+    public LabelDragRenderer( DasCanvasComponent parent ) {
         this.parent= parent;
         this.dirtyBounds= new Rectangle();
         gtr= new GrannyTextRenderer();
     }
     
+    /**
+     * This method is called by the DMIA on mouse release.  We use this to infer the mouse release
+     * and hide the Window.  Note this assumes isUpdatingDragSelection is false!
+     */
     public MouseDragEvent getMouseDragEvent(Object source, java.awt.Point p1, java.awt.Point p2, boolean isModified) {
+        if ( tooltip ) {
+            infoLabel.hide();
+        }
         return null;
     }
     
@@ -48,19 +67,107 @@ public class LabelDragRenderer implements DragRenderer {
         return false;
     }
     
-    public boolean isXRangeSelection() {
-        return true;
-    }
-    
-    public boolean isYRangeSelection() {
-        return true;
-    }
-    
-    void setLabel( String s ) {
+    public void setLabel( String s ) {
         this.label= s;
     }
     
+    private class InfoLabel {
+        JWindow window;
+        JPanel label;
+        GrannyTextRenderer gtr;
+        
+        JPanel containedPanel;
+        JComponent glassPane;
+        
+        boolean contained= true;
+        
+        void init() {
+            Window root= (Window)SwingUtilities.getRoot( parent );
+            window= new JWindow( root );
+            label= new JPanel() {
+                public void paintComponent( Graphics g ) {
+                    g.clearRect(0,0, getWidth(), getHeight() );
+                    gtr.draw( g, 0, (int)gtr.getAscent() );
+                }
+            };
+            label.setOpaque( true );
+            label.setPreferredSize( new Dimension( 300,20 ) );
+            window.getContentPane().add( label );
+            window.pack();
+            gtr= new GrannyTextRenderer();
+            
+            glassPane= (JComponent)parent.getCanvas().getGlassPane();
+            containedPanel= new JPanel() {
+                public void paintComponent( Graphics g ) {
+                    g.clearRect(0,0, getWidth(), getHeight() );
+                    gtr.draw( g, 0, (int)gtr.getAscent() );
+                }
+            };
+            containedPanel.setVisible(false);
+            glassPane.add(containedPanel);
+            contained= true;
+            
+        }
+        
+        void setText( String text, Point p ) {
+            if ( window==null ) init();
+            if ( text!=null ) {
+                gtr.setString( containedPanel, text );
+                Dimension dim= gtr.getDimension();
+
+                int posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * dim.width;
+                int posy= p.y + labelPositionY * 3 + Math.min( labelPositionY, 0 ) * dim.height;
+                
+                Rectangle bounds= gtr.getBounds();
+                
+                Point p2= new Point( posx, posy );
+                SwingUtilities.convertPointFromScreen( p2, glassPane );
+                    
+                bounds.translate( p2.x, p2.y );
+                
+                contained= glassPane.getBounds().contains( bounds );
+                
+                if ( contained ) {
+                    
+                    containedPanel.setSize(dim);
+                    containedPanel.setLocation( p2.x, p2.y );
+                    window.setVisible(false);
+                    containedPanel.setVisible(true);
+                    containedPanel.repaint();
+                    
+                } else {
+                    
+                    gtr.setString(label,text);
+                    dim= gtr.getDimension();
+                    window.setSize(dim);
+                    
+                    posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * dim.width;
+                    posy= p.y + labelPositionY * 3 + Math.min( labelPositionY, 0 ) * dim.height;
+                    
+                    containedPanel.setVisible(false);
+                    window.setLocation( posx, posy );
+                    window.setVisible(true);
+                    window.repaint();
+                }
+            } else {
+                hide();
+            }
+        }
+        
+        void hide() {
+            if ( window==null ) init();
+            if ( contained ) {
+                containedPanel.setVisible(false);
+            } else {
+                window.setVisible(false);
+            }
+        }
+        
+    }
+    
     private Rectangle paintLabel( Graphics g1, java.awt.Point p2 ) {
+        
+        if ( label==null ) return null;
         
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -75,16 +182,31 @@ public class LabelDragRenderer implements DragRenderer {
         
         int dy= (int)gtr.getHeight();
         
-        int xp= p2.x+3;
         if (maxLabelWidth<dx) maxLabelWidth=dx;
         
-        int yp= p2.y-3-dy;
+        if ( ( p2.x + maxLabelWidth > d.width ) && (p2.x-3-dx>0) ) {
+            labelPositionX= -1;
+        } else {
+            labelPositionX= 1;
+        }
         
-        if ( (xp+maxLabelWidth>d.width-3) && (p2.x-3-dx>0) ) {
+        int xp;
+        if ( labelPositionX==1 ) {
+            xp= p2.x+3;
+        } else {
             xp= p2.x-3-dx;
         }
         
-        if (yp<13) {
+        int yp;
+        if ( p2.y-3-dy < 13) {
+            labelPositionY= -1;
+        } else {
+            labelPositionY= 1;
+        }
+        
+        if ( labelPositionY==1 ) {
+            yp= p2.y-3-dy;
+        } else {
             yp= p2.y+3;
         }
         
@@ -105,9 +227,74 @@ public class LabelDragRenderer implements DragRenderer {
         
         return dirtyBounds;
     }
-
-    public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {        
-        Rectangle r= paintLabel( g, p2 );
-        return new Rectangle[] { r };
+    
+    public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
+        logger.finest("renderDrag "+p2);
+        if ( tooltip ) {
+            if ( infoLabel==null ) infoLabel= new InfoLabel();
+            Point p= (Point)p2.clone();
+            SwingUtilities.convertPointToScreen( p, parent );
+            infoLabel.setText( label, p );
+            return new Rectangle[0];
+        } else {
+            if ( label==null ) {
+                return new Rectangle[0];
+            } else {
+                Rectangle r= paintLabel( g, p2 );
+                return new Rectangle[] { r };
+            }
+        }
+    }
+    
+ /*   public void keyPressed(KeyEvent e) {
+        int keyCode= e.getKeyCode();
+  
+        if ( keyCode==KeyEvent.VK_LEFT || keyCode==KeyEvent.VK_RIGHT || keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_DOWN ) {
+                int x=0;
+                int y=0;
+                try {
+                    int xOff= parent.getLocationOnScreen().x-parent.getX();
+                    int yOff= parent.getLocationOnScreen().y-parent.getY();
+                    final java.awt.Robot robot= new java.awt.Robot();
+                    switch ( keyCode ) {
+                        case KeyEvent.VK_LEFT:
+                            robot.mouseMove(lastMousePoint.getX()+xOff-1, lastMousePoint.getY()+yOff);
+                            break;
+                        case KeyEvent.VK_RIGHT:
+                            robot.mouseMove(lastMousePoint.getX()+xOff+1, lastMousePoint.getY()+yOff);
+                            break;
+                        case KeyEvent.VK_UP:
+                            robot.mouseMove(lastMousePoint.getX()+xOff, lastMousePoint.getY()+yOff-1);
+                            break;
+                        case KeyEvent.VK_DOWN:
+                            robot.mouseMove(lastMousePoint.getX()+xOff, lastMousePoint.getY()+yOff+1);
+                            break;
+                    }
+                } catch ( java.awt.AWTException e1 ) {
+                    edu.uiowa.physics.pw.das.util.DasDie.println(e1.getMessage());
+                }
+  
+            } else {
+  
+                DataPointSelectionEvent dpse= getDataPointSelectionEvent(lastMousePoint);
+                HashMap planes= new HashMap();
+                planes.put( "keyChar", String.valueOf( e.getKeyChar() ) );
+                dpse= new DataPointSelectionEvent( this, dpse.getX(), dpse.getY(), planes );
+                fireDataPointSelectionListenerDataPointSelected( dpse );
+            }
+        }
+    }*/
+    
+    boolean tooltip= false;
+    public boolean isTooltip() {
+        return tooltip;
+    }
+    
+    public void setTooltip( boolean tooltip ) {
+        this.tooltip= tooltip;
+        if ( tooltip ) {
+            labelPositionX= 1;
+            labelPositionY= -1;
+        }
     }
 }
