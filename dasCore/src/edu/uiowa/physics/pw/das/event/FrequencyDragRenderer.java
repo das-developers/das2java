@@ -40,10 +40,6 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
         ncycles=1;
     }
     
-    public boolean isXRangeSelection() {
-        return false;
-    }
-    
     public void renderLabel( java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2, String report ) {
         int dxMax= Integer.MIN_VALUE;
         
@@ -182,10 +178,6 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
     }
     
     public boolean isUpdatingDragSelection() {
-        return false;
-    }
-    
-    public boolean isYRangeSelection() {
         return false;
     }
     

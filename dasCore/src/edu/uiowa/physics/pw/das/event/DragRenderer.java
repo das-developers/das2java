@@ -39,7 +39,9 @@ public interface DragRenderer
     public Color ghostColor= new Color(255,255,255,100);
     
     /* draws the drag for mousing from p1 to p2, and returns an array of
-     * Rectangles covering the rendering.  
+     * Rectangles covering the rendering.  If nothing is drawn, then an 
+     * array of length zero should be returned, and nulls are allowed in the
+     * array.
      */
     public abstract Rectangle[] renderDrag(Graphics g, Point p1, Point p2);
     
@@ -50,12 +52,6 @@ public interface DragRenderer
     
     /* promotes the drag begin and end into a mouseDragEvent */
     public abstract MouseDragEvent getMouseDragEvent( Object source, Point p1, Point p2, boolean isModified ); 
-    
-    /* isXRangeSelection() true indicates that mouse release right or left of the component bounds is allowed */
-    public boolean isXRangeSelection();
-    
-    /* isYRangeSelection() true indicates that mouse release above of below of the component bounds is allowed */
-    public boolean isYRangeSelection();
     
     /* indicates that MM.mousePointSelected() should called as new mouse events come in */
     public boolean isPointSelection();
