@@ -74,6 +74,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     JCheckBoxMenuItem primarySelectedItem;
     JCheckBoxMenuItem secondarySelectedItem;
     
+    // must be non-null, but may contain null elements
     Rectangle[] dirtyBoundsList;
     
     Logger log= DasLogger.getLogger(DasLogger.GUI_LOG);
@@ -103,6 +104,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     Vector hotSpots = null;
     Rectangle dirtyBounds= null;
+    
+    private boolean hasFocus=false;
     
     private static class MouseMode {
         String s;
@@ -141,6 +144,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         resizeRenderer= new BoxRenderer(parent);
         
         numInserted= 0; // number of additional inserted items
+        
+        dirtyBoundsList= new Rectangle[0];
     }
     
     public void replaceMouseModule( MouseModule oldModule, MouseModule newModule ) {
@@ -378,10 +383,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         };
     }
     
+    /**
+     * call the renderDrag method of the active module's dragRenderer.  This method
+     * returns an array of Rectangles, or null, indicating the affected regions.
+     * It's also permisable for a array element to be null.
+     */
     private void renderSelection(Graphics2D g) {
-        if ( active==null ) {
-            return;
-        }
         for (int i=0; i<active.size(); i++) {
             DasCanvas canvas = parent.getCanvas();
             selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
@@ -400,16 +407,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
      * the dragRenderer's dirty bounds will be.
      */
     private synchronized void refresh() {
-        if ( dirtyBoundsList!=null ) {
+        if ( dirtyBoundsList.length>0 ) {
             Rectangle[] dd= new Rectangle[dirtyBoundsList.length];
             for ( int i=0; i<dd.length; i++ ) {
-                dd[i]= new Rectangle( dirtyBoundsList[i] );
+                if ( dirtyBoundsList[i]!=null ) dd[i]= new Rectangle( dirtyBoundsList[i] );
             }
             for ( int i=0; i<dd.length; i++ ) {
-                parent.paintImmediately( dd[i] );
+                if ( dd[i]!=null ) parent.paintImmediately( dd[i] );
             }
             for ( int i=0; i<dirtyBoundsList.length; i++ ) {
-                parent.paintImmediately( dirtyBoundsList[i] );
+                if ( dirtyBoundsList[i]!=null ) parent.paintImmediately( dirtyBoundsList[i] );
             }
         } else {
             if ( active!=null ) {
@@ -417,15 +424,22 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             }
         }
         if ( active==null ) {
-            dirtyBoundsList=null;
+            dirtyBoundsList= new Rectangle[0];
         }
     }
     
     /*
      * Paint the drag renderer on top of parent.
      */
-    public void paint( Graphics g ) {
-        renderSelection( (Graphics2D)g );
+    public void paint( Graphics g1 ) {
+        Graphics2D g= (Graphics2D)g1;
+        if ( active!=null ) renderSelection( g );
+        if ( hasFocus && hoverHighlite ) {
+            g.translate(-parent.getX(),-parent.getY());
+            g.setColor( new Color(255,0,0,10) );
+            g.setStroke( new BasicStroke(10));
+            g.draw( parent.getBounds() );
+        }
     }
     
     private MouseMode activateMouseMode(MouseEvent e) {
@@ -747,6 +761,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseEntered(MouseEvent e) {
+        hasFocus= true;
+        parent.repaint();
         if (primary!=null) {
             hotSpots= primary.getHotSpots();
             getGlassPane().setCursor(primary.getCursor());
@@ -754,12 +770,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mouseExited(MouseEvent e) {
+        hasFocus= false;
+        parent.repaint();
         if (mouseMode==MouseMode.hotSpot) {
             parent.repaint(dirtyBounds);
             mouseMode= MouseMode.idle;
         }
         getGlassPane().setCursor(Cursor.getDefaultCursor());
     }
+    
     
     public void addMenuItem(Component b) {
         if (numInserted==0) {
@@ -769,7 +788,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         numInserted++;
     }
     
-    public Component getGlassPane() {
+    private Component getGlassPane() {
         return ((DasCanvas)parent.getParent()).getGlassPane();
     }
     
@@ -783,4 +802,17 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         return result;
     }
     
+    /**
+     * Draws a faint box around the border when the mouse enters the component, 
+     * to help indicate what's going on.
+     */
+    private boolean hoverHighlite=false;
+    
+    public boolean isHoverHighlite() {
+        return this.hoverHighlite;
+    } 
+    
+    public void setHoverHighlite( boolean value ) {
+        this.hoverHighlite= value;
+    }
 }
