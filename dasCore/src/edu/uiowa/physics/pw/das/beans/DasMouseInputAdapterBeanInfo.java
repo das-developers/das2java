@@ -29,6 +29,7 @@ public class DasMouseInputAdapterBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
         new Property("mouseModules", AccessLevel.DASML, "getMouseModules", null, "getMouseModule", null, null),        
+        //new Property("hoverHighlite", AccessLevel.DASML, "isHoverHighlite", "setHoverHighlite", null ),        
     };
     
     public DasMouseInputAdapterBeanInfo() {
