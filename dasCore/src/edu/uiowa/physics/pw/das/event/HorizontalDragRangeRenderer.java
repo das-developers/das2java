@@ -90,16 +90,8 @@ public class HorizontalDragRangeRenderer implements DragRenderer {
         parent.paintImmediately(dirtyBounds);
     }
     
-    public boolean isXRangeSelection() {
-        return true;
-    }
-    
     public boolean isPointSelection() {
         return true;
-    }
-    
-    public boolean isYRangeSelection() {
-        return false;
     }
     
     public boolean isUpdatingDragSelection() {

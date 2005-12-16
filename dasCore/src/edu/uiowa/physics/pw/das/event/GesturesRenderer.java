@@ -120,14 +120,6 @@ public class GesturesRenderer implements DragRenderer {
         return this.dirtyBounds;
     }
     
-    public boolean isXRangeSelection() {
-        return true;
-    }
-    
-    public boolean isYRangeSelection() {
-        return true;
-    }
-    
     public boolean isPointSelection() {
         return false;
     }
