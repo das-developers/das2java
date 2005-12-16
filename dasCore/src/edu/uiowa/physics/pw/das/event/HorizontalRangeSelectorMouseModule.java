@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
@@ -63,17 +64,10 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
             MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
             min= axis.invTransform(e.getMinimum());
             max= axis.invTransform(e.getMaximum());
-            Datum nnMin= axis.findTick(min,0,true);
-            Datum nnMax= axis.findTick(max,0,true);
-            if (nnMin.equals(nnMax)) {
-                min= axis.findTick(min,-1,true);
-                max= axis.findTick(max,1,true);
-            } else {
-                min= nnMin;
-                max= nnMax;
-            }
+            DatumRange dr= new DatumRange( min, max );
+            DatumRange nndr= axis.getTickV().enclosingRange(dr, true);
             DataRangeSelectionEvent te=
-            new DataRangeSelectionEvent(e0.getSource(),min,max);
+            new DataRangeSelectionEvent(e0.getSource(),nndr.min(),nndr.max());
             fireDataRangeSelectionListenerDataRangeSelected(te);
         } else if ( e0.getGesture()==Gesture.BACK ) {
             axis.setDataRangePrev();
