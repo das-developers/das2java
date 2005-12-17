@@ -219,6 +219,8 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     }
     
     protected DataSet getDataSetFromStream(InputStream in, Datum start, Datum end, DasProgressMonitor monitor ) throws DasException {
+        if ( monitor==null ) monitor= DasProgressMonitor.NULL;
+        
         PushbackInputStream pin = new PushbackInputStream(in, 4096);
         try {
             byte[] four = new byte[4];
@@ -227,12 +229,16 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             if ( bytesRead!=4 ) {
                 DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("no data returned from server");
                 throw new DasIOException( "No data returned from server" );
-            }
+            }            
+            
             if (new String(four).equals("[00]")) {
                 DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finer("got stream header [00]");
                 pin.unread(four);
                 
-                if ( monitor==null ) monitor= DasProgressMonitor.NULL;
+                if ( monitor.isCancelled() ) {
+                    pin.close();
+                    throw new InterruptedIOException("Operation cancelled");
+                }
                 
                 monitor.started();
                 
@@ -258,7 +264,12 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             else {
                 pin.unread(four);
                 
-                if (monitor != null) monitor.started();
+                if ( monitor.isCancelled() ) {
+                    pin.close();
+                    throw new InterruptedIOException("Operation cancelled");
+                }
+                
+                monitor.started();
                 
                 InputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
                 
