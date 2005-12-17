@@ -24,13 +24,16 @@ import javax.swing.*;
  */
 public class HttpFileSystem extends WebFileSystem {
     
+    private HashMap listings;
+    
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URL root, File localRoot) {
         super( root, localRoot );
+        listings= new HashMap();
     }
     
-    public static HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {        
-        File local;         
+    public static HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {
+        File local;
         if ( System.getProperty("user.name").equals("Web") ) {
             local= new File("/tmp");
         } else {
@@ -57,7 +60,7 @@ public class HttpFileSystem extends WebFileSystem {
         }
         if ( f.createNewFile() ) {
             DasApplication.getDefaultApplication().getLogger().fine("transferring file "+filename);
-            FileOutputStream out= new FileOutputStream( f );            
+            FileOutputStream out= new FileOutputStream( f );
             copyStream( in, out, monitor );
             monitor.finished();
             out.close();
@@ -75,7 +78,7 @@ public class HttpFileSystem extends WebFileSystem {
             if ( filename.endsWith("/") ) {
                 return true;
             } else {
-                try {                    
+                try {
                     File parentFile= f.getParentFile();
                     URL[] urls= HtmlUtil.getDirectoryListing( getURL( getLocalName( parentFile ) ) );
                     URL remoteUrl;
@@ -102,20 +105,22 @@ public class HttpFileSystem extends WebFileSystem {
         if ( ! isDirectory( directory ) ) {
             throw new IllegalArgumentException( "is not a directory: "+directory );
         }
-        try {
-            URL[] list= HtmlUtil.getDirectoryListing( getURL(directory ) );
-            if ( list.length>100 ) {
-                throw new IllegalStateException( "URL list is very long, refusing to transfer" );
+        if ( listings.containsKey(directory) ) {
+            return ( String[] ) listings.get(directory);
+        } else {
+            try {
+                URL[] list= HtmlUtil.getDirectoryListing( getURL(directory ) );
+                String[] result= new String[list.length];
+                for ( int i=0; i<list.length; i++ ) {
+                    URL url= list[i];
+                    result[i]= getLocalName(url);
+                }
+                listings.put( directory, result );
+                return result;
+            } catch ( IOException e ) {
+                handleException(e);
+                return new String[0];
             }
-            String[] result= new String[list.length];
-            for ( int i=0; i<list.length; i++ ) {
-                URL url= list[i];
-                result[i]= getLocalName(url);
-            }
-            return result;
-        } catch ( IOException e ) {
-            handleException(e);
-            return new String[0];
         }
     }
     
@@ -124,26 +129,19 @@ public class HttpFileSystem extends WebFileSystem {
         if ( ! isDirectory( directory ) ) {
             throw new IllegalArgumentException( "is not a directory: "+directory );
         }
-        try {
-            Pattern pattern= Pattern.compile(regex);
-            URL[] list= HtmlUtil.getDirectoryListing( getURL(directory ) );
-            if ( list.length>10000 ) {
-                throw new IllegalStateException( "URL list is very long, refusing to transfer" );
+        
+        String[] listing= listDirectory( directory );
+        Pattern pattern= Pattern.compile(regex);
+        ArrayList result= new ArrayList();
+        int n= directory.length();
+        for ( int i=0; i<listing.length; i++ ) {
+            String r1= listing[i].substring(n);
+            if ( pattern.matcher(r1).matches() ) {
+                result.add(r1);
             }
-            ArrayList result= new ArrayList();
-            for ( int i=0; i<list.length; i++ ) {
-                URL url= list[i];
-                String r1= getLocalName(url).substring(directory.length());
-                if ( pattern.matcher(r1).matches() ) {
-                    result.add(r1);
-                }
-            }
-            return (String[])result.toArray(new String[result.size()]);
-            
-        } catch ( IOException e ) {
-            handleException(e);
-            return new String[0];
         }
+        return (String[])result.toArray(new String[result.size()]);
+        
     }
     
 }
