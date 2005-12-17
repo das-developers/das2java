@@ -58,7 +58,7 @@ public final class RequestProcessor {
     private static final WeakHashMap runnableQueueMap = new WeakHashMap();
     private static final Runner runner = new Runner();
     
-    private static int maxThreadCount = 5;
+    private static int maxThreadCount = 10;
     private static int threadCount = 0;
     private static final Object THREAD_COUNT_LOCK = new Object();
     
