@@ -50,6 +50,7 @@ public interface DasProgressMonitor {
      */    
     public static final DasProgressMonitor NULL= new DasProgressMonitor() {
         public void setTaskSize(long taskSize) {} ;
+        public long getTaskSize( ) { return 1; }
         public void setTaskProgress(long position) throws IllegalArgumentException {};
         public long getTaskProgress() { return 0; };
         public void started() {};
@@ -78,6 +79,8 @@ public interface DasProgressMonitor {
      * @return the current progress of the monitored task.
      */
     long getTaskProgress();
+    
+    long getTaskSize();
     
     /** Notifies the <code>ProgressMonitor</code> that the task
      * being monitored has started.  If the <code>ProgressMonitor</code>
