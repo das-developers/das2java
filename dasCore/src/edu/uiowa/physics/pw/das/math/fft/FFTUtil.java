@@ -16,10 +16,11 @@ import edu.uiowa.physics.pw.das.datum.*;
 public class FFTUtil {
     
     public static VectorDataSet fftPower( GeneralFFT fft, VectorDataSet vds ) {        
-        double [] yreal= new double[ vds.getXLength() ];
+        vds= new ClippedVectorDataSet( vds, 0, fft.n );
+        double [] yreal= new double[ fft.n ];
         Units yUnits= vds.getYUnits();
-        double [] yimag= new double[ vds.getXLength() ];                
-        for ( int i=0; i<vds.getXLength(); i++ ) yreal[i]= vds.getDouble( i, yUnits );            
+        double [] yimag= new double[ fft.n ];
+        for ( int i=0; i<fft.n; i++ ) yreal[i]= vds.getDouble( i, yUnits );
         ComplexArray.Double ca= ComplexArray.newArray(yreal);
         fft.transform( ca );        
         DatumVector xtags= getFrequencyDomainTags( DataSetUtil.getXTags(vds) );        
