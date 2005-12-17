@@ -98,7 +98,12 @@ public class DasLogger {
     }
     
     public static Logger getLogger( LoggerId loggerId ) {
-        return loggerId.getLogger();
+        return loggerId.getLogger();        
+    }
+    
+    public static Logger getLogger( LoggerId loggerId, String identifier ) {        
+        String id= loggerId.toString()+"."+identifier;
+        return Logger.getLogger(id);
     }
     
     /**
