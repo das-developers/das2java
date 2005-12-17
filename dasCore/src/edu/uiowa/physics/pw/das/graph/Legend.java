@@ -33,6 +33,11 @@ public class Legend extends DasCanvasComponent {
             this.label= label;
         }
         
+        LegendElement( Icon icon, String label ) {
+            this.icon= icon;
+            this.label= label;
+        }
+        
     }
     
     ArrayList elements; // LegendElement
@@ -41,9 +46,21 @@ public class Legend extends DasCanvasComponent {
         elements= new ArrayList();
     }
     
+    public static Icon getIcon( Color color ) {        
+        Image image= new BufferedImage(6,10,BufferedImage.TYPE_INT_RGB);
+        Graphics g2= image.getGraphics();
+        g2.setColor(color);
+        g2.fillRect(0,0,6,10);        
+        return new ImageIcon( image );
+    }
+    
     public void add( SymbolLineRenderer rend, String label ) {
         LegendElement e= new LegendElement( rend, label );
         elements.add(e);
+    }
+    
+    public void add( Icon icon, String label ) {
+        elements.add( new LegendElement( icon, label ) );
     }
     
     public void resize() {
