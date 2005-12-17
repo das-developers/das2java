@@ -45,13 +45,11 @@ import java.awt.Image;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
-import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Hashtable;
 import javax.swing.Icon;
 import org.w3c.dom.*;
 
@@ -228,7 +226,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private boolean sliceRebinnedData= true;
     
     /**
-     * transforms the simpleTableDataSet into a Raster byte array.  The rows of 
+     * transforms the simpleTableDataSet into a Raster byte array.  The rows of
      * the table are adjacent in the output byte array.
      */
     private static byte[] transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb ) {
