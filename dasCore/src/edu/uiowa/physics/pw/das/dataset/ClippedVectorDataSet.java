@@ -25,7 +25,7 @@ public class ClippedVectorDataSet implements VectorDataSet {
         this.source= source;
     }
 
-    private ClippedVectorDataSet( VectorDataSet source, int xoffset, int xlength ) {
+    public ClippedVectorDataSet( VectorDataSet source, int xoffset, int xlength ) {
         this.xoffset= xoffset;
         this.xlength= xlength;
         this.source= source;
