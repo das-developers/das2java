@@ -407,7 +407,14 @@ public class DataSetUtil {
         }
     }
     
+    /**
+     * provides convenient method for appending datasets together.  The first 
+     * dataset may be null, in which case the second is trivially returned.
+     * Presently a builder is used to create the new dataset, but in the future 
+     * more efficient methods will be used.
+     */
     public static DataSet append( DataSet ds1, DataSet ds2 ) {
+        if ( ds1==null ) return ds2;
         if ( ds1 instanceof TableDataSet ) {
             TableDataSetBuilder builder= new TableDataSetBuilder( ds1.getXUnits(), ds1.getYUnits(), ((TableDataSet)ds1).getZUnits() );
             if ( ds1!=null ) builder.append( (TableDataSet) ds1 );
