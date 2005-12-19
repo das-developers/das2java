@@ -105,14 +105,16 @@ public abstract class DataSetDescriptor implements Displayable {
                     DataSet ds= getDataSet( start, end, resolution, monitor );
                     if ( ds==null ) throw new NoDataInIntervalException( new DatumRange(start,end).toString() );
                     DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
+                    dsue.setMonitor( monitor );
                     fireDataSetUpdateEvent(dsue);
                 } catch ( DasException e ) {
                     DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+                    dsue.setMonitor( monitor );
                     fireDataSetUpdateEvent(dsue);
                 }
             }
             public String toString() {
-                return "loadDataSet "+ start+" - "+ end;
+                return "loadDataSet "+ new DatumRange( start, end );
             }
         };
         DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("submit data request");
@@ -135,8 +137,10 @@ public abstract class DataSetDescriptor implements Displayable {
             try {
                 DataSet ds= getDataSet(null,null,null,null);
                 DataSetUpdateEvent dsue= new DataSetUpdateEvent( this, ds );
+                dsue.setMonitor(monitor);
             } catch ( DasException e ) {
                 DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+                dsue.setMonitor(monitor);
                 listener.dataSetUpdated(dsue);
             }
         } else {
@@ -146,14 +150,16 @@ public abstract class DataSetDescriptor implements Displayable {
                     try {
                         DataSet ds= getDataSet( start, end, resolution, monitor );
                         DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
+                        dsue.setMonitor(monitor);
                         listener.dataSetUpdated(dsue);
                     } catch ( DasException e ) {
                         DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+                        dsue.setMonitor(monitor);
                         listener.dataSetUpdated(dsue);
                     }
                 }
                 public String toString() {
-                    return "loadDataSet "+ start+" - "+ end;
+                    return "loadDataSet "+ new DatumRange( start, end );
                 }
             };
             RequestProcessor.invokeLater( request, listener );
