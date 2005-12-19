@@ -113,10 +113,10 @@ public class LabelDragRenderer implements DragRenderer {
             if ( window==null ) init();
             if ( text!=null ) {
                 gtr.setString( containedPanel, text );
-                Dimension dim= gtr.getDimension();
+                Rectangle rect= gtr.getBounds();
 
-                int posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * dim.width;
-                int posy= p.y + labelPositionY * 3 + Math.min( labelPositionY, 0 ) * dim.height;
+                int posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * rect.width;
+                int posy= p.y + labelPositionY * 3 + Math.min( labelPositionY, 0 ) * rect.height;
                 
                 Rectangle bounds= gtr.getBounds();
                 
@@ -129,7 +129,7 @@ public class LabelDragRenderer implements DragRenderer {
                 
                 if ( contained ) {
                     
-                    containedPanel.setSize(dim);
+                    containedPanel.setSize( new Dimension( rect.width, rect.height ) );
                     containedPanel.setLocation( p2.x, p2.y );
                     window.setVisible(false);
                     containedPanel.setVisible(true);
@@ -138,11 +138,11 @@ public class LabelDragRenderer implements DragRenderer {
                 } else {
                     
                     gtr.setString(label,text);
-                    dim= gtr.getDimension();
-                    window.setSize(dim);
+                    rect= gtr.getBounds();
+                    window.setSize( new Dimension( rect.width, rect.height ) );
                     
-                    posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * dim.width;
-                    posy= p.y + labelPositionY * 3 + Math.min( labelPositionY, 0 ) * dim.height;
+                    posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * rect.width;
+                    posy= p.y + labelPositionY * 3 + Math.min( labelPositionY, 0 ) * rect.height;
                     
                     containedPanel.setVisible(false);
                     window.setLocation( posx, posy );
