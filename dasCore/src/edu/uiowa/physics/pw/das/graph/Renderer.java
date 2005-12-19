@@ -72,8 +72,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     
     protected Renderer( DataSetDescriptor dsd ) {
         // this.dsd = dsd;                
-        this.loader= new XAxisDataLoader( this, dsd );        
-        this.dataSetId= dsd==null ? "" : dsd.getDataSetID();
+        this.loader= new XAxisDataLoader( this, dsd );                
     }
     
     protected Renderer( DataSet ds ) {
@@ -160,7 +159,11 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     }
     
     public String getDataSetID() {
-        return dataSetId;
+        if ( getDataSetDescriptor()==null ) {
+            return ""; 
+        } else {
+            return getDataSetDescriptor().getDataSetID();  
+        }
     }
     
     
