@@ -27,7 +27,7 @@ public class StreamUtil {
     public static TableDataSet loadTableDataSet( String filename ) {
         try {
             filename= URLEncoder.encode(filename,"UTF-8");
-            DataSetDescriptor dsd= DataSetDescriptor.create( DATA_SET_ID_PREFIX+filename );            
+            DataSetDescriptor dsd= DataSetDescriptor.create( DATA_SET_ID_PREFIX+filename );
             dsd.setDefaultCaching(false);
             DataSet ds= dsd.getDataSet(null,null,null,null);
             return (TableDataSet)ds;
@@ -38,4 +38,17 @@ public class StreamUtil {
         }
     }
     
+    public static DataSet loadDataSet( String filename ) {
+        try {
+            filename= URLEncoder.encode(filename,"UTF-8");
+            DataSetDescriptor dsd= DataSetDescriptor.create( DATA_SET_ID_PREFIX+filename );
+            dsd.setDefaultCaching(false);
+            DataSet ds= dsd.getDataSet(null,null,null,null);
+            return ds;
+        } catch ( UnsupportedEncodingException e ) {
+            throw new RuntimeException(e);
+        } catch ( DasException e ) {
+            throw new RuntimeException(e);
+        }
+    }
 }
