@@ -124,10 +124,11 @@ public class PropertyEditor extends JComponent {
     
     private Logger logger= DasLogger.getLogger(DasLogger.GUI_LOG);
     
-    public PropertyEditor( Object bean ) {
+    private PropertyEditor( PropertyTreeNodeInterface root, Object bean ) {
+        this.bean= bean;
         setLayout(new BorderLayout());
         this.bean= bean;
-        PropertyTreeNode root = new PropertyTreeNode(bean);
+        
         DefaultTreeModel treeModel = new DefaultTreeModel(root, true);        
         root.setTreeModel(treeModel);
         TreeTableCellRenderer tree = new TreeTableCellRenderer(treeModel);
@@ -157,6 +158,22 @@ public class PropertyEditor extends JComponent {
         table.addKeyListener( getKeyListener() );
         addActions( table );
         table.getSelectionModel().addListSelectionListener( getListSelectionListener() );
+    }
+    
+    public PropertyEditor( Object bean ) {                
+        this( new PropertyTreeNode(bean), bean );
+        if ( bean instanceof PropertyTreeNodeInterface ) throw new IllegalArgumentException("whoops!");
+    }
+    
+    public static PropertyEditor createPeersEditor( Object leader, Object[] peers ) {
+        PropertyTreeNode[] peerNodes= new PropertyTreeNode[peers.length];
+        for ( int i=0; i<peers.length; i++ ) {
+            peerNodes[i]= new PropertyTreeNode( peers[i] );
+        }
+        PeerPropertyTreeNode root= new PeerPropertyTreeNode( null, 
+                new PropertyTreeNode( leader ),  
+                peerNodes );
+        return new PropertyEditor( root, null );
     }
     
     private void addActions( final JTable table ) {
@@ -274,8 +291,8 @@ public class PropertyEditor extends JComponent {
         return new AbstractAction( "Edit Selected" ) {
             public void actionPerformed( ActionEvent e ) {
                 TreeTableModel model = (TreeTableModel)table.getModel();
-                PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(focusRow);
-                PropertyEditor p= new PropertyEditor(node.getValue());
+                PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(focusRow);
+                PropertyEditor p= new PropertyEditor( node, null );
                 p.showDialog(PropertyEditor.this);
             }
         };
@@ -311,7 +328,7 @@ public class PropertyEditor extends JComponent {
         refresh.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 TreeTableModel model = (TreeTableModel)table.getModel();
-                PropertyTreeNode root = (PropertyTreeNode)model.getRoot();
+                PropertyTreeNodeInterface root = (PropertyTreeNodeInterface)model.getRoot();
                 root.refresh();
                 model.fireTableDataChanged();
             }
@@ -326,16 +343,12 @@ public class PropertyEditor extends JComponent {
     
     private void globalApplyChanges() {
         TreeTableModel model = (TreeTableModel)table.getModel();
-        PropertyTreeNode root = (PropertyTreeNode)model.getRoot();
-        try {
-            root.flush();
-        } catch (InvocationTargetException ite) {
-            DasExceptionHandler.handle(ite.getCause());
-        }
+        PropertyTreeNodeInterface root = (PropertyTreeNodeInterface)model.getRoot();
+        root.flush();        
     }
     
     private void dismissDialog() {
-        PropertyTreeNode root = (PropertyTreeNode)((TreeTableModel)table.getModel()).getRoot();
+        PropertyTreeNodeInterface root = (PropertyTreeNodeInterface)((TreeTableModel)table.getModel()).getRoot();
         if (root.isDirty()) {
             String[] message = new String[] {
                 "You have unsaved changes",
@@ -395,7 +408,7 @@ public class PropertyEditor extends JComponent {
             int row = table.rowAtPoint(p);
             int column = table.columnAtPoint(p);
             TreeTableModel model = (TreeTableModel)table.getModel();
-            PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(row);
+            PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(row);
             
             focusRow= row;
             int modifiers= event.getModifiers() & ( MouseEvent.SHIFT_MASK | MouseEvent.CTRL_MASK );
