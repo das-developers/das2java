@@ -24,6 +24,7 @@ public class HtmlUtil {
     }
     
     public static URL[] getDirectoryListing( URL url ) throws IOException {
+        FileSystem.logger.finer("listing "+url);        
         
         String file= url.getFile();
         if ( file.charAt(file.length()-1)!='/' ) {
@@ -49,6 +50,7 @@ public class HtmlUtil {
         StringBuffer contentBuffer = new StringBuffer( contentLength ); 
         contentBuffer.append( new String( b, 0, numRead ) );
         while (numRead != -1) {
+            FileSystem.logger.finest("download listing");
             numRead = urlStream.read(b);
             if (numRead != -1) {
                 String newContent = new String(b, 0, numRead);
@@ -66,6 +68,7 @@ public class HtmlUtil {
         Matcher matcher= hrefPattern.matcher( content );
                 
         while ( matcher.find() ) {
+            FileSystem.logger.finest("parse listing");
             String strLink= matcher.group(2);
             URL urlLink= null;
             
