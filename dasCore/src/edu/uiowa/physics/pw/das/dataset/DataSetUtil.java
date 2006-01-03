@@ -19,10 +19,14 @@ import javax.swing.*;
 public class DataSetUtil {
     
     public static CacheTag guessCacheTag( DataSet ds ) {
-        Datum start= ds.getXTagDatum(0);
-        Datum end= ds.getXTagDatum( ds.getXLength()-1 );
-        Datum resolution= ds.getXTagDatum(1).subtract( start );
-        return new CacheTag( start, end, resolution );
+        if ( ds.getProperty(DataSet.PROPERTY_CACHE_TAG)!=null ) {
+            return (CacheTag)ds.getProperty(DataSet.PROPERTY_CACHE_TAG);
+        } else {
+            Datum start= ds.getXTagDatum(0);
+            Datum end= ds.getXTagDatum( ds.getXLength()-1 );
+            Datum resolution= ds.getXTagDatum(1).subtract( start );
+            return new CacheTag( start, end, resolution );
+        }
     }
     
     public static DasAxis guessYAxis( DataSet dsz ) {
@@ -408,24 +412,43 @@ public class DataSetUtil {
     }
     
     /**
-     * provides convenient method for appending datasets together.  The first 
+     * provides convenient method for appending datasets together.  The first
      * dataset may be null, in which case the second is trivially returned.
-     * Presently a builder is used to create the new dataset, but in the future 
-     * more efficient methods will be used.
+     * Presently a builder is used to create the new dataset, but in the future
+     * more efficient methods will be used.  ds2 must not be null!
      */
-    public static DataSet append( DataSet ds1, DataSet ds2 ) {
-        if ( ds1==null ) return ds2;
-        if ( ds1 instanceof TableDataSet ) {
-            TableDataSetBuilder builder= new TableDataSetBuilder( ds1.getXUnits(), ds1.getYUnits(), ((TableDataSet)ds1).getZUnits() );
-            if ( ds1!=null ) builder.append( (TableDataSet) ds1 );
-            if ( ds2!=null ) builder.append( (TableDataSet) ds2 );
-            return builder.toTableDataSet();
-        } else {
-            VectorDataSetBuilder builder= new VectorDataSetBuilder( ds1.getXUnits(), ds2.getYUnits() );
-            if ( ds1!=null ) builder.append( (VectorDataSet) ds1 );
-            if ( ds2!=null ) builder.append( (VectorDataSet) ds2 );
-            return builder.toVectorDataSet();
+    public static DataSet append( DataSet ds1, DataSet ds2, CacheTag ct ) {
+        CacheTag resultTag=null;
+        if ( ds2!=null ) resultTag= DataSetUtil.guessCacheTag( ds2 );
+        if ( ct!=null ) resultTag= ct;
+        if ( ds1!=null ) {
+            if ( resultTag==null ) {
+                resultTag= DataSetUtil.guessCacheTag( ds1 );
+            } else {
+                resultTag= CacheTag.append( DataSetUtil.guessCacheTag( ds1 ), resultTag );
+            }
         }
+        if ( ds2==null ) {
+            return ds1;
+        } else {
+            if ( ds2 instanceof TableDataSet ) {
+                TableDataSetBuilder builder= new TableDataSetBuilder( ds2.getXUnits(), ds2.getYUnits(), ((TableDataSet)ds2).getZUnits() );
+                if ( ds1!=null ) builder.append( (TableDataSet) ds1 );
+                builder.append( (TableDataSet) ds2 );
+                builder.setProperty( DataSet.PROPERTY_CACHE_TAG, resultTag );
+                return builder.toTableDataSet();
+            } else {
+                VectorDataSetBuilder builder= new VectorDataSetBuilder( ds2.getXUnits(), ds2.getYUnits() );
+                if ( ds1!=null ) builder.append( (VectorDataSet) ds1 );
+                builder.append( (VectorDataSet) ds2 );
+                builder.setProperty( DataSet.PROPERTY_CACHE_TAG, resultTag );
+                return builder.toVectorDataSet();
+            }
+        }
+    }
+    
+    public static DataSet append( DataSet ds1, DataSet ds2 ) {
+        return append( ds1, ds2, null );
     }
     
     public static VectorDataSet log10( VectorDataSet ds ) {
