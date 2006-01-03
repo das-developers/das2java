@@ -24,12 +24,12 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import edu.uiowa.physics.pw.das.util.*;
@@ -52,7 +52,7 @@ import java.io.InterruptedIOException;
 import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
-
+        
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected DataSetDescriptor dataSetDescriptor;
@@ -445,8 +445,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected void uninstallComponent() {
         super.uninstallComponent();
-        if (xAxis != null) xAxis.getCanvas().remove(xAxis);
-        if (yAxis != null) yAxis.getCanvas().remove(yAxis);
+        if (xAxis != null && xAxis.getCanvas()!=null ) xAxis.getCanvas().remove(xAxis);
+        if (yAxis != null && yAxis.getCanvas()!=null) yAxis.getCanvas().remove(yAxis);
         Renderer[] r = getRenderers();
         for (int index = 0; index < r.length; index++) {
             r[index].uninstallRenderer();
@@ -479,6 +479,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public static DasPlot createDummyPlot() {
         DasAxis xAxis= new DasAxis( Datum.create(-10), Datum.create(10), DasAxis.HORIZONTAL );
         DasAxis yAxis= new DasAxis( Datum.create(-10), Datum.create(10), DasAxis.VERTICAL );
+        DasPlot result= new DasPlot(xAxis,yAxis);
+        return result;
+    }
+    
+    public static DasPlot createPlot( DatumRange xrange, DatumRange yrange ) {
+        DasAxis xAxis= new DasAxis( xrange, DasAxis.HORIZONTAL );
+        DasAxis yAxis= new DasAxis( yrange, DasAxis.VERTICAL );
         DasPlot result= new DasPlot(xAxis,yAxis);
         return result;
     }
