@@ -16,11 +16,12 @@ import java.util.*;
  * TableDataSet by wrapping it with a subclass of this method.
  */
 public class TableDataSetWrapper implements TableDataSet {
-    //NOT USED
+    
     protected TableDataSet source;
     
     /** Creates a new instance of SourceDataSetWrapper */
     public TableDataSetWrapper( TableDataSet source ) {
+        if ( source==null ) throw new IllegalArgumentException("null source dataset");
         this.source= source;
     }
     
