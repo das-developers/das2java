@@ -9,9 +9,7 @@
  */
 
 package edu.uiowa.physics.pw.das.graph;
-
-import edu.uiowa.physics.pw.das.components.DasProgressPanel;
-import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 
@@ -23,8 +21,9 @@ public abstract class DataLoader {
     
     Renderer renderer;
     
-    protected DasProgressMonitor getMonitor() {
-        return DasProgressPanel.createComponentPanel( renderer.getParent(), "Loading data set" );
+    protected DasProgressMonitor getMonitor( String description ) {
+        return DasApplication.getDefaultApplication().getMonitorFactory()
+          .getMonitor( renderer.getParent(), "Loading data set", description );        
     }
     
     protected DataLoader( Renderer renderer ) {
