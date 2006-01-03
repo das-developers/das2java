@@ -14,7 +14,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
-class PropertyTreeNode implements TreeNode, TreeTableNode {
+class PropertyTreeNode implements PropertyTreeNodeInterface {
     
     static {
         String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans", "sun.beans.infos" };
@@ -45,7 +45,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
      * Used to put the tree model into the root tree node so that it can be 
      * passed down into the tree.
      */
-    protected void setTreeModel( DefaultTreeModel treeModel ) {
+    public void setTreeModel( DefaultTreeModel treeModel ) {
         if ( this.treeModel!=null ) throw new IllegalArgumentException("Improper use, see documentation");
         this.treeModel= treeModel;
     }
@@ -122,7 +122,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         return children.isEmpty();
     }
     
-    PropertyDescriptor getPropertyDescriptor() {
+    public PropertyDescriptor getPropertyDescriptor() {
         return propertyDescriptor;
     }
     
@@ -170,11 +170,11 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         }
     }
     
-    Object getValue() {
+    public Object getValue() {
         return value;
     }
     
-    Object getDisplayValue() {
+    public Object getDisplayValue() {
         if ( value instanceof Displayable ) {
             return value;
         }
@@ -182,24 +182,25 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         
         if ( allowsChildren ) {
             String ss= String.valueOf(value);
-            if ( ss.length()<100 ) {
+            /*if ( ss.length()<100 ) {
                 return ss;
             } else {
                 return ss.substring(0,100) + "...";
-            }
+            }*/
+            return value;
         } else {
             return value;
         }
     }
     
-    String getDisplayName() {
+    public String getDisplayName() {
         if (propertyDescriptor == null) {
             return "root";
         }
         return propertyDescriptor.getName();
     }
     
-    void setValue(Object obj) {
+    public void setValue(Object obj) {
         if (obj == value) {
             return;
         } else if (obj != null && obj.equals(value)) {
@@ -230,7 +231,7 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
         return (Object[]) list.toArray( new Object[list.size()] );
     }
     
-    void flush() throws InvocationTargetException {
+    public void flush() {
         try {
             if (dirty) {
                 DasLogger.getLogger( DasLogger.DASML_LOG).fine("flushing property "+absPropertyName()+"="+value );
@@ -247,6 +248,8 @@ class PropertyTreeNode implements TreeNode, TreeTableNode {
             }
         } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
+        } catch ( InvocationTargetException e ) {
+            DasExceptionHandler.handle(e);
         }
     }
     

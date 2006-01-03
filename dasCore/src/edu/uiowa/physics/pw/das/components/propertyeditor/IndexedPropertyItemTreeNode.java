@@ -1,11 +1,10 @@
 package edu.uiowa.physics.pw.das.components.propertyeditor;
+import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.beans.IndexedPropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 
 class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     
@@ -26,11 +25,11 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
         return indexedPropertyDescriptor.getPropertyEditorClass() == null;
     }
     
-    String getDisplayName() {
+    public String getDisplayName() {
         return propertyDescriptor.getName() + "[" + index + "]";
     }
     
-    void flush() throws InvocationTargetException {
+    public void flush()  {
         try {
             if (dirty) {
                 Method writeMethod = indexedPropertyDescriptor.getIndexedWriteMethod();
@@ -46,6 +45,8 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
             }
         } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
+        } catch ( InvocationTargetException e ) {
+            DasExceptionHandler.handle(e);
         }
     }
     

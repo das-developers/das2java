@@ -145,7 +145,7 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
         currentValue = value;
         currentRow = row;
         TreeTableModel model = (TreeTableModel)table.getModel();
-        PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(row);
+        PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(row);
         PropertyDescriptor pd = node.getPropertyDescriptor();
         if (value instanceof Enumeration) {
             editorState = ENUMERATION;

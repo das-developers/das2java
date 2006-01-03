@@ -31,11 +31,11 @@ class IndexedPropertyTreeNode extends PropertyTreeNode {
         }
     }
     
-    String getDisplayName() {
+    public String getDisplayName() {
         return propertyDescriptor.getName() + "[]";
     }
     
-    void flush() throws InvocationTargetException {
+    public void flush() {
         if (childDirty) {
             for (Iterator i = children.iterator(); i.hasNext(); ) {
                 PropertyTreeNode child = (PropertyTreeNode)i.next();
