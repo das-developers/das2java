@@ -26,9 +26,9 @@ package edu.uiowa.physics.pw.das.datum;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.math.*;
-
-import java.util.*;
 import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 /**
  *
  * @author  jbf
@@ -101,7 +101,37 @@ public class NumberUnits extends Units {
                 dd[1]= dd[1] * exp;
                 return dd;
             }
-        }        
+        }
+    }
+ 
+    // note + and - are left out because of ambiguity with sign.
+    private static Pattern expressionPattern= Pattern.compile( "(.+)(\\*)(.+)" );
+    
+    private Datum parseExpression( String s ) throws ParseException {
+        Matcher m= expressionPattern.matcher(s);
+        if ( !m.matches() ) throw new IllegalArgumentException("not an expression");
+        String operator= m.group(2);
+        Datum operand1;
+        try { 
+            operand1= Units.dimensionless.parse( m.group(1) );
+        } catch ( IllegalArgumentException e ) {
+            operand1= this.parse( m.group(1) );
+        }
+        Datum operand2;
+        try {
+            operand2= Units.dimensionless.parse( m.group(3) );
+        } catch ( IllegalArgumentException e ) {
+            operand2= this.parse( m.group(3) );
+        }
+        Datum result;
+        if ( operator.equals("*") ) {
+             result= operand1.multiply(operand2);
+        } else if ( operator.equals("/") ) {
+             result= operand1.divide(operand2);
+        } else {
+            throw new IllegalArgumentException("Bad operator: "+operator+" of expression "+s);
+        }
+        return result;
     }
     
     /*
@@ -110,29 +140,41 @@ public class NumberUnits extends Units {
      * unit and attempt to convert to this before creating the unit.
      */
     public Datum parse(String s) throws ParseException {
-        try {
-            String[] ss= s.trim().split("\\s");
-            double[] dd= parseDecimal(ss[0]);
-            if ( ss.length==1 ) {                                                
-                return Datum.create( dd[0], this, dd[1] );
+        if ( expressionPattern.matcher(s).matches() ) {
+            Datum result= parseExpression( s );
+            if ( result.getUnits()==Units.dimensionless ) {
+                result= this.createDatum( result.doubleValue() );
             } else {
-                String unitsString= ss[1];
-                for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
-                Units u;
-                try {
-                    u= Units.getByName(unitsString);
-                } catch ( IllegalArgumentException e ) {
-                    ParseException t= new ParseException(s, ss[0].length()+1 );
-                    t.initCause(e);
-                    throw t;
-                }
-                UnitsConverter uc= u.getConverter(this);
-                return Datum.create( uc.convert(dd[0]), this, uc.convert(dd[1]) );
+                // throw exception if it's not convertable
+                result= result.convertTo(this);
             }
-        } catch (NumberFormatException nfe) {
-            ParseException pe = new ParseException(nfe.getMessage(), 0);
-            pe.initCause(nfe);
-            throw pe;
+            return result;
+        } else {
+            try {
+                
+                String[] ss= s.trim().split("\\s");
+                double[] dd= parseDecimal(ss[0]);
+                if ( ss.length==1 ) {
+                    return Datum.create( dd[0], this, dd[1] );
+                } else {
+                    String unitsString= ss[1];
+                    for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
+                    Units u;
+                    try {
+                        u= Units.getByName(unitsString);
+                    } catch ( IllegalArgumentException e ) {
+                        ParseException t= new ParseException(s, ss[0].length()+1 );
+                        t.initCause(e);
+                        throw t;
+                    }
+                    UnitsConverter uc= u.getConverter(this);
+                    return Datum.create( uc.convert(dd[0]), this, uc.convert(dd[1]) );
+                }
+            } catch (NumberFormatException nfe) {
+                ParseException pe = new ParseException(nfe.getMessage(), 0);
+                pe.initCause(nfe);
+                throw pe;
+            }
         }
     }
     
@@ -189,7 +231,11 @@ public class NumberUnits extends Units {
         if ( bUnits==Units.dimensionless ) {
             return createDatum( multiply( a, b ) );
         } else {
-            throw new IllegalArgumentException("Only multiplication by dimensionless numbers is supported");
+            if ( this==Units.dimensionless ) {
+                return bUnits.createDatum( multiply( a, b ) );
+            } else {
+                throw new IllegalArgumentException("Multiplication of two non-dimensionless numbers is not supported");
+            }
         }
     }
     
