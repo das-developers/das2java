@@ -90,12 +90,13 @@ public class MendelbrotDataLoader extends DataLoader {
                 }
             }
             
-            currentRequest= new DataLoader.Request( getMonitor(), xAxis.getMemento(), yAxis.getMemento() );
+            final String taskDescription= "mendelbrot x:"+xAxis.getMemento()+" y:"+ yAxis.getMemento();
+            currentRequest= new DataLoader.Request( getMonitor(taskDescription), xAxis.getMemento(), yAxis.getMemento() );
             
             Thread t= new Thread( new Runnable() {
                 public void run( ) {
                     try {
-                        DataSet result= getDataSet( xRebinDescriptor, yRebinDescriptor, getMonitor() );
+                        DataSet result= getDataSet( xRebinDescriptor, yRebinDescriptor, getMonitor(taskDescription) );
                         getRenderer().setDataSet( result );
                         completedRequest= currentRequest;
                         currentRequest= null;
