@@ -34,7 +34,7 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
     
     private boolean isWritable(JTable table, int row) {
         TreeTableModel model = (TreeTableModel)table.getModel();
-        PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(row);
+        PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(row);
         PropertyDescriptor pd = node.getPropertyDescriptor();
         return pd.getWriteMethod() != null;
     }
@@ -72,6 +72,7 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
                 setDisabledIcon(enm.getListIcon());
             } else {
                 setIcon(null);
+                setDisabledIcon(null);
             }
             c = this;
             
