@@ -263,5 +263,13 @@ public class DasApplication {
     public String getDas2Version() {
         return Splash.getVersion();
     }
-        
+    
+    private MonitorFactory monitorFactory;
+    
+    public MonitorFactory getMonitorFactory() {
+        if ( monitorFactory==null ) {
+            monitorFactory= new MonitorFactory();
+        }
+        return monitorFactory;
+    }
 }
