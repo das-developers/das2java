@@ -59,7 +59,7 @@ public class PropertyEditorAdapter implements TableCellEditor {
 
     public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int rowIndex, int columnIndex) {
         TreeTableModel model = (TreeTableModel)table.getModel();
-        PropertyTreeNode node = (PropertyTreeNode)model.getNodeForRow(rowIndex);
+        PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(rowIndex);
         PropertyDescriptor pd = node.getPropertyDescriptor();
         editor = getEditor(pd);
         if (editor == null) {
