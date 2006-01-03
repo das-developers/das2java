@@ -197,7 +197,7 @@ public abstract class Units implements Displayable {
         unitsMap.put( id, this );
     };
     
-    private void registerConverter(Units toUnits, UnitsConverter converter) {
+    public void registerConverter(Units toUnits, UnitsConverter converter) {
         conversionMap.put(toUnits, converter);
         UnitsConverter inverse = (UnitsConverter)toUnits.conversionMap.get(this);
         if (inverse == null || inverse.getInverse() != converter) {
