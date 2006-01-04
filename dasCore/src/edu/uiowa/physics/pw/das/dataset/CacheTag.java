@@ -26,7 +26,7 @@ public class CacheTag {
         Datum min;
         Datum max;
         if ( !tag1.range.intersects(tag2.range) ) {
-            if ( tag1.range.min().lt( tag2.range.min() ) ) {
+            if ( tag2.range.min().lt( tag1.range.min() ) ) {
                 CacheTag temp= tag1;
                 tag1= tag2;
                 tag2= temp;
@@ -35,7 +35,7 @@ public class CacheTag {
                 throw new IllegalArgumentException("cache tags cannot be appended, they are not adjacent");
             }
             min= tag1.range.min();
-            max= tag1.range.max();
+            max= tag2.range.max();
         } else {
             min= tag1.range.min().lt( tag2.range.min() ) ? tag1.range.min() : tag2.range.min();
             max= tag1.range.max().gt( tag2.range.max() ) ? tag1.range.max() : tag2.range.max();
