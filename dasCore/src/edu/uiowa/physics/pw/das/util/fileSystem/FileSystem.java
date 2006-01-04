@@ -5,9 +5,11 @@
  */
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.net.*;
+import java.util.logging.Logger;
 
 /**
  * Filesystems provide an abstraction layer so that clients can access 
@@ -22,6 +24,7 @@ import java.net.*;
 public abstract class FileSystem  {   
         
     URL root;
+    protected static Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
     
     public class FileSystemOfflineException extends IOException {        
     }
@@ -30,7 +33,8 @@ public abstract class FileSystem  {
      * Creates a FileSystem by parsing the URL and creating the correct FS type.
      * Presently, only "file://" and "http://" are supported.
      */
-    public static FileSystem create( URL root ) throws FileSystemOfflineException {                
+    public static FileSystem create( URL root ) throws FileSystemOfflineException {          
+        logger.fine("create filesystem "+root);
         if ( "file".equals(root.getProtocol()) ) {
             return new LocalFileSystem( root );
         } else if ( "http".equals( root.getProtocol() ) ) {
