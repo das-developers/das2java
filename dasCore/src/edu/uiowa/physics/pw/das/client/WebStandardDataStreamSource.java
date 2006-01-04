@@ -154,13 +154,12 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         try {
             String formData = createFormDataString(dataSetID, start, end, additionalFormData);
             if ( dsd.isRestrictedAccess() ) {
-                Key key= server.getKey("");
+                key= server.getKey("");
                 if (key!=null) {
                     formData+= "&key="+URLEncoder.encode(key.toString(),"UTF-8");
                 }
             }
-            
-            boolean redirect=false;
+                       
             if ( redirect ) {
                 formData+= "&redirect=1";
             }
@@ -347,4 +346,39 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     public DasServer getDasServer() {
         return this.server;
     }
+
+    /**
+     * Holds value of property redirect.
+     */
+    private boolean redirect= false;
+
+    /**
+     * Getter for property redirect.
+     * @return Value of property redirect.
+     */
+    public boolean isRedirect() {
+        return this.redirect;
+    }
+
+    /**
+     * Setter for property redirect.
+     * @param redirect New value of property redirect.
+     */
+    public void setRedirect(boolean redirect) {
+        this.redirect = redirect;
+    }
+
+    /**
+     * Holds value of property key.
+     */
+    private Key key=null;
+
+    /**
+     * Getter for property key.
+     * @return Value of property key.
+     */
+    public Key getKey() {
+        return this.key;
+    }
+
 }
