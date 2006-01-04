@@ -269,22 +269,4 @@ public class IDLParser {
         
     }
     
-    public static void main( String[] args ) {
-        IDLParser idlp= new IDLParser();
-        String s= "( findgen(152)/151 * 6.01145  )";
-        double[] d= idlp.parseIDLArray(s);        
-        System.out.println("Note the parser gets this wrong:");
-        
-        s= "10^(findgen(320)/319.0*4.47966+1.42765)";
-        d= idlp.parseIDLArray(s);
-        
-        System.out.println("first d= "+d[0]+" last d="+d[d.length-1]);
-        
-        s= "10^((findgen(320)/319.0)*4.47966+1.42765)";
-        d= idlp.parseIDLArray(s);
-        
-        System.out.println("first d= "+d[0]+" last d="+d[d.length-1]);
-        
-    }
-    
 }
