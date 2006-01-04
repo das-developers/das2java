@@ -25,6 +25,7 @@ import javax.swing.*;
 public class HttpFileSystem extends WebFileSystem {
     
     private HashMap listings;
+    private static HashMap instances= new HashMap();
     
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URL root, File localRoot) {
@@ -32,22 +33,31 @@ public class HttpFileSystem extends WebFileSystem {
         listings= new HashMap();
     }
     
-    public static HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {
-        File local;
-        if ( System.getProperty("user.name").equals("Web") ) {
-            local= new File("/tmp");
+    public static synchronized HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {
+        if ( instances.containsKey( root ) ) {
+            logger.finer("reusing "+root);
+            return (HttpFileSystem)instances.get(root);
         } else {
-            local= new File( System.getProperty("user.home") );
+            File local;
+            if ( System.getProperty("user.name").equals("Web") ) {
+                local= new File("/tmp");
+            } else {
+                local= new File( System.getProperty("user.home") );
+            }
+            local= new File( local, ".das2/fileSystemCache/WebFileSystem/" );
+            local= new File( local, root.getHost() );
+            local= new File( local, root.getFile() );
+            local.mkdirs();
+            logger.finer("initializing httpfs "+root+" at "+local);
+            HttpFileSystem result= new HttpFileSystem( root, local );
+            instances.put(root,result);
+            return result;
         }
-        local= new File( local, ".das2/fileSystemCache/WebFileSystem/" );
-        local= new File( local, root.getHost() );
-        local= new File( local, root.getFile() );
-        local.mkdirs();
-        return new HttpFileSystem( root, local );
     }
     
     protected void transferFile( String filename, File f, DasProgressMonitor monitor ) throws IOException {
-        DasApplication.getDefaultApplication().getLogger().fine("create file "+filename);
+        logger.fine("create file "+filename);
+        
         URL remoteURL= new URL( root.toString()+filename );
         
         URLConnection urlc = remoteURL.openConnection();
@@ -59,7 +69,7 @@ public class HttpFileSystem extends WebFileSystem {
             f.getParentFile().mkdirs();
         }
         if ( f.createNewFile() ) {
-            DasApplication.getDefaultApplication().getLogger().fine("transferring file "+filename);
+            logger.fine("transferring file "+filename);
             FileOutputStream out= new FileOutputStream( f );
             copyStream( in, out, monitor );
             monitor.finished();
@@ -70,6 +80,7 @@ public class HttpFileSystem extends WebFileSystem {
         in.close();
     }
     
+    /* dumb method looks for / in parent directory's listing */
     public boolean isDirectory( String filename ) {
         File f= new File( localRoot, filename );
         if ( f.exists() ) {
@@ -78,25 +89,23 @@ public class HttpFileSystem extends WebFileSystem {
             if ( filename.endsWith("/") ) {
                 return true;
             } else {
-                try {
-                    File parentFile= f.getParentFile();
-                    URL[] urls= HtmlUtil.getDirectoryListing( getURL( getLocalName( parentFile ) ) );
-                    URL remoteUrl;
-                    if ( filename.startsWith("/") ) {
-                        remoteUrl= new URL( root+filename.substring(1)+"/" );
-                    } else {
-                        remoteUrl= new URL( root+filename+"/" );
-                    }
-                    for ( int i=0; i<urls.length; i++ ) {
-                        if ( urls[i].equals( remoteUrl ) ) {
-                            return true;
-                        }
-                    }
-                    return false;
-                } catch ( IOException e ) {
-                    handleException(e);
-                    return false;
+                File parentFile= f.getParentFile();
+                String parent= getLocalName( parentFile );
+                if ( !parent.endsWith("/") ) parent=parent+"/";
+                
+                String[] list= listDirectory( parent );
+                String lookFor;
+                if ( filename.startsWith("/") ) {
+                    lookFor= parent + filename.substring(1)+"/";
+                } else {
+                    lookFor= parent + filename + "/";
                 }
+                for ( int i=0; i<list.length; i++ ) {
+                    if ( list[i].equals( lookFor ) ) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
     }
@@ -104,22 +113,24 @@ public class HttpFileSystem extends WebFileSystem {
     public String[] listDirectory( String directory ) {
         if ( ! isDirectory( directory ) ) {
             throw new IllegalArgumentException( "is not a directory: "+directory );
-        }
-        if ( listings.containsKey(directory) ) {
-            return ( String[] ) listings.get(directory);
-        } else {
-            try {
-                URL[] list= HtmlUtil.getDirectoryListing( getURL(directory ) );
-                String[] result= new String[list.length];
-                for ( int i=0; i<list.length; i++ ) {
-                    URL url= list[i];
-                    result[i]= getLocalName(url);
+        }        
+        synchronized (listings) {
+            if ( listings.containsKey(directory) ) {
+                return ( String[] ) listings.get(directory);
+            } else {
+                try {
+                    URL[] list= HtmlUtil.getDirectoryListing( getURL(directory ) );
+                    String[] result= new String[list.length];
+                    for ( int i=0; i<list.length; i++ ) {
+                        URL url= list[i];
+                        result[i]= getLocalName(url);
+                    }
+                    listings.put( directory, result );
+                    return result;
+                } catch ( IOException e ) {
+                    handleException(e);
+                    return new String[0];
                 }
-                listings.put( directory, result );
-                return result;
-            } catch ( IOException e ) {
-                handleException(e);
-                return new String[0];
             }
         }
     }
