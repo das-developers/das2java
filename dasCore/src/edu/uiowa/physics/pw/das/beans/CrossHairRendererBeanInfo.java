@@ -37,5 +37,12 @@ public class CrossHairRendererBeanInfo extends AccessLevelBeanInfo {
     public CrossHairRendererBeanInfo() {
         super(properties, edu.uiowa.physics.pw.das.event.CrossHairRenderer.class);
     }
-        
+     
+    public java.beans.BeanInfo[] getAdditionalBeanInfo() {
+        BeanInfo[] additional = {
+            new LabelDragRendererBeanInfo(),
+        };
+        return additional;
+    }
+    
 }
