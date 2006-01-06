@@ -94,11 +94,19 @@ public class WritableTableDataSet implements TableDataSet {
     }
     
     public double getDouble(int i, int j, Units units) {
-        return zunits.convertDoubleTo(units,z[indexOf(i,j)]);
+        if ( units==zunits ) {
+            return z[indexOf(i,j)];
+        } else {
+            return zunits.convertDoubleTo(units,z[indexOf(i,j)]);
+        }
     }
     
     public void setDouble( int i, int j, double zvalue, Units units ) {
-        z[indexOf(i,j)]= units.convertDoubleTo(zunits,zvalue);
+        if ( units==zunits ) {
+            z[indexOf(i,j)]= zvalue;
+        } else {
+            z[indexOf(i,j)]= units.convertDoubleTo(zunits,zvalue);
+        }
     }
     
     public double[] getDoubleScan(int i, Units units) {
