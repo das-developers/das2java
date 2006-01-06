@@ -297,7 +297,11 @@ public abstract class Units implements Displayable {
         return getConverter( this, toUnits );
     }
     
-    public double convertDoubleTo( Units toUnits, double value ) {
+    /**
+     * convert the double in this units' space to toUnits' space.  This
+     * method is final so that a converter must be registered.
+     */
+    public final double convertDoubleTo( Units toUnits, double value ) {
         if ( this==toUnits ) {
             return value;
         } else {
