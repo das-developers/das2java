@@ -36,21 +36,27 @@ public class SyncUtil {
         return imap;
     }
     
+    /* calculates imap when width tags are irregular, and possibly overlapping.
+     */
     private static int[] calculateImapForWidthTags( DataSet source, DataSet target ) {
         int[] imap= new int[target.getXLength()];        
         Units xunits= source.getXUnits();
+        Units xoffsetUnits= xunits.getOffsetUnits();
         String widthsPlane= "xTagWidth";
         
         VectorDataSet widthsDs= (VectorDataSet)source.getPlanarView(widthsPlane);
         
+        int sourceLength= source.getXLength();
+        
         for ( int i=0; i<imap.length; i++ ) {
             imap[i]= -1;
-            Datum tt= target.getXTagDatum(i);
-            Datum s1= null;
-            for ( int k=0; ( s1==null || s1.le(tt) ) && k<source.getXLength(); k++ ) {
-                s1= source.getXTagDatum(k);
-                Datum s2= s1.add( widthsDs.getDatum(k) );                
-                if ( s1.le(tt) && tt.lt(s2) ) {
+            double tt= target.getXTagDouble(i,xunits);
+            double s1= -999;
+            
+            for ( int k=0; ( s1==-999 || s1<=tt ) && k<sourceLength; k++ ) {
+                s1= source.getXTagDouble(k,xunits);
+                double s2= s1 + widthsDs.getDouble( k, xoffsetUnits );
+                if ( s1<=tt && tt<s2 ) {
                     imap[i]= k;
                 }
             }
