@@ -70,6 +70,8 @@ public class TimeRangeLabel extends DasCanvasComponent {
         }
     }
     
+    private boolean startOnly = false;
+    
     /** Creates a new instance of TimeRangeLabel */
     public TimeRangeLabel(DataRange dataRange) {
         this.dataRange= dataRange;
@@ -99,10 +101,11 @@ public class TimeRangeLabel extends DasCanvasComponent {
         int yLevel= y - getFont().getSize()*2;
         g.drawString(df.format(min), x, yLevel );
         
-        String label= df.format(max);
-        g.drawString(label,
-           ( x + getColumn().getWidth() - fm.stringWidth(label)),
-           yLevel );        
+        if (!startOnly) {
+            String label= df.format(max);
+            x += getColumn().getWidth() - fm.stringWidth(label);
+            g.drawString(label, x, yLevel );
+        }
     }
     public void resize() {
         Rectangle bounds= new Rectangle( getColumn().getDMinimum()-30, getRow().getDMinimum()-getFont().getSize()*3, 
@@ -165,6 +168,17 @@ public class TimeRangeLabel extends DasCanvasComponent {
                 markDirty();
             }
         };
+    }
+    
+    public boolean isStartOnly() {
+        return startOnly;
+    }
+    
+    public void setStartOnly(boolean b) {
+        this.startOnly = b;
+        if (isDisplayable()) {
+            repaint();
+        }
     }
     
     public static void main( String[] args ) {
