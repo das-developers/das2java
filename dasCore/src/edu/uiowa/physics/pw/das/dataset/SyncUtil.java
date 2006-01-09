@@ -155,7 +155,7 @@ public class SyncUtil {
         
     }
     
-    public static DataSet syncronizeNearestNeighbor( DataSet source, DataSet target ) {
+    public static DataSet synchronizeNearestNeighbor( DataSet source, DataSet target ) {
         if ( source instanceof VectorDataSet ) {
             return SyncUtil.NearestNeighborVectorDataSet.create( (VectorDataSet)source, target );
         } else {
