@@ -312,16 +312,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
         }
         
-        if ( noneActive && renderers.size()>0 ) {
-            graphics.setColor(Color.gray);
-            String s= "(no active renderers)";
-            graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
-            
-        }
         if ( renderers.size()==0 ) {
             graphics.setColor(Color.gray);
             String s= "(no renderers)";
             DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("dasPlot has no renderers");
+            graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+        } else if ( noneActive ) {
+            graphics.setColor(Color.gray);
+            String s= "(no active renderers)";
             graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
         }
         
