@@ -33,6 +33,7 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import edu.uiowa.physics.pw.das.util.*;
+import java.awt.image.BufferedImage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,7 +53,7 @@ import java.io.InterruptedIOException;
 import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
-        
+
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected DataSetDescriptor dataSetDescriptor;
@@ -70,6 +71,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected RebinListener rebinListener = new RebinListener();
     
     DnDSupport dndSupport;
+    
+    /* cacheImage is a cached image that all the renderers have drawn on.  This
+     * relaxes the need for renderers' render method to execute in
+     * animation-interactive time.
+     */
+    boolean cacheImageValid= false;
+    Image cacheImage;
     
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         setOpaque(false);
@@ -190,98 +198,20 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         if (yAxis != oldValue) firePropertyChange("yAxis", oldValue, yAxis);
     }
-    
-    protected void drawInvalid() {
-        //  grey out the content while it is not consistent with the axes.
-        Graphics2D g= (Graphics2D)getGraphics();
         
-        if (g==null) return;
-        
-        g.translate(-getX(), -getY());
-        
-        java.awt.Rectangle r= DasRow.toRectangle(getRow(),getColumn());
-        r.width= r.width-1;
-        r.height= r.height-1;
-        r.y= r.y+1;
-        g.setColor(new Color(245,245,245,220)); // mostly opaque
-        
-        g.fill(r);
-        g.dispose();
-    }
-    
     protected void updateImmediately() {
+        cacheImageValid= false;
         for (int i=0; i<renderers.size(); i++) {
             Renderer rend= (Renderer)renderers.get(i);
             rend.update();
         }
     }
     
+    
     DataRequestThread drt;
     
     DasProgressPanel progressPanel;
-    
-    protected void loadDataSet() {
-        final Component parent= getParent();
-        final Cursor cursor0= null;
-        if (parent != null) {
-            parent.getCursor();
-            parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        }
-        
-        //drawInvalid();
-        
-        if (parent != null) {
-            ((DasCanvas)parent).lockDisplay(this);
-        }
-        
-        Datum dataRange1 = getXAxis().getDataMaximum().subtract(getXAxis().getDataMinimum());
-        double dataRange= dataRange1.doubleValue(Units.seconds);
-        double deviceRange = Math.floor(getColumn().getDMaximum() + 0.5) - Math.floor(getColumn().getDMinimum() + 0.5);
-        double resolution =  dataRange/deviceRange;
-        if (progressPanel == null) {
-            progressPanel = DasProgressPanel.createComponentPanel(this,"loading data set");
-        }
-        
-        DataRequestor requestor = new DataRequestor() {
-            public void exception(Exception exception) {
-                if (!(exception instanceof InterruptedIOException)) {
-                    DasExceptionHandler.handle(exception);
-                    finished(null);
-                }
-            }
-            public void finished(DataSet ds) {
-                progressPanel.setVisible(false);
-                if (parent != null) {
-                    parent.setCursor(cursor0);
-                }
-                Data = ds;
-                try {
-                    updatePlotImage();
-                } catch (DasException de) {
-                    DasExceptionHandler.handle(de);
-                }
-                if (parent != null) {
-                    ((DasCanvas)parent).freeDisplay(this);
-                }
-            }
-        };
-        if (drt == null) {
-            drt = new DataRequestThread();
-        }
-        try {
-            drt.request(dataSetDescriptor, xAxis.getDataMinimum(), xAxis.getDataMaximum(), Datum.create(resolution,Units.seconds), requestor, progressPanel);
-            try {
-                updatePlotImage();
-            } catch ( DasException de ) {
-                DasExceptionHandler.handle(de);
-            }
-        } catch (InterruptedException ie) {
-            DasExceptionHandler.handle(ie);
-        }
-    }
-    
-    protected void updatePlotImage() throws DasException {}
-    
+   
     protected void paintComponent(Graphics graphics1) {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
@@ -295,33 +225,53 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         Graphics2D graphics= (Graphics2D)graphics1;
         
-        graphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
         graphics.translate(-getX(), -getY());
-        
-        Graphics2D plotGraphics = (Graphics2D)graphics.create(x-1, y-1, xSize+2, ySize+2);
-        plotGraphics.translate(-x + 1, -y + 1);
-        
-        drawContent(plotGraphics);
-        
-        boolean noneActive=true;
-        for ( int i=0; i<renderers.size(); i++ ) {
-            Renderer rend= (Renderer)renderers.get(i);
-            if ( rend.isActive() ) {
-                rend.render(plotGraphics,xAxis,yAxis);
-                noneActive= false;
+        if ( cacheImageValid && !getCanvas().isPrintingThread() ) {
+            
+            graphics.drawImage( cacheImage, x-1, y-1, getWidth(), getHeight(), this );
+            //graphics.drawString( "cacheImage", getWidth()/2, getHeight()/2 );
+            
+        } else {                        
+            Graphics2D plotGraphics;
+            if ( getCanvas().isPrintingThread() ) { 
+                plotGraphics = (Graphics2D)graphics.create(x-1, y-1, xSize+2, ySize+2);
+            } else {
+                cacheImage= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
+                plotGraphics= (Graphics2D)cacheImage.getGraphics();
+                plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
+            }
+                        
+            plotGraphics.translate(-x + 1, -y + 1);
+            
+            drawContent(plotGraphics);
+            
+            boolean noneActive=true;
+            for ( int i=0; i<renderers.size(); i++ ) {
+                Renderer rend= (Renderer)renderers.get(i);
+                if ( rend.isActive() ) {
+                    rend.render(plotGraphics,xAxis,yAxis);
+                    noneActive= false;
+                }
+            }
+            
+            if ( renderers.size()==0 ) {
+                graphics.setColor(Color.gray);
+                String s= "(no renderers)";
+                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("dasPlot has no renderers");
+                graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+            } else if ( noneActive ) {
+                graphics.setColor(Color.gray);
+                String s= "(no active renderers)";
+                graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+            }
+            
+            if ( !getCanvas().isPrintingThread() ) {
+                cacheImageValid= true;
+                graphics.drawImage( cacheImage, x-1, y-1, getWidth(), getHeight(), this );
+                //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
             }
         }
         
-        if ( renderers.size()==0 ) {
-            graphics.setColor(Color.gray);
-            String s= "(no renderers)";
-            DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("dasPlot has no renderers");
-            graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
-        } else if ( noneActive ) {
-            graphics.setColor(Color.gray);
-            String s= "(no active renderers)";
-            graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
-        }
         
         graphics.setColor(getForeground());
         graphics.drawRect(x-1, y-1, xSize + 1, ySize + 1);
@@ -518,7 +468,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 } else if (node.getNodeName().equals("zAxis")) {
                     colorbar = processZAxisElement((Element)node, row, column, form);
                 }
-
+                
             }
         }
         
@@ -616,7 +566,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
     
-        
+    
     private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -629,7 +579,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         return null;
     }
-
+    
     private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int index = 0; index < children.getLength(); index++) {
@@ -815,6 +765,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         } else {
             super.processEvent(e);
         }
+    }
+
+    void markDirty() {
+        cacheImageValid= false;
+        super.markDirty();
     }
     
 }
