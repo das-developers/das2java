@@ -82,9 +82,8 @@ public class DasApplication {
     
     /** Creates a new instance of DasApplication */
     private DasApplication() {
-        nameContext = new NameContext();
-	//applet= Thread.currentThread().getContextClassLoader().getClass().getName().contains("plugin");
-        applet= false;
+        nameContext = new NameContext();        
+        applet= Thread.currentThread().getContextClassLoader().getClass().getName().indexOf("plugin") > -1;
     }
     
     public NameContext getNameContext() {
