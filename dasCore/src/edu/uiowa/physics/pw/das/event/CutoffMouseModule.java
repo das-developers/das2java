@@ -520,7 +520,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         recalculate();
     }
     
-    private Datum xResolution= Units.milliseconds.createDatum(500);
+    private Datum xResolution= Units.milliseconds.createDatum(1000);
     
     public Datum getXResolution() {
         return this.xResolution;
