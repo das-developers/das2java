@@ -107,7 +107,7 @@ public abstract class DataLoader {
 
    
     public boolean isActive() {
-        return this.active;
+        return this.active && renderer.isActive();
     }
 
     public void setActive(boolean active) {
