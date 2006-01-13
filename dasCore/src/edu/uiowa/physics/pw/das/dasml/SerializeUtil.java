@@ -105,7 +105,7 @@ public class SerializeUtil {
                     continue;
                 }
                 
-                java.beans.PropertyEditor editor= PropertyEditorManager.findEditor( pd.getPropertyType() );
+                java.beans.PropertyEditor editor= BeansUtil.findEditor( pd.getPropertyType() );
                 
                 String textValue= null;
                 
@@ -175,7 +175,7 @@ public class SerializeUtil {
         
         value= readMethod.invoke( object, new Object[0] );
         
-        java.beans.PropertyEditor editor= PropertyEditorManager.findEditor( pd.getPropertyType() );
+        java.beans.PropertyEditor editor= BeansUtil.findEditor( pd.getPropertyType() );
         
         String textValue= null;
         

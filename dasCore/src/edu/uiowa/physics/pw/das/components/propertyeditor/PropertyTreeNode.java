@@ -1,7 +1,6 @@
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
 import edu.uiowa.physics.pw.das.beans.*;
-import edu.uiowa.physics.pw.das.components.treetable.TreeTableNode;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.beans.*;
@@ -10,7 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Enumeration;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
@@ -40,9 +38,9 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
     PropertyTreeNode( Object value ) {
         this.value = value;
     }
-
+    
     /**
-     * Used to put the tree model into the root tree node so that it can be 
+     * Used to put the tree model into the root tree node so that it can be
      * passed down into the tree.
      */
     public void setTreeModel( DefaultTreeModel treeModel ) {
@@ -50,7 +48,7 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
         this.treeModel= treeModel;
     }
     
-     PropertyTreeNode(PropertyTreeNode parent, PropertyDescriptor propertyDescriptor ) throws InvocationTargetException {
+    PropertyTreeNode(PropertyTreeNode parent, PropertyDescriptor propertyDescriptor ) throws InvocationTargetException {
         this.parent = parent;
         this.propertyDescriptor = propertyDescriptor;
         this.treeModel= parent.treeModel;
@@ -78,10 +76,12 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
         if (propertyDescriptor == null) {
             return true;
         }
-        //Properties that define an editor should not be expanded
+        
+        //Properties that define an editor should not be expanded        
         else if (propertyDescriptor.getPropertyEditorClass() != null) {
             return false;
-        } else {
+        }
+        else {
             Class type;
             if (propertyDescriptor instanceof IndexedPropertyDescriptor) {
                 IndexedPropertyDescriptor ipd = (IndexedPropertyDescriptor)propertyDescriptor;
@@ -93,7 +93,7 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
             //Types with identified as editable by PropertyEditor and
             //types with registered PropertyEditors should not be expanded.
             return !PropertyEditor.editableTypes.contains(type)
-            && PropertyEditorManager.findEditor(type) == null;
+            && BeansUtil.findEditor(type) == null;
         }
     }
     
@@ -227,7 +227,7 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
         while ( node!=null ) {
             list.add( 0, node );
             node= node.getParent();
-        }        
+        }
         return (Object[]) list.toArray( new Object[list.size()] );
     }
     
@@ -336,7 +336,7 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
         }
     }
     
-    protected Object read() {        
+    protected Object read() {
         if (propertyDescriptor == null) {
             return value;
         } else {

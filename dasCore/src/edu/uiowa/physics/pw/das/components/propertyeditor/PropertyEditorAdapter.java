@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
+import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -13,7 +14,6 @@ import java.awt.event.ActionListener;
 import java.beans.IndexedPropertyDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
 import java.util.EventObject;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -101,7 +101,7 @@ public class PropertyEditorAdapter implements TableCellEditor {
             }
         }
         else {
-            ed = PropertyEditorManager.findEditor(pd instanceof IndexedPropertyDescriptor
+            ed = BeansUtil.findEditor(pd instanceof IndexedPropertyDescriptor
                     ? ((IndexedPropertyDescriptor)pd).getIndexedPropertyType()
                     : pd.getPropertyType());
         }
