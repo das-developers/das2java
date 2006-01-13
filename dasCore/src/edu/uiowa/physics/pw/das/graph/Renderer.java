@@ -192,6 +192,9 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
     
     public void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
+
+        ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
         int x= xAxis.getColumn().getDMiddle();
         int y= yAxis.getRow().getDMiddle();
         
@@ -247,6 +250,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     }
     
     public void update() {
+        if ( getParent()!=null ) getParent().markDirty();
         logger.fine("update");
         if (parent != null) {
             java.awt.EventQueue eventQueue =
@@ -307,6 +311,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         }
         
         logger.fine("repaint");
+        parent.markDirty();
         parent.repaint();
     }
     
