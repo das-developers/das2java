@@ -87,6 +87,12 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         long timer0= System.currentTimeMillis();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
+        
+        if ( this.ds==null && lastException!=null ) {
+            renderException(g,xAxis,yAxis,lastException);
+            return;
+        } 
+        
         if (dataSet == null || dataSet.getXLength() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
             return;
