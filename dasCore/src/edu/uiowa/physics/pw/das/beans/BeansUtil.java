@@ -32,10 +32,36 @@ public class BeansUtil {
 	PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
 	PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
 	PropertyEditorManager.registerEditor(PsymConnector.class, EnumerationEditor.class);
+        
 	// PropertyEditorManager.registerEditor(Rectangle.class, RectangleEditor.class);
 	//PropertyEditorManager.registerEditor(DasServer.class, DasServerEditor.class);
     }
     
+    /**
+     * There's an annoyance with PropertyEditorManager.findEditor, in that it 
+     * always goes looking for the editor with the classLoader.  This is annoying
+     * for applets, because this causes an applet codebase hit each time its called,
+     * even if it's already been called for the given class.  This is problemmatic
+     * with the propertyEditor, which calls this for each property, making it 
+     * sub-interactive at best.  Here we keep track of the results, either in a 
+     * list of nullPropertyEditors or by registering the editor we just found.
+     */
+    static HashSet nullPropertyEditors= new HashSet();
+    public static java.beans.PropertyEditor findEditor( Class propertyClass ) { 
+        java.beans.PropertyEditor result;
+        if ( nullPropertyEditors.contains(propertyClass) ) {
+            result= null;
+        } else {
+            result= PropertyEditorManager.findEditor( propertyClass );
+            if ( result==null ) {
+                nullPropertyEditors.add( propertyClass );
+            } else {
+                PropertyEditorManager.registerEditor( propertyClass, result.getClass() );
+            }
+        }
+        return result;
+    }
+   
     /**
      * Use reflection to get a list of all the property names for the class.
      * The properties are returned in the order specified, and put inherited properties
@@ -51,7 +77,7 @@ public class BeansUtil {
 	try {
 	    Logger log= DasLogger.getLogger(DasLogger.SYSTEM_LOG);
 	    
-	    // goal: get BeanInfo for the class, the AccessLevelBeanInfo if it exists.
+	    // goal: get BeanInfo for the class, or the AccessLevelBeanInfo if it exists.
 	    BeanInfo beanInfo= null;
 	    
 	    if ( c.getPackage()==null ) { // e.g. String array
