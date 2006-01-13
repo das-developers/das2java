@@ -364,6 +364,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         update();
         DasProperties.getInstance().put("components.DataPointRecorder.lastFileLoad",  file.toString());
         fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
+                
+        table.getColumnModel().getColumn(0).setPreferredWidth( 200 );
     }
     
     private class MyMouseAdapter extends MouseAdapter {
@@ -594,7 +596,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     unitsArray[index]= ((Datum)value).getUnits();
                 }
                 index++;
-            }
+            }      
             myTableModel.fireTableStructureChanged();
         }
         if ( !x.getUnits().isConvertableTo(unitsArray[0]) ) {
@@ -783,7 +785,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * Holds value of property xTagWidth.
      */
-    private Datum xTagWidth;
+    private Datum xTagWidth= null;
     
     /**
      * Getter for property xTagWidth.
@@ -798,7 +800,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @param xTagWidth New value of property xTagWidth.
      */
     public void setXTagWidth(Datum xTagWidth) {
-        
         this.xTagWidth = xTagWidth;
     }
     
