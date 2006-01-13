@@ -99,7 +99,9 @@ public class DasProperties extends Properties {
     
     private static class DasPropertiesTableModel extends AbstractTableModel {
         public int getColumnCount() { return 2;  }
-        public int getRowCount() { return instance.size(); }
+        public int getRowCount() { 
+            return instance.size(); 
+        }
         public Object getValueAt(int row, int col) {
             String propertyName= (String)propertyOrder.get(row);
             String value;
@@ -253,7 +255,7 @@ public class DasProperties extends Properties {
         jframe.setVisible(true);
     }
     
-    public static final DasProperties instance = new DasProperties();
+    private static final DasProperties instance = new DasProperties();
     
     public void readPersistentProperties() {
         
