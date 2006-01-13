@@ -77,8 +77,10 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -311,7 +313,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             String dasVersion= Splash.getVersion();
             String javaVersion= System.getProperty("java.version");
             
-            String aboutContent= "<html>release version: "+dasVersion+"<br>java version: "+javaVersion+"<br></html>";
+            String buildTime= "???";
+            java.net.URL buildURL= this.getClass().getResource("/buildTime.txt");
+            if ( buildURL!=null ) {
+                try {
+                    BufferedReader reader= new BufferedReader( new InputStreamReader( buildURL.openStream() ) );
+                    buildTime= reader.readLine();
+                    reader.close();
+                } catch ( IOException ex ) {
+                    ex.printStackTrace();
+                }
+            }
+            String aboutContent= "<html>release version: "+dasVersion+
+                    "<br>build time: "+buildTime+
+                    "<br>java version: "+javaVersion+
+                    "<br></html>";
             
             JOptionPane.showConfirmDialog( currentCanvas, aboutContent, "about das2", JOptionPane.PLAIN_MESSAGE );
             currentCanvas.setSize(currentCanvas.getWidth()+1, currentCanvas.getHeight()+1);
@@ -907,7 +923,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     public void setBaseFont( Font font ) {
         this.baseFont= font;
-        setFont( getFontForSize( getWidth(), getHeight() ) ); 
+        setFont( getFontForSize( getWidth(), getHeight() ) );
         repaint();
     }
     
@@ -939,7 +955,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private ComponentListener createResizeListener() {
         return new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
-                setFont( getFontForSize( getWidth(), getHeight() ) ); 
+                setFont( getFontForSize( getWidth(), getHeight() ) );
             }
         };
     }
