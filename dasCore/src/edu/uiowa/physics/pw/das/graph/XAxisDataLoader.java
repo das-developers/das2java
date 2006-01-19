@@ -170,7 +170,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
             
             DasProgressMonitor mon= e.getMonitor();
             if ( currentRequest!=null ) {
-                if ( mon!=null && mon==currentRequest.monitor ) {
+                if ( mon==null || mon==currentRequest.monitor ) {
                     renderer.setException( exception );
                     renderer.setDataSet(null);
                     logger.fine("current request completed w/exception: " + currentRequest );
@@ -202,7 +202,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
             } else {
                 DataSet ds= e.getDataSet();
                 DasProgressMonitor mon= e.getMonitor();
-                if ( mon!=null && currentRequest.monitor==mon ) {
+                if ( mon==null || currentRequest.monitor==mon ) {
                     logger.info("got dataset update w/dataset: "+ds);
                     if ( ds!=null ) {
                         if ( ds.getXLength()>0 ) {
