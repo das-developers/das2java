@@ -19,8 +19,8 @@ import java.util.regex.*;
  */
 public class LocalFileSystem extends FileSystem {
     
-    File localRoot;    
-        
+    File localRoot;
+    
     protected LocalFileSystem(URL root) throws FileSystemOfflineException {
         super( root );
         if ( !("file".equals(root.getProtocol()) ) ) {
@@ -36,7 +36,7 @@ public class LocalFileSystem extends FileSystem {
             }
         }
     }
-        
+    
     public boolean isDirectory(String filename) {
         return new File( localRoot, filename ).isDirectory();
     }
@@ -52,24 +52,30 @@ public class LocalFileSystem extends FileSystem {
     
     public String[] listDirectory(String directory) {
         File f= new File( localRoot, directory );
-        return f.list();
+        File[] files= f.listFiles();
+        String[] result= new String[files.length];
+        for ( int i=0; i<files.length; i++ ) result[i]= files[i].getName() + ( files[i].isDirectory() ? "/" : "" );
+        return result;
     }
     
     public String[] listDirectory(String directory, String regex ) {
         File f= new File( localRoot, directory );
         final Pattern pattern= Pattern.compile(regex);
-        return f.list( new FilenameFilter() {
+        File[] files= f.listFiles( new FilenameFilter() {
             public boolean accept( File file, String name ) {
                 return pattern.matcher(name).matches();
             }
-        });
+        } );
+        String[] result= new String[files.length];
+        for ( int i=0; i<files.length; i++ ) result[i]= files[i].getName() + ( files[i].isDirectory() ? "/" : "" );
+        return result;
     }
     
     public String toString() {
         return "lfs "+localRoot;
     }
-
-    public FileObject getFile(String filename) {
+    
+    public FileObject getFileObject(String filename) {
         return new LocalFileObject( this, localRoot, filename );
     }
     

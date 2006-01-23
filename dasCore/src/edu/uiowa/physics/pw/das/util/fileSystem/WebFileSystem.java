@@ -40,8 +40,7 @@ public abstract class WebFileSystem extends FileSystem {
             local= new File( System.getProperty("user.home") );
         }
         local= new File( local, ".das2/fileSystemCache/WebFileSystem/" );
-        
-        local= new File( "c:/webFS/" );
+              
         local= new File( local, root.getProtocol() );
         local= new File( local, root.getHost() );
         local= new File( local, root.getFile() );
@@ -49,6 +48,10 @@ public abstract class WebFileSystem extends FileSystem {
         return local;
     }
     
+    /**
+     * Transfers the file from the remote store to a local copy f.  This should only be
+     * used within the class and subclasses, clients should use getFileObject( String ).getFile().
+     */
     abstract void transferFile( String filename, File f, DasProgressMonitor monitor ) throws IOException;
     
     protected File getLocalRoot() {
@@ -98,7 +101,7 @@ public abstract class WebFileSystem extends FileSystem {
     }
     
     
-    public FileObject getFile( String filename ) {        
+    public FileObject getFileObject( String filename ) {        
         WebFileObject f= new WebFileObject( this, filename, new Date(System.currentTimeMillis()) );
         return f;
     }

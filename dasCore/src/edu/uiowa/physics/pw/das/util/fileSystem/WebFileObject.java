@@ -9,6 +9,9 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -89,9 +92,13 @@ public class WebFileObject extends FileObject {
     }
     
     public java.util.Date lastModified() {
-        return new java.util.Date(System.currentTimeMillis());
+        return modifiedDate;
     }
     
+    /**
+     * returns the File that corresponds to the remote file.  This may or may
+     * not exist, depending on whether it's been downloaded yet.
+     */
     protected File getLocalFile() {
         return this.localFile;
     }
@@ -116,8 +123,8 @@ public class WebFileObject extends FileObject {
     protected WebFileObject( WebFileSystem wfs, String pathname, Date modifiedDate ) {
         this.localFile= new File( wfs.getLocalRoot(), pathname );
         
-        // until we can check for file dates on the server, don't keep cached copies around
         this.localFile.deleteOnExit();
+        this.modifiedDate= modifiedDate;
         
         this.wfs= wfs;
         this.pathname= pathname;
@@ -150,16 +157,44 @@ public class WebFileObject extends FileObject {
     }
     
     public File getFile( DasProgressMonitor monitor ) throws FileNotFoundException {
-        if ( !localFile.exists() ) {
-            try {
-                wfs.transferFile( pathname,localFile, monitor );
-            } catch ( FileNotFoundException e ) {
-                throw e;
-            } catch ( IOException e ) {
-                wfs.handleException(e);
+        try {
+            boolean download= false;
+            
+            Date remoteDate;
+            if ( wfs instanceof HttpFileSystem ) {
+                URL url= wfs.getURL( this.getNameExt() );
+                HttpURLConnection connection= (HttpURLConnection)url.openConnection();
+                connection.setRequestMethod("HEAD");
+                connection.connect();
+                remoteDate= new Date( connection.getDate() );
+            } else {
+                // this is the old logic
+                remoteDate= new Date( localFile.lastModified() );
             }
+            
+            if ( localFile.exists() ) {
+                Date localFileLastModified= new Date( localFile.lastModified() );
+                if ( remoteDate.after( localFileLastModified ) ) {
+                    FileSystem.logger.info("remote file is newer than local copy, download.");
+                    download= true;
+                }
+            } else {
+                download= true;
+            }
+            
+            if ( download ) {
+                try {
+                    wfs.transferFile( pathname,localFile, monitor );
+                } catch ( FileNotFoundException e ) {
+                    throw e;
+                }
+            }
+            
+            return localFile;
+        } catch ( IOException e ) {
+            wfs.handleException( e ) ;
+            throw new FileNotFoundException( e.getMessage() );
         }
-        return localFile;
     }
-        
+    
 }

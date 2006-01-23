@@ -9,14 +9,13 @@
  */
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
-
-import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.util.*;
+import edu.uiowa.physics.pw.das.util.fileSystem.FileSystem.FileSystemOfflineException;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
-import javax.swing.*;
+
 
 /**
  *
@@ -38,20 +37,24 @@ public class HttpFileSystem extends WebFileSystem {
             logger.finer("reusing "+root);
             return (HttpFileSystem)instances.get(root);
         } else {
-            File local;
-            if ( System.getProperty("user.name").equals("Web") ) {
-                local= new File("/tmp");
-            } else {
-                local= new File( System.getProperty("user.home") );
+            try {
+                // verify URL is valid an accessible
+                HttpURLConnection urlc= (HttpURLConnection)root.openConnection();
+                urlc.setRequestMethod("HEAD");
+                urlc.connect();
+                if ( urlc.getResponseCode()!=HttpURLConnection.HTTP_OK ) {
+                    throw new FileSystemOfflineException( "" + urlc.getResponseCode() + ": " + urlc.getResponseMessage() );
+                }
+                File local= localRoot( root );
+                logger.finer("initializing httpfs "+root+" at "+local);
+                HttpFileSystem result= new HttpFileSystem( root, local );
+                instances.put(root,result);
+                return result;
+            } catch ( FileSystemOfflineException e ) {
+                throw e;
+            } catch ( IOException e ) {
+                throw new FileSystemOfflineException(e);                
             }
-            local= new File( local, ".das2/fileSystemCache/WebFileSystem/" );
-            local= new File( local, root.getHost() );
-            local= new File( local, root.getFile() );
-            local.mkdirs();
-            logger.finer("initializing httpfs "+root+" at "+local);
-            HttpFileSystem result= new HttpFileSystem( root, local );
-            instances.put(root,result);
-            return result;
         }
     }
     
@@ -68,6 +71,11 @@ public class HttpFileSystem extends WebFileSystem {
         if ( !f.getParentFile().exists() ) {
             f.getParentFile().mkdirs();
         }
+        if ( f.exists() ) {
+            if ( !f.delete() ) {
+                throw new IOException( "Unable to cobbler file: "+f );
+            }
+        }
         if ( f.createNewFile() ) {
             logger.fine("transferring file "+filename);
             FileOutputStream out= new FileOutputStream( f );
@@ -75,7 +83,7 @@ public class HttpFileSystem extends WebFileSystem {
             monitor.finished();
             out.close();
         } else {
-            handleException( new RuntimeException( "couldn't create local file: "+f ) );
+            throw new IOException( "couldn't create local file: "+f );
         }
         in.close();
     }
@@ -96,9 +104,9 @@ public class HttpFileSystem extends WebFileSystem {
                 String[] list= listDirectory( parent );
                 String lookFor;
                 if ( filename.startsWith("/") ) {
-                    lookFor= parent + filename.substring(1)+"/";
+                    lookFor= filename.substring(1)+"/";
                 } else {
-                    lookFor= parent + filename + "/";
+                    lookFor= filename + "/";
                 }
                 for ( int i=0; i<list.length; i++ ) {
                     if ( list[i].equals( lookFor ) ) {
@@ -111,9 +119,13 @@ public class HttpFileSystem extends WebFileSystem {
     }
     
     public String[] listDirectory( String directory ) {
+        directory= this.toCanonicalFilename( directory );
         if ( ! isDirectory( directory ) ) {
             throw new IllegalArgumentException( "is not a directory: "+directory );
-        }        
+        } 
+        
+        if ( !directory.endsWith("/") ) directory= directory+"/";
+        
         synchronized (listings) {
             if ( listings.containsKey(directory) ) {
                 return ( String[] ) listings.get(directory);
@@ -121,9 +133,10 @@ public class HttpFileSystem extends WebFileSystem {
                 try {
                     URL[] list= HtmlUtil.getDirectoryListing( getURL(directory ) );
                     String[] result= new String[list.length];
+                    int n= directory.length();
                     for ( int i=0; i<list.length; i++ ) {
                         URL url= list[i];
-                        result[i]= getLocalName(url);
+                        result[i]= getLocalName(url).substring(n);
                     }
                     listings.put( directory, result );
                     return result;
@@ -135,6 +148,7 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
     
+    // TODO: handle / or not in regex
     public String[] listDirectory( String directory, String regex ) {
         directory= toCanonicalFilename(directory);
         if ( ! isDirectory( directory ) ) {
@@ -143,12 +157,10 @@ public class HttpFileSystem extends WebFileSystem {
         
         String[] listing= listDirectory( directory );
         Pattern pattern= Pattern.compile(regex);
-        ArrayList result= new ArrayList();
-        int n= directory.length();
-        for ( int i=0; i<listing.length; i++ ) {
-            String r1= listing[i].substring(n);
-            if ( pattern.matcher(r1).matches() ) {
-                result.add(r1);
+        ArrayList result= new ArrayList();        
+        for ( int i=0; i<listing.length; i++ ) {            
+            if ( pattern.matcher(listing[i]).matches() ) {
+                result.add(listing[i]);
             }
         }
         return (String[])result.toArray(new String[result.size()]);

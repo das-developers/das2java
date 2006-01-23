@@ -73,7 +73,7 @@ public class FTPFileSystem extends WebFileSystem {
                     //long size= Long.parseLong( aline.substring( 31, 31+12 ) ); // tested on: linux
                     boolean isFolder= type=='d';                    
                     
-                    result.add( name );
+                    result.add( name + ( isFolder ? "/" : "" ) );
                     
                     //sumSize= sumSize + size;
                     
@@ -89,11 +89,15 @@ public class FTPFileSystem extends WebFileSystem {
     }
     
     public String[] listDirectory(String directory) {
+        directory= toCanonicalFolderName( directory );
+        
         try {
-            File listing= new File( localRoot, directory + ".listing" );
+            new File( localRoot, directory ).mkdirs();
+            File listing= new File( localRoot, directory + ".listing" );            
             if ( !listing.canRead() ) {
                 transferFile( directory, listing, DasProgressMonitor.NULL );
             }
+            listing.deleteOnExit();
             return parseLsl( directory, listing );
         } catch ( IOException e ) {
             throw new RuntimeException(e);

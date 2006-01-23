@@ -26,7 +26,17 @@ public abstract class FileSystem  {
     URL root;
     protected static Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
     
-    public class FileSystemOfflineException extends IOException {        
+    public static class FileSystemOfflineException extends IOException {
+        FileSystemOfflineException() {
+            super();
+        }
+        FileSystemOfflineException( String message ) {
+            super( message );
+        }
+        FileSystemOfflineException( IOException e ) {
+            super( e.getMessage() );
+            initCause(e);
+        }
     }
     
     /**
@@ -74,21 +84,42 @@ public abstract class FileSystem  {
     /**
      * returns the canonical name /a/b/c.dat of a string that
      * contains backslashes and might not have the leading /
-     * and trailing slashes.
+     * and trailing slashes.  Note this is the name of the FileObject 
+     * within the FileSystem.
      */    
     protected static String toCanonicalFilename( String filename ) {
         filename= filename.replaceAll( "\\\\", "/" );
         if ( filename.length()==0 || filename.charAt(0)!='/' ) {
             filename= "/"+filename;
-        }
+        }        
         return filename;
     }
     
-    abstract public FileObject getFile( String filename );
+    protected static String toCanonicalFolderName( String name ) {
+        name= toCanonicalFilename( name );
+        if ( !name.endsWith("/") ) name= name + "/";
+        return name;
+    }
+    
+    /**
+     * return the FileObject that corresponds to the name.
+     */
+    abstract public FileObject getFileObject( String filename );
     
     abstract public boolean isDirectory( String filename );
     
+    /**
+     * returns a list of the names of the files in a directory.  Names ending
+     * in "/" are themselves directories, and the "/" is not part of the name.
+     * 
+     */
     abstract public String[] listDirectory( String directory );
-    abstract public String[] listDirectory( String directory, String pattern );
+    
+    /**
+     * returns a list of the names of the files in a directory that match regex.
+     * Trailing slashes on directory names are not part of the name and need 
+     * not be part of the regex.
+     */
+    abstract public String[] listDirectory( String directory, String regex );
     
 }
