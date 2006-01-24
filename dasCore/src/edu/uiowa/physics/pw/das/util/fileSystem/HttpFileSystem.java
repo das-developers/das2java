@@ -58,7 +58,7 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
     
-    protected void transferFile( String filename, File f, DasProgressMonitor monitor ) throws IOException {
+    protected void downloadFile( String filename, File f, DasProgressMonitor monitor ) throws IOException {
         logger.info("transferFile "+filename);
         
         URL remoteURL= new URL( root.toString()+filename );
@@ -76,6 +76,7 @@ public class HttpFileSystem extends WebFileSystem {
             logger.fine("clobber file "+f);
             if ( !f.delete() ) {
                 logger.info("Unable to clobber file "+f+", better use it for now." );
+                return;
             }
         }
         if ( f.createNewFile() ) {

@@ -54,7 +54,7 @@ public class WebFileObject extends FileObject {
         }
         if ( !localFile.exists() ) {
             try {
-                wfs.transferFile( pathname,localFile,monitor );
+                wfs.downloadFile( pathname,localFile,monitor );
             } catch ( FileNotFoundException e ) {
                 throw e;
             } catch ( IOException e ) {
@@ -109,7 +109,7 @@ public class WebFileObject extends FileObject {
         } else {
             try {
                 DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).info("This implementation of WebFileObject.exists() is not optimal");
-                wfs.transferFile( pathname,localFile, DasProgressMonitor.NULL );
+                wfs.downloadFile( pathname,localFile, DasProgressMonitor.NULL );
                 return localFile.exists();
             } catch ( FileNotFoundException e ) {
                 return false;
@@ -184,7 +184,7 @@ public class WebFileObject extends FileObject {
             
             if ( download ) {
                 try {                    
-                    wfs.transferFile( pathname,localFile, monitor );
+                    wfs.downloadFile( pathname,localFile, monitor );
                 } catch ( FileNotFoundException e ) {
                     throw e;
                 }

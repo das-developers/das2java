@@ -52,7 +52,7 @@ public abstract class WebFileSystem extends FileSystem {
      * Transfers the file from the remote store to a local copy f.  This should only be
      * used within the class and subclasses, clients should use getFileObject( String ).getFile().
      */
-    abstract void transferFile( String filename, File f, DasProgressMonitor monitor ) throws IOException;
+    abstract void downloadFile( String filename, File f, DasProgressMonitor monitor ) throws IOException;
     
     protected File getLocalRoot() {
         return this.localRoot;

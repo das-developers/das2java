@@ -95,7 +95,7 @@ public class FTPFileSystem extends WebFileSystem {
             new File( localRoot, directory ).mkdirs();
             File listing= new File( localRoot, directory + ".listing" );            
             if ( !listing.canRead() ) {
-                transferFile( directory, listing, DasProgressMonitor.NULL );
+                downloadFile( directory, listing, DasProgressMonitor.NULL );
             }
             listing.deleteOnExit();
             return parseLsl( directory, listing );
@@ -104,7 +104,7 @@ public class FTPFileSystem extends WebFileSystem {
         }
     }
     
-    void transferFile(String filename, java.io.File f, DasProgressMonitor monitor ) throws java.io.IOException {
+    void downloadFile(String filename, java.io.File f, DasProgressMonitor monitor ) throws java.io.IOException {
         filename= toCanonicalFilename( filename );
         URL url= new URL( root + filename.substring(1) );
         URLConnection urlc = url.openConnection();
