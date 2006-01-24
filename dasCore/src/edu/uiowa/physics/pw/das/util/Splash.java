@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import java.awt.image.BufferedImage;
 import java.util.logging.*;
 import javax.swing.*;
 import java.awt.*;
@@ -73,6 +74,7 @@ public class Splash extends JWindow {
     
     private static ImageIcon getSplashImage() {
         URL url= Splash.class.getResource("/images/dasSplash.gif");
+        if ( url==null ) return null;
         return new ImageIcon(url);        
     }
     
