@@ -59,7 +59,7 @@ public class HttpFileSystem extends WebFileSystem {
     }
     
     protected void transferFile( String filename, File f, DasProgressMonitor monitor ) throws IOException {
-        logger.fine("create file "+filename);
+        logger.info("transferFile "+filename);
         
         URL remoteURL= new URL( root.toString()+filename );
         
@@ -69,11 +69,13 @@ public class HttpFileSystem extends WebFileSystem {
         InputStream in= urlc.getInputStream();
         
         if ( !f.getParentFile().exists() ) {
+            logger.fine("make dirs "+f.getParentFile());
             f.getParentFile().mkdirs();
         }
         if ( f.exists() ) {
+            logger.fine("clobber file "+f);
             if ( !f.delete() ) {
-                throw new IOException( "Unable to cobbler file: "+f );
+                logger.info("Unable to clobber file "+f+", better use it for now." );
             }
         }
         if ( f.createNewFile() ) {
@@ -156,9 +158,9 @@ public class HttpFileSystem extends WebFileSystem {
         }
         
         String[] listing= listDirectory( directory );
-        Pattern pattern= Pattern.compile(regex);
-        ArrayList result= new ArrayList();        
-        for ( int i=0; i<listing.length; i++ ) {            
+        Pattern pattern= Pattern.compile(regex+"/?");
+        ArrayList result= new ArrayList();
+        for ( int i=0; i<listing.length; i++ ) {
             if ( pattern.matcher(listing[i]).matches() ) {
                 result.add(listing[i]);
             }
