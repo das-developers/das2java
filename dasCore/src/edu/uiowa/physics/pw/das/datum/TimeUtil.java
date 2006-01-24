@@ -26,6 +26,7 @@ import java.util.*;
 
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
+import java.text.ParseException;
 
 /**
  *
@@ -393,6 +394,23 @@ public final class TimeUtil {
         else {
             return Units.us2000.convertDoubleTo(units, us2000);
         }
+    }
+    
+    /**
+     * returns 1..12 for the month name
+     *
+     * @throws ParseException if the name isn't recognized
+     */
+    public static int monthNumber( String s ) throws ParseException {
+        final String[] mons = {
+            "jan", "feb", "mar", "apr", "may", "jun",
+            "jul", "aug", "sep", "oct", "nov", "dec"
+        };
+        s= s.substring(0,3).toLowerCase();
+        for ( int i=0; i<12; i++ ) {
+            if ( s.equals( mons[i] ) ) return i+1;
+        }
+        throw new ParseException("Unable to parse month", 0 );
     }
     
     public static final TimeStruct parseTime(String s) throws java.text.ParseException {
