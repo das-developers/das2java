@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 public abstract class FileSystem  {   
         
     URL root;
-    protected static Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
+    protected static Logger logger= DasLogger.getLogger( DasLogger.FILESYSTEM_LOG );
     
     public static class FileSystemOfflineException extends IOException {
         FileSystemOfflineException() {
