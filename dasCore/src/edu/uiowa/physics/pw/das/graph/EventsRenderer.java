@@ -63,8 +63,8 @@ public class EventsRenderer extends Renderer {
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
             VectorDataSet vds= (VectorDataSet)getDataSet();
             
-            if ( vds==null ) return null;
-            if ( vds.getXLength()==0 ) return null;
+            if ( vds==null ) return new Rectangle[0];
+            if ( vds.getXLength()==0 ) return new Rectangle[0];
             
             if ( p2.getX()<0 || p2.getX() >= eventMap.length ) {
                 setLabel(null);
@@ -104,16 +104,16 @@ public class EventsRenderer extends Renderer {
         
         Graphics2D g= ( Graphics2D ) g1.create();
         
-        g.setColor(new Color(100,100,100,180));
+        g.setColor(color);
         
         if ( vds==null && lastException!=null ) {
             renderException( g, xAxis, yAxis, lastException );
             
         } else {
-            if ( vds.getPlanarView("xTagWidth")==null ) {
-                throw new IllegalArgumentException("no xTagWidth plane found.");
+            VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView(widthPlaneId);
+            if ( widthsDs==null ) {
+                throw new IllegalArgumentException("no width plane named \""+widthPlaneId+"\" found");
             }
-            VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView("xTagWidth");
             
             DasColumn column= xAxis.getColumn();
             DasRow row= parent.getRow();
@@ -164,6 +164,24 @@ public class EventsRenderer extends Renderer {
     }
     
     protected void uninstallRenderer() {
+    }
+    
+    private Color color= new Color(100,100,100,180);
+    
+    public Color getColor() {
+        return color;
+    } 
+    
+    public void setColor( Color color ) {        
+        this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );
+    }
+    
+    private String widthPlaneId="xTagWidth";
+    public void setWidthPlaneId( String id ) {
+        this.widthPlaneId= id;
+    }
+    public String getWidthPlaneId( ) {
+        return this.widthPlaneId;
     }
     
 }
