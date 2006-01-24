@@ -166,7 +166,7 @@ public class WebFileObject extends FileObject {
                 HttpURLConnection connection= (HttpURLConnection)url.openConnection();
                 connection.setRequestMethod("HEAD");
                 connection.connect();
-                remoteDate= new Date( connection.getDate() );
+                remoteDate= new Date( connection.getLastModified() );
             } else {
                 // this is the old logic
                 remoteDate= new Date( localFile.lastModified() );
@@ -175,7 +175,7 @@ public class WebFileObject extends FileObject {
             if ( localFile.exists() ) {
                 Date localFileLastModified= new Date( localFile.lastModified() );
                 if ( remoteDate.after( localFileLastModified ) ) {
-                    FileSystem.logger.info("remote file is newer than local copy, download.");
+                    FileSystem.logger.info("remote file is newer than local copy of "+this.getNameExt()+", download.");
                     download= true;
                 }
             } else {
@@ -183,7 +183,7 @@ public class WebFileObject extends FileObject {
             }
             
             if ( download ) {
-                try {
+                try {                    
                     wfs.transferFile( pathname,localFile, monitor );
                 } catch ( FileNotFoundException e ) {
                     throw e;
@@ -193,7 +193,7 @@ public class WebFileObject extends FileObject {
             return localFile;
         } catch ( IOException e ) {
             wfs.handleException( e ) ;
-            throw new FileNotFoundException( e.getMessage() );
+            throw (FileNotFoundException)new FileNotFoundException( e.getMessage() ).initCause(e);
         }
     }
     
