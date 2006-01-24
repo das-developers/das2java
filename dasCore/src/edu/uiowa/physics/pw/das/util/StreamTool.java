@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.stream.*;
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -301,7 +302,7 @@ public class StreamTool {
         return new StreamException(type);
     }
     
-    private static boolean getChunk(ReadStreamStructure struct ) throws StreamException, IOException {
+    private static boolean getChunk( ReadStreamStructure struct ) throws StreamException, IOException {
         struct.bigBuffer.mark();
         if (struct.bigBuffer.remaining() < 4) {
             return false;
@@ -353,7 +354,12 @@ public class StreamTool {
             }
             struct.handler.packet(pd, xTag, vectors);
         } else {
-            throw new StreamException("Expected four byte header, found '" + new String(struct.four) + "'");
+            String msg= "Expected four byte header, found '";
+            String s= new String(struct.four);
+            s= s.replaceAll( "\n", "\\\\n" ); // TODO: what's the right wat to say this?
+            msg+= s;
+            msg+= "' at byteOffset=" + struct.bigBuffer.position();
+            throw new StreamException( msg );
         }
         return true;
     }
