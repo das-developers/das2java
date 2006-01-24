@@ -95,7 +95,7 @@ public class FileStorageModel {
     private static final FieldHandler StartMonthNameHandler= new FieldHandler() {
         public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
             try {
-                ts1.month= TimeUtil.parseMonth( s );
+                ts1.month= TimeUtil.monthNumber( s );
             } catch ( ParseException e ) {
                 DasExceptionHandler.handle(e);
             }
@@ -105,7 +105,7 @@ public class FileStorageModel {
     private static final FieldHandler EndMonthNameHandler= new FieldHandler() {
         public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
             try {
-                ts2.month= TimeUtil.parseMonth( s );
+                ts2.month= TimeUtil.monthNumber( s );
             } catch ( ParseException e ) {
                 DasExceptionHandler.handle(e);
             }
