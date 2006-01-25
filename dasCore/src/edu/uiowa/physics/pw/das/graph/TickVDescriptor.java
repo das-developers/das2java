@@ -255,9 +255,12 @@ public class TickVDescriptor {
             return linTicks;
         }
         
-        double dMinTick= DasMath.roundNFractionalDigits(DasMath.log10(min),4);
+        double min3= min / ( max / min );
+        double max3= max * ( max / min );
+        
+        double dMinTick= DasMath.roundNFractionalDigits(DasMath.log10(min3),4);
         int minTick= (int)Math.ceil(dMinTick);
-        double dMaxTick= DasMath.roundNFractionalDigits(DasMath.log10(max),4);
+        double dMaxTick= DasMath.roundNFractionalDigits(DasMath.log10(max3),4);
         int maxTick= (int)Math.floor(dMaxTick);
         
         int nTicks= ( maxTick - minTick ) + 1;
@@ -273,8 +276,8 @@ public class TickVDescriptor {
         
         ticks.datumFormatter= DEFAULT_LOG_FORMATTER;
         
-        int firstMinorTickCycle= (int)Math.floor(DasMath.log10(min));
-        int lastMinorTickCycle= (int)Math.floor(DasMath.log10(max));
+        int firstMinorTickCycle= (int)Math.floor(DasMath.log10(min3));
+        int lastMinorTickCycle= (int)Math.floor(DasMath.log10(max3));
         
         double[] minorTickV=null;
         int idx=0;
