@@ -207,11 +207,15 @@ public class TickVDescriptor {
         double min= minD.doubleValue(ticks.units);
         double max= maxD.doubleValue(ticks.units);
         
-        if ( ( max / min ) < 10.5 ) {
+        double logMin= DasMath.log10( min );
+        double logMax= DasMath.log10( max );
+        int ntick0= (int)( Math.floor(logMax*0.999) - Math.ceil(logMin*1.001) + 1 );
+        
+        if ( ntick0 < 2 ) {
             return bestTickVLinear( minD, maxD, nTicksMin, nTicksMax );
         }
         
-        if ( DasMath.log10( max / min ) > nTicksMax) {
+        if ( ntick0 > nTicksMax) {
             Units units = minD.getUnits();
             Datum logMinD= units.createDatum(DasMath.log10(min));
             Datum logMaxD= units.createDatum(DasMath.log10(max));
