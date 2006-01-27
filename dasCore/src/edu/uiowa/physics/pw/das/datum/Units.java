@@ -89,6 +89,10 @@ public abstract class Units implements Displayable {
     public static final Units kiloBytesPerSecond= new NumberUnits("KBytes/s");
     public static final Units bytes= new NumberUnits( "bytes" );
     public static final Units kiloBytes= new NumberUnits( "KBytes" );
+    static {
+        bytesPerSecond.registerConverter( kiloBytesPerSecond, UnitsConverter.KILO );
+        bytes.registerConverter( kiloBytes, UnitsConverter.KILO );
+    }
     
     public static final Units hertz= new NumberUnits("Hz");
     public static final Units kiloHertz = new NumberUnits("kHz");
@@ -117,17 +121,6 @@ public abstract class Units implements Displayable {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 1.534e4));
-    }
-    
-    public static final EnumerationUnits spacecraft= new EnumerationUnits( "spacecraft", "Enumeration of various spacecraft" );
-    
-    static {
-        Units.spacecraft.createDatum( "Voyager1" );
-        Units.spacecraft.createDatum( "Voyager2" );
-        Units.spacecraft.createDatum( "Cluster Rumba" );
-        Units.spacecraft.createDatum( "Cluster Salsa" );
-        Units.spacecraft.createDatum( "Cluster Samba" );
-        Units.spacecraft.createDatum( "Cluster Tango" );
     }
     
     public static final Units percent= new NumberUnits("%","");
