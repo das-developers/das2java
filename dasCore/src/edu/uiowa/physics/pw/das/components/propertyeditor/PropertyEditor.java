@@ -28,9 +28,9 @@ import edu.uiowa.physics.pw.das.components.treetable.TreeTableCellRenderer;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
 import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,7 +50,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -95,6 +94,7 @@ public class PropertyEditor extends JComponent {
         //Object types
         set.add(String.class);
         set.add(Datum.class);
+        set.add(DatumRange.class);
         set.add(Color.class);
         //set.add(PsymConnector.class);
         
