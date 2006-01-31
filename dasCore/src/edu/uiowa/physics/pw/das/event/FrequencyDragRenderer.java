@@ -19,9 +19,8 @@ import java.text.*;
  * @author  Jeremy
  * @author  eew
  */
-public class FrequencyDragRenderer implements DragRenderer, KeyListener {
-    
-    private Rectangle dirtyBounds;
+public class FrequencyDragRenderer extends LabelDragRenderer implements DragRenderer, KeyListener {
+        
     DasCanvasComponent parent;
     
     DasAxis axis;
@@ -33,6 +32,7 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
     
     /** Creates a new instance of HorizontalFrequencyDragRenderer */
     public FrequencyDragRenderer( DasCanvasComponent parent, DasAxis axis ) {
+        super( parent );
         this.parent= parent;
         parent.addKeyListener(this);
         this.axis= axis;
@@ -40,44 +40,9 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
         ncycles=1;
     }
     
-    public void renderLabel( java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2, String report ) {
-        int dxMax= Integer.MIN_VALUE;
-        
-        Graphics2D g= ( Graphics2D ) g1;
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        FontMetrics fm= parent.getGraphics().getFontMetrics();
-        
-        Color color0= g.getColor();
-        g.setColor(new Color(255,255,255,200));
-        
-        Dimension d= parent.getSize();
-        
-        int dx= fm.stringWidth(report)+6;
-        if (dxMax<dx) dxMax=dx;
-        int dy= fm.getAscent()+fm.getDescent();
-        int xp= p2.x+3;
-        int yp= p2.y-3-dy;
-        
-        if ( (xp+dxMax>d.width-3) && (p2.x-3-dx>0) ) {
-            xp= p2.x-3-dx;
-        }
-        
-        if (yp<13) {
-            yp= p2.y+3;
-        }
-        
-        Rectangle bg= new Rectangle(xp,yp,dx,dy);        
-        g.fill(bg);
-        
-        g.setColor(new Color(20,20,20));
-        g.drawString(report,xp+3,yp+fm.getAscent());
-        g.setColor(color0);
-        
-        dirtyBounds.add(bg);
-    }
-    
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
+        
+        Rectangle myDirtyBounds= new Rectangle();
         
         //Probably only need to do this once.
         horizontal = axis.isHorizontal();
@@ -97,12 +62,12 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
         g.setColor(new Color(255,255,255,128));
         g.setStroke(new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
         
-        internalRender(g, dirtyBounds, x1, x2, y1, y2);
+        internalRender(g, myDirtyBounds, x1, x2, y1, y2);
         
         g.setStroke(stroke0);
         g.setColor(color0);
         
-        internalRender(g, dirtyBounds, x1, x2, y1, y2);
+        internalRender(g, myDirtyBounds, x1, x2, y1, y2);
         
         Datum periodDatum;
         if (horizontal) {
@@ -117,9 +82,12 @@ public class FrequencyDragRenderer implements DragRenderer, KeyListener {
         double freq= ncycles / period;
         
         DecimalFormat df= new DecimalFormat("0.00");
-        renderLabel(g1, p1, p2, "T:"+df.format(period)+" f:"+df.format(freq) );
         
-        return new Rectangle[] { dirtyBounds };
+        setLabel( "T:"+periodDatum+" f:"+df.format(freq) + "" + periodDatum.getUnits()+"!A-1" );
+        
+        super.renderDrag( g1, p1, p2 );
+        
+        return new Rectangle[] { dirtyBounds, myDirtyBounds };
     }
     
     private void internalRender(Graphics2D g, Rectangle dirtyBounds, int x1, int x2, int y1, int y2) {
