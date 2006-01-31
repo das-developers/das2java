@@ -71,7 +71,7 @@ public class FTPFileSystem extends WebFileSystem {
                     int i= aline.lastIndexOf( ' ' );
                     String name= aline.substring( i+1 );
                     //long size= Long.parseLong( aline.substring( 31, 31+12 ) ); // tested on: linux
-                    boolean isFolder= type=='d';                    
+                    boolean isFolder= type=='d';
                     
                     result.add( name + ( isFolder ? "/" : "" ) );
                     
@@ -93,7 +93,7 @@ public class FTPFileSystem extends WebFileSystem {
         
         try {
             new File( localRoot, directory ).mkdirs();
-            File listing= new File( localRoot, directory + ".listing" );            
+            File listing= new File( localRoot, directory + ".listing" );
             if ( !listing.canRead() ) {
                 downloadFile( directory, listing, DasProgressMonitor.NULL );
             }
@@ -111,10 +111,18 @@ public class FTPFileSystem extends WebFileSystem {
         monitor.setTaskSize( urlc.getContentLength() );
         FileOutputStream out= new FileOutputStream( f );
         InputStream is = urlc.getInputStream(); // To download
-        copyStream(is, out, monitor );
-        monitor.finished();
-        out.close();
-        is.close();
+        try {
+            copyStream(is, out, monitor );
+            monitor.finished();
+            out.close();
+            is.close();
+        } catch ( IOException e ) {
+            out.close();
+            is.close();
+            f.delete();
+            throw e;
+        }
+        
     }
     
 }
