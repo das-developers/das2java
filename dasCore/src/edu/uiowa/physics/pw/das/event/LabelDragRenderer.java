@@ -54,7 +54,7 @@ public class LabelDragRenderer implements DragRenderer {
      */
     public MouseDragEvent getMouseDragEvent(Object source, java.awt.Point p1, java.awt.Point p2, boolean isModified) {
         if ( tooltip ) {
-            infoLabel.hide();
+            if ( infoLabel!=null ) infoLabel.hide();
         }
         return null;
     }
