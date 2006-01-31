@@ -25,8 +25,9 @@ public class BeansUtil {
      * See that the known editors are registered with the PropertyEditorManager
      */
     public static void registerPropertyEditors() {
-	PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);
-	PropertyEditorManager.registerEditor(Datum.class, DatumEditor.class);
+        PropertyEditorManager.registerEditor(Datum.class, DatumEditor.class);
+        PropertyEditorManager.registerEditor(DatumRange.class, DatumRangeEditor.class);
+	PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);	
 	PropertyEditorManager.registerEditor(Units.class, UnitsEditor.class );
 	PropertyEditorManager.registerEditor(NumberUnits.class, UnitsEditor.class );
 	PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
