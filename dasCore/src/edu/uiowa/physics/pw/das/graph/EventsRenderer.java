@@ -73,16 +73,15 @@ public class EventsRenderer extends Renderer {
                 if ( i>=0 ) {
                     Datum sx= vds.getXTagDatum(i);
                     Datum sz= vds.getDatum(i);
-                    VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView("xTagWidth");
+                    VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView(widthPlaneId);
                     Datum sy= DatumUtil.asOrderOneUnits( widthsDs.getDatum(i) );
                     DatumRange dr= new DatumRange( sx, sx.add(sy) );
                     //setLabel(""+sx+" "+sy+"!c"+sz );
                     setLabel(""+dr+" ("+sy+")!c"+sz );
                 } else {
                     setLabel(null);
-                }
-            }
-            
+                }                
+            }            
             return super.renderDrag( g, p1, p2 );
         }
         
