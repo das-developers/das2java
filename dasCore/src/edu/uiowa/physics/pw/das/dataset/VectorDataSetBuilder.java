@@ -117,9 +117,18 @@ public class VectorDataSetBuilder {
     }
     
     public void append(VectorDataSet vds) {
-        Units yUnits = (Units)yUnitsMap.get("");
-        for (int i = 0; i < vds.getXLength(); i++) {
-            insertY(vds.getXTagDouble(i, xUnits), vds.getDouble(i, yUnits));
+        String[] planeIds= vds.getPlaneIds();
+        for ( int iplane=0; iplane<planeIds.length; iplane++ ) {
+            String plane= planeIds[iplane];
+            VectorDataSet planeDs= (VectorDataSet)vds.getPlanarView(plane);            
+            Units yUnits = (Units)yUnitsMap.get(plane);
+            if ( yUnits==null ) {
+                addPlane( plane, planeDs.getYUnits() );
+                yUnits = (Units)yUnitsMap.get(plane);
+            }
+            for (int i = 0; i < planeDs.getXLength(); i++) {
+                insertY( planeDs.getXTagDouble(i, xUnits), planeDs.getDouble(i, yUnits), plane );
+            }
         }
     }
     
