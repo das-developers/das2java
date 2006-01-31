@@ -419,8 +419,11 @@ public class DataSetUtil {
      */
     public static DataSet append( DataSet ds1, DataSet ds2, CacheTag ct ) {
         CacheTag resultTag=null;
-        if ( ds2!=null ) resultTag= DataSetUtil.guessCacheTag( ds2 );
-        if ( ct!=null ) resultTag= ct;
+        if ( ct!=null ) {
+            resultTag= ct;
+        } else {
+            if ( ds2!=null ) resultTag= DataSetUtil.guessCacheTag( ds2 );
+        }
         if ( ds1!=null ) {
             if ( resultTag==null ) {
                 resultTag= DataSetUtil.guessCacheTag( ds1 );
