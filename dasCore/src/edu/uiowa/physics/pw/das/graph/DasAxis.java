@@ -903,7 +903,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         nTicksMax= (nTicksMax<7)?nTicksMax:7;
         
-        tickV= TickVDescriptor.bestTickVLogNew( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
+        tickV= TickVDescriptor.bestTickVLogNew( getDataMinimum(), getDataMaximum(), 3, nTicksMax );        
         datumFormatter= tickV.getFormatter();
         
         return;
@@ -1163,7 +1163,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
             double tick1= ticks.tickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
+            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 tickLength= tickLengthMajor;
                 if (bottomTicks) {
@@ -1183,7 +1183,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
             double tick1= ticks.minorTickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
+            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 tickLength= tickLengthMinor;
                 if (bottomTicks) {
@@ -1259,7 +1259,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
             double tick1= ticks.tickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
+            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 
                 tickLength= tickLengthMajor;
@@ -1281,7 +1281,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
             tickLength= tickLengthMinor;
             double tick1= ticks.minorTickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units) + 0.5);
+            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
             if ( DMin <= tickPosition && tickPosition <= DMax ) {
                 tickLength= tickLengthMinor;
                 if (leftTicks) {
@@ -2485,7 +2485,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         return result;
     }
-    
+
     protected class AxisLayoutManager implements LayoutManager {
         
         //NOOP
