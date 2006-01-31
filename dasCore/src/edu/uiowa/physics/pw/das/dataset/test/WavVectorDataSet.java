@@ -151,7 +151,7 @@ public abstract class WavVectorDataSet implements VectorDataSet {
     }
     
     public double getXTagDouble(int i, Units units) {
-        return ((double)i)/sampleRate;
+        return Units.seconds.convertDoubleTo( units, ((double)i)/sampleRate );
     }
     
     public Units getXUnits() {
@@ -182,9 +182,8 @@ public abstract class WavVectorDataSet implements VectorDataSet {
         return null;
     }
     
-    public Datum getXTagDatum(int i) {
-        Units xUnits= getXUnits();
-        return xUnits.createDatum( getXTagDouble(i,xUnits) );
+    public Datum getXTagDatum(int i) {        
+        return Units.seconds.createDatum( getXTagDouble(i,Units.seconds) );
     }
     
     public int getXTagInt(int i, Units units) {
