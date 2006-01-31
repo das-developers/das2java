@@ -114,11 +114,12 @@ public abstract class WebFileSystem extends FileSystem {
         int bytesRead= is.read( buffer, 0, 2048 );
         long totalBytesRead= bytesRead;
         while ( bytesRead>-1 ) {
-            if ( monitor.isCancelled() ) throw new IOException( "operation cancelled" );
+            if ( monitor.isCancelled() ) throw new InterruptedIOException( );
             monitor.setTaskProgress( totalBytesRead );            
             out.write( buffer, 0, bytesRead );            
             bytesRead= is.read( buffer, 0, 2048 );         
             totalBytesRead+= bytesRead;
+            logger.finest( "transferring data" );
         }
     }
     
