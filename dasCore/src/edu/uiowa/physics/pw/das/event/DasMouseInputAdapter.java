@@ -389,16 +389,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
      * It's also permisable for a array element to be null.
      */
     private void renderSelection(Graphics2D g) {
-        for (int i=0; i<active.size(); i++) {
-            DasCanvas canvas = parent.getCanvas();
-            selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
-            selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
-            DragRenderer dr= ((MouseModule)active.get(i)).getDragRenderer();
-            Rectangle[] dd= dr.renderDrag(g,selectionStart,selectionEnd);
-            dirtyBoundsList= new Rectangle[dd.length];
-            for ( i=0; i<dd.length; i++ ) {
-                dirtyBoundsList[i]= new Rectangle( dd[i] );
+        try {
+            for (int i=0; i<active.size(); i++) {
+                DasCanvas canvas = parent.getCanvas();
+                selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
+                selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
+                DragRenderer dr= ((MouseModule)active.get(i)).getDragRenderer();
+                Rectangle[] dd= dr.renderDrag(g,selectionStart,selectionEnd);
+                dirtyBoundsList= new Rectangle[dd.length];
+                for ( i=0; i<dd.length; i++ ) {
+                    dirtyBoundsList[i]= new Rectangle( dd[i] );
+                }
             }
+        } catch ( RuntimeException e ) {
+            DasExceptionHandler.handle(e);
         }
     }
     
@@ -803,14 +807,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     /**
-     * Draws a faint box around the border when the mouse enters the component, 
+     * Draws a faint box around the border when the mouse enters the component,
      * to help indicate what's going on.
      */
     private boolean hoverHighlite=false;
     
     public boolean isHoverHighlite() {
         return this.hoverHighlite;
-    } 
+    }
     
     public void setHoverHighlite( boolean value ) {
         this.hoverHighlite= value;
