@@ -92,6 +92,17 @@ public final class TimeUtil {
          * seconds since the last minute boundary of the time datum
          */        
         public double seconds; // remaining number of seconds past minute boundary
+        
+        /**
+         * additional milliseconds since minute boundary
+         */
+        public int millis;
+        
+        /**
+         * additional microseconds since minute boundary
+         */
+        public int micros;
+        
         public String toString() {
             return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
         }
@@ -139,7 +150,7 @@ public final class TimeUtil {
         int minute = (int)d.minute;
         double seconds = d.seconds + hour*(float)3600.0 + minute*(float)60.0;
         double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 ) + seconds / 86400. );
-        return Datum.create( us2000, Units.us2000 );
+        return Datum.create( us2000 + d.millis * 1000 + d.micros, Units.us2000 );
     }
     
     public static TimeStruct toTimeStruct(Datum datum) {
@@ -187,7 +198,7 @@ public final class TimeUtil {
         int seconds= (int)( ts.seconds+0.0000005 );
         int micros= (int)( ( ts.seconds+0.0000005 - seconds ) * 1000000 );
         int millis= micros / 1000;
-        micros= micros - millis * 1000;
+        micros= micros - millis * 1000 + ts.micros + ts.millis*1000;
         return new int[] { ts.year, ts.month, ts.minute, ts.hour, ts.minute, seconds, millis, micros };
     }
     
@@ -413,6 +424,12 @@ public final class TimeUtil {
         throw new ParseException("Unable to parse month", 0 );
     }
     
+    public class TimeParser {
+        String regex;
+        int[] digits;
+        
+    }
+    
     public static final TimeStruct parseTime(String s) throws java.text.ParseException {
         int year, month, day_month, day_year, hour, minute;
         //String s;
@@ -445,6 +462,8 @@ public final class TimeUtil {
         int i, j, len, n;
         String[] tok = new String[10];
         boolean[] want = new boolean[7];
+        int[] format= new int[7];
+        
         java.util.Arrays.fill(want, false);
         int ptr;
         int number;
@@ -485,7 +504,7 @@ public final class TimeUtil {
         curdate = new GregorianCalendar();
         curdate.setTime(new Date());
         
-        year = curdate.get(Calendar.YEAR);
+        year = 0;
         month = 0;
         day_month = 0;
         day_year = 0;
