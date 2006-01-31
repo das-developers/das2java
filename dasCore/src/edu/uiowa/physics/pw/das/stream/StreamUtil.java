@@ -9,11 +9,18 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.DasException;
+import edu.uiowa.physics.pw.das.client.DataSetStreamHandler;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.TableDataSet;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.StreamTool;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.channels.ReadableByteChannel;
+import java.util.HashMap;
 
 /**
  *
@@ -38,7 +45,17 @@ public class StreamUtil {
         }
     }
     
-    public static DataSet loadDataSet( String filename ) {
+    public static DataSet loadDataSetNew( String filename ) throws IOException, StreamException {
+        FileInputStream in= new FileInputStream( filename );
+        ReadableByteChannel channel = in.getChannel();
+                
+        DataSetStreamHandler handler = new DataSetStreamHandler( new HashMap(), DasProgressMonitor.NULL );
+             
+        StreamTool.readStream(channel, handler);
+        return handler.getDataSet();
+    }
+    
+    public static DataSet loadDataSet( String filename ) {        
         try {
             filename= URLEncoder.encode(filename,"UTF-8");
             DataSetDescriptor dsd= DataSetDescriptor.create( DATA_SET_ID_PREFIX+filename );
