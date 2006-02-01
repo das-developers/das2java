@@ -9,7 +9,6 @@
 
 package edu.uiowa.physics.pw.das.components;
 
-import edu.uiowa.physics.pw.das.graph.LoggingComponent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
@@ -140,29 +139,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         int index= getTabCount();
         super.insertTab( td.title, td.icon, c, td.tip, index );
         setSelectedIndex( index );
-    }
-    
-    private  JPanel getPanel( final int index ) {
-        final JPanel panel= new JPanel();
-        
-        panel.setLayout( new BoxLayout( panel, BoxLayout.Y_AXIS ) );
-        JLabel label= new JLabel(" --"+index+"--");
-        label.setFont( Font.decode( "HELVETICA" ).deriveFont(Font.BOLD,144.0f) );
-        panel.add( label );
-        return panel;
-    }
-    
-    public static void main( String[] args ) {
-        TearoffTabbedPane pane= new TearoffTabbedPane();
-        pane.addTab( "firstTab", pane.getPanel(1) );
-        pane.addTab( "secondTab", pane.getPanel(2) );
-        pane.addTab( "thirdTab", pane.getPanel(3) );
-        pane.addTab( "fourthTab", new LoggingComponent( ) );
-        JFrame frame= new JFrame();
-        frame.getContentPane().add( pane );
-        frame.pack();
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     }
     
     public void addTab(String title, Icon icon, Component component) {
