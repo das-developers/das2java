@@ -15,6 +15,7 @@ package edu.uiowa.physics.pw.das.util;
 public class SubTaskMonitor implements DasProgressMonitor {
     DasProgressMonitor parent;
     long min, max, progress, size;
+    String label;
     
     private SubTaskMonitor( DasProgressMonitor parent, long min, long max ) {
         this.parent= parent;
@@ -67,5 +68,16 @@ public class SubTaskMonitor implements DasProgressMonitor {
     public void started() {
         // ignore
     }
+
+    public void setLabel(String label) {
+        this.label= label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
     
+    public String toString() {
+        return parent.toString()+">"+label;
+    }
 }

@@ -57,7 +57,9 @@ public interface DasProgressMonitor {
         public void finished() {};
         public void cancel() {};
         public boolean isCancelled() { return false; };        
-        public void setAdditionalInfo(String s) { };        
+        public void setAdditionalInfo(String s) { };
+        public void setLabel( String s ) { };
+        public String getLabel() { return ""; }
     };
     
     /** Sets the maximum value for the task progress of this
@@ -79,6 +81,20 @@ public interface DasProgressMonitor {
      * @return the current progress of the monitored task.
      */
     long getTaskProgress();
+    
+    /**
+     * Set a consise string that describes the task being performed.  Monitors
+     * don't necessarily need to display this label, and this request may be
+     * ignored.  It is only provided so a process can provide more information
+     * about what's happening.
+     */
+    public void setLabel( String label );
+    
+    /**
+     * Return the label string displayed.  This is primarily to aid in debugging,
+     * and this method need not return the string set by setLabel.
+     */
+    public String getLabel();
     
     long getTaskSize();
     

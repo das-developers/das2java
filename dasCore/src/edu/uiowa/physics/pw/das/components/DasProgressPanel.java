@@ -51,15 +51,18 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
     private int cancelCheckFailures= 0; // number of times client codes failed to check cancelled before setTaskProgress.
-    private boolean cancelChecked= false;  
+    private boolean cancelChecked= false;
     private String label;
-    private static final int hideInitiallyMilliSeconds= 1500;
-    private long lastTaskTime;
+    private static final int hideInitiallyMilliSeconds= 300;
+    private static final int refreshPeriodMilliSeconds= 500;
+    
     private boolean running = false;
     private boolean finished= false;
     private long lastRefreshTime;
     private ArrayList refreshTimeQueue;
-
+    
+    private Thread updateThread;
+    
     private Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
     
     /**
@@ -74,9 +77,8 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         setOpaque(false);
         initComponents();
         transferRateFormat= new DecimalFormat();
-        transferRateFormat.setMaximumFractionDigits(2);        
+        transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
-        lastTaskTime= Integer.MAX_VALUE;
         lastRefreshTime= Integer.MIN_VALUE;
         showProgressRate= true;
         isCancelled= false;
@@ -94,7 +96,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         
         ((Container)(component.getCanvas().getGlassPane())).add(progressPanel);
         
-        progressPanel.setVisible(false); 
+        progressPanel.setVisible(false);
         
         return progressPanel;
         
@@ -188,7 +190,6 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     public void finished() {
         running = false;
         finished= true;
-        lastTaskTime= System.currentTimeMillis()-taskStartedTime;
         if ( jframe==null ) {
             setVisible(false);
         } else {
@@ -198,12 +199,12 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
-        logger.finest( "progressPosition="+position );
+        //logger.finest( "progressPosition="+position );
         
         if ( position!=0 && position<currentTaskPosition ) {
             logger.finest( "progress position goes backwards" );
         }
-
+        
         if (!cancelChecked) {
             cancelCheckFailures++;
             if ( cancelCheckFailures>2 ) {
@@ -213,14 +214,47 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
         cancelChecked= false;  // reset for next time, isCancelled will set true.
         
+        if ( maximumTaskPosition==0 ) {
+            throw new IllegalArgumentException( "when taskSize is 0, setTaskProgress must not be called.");
+        }
+        
+        currentTaskPosition = position;
+        
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
         if ( elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
             setVisible(true);
         }
-        
-        currentTaskPosition = position;
+   /*     long tnow;
+        if ( (tnow=System.currentTimeMillis()) - lastRefreshTime > 30 ) {
+            updateUIComponents();
+            if (Toolkit.getDefaultToolkit().getSystemEventQueue().isDispatchThread()) {
+                paintImmediately(0, 0, getWidth(), getHeight());
+            }
+            else {
+                repaint();
+            }
+            lastRefreshTime= tnow;
+        } */
+    }
+    
+    private void startUpdateThread() {
+        Runnable run= new Runnable() {
+            public void run() {
+                while( !DasProgressPanel.this.finished ) {
+                    updateUIComponents();
+                    repaint();
+                    try { Thread.sleep( refreshPeriodMilliSeconds ); } catch ( InterruptedException e ) { };                    
+                }
+            }
+        };
+        updateThread= new Thread( run, "progressMonitorUpdateThread" );
+        updateThread.start();
+    }
+    
+    private void updateUIComponents() {
+        long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
+                
         long kb = currentTaskPosition ;
-        
         
         if ( maximumTaskPosition > 0 ) {
             progressBar.setValue( (int) (kb * 100 / (maximumTaskPosition) ) );
@@ -236,21 +270,10 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
         
         if ( showProgressRate && elapsedTimeMs > 1000 && transferRateString!=null ) {
-            double transferRate = ((double)position * 1000) / ( elapsedTimeMs );
+            double transferRate = ((double)currentTaskPosition * 1000) / ( elapsedTimeMs );
             kbLabel.setText(bytesReadLabel+" "+transferRateString );
         } else {
             kbLabel.setText(bytesReadLabel);
-        }        
-        
-        long tnow;
-        if ( (tnow=System.currentTimeMillis()) - lastRefreshTime > 30 ) {
-            if (Toolkit.getDefaultToolkit().getSystemEventQueue().isDispatchThread()) {
-                paintImmediately(0, 0, getWidth(), getHeight());
-            }
-            else {
-                repaint();
-            }
-            lastRefreshTime= tnow;
         }
     }
     
@@ -268,23 +291,27 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     public void setTaskSize(long taskSize) {
         if (taskSize == -1) {
-            progressBar.setIndeterminate(true);            
-        } else if ( taskSize<1 ) {
-            throw new IllegalArgumentException( "taskSize must be positive, or -1" );
+            progressBar.setIndeterminate(true);
+        } else if ( taskSize<0 ) {
+            throw new IllegalArgumentException( "taskSize must be positive, -1, or 0, not "+taskSize );
         } else {
             progressBar.setIndeterminate(false);
         }
         maximumTaskPosition = taskSize;
     }
     
+    public void setVisible( boolean visible ) {
+        super.setVisible(visible);
+        if ( visible ) {
+            startUpdateThread();
+        }
+    }
+    
     public void started() {
         taskStartedTime= System.currentTimeMillis();
         running = true;
-        logger.fine("lastTaskTime="+lastTaskTime);
         
-        if ( lastTaskTime>hideInitiallyMilliSeconds*2.0 ) {
-            setVisible(true);
-        } else {
+        if ( hideInitiallyMilliSeconds > 0 ) {
             setVisible(false);
             new Thread( new Runnable() {
                 public void run() {
@@ -293,11 +320,14 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
                     } catch ( InterruptedException e ) { };
                     if (running) {
                         logger.fine("hide time="+(System.currentTimeMillis()-taskStartedTime) );
-                        setTaskProgress(getTaskProgress());
+                        setVisible(true);
                     }
                 }
-            } ).start();
+            }, "progressPanelUpdateThread" ).start();
+        } else {
+            setVisible(true);
         }
+        
         // cancel() might have been called before we got here, so check it.
         if ( isCancelled ) return;
         setTaskProgress(0);
@@ -318,13 +348,12 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         Graphics2D g2= ( Graphics2D) g1;
         
         g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-        RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+                RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
         g2.setColor(new Color(0xdcFFFFFF, true));
         Rectangle rect = g2.getClipBounds();
         if (rect == null) {
             g2.fillRect(0, 0, getWidth(), getHeight());
-        }
-        else {
+        } else {
             g2.fillRect(rect.x, rect.y, rect.width, rect.height);
         }
         
