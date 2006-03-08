@@ -28,118 +28,7 @@ public class DataSetUtil {
             return new CacheTag( start, end, resolution );
         }
     }
-    
-    public static DasAxis guessYAxis( DataSet dsz ) {
-        boolean log= false;
-        
-        if ( dsz.getProperty( DataSet.PROPERTY_Y_SCALETYPE )!=null ) {
-            if ( dsz.getProperty( DataSet.PROPERTY_Y_SCALETYPE ).equals("log") ) {
-                log= true;
-            }
-        }
-        
-        DasAxis result;
-        
-        if ( dsz instanceof TableDataSet ) {
-            TableDataSet ds= (TableDataSet)dsz;
-            Units yunits= ds.getYUnits();
-            Datum min, max;
-            
-            DatumRange yrange= yRange(dsz);
-            Datum dy= TableUtil.guessYTagWidth( ds );
-            if ( dy.getUnits().isConvertableTo( Units.logERatio ) ) log=true;
-            
-            result= new DasAxis( yrange.min(), yrange.max(), DasAxis.LEFT, log );
-            
-        } else if ( dsz instanceof VectorDataSet ) {
-            VectorDataSet ds= ( VectorDataSet ) dsz;
-            Units yunits= ds.getYUnits();
-            
-            DatumRange range= yRange( dsz );
-            
-            result= new DasAxis( range.min(), range.max(), DasAxis.LEFT, log );
-        } else {
-            throw new IllegalArgumentException( "not supported: "+dsz );
-        }
-        
-        if ( dsz.getProperty( DataSet.PROPERTY_Y_LABEL )!=null ) {
-            result.setLabel( (String)dsz.getProperty( DataSet.PROPERTY_Y_LABEL ) );
-        }
-        return result;
-    }
-    
-    public static DasAxis guessXAxis( DataSet ds ) {
-        Datum min= ds.getXTagDatum(0);
-        Datum max= ds.getXTagDatum( ds.getXLength()-1 );
-        return new DasAxis( min, max, DasAxis.BOTTOM );
-    }
-    
-    public static DasAxis guessZAxis( DataSet dsz ) {
-        if ( !(dsz instanceof TableDataSet) ) throw new IllegalArgumentException("only TableDataSet supported");
-        
-        TableDataSet ds= (TableDataSet)dsz;
-        Units zunits= ds.getZUnits();
-        
-        DatumRange range= zRange(ds);
-        
-        boolean log= false;
-        if ( dsz.getProperty( DataSet.PROPERTY_Z_SCALETYPE )!=null ) {
-            if ( dsz.getProperty( DataSet.PROPERTY_Z_SCALETYPE ).equals("log") ) {
-                log= true;
-                if ( range.min().doubleValue( range.getUnits() ) <= 0 ) { // kludge for VALIDMIN
-                    double max= range.max().doubleValue(range.getUnits());
-                    range= new DatumRange( max/1000, max, range.getUnits() );
-                }
-            }
-        }
-        
-        DasAxis result= new DasAxis( range.min(), range.max(), DasAxis.LEFT, log );
-        if ( dsz.getProperty( DataSet.PROPERTY_Z_LABEL )!=null ) {
-            result.setLabel( (String)dsz.getProperty( DataSet.PROPERTY_Z_LABEL ) );
-        }
-        return result;
-    }
-    
-    public static DasPlot guessPlot( DataSet ds ) {
-        DasAxis xaxis= guessXAxis( ds );
-        DasAxis yaxis= guessYAxis( ds );
-        DasPlot plot= new DasPlot( xaxis, yaxis );
-        if ( ds instanceof VectorDataSet ) {
-            edu.uiowa.physics.pw.das.graph.Renderer rend;
-            if ( ds.getXLength() > 10000 ) {
-                rend= new ImageVectorDataSetRenderer(new ConstantDataSetDescriptor(ds));
-            } else {
-                rend= new SymbolLineRenderer( ds );
-            }
-            plot.addRenderer(rend);
-        } else if (ds instanceof TableDataSet ) {
-            Units zunits= ((TableDataSet)ds).getZUnits();
-            DasAxis zaxis= guessZAxis(ds);
-            DasColorBar colorbar= new DasColorBar( zaxis.getDataMinimum(), zaxis.getDataMaximum(), zaxis.isLog() );
-            colorbar.setLabel( zaxis.getLabel() );
-            edu.uiowa.physics.pw.das.graph.Renderer rend= new SpectrogramRenderer( new ConstantDataSetDescriptor(ds), colorbar );
-            plot.addRenderer(rend);
-        }
-        
-        return plot;
-    }
-    
-    public static DasPlot visualize( DataSet ds, double xmin, double xmax, double ymin, double ymax ) {
-        JFrame jframe= new JFrame("DataSetUtil.visualize");
-        DasCanvas canvas= new DasCanvas(400,400);
-        jframe.getContentPane().add( canvas );
-        DasPlot result= guessPlot( ds );
-        canvas.add( result, DasRow.create(canvas), DasColumn.create( canvas ) );
-        Units xunits= result.getXAxis().getUnits();
-        result.getXAxis().setDataRange(xunits.createDatum(xmin), xunits.createDatum(xmax) );
-        Units yunits= result.getYAxis().getUnits();
-        result.getYAxis().setDataRange(yunits.createDatum(ymin), yunits.createDatum(ymax) );
-        jframe.pack();
-        jframe.setVisible(true);
-        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        return result;
-    }
-    
+                
     public static DatumRange xRange( DataSet ds ) {
         int n=ds.getXLength();
         return new DatumRange( ds.getXTagDatum(0), ds.getXTagDatum(n-1) );
@@ -169,40 +58,11 @@ public class DataSetUtil {
     }
     
     public static DasPlot visualize( DataSet ds ) {
-        
-        JFrame jframe= new JFrame("DataSetUtil.visualize");
-        DasCanvas canvas= new DasCanvas(400,400);
-        jframe.getContentPane().add( canvas );
-        DasPlot result= guessPlot( ds );
-        canvas.add( result, DasRow.create(canvas), DasColumn.create( canvas ) );
-        
-        jframe.pack();
-        jframe.setVisible(true);
-        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        return result;
+        return GraphUtil.visualize( ds );        
     }
     
-    public static DasPlot visualize( DataSet ds, boolean ylog ) {
-        DatumRange xRange= xRange( ds );
-        DatumRange yRange= yRange( ds );
-        JFrame jframe= new JFrame("DataSetUtil.visualize");
-        DasCanvas canvas= new DasCanvas(400,400);
-        jframe.getContentPane().add( canvas );
-        DasPlot result= guessPlot( ds );
-        canvas.add( result, DasRow.create(canvas), DasColumn.create( canvas ) );
-        Units xunits= result.getXAxis().getUnits();
-        result.getXAxis().setDatumRange(xRange.zoomOut(1.1));
-        Units yunits= result.getYAxis().getUnits();
-        if ( ylog ) {
-            result.getYAxis().setDatumRange(yRange);
-            result.getYAxis().setLog(true);
-        } else {
-            result.getYAxis().setDatumRange(yRange.zoomOut(1.1));
-        }
-        jframe.pack();
-        jframe.setVisible(true);
-        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        return result;
+    public static DasPlot visualize( DataSet ds, boolean ylog ) {    
+        return GraphUtil.visualize( ds, ylog );
     }
     
     /**
