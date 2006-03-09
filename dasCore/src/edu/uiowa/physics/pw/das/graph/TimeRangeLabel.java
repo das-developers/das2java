@@ -64,6 +64,8 @@ public class TimeRangeLabel extends DasCanvasComponent {
     
     private DatumFormatter df;
     
+    double emOffset = 2.0;
+    
     private class DataRangePropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             repaint();
@@ -98,7 +100,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
         
         g.translate(-getX(),-getY());
         
-        int yLevel= y - getFont().getSize()*2;
+        int yLevel= y - (int)(getFont().getSize()*emOffset + 0.5);
         g.drawString(df.format(min), x, yLevel );
         
         if (!startOnly) {
@@ -108,8 +110,11 @@ public class TimeRangeLabel extends DasCanvasComponent {
         }
     }
     public void resize() {
-        Rectangle bounds= new Rectangle( getColumn().getDMinimum()-30, getRow().getDMinimum()-getFont().getSize()*3, 
-              getColumn().getWidth()+60, getFont().getSize()*3 );
+        Rectangle bounds= new Rectangle(
+                getColumn().getDMinimum()-30,
+                getRow().getDMinimum()-(int)(getFont().getSize()*(emOffset+1)+0.5), 
+                getColumn().getWidth()+60,
+                getFont().getSize()*3 );
         this.setBounds( bounds );
     }
     
@@ -177,6 +182,18 @@ public class TimeRangeLabel extends DasCanvasComponent {
     public void setStartOnly(boolean b) {
         this.startOnly = b;
         if (isDisplayable()) {
+            repaint();
+        }
+    }
+    
+    public double getEmOffset() {
+        return emOffset;
+    }
+    
+    public void setEmOffset(double emOffset) {
+        this.emOffset = emOffset;
+        if (getCanvas() != null) {
+            resize();
             repaint();
         }
     }
