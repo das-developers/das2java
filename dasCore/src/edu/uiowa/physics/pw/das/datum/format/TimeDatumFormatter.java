@@ -208,6 +208,12 @@ public class TimeDatumFormatter extends DatumFormatter {
         return TIMESTAMP_FIELD_COUNT + scaleSeconds.length - 1;
     }
     
+    /**
+     * returns Number[] for formatting, truncating the fractional seconds and putting the 
+     * remainder in lower sig digits.  
+     * 
+     * Note: TimeUtil.TimeStruct ts is modified.
+     */
     private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
         int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
         int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
@@ -215,13 +221,18 @@ public class TimeDatumFormatter extends DatumFormatter {
         Number[] array = new Number[fieldCount];
         int seconds = (int)Math.round(ts.seconds * maxScale) / maxScale;
         double fracSeconds = ts.seconds - seconds;
+        ts.seconds= seconds;        
+        ts.micros= (int)(fracSeconds * 1e6);
+        
+        TimeUtil.carry(ts);
+        
         array[YEAR_FIELD_INDEX] = new Integer(ts.year);
         array[MONTH_FIELD_INDEX] = new Integer(ts.month);
         array[DAY_FIELD_INDEX] = new Integer(ts.day);
         array[DOY_FIELD_INDEX] = new Integer(ts.doy);
         array[HOUR_FIELD_INDEX] = new Integer(ts.hour);
         array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
-        array[SECONDS_FIELD_INDEX] = new Integer(seconds);
+        array[SECONDS_FIELD_INDEX] = new Integer((int)ts.seconds);
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
             int value = (int)Math.round(fracSeconds * Math.pow(10, scaleSeconds[i - TIMESTAMP_FIELD_COUNT]));
             array[i] = new Integer(value);
