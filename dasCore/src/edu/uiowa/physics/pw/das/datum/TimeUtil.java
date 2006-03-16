@@ -107,6 +107,19 @@ public final class TimeUtil {
             return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
         }
         public boolean[] want;
+        
+        public TimeStruct copy() {
+            TimeStruct result= new TimeStruct();
+            result.year= this.year;
+            result.month= this.month;
+            result.day= this.day;
+            result.hour= this.hour;
+            result.minute= this.minute;
+            result.seconds= this.seconds;
+            result.millis= this.millis;
+            result.micros= this.micros;        
+            return result;
+        }
     }
     
     public static final int YEAR = 1;
@@ -298,6 +311,7 @@ public final class TimeUtil {
     }
     
     public static Datum next( int step, Datum datum ) {
+        if ( step >= HOUR ) throw new IllegalArgumentException("not tested");
         TimeStruct array= toTimeStruct(datum);
         switch (step) {
             case DAY:
