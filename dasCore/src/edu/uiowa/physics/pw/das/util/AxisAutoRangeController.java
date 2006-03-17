@@ -11,8 +11,8 @@ package edu.uiowa.physics.pw.das.util;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener;
-import edu.uiowa.physics.pw.das.dataset.DataSetUtil;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
+import edu.uiowa.physics.pw.das.graph.GraphUtil;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,14 +53,14 @@ public class AxisAutoRangeController implements DataSetUpdateListener, PropertyC
         isAutomaticPropertyChange= true;
         
         if ( xAxis!=null ) {
-            DasAxis newAxis= DataSetUtil.guessXAxis(ds);
+            DasAxis newAxis= GraphUtil.guessXAxis(ds);
             if ( !xManualProps.containsKey("dataMinimum") ) xAxis.setDatumRange(newAxis.getDatumRange());
             if ( !xManualProps.containsKey("log") ) xAxis.setLog(newAxis.isLog());
             myXAxis= newAxis;
         }
         
         if ( yAxis!=null ) {
-            DasAxis newAxis= DataSetUtil.guessYAxis(ds);
+            DasAxis newAxis= GraphUtil.guessYAxis(ds);
             if ( !yManualProps.containsKey("dataMinimum") ) yAxis.setDatumRange(newAxis.getDatumRange());
             if ( !yManualProps.containsKey("log") ) yAxis.setLog(newAxis.isLog());
             if ( !yManualProps.containsKey("label") ) yAxis.setLabel( newAxis.getLabel() );
@@ -68,7 +68,7 @@ public class AxisAutoRangeController implements DataSetUpdateListener, PropertyC
         }
         
         if ( zAxis!=null ) {
-            DasAxis newAxis= DataSetUtil.guessZAxis(ds);
+            DasAxis newAxis= GraphUtil.guessZAxis(ds);
             if ( !zManualProps.containsKey("dataMinimum") ) zAxis.setDatumRange(newAxis.getDatumRange());
             if ( !zManualProps.containsKey("log") ) zAxis.setLog(newAxis.isLog());
             if ( !zManualProps.containsKey("label") ) zAxis.setLabel( newAxis.getLabel() );
