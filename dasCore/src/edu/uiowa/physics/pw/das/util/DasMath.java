@@ -137,7 +137,9 @@ public class DasMath {
         }
     }
     
-    /* just like modulo (%) function, but negative numbers return positive phase. */
+    /**
+     * just like modulo (%) function, but negative numbers return positive phase. 
+     */
     public static double modp(double x, double t) {
         double result= x % t;
         return result >= 0 ? result : t + result;
