@@ -98,6 +98,13 @@ public class HttpFileSystem extends WebFileSystem {
             URL remoteURL= new URL( root.toString()+filename );
             
             URLConnection urlc = remoteURL.openConnection();
+            
+            HttpURLConnection hurlc= (HttpURLConnection)urlc;
+            if ( hurlc.getResponseCode()!=200 ) {
+                System.err.println(""+hurlc.getResponseCode()+" URL: "+remoteURL);
+                throw new IOException( hurlc.getResponseMessage() );
+            }
+            
             monitor.setTaskSize( urlc.getContentLength() );
             
             if ( !f.getParentFile().exists() ) {
@@ -113,7 +120,9 @@ public class HttpFileSystem extends WebFileSystem {
             }
             
             if ( f.createNewFile() ) {
-                InputStream in= urlc.getInputStream();
+                InputStream in;
+                in= urlc.getInputStream();
+                
                 in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
                 logger.fine("transferring bytes of "+filename);
                 FileOutputStream out= new FileOutputStream( f );
