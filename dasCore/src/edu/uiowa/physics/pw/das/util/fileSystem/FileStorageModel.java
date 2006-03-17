@@ -203,12 +203,18 @@ public class FileStorageModel {
         }
         
         for ( int i=0; i<digitList.length; i++ ) {
-            if ( digitList[i]>=startBase && digitList[i]<endBase ) {
+            if ( digitList[i]==StartDoy ) {
+                startDigits[1]=1; startDigits[2]=1;
+                if ( 103>startLsd ) startLsd= 103;
+            } else if ( digitList[i]==EndDoy ) {
+                endDigits[1]=1; endDigits[2]=1;
+                if ( 203>endLsd ) endLsd= 203;
+            } else if ( digitList[i]>=startBase && digitList[i]<endBase ) {
                 startDigits[digitList[i]-startBase]= 1;
                 if ( digitList[i]>startLsd ) startLsd= digitList[i];
             } else if ( digitList[i]>=endBase && digitList[i]<ignoreBase ) {
                 endDigits[digitList[i]-endBase]= 1;
-                if ( digitList[i]>startLsd ) endLsd= digitList[i];
+                if ( digitList[i]>endLsd ) endLsd= digitList[i];
             }
         }
         if ( startDigits[StartYear2-startBase]==1 ) startDigits[StartYear4-startBase]=1;
@@ -288,7 +294,7 @@ public class FileStorageModel {
      * .../FULL1/T8709_12/T871118.DAT
      *'.../FULL1/T'YYMM_MM/TYYMMDD'.DAT'
      */
-    private DatumRange getDatumRangeForFile( String filename ) {
+    private DatumRange getDatumRangeFor( String filename ) {
         
         TimeUtil.TimeStruct ts1= new TimeUtil.TimeStruct();
         ts1.year=0;
@@ -377,7 +383,7 @@ public class FileStorageModel {
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                if ( getDatumRangeForFile( ff ).intersects(targetRange) ) list.add(ff);
+                if ( getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
             }
         }
         return (String[])list.toArray(new String[list.size()]);
@@ -388,7 +394,21 @@ public class FileStorageModel {
     }
     
     public DatumRange getRangeFor( String name ) {
-        return getDatumRangeForFile( name );
+        return getDatumRangeFor( name );
+    }
+    
+    /**
+     * returns true if the file came (or could come) from this FileStorageModel.  
+     */
+    public boolean containsFile( File file ) {
+        if ( !fileNameMap.containsKey(file) ) {
+            return false;
+        } else {
+            String result= (String)fileNameMap.get(file);
+            String name= getNameFor( file );
+            Matcher m= pattern.matcher( name );
+            return m.matches();
+        }
     }
     
     /**
