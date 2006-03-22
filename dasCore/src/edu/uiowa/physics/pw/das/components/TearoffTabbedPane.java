@@ -88,7 +88,8 @@ public class TearoffTabbedPane extends JTabbedPane {
         } else {
             newContainer.add(c);
         }
-        ((TabDesc)tabs.get(c)).babysitter= newContainer;
+        ((TabDesc)tabs.get(c)).babysitter= newContainer;        
+        setSelectedIndex(tabIndex-1);
     }
     
     private class AbstractWindowListener implements WindowListener {
