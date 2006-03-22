@@ -206,16 +206,30 @@ public class DasApplication {
         return meter;
     }
         
-    public JFrame createMainFrame( java.awt.Container canvas ) {
-        JFrame frame= createMainFrame();
-        frame.setContentPane(canvas);
+    /**
+     * @deprecated.  Use createMainFrame( String title, Container container );
+     */
+    public JFrame createMainFrame( java.awt.Container container ) {
+        return createMainFrame( "Das2", container );
+    }
+    
+    public JFrame createMainFrame( String title, java.awt.Container container ) {
+        JFrame frame= createMainFrame(title);
+        frame.getContentPane().add(container);
         frame.pack();
         frame.setVisible(true);
         return frame;
     }
-        
+  
+    /**
+     * @deprecated.  Use createMainFrame(String title) 
+     */
     public JFrame createMainFrame() {
-        mainFrame= new JFrame("Das2");
+        return createMainFrame("Das2");
+    }
+
+    public JFrame createMainFrame( String title ) {
+        mainFrame= new JFrame(title);
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
         
         int xlocation= prefs.getInt( "xlocation", 20 );
