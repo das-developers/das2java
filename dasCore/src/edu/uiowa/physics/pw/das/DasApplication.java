@@ -231,19 +231,15 @@ public class DasApplication {
     public JFrame createMainFrame( String title ) {
         mainFrame= new JFrame(title);
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
-        
         int xlocation= prefs.getInt( "xlocation", 20 );
         int ylocation= prefs.getInt( "ylocation", 20 );
         mainFrame.setLocation(xlocation, ylocation);
         mainFrame.addWindowListener( new WindowAdapter() {
             public void windowClosing( WindowEvent e ) {
-                prefs.putInt( "xlocation", mainFrame.getLocation().x );
-                prefs.putInt( "ylocation", mainFrame.getLocation().y );
-                System.out.println("bye!"+mainFrame.getLocation());
+                quit();
             }
         } );
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+        mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         System.setProperty( "sun.awt.exception.handler", DasExceptionHandler.class.getName() );
         return mainFrame;
     }        
@@ -252,6 +248,14 @@ public class DasApplication {
         return this.mainFrame;
     }
 
+    public void quit() {
+        final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
+        prefs.putInt( "xlocation", mainFrame.getLocation().x );
+        prefs.putInt( "ylocation", mainFrame.getLocation().y );
+        System.out.println("bye!"+mainFrame.getLocation());     
+        System.exit(0);
+    }
+    
     /**
      * Holds value of property interactive.
      */
