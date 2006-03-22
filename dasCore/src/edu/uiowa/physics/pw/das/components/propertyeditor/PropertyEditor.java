@@ -290,10 +290,21 @@ public class PropertyEditor extends JComponent {
     private Action getEditSelectedAction() {
         return new AbstractAction( "Edit Selected" ) {
             public void actionPerformed( ActionEvent e ) {
+                PropertyEditor p;
                 TreeTableModel model = (TreeTableModel)table.getModel();
                 PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(focusRow);
-                PropertyEditor p= new PropertyEditor( node, null );
+                int[] selected= table.getSelectedRows();
+                if ( selected.length==1 ) {
+                    p= new PropertyEditor( node.getValue() );                    
+                } else {
+                    Object[] peers= new Object[ selected.length ];
+                    for ( int i=0; i<selected.length; i++ ) {
+                        peers[i]= ((PropertyTreeNode)model.getNodeForRow(selected[i])).getValue();
+                    }
+                    p= createPeersEditor( node.getValue(), peers );
+                }
                 p.showDialog(PropertyEditor.this);
+                
             }
         };
     }
