@@ -155,7 +155,7 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
     }
     
     public String toString() {
-        return leader.getDisplayName()+" & peers";
+        return leader.getDisplayName()+" ++";
     }
     
     public void setValue(Object value) {
