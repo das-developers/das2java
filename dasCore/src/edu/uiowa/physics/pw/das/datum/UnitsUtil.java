@@ -17,6 +17,8 @@ public class UnitsUtil {
             return Units.hertz;
         } else if ( unit==Units.dimensionless ) {
             return Units.dimensionless;
+        } else if ( unit==Units.microseconds ) {
+            return Units.megaHertz;
         } else {
             throw new IllegalArgumentException( "units not supported: "+unit );
         }
