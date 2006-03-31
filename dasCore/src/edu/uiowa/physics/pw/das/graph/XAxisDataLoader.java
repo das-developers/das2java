@@ -45,6 +45,8 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     Request currentRequest;
     List unsolicitedRequests;
     
+    Object lockObject= new Object();
+    
     /** Creates a new instance of DataLoader */
     public XAxisDataLoader( Renderer r, DataSetDescriptor dsd ) {
         super(r);
@@ -56,6 +58,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     
     public void update() {
         if ( isActive() ) {
+            logger.finer("enter XAxisDataLoader.update");
             DasPlot p= getRenderer().getParent();
             if ( p==null ) {
                 logger.fine("plot is null, no need to load");
@@ -64,6 +67,8 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                 DasAxis yAxis = p.getYAxis();
                 loadDataSet( xAxis, yAxis );
             }
+        } else {
+            logger.finer("enter XAxisDataLoader.update, ignored not active");
         }
     }
     
@@ -71,8 +76,9 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
      * suitable.
      */
     private void loadDataSet( DasAxis xAxis, DasAxis yAxis ) {
+        
         logger.fine( "render requests dataset for x:"+xAxis.getMemento() + " y:"+yAxis.getMemento());
-                
+        
         if ( xaxis==null ) this.xaxis= xAxis;
         
         if ( xaxis.getColumn()==DasColumn.NULL ) {
@@ -85,55 +91,60 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
             return;
         }
         
-        if ( currentRequest!=null ) {
-            if ( ! xAxis.getMemento().equals( currentRequest.xmem ) ) {
-                logger.fine( "cancel old request: "+currentRequest );
-                DasProgressMonitor monitor= currentRequest.monitor;
-                currentRequest= null;
-                monitor.cancel();
-            } else {
-                logger.fine( "ignore repeat request" );
-                return; // ignore the repeated request
+        synchronized (lockObject) {
+            if ( currentRequest!=null ) {
+                synchronized (currentRequest) {
+                    if ( ! xAxis.getMemento().equals( currentRequest.xmem ) ) {
+                        logger.fine( "cancel old request: "+currentRequest );
+                        DasProgressMonitor monitor= currentRequest.monitor;
+                        currentRequest= null;
+                        monitor.cancel();
+                    } else {
+                        logger.fine( "ignore repeat request" );
+                        return; // ignore the repeated request
+                    }
+                }
             }
-        }
-        
-        Datum resolution;
-        Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
-        
-        double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
-        if ( isFullResolution() ) {
-            resolution = null;
-        } else {
-            resolution =  dataRange1.divide(deviceRange);
-        }
-        
-        if ( deviceRange==0.0 ) {
-            // this condition occurs sometimes at startup, it's not known why
-            return;
-        }
-        
-        DasPlot parent= renderer.getParent();
-        
-        DatumRange loadRange= xAxis.getDatumRange();
-        
-        CacheTag cacheTag= new CacheTag( loadRange, resolution );
-        if ( dsd.getDataSetCache().haveStored(dsd, cacheTag) ) {
-            renderer.setDataSet( dsd.getDataSetCache().retrieve( dsd, cacheTag ) );
-            currentRequest= null;
             
-        } else {
+            Datum resolution;
+            Datum dataRange1 = xAxis.getDataMaximum().subtract(xAxis.getDataMinimum());
             
-            progressMonitor = getMonitor( "dsd.requestDataSet "+dsd+":"+loadRange+" @ "+DatumUtil.asOrderOneUnits(resolution) );
+            double deviceRange = Math.floor(xAxis.getColumn().getDMaximum() + 0.5) - Math.floor(xAxis.getColumn().getDMinimum() + 0.5);
+            if ( isFullResolution() ) {
+                resolution = null;
+            } else {
+                resolution =  dataRange1.divide(deviceRange);
+            }
             
-            parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
+            if ( deviceRange==0.0 ) {
+                // this condition occurs sometimes at startup, it's not known why
+                return;
+            }
             
-            //if ( renderer.isOverloading() ) loadRange= loadRange.rescale(-1,2);
-            logger.info("request data from dsd: "+loadRange+" @ "+resolution);
+            DasPlot parent= renderer.getParent();
             
-            currentRequest= new Request( progressMonitor, xAxis.getMemento(), yAxis.getMemento() );
+            DatumRange loadRange= xAxis.getDatumRange();
             
-            dsd.requestDataSet( loadRange.min(), loadRange.max(), resolution, progressMonitor, parent.getCanvas() );
-            // the request will come back with a DataSetUpdated event
+            CacheTag cacheTag= new CacheTag( loadRange, resolution );
+            if ( dsd.getDataSetCache().haveStored(dsd, cacheTag) ) {
+                renderer.setDataSet( dsd.getDataSetCache().retrieve( dsd, cacheTag ) );
+                currentRequest= null;
+                
+            } else {
+                
+                progressMonitor = getMonitor( "dsd.requestDataSet "+dsd+":"+loadRange+" @ "+ 
+                        ( resolution==null ? "intrinsic" : ""+DatumUtil.asOrderOneUnits(resolution) ) );
+                
+                parent.repaint( 0, 0, parent.getWidth(), parent.getHeight() );
+                
+                //if ( renderer.isOverloading() ) loadRange= loadRange.rescale(-1,2);
+                logger.info("request data from dsd: "+loadRange+" @ "+resolution);
+                
+                currentRequest= new Request( progressMonitor, xAxis.getMemento(), yAxis.getMemento() );
+                
+                dsd.requestDataSet( loadRange.min(), loadRange.max(), resolution, progressMonitor, parent.getCanvas() );
+                // the request will come back with a DataSetUpdated event
+            }
         }
     }
     
@@ -155,71 +166,73 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     }
     
     public void dataSetUpdated( DataSetUpdateEvent e ) {
-        //updateImmediately();
         
-        logger.info("got dataset update:"+e);
-        // TODO make sure Exception is cleared--what if data set is non-null but Exception is as well?
-        if ( e.getException()!=null && e.getDataSet()!=null ) {
-            throw new IllegalStateException("both exception and data set");
-        } else if (e.getException() != null) {
-            logger.info("got dataset update exception: "+e.getException());
-            Exception exception = e.getException();
-            if ( !rendererHandlesException(exception) ) {
-                DasExceptionHandler.handle(exception);
-            }
+        synchronized ( lockObject ) {
             
-            DasProgressMonitor mon= e.getMonitor();
-            if ( currentRequest!=null ) {
-                if ( mon==null || mon==currentRequest.monitor ) {
-                    renderer.setException( exception );
-                    renderer.setDataSet(null);
-                    logger.fine("current request completed w/exception: " + currentRequest );
-                    currentRequest=null;
-                } else {
-                    logger.fine("got exception but not for currentRequest " );
+            logger.fine("got dataset update:"+e);
+            // TODO make sure Exception is cleared--what if data set is non-null but Exception is as well?
+            if ( e.getException()!=null && e.getDataSet()!=null ) {
+                throw new IllegalStateException("both exception and data set");
+            } else if (e.getException() != null) {
+                logger.fine("got dataset update exception: "+e.getException());
+                Exception exception = e.getException();
+                if ( !rendererHandlesException(exception) ) {
+                    DasExceptionHandler.handle(exception);
                 }
-            } else {
-                logger.fine("got exception but currentRequest " );
-            }
-            
-            
-            if ( !rendererHandlesException(exception)  ) {
-                DasExceptionHandler.handle(exception);
-            }
-            
-        } else if ( e.getDataSet()==null ) {
-            // this indicates that the DataSetDescriptor has changed, and that the
-            // renderer needs to reread the data.  Cause this by invalidating the
-            // component.
-            logger.info("got dataset update notification (no dataset).");
-            loadDataSet( renderer.getParent().getXAxis(), renderer.getParent().getYAxis() );
-            return;
-        } else {
-            if ( currentRequest==null ) {
-                logger.fine( "ignore update w/dataset, currentRequest=null" );
-                // note this is hiding a bug.  Why did the dataset continue to load after we
-                // cancelled it? --jbf
-            } else {
-                DataSet ds= e.getDataSet();
+                
                 DasProgressMonitor mon= e.getMonitor();
-                if ( mon==null || currentRequest.monitor==mon ) {
-                    logger.info("got dataset update w/dataset: "+ds);
-                    if ( ds!=null ) {
-                        if ( ds.getXLength()>0 ) {
-                            logger.info("  ds range: "+DataSetUtil.xRange(ds) );
-                        } else {
-                            logger.info("  ds range: (empty)" );
-                        }
+                if ( currentRequest!=null ) {
+                    if ( mon==null || mon==currentRequest.monitor ) {
+                        renderer.setException( exception );
+                        renderer.setDataSet(null);
+                        logger.fine("current request completed w/exception: " + currentRequest );
+                        currentRequest=null;
+                    } else {
+                        logger.fine("got exception but not for currentRequest " );
                     }
-                    renderer.setDataSet( ds );
-                    logger.fine("current request completed w/dataset: " + currentRequest.xmem );
-                    currentRequest=null;
                 } else {
-                    logger.info("got dataset update w/dataset but not my monitor: "+ds);
+                    logger.fine("got exception but currentRequest " );
+                }
+                
+                
+                if ( !rendererHandlesException(exception)  ) {
+                    DasExceptionHandler.handle(exception);
+                }
+                
+            } else if ( e.getDataSet()==null ) {
+                // this indicates that the DataSetDescriptor has changed, and that the
+                // renderer needs to reread the data.  Cause this by invalidating the
+                // component.
+                logger.fine("got dataset update notification (no dataset).");
+                loadDataSet( renderer.getParent().getXAxis(), renderer.getParent().getYAxis() );
+                return;
+            } else {
+                if ( currentRequest==null ) {
+                    logger.fine( "ignore update w/dataset, currentRequest=null" );
+                    // note this is hiding a bug.  Why did the dataset continue to load after we
+                    // cancelled it? --jbf
+                } else {
+                    DataSet ds= e.getDataSet();
+                    DasProgressMonitor mon= e.getMonitor();
+                    if ( mon==null || currentRequest.monitor==mon ) {
+                        logger.fine("got dataset update w/dataset: "+ds);
+                        if ( ds!=null ) {
+                            if ( ds.getXLength()>0 ) {
+                                logger.fine("  ds range: "+DataSetUtil.xRange(ds) );
+                            } else {
+                                logger.fine("  ds range: (empty)" );
+                            }
+                        }
+                        renderer.setDataSet( ds );
+
+                        logger.fine("current request completed w/dataset: " + currentRequest.xmem );
+                        currentRequest=null;
+                    } else {
+                        logger.fine("got dataset update w/dataset but not my monitor: "+ds);
+                    }
                 }
             }
         }
-        
     }
     
     
