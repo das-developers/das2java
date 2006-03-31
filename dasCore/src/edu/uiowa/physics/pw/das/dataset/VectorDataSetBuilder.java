@@ -55,7 +55,7 @@ public class VectorDataSetBuilder {
         this.xUnits= xUnits;
         setYUnits(yUnits);
     }
-
+    
     public void setProperty(String name, Object value) {
         properties.put(name, value);
     }
@@ -67,11 +67,11 @@ public class VectorDataSetBuilder {
     public void addProperties(Map map) {
         properties.putAll(map);
     }
-
+    
     public void addPlane(String name, Units yUnits ) {
         if (!planeIDs.contains(name)) {
             planeIDs.add(name);
-            yUnitsMap.put(name, yUnits );            
+            yUnitsMap.put(name, yUnits );
         }
     }
     
@@ -85,7 +85,7 @@ public class VectorDataSetBuilder {
         }
         if ( Double.isInfinite(x) || Double.isNaN(x) ) {
             throw new IllegalArgumentException( "x is not finite" );
-        }        
+        }
         int insertionIndex = xTags.indexOf(x);
         if (planeID == null) {
             planeID = "";
@@ -96,10 +96,35 @@ public class VectorDataSetBuilder {
             MultiY scan = new MultiY();
             scan.put(planeID, y);
             yValues.add(insertionIndex, scan);
-        }
-        else {
+        } else {
             MultiY scan = (MultiY)yValues.get(insertionIndex);
             scan.put(planeID, y);
+        }
+    }
+    
+    /**
+     * Insert method favored when there is a default and one additional plane, 
+     * because it's less prone to error when the
+     * one forgets the planeId.  (And it's slightly more efficient because 
+     * the index search need only be done once.)
+     */
+    public void insertY( double x, double y, String planeId1, double planeValue1 ) {
+        if ( Double.isInfinite(x) || Double.isNaN(x) ) {
+            throw new IllegalArgumentException( "x is not finite" );
+        }
+        int insertionIndex = xTags.indexOf(x);
+        if (insertionIndex < 0) {
+            insertionIndex = ~insertionIndex;
+            xTags.add(x);
+            MultiY scan = new MultiY();
+            scan.put( "", y );
+            scan.put( planeId1, planeValue1 );
+            yValues.add(insertionIndex, scan);
+        } else {
+            //throw new IllegalArgumentException("already got value at this index");
+            MultiY scan = (MultiY)yValues.get(insertionIndex);
+            scan.put( "", y );
+            scan.put( planeId1, planeValue1 );
         }
     }
     
@@ -120,7 +145,7 @@ public class VectorDataSetBuilder {
         String[] planeIds= vds.getPlaneIds();
         for ( int iplane=0; iplane<planeIds.length; iplane++ ) {
             String plane= planeIds[iplane];
-            VectorDataSet planeDs= (VectorDataSet)vds.getPlanarView(plane);            
+            VectorDataSet planeDs= (VectorDataSet)vds.getPlanarView(plane);
             Units yUnits = (Units)yUnitsMap.get(plane);
             if ( yUnits==null ) {
                 addPlane( plane, planeDs.getYUnits() );
@@ -130,6 +155,7 @@ public class VectorDataSetBuilder {
                 insertY( planeDs.getXTagDouble(i, xUnits), planeDs.getDouble(i, yUnits), plane );
             }
         }
+        addProperties(vds.getProperties());
     }
     
     public void setXUnits(Units units) {
@@ -162,11 +188,11 @@ public class VectorDataSetBuilder {
     
     public VectorDataSet toVectorDataSet() {
         double[][] collapsedYValues = collapseYValues(yValues, planeIDs, yUnitsMap);
-        Units[] yUnitsArray = getUnitsArray(planeIDs, yUnitsMap);        
-        properties.put( "plane-list", Collections.unmodifiableList(planeIDs) ); 
+        Units[] yUnitsArray = getUnitsArray(planeIDs, yUnitsMap);
+        properties.put( "plane-list", Collections.unmodifiableList(planeIDs) );
         return new DefaultVectorDataSet(xTags.toArray(), xUnits, collapsedYValues, yUnitsArray, (String[])planeIDs.toArray(new String[planeIDs.size()]), properties);
     }
-        
+    
     private static double[] insert(double[] array, double value, int index) {
         double[] result = new double[array.length + 1];
         System.arraycopy(array, 0, result, 0, index);
@@ -174,7 +200,7 @@ public class VectorDataSetBuilder {
         System.arraycopy(array, index, result, index + 1, array.length - index);
         return result;
     }
-
+    
     private static double[][] insert(double[][] array, double[] values, int index) {
         double[][] result = new double[array.length + 1][];
         System.arraycopy(array, 0, result, 0, index);
@@ -186,7 +212,7 @@ public class VectorDataSetBuilder {
     private static String toString(double[] array) {
         return toString(array, 0, array.length);
     }
-
+    
     private static String toString(double[] array, int startIndex, int endIndex) {
         if (array.length == 0) return "[]";
         StringBuffer buffer = new StringBuffer("[");
@@ -196,7 +222,7 @@ public class VectorDataSetBuilder {
         buffer.append(array[endIndex - 1]).append(']');
         return buffer.toString();
     }
-
+    
     private static double[][] collapseYValues(List list, List planeIDs, Map unitsMap) {
         double[][] yValues = new double[planeIDs.size()][list.size()];
         int index = 0;
@@ -226,7 +252,7 @@ public class VectorDataSetBuilder {
     private class MultiY {
         private HashMap yValues = new HashMap();
         private void put(String name, double y) {
-            yValues.put(name, new Double(y));            
+            yValues.put(name, new Double(y));
         }
         private double get(String name) {
             Double y = (Double)yValues.get(name);
