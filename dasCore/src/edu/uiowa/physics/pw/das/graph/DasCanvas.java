@@ -877,6 +877,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             ((DasPlot)comp).putClientProperty(LAYER_PROPERTY, PLOT_LAYER);
         } else if (comp instanceof DasAxis) {
             ((DasAxis)comp).putClientProperty(LAYER_PROPERTY, AXIS_LAYER);
+        } else if (comp instanceof Legend ) {
+            ((Legend)comp).putClientProperty( LAYER_PROPERTY, AXIS_LAYER );
         }
         //            else if (comp instanceof DasAnnotation) {
         //                ((DasLabel)comp).putClientProperty(LAYER_PROPERTY, ANNOTATION_LAYER);
