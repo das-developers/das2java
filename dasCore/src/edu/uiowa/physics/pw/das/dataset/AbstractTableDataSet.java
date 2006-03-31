@@ -67,7 +67,7 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
             this.ds = (TableDataSet)ds;
             this.iIndex = i;
         }
-        
+                
         public DataSet getPlanarView(String planeID) {
             return new XSliceDataSet( (AbstractDataSet)ds.getPlanarView(planeID), iIndex );
         }
@@ -122,6 +122,10 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
         
         public String toString() {
             return VectorUtil.toString(this);
+        }
+
+        public Map getProperties() {
+            return new HashMap();
         }
         
     }
