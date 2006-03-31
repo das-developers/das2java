@@ -82,6 +82,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         lastRefreshTime= Integer.MIN_VALUE;
         showProgressRate= true;
         isCancelled= false;
+        running= false;
     }
     
     public static DasProgressPanel createComponentPanel( DasCanvasComponent component, String initialMessage ) {
@@ -200,6 +201,10 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
         //logger.finest( "progressPosition="+position );
+        
+        if ( !running ) {
+            throw new IllegalStateException("setTaskProgress called before started");
+        }
         
         if ( position!=0 && position<currentTaskPosition ) {
             logger.finest( "progress position goes backwards" );
