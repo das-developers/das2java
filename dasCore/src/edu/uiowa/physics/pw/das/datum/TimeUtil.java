@@ -311,7 +311,7 @@ public final class TimeUtil {
     }
     
     public static Datum next( int step, Datum datum ) {
-        if ( step >= HOUR ) throw new IllegalArgumentException("not tested");
+        if ( step >= HOUR && step<WEEK ) throw new IllegalArgumentException("not tested");
         TimeStruct array= toTimeStruct(datum);
         switch (step) {
             case DAY:
