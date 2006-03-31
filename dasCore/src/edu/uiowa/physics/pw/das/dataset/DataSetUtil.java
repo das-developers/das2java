@@ -323,4 +323,26 @@ public class DataSetUtil {
         }
         return builder.toVectorDataSet();
     }
+    
+    /**
+     * returns all planes, including the default plane "".  This is to take care of
+     * inconsistent behavior of the ds.getPlaneIds() implementations.
+     */
+    public static String[] getAllPlaneIds( DataSet ds ) {
+        String[] planes= ds.getPlaneIds();
+        boolean haveDefault=false;
+        for ( int i=0; i<planes.length; i++ ) {
+            if ( planes[i].equals("") ) haveDefault=true;
+        }
+        if ( haveDefault ) {
+            return planes;
+        } else {
+            String[] newPlanes= new String[ planes.length+1] ;
+            newPlanes[0]= "";
+            for ( int i=0; i<planes.length; i++ ) {
+                newPlanes[i+1]= planes[i];
+            }
+            return newPlanes;
+        }
+    }
 }
