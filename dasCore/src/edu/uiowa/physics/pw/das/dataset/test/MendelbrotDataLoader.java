@@ -32,7 +32,7 @@ public class MendelbrotDataLoader extends DataLoader {
     Request currentRequest;
     Request completedRequest;
     
-    Logger logger= DasLogger.getLogger();
+    Logger logger= DasLogger.getLogger(DasLogger.GRAPHICS_LOG, "MendelBrotDataLoader" );
     
     /** Creates a new instance of MendelbrotDataSetDescriptor */
     public MendelbrotDataLoader( Renderer r ) {
