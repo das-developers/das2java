@@ -421,7 +421,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
         
         public DataSet getPlanarView(String planeID) {
-            return null;
+            return planeID.equals("") ? this : null;
         }
         
         public String[] getPlaneIds() {
