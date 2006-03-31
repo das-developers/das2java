@@ -160,5 +160,8 @@ public class EnumerationUnits extends Units {
         }
         return result;
     }    
-            
+    
+    public int getHighestOrdinal() {
+        return this.highestOrdinal;
+    }
 }
