@@ -146,7 +146,7 @@ public class VectorUtil {
     public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
         dumpToAsciiStream(vds, out);
     }
-    
+        
     private static void dumpToDas2Stream( VectorDataSet vds, WritableByteChannel out, boolean asciiTransferTypes ) {
         if (vds.getXLength() == 0) {
             try {
@@ -161,6 +161,12 @@ public class VectorUtil {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             
+            Map properties= vds.getProperties();
+            for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
+                String key= (String)i.next();                
+                sd.setProperty(key, properties.get(key));
+            }
+                        
             DataTransferType xTransferType;
             DataTransferType yTransferType;
             
@@ -185,7 +191,8 @@ public class VectorUtil {
             PacketDescriptor pd = new PacketDescriptor();
             pd.setXDescriptor(xDescriptor);
             
-            String[] planeIds= vds.getPlaneIds();
+            String[] planeIds= DataSetUtil.getAllPlaneIds(vds);
+            
             DatumVector[] yValues = new DatumVector[planeIds.length];
             
             for ( int i=0; i<planeIds.length; i++ ) {
