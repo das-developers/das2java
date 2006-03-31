@@ -107,14 +107,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     private boolean hasFocus=false;
     
+    private Point pressPosition;
+    
     private static class MouseMode {
         String s;
         boolean resizeTop= false;
         boolean resizeBottom= false;
         boolean resizeRight= false;
         boolean resizeLeft= false;
+        Point moveStart= null;
         static MouseMode idle= new MouseMode("idle");
         static MouseMode resize= new MouseMode("resize");
+        static MouseMode move= new MouseMode("move");
         static MouseMode moduleDrag= new MouseMode("moduleDrag");
         static MouseMode hotSpot = new MouseMode("hotSpot");
         
@@ -487,6 +491,24 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                         cursor= new Cursor(Cursor.SE_RESIZE_CURSOR);
                     }
                 }
+            } else if ( ( e.getModifiersEx()& MouseEvent.CTRL_DOWN_MASK ) == MouseEvent.CTRL_DOWN_MASK ) {
+                if ( xLeftSide ) {
+                    if ( yTopSide ) {
+                        result= MouseMode.move;
+                        cursor= new Cursor(Cursor.MOVE_CURSOR);
+                    } else if ( yBottomSide ) {
+                        result= MouseMode.move;
+                        cursor= new Cursor(Cursor.MOVE_CURSOR);
+                    }
+                } else if ( xRightSide ) {
+                    if ( yTopSide ) {
+                        result= MouseMode.move;
+                        cursor= new Cursor(Cursor.MOVE_CURSOR);
+                    } else if  ( yBottomSide ) {
+                        result= MouseMode.move;
+                        cursor= new Cursor(Cursor.MOVE_CURSOR);
+                    }
+                }
             }
         }
         
@@ -508,7 +530,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             result.resizeTop= yTopSide;
             result.resizeRight= xRightSide;
             result.resizeLeft= xLeftSide;
+        } else if ( result==MouseMode.move ) {
+            result.moveStart= e.getPoint();
         }
+        
         if (result!=mouseMode) {
             getGlassPane().setCursor(cursor);
             if (mouseMode==MouseMode.hotSpot && result!=MouseMode.hotSpot) {
@@ -571,6 +596,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         parent.requestFocus();
         xOffset= l.x;
         yOffset= l.y;
+        pressPosition= e.getPoint();
         
         if ( mouseMode==MouseMode.resize ) {
             resizeStart= new Point(0,0);
@@ -586,6 +612,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             } else if (mouseMode.resizeBottom) {
                 resizeStart.y=  0;
             }
+            
+        } else if ( mouseMode==MouseMode.move ) {
+            mouseMode.moveStart= e.getPoint();
+            
+            graphics= (Graphics2D) getGlassPane().getGraphics();
+            graphics.translate(parent.getX(),parent.getY());
+            
         } else if ( mouseMode==MouseMode.hotSpot ) {
             Vector v= hotSpots;
             for (int i=0; i<v.size(); i++) {
@@ -644,6 +677,21 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         if (mouseMode==MouseMode.resize) {
             resizeRenderer.clear(graphics);
             resizeRenderer.renderDrag(graphics,resizeStart,e.getPoint());
+        } else if ( mouseMode==MouseMode.move) {
+            Point moveEnd= e.getPoint();
+            int dx= moveEnd.x - mouseMode.moveStart.x;
+            int dy= moveEnd.y - mouseMode.moveStart.y;
+            
+            int xmin= parent.getColumn().getDMinimum();
+            int xmax= parent.getColumn().getDMaximum();            
+            
+            int ymin= parent.getRow().getDMinimum();
+            int ymax= parent.getRow().getDMaximum();
+            Point p1= new Point( xmin+dx-parent.getX(), ymin+dy-parent.getY() );
+            Point p2= new Point( xmax+dx-parent.getX(), ymax+dy-parent.getY() );
+            
+            resizeRenderer.clear(graphics);
+            resizeRenderer.renderDrag(graphics,p1,p2);
         } else {
             if (active!=null) {
                 //clearSelection(graphics);
@@ -705,6 +753,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         log.finest("mouseReleased");
         if (mouseMode==MouseMode.resize) {
             performResize(e);
+        } else if ( mouseMode==MouseMode.move ) {
+            performMove(e);
         } else {
             if (e.getButton()==button) {
                 if ( active!=null ) {
@@ -818,5 +868,28 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     public void setHoverHighlite( boolean value ) {
         this.hoverHighlite= value;
+    }
+    
+    /**
+     * returns the position of the last mouse press.  This is a hack so that
+     * the mouse position can be obtained to get the context of the press.
+     */
+    public Point getMousePressPosition() {
+        return this.pressPosition;
+    }
+    
+    private void performMove(MouseEvent e) {
+        Point moveEnd= e.getPoint();
+        int dx= moveEnd.x - mouseMode.moveStart.x;
+        int dy= moveEnd.y - mouseMode.moveStart.y;
+        
+        int min= parent.getColumn().getDMinimum();
+        int max= parent.getColumn().getDMaximum();
+        parent.getColumn().setDPosition( min+dx, max+dx );
+        
+        min= parent.getRow().getDMinimum();
+        max= parent.getRow().getDMaximum();
+        parent.getRow().setDPosition( min+dy, max+dy );
+        
     }
 }
