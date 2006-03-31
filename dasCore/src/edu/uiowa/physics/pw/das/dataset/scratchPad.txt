@@ -49,6 +49,8 @@ HyperTable    // arbitrary rank
    getDouble(i,j,k,l,Units)->double
    length(index)->int
    getUnits()->Units
+   slice(index,idim)->HyperTable
+   collapse(offset,length,idim)->HyperTable
 
 TableDataSet
    tableCount()->int
@@ -62,4 +64,7 @@ VectorDataSet
    getDepend()->String[]
    getTags(String)->Vector
    getPlane(name)->DataSet
+
+HyperTableDataSet
+   slice or collapse to reduce to TableDataSet
 
