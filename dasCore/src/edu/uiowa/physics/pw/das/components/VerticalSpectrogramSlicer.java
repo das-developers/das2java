@@ -153,6 +153,10 @@ extends DasPlot implements DataPointSelectionListener {
         //edu.uiowa.physics.pw.das.util.DasDie.println("event handled in "+x+" milliseconds");
     }
     
+    protected boolean isPopupVisible() {
+        return ( popupWindow != null && popupWindow.isVisible()) && getCanvas() != null;
+    }
+    
     public void DataPointSelected(DataPointSelectionEvent e) {    
         long xxx[]= { 0,0,0,0 };
         xxx[0] = System.currentTimeMillis()-e.birthMilli;    
@@ -166,8 +170,8 @@ extends DasPlot implements DataPointSelectionListener {
         VectorDataSet sliceDataSet= tds.getXSlice( DataSetUtil.closestColumn( tds, e.getX() ) );
                       
         renderer.setDataSet(sliceDataSet);
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
-        if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");        
+        if (!isPopupVisible()) {
             showPopup();
         }
         
