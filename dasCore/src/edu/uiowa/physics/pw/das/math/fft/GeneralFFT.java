@@ -20,45 +20,68 @@ public class GeneralFFT {
     int n;
     ComplexDoubleFFT complexDoubleFFT;
     ComplexFloatFFT complexFloatFFT;
-    private static final double LOG_2 = Math.log(2);
+    RealDoubleFFT realDoubleFFT;
+    boolean real;
     
-
+    private static final double LOG_2 = Math.log(2);
     
     /**
      * Initialize the FFT object by constructing wave tables that can be repeatly used.
      */
-    public GeneralFFT( int n, boolean doublePrecision ) {
+    public GeneralFFT( int n, boolean doublePrecision, boolean real ) {
         this.n= n;
         this.doublePrecision= doublePrecision;
         if ( n<2 || n>Math.pow(2,100)) throw new IllegalArgumentException("n too big or too small, n="+n);
+        //this.real= real;
+        this.real= false;  // funny real,false...
         if ( doublePrecision ) {
             complexDoubleFFT= new ComplexDoubleFFT_Mixed(n);
         } else {
             complexFloatFFT= new ComplexFloatFFT_Mixed(n);
         }
+        if ( this.real ) {
+            if ( n%2 != 0 ) throw new IllegalArgumentException("n must be even");
+            if ( doublePrecision ) {
+                realDoubleFFT= new RealDoubleFFT_Even(n);
+            } else {
+                throw new UnsupportedOperationException("not implemented");
+            }
+        } else {
+            if ( doublePrecision ) {
+                complexDoubleFFT= new ComplexDoubleFFT_Mixed(n);
+            } else {
+                complexFloatFFT= new ComplexFloatFFT_Mixed(n);
+            }
+        }
     }
     
     /**
      * creates an FFT object that operates on a ComplexArray.Float of n elements.
-     */    
+     */
     public static GeneralFFT newFloatFFT( int n ) {
-        return new GeneralFFT( n, false );
+        return new GeneralFFT( n, false, false );
     }
     
-     /**
+    /**
      * creates an FFT object that operates on a ComplexArray.Double of n elements.
-     */    
+     */
     public static GeneralFFT newDoubleFFT( int n ) {
-        return new GeneralFFT( n, true );
+        return new GeneralFFT( n, true, false );
     }
     
     /**
      * perform the forward transform on the array in situ.
-     */    
+     */
     public void transform( ComplexArray.Double data ) {
         if ( !doublePrecision ) throw new IllegalArgumentException("expected float arrays, got doubles");
-        complexDoubleFFT.transform( data );
-        double norm = complexDoubleFFT.normalization();
+        double norm;
+        if ( real ) {
+            realDoubleFFT.transform( data );
+            norm= realDoubleFFT.normalization();
+        } else {
+            complexDoubleFFT.transform( data );
+            norm = complexDoubleFFT.normalization();
+        }
         for (int i = 0; i < n; i++) {
             data.setReal( i, data.getReal(i) * norm );
             data.setImag( i, data.getImag(i) * norm );
@@ -67,7 +90,7 @@ public class GeneralFFT {
     
     /**
      * perform the forward transform on the array in situ.
-     */    
+     */
     public void transform( ComplexArray.Float data ) {
         if ( doublePrecision ) throw new IllegalArgumentException("expected double arrays, got floats");
         complexFloatFFT.transform( data );
@@ -80,7 +103,7 @@ public class GeneralFFT {
     
     /**
      * perform the inverse transform on the array in situ.
-     */    
+     */
     public void invTransform( ComplexArray.Double data ) {
         if ( !doublePrecision ) throw new IllegalArgumentException("expected float arrays, got doubles");
         complexDoubleFFT.inverse( data );
@@ -88,7 +111,7 @@ public class GeneralFFT {
     
     /**
      * perform the inverse transform on the array in situ.
-     */    
+     */
     public void invTransform(  ComplexArray.Float data ) {
         if ( doublePrecision ) throw new IllegalArgumentException("expected double arrays, got floats");
         complexFloatFFT.inverse( data );

@@ -83,11 +83,7 @@ public class CurveRenderer extends Renderer {
          VectorDataSet xds= (VectorDataSet)dataSet.getPlanarView(xplane);
          VectorDataSet yds= (VectorDataSet)dataSet.getPlanarView(yplane);
         
-         AffineTransform at= getAffineTransform( xAxis, yAxis );
-         if ( at==null ) return;
-         
         Graphics2D graphics= (Graphics2D) g1.create();
-        graphics.transform( at );
         
         RenderingHints hints0= graphics.getRenderingHints();
         if ( antiAliased ) {
@@ -137,33 +133,6 @@ public class CurveRenderer extends Renderer {
         }
                 
         graphics.setRenderingHints(hints0);
-        /*
-        Graphics2D g= (Graphics2D)g1;
-        g.setStroke( stroke );
-         
-        DataSet ds= getDataSet();
-         
-        Datum xTagWidth;
-        if ( ( xTagWidth=(Datum)ds.getProperty("xTagWidth") ) == null ) {
-            xTagWidth= DataSetUtil.guessXTagWidth(ds);
-        }
-         
-        xds= (VectorDataSet) ds.getPlanarView(xplane);
-        yds= (VectorDataSet) ds.getPlanarView(yplane);
-        xunits= xds.getYUnits();
-        yunits= yds.getYUnits();
-         
-        idata= new double[2][xds.getXLength()];
-        for ( int i=0; i<xds.getXLength(); i++ ) {
-            idata[0][i]= xAxis.transform(xds.getDouble(i,xunits),xunits);
-            idata[1][i]= yAxis.transform(yds.getDouble(i,yunits),yunits);
-        }
-         
-        for ( int i=1; i<xds.getXLength(); i++ ) {
-            if ( ds.getXTagDatum(i).subtract( ds.getXTagDatum(i-1) ) .le(xTagWidth ) )
-                g.drawLine((int)idata[0][i-1],(int)idata[1][i-1],(int)idata[0][i],(int)idata[1][i]);
-        }
-         */
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
@@ -178,7 +147,7 @@ public class CurveRenderer extends Renderer {
         VectorDataSet xds= (VectorDataSet)dataSet.getPlanarView(xplane);
         VectorDataSet yds= (VectorDataSet)dataSet.getPlanarView(yplane);
         
-        path= Util.getPath( xAxis, yAxis, xds, yds, false );
+        path= GraphUtil.getPath( xAxis, yAxis, xds, yds, false );
     }
     
     /** Getter for property lineWidth.

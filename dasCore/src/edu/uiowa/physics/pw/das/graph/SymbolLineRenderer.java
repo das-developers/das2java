@@ -57,6 +57,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     //private Stroke stroke;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     
+    int renderCount=0, updateImageCount=0;
+    
     /** Holds value of property color. */
     private Color color= Color.BLACK;
     
@@ -81,8 +83,14 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     public SymbolLineRenderer(DataSetDescriptor dsd) {
         super(dsd);
     }
+     
+    private void reportCount() {
+        //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+    }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+        renderCount++;
+        reportCount();
         
         long timer0= System.currentTimeMillis();
         
@@ -103,11 +111,6 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         g.setColor(color);
         
         Graphics2D graphics= (Graphics2D) g.create();
-        
-        AffineTransform at= getAffineTransform( xAxis, yAxis );
-        if ( at==null ) return;
-        
-        graphics.transform(at);
         
         RenderingHints hints0= graphics.getRenderingHints();
         if ( antiAliased ) {
@@ -184,6 +187,9 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
+        updateImageCount++;
+        reportCount();
+        
         try {
             super.updatePlotImage( xAxis, yAxis, monitor );
         } catch ( DasException e ) {

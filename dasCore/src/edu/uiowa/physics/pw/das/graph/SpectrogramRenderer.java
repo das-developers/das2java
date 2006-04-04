@@ -50,6 +50,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.w3c.dom.*;
 
@@ -59,13 +60,16 @@ import org.w3c.dom.*;
  */
 public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, edu.uiowa.physics.pw.das.components.propertyeditor.Displayable {
     
+    private Object lockObject= new Object();
     private DasColorBar colorBar;
-    Image plotImage;
-    BufferedImage plotImage2;
-    byte[] raster;
+    private Image plotImage;
+    private byte[] raster;
+    
     DatumRange imageXRange;
     DatumRange imageYRange;
     DasAxis.Memento xmemento, ymemento, cmemento;
+    
+    int updateImageCount=0, renderCount=0;
     
     private TableDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
     
@@ -76,6 +80,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     RebinListener rebinListener= new RebinListener();
+    
+    private static Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
     
     /** Holds value of property rebinner. */
     private RebinnerEnum rebinnerEnum;
@@ -188,35 +194,19 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+        logger.finer("entering SpectrogramRenderer.render");
         Graphics2D g2= (Graphics2D)g.create();
         
-        // TODO: This seems to work as long as the upper-left hand corner of the image doesn't move!!!
-        //   works fine for resize of lower-right and range changes.
-        AffineTransform at= getAffineTransform( xAxis, yAxis );
-        
-        if ( at==null ) {
-            return; // TODO: consider throwing exception
-        }
-        
-        if ( this.ds==null && lastException!=null ) {
-            renderException(g2,xAxis,yAxis,lastException);
-        } else if (plotImage!=null) {
-            Point2D p;
-            if ( !at.isIdentity() ) {
-                try {
-                    g2.transform(at);
-                    g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
-                    p= new Point2D.Double( xAxis.transform(imageXRange.min()), yAxis.transform(imageYRange.max()) );
-                    p= at.inverseTransform( p, p );
-                } catch ( NoninvertibleTransformException e ) {
-                    return;
-                }
-            } else {
+        renderCount ++;
+        reportCount();
+        synchronized (lockObject ) {
+            if ( plotImage==null && lastException!=null ) {
+                renderException(g2,xAxis,yAxis,lastException);
+            } else if (plotImage!=null) {
+                Point2D p;
                 p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
+                g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
             }
-            
-            g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
-            
         }
         g2.dispose();
     }
@@ -232,7 +222,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private static byte[] transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb ) {
         
         if ( rebinData.tableCount() > 1 ) throw new IllegalArgumentException("TableDataSet contains more than one table");
-        DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "converting to pixel map" );
+        logger.fine( "converting to pixel map" );
         //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
         int itable=0;
         int ny= rebinData.getYLength(itable);
@@ -262,13 +252,19 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return pix;
     }
     
+    private void reportCount() {
+       // System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+    }
     
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
+        logger.finer("entering SpectrogramRenderer.updatePlotImage");
+        updateImageCount++;
+        reportCount();
         try {
             int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
             int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
             
-            if ( plotImage2!=null && xmemento!=null && ymemento!=null
+            if ( raster!=null && xmemento!=null && ymemento!=null
                     && xAxis.getMemento().equals( xmemento ) && yAxis.getMemento().equals( ymemento )
                     && colorBar.getMemento().equals( cmemento ) ) {
                 logger.fine("same xaxis, yaxis, reusing raster");
@@ -276,12 +272,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             } else {
                 
                 if (getParent()==null  || w<=1 || h<=1 ) {
-                    DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).finest("canvas not useable!!!");
+                    logger.finest("canvas not useable!!!");
                     return;
                 }
                 
                 if ( this.ds == null) {
-                    DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "got null dataset, setting image to null" );
+                    logger.fine( "got null dataset, setting image to null" );
                     plotImage= null;
                     rebinDataSet= null;
                     imageXRange= null;
@@ -305,10 +301,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     imageXRange= xAxis.getDatumRange();
                     imageYRange= yAxis.getDatumRange();
                     
-                    DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG ).fine( "rebinning to pixel resolution" );
+                    logger.fine( "rebinning to pixel resolution" );
                     
                     DataSetRebinner rebinner= this.rebinnerEnum.getRebinner();
-                    //rebinner= new NewAverageTableRebinner();
                     
                     long t0;
                     
@@ -323,9 +318,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     raster= transformSimpleTableDataSet( rebinDataSet, colorBar );
                     
                 }
-                
-                
             }
+            
+            BufferedImage plotImage2;  // index color model
             
             IndexColorModel model= colorBar.getIndexColorModel();
             plotImage2= new BufferedImage( w, h, BufferedImage.TYPE_BYTE_INDEXED, model );
@@ -334,8 +329,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             
             r.setDataElements( 0,0,w,h,raster);
             
-            plotImage= plotImage2;
-            
+            synchronized ( lockObject ) {
+                plotImage= plotImage2;
+            }
+        } catch ( NoDataInIntervalException e ) {
+            lastException= e;
+            plotImage= null;
         } finally {
             getParent().repaint();
         }
@@ -466,7 +465,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setRebinner( RebinnerEnum rebinnerEnum) {
         this.rebinnerEnum = rebinnerEnum;
-        this.plotImage2= null;
+        this.raster= null;
         this.plotImage= null;
         refreshImage();
     }
@@ -504,10 +503,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     public void setDataSet(DataSet ds) {
-        this.plotImage2= null;
+        this.raster= null;
+        // TODO: preserve plotImage until updatePlotImage is done
         this.plotImage= null;
         super.setDataSet(ds);
-        
     }
     
 }

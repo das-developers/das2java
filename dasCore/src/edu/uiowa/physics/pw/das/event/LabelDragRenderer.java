@@ -10,6 +10,8 @@ import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -230,19 +232,46 @@ public class LabelDragRenderer implements DragRenderer {
     
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         logger.finest("renderDrag "+p2);
+        Rectangle[] result;
         if ( tooltip ) {
             if ( infoLabel==null ) infoLabel= new InfoLabel();
             Point p= (Point)p2.clone();
             SwingUtilities.convertPointToScreen( p, parent );
             infoLabel.setText( label, p );
-            return new Rectangle[0];
+            result= new Rectangle[0];
         } else {
             if ( label==null ) {
-                return new Rectangle[0];
+                result= new Rectangle[0];
             } else {
                 Rectangle r= paintLabel( g, p2 );
-                return new Rectangle[] { r };
+                result= new Rectangle[] { r };
             }
+        }        
+        return result;
+    }
+    
+    /**
+     * added to more conveniently keep track of dirty bounds when subclassing.
+     */
+    ArrayList newDirtyBounds;
+    
+    protected void resetDirtyBounds( ) {
+        newDirtyBounds= new ArrayList();
+    }
+    
+    protected void addDirtyBounds( Rectangle[] dirty ) {        
+        if ( dirty!=null && dirty.length>0 ) newDirtyBounds.addAll( Arrays.asList( dirty ) );
+    }
+    
+    protected void addDirtyBounds( Rectangle dirty ) {
+        if ( dirty!=null ) newDirtyBounds.add( dirty );
+    }
+    
+    protected Rectangle[] getDirtyBounds() {
+        try {
+        return (Rectangle[]) newDirtyBounds.toArray( new Rectangle[newDirtyBounds.size()] );
+        } catch ( RuntimeException e ) {
+            throw e;
         }
     }
     

@@ -1,0 +1,37 @@
+Best Formatter 
+
+Purpose: for a group of numbers, select a formatter that correctly and 
+  efficiently represents each number of the set.
+
+Cases:
+   1. linearly spaced.  
+   2. logarithmically spaced.
+   3. arbitary set of similar magnitude
+   4. arbitary set of differing magnitudes
+   3a. similar, large magnitude
+   3b. similar, order-one magnitude
+
+Is (1) an instance of (3), and (2) an instance of (4)?
+
+Case 3b solution:
+   Find the greatest common divisor of the numbers, and let this
+set the number of fractional decimal places.  
+
+Case 3a solution:
+   Identify the base exponent to make each number order one, specifically
+so the mantissas of the numbers vary from 1-100.  Then use gcd to determine
+number of digimal places, and express each number with the common exponent
+pulled out.
+
+Case 4 solution:
+???
+
+
+
+Case 3 examples:
+dv= DatumVector.newDatumVector( new double[] { 100000, 125000, 105000 }, Units.dimensionless );
+
+Case 4 examples:
+dv= DatumVector.newDatumVector( new double[] { 0.002, 2.001, 105.001 }, Units.dimensionless );
+dv= DatumVector.newDatumVector( new double[] { 1e3, 1e6, 1e9, 2.345e7 }, Units.dimensionless );
+dv= DatumVector.newDatumVector( new double[] { 0.001, 1.0, 1000.00 }, Units.dimensionless );

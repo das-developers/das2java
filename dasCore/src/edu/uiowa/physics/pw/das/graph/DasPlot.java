@@ -25,15 +25,16 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,12 +48,13 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.io.*;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
@@ -61,6 +63,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected DataSet Data;
     private DasAxis xAxis;
     private DasAxis yAxis;
+    
+    DasAxis.Memento xmemento;
+    DasAxis.Memento ymemento;
     
     protected String offsetTime = "";
     protected String plotTitle = "";
@@ -72,12 +77,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     DnDSupport dndSupport;
     
+    static Logger logger= DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG );
+    
     /* cacheImage is a cached image that all the renderers have drawn on.  This
      * relaxes the need for renderers' render method to execute in
      * animation-interactive time.
      */
     boolean cacheImageValid= false;
     Image cacheImage;
+    
+    boolean preview= false;
     
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         setOpaque(false);
@@ -117,6 +126,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             mouseAdapter.setSecondaryModule(x);
             
             mouseAdapter.setPrimaryModule(x);
+            
+            x= new MouseModule( this, new LengthDragRenderer( this, xAxis, yAxis ), "Length" );
+            mouseAdapter.addMouseModule(x);
             
             JMenuItem dumpMenuItem= new JMenuItem("Dump Data Set To File");
             dumpMenuItem.addActionListener(new ActionListener() {
@@ -198,21 +210,67 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         if (yAxis != oldValue) firePropertyChange("yAxis", oldValue, yAxis);
     }
-        
+    
     protected void updateImmediately() {
-        cacheImageValid= false;
+        paintImmediately(0,0,getWidth(),getHeight());
+        logger.finer("DasPlot.updateImmediately");
         for (int i=0; i<renderers.size(); i++) {
             Renderer rend= (Renderer)renderers.get(i);
             rend.update();
         }
     }
     
+    private String getATScaleTranslateString( AffineTransform at ) {
+        String atDesc;
+        NumberFormat nf= new DecimalFormat( "0.00" );
+        
+        if ( at==null ) {
+            return "null";
+        } else if ( !at.isIdentity() ) {
+            atDesc= "scaleX:"+nf.format(at.getScaleX()) +" translateX:"+ nf.format(at.getTranslateX());
+            return atDesc;
+        } else {
+            return "identity";
+        }
+    }
     
-    DataRequestThread drt;
+    /*
+     * returns the AffineTransform to transform data from the last updatePlotImage call
+     * axes (if super.updatePlotImage was called), or null if the transform is not possible.
+     */
+    protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
+        if ( xmemento==null ) {
+            logger.fine( "unable to calculate AT, because old transform is not defined." );
+            return null;
+        } else {
+            AffineTransform at= new AffineTransform();
+            at= xAxis.getAffineTransform(xmemento,at);
+            at= new AffineTransform();
+            at= xAxis.getAffineTransform(xmemento,at);
+            at= yAxis.getAffineTransform(ymemento,at);
+            return at;
+        }
+    }
     
-    DasProgressPanel progressPanel;
-   
+    /**
+     * at.isIdentity returns false if the at is not precisely identity,
+     * so this is used to account for fuzz.
+     */
+    private boolean isIdentity( AffineTransform at ) {
+        return at.isIdentity() || 
+                ( Math.abs( at.getScaleX()-1.00 ) < 0.001 
+            && Math.abs( at.getScaleY()-1.00 ) < 0.001 
+            && Math.abs( at.getTranslateX() ) < 0.001  
+            && Math.abs( at.getTranslateY() ) < 0.001 );
+    }
+    
     protected void paintComponent(Graphics graphics1) {
+                
+        if ( ! EventQueue.isDispatchThread() ) {
+            throw new RuntimeException("not event thread");
+        }
+        
+        logger.finer( "entering DasPlot.paintComponent" );
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         int xSize= getColumn().getDMaximum() - x;
@@ -224,24 +282,59 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         
         Graphics2D graphics= (Graphics2D)graphics1;
-        
+        graphics.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         graphics.translate(-getX(), -getY());
         if ( cacheImageValid && !getCanvas().isPrintingThread() ) {
             
-            graphics.drawImage( cacheImage, x-1, y-1, getWidth(), getHeight(), this );
-            //graphics.drawString( "cacheImage", getWidth()/2, getHeight()/2 );
+            Graphics2D atGraphics= (Graphics2D)graphics.create();
             
-        } else {                        
+            AffineTransform at= getAffineTransform( xAxis, yAxis );            
+            if ( at==null || ( preview==false && !isIdentity(at) ) ) {
+                atGraphics.drawImage( cacheImage, x-1, y-1, getWidth(), getHeight(), this );
+                Color c= new Color( 255, 255, 255, 128 );
+                atGraphics.setColor( c );
+                atGraphics.fillRect( x-1, y-1, getWidth(), getHeight() );
+                atGraphics.setColor( Color.DARK_GRAY );
+                atGraphics.drawString( "moment...", getWidth()/2, getHeight()/2 );
+                logger.finest( " using cacheImage with ricepaper to invalidate" );
+                
+            } else {
+                String atDesc;
+                NumberFormat nf= new DecimalFormat( "0.00" );
+                atDesc= getATScaleTranslateString( at );
+            
+                if ( !at.isIdentity() ) {
+                    logger.finest( " using cacheImage w/AT "+atDesc );
+                    atGraphics.transform(at);
+                } else {
+                    logger.finest( " using cacheImage" );
+                }
+            
+                atGraphics.drawImage( cacheImage, x-1, y-1, getWidth(), getHeight(), this );
+                //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
+            
+            }
+            
+            atGraphics.dispose();
+            
+        } else {
+            
             Graphics2D plotGraphics;
-            if ( getCanvas().isPrintingThread() ) { 
+            if ( getCanvas().isPrintingThread() ) {
                 plotGraphics = (Graphics2D)graphics.create(x-1, y-1, xSize+2, ySize+2);
+                logger.finest( " printing thread, drawing" );
             } else {
                 cacheImage= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
                 plotGraphics= (Graphics2D)cacheImage.getGraphics();
                 plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
+                logger.finest( " rebuilding cacheImage" );
             }
-                        
+            
             plotGraphics.translate(-x + 1, -y + 1);
+            
+            if ( drawGrid ) {
+                drawGrid(plotGraphics);
+            }
             
             drawContent(plotGraphics);
             
@@ -257,7 +350,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if ( renderers.size()==0 ) {
                 graphics.setColor(Color.gray);
                 String s= "(no renderers)";
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("dasPlot has no renderers");
+                logger.info("dasPlot has no renderers");
                 graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
             } else if ( noneActive ) {
                 graphics.setColor(Color.gray);
@@ -269,6 +362,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 cacheImageValid= true;
                 graphics.drawImage( cacheImage, x-1, y-1, getWidth(), getHeight(), this );
                 //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
+
+                xmemento= xAxis.getMemento();
+                ymemento= yAxis.getMemento();
+
+                DatumRange dr= new DatumRange( xAxis.getDataRange().getMinimum(),
+                        xAxis.getDataRange().getMaximum(), xAxis.getDataRange().getUnits() );
+                logger.finest( "recalc cacheImage, xmemento="+xmemento + " dr="+dr );
             }
         }
         
@@ -288,6 +388,26 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         graphics.translate(getX(), getY());
         getMouseAdapter().paint(graphics);
+    }
+    
+    private void drawGrid( Graphics2D g ) {
+        g.setColor( Color.lightGray );
+        if ( yAxis.isVisible() ) {
+            TickVDescriptor tickDescriptor= yAxis.getTickV();
+            DatumVector ticks= tickDescriptor.getMajorTicks();
+            for ( int i=0; i<ticks.getLength(); i++ ) {
+                int y= (int)yAxis.transform(ticks.get(i));
+                g.drawLine( getX(), y, getX()+getWidth(), y );
+            }
+        }
+        if ( xAxis.isVisible() ) {
+            TickVDescriptor tickDescriptor= xAxis.getTickV();
+            DatumVector ticks= tickDescriptor.getMajorTicks();
+            for ( int i=0; i<ticks.getLength(); i++ ) {
+                int x= (int)xAxis.transform(ticks.get(i));
+                g.drawLine( x, getY(), x, getY()+getHeight() );
+            }
+        }
     }
     
     protected void drawContent(Graphics2D g) {
@@ -372,7 +492,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected class RebinListener implements java.beans.PropertyChangeListener {
         public void propertyChange(java.beans.PropertyChangeEvent e) {
-            //            DasApplication.getDefaultApplication().getLogger().fine("rebin listener got property change: "+e.getNewValue());
+            //            logger.fine("rebin listener got property change: "+e.getNewValue());
             markDirty();
             DasPlot.this.update();
         }
@@ -402,7 +522,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public void addRenderer(Renderer rend) {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("addRenderer("+rend+")");
+        logger.info("addRenderer("+rend+")");
         if (rend.parent != null) {
             rend.parent.removeRenderer(rend);
         }
@@ -412,8 +532,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             rend.installRenderer();
         }
         rend.update();
-        markDirty();
-        repaint();
+        invalidateCacheImage();
     }
     
     public void removeRenderer(Renderer rend) {
@@ -697,10 +816,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
     }
     
-    public DasProgressMonitor getDasProgressMonitor() {
-        return progressPanel;
-    }
-    
     public Shape getActiveRegion() {
         return getBounds();
     }
@@ -761,15 +876,51 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (e instanceof DasRendererUpdateEvent) {
             DasRendererUpdateEvent drue = (DasRendererUpdateEvent)e;
             drue.getRenderer().updateImmediately();
+            cacheImageValid= false;
             repaint();
         } else {
             super.processEvent(e);
         }
     }
-
-    void markDirty() {
+    
+    protected void invalidateCacheImage() {
         cacheImageValid= false;
-        super.markDirty();
+        repaint();
     }
     
+    void markDirty() {
+        logger.finer("DasPlot.markDirty");
+        super.markDirty();
+        repaint(); 
+    }
+    
+    /**
+     * Holds value of property drawGrid.
+     */
+    private boolean drawGrid= false;
+    
+    /**
+     * Getter for property drawGrid.
+     * @return Value of property drawGrid.
+     */
+    public boolean isDrawGrid() {
+        return this.drawGrid;
+    }
+    
+    /**
+     * Setter for property drawGrid.
+     * @param drawGrid New value of property drawGrid.
+     */
+    public void setDrawGrid(boolean drawGrid) {
+        this.drawGrid = drawGrid;
+        this.update();
+    }
+    
+    public void setPreviewEnabled( boolean preview ) {
+        this.preview= preview;
+    } 
+    
+    public boolean isPreviewEnabled() {
+        return this.preview;
+    }
 }

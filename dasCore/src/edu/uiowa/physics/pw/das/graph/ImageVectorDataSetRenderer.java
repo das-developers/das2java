@@ -57,27 +57,14 @@ public class ImageVectorDataSetRenderer extends Renderer {
     private void renderGhostly( java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
         Graphics2D g2= (Graphics2D)g1.create();
         
-        AffineTransform at= getAffineTransform( xAxis, yAxis );
-        
-        if ( at==null ) {
-            return; // TODO: consider throwing exception
-        }
-        
         if (getDataSet()==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
         } else if (plotImage!=null) {
             Point2D p;
-
-            try {
-                g2.transform(at);
-                //g2.setRenderingHint( RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED );
-                g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
-                p= new Point2D.Double( xAxis.transform(imageXRange.min()), yAxis.transform(imageYRange.max()) );
-                p= at.inverseTransform( p, p );
-            } catch ( NoninvertibleTransformException e ) {
-                return;
-            }
-
+            
+            g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
+            p= new Point2D.Double( xAxis.transform(imageXRange.min()), yAxis.transform(imageYRange.max()) );
+            
             g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
             
         }
@@ -86,7 +73,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     
     
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
-        renderGhostly( g1, xAxis, yAxis );        
+        renderGhostly( g1, xAxis, yAxis );
     }
     
     private void ghostlyImage2( DasAxis xAxis, DasAxis yAxis, VectorDataSet ds ) {
@@ -125,7 +112,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int ix= (int)xAxis.transform( ds.getXTagDatum(i) );
             switch( state ) {
                 case STATE_MOVETO:
-                    g.fillRect( ix, iy, 1, 1 ); 
+                    g.fillRect( ix, iy, 1, 1 );
                     ix0= ix; iy0=iy; break;
                 case STATE_LINETO:
                     g.draw( new Line2D.Float( ix0, iy0, ix, iy ) );
@@ -223,7 +210,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
         imageXRange= xrange;
         imageYRange= yrange;
-    }    
+    }
     
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, edu.uiowa.physics.pw.das.util.DasProgressMonitor monitor) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
@@ -231,11 +218,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
         long t0= System.currentTimeMillis();
         VectorDataSet ds= (VectorDataSet)getDataSet();
         if ( ds==null ) return;
-                
-        DatumRange visibleRange= xAxis.getDatumRange();        
+        
+        DatumRange visibleRange= xAxis.getDatumRange();
         int firstIndex= DataSetUtil.getPreviousColumn( ds, visibleRange.min() );
         int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );
-                
+        
         if ( ( lastIndex-firstIndex ) > 20 * xAxis.getColumn().getWidth() ) {
             logger.info("rendering with histogram");
             ghostlyImage( xAxis, yAxis, ds );

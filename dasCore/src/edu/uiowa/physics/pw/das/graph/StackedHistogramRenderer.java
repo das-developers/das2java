@@ -118,33 +118,15 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        AffineTransform at= getAffineTransform( xAxis, yAxis );
-        if ( at==null ) {
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("at is null");
-            return;
-        }
+        
         Graphics2D g2= (Graphics2D)g.create();
         
         Point2D p;
         if (getDataSet()==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
         } else if (plotImage!=null) {
-          g2.transform( at );
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
-            /*  if ( !at.isIdentity() ) { // this doesn't work because of the labelWidth/2 offset.
-                try {
-                    g2.transform( at );
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
-                    //p= new Point2D.Double( xAxis.transform(imageXRange.min()), yAxis.transform(imageYRange.max()) );                    
-                    //p= at.inverseTransform( p, p );
-                    p= new Point2D.Double( parent.getColumn().getDMinimum(), parent.getRow().getDMinimum() );
-                } catch ( NoninvertibleTransformException e ) {
-                    return;
-                }
-            } else { */
-            
-                p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
-            /* } */
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
+            p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
             
             g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
             

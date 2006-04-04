@@ -1,0 +1,498 @@
+/*
+ * GraphicalLogFormatter.java
+ *
+ * Created on December 8, 2005, 2:32 PM
+ *
+ *
+ */
+
+package edu.uiowa.physics.pw.das.util;
+import edu.uiowa.physics.pw.das.DasApplication;
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.event.BoxRenderer;
+import edu.uiowa.physics.pw.das.event.BoxSelectionEvent;
+import edu.uiowa.physics.pw.das.event.BoxSelectionListener;
+import edu.uiowa.physics.pw.das.event.BoxSelectorMouseModule;
+import edu.uiowa.physics.pw.das.event.LabelDragRenderer;
+import edu.uiowa.physics.pw.das.event.MouseModule;
+import edu.uiowa.physics.pw.das.graph.DasAxis;
+import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import edu.uiowa.physics.pw.das.graph.DasColumn;
+import edu.uiowa.physics.pw.das.graph.DasPlot;
+import edu.uiowa.physics.pw.das.graph.DasRow;
+import edu.uiowa.physics.pw.das.graph.Legend;
+import edu.uiowa.physics.pw.das.graph.Renderer;
+import edu.uiowa.physics.pw.das.system.DasLogger;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+
+
+
+
+/**
+ *
+ * @author Jeremy
+ */
+public class GraphicalLogHandler extends Handler {
+    
+    List records= new ArrayList();
+    List yAxisValues= new ArrayList();
+    List times= new ArrayList();
+    
+    Renderer renderer;
+    boolean updating= false;
+    Thread updateThread;
+    
+    long time0;
+    
+    HashMap loggerMap= new HashMap();
+    HashMap yaxisMap= new HashMap();
+    
+    private final int YAXIS_THREAD = -199;
+    private final int YAXIS_CLASS = -198;
+    //private final int yaxisDimension = YAXIS_THREAD;
+    private final int yaxisDimension = YAXIS_CLASS;
+    
+    DasAxis xaxis;
+    Legend legend;
+    
+    JFrame frame;
+    
+    // this is to avoid initialization failures
+    long sleepInitiallyTime= 2000; // milliseconds
+    
+    public GraphicalLogHandler() {
+        time0= System.currentTimeMillis();
+    }
+    
+    private void createCanvas() {
+        if  ( loggerMap.size()==0 ) {
+            loggerMap.put( DasLogger.getLogger(DasLogger.APPLICATION_LOG).getName(), Color.black );
+            loggerMap.put( DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG).getName(), Color.blue );
+            loggerMap.put( DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).getName(), Color.YELLOW );
+            loggerMap.put( DasLogger.getLogger(DasLogger.GRAPHICS_LOG ).getName(), Color.PINK );
+            loggerMap.put( DasLogger.getLogger(DasLogger.SYSTEM_LOG ).getName(), Color.gray );
+            loggerMap.put( DasLogger.getLogger(DasLogger.GUI_LOG ).getName(), Color.green );
+            loggerMap.put( DasLogger.getLogger(DasLogger.DASML_LOG).getName(), Color.LIGHT_GRAY );
+        }
+        
+        DasCanvas canvas= new DasCanvas(800,400);
+        DasPlot plot= DasPlot.createPlot( new DatumRange( 0, 10, Units.seconds ) ,
+                new DatumRange( 0, 10, Units.dimensionless ) );
+        xaxis= plot.getXAxis();
+        xaxis.setAnimated(false);
+        
+        renderer.setDataSetLoader(null);
+        plot.addRenderer( renderer );
+        
+        canvas.add( plot, DasRow.create( canvas ), DasColumn.create(canvas) );
+        
+        MouseModule mm=  getMouseModule();
+        plot.getMouseAdapter().addMouseModule( mm );
+        plot.getMouseAdapter().setPrimaryModule( mm );
+        
+        mm= getShowLogMouseModule( plot );
+        plot.getMouseAdapter().addMouseModule( mm );
+        plot.getMouseAdapter().setSecondaryModule( mm );
+        
+        legend= new Legend();
+        canvas.add( legend, new DasRow( canvas, 0.1, 0.5 ), new DasColumn( canvas, 0.8, 0.98 ) );
+        
+        for ( Iterator i= loggerMap.keySet().iterator(); i.hasNext(); ) {
+            Object key= i.next();
+            String name= String.valueOf(key);
+            if ( name.equals("") ) name="<default>";
+            legend.add( legend.getIcon( (Color)loggerMap.get(key) ), name );
+        }
+        
+        frame= DasApplication.getDefaultApplication().createMainFrame( );
+        JPanel appPanel= new JPanel( new BorderLayout() );
+        appPanel.add( canvas, BorderLayout.CENTER );
+        
+        JPanel controlPanel= new JPanel();
+        controlPanel.setLayout( new BoxLayout( controlPanel, BoxLayout.X_AXIS ) );
+        
+        JCheckBox jcb= new JCheckBox( getUpdatingAction() );
+        jcb.setSelected(updating);
+        
+        startUpdateThread();
+        
+        controlPanel.add( jcb );
+        
+        JButton x= new JButton( getUpdateAction() );
+        controlPanel.add( x );
+        
+        appPanel.add( controlPanel, BorderLayout.SOUTH );
+        
+        
+        
+        frame.getContentPane().add( appPanel );
+        frame.setVisible( true );
+        frame.pack();
+        frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+    }
+    
+    private Action getUpdatingAction() {
+        return new AbstractAction( "Updating" ) {
+            public void actionPerformed( ActionEvent e ) {
+                JCheckBox source= (JCheckBox)e.getSource();
+                updating= source.isSelected();
+                if ( updating ) startUpdateThread();
+            }
+        };
+    }
+    
+    private Action getUpdateAction() {
+        return new AbstractAction( "Update" ) {
+            public void actionPerformed( ActionEvent e ) {
+                update();
+            }
+        };
+    }
+    
+    private void update() {
+        long endMillis= System.currentTimeMillis() - time0 + 2000;
+        if ( endMillis < 10000 ) endMillis= 10000;
+        Datum end= Units.seconds.createDatum( endMillis/1000. );
+        DatumRange range= new DatumRange( end.subtract( xaxis.getDatumRange().width() ), end );
+        xaxis.setDatumRange( range );
+    }
+    
+    private void startUpdateThread() {
+        if ( updateThread==null ) {
+            updateThread= new Thread( new Runnable() {
+                public void run() {
+                    while ( true ) {
+                        try { Thread.sleep(500); } catch ( InterruptedException e ) { }
+                        if ( updating ) update();
+                    }
+                }
+            }, "graphicalHandlerUpdateThread" );
+            updateThread.start();
+        }
+    }
+    
+    private boolean checkMyMessages( StackTraceElement[] st ) {
+        String myName= this.getClass().getName();
+        boolean result= false;
+        for ( int i=1; i<st.length; i++ ) {
+            if ( st[i].getClassName().equals(myName) ) {
+                result= true;
+            }
+            if ( st[i].getClassName().indexOf("DasLogger")>-1 ) result=true;
+        }
+        return result;
+    }
+    
+    public void publish( LogRecord rec ) {
+        StackTraceElement[] st= new Throwable().getStackTrace();
+        
+        if ( checkMyMessages(st) ) return;
+        if ( Thread.currentThread().getName().equals( "graphicalHandlerUpdateThread" ) ) return;
+        
+        if ( renderer==null &&
+                ( System.currentTimeMillis() - this.time0 ) > sleepInitiallyTime ) getRenderer();
+        
+        String yAxisName;
+        if ( yaxisDimension==YAXIS_THREAD ) {
+            yAxisName= Thread.currentThread().getName() ;
+        } else if ( yaxisDimension==YAXIS_CLASS ) {
+            yAxisName= rec.getSourceClassName();
+        }
+        
+        Integer yValue= (Integer)yaxisMap.get( yAxisName );
+        if ( yValue==null ) {
+            yValue= new Integer( yaxisMap.size() );
+            yaxisMap.put( yAxisName, yValue );
+        }
+        synchronized (this) {
+            Long time= new Long( rec.getMillis() - time0 ) ;
+            int index= Collections.binarySearch(times, time );
+            if ( index<0 ) {
+                index= -1-index;
+            } else {
+                int fudge=0;
+                while ( index>=0 ) {
+                    fudge++;
+                    time= new Long( rec.getMillis() - time0 + fudge ) ;
+                    index= Collections.binarySearch(times, time );
+                }
+                index= -1-index;
+            }
+            records.add( index, rec );
+            yAxisValues.add( index, yValue );
+            times.add( index, time );
+            
+        }
+        
+        // consider how to not record it's own messages
+    }
+    
+    public void flush() {
+        if ( renderer==null ) getRenderer();
+        renderer.update();
+    }
+    
+    public void close() {
+    }
+    
+    ObjectLocator objectLocator;
+    public class LogRenderer extends Renderer {
+        String searchRegex="";
+        
+        public String getSearchRegex() {
+            return searchRegex;
+        }
+        public void setSearchRegex( String regex ) {
+            this.searchRegex= regex;
+            update();
+        }
+        
+        public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+            
+            Graphics2D g= (Graphics2D)g1;
+            g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+            
+            int ix0= (int) xAxis.transform( xAxis.getDataMinimum() );
+            g.setColor( Color.gray );
+            for ( Iterator iterator= yaxisMap.keySet().iterator(); iterator.hasNext(); ) {
+                Object name= iterator.next();
+                Integer ithread= (Integer)yaxisMap.get(name);
+                int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread.intValue()) );
+                g.drawString( ""+name, ix0+2, iy );
+            }
+            
+            synchronized(GraphicalLogHandler.this) {
+                
+                objectLocator= new ObjectLocator();
+                
+                long minMilli= (long)xAxis.getDataMinimum().doubleValue( Units.milliseconds );
+                long maxMilli= (long)xAxis.getDataMaximum().doubleValue( Units.milliseconds );
+                
+                int firstIndex= Collections.binarySearch( times, new Long( minMilli ) );
+                if ( firstIndex<0 ) firstIndex= -1 - firstIndex;
+                int lastIndex= Collections.binarySearch( times, new Long( maxMilli ) );
+                if ( lastIndex<0 ) {
+                    lastIndex= -1 - lastIndex;
+                } else {
+                    lastIndex++;
+                }
+                
+                int lastX=-999;
+                int lastY=-999;
+                int collisionCount=0;
+                
+                if ( !searchRegex.equals("") ) {
+                    for ( int i=firstIndex; i<lastIndex; i++ ) {
+                        LogRecord record= (LogRecord) records.get(i);
+                        if ( record.getMessage().matches( searchRegex ) ) {
+                            int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
+                            g.setColor( Color.lightGray );
+                            g.fillRect( ix-2, getParent().getY(), 5, getParent().getHeight() );
+                            objectLocator.addObject( new Rectangle( ix-2, getParent().getY(), 5, getParent().getHeight() ),
+                                    record );
+                        }
+                    }
+                }
+                
+                for ( int i=firstIndex; i<lastIndex; i++ ) {
+                    
+                    LogRecord record= (LogRecord) records.get(i);
+                    
+                    int ithread= ((Integer)yAxisValues.get(i)).intValue();
+                    
+                    int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread) );
+                    int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
+                    
+                    if ( ix==lastX && iy==lastY ) {
+                        collisionCount++;
+                    } else {
+                        lastX= ix;
+                        lastY= iy;
+                        collisionCount=0;
+                    }
+                    
+                    if ( !searchRegex.equals("") ) {
+                        if ( record.getMessage().matches( searchRegex ) ) {
+                            g.setColor( Color.lightGray );
+                            g.fillRect( ix-2, 0, 5, 100 );
+                        }
+                    }
+                    
+                    Color color= (Color)loggerMap.get( record.getLoggerName() );
+                    if ( color==null ) {
+                        Object key= record.getLoggerName();
+                        loggerMap.put( key, Color.ORANGE );
+                        legend.add( legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
+                        legend.repaint();
+                    }
+                    g.setColor( color );
+                    
+                    int height= record.getLevel().intValue() / 100;
+                    g.fillRect( ix-2, iy-height-2*collisionCount, 5, height );
+                    objectLocator.addObject( new Rectangle( ix-2, iy-height-2*collisionCount, 5, height ), record );
+                }
+            }
+        }
+        
+        protected void installRenderer() { } ;
+        
+        protected void uninstallRenderer() { } ;
+        
+        protected Element getDOMElement( Document document ) { return null; }
+        
+    }
+    
+    Renderer getRenderer() {
+        if ( renderer==null ) {
+            renderer= new LogRenderer();
+            createCanvas();
+        }
+        return renderer;
+    }
+    
+    private class LookupDragRenderer extends LabelDragRenderer {
+        DasAxis xaxis, yaxis;
+        DasPlot parent;
+        
+        LookupDragRenderer( DasPlot parent ) {
+            super( parent );
+            this.xaxis= parent.getXAxis();
+            this.yaxis= parent.getYAxis();
+            this.parent= parent;
+        }
+        
+        public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
+            LogRecord select= (LogRecord)objectLocator.closestObject( new Point( (int)p2.getX()+parent.getX(), (int)p2.getY() + parent.getY() ));
+            int iclosest= records.indexOf( select );
+            
+            String label;
+            Rectangle[] myDirtyBounds;
+            
+            if ( select==null ) {
+                label= "n/a";
+                myDirtyBounds= new Rectangle[] { new Rectangle( 0,0,0,0 ), new Rectangle( 0,0,0,0 ) };
+                
+            } else {
+                label= select.getLoggerName()+":"+select.getLevel()+":!c"+select.getMessage();
+                
+                int ix= (int)xaxis.transform( Units.milliseconds.createDatum( ((Long)times.get(iclosest)).longValue() ) );
+                int iy= (int)yaxis.transform( Units.dimensionless.createDatum( ((Integer)yAxisValues.get(iclosest)).intValue() ) );
+                g.drawOval( ix-5 - parent.getX(),  iy-5 - parent.getY(), 10, 10 );
+                GrannyTextRenderer gtr= new GrannyTextRenderer();
+                gtr.setString(parent, label);
+                gtr.draw( g, 5, g.getFontMetrics().getHeight() );
+                Rectangle gtrBounds= gtr.getBounds();
+                gtrBounds.translate(5,g.getFontMetrics().getHeight());
+                myDirtyBounds= new Rectangle[] {
+                    new Rectangle( ix-5 - parent.getX(),  iy-5 - parent.getY(), 11, 11 ),
+                            gtrBounds };
+            }
+            
+            super.setLabel(label);
+            Rectangle[] dirtyBounds= super.renderDrag( g, p1, p2 );
+            if ( dirtyBounds.length > 0 ) {
+                return new Rectangle[] { dirtyBounds[0], myDirtyBounds[0], myDirtyBounds[1] } ;
+            } else {
+                return new Rectangle[] { myDirtyBounds[0], myDirtyBounds[1] } ;
+            }
+        }
+        
+    }
+    
+    
+    public MouseModule getMouseModule( ) {
+        DasPlot parent= renderer.getParent();
+        LabelDragRenderer dr= new LookupDragRenderer( parent );
+        MouseModule mouseModule= new MouseModule( parent, dr, "DataSetMonitor" );
+        return mouseModule;
+    }
+    
+    public MouseModule getShowLogMouseModule( DasPlot plot2 ) {
+        BoxSelectorMouseModule result= new BoxSelectorMouseModule( plot2, plot2.getXAxis(), plot2.getYAxis(),
+                plot2.getRenderer(0), new BoxRenderer( plot2 ), "View Messages" );
+        result.setDragEvents( false );
+        result.setReleaseEvents( true );
+        result.addBoxSelectionListener( new BoxSelectionListener() {
+            BoxSelectionListener l;
+            public void BoxSelected( BoxSelectionEvent e ) {
+                StringBuffer buf= new StringBuffer(1000);
+                
+                //Handler h= new ConsoleHandler();
+                //Formatter f= h.getFormatter();
+                Formatter f= new DenseConsoleFormatter();
+                
+                ArrayList rec= new ArrayList();
+                DatumRange threadsRange= e.getYRange();
+                DatumRange timeRange= e.getXRange();
+                
+                int messageCount=0;
+                for ( int i=0; i<records.size(); i++ ) {
+                    double time= ((Long)times.get( i )).doubleValue();
+                    if ( timeRange.contains( Units.milliseconds.createDatum( time ) ) ) {
+                        if ( threadsRange.contains( Units.dimensionless.createDatum( (Number)yAxisValues.get(i) ) ) ) {
+                            buf.append( f.format( (LogRecord)records.get(i) ) );
+                            messageCount++;
+                        }
+                    }
+                }
+                
+                JDialog dialog= new JDialog( frame, "Log messages" );
+                JTextArea pane= new JTextArea( );
+                pane.insert( buf.toString(), 0 );
+                pane.insert( ""+messageCount+" messages: \n\n", 0 );
+                
+                JScrollPane spane= new JScrollPane( pane );
+                spane.setPreferredSize( new Dimension( 800, 600 ) );
+                dialog.getContentPane().add( spane );
+                dialog.pack();
+                dialog.show();
+            }
+        } );
+        return result;
+    }
+    
+    class DialogHandler {
+        Formatter formatter;
+        DialogHandler( Formatter formatter ) {
+        }
+    }
+    
+    public static void main( String[] args ) {
+        // set up your logging to use this.
+        DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).warning("warning");
+        DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).info("info");
+    }
+    
+}
