@@ -45,24 +45,29 @@ public abstract class ComplexDoubleFFT {
             throw new IllegalArgumentException("The stride must be >=1 : "+stride);
         if (i0+stride*(n-1) >= data.length())
             throw new IllegalArgumentException("The data array is too small for "+n+":"+
-            "i0="+i0+" stride="+stride+
-            " data.length="+data.length()); }
+                    "i0="+i0+" stride="+stride+
+                    " data.length="+data.length()); }
     
-     /** Compute the Fast Fourier Transform of data leaving the result in data.
-    * The array data must be dimensioned (at least) 2*n, consisting of alternating
-    * real and imaginary parts. */
-  public void transform ( ComplexArray.Double data ) {
-    transform (data, 0,1); }
-
-  /** Compute the Fast Fourier Transform of data leaving the result in data.
-    * The array data must contain the data points in the following locations:
-    *<PRE>
-    *    Re(d[i]) = data[i0 + stride*i]
-    *    Im(d[i]) = data[i0 + stride*i+1]
-    *</PRE>
-    */
+    /** Compute the Fast Fourier Transform of data leaving the result in data.
+     * The array data must be dimensioned (at least) 2*n, consisting of alternating
+     * real and imaginary parts. */
+    public void transform( ComplexArray.Double data ) {
+        transform(data, 0,1);
+    }
+    
+    
+    /** Compute the Fast Fourier Transform of data leaving the result in data.
+     * The array data must contain the data points in the following locations:
+     *<PRE>
+     *    Re(d[i]) = data[i0 + stride*i]
+     *    Im(d[i]) = data[i0 + stride*i+1]
+     *</PRE>
+     */
     public abstract void transform( ComplexArray.Double data, int i0, int stride );
     
+    public void backtransform( ComplexArray.Double data){
+        backtransform(data,0,1);
+    }
     
     /** Compute the (unnomalized) inverse FFT of data, leaving it in place.*/
     public abstract void backtransform( ComplexArray.Double data, int i0, int stride );
