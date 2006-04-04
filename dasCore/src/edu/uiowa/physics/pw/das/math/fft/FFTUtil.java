@@ -57,7 +57,7 @@ public class FFTUtil {
             result[i+n21]= (n21-n+i) / ( n*T );
         }
         
-        Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit );
+        Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit.getOffsetUnits() );
         return DatumVector.newDatumVector( result, frequencyUnit );
     }
 }
