@@ -55,6 +55,7 @@ public class DasServer {
     private String host;
     private String path;
     private int port;
+    private HashMap keys; // <key>
     private Key key;
     
     private static HashMap instanceHashMap= new HashMap();
@@ -81,7 +82,7 @@ public class DasServer {
         }
         this.host= host;
         this.path= path;
-        this.key= null;
+        this.keys= new HashMap(); 
     }
     
     public String getURL() {
@@ -280,19 +281,13 @@ public class DasServer {
         
     }
     
-    public Key authenticate( String user, String pass) {
+    protected Key authenticate( String user, String passCrypt) {
         try {
             Key result= null;
             
             String formData= "server=authenticator";
-            formData+= "&user="+URLBuddy.encodeUTF8(user);
-            String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(pass);
-            
-            if (pass.equals("sendPropertyPassword")) {
-                cryptPass= DasProperties.getInstance().getProperty("password");
-            }
-            
-            formData+= "&passwd="+URLBuddy.encodeUTF8(cryptPass);
+            formData+= "&user="+URLBuddy.encodeUTF8(user);            
+            formData+= "&passwd="+URLBuddy.encodeUTF8(passCrypt);
             
             URL server= new URL("http",host,port,path+"?"+formData);
             edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
@@ -501,16 +496,15 @@ public class DasServer {
     }
     
     public Key getKey( String resource ) {
-        /* TODO: resource ignored, we need to provide means for switching credentials */        
         synchronized (this) {
-            if ( key==null ) {                
+            if ( keys.get(resource)==null ) {
                 Authenticator authenticator;
                 authenticator= new Authenticator(this,resource);
                 Key key= authenticator.authenticate();
-                if ( key!=null ) setKey(key);
+                if ( key!=null ) keys.put( resource, key);
             }
         }
-        return this.key;
+        return (Key)keys.get(resource);
     }
     
     public void setKey( Key key ) {
