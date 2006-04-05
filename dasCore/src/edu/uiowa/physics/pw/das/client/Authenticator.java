@@ -22,7 +22,9 @@
  */
 package edu.uiowa.physics.pw.das.client;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasProperties;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,115 +33,116 @@ import java.net.*;
 import java.util.Properties;
 
 public class Authenticator extends JPanel {
-    
+
     JLabel feedbackLabel;
     JTextField tfUser;
-    
+
     JPasswordField tfPass;
-    
+
     DasServer dasServer;
-    
+    String resourceId;
+
+    Preferences prefs= Preferences.userNodeForPackage( Authenticator.class );
+
     public Authenticator(DasServer dasServer) {
         this( dasServer, "" );
     }
-    
+
     public Authenticator(DasServer dasServer, String restrictedResourceLabel ) {
-        
+
         this.dasServer= dasServer;
-        
+        this.resourceId= String.valueOf(  dasServer.getURL() ) + "::" + restrictedResourceLabel;;
+
         setLayout( new BoxLayout(this,BoxLayout.Y_AXIS));
-        
+
         add(new JLabel(dasServer.getName(),JLabel.LEFT));
         add(new JLabel(dasServer.getLogo(),JLabel.LEFT));
-        
+
         if ( ! "".equals( restrictedResourceLabel ) ) {
             add( new JLabel( ""+restrictedResourceLabel ) );
         }
-        
+
         add(new JLabel("Username: ",JLabel.LEFT));
         tfUser= new JTextField();
-        Properties xxx=DasProperties.getInstance();
-        if (!"".equals(DasProperties.getInstance().getProperty("username"))) {
-            tfUser.setText(DasProperties.getInstance().getProperty("username"));
-        }
         add(tfUser);
-        
+
         add(new JLabel("Password: ",JLabel.LEFT));
         tfPass= new JPasswordField();
-        if (!"".equals(DasProperties.getInstance().getProperty("password"))) {
-            tfPass.setText(DasProperties.getInstance().getProperty("password"));
-        }
         add(tfPass);
-        
+
+        if ( prefs.get("saveCredentials","true").equals("true") ) {
+            String username= prefs.get( resourceId+".username", DasProperties.getInstance().getProperty("username") );
+            if (!"".equals(username)) tfUser.setText(username);
+            String passwordCrypt= prefs.get( resourceId+".passwordCrypt", DasProperties.getInstance().getProperty("password") );
+            if (!"".equals(passwordCrypt)) tfPass.setText("usePrefs");
+        }
+
         feedbackLabel= new JLabel("",JLabel.LEFT);
         add(feedbackLabel);
-        
+
         try {
             String lockingKeyWarning= "";
             if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_CAPS_LOCK ) ) {
                 lockingKeyWarning+= ", CAPS LOCK is on";
             }
-            
+
             if ( Toolkit.getDefaultToolkit().getLockingKeyState( KeyEvent.VK_NUM_LOCK ) ) {
                 lockingKeyWarning+= ", NUM LOCK is on";
             }
-            
+
             if ( !"".equals( lockingKeyWarning ) ) {
                 feedbackLabel.setText(lockingKeyWarning.substring(2));
             }
         } catch ( UnsupportedOperationException e ) {
             //  I sure hope they don't have caps lock on!
         }
-        
+
     }
-    
+
     public Key authenticate() {
-        
+
         Key result=null;
         int okayCancel=JOptionPane.OK_OPTION;
+
+        Component parent=DasApplication.getDefaultApplication().getMainFrame();
         
         while ( okayCancel==JOptionPane.OK_OPTION && result==null ) {
             okayCancel=
-                    JOptionPane.showConfirmDialog(null,this,"Authenticator",
+                    JOptionPane.showConfirmDialog(parent,this,"Authenticator",
                     JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
-            
+
             if (okayCancel==JOptionPane.OK_OPTION) {
-                char[] ipass= tfPass.getPassword();
-                String pass= String.valueOf(tfPass.getPassword());
-                if (pass.equals(DasProperties.getInstance().getProperty("password"))) {
-                    pass= "sendPropertyPassword";
-                }
-                
+
                 String username= tfUser.getText().trim();
+                String password= String.valueOf( tfPass.getPassword() );
+
+                String passCrypt= null;
+                if ( password.equals("usePrefs") ) {
+                    passCrypt= prefs.get( resourceId+".passwordCrypt", DasProperties.getInstance().getProperty("password") );
+                } else {
+                    passCrypt= edu.uiowa.physics.pw.das.util.Crypt.crypt(password);
+                }
+
                 try {
-                    result= dasServer.authenticate(username,pass);
+                    result= dasServer.authenticate(username,passCrypt);
                     if (result==null) {
                         feedbackLabel.setText("Login incorrect");
                         feedbackLabel.setForeground(Color.red);
+                    } else {
+                        if (prefs.get("saveCredentials","true").equals("true") ) {
+                            prefs.put( resourceId+".username", username );
+                            prefs.put( resourceId+".passwordCrypt", passCrypt );
+                            prefs.flush();
+                        }
                     }
                 } catch ( Exception e ) {
                     feedbackLabel.setText("Failed connect to server");
                 }
-                DasProperties.getInstance().setProperty("username",username);
-                if (!pass.equals("sendPropertyPassword")) {
-                    String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(pass);
-                    DasProperties.getInstance().setProperty("password",cryptPass);
-                }
-                DasProperties.getInstance().writePersistentProperties();
             }
         }
-        
+
         return result;
     }
-    
-    public static void main( String[] args ) {
-        try {
-            Authenticator a= new Authenticator(DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das-test/das2ServerEEW")));
-            edu.uiowa.physics.pw.das.util.DasDie.println(a.authenticate());
-        } catch (MalformedURLException mue) {
-            mue.printStackTrace();
-        }
-        
-    }
+
 }
 
