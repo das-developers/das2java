@@ -24,20 +24,19 @@
 package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.DasProperties;
 import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.stream.*;
-import edu.uiowa.physics.pw.das.dataset.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -51,15 +50,17 @@ import org.w3c.dom.Element;
  */
 
 public class DasServer {
-    
+
     private String host;
     private String path;
     private int port;
     private HashMap keys; // <key>
     private Key key;
-    
+
+    private static Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
+
     private static HashMap instanceHashMap= new HashMap();
-    
+
     public static DasServer plasmaWaveGroup;
     public static DasServer sarahandjeremy;
     static {
@@ -70,7 +71,7 @@ public class DasServer {
             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(e);
         }
     }
-    
+
     /** Creates a new instance of DasServer */
     private DasServer(String host, String path) {
         String[] s= host.split(":");
@@ -82,9 +83,9 @@ public class DasServer {
         }
         this.host= host;
         this.path= path;
-        this.keys= new HashMap(); 
+        this.keys= new HashMap();
     }
-    
+
     public String getURL() {
         if ( port==-1 ) {
             return "http://"+host+path;
@@ -92,7 +93,7 @@ public class DasServer {
             return "http://"+host+":"+port+path;
         }
     }
-    
+
     public static DasServer create( URL url ) {
         String host= url.getHost();
         int port = url.getPort();
@@ -101,94 +102,103 @@ public class DasServer {
         }
         String key= "http://" + host + url.getPath();
         if ( instanceHashMap.containsKey( key ) ) {
+            logger.info( "Using existing DasServer for "+url);
             return (DasServer) instanceHashMap.get( key );
         } else {
             String path= url.getPath();
+            logger.info( "Creating DasServer for "+url);
             DasServer result= new DasServer(host,path);
             instanceHashMap.put(key,result);
             return result;
         }
     }
-    
+
     public String getName() {
         String formData= "server=id";
-        
+
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
-            //edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
-            
+
+            logger.info( "connecting to "+server);
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
-            
+
             String contentType = urlConnection.getContentType();
-            
+
             InputStream in= urlConnection.getInputStream();
-            
-            byte[] data= read(in);
-            return new String(data);
+
+            String result= new String(  read(in) );
+            logger.info( "response="+result);
+
+            return result;
         } catch (IOException e) {
-            
+
             return "";
         }
-        
+
     }
-    
+
     public ImageIcon getLogo() {
-        
+
         String formData= "server=logo";
-        
+
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
-            //edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
-            
+
+            logger.info( "connecting to "+server);
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
-            
+
             String contentType = urlConnection.getContentType();
-            
+
             InputStream in= urlConnection.getInputStream();
-            
+
             byte[] data= read(in);
+            logger.info( "response="+data.length+" bytes");
             return new ImageIcon(data);
-            
+
         } catch (IOException e) {
-            
+
             return new ImageIcon();
         }
-        
+
     }
-    
+
     public TreeModel getDataSetList() throws edu.uiowa.physics.pw.das.DasException {
         String formData= "server=list";
-        
+
         try {
-            URL server= new URL("http",host,port,path+"?"+formData);            
-            
+            URL server= new URL("http",host,port,path+"?"+formData);
+
+            logger.info( "connecting to "+server);
+
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
-            
+
             String contentType = urlConnection.getContentType();
-            
+
             InputStream in= urlConnection.getInputStream();
-            
-            return createModel(in);
-            
+
+            TreeModel result= createModel(in);
+            logger.info( "response->"+result);
+            return result;
+
         } catch (IOException e) {
-            
+
             throw new DasIOException( e.getMessage() );
         }
-        
+
     }
-    
+
     private TreeModel createModel(InputStream uin) throws IOException {
-        
+
         BufferedReader in = new BufferedReader( new InputStreamReader(uin) );
-        
+
         DefaultMutableTreeNode root =
         new DefaultMutableTreeNode( getURL(), true );
         DefaultTreeModel model = new DefaultTreeModel(root, true);
         String line = in.readLine();
-        
+
         while (line != null) {
             DefaultMutableTreeNode current = root;
             StringTokenizer tokenizer = new StringTokenizer(line, "/");
@@ -214,27 +224,29 @@ public class DasServer {
         }
         return model;
     }
-    
+
     public StandardDataStreamSource getStandardDataStreamSource(URL url) {
         return new WebStandardDataStreamSource(this, url);
     }
-    
+
     public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
-        try {            
+        try {
             String dsdf = dataSetID.getQuery().split("&")[0];
             URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
-            DasApplication.getDefaultApplication().getLogger().info("getting dataSetDescription from "+url);            
+
+            logger.info( "connecting to "+url);
             URLConnection connection = url.openConnection();
             connection.connect();
             String contentType = connection.getContentType();
             String[] s1= contentType.split(";"); // dump charset info
             contentType= s1[0];
-            
+
             if (contentType.equalsIgnoreCase("text/plain")) {
                 PushbackReader reader = new PushbackReader(new InputStreamReader(connection.getInputStream()), 4);
                 char[] four = new char[4];
                 reader.read(four);
                 if (new String(four).equals("[00]")) {
+                    logger.info("response is a das2Stream");
                     reader.skip(6);
                     Document header = StreamDescriptor.parseHeader(reader);
                     Element root = header.getDocumentElement();
@@ -242,6 +254,7 @@ public class DasServer {
                         return new StreamDescriptor(root);
                     }
                     else if ( root.getTagName().equals("exception") ) {
+                        logger.info("response is an exception");
                         String type= root.getAttribute("type");
                         StreamException se= new StreamException( "stream exception: "+type );
                         DasException de= new DasException( "stream exception: "+type );
@@ -253,9 +266,10 @@ public class DasServer {
                     }
                     else {
                         throw new DasStreamFormatException();
-                    } 
+                    }
                 }
                 else {
+                    logger.info("response is a legacy descriptor");
                     reader.unread(four);
                     BufferedReader in = new BufferedReader(reader);
                     StreamDescriptor result = StreamDescriptor.createLegacyDescriptor(in);
@@ -277,29 +291,30 @@ public class DasServer {
         } catch ( IOException e ) {
             throw new DasIOException(e.toString());
         }
-        
-        
+
+
     }
-    
-    protected Key authenticate( String user, String passCrypt) {
+
+    public Key authenticate( String user, String passCrypt) {
         try {
             Key result= null;
-            
+
             String formData= "server=authenticator";
-            formData+= "&user="+URLBuddy.encodeUTF8(user);            
+            formData+= "&user="+URLBuddy.encodeUTF8(user);
             formData+= "&passwd="+URLBuddy.encodeUTF8(passCrypt);
-            
+
             URL server= new URL("http",host,port,path+"?"+formData);
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
-            
+
+            logger.info( "connecting to "+server);
+
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
-            
+
             String serverResponse= readServerResponse(bin);
-            
+
             String errTag= "error";
             String keyTag= "key";
-            
+
             if ( serverResponse.substring(0,keyTag.length()+2).equals("<"+keyTag+">")) {
                 int index= serverResponse.indexOf("</"+keyTag+">");
                 String keyString= serverResponse.substring(keyTag.length()+2,index);
@@ -314,7 +329,37 @@ public class DasServer {
             return null;
         }
     }
-    
+
+    /**
+     * returns a List<String> of resource Id's available with this key
+     */
+    public List groups( Key key ) {
+        try {
+            String formData= "server=groups";
+            formData+= "&key="+URLBuddy.encodeUTF8(key.toString());
+
+            URL server= new URL("http",host,port,path+"?"+formData);
+
+            logger.info( "connecting to "+server);
+
+            InputStream in= server.openStream();
+            BufferedInputStream bin= new BufferedInputStream(in);
+
+            String serverResponse= readServerResponse(bin);
+
+            String[] groups= serverResponse.split(",");
+            ArrayList result= new ArrayList();
+            for ( int i=0; i<groups.length; i++ ) {
+                groups[i]= groups[i].trim();
+                if ( !"".equals(groups[i]) ) result.add( groups[i] );
+            }
+
+            return result;
+        } catch ( IOException e ) {
+            throw new RuntimeException(e);
+        } 
+    }
+
     public void changePassword( String user, String oldPass, String newPass ) throws DasServerException {
         try {
             String formData= "server=changePassword";
@@ -323,18 +368,18 @@ public class DasServer {
             formData+= "&passwd="+URLBuddy.encodeUTF8(cryptPass);
             String cryptNewPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(newPass);
             formData+= "&newPasswd="+URLBuddy.encodeUTF8(cryptNewPass);
-            
+
             URL server= new URL("http",host,port,path+"?"+formData);
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.VERBOSE,server.toString());
-            
+            logger.info( "connecting to "+server);
+
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
-            
+
             String serverResponse= readServerResponse(bin);
-            
+
             String errTag= "error";
             String keyTag= "key";
-            
+
             if ( serverResponse.substring(0,errTag.length()+2).equals("<"+errTag+">")) {
                 int index= serverResponse.indexOf("</"+errTag+">");
                 String errString= serverResponse.substring(errTag.length()+2,index);
@@ -347,154 +392,156 @@ public class DasServer {
         } catch ( IOException e ) {
             throw new DasServerException("Failed Connection");
         }
-        
-        
+
+
     }
-    
+
     public String readServerResponse( BufferedInputStream in ) {
         // Read <dasResponse>...</dasResponse>, leaving the InputStream immediately after //
-        
+
         in.mark(Integer.MAX_VALUE);
-        
+
         String das2Response;
-        
+
         byte[] data = new byte[4096];
-        
+
         int lastBytesRead = -1;
-        
+
         String s;
-        
+
         int offset=0;
-        
+
         try {
             int bytesRead= in.read(data,offset,4096-offset);
-            
+
             String das2ResponseTag= "das2Response";
             // beware das2ResponseTagLength=14 assumed below!!!
-            
+
             if (bytesRead<(das2ResponseTag.length()+2)) {
                 offset+= bytesRead;
                 bytesRead= in.read(data,offset,4096-offset);
             }
-            
+
             if ( new String(data,0,14,"UTF-8").equals("<"+das2ResponseTag+">")) {
                 while ( new String( data,0,offset,"UTF-8" ).indexOf("</"+das2ResponseTag+">")==-1 &&
                 offset<4096 ) {
                     offset+= bytesRead;
                     bytesRead= in.read(data,offset,4096-offset);
                 }
-                
+
                 int index= new String( data,0,offset,"UTF-8" ).indexOf("</"+das2ResponseTag+">");
-                
+
                 das2Response= new String(data,14,index-14);
-                
+
                 edu.uiowa.physics.pw.das.util.DasDie.println("das2Response="+das2Response);
-                
+
                 in.reset();
                 in.skip( das2Response.length() + 2 * das2ResponseTag.length() + 5 );
-                
+
             } else {
                 in.reset();
-                
+
                 das2Response="";
             }
         } catch ( IOException e ) {
             das2Response= "";
         }
-        
+
+        logger.info( "response="+das2Response);
+
         return das2Response;
     }
-    
-    public byte[] read(InputStream uin) throws IOException {
+
+    private byte[] read(InputStream uin) throws IOException {
         LinkedList list = new LinkedList();
         byte[] data;
         int bytesRead=0;
         int totalBytesRead=0;
-        
+
         //BufferedInputStream in= new BufferedInputStream(uin,4096*2);
         InputStream in= uin;
-        
+
         long time = System.currentTimeMillis();
         //        fireReaderStarted();
-        
+
         //FileOutputStream out= new FileOutputStream("x."+time+".dat");
-        
+
         data = new byte[4096];
-        
+
         int lastBytesRead = -1;
-        
+
         String s;
-        
+
         int offset=0;
-        
+
         //        if (requestor != null) {
         //            requestor.totalByteCount(-1);
         //        }
-        
+
         bytesRead= in.read(data,offset,4096-offset);
-        
+
         while (bytesRead != -1) {
-            
+
             int bytesSoFar = totalBytesRead;
             //            fireReaderUpdate(bytesSoFar);
             //            if (requestor != null) {
             //                requestor.currentByteCount(bytesSoFar);
             //            }
-            
+
             offset+=bytesRead;
             lastBytesRead= offset;
-            
+
             if (offset==4096) {
                 list.addLast(data);
                 data = new byte[4096];
                 offset=0;
             }
-            
+
             totalBytesRead+= bytesRead;
-            
+
             bytesRead= in.read(data,offset,4096-offset);
-            
+
         }
-        
+
         if (lastBytesRead<4096) {
             list.addLast(data);
         }
-        
+
         if (list.size()== 0) {
             return new byte[0];
         }
-        
+
         int dataLength = (list.size()-1)*4096 + lastBytesRead;
-        
+
         data = new byte[dataLength];
-        
+
         Iterator iterator = list.iterator();
         int i;
         for (i = 0; i < list.size()-1; i++) {
             System.arraycopy(iterator.next(), 0, data, i*4096, 4096);
         }
         System.arraycopy(iterator.next(), 0, data, i*4096, lastBytesRead);
-        
+
         return data;
     }
-    
+
     public String getHost() {
         return host;
     }
-    
+
     public int getPort() {
         // returns -1 if the port was not specified, which can be used with URL constructor
         return port;
     }
-    
+
     public String getPath() {
         return path;
     }
-    
+
     public URL getURL( String formData ) throws MalformedURLException {
         return new URL( "http", host, port, path+"?"+formData );
     }
-    
+
     public Key getKey( String resource ) {
         synchronized (this) {
             if ( keys.get(resource)==null ) {
@@ -506,11 +553,11 @@ public class DasServer {
         }
         return (Key)keys.get(resource);
     }
-    
+
     public void setKey( Key key ) {
         this.key= key;
     }
-    
+
     public String toString() {
         return this.getURL();
     }
