@@ -1,4 +1,4 @@
-/* 
+/*
  * ImageVectorDataSetRenderer.java
  *
  * This renderer can handle vector data sets with tens of thousands of points
