@@ -244,7 +244,7 @@ public class DasApplication {
         return mainFrame;
     }        
         
-    public JFrame getMainFrame() {            
+    public JFrame getMainFrame() {
         return this.mainFrame;
     }
 
