@@ -39,36 +39,36 @@ import java.util.Stack;
 import java.util.logging.Logger;
 
 public class DataRange implements Cloneable {
-    
+
     private DasAxis parent;
-    
+
     private Units units;
-    
+
     /* minimum, possibly with log applied */
     private double minimum;
-    
+
     /* maximum, possibly with log applied */
     private double maximum;
-    
+
     /* storage for values of temporary invalid states during state transition.*/
     private Datum pendingMin=null, pendingMax=null;
-    
+
     /* range is the min and max, not in the log space.  This is the range that controls the DataRange, as opposed
        to minimum and maximum, which are simply to implement it. */
     private DatumRange range;
-    
+
     private boolean log;
-    
+
     private EventListenerList listenerList = new EventListenerList();
-    
+
     private Stack history;
-    
+
     private Stack forwardHistory;
-    
+
     private List favorites;
-    
+
     private PropertyChangeSupport propertyChangeDelegate;
-    
+
     public Object clone() {
         try {
             return super.clone();
@@ -76,7 +76,7 @@ public class DataRange implements Cloneable {
             throw new Error("Assertion failure");
         }
     }
-    
+
     public DataRange( DasAxis parent, Datum min, Datum max, boolean log ) {
         if (min.gt(max)) throw new IllegalArgumentException("data min on axis is greater than data max");
         if (!min.isValid()) throw new IllegalArgumentException("data_minimum on axis is NaN");
@@ -97,11 +97,11 @@ public class DataRange implements Cloneable {
         forwardHistory = new Stack();
         propertyChangeDelegate = new PropertyChangeSupport(this);
     }
-    
+
     public boolean isLog() {
         return log;
     }
-    
+
     /*
      * need some method for changing the axis units...
      */
@@ -116,14 +116,14 @@ public class DataRange implements Cloneable {
         }
         fireUpdate();
     }
-    
+
     public void setLog(boolean log) {
         /*
          * propose new logic for going between lin/log axes:
          * to log: pick first minor tick greater than zero.
          * to lin: pick first minor tick in linear space less than min.
          */
-        
+
         if (this.log==log) return;
         boolean oldLog = this.log;
         if (log) {
@@ -142,15 +142,15 @@ public class DataRange implements Cloneable {
         firePropertyChange("log", oldLog, log);
         fireUpdate();
     }
-    
+
     public DasAxis getCreator() {
         return parent;
     }
-    
+
     public double getMinimum() { return minimum; }
-    
+
     public double getMaximum() { return maximum; }
-    
+
     /* @returns the floating point index within the range, where 0.0 indicates
      * @param value is equal to minimum and 1.0 means it is equal to maximum,
      * with log/lin/??? curvature considered.
@@ -161,24 +161,24 @@ public class DataRange implements Cloneable {
         }
         return ( value-minimum ) / ( maximum - minimum );
     }
-    
+
     public Units getUnits() { return units; }
-    
+
     public DatumRange getDatumRange() { return range; }
-    
+
     public void setUnits(Units newUnits) {
         if (units.equals(newUnits)) {
             return;
         }
-        
+
         minimum = units.convertDoubleTo(newUnits, minimum);
         maximum = units.convertDoubleTo(newUnits, maximum);
         units = newUnits;
-        
+
         clearHistory();
-        
+
     }
-    
+
     public void setMinimum( Datum min ) {
         Datum max= pendingMax!=null ? pendingMax : this.range.max();
         if ( min.le( max ) ) {
@@ -187,7 +187,7 @@ public class DataRange implements Cloneable {
             this.pendingMin= min;
         }
     }
-    
+
     public void setMaximum( Datum max ) {
         Datum min= pendingMin!=null ? pendingMin : this.range.min();
         if ( min.le( max ) ) {
@@ -196,7 +196,7 @@ public class DataRange implements Cloneable {
             this.pendingMax= max;
         }
     }
-    
+
     private void reportHistory() {
         Logger log= DasLogger.getLogger( DasLogger.GUI_LOG );
         log.finest("history: "+history.size());
@@ -206,21 +206,21 @@ public class DataRange implements Cloneable {
         log.finest("forwardHistory: "+forwardHistory.size());
         log.finest("-------------");
     }
-    
+
     protected void clearHistory() {
         ArrayList oldHistory= new ArrayList( history );
         history.removeAllElements();
         forwardHistory.removeAllElements();
         firePropertyChange("history", oldHistory, history );
     }
-    
+
     public void addToFavorites( DatumRange range ) {
         if (favorites==null) favorites= new ArrayList();
         List oldFavorites= new ArrayList(favorites);
         favorites.add( range );
         firePropertyChange("favorites", oldFavorites, favorites );
     }
-    
+
     public List getFavorites() {
         if ( favorites==null ) {
             return new ArrayList();
@@ -228,7 +228,7 @@ public class DataRange implements Cloneable {
             return new ArrayList( favorites );
         }
     }
-    
+
     public List getHistory() {
         if ( history==null ) {
             return new ArrayList();
@@ -237,15 +237,15 @@ public class DataRange implements Cloneable {
             Collections.reverse(result);
             return result.subList(0,Math.min(result.size(),10));
         }
-        
+
     }
-    
+
     public void setRange( DatumRange range ) {
         pendingMin= null;
         pendingMax= null;
         setRange( range, true );
     }
-    
+
     public void setRange( double min, double max ) {
         DatumRange newRange;
         if ( log ) {
@@ -255,13 +255,13 @@ public class DataRange implements Cloneable {
         }
         setRange( newRange, true );
     }
-    
+
     private void setRange( DatumRange range, boolean pushHistory ) {
-        
+
         if ( range.getUnits()!=this.units ) {
             throw new IllegalArgumentException("units may not be changed");
         }
-        
+
         if ( pushHistory ) {
             List oldHistory= new ArrayList( history );
             history.push(this.range);
@@ -269,34 +269,34 @@ public class DataRange implements Cloneable {
             forwardHistory.removeAllElements();
             firePropertyChange( "history", new ArrayList(), new ArrayList(history) );
         }
-        
+
         this.range= range;
-        
+
         double oldMin = minimum;
         double oldMax = maximum;
-        
+
         minimum = range.min().doubleValue( units );
         maximum = range.max().doubleValue( units );
         if ( log ) {
             minimum= DasMath.log10( minimum );
             maximum= DasMath.log10( maximum );
         }
-        
+
         fireUpdate();
         if (minimum != oldMin) firePropertyChange("minimum", oldMin, minimum);
         if (maximum != oldMax) firePropertyChange("maximum", oldMax, maximum);
     }
-    
+
     public void setRangePrev() {
         reportHistory();
         if (!history.isEmpty()) {
-            forwardHistory.push( range );            
+            forwardHistory.push( range );
             DatumRange newRange= (DatumRange) history.pop();
             setRange( newRange, false );
             firePropertyChange( "history", null, new ArrayList(history) );
         }
     }
-    
+
     public void setRangeForward() {
         reportHistory();
         if (!forwardHistory.isEmpty()) {
@@ -307,35 +307,35 @@ public class DataRange implements Cloneable {
             firePropertyChange("history",oldHistory,history);
         }
     }
-    
+
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertyChangeDelegate.addPropertyChangeListener(propertyName, listener);
     }
-    
+
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertyChangeDelegate.addPropertyChangeListener(propertyName, listener);
     }
-    
+
     protected void firePropertyChange(String propertyName, double oldValue, double newValue) {
         firePropertyChange(propertyName, new Double(oldValue), new Double(newValue));
     }
-    
+
     protected void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
         firePropertyChange(propertyName, (oldValue ? Boolean.TRUE : Boolean.FALSE), (newValue ? Boolean.TRUE : Boolean.FALSE));
     }
-    
+
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         propertyChangeDelegate.firePropertyChange(propertyName, oldValue, newValue);
     }
-    
+
     public void addUpdateListener(DasUpdateListener l) {
         listenerList.add(DasUpdateListener.class, l);
     }
-    
+
     public void removeUpdateListener(DasUpdateListener l) {
         listenerList.remove(DasUpdateListener.class, l);
     }
-    
+
     protected void fireUpdate() {
         Object[] listeners = listenerList.getListenerList();
         DasUpdateEvent e = new DasUpdateEvent(this);
@@ -345,16 +345,16 @@ public class DataRange implements Cloneable {
             }
         }
     }
-    
+
     /**
-     * pop ipop items off the history list.  This is used by the history menu 
+     * pop ipop items off the history list.  This is used by the history menu
      */
     protected void popHistory( int ipop ) {
         for ( int i=0; i<ipop; i++ ) {
             history.pop();
-        }        
+        }
     }
-    
+
     /* @returns a dummy DataRange that simply holds min, max.  So that no one is
      * listening to the changes and no history.
      */
@@ -371,12 +371,12 @@ public class DataRange implements Cloneable {
         public double getMinimum() { return minimum; }
         public double getMaximum() { return maximum; }
     }
-    
-    
+
+
     public static DataRange getAnimationDataRange( DatumRange range, boolean log ) {
         return new DataRange.Animation( range, log );
     }
-    
-    
+
+
 }
 

@@ -1,4 +1,4 @@
-/* File: TickCurveRenderer.java
+/* File: TickCurveRenderer.java 
  * Copyright (C) 2002-2003 The University of Iowa
  *
  * Created on November 3, 2003, 11:43 AM by __FULLNAME__ <__EMAIL__>

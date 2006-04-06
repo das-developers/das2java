@@ -1,4 +1,4 @@
-/*
+/* 
  * LoggingComponent.java
  *
  * Created on January 27, 2006, 2:15 PM

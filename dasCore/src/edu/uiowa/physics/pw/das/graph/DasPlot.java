@@ -1,4 +1,4 @@
-/* File: DasPlot.java
+/* File: DasPlot.java 
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>

@@ -1,4 +1,4 @@
-/*
+/* 
  * DasSerializeable.java
  *
  * Created on November 4, 2004, 5:35 PM

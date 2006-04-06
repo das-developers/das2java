@@ -1,4 +1,4 @@
-/*
+/* 
  * DasCanvasComponentInterface.java
  *
  * Created on November 4, 2004, 5:26 PM
