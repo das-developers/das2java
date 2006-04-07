@@ -83,7 +83,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     public SymbolLineRenderer(DataSetDescriptor dsd) {
         super(dsd);
     }
-     
+    
     private void reportCount() {
         //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
     }
@@ -99,14 +99,14 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         if ( this.ds==null && lastException!=null ) {
             renderException(g,xAxis,yAxis,lastException);
             return;
-        } 
+        }
         
         if (dataSet == null || dataSet.getXLength() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
             return;
         }
         
-        DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set "+dataSet);        
+        DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set "+dataSet);
         
         g.setColor(color);
         
@@ -159,23 +159,25 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             ymin = tmp;
         }
         
-        int ixmax, ixmin;
-        
-        ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
-        if ( ixmin>0 ) ixmin--;
-        ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
-        if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
-        
-        for (int index = ixmin; index <= ixmax; index++) {
-            if ( ! yUnits.isFill(dataSet.getDouble(index,yUnits)) ) {
-                double i = xAxis.transform(dataSet.getXTagDouble(index,xUnits),xUnits);
-                double j = yAxis.transform(dataSet.getDouble(index,yUnits),yUnits);
-                if ( Double.isNaN(j) ) {
-                    //DasApplication.getDefaultApplication().getDebugLogger().warning("got NaN");
-                } else {
-                    // note g is in the original space, not the AT space.
-                    ((Graphics2D)g).setStroke(new BasicStroke(lineWidth));
-                    psym.draw( g, i, j, (float)symSize );
+        if ( psym!=Psym.NONE ) { // optimize for common case
+            int ixmax, ixmin;
+            
+            ixmin= VectorUtil.closestXTag(dataSet,xmin,xUnits);
+            if ( ixmin>0 ) ixmin--;
+            ixmax= VectorUtil.closestXTag(dataSet,xmax,xUnits);
+            if ( ixmax<dataSet.getXLength()-1 ) ixmax++;
+            
+            for (int index = ixmin; index <= ixmax; index++) {
+                if ( !dataSet.getDatum(index).isFill() ) {
+                    double i = xAxis.transform(dataSet.getXTagDouble(index,xUnits),xUnits);
+                    double j = yAxis.transform(dataSet.getDouble(index,yUnits),yUnits);
+                    if ( Double.isNaN(j) ) {
+                        //DasApplication.getDefaultApplication().getDebugLogger().warning("got NaN");
+                    } else {
+                        // note g is in the original space, not the AT space.
+                        ((Graphics2D)g).setStroke(new BasicStroke(lineWidth));
+                        psym.draw( g, i, j, (float)symSize );
+                    }
                 }
             }
         }
@@ -212,74 +214,79 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         Units yUnits= yAxis.getUnits();
         
         DatumRange visibleRange= xAxis.getDatumRange();
-       // if ( isOverloading() ) {
-       //     visibleRange= visibleRange.rescale(-1,2);
-       // }
+        // if ( isOverloading() ) {
+        //     visibleRange= visibleRange.rescale(-1,2);
+        // }
         xmax= visibleRange.min().doubleValue(xUnits);
         xmin= visibleRange.max().doubleValue(xUnits);
         ymax= yAxis.getDataMaximum().doubleValue(yUnits);
         ymin= yAxis.getDataMinimum().doubleValue(yUnits);
         
-        ixmin= DataSetUtil.getPreviousColumn( dataSet, visibleRange.min() );        
-        ixmax= DataSetUtil.getNextColumn( dataSet, visibleRange.max() );
-        
-        GeneralPath newPath = new GeneralPath( GeneralPath.WIND_NON_ZERO, 110 * ( ixmax - ixmin ) / 100 );        
-        
-        double xSampleWidth;
-        if (dataSet.getProperty("xTagWidth") != null) {
-            Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xTagWidth");
-            xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
-        } else {
-            //Try to load the legacy sample-width property.
-            String xSampleWidthString = (String)dataSet.getProperty("x_sample_width");
-            if (xSampleWidthString != null) {
-                double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
-                xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
+        if ( psymConnector!=PsymConnector.NONE ) {
+            ixmin= DataSetUtil.getPreviousColumn( dataSet, visibleRange.min() );
+            ixmax= DataSetUtil.getNextColumn( dataSet, visibleRange.max() );
+            
+            GeneralPath newPath = new GeneralPath( GeneralPath.WIND_NON_ZERO, 110 * ( ixmax - ixmin ) / 100 );
+            
+            double xSampleWidth;
+            if (dataSet.getProperty("xTagWidth") != null) {
+                Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xTagWidth");
+                xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
             } else {
-                xSampleWidth = 1e31;
-            }
-        }
-        
-        /* fuzz the xSampleWidth */
-        xSampleWidth = xSampleWidth * 1.5;
-        
-        double x0 = Double.NaN;
-        double y0 = Double.NaN;
-        double i0 = Double.NaN;
-        double j0 = Double.NaN;
-        boolean skippedLast = true;
-        for (int index = ixmin; index <= ixmax; index++) {
-            double x = dataSet.getXTagDouble(index, xUnits);
-            double y = dataSet.getDouble(index, yUnits);
-            double i = xAxis.transform(x, xUnits);
-            double j = yAxis.transform(y, yUnits);
-            if ( yUnits.isFill(y) || Double.isNaN(y)) {
-                skippedLast = true;
-            } else if (skippedLast) {
-                newPath.moveTo((float)i, (float)j);
-                skippedLast = false;
-            } else if (Math.abs(x - x0) > xSampleWidth) {
-                //This should put a point on an isolated data value
-                newPath.lineTo((float)i0, (float)j0);
-                newPath.moveTo((float)i, (float)j);
-                skippedLast = false;
-            } else {
-                if (histogram) {
-                    double i1 = (i0 + i)/2;
-                    newPath.lineTo((float)i1, (float)j0);
-                    newPath.lineTo((float)i1, (float)j);
-                    newPath.lineTo((float)i, (float)j);
+                //Try to load the legacy sample-width property.
+                String xSampleWidthString = (String)dataSet.getProperty("x_sample_width");
+                if (xSampleWidthString != null) {
+                    double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
+                    xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
                 } else {
-                    newPath.lineTo((float)i, (float)j);
+                    xSampleWidth = 1e31;
                 }
-                skippedLast = false;
             }
-            x0= x;
-            y0= y;
-            i0= i;
-            j0= j;
+            
+            /* fuzz the xSampleWidth */
+            xSampleWidth = xSampleWidth * 1.5;
+            
+            double x0 = Double.NaN;
+            double y0 = Double.NaN;
+            double i0 = Double.NaN;
+            double j0 = Double.NaN;
+            boolean skippedLast = true;
+            for (int index = ixmin; index <= ixmax; index++) {
+                double x = dataSet.getXTagDouble(index, xUnits);
+                double y = dataSet.getDouble(index, yUnits);
+                double i = xAxis.transform(x, xUnits);
+                double j = yAxis.transform(y, yUnits);
+                if ( dataSet.getDatum(index).isFill() || Double.isNaN(y) ) {
+                    skippedLast = true;
+                } else if (skippedLast) {
+                    newPath.moveTo((float)i, (float)j);
+                    skippedLast = false;
+                } else if (Math.abs(x - x0) > xSampleWidth) {
+                    //This should put a point on an isolated data value
+                    newPath.lineTo((float)i0, (float)j0);
+                    newPath.moveTo((float)i, (float)j);
+                    skippedLast = false;
+                } else {
+                    if (histogram) {
+                        double i1 = (i0 + i)/2;
+                        newPath.lineTo((float)i1, (float)j0);
+                        newPath.lineTo((float)i1, (float)j);
+                        newPath.lineTo((float)i, (float)j);
+                    } else {
+                        newPath.lineTo((float)i, (float)j);
+                    }
+                    skippedLast = false;
+                }
+                x0= x;
+                y0= y;
+                i0= i;
+                j0= j;
+            }
+            path = newPath;
+            
+        } else {
+            path= null;
         }
-        path = newPath;
         if (getParent() != null) {
             getParent().repaint();
         }
@@ -428,7 +435,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         }
     }
     
-    public String getListLabel() {        
+    public String getListLabel() {
         return String.valueOf( this.getDataSetDescriptor() );
     }
     
