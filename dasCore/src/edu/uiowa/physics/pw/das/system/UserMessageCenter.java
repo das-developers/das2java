@@ -9,23 +9,35 @@
 package edu.uiowa.physics.pw.das.system;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
  *
  * @author Jeremy
  */
 public class UserMessageCenter {
+    
     private static UserMessageCenter instance;
+    
+    class MessageRecord {
+        JButton nextButton;
+        Component component;
+    }
+    
+    List messageRecords;
+    
     public static UserMessageCenter getDefault() {
         if ( instance==null ) {
             instance= new UserMessageCenter();
@@ -35,6 +47,7 @@ public class UserMessageCenter {
     
     private UserMessageCenter() {
         createComponents();
+        messageRecords= new ArrayList();
     }
     
     HashMap sources= new HashMap();   //<message>
@@ -44,10 +57,12 @@ public class UserMessageCenter {
      * source, etc.
      */
     public void notifyUser( Object source, String message ) {
-        notifyUser( source, new JLabel(message) );
+        JTextArea textArea= new JTextArea(message); 
+        textArea.setLineWrap(true);
+        notifyUser( source, textArea);
     }
     
-    public void notifyUser( Object source, JLabel message ) {
+    private void notifyUser( Object source, JTextArea message ) {
         HashMap sourceMessages= (HashMap)sources.get( source );
         if ( sourceMessages!=null ) {
             if ( sourceMessages.containsKey(message.getText() ) ) {
@@ -63,8 +78,9 @@ public class UserMessageCenter {
         JPanel panel= new JPanel();
         panel.setLayout( new BorderLayout(  ) );
         panel.add( message, BorderLayout.CENTER );
-        
-        panel.add( new JButton( getNextAction() ), BorderLayout.SOUTH );
+                
+        JButton nextButton= new JButton( getNextAction() );
+        panel.add( nextButton, BorderLayout.SOUTH );
         pane.add( panel, tabCount );
         tabCount++;
         
@@ -72,6 +88,19 @@ public class UserMessageCenter {
             frame.setVisible(true);
         }
         
+        MessageRecord record= new MessageRecord();
+        record.component= panel;
+        record.nextButton= nextButton;
+        
+        messageRecords.add( record );
+        update();
+    }
+    
+    private void update() {
+        for ( int i=0; i<messageRecords.size(); i++ ) {
+            MessageRecord record= (MessageRecord)messageRecords.get(i);
+            record.nextButton.setEnabled( i<messageRecords.size()-1) ;
+        }
     }
     
     private Action getNextAction() {
