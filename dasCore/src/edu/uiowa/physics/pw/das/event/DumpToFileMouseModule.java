@@ -9,6 +9,7 @@ package edu.uiowa.physics.pw.das.event;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.system.UserMessageCenter;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.nio.channels.*;
@@ -52,6 +53,12 @@ public class DumpToFileMouseModule extends MouseModule {
         yrange= new DatumRange( yAxis.invTransform(e.getYMaximum()), yAxis.invTransform(e.getYMinimum()) );
         
         DataSet ds= dsConsumer.getDataSet();
+        
+        if ( ds==null ) {
+            UserMessageCenter.getDefault().notifyUser( this, "This renderer doesn't have a dataset loaded" );
+            return;
+        }
+        
         DataSet outds;
         if ( ds instanceof TableDataSet ) {
             TableDataSet tds= (TableDataSet)ds;
