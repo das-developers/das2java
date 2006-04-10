@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -39,36 +40,41 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     protected Units[] unitsArray;
     protected String[] planesArray;
     protected AbstractTableModel myTableModel;
+
     private File saveFile;
+    private boolean modified;
     private JLabel messageLabel;
+
     private boolean active= true; // false means don't fire updates
-    
+
+    Preferences prefs= Preferences.userNodeForPackage( this.getClass() );
+
     protected class DataPoint implements Comparable {
         Datum[] data;
         HashMap planes;
-        
+
         public DataPoint( Datum x1, Datum x2, HashMap planes ) {
             this( new Datum[] { x1,x2 }, planes );
         }
-        
+
         public DataPoint( Datum[] data, HashMap planes ) {
             this.data= data;
             this.planes= planes;
         }
-        
+
         Datum get(int i) {
             return data[i];
         }
-        
+
         Object getPlane( String name ) {
             return planes.get(name);
         }
-        
+
         public int compareTo(Object o) {
             DataPoint that = (DataPoint)o;
             return this.data[0].lt(that.data[0]) ? -1 : this.data[0].gt(that.data[0]) ? 1 : 0;
         }
-        
+
         public String toString() {
             StringBuffer result= new StringBuffer( ""+data[0]+" "+data[1] );
             if ( planes!=null ) {
@@ -80,9 +86,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return result.toString();
         }
     }
-    
+
     private class MyTableModel extends AbstractTableModel {
-        
+
         public int getColumnCount() {
             if ( unitsArray==null ) {
                 return 2;
@@ -90,19 +96,19 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 return planesArray.length;
             }
         }
-        
+
         public String getColumnName(int j) {
             String result= planesArray[j];
             if ( unitsArray[j]!=null ) result+= "("+unitsArray[j]+")";
             return result;
         }
-        
+
         public int getRowCount() {
             int nrow= dataPoints.size();
             nrow= nrow>0 ? nrow : 1 ;
             return dataPoints.size();
         }
-        
+
         public Object getValueAt(int i, int j) {
             DataPoint x= (DataPoint)dataPoints.get(i);
             if ( j<x.data.length ) {
@@ -111,15 +117,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 return x.getPlane(planesArray[j]);
             }
         }
-        
+
     }
-    
+
     public void deleteRow( int row ) {
         dataPoints.remove(row);
-        update();
+        modified= true;
+        updateClients();
+        updateStatus();
         fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
     }
-    
+
     class MyDataSetDescriptor extends DataSetDescriptor {
         MyDataSetDescriptor() {
             super(null);
@@ -127,7 +135,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         public void fireUpdate() {
             fireDataSetUpdateEvent( new DataSetUpdateEvent(this) );
         }
-        
+
         protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, DasProgressMonitor monitor) throws DasException {
             if ( dataPoints.size()==0 ) {
                 return null;
@@ -140,14 +148,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 return builder.toVectorDataSet();
             }
         }
-        
+
         public Units getXUnits() {
             return unitsArray[0];
         }
-        
+
     }
     private MyDataSetDescriptor dataSetDescriptor;
-    
+
     /**
      * @depricated  use getDataSet() and getSelectedDataSet() instead
      */
@@ -157,7 +165,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
         return dataSetDescriptor;
     }
-    
+
     /**
      * returns a data set of the table data.
      */
@@ -176,7 +184,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return builder.toVectorDataSet();
         }
     }
-    
+
     /**
      * returns a data set of the selected table data
      */
@@ -197,7 +205,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return builder.toVectorDataSet();
         }
     }
-    
+
     /**
      * Selects all the points within the DatumRange
      */
@@ -205,7 +213,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         List selectMe= new ArrayList();
         for ( int i=0; i<dataPoints.size(); i++ ) {
             DataPoint p= (DataPoint)dataPoints.get(i);
-            if ( xrange.contains( p.data[0] ) 
+            if ( xrange.contains( p.data[0] )
             && yrange.contains( p.data[1]  ) ) {
                 selectMe.add(new Integer(i));
             }
@@ -216,11 +224,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             table.getSelectionModel().addSelectionInterval( iselect, iselect );
         }
     }
-    
+
     public void saveToFile( File file ) throws IOException {
         FileOutputStream out= new FileOutputStream( file );
         BufferedWriter r= new BufferedWriter(new OutputStreamWriter(out));
-        
+
         StringBuffer header= new StringBuffer();
         header.append("## ");
         for ( int j=0; j<planesArray.length; j++ ) {
@@ -245,42 +253,45 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
             r.write(s.toString());
             r.newLine();
-            DasProperties.getInstance().put("components.DataPointRecorder.lastFileSave",  file.toString());
+            prefs.put( "components.DataPointRecorder.lastFileSave",  file.toString() );
+            prefs.put( "components.DataPointRecorder.lastFileLoad",  file.toString() );
         }
         r.close();
-        
+        modified= false;
+        updateStatus();
+
     }
-    
+
     public void loadFromFile( File file ) throws IOException {
-        active= false; 
-        
+        active= false;
+
         FileInputStream in= new FileInputStream( file );
         BufferedReader r= new BufferedReader(new InputStreamReader(in));
-        
+
         int lineCount=0;
         for ( String line= r.readLine(); line!=null; line= r.readLine() ) {
             lineCount++;
         }
         r.close();
-        
+
         in= new FileInputStream( file );
         r= new BufferedReader(new InputStreamReader(in));
-        
+
         dataPoints.clear();
         String[] planesArray= null;
         Units[] unitsArray= null;
-        
+
         Datum x;
         Datum y;
         HashMap planes= new HashMap();
-        
+
         DasProgressMonitor mon;
         if ( lineCount > 500 ) {
             mon= DasProgressPanel.createFramed("reading file");
         } else {
             mon= DasProgressMonitor.NULL;
         }
-        
+
         mon.setTaskSize( lineCount );
         int linenum=0;
         for ( String line= r.readLine(); line!=null; line= r.readLine() ) {
@@ -324,14 +335,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
                 planesArray= new String[] { "X", "Y", "comment" };
             }
-            
+
             try {
-                
+
                 x= unitsArray[0].parse(s[0]);
                 y= unitsArray[1].parse(s[1]);
-                
+
                 planes= new HashMap();
-                
+
                 for ( int i=2; i<s.length; i++ ) {
                     if ( unitsArray[i]==null ) {
                         Pattern p= Pattern.compile("\"(.*)\".*");
@@ -349,29 +360,33 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         }
                     }
                 }
-                
+
                 DataPointSelectionEvent e;
                 e= new DataPointSelectionEvent(this, x, y, planes );
                 DataPointSelected(e);
             } catch ( ParseException e ) {
                 throw new RuntimeException(e);
             }
-            
+
         }
         mon.finished();
-        
+
         active= true;
-        update();
-        DasProperties.getInstance().put("components.DataPointRecorder.lastFileLoad",  file.toString());
+
+        modified= false;
+        updateStatus();
+        updateClients();
+
+        prefs.put("components.DataPointRecorder.lastFileLoad",  file.toString());
         fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
-                
+
         table.getColumnModel().getColumn(0).setPreferredWidth( 200 );
     }
-    
+
     private class MyMouseAdapter extends MouseAdapter {
         JPopupMenu popup;
         final JTable parent;
-        
+
         MyMouseAdapter(final JTable parent) {
             this.parent= parent;
             popup= new JPopupMenu("Options");
@@ -389,7 +404,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             });
             popup.add(menuItem);
         }
-        
+
         MouseAdapter mm;
         public void mousePressed(MouseEvent e) {
             if ( e.getButton()==MouseEvent.BUTTON3 ) {
@@ -400,19 +415,18 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             // hide popup
         }
     }
-    
-    private Action getSaveAction() {
-        return new AbstractAction( "Save..." ) {
+
+    private Action getSaveAsAction() {
+        return new AbstractAction( "Save As..." ) {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser jj= new JFileChooser();
-                String lastFileString= (String)DasProperties.getInstance().get("components.DataPointRecorder.lastFileSave");
-                if ( lastFileString==null ) lastFileString="";
+                String lastFileString= prefs.get("components.DataPointRecorder.lastFileSave","");
                 File lastFile= null;
                 if ( lastFileString!="" ) {
                     lastFile= new File( lastFileString );
                     jj.setSelectedFile(lastFile);
                 }
-                
+
                 int status= jj.showSaveDialog(DataPointRecorder.this);
                 if ( status==JFileChooser.APPROVE_OPTION ) {
                     try {
@@ -426,37 +440,89 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         };
     }
-    
-    private Action getLoadAction() {
-        return new AbstractAction( "Load..." ) {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser jj= new JFileChooser();
-                String lastFileString= (String)DasProperties.getInstance().get("components.DataPointRecorder.lastFileLoad");
-                if ( lastFileString==null ) lastFileString="";
-                File lastFile= null;
-                if ( lastFileString!="" ) {
-                    lastFile= new File( lastFileString );
-                    jj.setSelectedFile(lastFile);
-                }
-                int status= jj.showOpenDialog(DataPointRecorder.this);
-                if ( status==JFileChooser.APPROVE_OPTION ) {
-                    final File loadFile= jj.getSelectedFile();
-                    
-                    Runnable run= new Runnable() {
-                        public void run( ) {
-                            try {
-                                loadFromFile(loadFile);
-                            } catch ( IOException e ) {
-                                DasExceptionHandler.handle(e);
-                            }
-                        }
-                    };
-                    new Thread( run ).start();
+
+    private Action getSaveAction() {
+        return new AbstractAction( "Save" ) {
+            public void actionPerformed( ActionEvent e ) {
+                if ( saveFile==null ) {
+                    getSaveAsAction().actionPerformed(e);
+                } else {
+                    try {
+                        saveToFile(saveFile);
+                    } catch (IOException ex) {
+                        DasExceptionHandler.handle( ex );
+                    }
                 }
             }
         };
     }
-    
+
+    private Action getLoadAction() {
+        return new AbstractAction( "Open..." ) {
+            public void actionPerformed(ActionEvent e) {
+                if ( checkModified(e) ) {
+                    JFileChooser jj= new JFileChooser();
+                    String lastFileString= prefs.get("components.DataPointRecorder.lastFileLoad","");
+                    File lastFile= null;
+                    if ( lastFileString!="" ) {
+                        lastFile= new File( lastFileString );
+                        jj.setSelectedFile(lastFile);
+                    }
+                    int status= jj.showOpenDialog(DataPointRecorder.this);
+                    if ( status==JFileChooser.APPROVE_OPTION ) {
+                        final File loadFile= jj.getSelectedFile();
+                        prefs.put("components.DataPointRecorder.lastFileLoad",loadFile.toString());
+                        Runnable run= new Runnable() {
+                            public void run( ) {
+                                try {
+                                    loadFromFile(loadFile);
+                                    saveFile= loadFile;
+                                    updateStatus();
+                                } catch ( IOException e ) {
+                                    DasExceptionHandler.handle(e);
+                                }
+                            }
+                        };
+                        new Thread( run ).start();
+                    }
+                }
+            }
+        };
+    }
+
+    /**
+     * returns true if the operation should continue, false
+     * if not, meaning the user pressed cancel.
+     */
+    private boolean checkModified( ActionEvent e ) {
+        if ( modified ) {
+            int n = JOptionPane.showConfirmDialog(
+                    DataPointRecorder.this,
+                    "Current work has not been saved.\n  Save first?",
+                    "Save work first",
+                    JOptionPane.YES_NO_CANCEL_OPTION );
+            if ( n==JOptionPane.YES_OPTION ) {
+                getSaveAction().actionPerformed(e);
+            }
+            return ( n != JOptionPane.CANCEL_OPTION );
+        } else {
+            return true;
+        }
+    }
+
+    private Action getNewAction() {
+        return new AbstractAction( "New" ) {
+            public void actionPerformed( ActionEvent e ) {
+                if ( checkModified( e ) ) {
+                    dataPoints.removeAll(dataPoints);
+                    saveFile= null;
+                    updateStatus();
+                    updateClients();
+                }
+            }
+        };
+    }
+
     private Action getPropertiesAction() {
         return new AbstractAction( "Properties" ) {
             public void actionPerformed(ActionEvent e) {
@@ -464,7 +530,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         };
     }
-    
+
     private Action getUpdateAction() {
         return new AbstractAction("Update"){
             public void actionPerformed(ActionEvent e) {
@@ -477,21 +543,35 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         };
     }
-    
+
     /** Creates a new instance of DataPointRecorder */
     public DataPointRecorder() {
         super();
         dataPoints= new ArrayList();
         myTableModel= new MyTableModel();
         this.setLayout(new BorderLayout());
-        
+
+        JMenuBar menuBar= new JMenuBar();
+        JMenu fileMenu= new JMenu( "File" );
+        fileMenu.add( new JMenuItem( getNewAction() ) );
+        fileMenu.add( new JMenuItem( getLoadAction() ) );
+        fileMenu.add( new JMenuItem( getSaveAction() ) );
+        fileMenu.add( new JMenuItem( getSaveAsAction() ) );
+        menuBar.add( fileMenu );
+
+        JMenu editMenu= new JMenu( "Edit" );
+        editMenu.add( new JMenuItem( getPropertiesAction() ) );
+        menuBar.add( editMenu );
+
+        this.add( menuBar, BorderLayout.NORTH );
+
         planesArray= new String[] { "X", "Y" };
         unitsArray= new Units[] { null, null };
-        
+
         table= new JTable(myTableModel);
-        
+
         table.getTableHeader().setReorderingAllowed(false);
-        
+
         table.setRowSelectionAllowed(true);
         table.addMouseListener(new DataPointRecorder.MyMouseAdapter(table));
         table.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
@@ -505,33 +585,31 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
             }
         });
-        
+
         scrollPane= new JScrollPane(table);
         this.add(scrollPane,BorderLayout.CENTER);
-        
+
         JPanel controlStatusPanel= new JPanel();
         controlStatusPanel.setLayout( new BoxLayout( controlStatusPanel, BoxLayout.Y_AXIS ) );
-        
+
         final JPanel controlPanel= new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel,BoxLayout.X_AXIS));
-        JButton saveButton= new JButton(getSaveAction());
-        JButton loadButton= new JButton(getLoadAction());
-        
-        controlPanel.add(saveButton);
-        controlPanel.add(loadButton);
-        
-        controlPanel.add(new JButton(getPropertiesAction()));
-        
+
         JButton updateButton= new JButton(getUpdateAction());
-        
+
         controlPanel.add(updateButton);
+
+        messageLabel= new JLabel("ready");
+        messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+
+        controlStatusPanel.add( messageLabel );
+
+        controlPanel.setAlignmentX( JLabel.LEFT_ALIGNMENT );
         controlStatusPanel.add(controlPanel);
-        //messageLabel= new JLabel("ready");
-        //messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-        //controlStatusPanel.add( messageLabel );
+
         this.add(controlStatusPanel,BorderLayout.SOUTH);
     }
-    
+
     public static DataPointRecorder createFramed() {
         DataPointRecorder result;
         JFrame frame= new JFrame("Data Point Recorder");
@@ -542,12 +620,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         return result;
     }
-    
+
     /**
      * update fires off the TableDataChanged, and sets the current selected
      * row if necessary.
      */
-    private void update() {
+    private void updateClients() {
         if ( active ) {
             myTableModel.fireTableDataChanged();
             if ( selectRow!=-1 ) {
@@ -557,7 +635,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
     }
-    
+
+    private void updateStatus() {
+        String statusString= ( saveFile==null ? "" : ( String.valueOf( saveFile ) + " " )  )  +
+                ( modified ? "(modified)" : "" );
+        messageLabel.setText( statusString );
+    }
     private void insertInternal( DataPoint newPoint ) {
         int newSelect;
         if ( sorted ) {
@@ -574,8 +657,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             newSelect= dataPoints.size()-1;
         }
         selectRow= newSelect;
+        modified= true;
+        updateStatus();
     }
-    
+
     private void addDataPoint( Datum x, Datum y, HashMap planes ) {
         if ( dataPoints.size()==0 ) {
             Datum[] datums= new Datum[] { x, y };
@@ -596,7 +681,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     unitsArray[index]= ((Datum)value).getUnits();
                 }
                 index++;
-            }      
+            }
             myTableModel.fireTableStructureChanged();
         }
         if ( !x.getUnits().isConvertableTo(unitsArray[0]) ) {
@@ -608,7 +693,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         insertInternal( new DataPoint( x, y, new HashMap(planes) ) );
         if ( active ) fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent(this) );
     }
-    
+
     /**
      * this adds all the points in the DataSet to the list.  This will also check the dataset for the special
      * property "comment" and add it as a comment.
@@ -618,34 +703,34 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             public void dataSetUpdated( DataSetUpdateEvent e ) {
                 VectorDataSet ds= (VectorDataSet)e.getDataSet();
                 String comment;
-                
+
                 HashMap planesMap= new HashMap();
-                
+
                 if ( ds.getProperty("comment")!=null ) {
                     planesMap.put( "comment", ds.getProperty("comment") );
-                } 
-                
+                }
+
                 if ( ds.getProperty("xTagWidth")!=null ) {
                     DataPointRecorder.this.xTagWidth= (Datum)ds.getProperty("xTagWidth");
                 }
                 String[] planes= ds.getPlaneIds();
                 if ( ds!=null ) {
-                    for ( int i=0; i<ds.getXLength(); i++ ) {                        
+                    for ( int i=0; i<ds.getXLength(); i++ ) {
                         for ( int j=0; j<planes.length; j++ ) {
                             if ( !planes[j].equals("") ) {
                                 planesMap.put( planes[j], ((VectorDataSet)ds.getPlanarView(planes[j])).getDatum(i) );
                             }
-                        }                        
+                        }
                         addDataPoint( ds.getXTagDatum(i), ds.getDatum(i), planesMap );
                     }
-                    update();
+                    updateClients();
                 } else {
                     throw new RuntimeException("not supported, I need the DataSet in the update event");
                 }
             }
         };
     }
-    
+
     public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
         String comment="";
         HashMap planesMap;
@@ -660,7 +745,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 planesMap.put( x[i], e.getPlane(x[i]) );
             }
         }
-        
+
         // if a point exists within xTagWidth of the point, then have this point replace
         Datum x= e.getX();
         if ( snapToGrid && xTagWidth!=null && dataPoints.size()>0 ) {
@@ -672,22 +757,22 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
         addDataPoint( x, e.getY(), planesMap );
-        update();
+        updateClients();
     }
-    
+
     private javax.swing.event.EventListenerList listenerList =  null;
-    
+
     public synchronized void addDataSetUpdateListener(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener listener) {
         if (listenerList == null ) {
             listenerList = new javax.swing.event.EventListenerList();
         }
         listenerList.add(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener.class, listener);
     }
-    
+
     public synchronized void removeDataSetUpdateListener(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener listener) {
         listenerList.remove(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener.class, listener);
     }
-    
+
     private void fireDataSetUpdateListenerDataSetUpdated(edu.uiowa.physics.pw.das.dataset.DataSetUpdateEvent event) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
@@ -697,20 +782,20 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
     }
-    
+
     private javax.swing.event.EventListenerList selectedListenerList =  null;
-    
+
     public synchronized void addSelectedDataSetUpdateListener(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener listener) {
         if (selectedListenerList == null ) {
             selectedListenerList = new javax.swing.event.EventListenerList();
         }
         selectedListenerList.add(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener.class, listener);
     }
-    
+
     public synchronized void removeSelectedDataSetUpdateListener(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener listener) {
         selectedListenerList.remove(edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener.class, listener);
     }
-    
+
     private void fireSelectedDataSetUpdateListenerDataSetUpdated(edu.uiowa.physics.pw.das.dataset.DataSetUpdateEvent event) {
         if (selectedListenerList == null) return;
         Object[] listeners = selectedListenerList.getListenerList();
@@ -720,58 +805,58 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
     }
-    
+
     /**
      * Holds value of property sorted.
      */
     private boolean sorted= true;
-    
+
     /**
      * Getter for property sorted.
      * @return Value of property sorted.
      */
     public boolean isSorted() {
-        
+
         return this.sorted;
     }
-    
+
     /**
      * Setter for property sorted.
      * @param sorted New value of property sorted.
      */
     public void setSorted(boolean sorted) {
-        
+
         this.sorted = sorted;
     }
-    
+
     /**
      * Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
     public synchronized void addDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
-        
+
         if (listenerList == null ) {
             listenerList = new javax.swing.event.EventListenerList();
         }
         listenerList.add(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
     }
-    
+
     /**
      * Removes DataPointSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
     public synchronized void removeDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
-        
+
         listenerList.remove(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
     }
-    
+
     /**
      * Notifies all registered listeners about the event.
      *
      * @param event The event to be fired
      */
     private void fireDataPointSelectionListenerDataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
-        
+
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -780,13 +865,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
     }
-    
-    
+
+
     /**
      * Holds value of property xTagWidth.
      */
     private Datum xTagWidth= null;
-    
+
     /**
      * Getter for property xTagWidth.
      * @return Value of property xTagWidth.
@@ -794,7 +879,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public Datum getXTagWidth() {
         return this.xTagWidth;
     }
-    
+
     /**
      * Setter for property xTagWidth.
      * @param xTagWidth New value of property xTagWidth.
@@ -802,27 +887,27 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public void setXTagWidth(Datum xTagWidth) {
         this.xTagWidth = xTagWidth;
     }
-    
+
     /**
      * Holds value of property snapToGrid.
      */
     private boolean snapToGrid= false;
-    
+
     /**
      * Getter for property fuzzyOverwrite.
      * @return Value of property fuzzyOverwrite.
      */
     public boolean isSnapToGrid()  {
-        
+
         return this.snapToGrid;
     }
-    
+
     /**
      * Setter for property fuzzyOverwrite.
      * @param fuzzyOverwrite New value of property fuzzyOverwrite.
      */
     public void setSnapToGrid(boolean snapToGrid)  {
-        
+
         this.snapToGrid = snapToGrid;
     }
 }
