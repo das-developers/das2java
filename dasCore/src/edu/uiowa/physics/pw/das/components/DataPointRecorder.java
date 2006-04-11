@@ -293,6 +293,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         mon.setTaskSize( lineCount );
+        mon.started();
         int linenum=0;
         for ( String line= r.readLine(); line!=null; line= r.readLine() ) {
             linenum++;
