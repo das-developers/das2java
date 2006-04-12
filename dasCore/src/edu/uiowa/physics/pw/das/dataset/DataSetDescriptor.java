@@ -181,7 +181,7 @@ public abstract class DataSetDescriptor implements Displayable {
         CacheTag tag=null;
         if ( defaultCaching ) {
             tag= new CacheTag( start, end, resolution );
-            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getDataSet "+tag);
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getDataSet " + this +" " + tag);
         }
         
         if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {
