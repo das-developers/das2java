@@ -433,7 +433,7 @@ public class PropertyEditor extends JComponent {
             Point p = event.getPoint();
             focusRow = table.rowAtPoint(p);
             if ( event.getButton()==MouseEvent.BUTTON3 ) {
-                popupMenu.show( PropertyEditor.this, event.getX(), event.getY() );
+                popupMenu.show( PropertyEditor.this.table, event.getX(), event.getY() );
             }
         }
         
