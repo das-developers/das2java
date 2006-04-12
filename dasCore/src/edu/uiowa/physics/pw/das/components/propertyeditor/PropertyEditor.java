@@ -152,6 +152,8 @@ public class PropertyEditor extends JComponent {
         tree.setCellRenderer(valueRenderer);
         table.getColumnModel().getColumn(0).setCellRenderer(tree);
         table.getColumnModel().getColumn(1).setCellRenderer(valueRenderer);
+        table.getColumnModel().getColumn(0).setMaxWidth(250);
+        table.getColumnModel().getColumn(0).setPreferredWidth(150);
         table.setDefaultEditor(Object.class, editor);
         table.addMouseListener(new PropertyTableMouseListener());
         table.setSurrendersFocusOnKeystroke(true);
