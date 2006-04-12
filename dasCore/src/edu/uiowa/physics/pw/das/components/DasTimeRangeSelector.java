@@ -33,29 +33,34 @@ import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
 import edu.uiowa.physics.pw.das.util.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 
 import javax.swing.event.EventListenerList;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.prefs.*;
 import javax.swing.*;
 
 public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionListener {
-    
+
     private DatumRange range= null;
-    
+
     JTextField idStart= null;
     JTextField idStop= null;
     JButton viewButton= null;
     JPanel startStopPane=null;
-    
+
     boolean updateRangeString= false;   // true indicates use formatted range string in start time cell.
-    
+
     /** Utility field used by event firing mechanism. */
     private EventListenerList listenerList =  null;
-    
+
     /** Action that is associated with the previous button.
      * Access is given to subclasses so that other widgets can be associated
      * with this action (Popup menu, etc).
@@ -65,7 +70,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
             fireTimeRangeSelectedPrevious();
         }
     };
-    
+
     /** Action that is associated with the next button.
      * Access is given to subclasses so that other widgets can be associated
      * with this action (Popup menu, etc).
@@ -75,31 +80,42 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
             fireTimeRangeSelectedNext();
         }
     };
-    
+
     protected final Action rangeAction = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
             fireTimeRangeSelected();
         }
     };
+
+    private boolean favoritesEnabled= false;
     
+    private List favoritesList= null;
+    private JPopupMenu favoritesMenu= null;
+
+    private final int FAVORITES_LIST_SIZE= 5;
+
+    private String favoritesGroup;
+
+    private JButton favoritesButton;
+
     /** Creates a new instance of DasTimeRangeSelector */
     public DasTimeRangeSelector() {
         super();
         updateRangeString= Preferences.userNodeForPackage(this.getClass()).getBoolean("updateRangeString", false);
         buildComponents();
     }
-    
+
     private Action getModeAction() {
         return new AbstractAction("mode") {
             public void actionPerformed( ActionEvent e ) {
                 updateRangeString= !updateRangeString;
                 Preferences.userNodeForPackage(this.getClass()).putBoolean("updateRangeString", updateRangeString );
                 revalidateUpdateMode();
-                update();                
+                update();
             }
         };
     }
-    
+
     private void revalidateUpdateMode() {
         if ( updateRangeString ) {
             //idStop.setColumns(8);
@@ -113,54 +129,60 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         }
         startStopPane.revalidate();
     }
-    
+
     private void buildComponents() {
         this.setLayout(new FlowLayout());
-        
+
         JButton b= new JButton();
         b.setAction(previousAction);
         b.setActionCommand("previous");
         b.setToolTipText("Scan back in time");
         this.add(b);
-        
+
         startStopPane= new JPanel(new FlowLayout());
-        
+
         idStart= new JTextField(18);
         idStart.setAction(rangeAction);
         idStart.setActionCommand("startTime");
         startStopPane.add(idStart);
-        
+
         idStop= new JTextField(18);
         idStop.addActionListener(rangeAction);
         idStop.setActionCommand("endTime");
         startStopPane.add(idStop);
-        
+
+        favoritesButton= new JButton("Fav");
+        favoritesButton.setToolTipText("recently entries times");
+        favoritesButton.setPreferredSize(new Dimension( 20,20 ) );
+        favoritesButton.setVisible(false);
+        startStopPane.add(favoritesButton);
+
         viewButton= new JButton(getModeAction());
         viewButton.setToolTipText("input mode: start/end vs time range string");
         viewButton.setPreferredSize(new Dimension( 20,20 ) );
         startStopPane.add(viewButton);
-        
+
         this.add(startStopPane);
-        
+
         b= new JButton();
         b.setAction(nextAction);
         b.setActionCommand("next");
         b.setToolTipText("Scan forward in time");
         this.add(b);
-        
+
         revalidateUpdateMode();
     }
-    
+
     public DasTimeRangeSelector(Datum startTime, Datum endTime) {
         this(new DatumRange( startTime, endTime ));
     }
-    
+
     public DasTimeRangeSelector( DatumRange range ) {
         this();
         this.range= range;
         update();
     }
-    
+
     private void parseRange() {
         boolean updateRangeString0= updateRangeString;
         if ( idStop.getText().equals("") ) {
@@ -185,29 +207,76 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         }
         if ( updateRangeString!=updateRangeString0 )
             Preferences.userNodeForPackage(getClass()).putBoolean("updateRangeString", updateRangeString );
-        
+
         return;
     }
+
+    private void refreshFavorites() {
+        favoritesMenu.removeAll();
+        
+        for ( Iterator i= favoritesList.iterator(); i.hasNext(); ) {
+            final String fav= (String) i.next();
+            Action favAction= new AbstractAction( fav ) {
+                public void actionPerformed( ActionEvent e ) {
+                    DasTimeRangeSelector.this.setRange( DatumRangeUtil.parseTimeRangeValid(fav) );
+                    fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range));
+                }
+            };
+            favoritesMenu.add( favAction );
+        }
+    }
     
+    private void buildFavorites( ) {
+        String favorites= Preferences.userNodeForPackage(getClass()).get( "timeRangeSelector."+favoritesGroup, "" );
+        String[] ss= favorites.split("\\|\\|");
+        favoritesList= new ArrayList();
+        for ( int i=0; i<ss.length; i++ ) {
+            if ( !"".equals(ss[i]) ) favoritesList.add(ss[i]);
+        }
+        favoritesMenu= new JPopupMenu();
+        refreshFavorites();
+        favoritesButton.add( favoritesMenu );
+        favoritesButton.addActionListener( getFavoritesListener());        
+    }
+    
+    private ActionListener getFavoritesListener() {
+        return new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+                favoritesMenu.show(DasTimeRangeSelector.this, favoritesButton.getX(), favoritesButton.getY() );
+            }
+        };
+    }
+    /**
+     * adds a droplist of recently entered times.  This should be a spacecraft string, or null.
+     */
+    public void enableFavorites( String group ) {
+        if ( group==null ) group="default";
+        this.favoritesGroup= group;
+        favoritesEnabled= true;
+        favoritesButton.setVisible(true);
+        buildFavorites( );
+        
+    }
+
     public Datum getStartTime() {
         parseRange();
         return range.min();
     }
-    
+
     public Datum getEndTime() {
         parseRange();
         return range.max();
     }
-    
+
     public DatumRange getRange() {
         return range;
     }
-    
+
     public void setRange( DatumRange range ) {
         this.range= range;
         update();
     }
-    
+
     private void update() {
         if ( range!=null ) {
             if ( updateRangeString ) {
@@ -220,7 +289,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
             }
         }
     }
-    
+
     public void setStartTime(Datum s1) {
         if ( range==null ) {
             return;
@@ -233,7 +302,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         }
         update();
     }
-    
+
     public void setEndTime(Datum s2) {
         if ( range==null ) {
             return;
@@ -246,22 +315,22 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         }
         update();
     }
-    
+
     public boolean isWithin(Datum s1, Datum s2) {
         Datum startTime= getStartTime();
         Datum endTime= getEndTime();
         return s1.compareTo(startTime) <= 0 && endTime.compareTo(s2) <= 0;
     }
-    
-    
+
+
     public void timeRangeSelected(TimeRangeSelectionEvent e) {
         DatumRange range= e.getRange();
-        if ( !range.equals(this.range) ) {            
+        if ( !range.equals(this.range) ) {
             setRange( e.getRange() );
             fireTimeRangeSelected(e);
         }
     }
-    
+
     /** Registers TimeRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
@@ -271,32 +340,41 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         }
         listenerList.add(TimeRangeSelectionListener.class, listener);
     }
-    
+
     /** Removes TimeRangeSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
     public synchronized void removeTimeRangeSelectionListener(TimeRangeSelectionListener listener) {
         listenerList.remove(TimeRangeSelectionListener.class, listener);
     }
-    
+
     protected void fireTimeRangeSelectedPrevious() {
         range= range.previous();
         update();
         fireTimeRangeSelected(new TimeRangeSelectionEvent( this, range ));
     }
-    
+
     protected void fireTimeRangeSelectedNext() {
         range= range.next();
         update();
         fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range));
     }
-    
+
     protected void fireTimeRangeSelected() {
         parseRange();
         update();
+        if ( favoritesEnabled ) {
+            String store= range.toString();
+            favoritesList.add( 0, store );
+            for ( int i=FAVORITES_LIST_SIZE; i<favoritesList.size(); i++ ) {
+                favoritesList.remove(i);
+            }
+            refreshFavorites();
+            saveFavorites();
+        }
         fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range));
     }
-    
+
     /** Notifies all registered listeners about the event.
      *
      * @param event The event to be fired
@@ -304,22 +382,31 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
     protected void fireTimeRangeSelected(TimeRangeSelectionEvent event) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length-2; i>=0; i-=2) {            
+        for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==TimeRangeSelectionListener.class) {
-                String logmsg= "fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event;                
+                String logmsg= "fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event;
                 DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine(logmsg);
                 ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
                 ((TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }
     }
-    
+
     public Dimension getMaximumSize() {
         return super.getPreferredSize();
     }
-    
+
     public Dimension getMinimumSize() {
         return super.getPreferredSize();
     }
-    
+
+    private void saveFavorites() {
+        if ( favoritesList.size()==0 ) return;        
+        StringBuffer favorites= new StringBuffer( (String)favoritesList.get(0) );
+        for ( int i=1; i<favoritesList.size(); i++ ) {
+            favorites.append( "||" + favoritesList.get(i) );
+        }
+        Preferences.userNodeForPackage(getClass()).put( "timeRangeSelector."+favoritesGroup, favorites.toString() );
+    }
+
 }
