@@ -24,7 +24,12 @@
 package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
-/** TODO */
+/** 
+ * An AttachedRow is like an AttachedColumn whose position is defined relative to another row.  
+ * An example application is attaching an EventsBar to a DasPlot so that if the plot is resized, 
+ * then the EventsBar moves along with it.
+ *
+ */
 public class AttachedRow extends DasRow {
     
     private DasRow row;
@@ -32,8 +37,12 @@ public class AttachedRow extends DasRow {
     /** Creates a new instance of AttachedRow
      * TODO
      * @param row the new row.
-     * @param minimum the new minimum value for the row in the device space.
-     * @param maximum the new maximum value for the row in the device space.
+     * @param minimum the minimum (top) position, with respect to @param column.  1.0 refers 
+     * to the bottom, 0.0 refers to the top. So for example,
+     * 1.01 is a reasonable setting for an events bar.
+     * @param maximum the maximum (right) position, with respect to @param column.  1.0 refers 
+     * to the bottom, 0.0 refers to the top. So for example,
+     * 1.05 is a reasonable setting for a events bar.
      */
     public AttachedRow(DasRow row, double minimum, double maximum) {
         super(row.getParent(),minimum,maximum);
@@ -85,16 +94,20 @@ public class AttachedRow extends DasRow {
         row.removepwUpdateListener(l);
     }
     
-    /** Sets the minimum value for the row in the device space.
-     * @param value the new minimum value of the row in the device space.
+    /**     
+     * Sets the minimum for the column in the device space.
+     * @param minimum the new minimum value for the column.  This value is converted to be with
+     * respect to the parent row.
      */
     public void setDMinimum(int value) {
         double delta= row.getHeight();
         setMinimum((value-row.getDMinimum())/delta);
     }
     
-    /** Sets the maximum value of the row in the device space.
-     * @param value the new maximum value of the row in the device space.
+    /**   
+     * Sets the maximum for the column in the device space.
+     * @param maximum The new maximum value for the column. This value is converted to be with
+     * respect to the parent column.
      */
     public void setDMaximum(int value) {
         double delta= row.getHeight();

@@ -24,16 +24,24 @@
 package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 
-/** TODO */
+/**
+ * An AttachedColumn is a column whose position is defined relative to another column.  
+ * An example application is attaching a ColorBar to a DasPlot so that if the plot is resized, 
+ * then the ColorBar moves along with it.
+ */
 public class AttachedColumn extends DasColumn {
     
     private DasColumn column;
     
-    /** Creates a new instance of AttachedColumn.
-     * TODO
-     * @param column the new column.
-     * @param minimum the new minimum.
-     * @param maximum the new maximum.
+    /**
+     * Creates a new instance of AttachedColumn.
+     * @param column The column to follow.
+     * @param minimum the minimum (left) position, with respect to @param column.  1.0 refers 
+     * to the right side, 0.0 refers to the left side. So for example,
+     * 1.01 is a reasonable setting for a color bar.
+     * @param maximum the maximum (right) position, with respect to @param column.  1.0 refers 
+     * to the right side, 0.0 refers to the left side. So for example,
+     * 1.05 is a reasonable setting for a color bar.
      */
     public AttachedColumn(DasColumn column, double minimum, double maximum) {
         super(column.getParent(),minimum,maximum);
@@ -62,8 +70,10 @@ public class AttachedColumn extends DasColumn {
         return column.getDMinimum()+(int)(delta*getMinimum());        
     }
     
-    /** Sets the minimum for the column in the device space.
-     * @param minimum the new minimum value for the column.
+    /**
+     * Sets the minimum for the column in the device space.
+     * @param minimum the new minimum value for the column.  This value is converted to be with
+     * respect to the parent column.
      */
     public void setDMinimum(int minimum) {
         double delta= column.getWidth();
@@ -71,8 +81,10 @@ public class AttachedColumn extends DasColumn {
         fireUpdate();
     }
     
-    /** Sets the maximum for the column in the device space.
-     * @param maximum The new maximum value for the column.
+    /**
+     * Sets the maximum for the column in the device space.
+     * @param maximum The new maximum value for the column. This value is converted to be with
+     * respect to the parent column.
      */
     public void setDMaximum(int maximum) {
         double delta= column.getWidth();
@@ -81,9 +93,11 @@ public class AttachedColumn extends DasColumn {
     }
     
     
-    /** Sets the minimum and maximum for the column in the device space.
+    /**
+     * Sets the minimum and maximum for the column in the device space.
      * @param minimum the new minimum for the column.
-     * @param maximum the new maximum for the column.
+     * @param maximum the new maximum for the column. These values are converted to be with
+     * respect to the parent column.
      */
     public void setDPosition(int minimum, int maximum) {
         double delta= column.getWidth();
@@ -92,8 +106,9 @@ public class AttachedColumn extends DasColumn {
         fireUpdate();
     }
     
-    /** Gets the width of the column.
-     * @return the width of the column.
+    /**
+     * Gets the width of the column.
+     * @return the width of the column, in pixels.
      */
     public int getWidth() {
         return (int)(column.getWidth()*(getMaximum()-getMinimum()));
