@@ -44,11 +44,6 @@ public class DasApplication {
     
     private JFrame mainFrame;
     private boolean applet;
-            
-    static {
-        String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans" };
-        java.beans.Introspector.setBeanInfoSearchPath(beanInfoSearchPath);
-    }
     
     private NameContext nameContext;
     
