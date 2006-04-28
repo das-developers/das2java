@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das;
 
+import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpression;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.datum.*;
@@ -242,7 +243,7 @@ public class NameContext {
     private void maybeLoadPropertiesForClass(Class cl) {
         try {
             if (propertyMap.get(cl) == null) {
-                BeanInfo info = Introspector.getBeanInfo(cl);
+                BeanInfo info = BeansUtil.getBeanInfo(cl);
                 HashMap map = new HashMap();
                 PropertyDescriptor[] properties = info.getPropertyDescriptors();
                 for (int i = 0; i < properties.length; i++) {
