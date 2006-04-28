@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.dasml;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import org.apache.xml.serialize.*;
@@ -46,7 +47,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -325,7 +325,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
         Object o = application.getNameContext().get(objectName);
         Method method = null;
         try {
-            BeanInfo info = Introspector.getBeanInfo(o.getClass());
+            BeanInfo info = BeansUtil.getBeanInfo(o.getClass());
             MethodDescriptor[] methodDescriptors = info.getMethodDescriptors();
             for (int i = 0; i <= methodDescriptors.length; i++) {
                 if (i == methodDescriptors.length)
