@@ -89,6 +89,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     boolean preview= false;
     
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
+        super();
+        
         setOpaque(false);
         
         this.renderers= new ArrayList();
