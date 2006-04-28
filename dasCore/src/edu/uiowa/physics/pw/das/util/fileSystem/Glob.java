@@ -23,11 +23,11 @@
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
-import java.io.*;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import javax.swing.filechooser.FileFilter;
 
 /**
  * known bug: *.java matches ".java". The unix glob behavior is to
@@ -75,10 +75,14 @@ public class Glob {
      * @param glob
      * @return
      */
-    private static Pattern getPattern( String glob ) {
-        final String regex= glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
+    public static Pattern getPattern( String glob ) {
+        final String regex= getRegex( glob );
         final Pattern absPattern= Pattern.compile(regex);
         return absPattern;
+    }
+    
+    private static String getRegex( String glob ) {
+        return glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
     }
     
     /**
@@ -109,7 +113,7 @@ public class Glob {
             throw new IllegalArgumentException("absolute files only");
         }
         
-        final String regex= glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
+        final String regex= getRegex( glob );
         final Pattern absPattern= Pattern.compile(regex);
         List list= new ArrayList();
         for ( int i=0; i<files.length; i++ ) {
@@ -123,8 +127,19 @@ public class Glob {
             }
         }
         return (FileObject[])list.toArray(new FileObject[list.size()]);
-        
     }
     
+    public static FileFilter getGlobFileFilter( final String glob ) {
+        final Pattern pattern= getPattern(glob);
+        FileFilter f;
+        return new FileFilter() {
+            public boolean accept(File pathname) {
+                return pattern.matcher( pathname.getName() ).matches( );
+            }
+            public String getDescription() {
+                return glob;
+            }
+        };
+    }
     
 }
