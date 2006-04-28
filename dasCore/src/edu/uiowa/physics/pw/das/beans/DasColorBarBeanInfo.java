@@ -39,7 +39,7 @@ import java.beans.Introspector;
 public class DasColorBarBeanInfo extends AccessLevelBeanInfo {
     
     protected static final Property[] properties = {
-        new Property("type", AccessLevel.DASML, "getType", "setType", EnumerationEditor.class)
+        new Property("type", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getType", "setType", EnumerationEditor.class)
     };
     
     public DasColorBarBeanInfo() {

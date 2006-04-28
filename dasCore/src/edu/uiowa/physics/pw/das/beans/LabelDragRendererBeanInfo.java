@@ -28,7 +28,7 @@ package edu.uiowa.physics.pw.das.beans;
 public class LabelDragRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
-        new Property("tooltip", AccessLevel.DASML, "isTooltip", "setTooltip", null),
+        new Property("tooltip", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "isTooltip", "setTooltip", null),
     };
     
     public LabelDragRendererBeanInfo() {

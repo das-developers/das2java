@@ -28,7 +28,7 @@ import java.beans.BeanInfo;
 public class MouseModuleBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {        
-        new Property("dragRenderer", AccessLevel.DASML, "getDragRenderer", null, null),
+        new Property("dragRenderer", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDragRenderer", null, null),
         new Property("label", AccessLevel.DASML, "getLabel", "setLabel", null),
     };
     

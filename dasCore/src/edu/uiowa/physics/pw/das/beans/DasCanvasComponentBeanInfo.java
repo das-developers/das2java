@@ -30,10 +30,10 @@ import java.beans.MethodDescriptor;
 public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
     
     private static Property[] properties = {
-        new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
-        new Property("row", AccessLevel.ALL, "getRow", "setRow", null),
-        new Property("column", AccessLevel.ALL, "getColumn", "setColumn", null),
-        new Property("mouseAdapter", AccessLevel.ALL, "getDasMouseInputAdapter", "setDasMouseInputAdapter", null)
+        new Property("name", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
+        new Property("row", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getRow", "setRow", null),
+        new Property("column", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getColumn", "setColumn", null),
+        new Property("mouseAdapter", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasMouseInputAdapter", "setDasMouseInputAdapter", null)
     };
     
     private static MethodDescriptor[] methods;

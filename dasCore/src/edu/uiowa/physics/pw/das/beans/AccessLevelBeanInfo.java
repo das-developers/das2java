@@ -24,6 +24,8 @@
 package edu.uiowa.physics.pw.das.beans;
 
 import java.beans.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This class is designed to implement access levels for bean properties.
@@ -59,6 +61,27 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         }
     }
     
+    /**
+     * this level indicates what persistence is allowed.
+     */
+    public static class PersistenceLevel implements Comparable {
+        public static final PersistenceLevel NONE = new PersistenceLevel( "NONE", 0);
+        public static final PersistenceLevel TRANSIENT = new PersistenceLevel( "TRANSIENT", 1000 );
+        public static final PersistenceLevel PERSISTENT = new PersistenceLevel( "PERSISTENT", 2000);
+        
+        private String str;
+        private int order;
+        private PersistenceLevel(String str, int order) {
+            this.str = str; this.order = order;
+        }
+        public int compareTo(Object o) {
+            return order - ((PersistenceLevel)o).order;
+        }
+        public String toString() {
+            return str;
+        }
+    }
+    
     private Property[] properties;
     private Class beanClass;
     private static AccessLevel accessLevel;
@@ -68,17 +91,13 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         String level = System.getProperty("edu.uiowa.physics.das.beans.AccessLevelBeanInfo.AccessLevel");
         if (level==null) {
             accessLevel = AccessLevel.ALL;
-        }
-        else if (level.equals("ALL")) {
+        } else if (level.equals("ALL")) {
             accessLevel = AccessLevel.ALL;
-        }
-        else if (level.equals("DASML")) {
+        } else if (level.equals("DASML")) {
             accessLevel = AccessLevel.DASML;
-        }
-        else if (level.equals("END_USER")) {
+        } else if (level.equals("END_USER")) {
             accessLevel = AccessLevel.END_USER;
-        }
-        else {
+        } else {
             accessLevel = AccessLevel.ALL;
         }
     }
@@ -124,6 +143,34 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         this.beanClass = beanClass;
     }
     
+    /**
+     * convenient method that only returns the descriptors for the specified persistence level.
+     * Also implements the property inheritance.
+     */
+    public PropertyDescriptor[] getPropertyDescriptors( PersistenceLevel persistenceLevel ) {
+        synchronized (lockObject) {
+            try {
+                ArrayList result= new ArrayList();
+                int propertyIndex = 0;
+                for (int index = 0; index < properties.length; index++) {
+                    if (persistenceLevel.compareTo(properties[index].getPersistenceLevel()) <= 0) {
+                        result.add( properties[index].getPropertyDescriptor(beanClass) );
+                    }
+                }
+                BeanInfo[] moreBeanInfos= getAdditionalBeanInfo() ;
+                if ( moreBeanInfos!=null ) {
+                    for ( int i=0; i<moreBeanInfos.length; i++ ) {
+                        result.addAll( Arrays.asList( moreBeanInfos[i].getPropertyDescriptors() ) );
+                    }
+                }
+                return (PropertyDescriptor[]) result.toArray( new PropertyDescriptor[ result.size() ] );
+                
+            } catch (IntrospectionException ie) {
+                throw new IllegalStateException(ie.getMessage());
+            }
+        }
+    }
+
     public PropertyDescriptor[] getPropertyDescriptors() {
         synchronized (lockObject) {
             try {
@@ -142,11 +189,30 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
                     }
                 }
                 return descriptors;
-            }
-            catch (IntrospectionException ie) {
+            } catch (IntrospectionException ie) {
                 throw new IllegalStateException(ie.getMessage());
             }
         }
+    }
+    
+    public Property getProperty( PropertyDescriptor pd ) {
+        String name= pd.getName();
+        for ( int i=0; i<properties.length; i++ ) {
+            if ( properties[i].name==name ) {
+                return properties[i];
+            }
+        }
+        BeanInfo[] additional= getAdditionalBeanInfo();
+        if ( additional!=null && additional.length>0) {
+            for ( int i=0; i<additional.length; i++ ) {
+                BeanInfo b= additional[i];
+                if ( b instanceof AccessLevelBeanInfo ) {
+                    Property p= ((AccessLevelBeanInfo)b).getProperty(pd);
+                    if ( p!=null ) return p;
+                }
+            }
+        }
+        return null;
     }
     
     public BeanDescriptor getBeanDescriptor() {
@@ -166,6 +232,9 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         
         /** The AccessLevel associated with this property */
         private final AccessLevel level;
+        
+        /** The PersistenceLevel associated with this property */
+        private final PersistenceLevel persistenceLevel;
         
         /** The name of the accessor method for this property */
         private final String getter;
@@ -192,9 +261,10 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
          * @param setter the name of the mutator method for this property
          * @param editor the class name of the graphical editor for this property
          */
-        public Property(String name, AccessLevel level, String getter, String setter, Class editor) {
+        public Property(String name, AccessLevel level,  PersistenceLevel persistenceLevel, String getter, String setter, Class editor) {
             this.name = name;
             this.level = level;
+            this.persistenceLevel= persistenceLevel;
             this.getter = getter;
             this.setter = setter;
             this.igetter = null;
@@ -202,7 +272,39 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
             this.editor = editor;
             this.indexed = false;
         }
-
+        
+        /** Creates a new Property object.
+         * @param name the name the user will see for this property
+         * @param level the AccessLevel associated with this property
+         * @param getter the name of the accessor method for this property
+         * @param setter the name of the mutator method for this property
+         * @param editor the class name of the graphical editor for this property
+         */
+        public Property(String name, AccessLevel level, String getter, String setter, Class editor) {
+            this( name, level, PersistenceLevel.TRANSIENT, getter, setter, editor );
+        }
+        
+        /** Creates a new Property object that is indexed.
+         * @param name the name the user will see for this property
+         * @param level the AccessLevel associated with this property
+         * @param getter the name of the accessor method for this property
+         * @param setter the name of the mutator method for this property
+         * @param igetter the name of the indexed accessor method for this property
+         * @param isetter the name of the indexed mutator method for this property
+         * @param editor the class name of the graphical editor for this property
+         */
+        public Property(String name, AccessLevel level, PersistenceLevel persistenceLevel, String getter, String setter, String igetter, String isetter, Class editor) {
+            this.name = name;
+            this.level = level;
+            this.persistenceLevel= persistenceLevel;
+            this.getter = getter;
+            this.setter = setter;
+            this.igetter = igetter;
+            this.isetter = isetter;
+            this.editor = editor;
+            this.indexed = true;
+        }
+        
         /** Creates a new Property object that is indexed.
          * @param name the name the user will see for this property
          * @param level the AccessLevel associated with this property
@@ -213,14 +315,7 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
          * @param editor the class name of the graphical editor for this property
          */
         public Property(String name, AccessLevel level, String getter, String setter, String igetter, String isetter, Class editor) {
-            this.name = name;
-            this.level = level;
-            this.getter = getter;
-            this.setter = setter;
-            this.igetter = igetter;
-            this.isetter = isetter;
-            this.editor = editor;
-            this.indexed = true;
+            this( name, level, PersistenceLevel.TRANSIENT, getter, setter, igetter, isetter, editor );
         }
         
         /** Returns the access level for this property */
@@ -235,14 +330,17 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
             PropertyDescriptor pd;
             if (indexed) {
                 pd = new IndexedPropertyDescriptor(name, beanClass, getter, setter, igetter, isetter);
-            }
-            else {
+            } else {
                 pd = new PropertyDescriptor(name, beanClass, getter, setter);
             }
             if (editor != null) {
                 pd.setPropertyEditorClass(editor);
             }
             return pd;
+        }
+        
+        public AccessLevelBeanInfo.PersistenceLevel getPersistenceLevel() {
+            return persistenceLevel;
         }
     }
 }

@@ -31,9 +31,9 @@ package edu.uiowa.physics.pw.das.beans;
 public class DasRowBeanInfo extends AccessLevelBeanInfo {
     
     private static Property[] properties = {
-        new Property("name", AccessLevel.DASML, "getDasName", "setDasName", null),
-        new Property("minimum", AccessLevel.DASML, "getMinimum", "setMinimum", null),
-        new Property("maximum", AccessLevel.DASML, "getMaximum", "setMaximum", null),
+        new Property("name", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
+        new Property("minimum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getMinimum", "setMinimum", null),
+        new Property("maximum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getMaximum", "setMaximum", null),
         new Property("Dminimum", AccessLevel.DASML, "getDMinimum", "setDMinimum", null),
         new Property("Dmaximum", AccessLevel.DASML, "getDMaximum", "setDMaximum", null), 
     /*    new Property("top", AccessLevel.DASML, "getTop", "setTop", null),

@@ -28,12 +28,12 @@ import java.beans.BeanInfo;
 public class DasPlotBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
-        new Property("xAxis", AccessLevel.DASML, "getXAxis", "setXAxis", null),
-        new Property("yAxis", AccessLevel.DASML, "getYAxis", "setYAxis", null),
-        new Property("title", AccessLevel.DASML, "getTitle", "setTitle", null),
+        new Property("xAxis", AccessLevel.DASML,  PersistenceLevel.PERSISTENT, "getXAxis", "setXAxis", null),
+        new Property("yAxis", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getYAxis", "setYAxis", null),
+        new Property("title", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getTitle", "setTitle", null),
         new Property("drawGrid", AccessLevel.DASML, "isDrawGrid", "setDrawGrid", null),
         new Property("preview", AccessLevel.DASML, "isPreviewEnabled", "setPreviewEnabled", null ),
-        new Property("renderers", AccessLevel.DASML, "getRenderers", null, "getRenderer", null, null),        
+        new Property("renderers", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getRenderers", null, "getRenderer", null, null),        
     };
     
     public DasPlotBeanInfo() {

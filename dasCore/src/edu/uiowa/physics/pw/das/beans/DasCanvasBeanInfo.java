@@ -32,12 +32,12 @@ import java.beans.MethodDescriptor;
 public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
     
     private static Property[] properties = {
-        new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
-        new Property("width", AccessLevel.DASML, "getWidth", "setPreferredWidth", null),
-        new Property("height", AccessLevel.DASML, "getHeight", "setPreferredHeight", null),
-          new Property("baseFont", AccessLevel.DASML, "getBaseFont", "setBaseFont", null),
-        new Property("application", AccessLevel.DASML, "getApplication", null, null),
-        new Property("components", AccessLevel.DASML, "getCanvasComponents", null, "getCanvasComponents", null, null ), 
+        new Property("name", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
+        new Property("width", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getWidth", "setPreferredWidth", null),
+        new Property("height", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getHeight", "setPreferredHeight", null),
+          new Property("baseFont", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getBaseFont", "setBaseFont", null),
+        new Property("application", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getApplication", null, null),
+        new Property("components", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getCanvasComponents", null, "getCanvasComponents", null, null ), 
     };
     
     private static MethodDescriptor[] methods;

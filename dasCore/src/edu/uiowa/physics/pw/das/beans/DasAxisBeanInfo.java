@@ -35,10 +35,10 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
         new Property("range", AccessLevel.END_USER, "getDatumRange", "setDatumRange", null ),
-        new Property("dataMaximum", AccessLevel.DASML, "getDataMaximum", "setDataMaximum", null),
-        new Property("dataMinimum", AccessLevel.DASML, "getDataMinimum", "setDataMinimum", null),
-        new Property("label", AccessLevel.DASML, "getLabel", "setLabel", null),
-        new Property("log", AccessLevel.DASML, "isLog", "setLog", null),
+        new Property("dataMaximum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDataMaximum", "setDataMaximum", null),
+        new Property("dataMinimum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDataMinimum", "setDataMinimum", null),
+        new Property("label", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getLabel", "setLabel", null),
+        new Property("log", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "isLog", "setLog", null),
         new Property("units", AccessLevel.DASML, "getUnits", null, null),
         new Property("tickLabelsVisible", AccessLevel.DASML, "areTickLabelsVisible", "setTickLabelsVisible", null),
         new Property("oppositeAxisVisible", AccessLevel.DASML, "isOppositeAxisVisible", "setOppositeAxisVisible", null),

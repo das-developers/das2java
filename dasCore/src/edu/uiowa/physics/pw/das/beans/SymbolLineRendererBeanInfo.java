@@ -29,12 +29,12 @@ import java.beans.BeanInfo;
 public class SymbolLineRendererBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
-        new Property("psym", AccessLevel.DASML, "getPsym", "setPsym", EnumerationEditor.class),
-        new Property("psymConnector", AccessLevel.DASML, "getPsymConnector", "setPsymConnector", EnumerationEditor.class),
+        new Property("psym", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getPsym", "setPsym", EnumerationEditor.class),
+        new Property("psymConnector", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getPsymConnector", "setPsymConnector", EnumerationEditor.class),
         new Property("histogram", AccessLevel.DASML, "isHistogram", "setHistogram", null),
-        new Property("color", AccessLevel.DASML, "getColor", "setColor", null),
-        new Property("lineWidth", AccessLevel.DASML, "getLineWidth", "setLineWidth", null),
-        new Property("symSize", AccessLevel.DASML, "getSymSize", "setSymSize", null),
+        new Property("color", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getColor", "setColor", null),
+        new Property("lineWidth", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getLineWidth", "setLineWidth", null),
+        new Property("symSize", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getSymSize", "setSymSize", null),
         new Property("antiAliased", AccessLevel.DASML, "isAntiAliased", "setAntiAliased", null),
     };
     
