@@ -24,8 +24,8 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 /**
- *
- * @author  Edward West
+ * List implementation that allows for efficient insertion into the middle of the list.
+ * @author Edward West
  */
 class GapListDouble {
 
@@ -34,9 +34,17 @@ class GapListDouble {
     private int gapStart = 0;
     private int gapEnd = INITIAL_ARRAY_SIZE;
 
+    /**
+     * Constructor for the class, which is only used within the package.
+     */
     GapListDouble() {
     }
 
+    /**
+     * inserts the double into the list.
+     * @param d the double to be added.
+     * @return the index of the element within the list.
+     */
     public int add(double d) {
         int index = indexOf(d);
         if (index < 0) {
@@ -53,6 +61,11 @@ class GapListDouble {
         return index;
     }
     
+    /**
+     * Returns the element at the specified position in this list.
+     * @param index index of element to return.
+     * @return the element at the specified position in this list.
+     */
     public double get(int index) {
         if (index < gapStart) {
             return array[index];
@@ -61,8 +74,12 @@ class GapListDouble {
             return array[index + (gapEnd - gapStart)];
         }
     }
-    
-    /* TODO: document output: what is ~? */
+
+    /**
+     * Find the index of the number, or insertion index if the number is not in the list.
+     * @param d number to look for
+     * @return index of the search key, if it is contained in the list; otherwise, (-(insertion point) - 1). The insertion point is defined as the point at which the key would be inserted into the list: the index of the first element greater than the key, or list.size(), if all elements in the list are less than the specified key. Note that this guarantees that the return value will be >= 0 if and only if the key is found.
+     */
     public int indexOf(double d) {
         if (gapStart != 0 && array[gapStart - 1] >= d) {
             return binarySearch(d, array, 0, gapStart);
@@ -81,6 +98,10 @@ class GapListDouble {
         }
     }
     
+    /**
+     * true is the list is empty
+     * @return true if the list is empty
+     */
     public boolean isEmpty() {
         return gapStart == 0 && gapEnd == array.length;
     }
@@ -89,10 +110,18 @@ class GapListDouble {
         return gapStart == gapEnd;
     }
     
+    /**
+     * Returns the number of elements in this collection.
+     * @return the number of elements in the list.
+     */
     public int size() {
         return gapStart + array.length - gapEnd;
     }
     
+    /**
+     * returns the list in an array.
+     * @return double array of length size(), containing the list.
+     */
     public double[] toArray() {
         double[] out = new double[size()];
         System.arraycopy(array, 0, out, 0, gapStart);
@@ -100,6 +129,10 @@ class GapListDouble {
         return out;
     }
     
+    /**
+     * returns a string representation of the object.
+     * @return a string representation of the object.
+     */
     public String toString() {
         if (isEmpty()) {
             return "[]";
@@ -139,6 +172,9 @@ class GapListDouble {
         }
     }
     
+    /**
+     * index of the search key, if it is contained in the list; otherwise, (-(insertion point) - 1). The insertion point is defined as the point at which the key would be inserted into the list: the index of the first element greater than the key, or list.size(), if all elements in the list are less than the specified key. Note that this guarantees that the return value will be >= 0 if and only if the key is found.  
+     */
     private static int binarySearch(final double d, final double[] array, final int start, final int end) {
 	int low = start;
 	int high = end-1;
