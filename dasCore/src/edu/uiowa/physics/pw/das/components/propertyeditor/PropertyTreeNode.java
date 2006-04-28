@@ -14,11 +14,6 @@ import javax.swing.tree.TreeNode;
 
 class PropertyTreeNode implements PropertyTreeNodeInterface {
     
-    static {
-        String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans", "sun.beans.infos" };
-        Introspector.setBeanInfoSearchPath(beanInfoSearchPath);
-    }
-    
     protected static final Object[] NULL_ARGS = new Object[0];
     
     protected List children;
@@ -132,9 +127,8 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
             ArrayList children = new ArrayList();
             if (getAllowsChildren()) {
                 try {
-                    BeanInfo info = Introspector.getBeanInfo(value.getClass());
-                    PropertyDescriptor[] properties= info.getPropertyDescriptors();
-                    String[] propertyNameList= BeansUtil.getPropertyNames(value.getClass());
+                    PropertyDescriptor[] properties= BeansUtil.getPropertyDescriptors(value.getClass());
+                    String[] propertyNameList= BeansUtil.getPropertyNames( properties );
                     if ( propertyNameList==null ) {
                         propertyNameList= new String[ properties.length ];
                         for ( int i=0; i<properties.length; i++ ) {
@@ -150,7 +144,7 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
                     for (int j = 0; j < propertyNameList.length; j++) {
                         PropertyDescriptor pd= (PropertyDescriptor)nameMap.get( propertyNameList[j] );
                         if ( pd==null ) {
-                            throw new IllegalArgumentException( "property not found: "+propertyNameList[j] );
+                            throw new IllegalArgumentException( "property not found: "+propertyNameList[j] + " of object["+value+"]");
                         }
                         if (pd.getReadMethod() != null) {
                             if (pd instanceof IndexedPropertyDescriptor) {
@@ -162,8 +156,6 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
                     }
                 } catch (InvocationTargetException ite) {
                     DasExceptionHandler.handle(ite.getCause());
-                } catch (IntrospectionException ie) {
-                    throw new RuntimeException(ie);
                 }
             }
             this.children= children;
