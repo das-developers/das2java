@@ -50,6 +50,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     private JProgressBar progressBar;
     private JFrame jframe;  // created when createFramed() is used.
     private boolean isCancelled = false;
+    private JButton cancelButton;
     private int cancelCheckFailures= 0; // number of times client codes failed to check cancelled before setTaskProgress.
     private boolean cancelChecked= false;
     private String label;
@@ -133,7 +134,6 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     private void initComponents() {
         JPanel mainPanel, buttonPanel;
-        JButton cancelButton;
         
         messageLabel = new JLabel();
         messageLabel.setOpaque(false);
@@ -170,6 +170,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         CompoundBorder border = new CompoundBorder(lineBorder, emptyBorder);
         
         cancelButton = new JButton("cancel");
+        cancelButton.setEnabled(false);
         cancelButton.setOpaque(false);
         cancelButton.setBorder(border);
         cancelButton.setFocusPainted(false);
@@ -200,7 +201,14 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
-        //logger.finest( "progressPosition="+position );
+        logger.finest( "progressPosition="+position );
+        
+        if (isCancelled) {
+            // note that the monitored process should check isCancelled before setTaskProgress, but this is no longer required.
+            // If this is not done, we throw a IllegalStateException to kill the thread, and the monitored process is killed that way.
+            logger.fine("setTaskProgress called when isCancelled true. consider checking isCancelled before calling setTaskProgress.");
+            throw new IllegalStateException("Operation cancelled: developers: consider checking isCancelled before calling setTaskProgress.");
+        }
         
         if ( !running ) {
             throw new IllegalStateException("setTaskProgress called before started");
@@ -211,11 +219,9 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         }
         
         if (!cancelChecked) {
+            // cancelCheckFailures is used to detect when if the monitored process is not checking cancelled.  If it is not, then we
+            // disable the cancel button.  Note the cancel() method can still be called from elsewhere, killing the process.
             cancelCheckFailures++;
-            if ( cancelCheckFailures>2 ) {
-                logger.fine("setTaskProgress called when isCancelled true, check isCancelled before calling setTaskProgress?");
-                throw new IllegalStateException("Operation cancelled: developers: check isCancelled before calling setTaskProgress");
-            }
         }
         cancelChecked= false;  // reset for next time, isCancelled will set true.
         
@@ -248,7 +254,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
                 while( !DasProgressPanel.this.finished ) {
                     updateUIComponents();
                     repaint();
-                    try { Thread.sleep( refreshPeriodMilliSeconds ); } catch ( InterruptedException e ) { };                    
+                    try { Thread.sleep( refreshPeriodMilliSeconds ); } catch ( InterruptedException e ) { };
                 }
             }
         };
@@ -258,7 +264,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     private void updateUIComponents() {
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
-                
+        
         long kb = currentTaskPosition ;
         
         if ( maximumTaskPosition > 0 ) {
@@ -279,6 +285,11 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
             kbLabel.setText(bytesReadLabel+" "+transferRateString );
         } else {
             kbLabel.setText(bytesReadLabel);
+        }
+        
+        boolean cancelEnabled= cancelCheckFailures<2;
+        if ( cancelEnabled != cancelButton.isEnabled() ) {
+            cancelButton.setEnabled( cancelEnabled );
         }
     }
     
@@ -335,7 +346,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         
         // cancel() might have been called before we got here, so check it.
         if ( isCancelled ) return;
-        setTaskProgress(0);
+        if ( maximumTaskPosition>0 ) setTaskProgress(0);
     }
     
     public void cancel() {
