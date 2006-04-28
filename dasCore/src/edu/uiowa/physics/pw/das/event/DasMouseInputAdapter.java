@@ -806,6 +806,23 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         return result;
     }
     
+    public String getPrimaryModuleLabel() {
+        return primary==null ? "" : primary.getLabel();
+    }
+
+    public void setPrimaryModuleByLabel( String label ) {
+        MouseModule mm= getModuleByLabel( label ) ;
+        if ( mm!=null ) setPrimaryModule( mm );
+    }
+
+    public String getSecondaryModuleLabel() {
+        return secondary==null ? "" : secondary.getLabel();
+    }
+
+    public void setSecondaryModuleByLabel( String label ) {
+        MouseModule mm= getModuleByLabel( label ) ;
+        if ( mm!=null ) setSecondaryModule( mm );
+    }    
     /**
      * Setter for property mouseModules.
      * @param mouseModules New value of property mouseModules.
