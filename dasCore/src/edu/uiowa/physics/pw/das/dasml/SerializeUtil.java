@@ -10,21 +10,19 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
-import edu.uiowa.physics.pw.das.beans.*;
+import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo;
 import edu.uiowa.physics.pw.das.beans.BeansUtil;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import java.awt.Rectangle;
 import java.beans.*;
 import java.beans.PropertyDescriptor;
-import java.beans.XMLEncoder;
 import java.lang.reflect.*;
 import java.text.*;
 import java.util.*;
 import java.util.logging.*;
 import org.w3c.dom.*;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -33,7 +31,7 @@ import org.w3c.dom.Element;
  * @author Jeremy
  */
 public class SerializeUtil {
-    
+
     static Set toStringSet;
     static {
         toStringSet= new HashSet();
@@ -46,14 +44,18 @@ public class SerializeUtil {
         toStringSet.add( String.class );
         BeansUtil.registerPropertyEditors();
     }
-    
+
     public static org.w3c.dom.Element getDOMElement( Document document, Object object ) {
+        return getDOMElement( document, object, DasProgressMonitor.NULL );
+    }
+    
+    public static org.w3c.dom.Element getDOMElement( Document document, Object object, DasProgressMonitor monitor ) {
         Logger log= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
-        
+
         try {
             String elementName= object.getClass().getName();
             elementName= elementName.replaceAll("\\$", "\\_dollar_");
-            
+
             Element element=null;
             try {
                 element= document.createElement(elementName);
@@ -61,59 +63,67 @@ public class SerializeUtil {
                 System.err.println(e);
                 throw new RuntimeException(e);
             }
-            
-            BeanInfo info = Introspector.getBeanInfo(object.getClass());
-            PropertyDescriptor[] properties = info.getPropertyDescriptors();
-            String[] propertyNameList= BeansUtil.getPropertyNames(object.getClass());
-            
+             
+            BeanInfo info = BeansUtil.getBeanInfo(object.getClass());
+
+            AccessLevelBeanInfo alInfo= BeansUtil.asAccessLevelBeanInfo( info, object.getClass() );
+
+            PropertyDescriptor[] properties = alInfo.getPropertyDescriptors( AccessLevelBeanInfo.PersistenceLevel.PERSISTENT );
+            String[] propertyNameList= BeansUtil.getPropertyNames( properties );
+
             HashMap nameMap= new HashMap();
-            
+
             for ( int i=0; i<properties.length; i++ ) {
                 nameMap.put( properties[i].getName(), properties[i] );
             }
-            
+
             HashMap serializedObjects= new HashMap();
-            
+
+            if ( propertyNameList.length>0 ) monitor.setTaskSize( propertyNameList.length );
+            monitor.started();
+
             for ( int i=0; i<propertyNameList.length; i++ ) {
+                monitor.setTaskProgress(i);
+
                 String propertyName= propertyNameList[i];
-                       
+
                 log.fine( "serializing property "+propertyName + " of "+elementName );
-                
+
                 PropertyDescriptor pd= (PropertyDescriptor)nameMap.get(propertyName);
-                
+
                 if ( pd==null ) {
                     log.warning("unable to locate property: "+propertyName+", ignoring");
                     continue;
                 }
-                
+
                 Method readMethod= pd.getReadMethod();
-                
+
                 if ( readMethod==null ) {
                     // note this happens with the indexed property getRBG of ColorBar.Type
                     log.info( "skipping property "+propertyName+" of "+elementName+", failed to find read method." );
                     continue;
                 }
-                
+
                 Method writeMethod= pd.getWriteMethod();
-                
+
                 Object value;
-                
+
                 value= readMethod.invoke( object, new Object[0] );
-                
+
                 if ( value==null ) {
                     log.info( "skipping property "+propertyName+" of "+elementName+", value is null." );
                     continue;
                 }
-                
-                java.beans.PropertyEditor editor= BeansUtil.findEditor( pd.getPropertyType() );
-                
+
+                java.beans.PropertyEditor editor= BeansUtil.getEditor( pd );
+
                 String textValue= null;
-                
+
                 if ( editor!=null ) {
                     editor.setValue( value );
                     textValue= editor.getAsText();
                 }
-                
+
                 if ( textValue!=null ) {
                     if ( writeMethod!=null ) element.setAttribute( propertyName, textValue );
                 } else if ( value instanceof DasCanvasComponent ) {
@@ -124,7 +134,7 @@ public class SerializeUtil {
                         continue;
                     } else {
                         Element propertyElement= document.createElement( propertyName );
-                        Element child= getDOMElement( document, value );
+                        Element child= getDOMElement( document, value, DasProgressMonitor.NULL );
                         propertyElement.appendChild(child);
                         element.appendChild(propertyElement);
                         serializedObjects.put( dcc.getDasName(), null );
@@ -134,20 +144,21 @@ public class SerializeUtil {
                     Element propertyElement= document.createElement( propertyName );
                     for ( int j=0; j<Array.getLength(value); j++ ) {
                         Object value1= Array.get( value, j );
-                        Element child= getDOMElement( document, value1 );
+                        Element child= getDOMElement( document, value1, DasProgressMonitor.NULL );
                         propertyElement.appendChild(child);
                     }
                     element.appendChild(propertyElement);
-                    
+
                 } else {
                     // catch-all for other beans.
                     Element propertyElement= document.createElement( propertyName );
-                    Element child= getDOMElement( document, value );
+                    Element child= getDOMElement( document, value, DasProgressMonitor.NULL );
                     propertyElement.appendChild(child);
                     element.appendChild(propertyElement);
                 }
             }
-            
+            monitor.finished();
+
             return element;
         } catch ( IntrospectionException e ) {
             throw new RuntimeException(e);
@@ -157,55 +168,55 @@ public class SerializeUtil {
             throw new RuntimeException(e);
         }
     }
-    
+
     private static void processNode( Node node, Object object, String className, Map nameMap ) throws IllegalAccessException, ParseException, InvocationTargetException {
         Logger log= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
-        
+
         String propertyName= node.getNodeName();
-        
+
         PropertyDescriptor pd= (PropertyDescriptor)nameMap.get(propertyName);
-        
+
         if ( pd==null ) {
             log.warning("unable to locate property: "+propertyName+" of "+className+", ignoring");
             return;
         }
-        
+
         Method readMethod= pd.getReadMethod();
         Object value;
-        
+
         value= readMethod.invoke( object, new Object[0] );
-        
-        java.beans.PropertyEditor editor= BeansUtil.findEditor( pd.getPropertyType() );
-        
+
+        java.beans.PropertyEditor editor= BeansUtil.getEditor( pd );
+
         String textValue= null;
-        
+
         if ( editor!=null ) {
             editor.setValue( value );
             textValue= editor.getAsText(); // getAsText implies that setAsText is supported--see docs.
         }
-        
+
         if ( textValue!=null ) {
             Attr attr= (Attr)node;
             String newTextValue= attr.getValue();
             editor.setAsText( newTextValue );
-            
+
             Method writeMethod= pd.getWriteMethod();
             if ( writeMethod==null ) {
                 log.warning("read-only property \""+propertyName+"\" of "+className+" ignored" );
                 return;
             }
-            
+
             Object newValue= editor.getValue();
-            
-             if ( propertyName.equals("dataSetID" )  ) {
-                log.info( "kludge to avoid setting dataSetID to null, ignoring" );                
+
+            if ( propertyName.equals("dataSetID" )  ) {
+                log.info( "kludge to avoid setting dataSetID to null, ignoring" );
             }
-            
+
             if ( propertyName.equals("dataSetID" ) && ( value==null || value.equals("") ) ) {
                 log.info( "kludge to avoid setting dataSetID to null, ignoring" );
                 return;
             }
-            
+
             writeMethod.invoke( object, new Object[] { newValue } );
         } else if ( value instanceof DasCanvasComponent ) {
             DasCanvasComponent dcc= (DasCanvasComponent)value;
@@ -234,7 +245,7 @@ public class SerializeUtil {
             processElement( propertyElement, value );
         }
     }
-    
+
     /* set the properties of the object by
      * reading each property state from the element, and setting the property.
      */
@@ -243,44 +254,45 @@ public class SerializeUtil {
         try {
             String elementName= element.getTagName();
             elementName= elementName.replaceAll( "\\_dollar_", "\\$" );
-            
-            log.fine("handling "+elementName);           
-            
+
+            log.fine("handling "+elementName);
+
             if ( !object.getClass().getName().equals( elementName ) ) {
                 throw new IllegalArgumentException("class name doesn't match: expected "+
                         object.getClass().getName()+", got "+elementName );
             }
-            
-            BeanInfo info = Introspector.getBeanInfo(object.getClass());
-            PropertyDescriptor[] properties = info.getPropertyDescriptors();
+
+            AccessLevelBeanInfo info = BeansUtil.asAccessLevelBeanInfo( BeansUtil.getBeanInfo(object.getClass()), object.getClass() );
+            PropertyDescriptor[] properties =
+                     info.getPropertyDescriptors( AccessLevelBeanInfo.PersistenceLevel.PERSISTENT ) ; 
             String[] propertyNameList= BeansUtil.getPropertyNames(object.getClass());
-            
+
             HashMap nameMap= new HashMap();
-            
+
             for ( int i=0; i<properties.length; i++ ) {
                 nameMap.put( properties[i].getName(), properties[i] );
             }
-            
+
             HashMap serializedObjects= new HashMap();
-            
+
             NamedNodeMap attrs= element.getAttributes();
             for ( int i=0; i<attrs.getLength(); i++ ) {
                 Node node= attrs.item(i);
                 log.finer( "attr: "+ node.getNodeType() +"  "+node.getNodeName() );
                 processNode( node, object, elementName, nameMap );
             }
-            
+
             NodeList children= element.getChildNodes();
-            
+
             for ( int i=0; i<children.getLength(); i++ ) {
                 Node node= children.item(i);
-                
+
                 //log.finest( "got node: "+node.getNodeName() + " " + node.getNodeType() +"  "+node.getNodeName() );
                 if ( node.getNodeType()!=Node.ELEMENT_NODE ) continue;
-                
+
                 processNode( node, object, elementName, nameMap );
             }
-            
+
         } catch ( IntrospectionException e ) {
             throw new RuntimeException(e);
         } catch ( IllegalAccessException e ) {
