@@ -152,6 +152,13 @@ public class UserMessageCenter {
         frame.pack();
     }
 
+    /**
+     * Notify user that an exception occured, presumably because they are capable of handling the exception.
+     */
+    public void notifyUser( Object source, Throwable e) {
+        notifyUser( source, e.getMessage() );
+    }
+
 
 
 }
