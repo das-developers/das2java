@@ -21,6 +21,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
     /** Creates a new instance of DasAnnotation */
     public DasAnnotation( String string ) {
+        super();
         this.gtr= new GrannyTextRenderer();        
         this.string= string;
     }
