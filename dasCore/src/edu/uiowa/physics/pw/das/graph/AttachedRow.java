@@ -49,6 +49,16 @@ public class AttachedRow extends DasRow {
         this.row= row;
     }
     
+        
+    public DasRow getRow() {
+        return this.row;
+    }
+    
+    public void setRow( DasRow row ) {
+        if ( this.getParent() != row.getParent() ) throw new IllegalArgumentException("row is from wrong canvas");
+        this.row= row;
+    }
+    
     /** Gets the maximum for the row in the device space.
      * @return the maximum value for the row in the device space.
      */
@@ -95,8 +105,8 @@ public class AttachedRow extends DasRow {
     }
     
     /**     
-     * Sets the minimum for the column in the device space.
-     * @param minimum the new minimum value for the column.  This value is converted to be with
+     * Sets the minimum for the row in the device space.
+     * @param minimum the new minimum value for the row.  This value is converted to be with
      * respect to the parent row.
      */
     public void setDMinimum(int value) {

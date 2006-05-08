@@ -48,6 +48,15 @@ public class AttachedColumn extends DasColumn {
         this.column= column;
     }
     
+    public DasColumn getColumn() {
+        return this.column;
+    }
+    
+    public void setColumn( DasColumn column ) {
+        if ( this.getParent() != column.getParent() ) throw new IllegalArgumentException("column is from wrong canvas");
+        this.column= column;
+    }
+    
     /** Gets the maximum for the column in the device space.
      * @return the maximum value for the column in the device space.
      */
