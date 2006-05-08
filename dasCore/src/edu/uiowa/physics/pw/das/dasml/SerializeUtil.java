@@ -42,7 +42,6 @@ public class SerializeUtil {
         toStringSet.add( Float.class );
         toStringSet.add( Double.class );
         toStringSet.add( String.class );
-        BeansUtil.registerPropertyEditors();
     }
 
     public static org.w3c.dom.Element getDOMElement( Document document, Object object ) {
@@ -194,7 +193,7 @@ public class SerializeUtil {
             editor.setValue( value );
             textValue= editor.getAsText(); // getAsText implies that setAsText is supported--see docs.
         }
-
+        
         if ( textValue!=null ) {
             Attr attr= (Attr)node;
             String newTextValue= attr.getValue();
@@ -218,11 +217,20 @@ public class SerializeUtil {
             }
 
             writeMethod.invoke( object, new Object[] { newValue } );
+        
         } else if ( value instanceof DasCanvasComponent ) {
             DasCanvasComponent dcc= (DasCanvasComponent)value;
             Node propertyNode= node.getFirstChild();
-            while ( propertyNode!=null && propertyNode.getNodeType()!=Node.ELEMENT_NODE ) propertyNode= propertyNode.getNextSibling();
-            if ( propertyNode==null ) throw new IllegalStateException( "expected element node under "+propertyName );
+            while ( propertyNode!=null && 
+                     ( propertyNode.getNodeType()!=org.w3c.dom.Node.ELEMENT_NODE ) &&
+                     ( propertyNode.getNodeType()!=org.w3c.dom.Node.TEXT_NODE ) )   propertyNode= propertyNode.getNextSibling();
+            if ( propertyNode==null ) {
+                throw new IllegalStateException( "expected element node under "+propertyName );
+            }
+            if ( propertyNode.getNodeType()==Node.TEXT_NODE ) {
+                // name dereference--ignore
+                return;
+            }
             Element propertyElement= (Element)propertyNode;
             processElement( propertyElement, value );
         } else if ( value.getClass().isArray() ) {
@@ -239,8 +247,12 @@ public class SerializeUtil {
             }
         } else {
             Node propertyNode= node.getFirstChild();
-            while ( propertyNode!=null && propertyNode.getNodeType()!=Node.ELEMENT_NODE ) propertyNode= propertyNode.getNextSibling();
+            while ( propertyNode!=null && propertyNode.getNodeType()!=Node.ELEMENT_NODE && propertyNode.getNodeType()!=org.w3c.dom.Node.TEXT_NODE ) propertyNode= propertyNode.getNextSibling();
             if ( propertyNode==null ) throw new IllegalStateException( "expected element node under "+propertyName );
+            if ( propertyNode.getNodeType()==Node.TEXT_NODE ) {
+                // name dereference--ignore
+                return;
+            }
             Element propertyElement= (Element)propertyNode;
             processElement( propertyElement, value );
         }
