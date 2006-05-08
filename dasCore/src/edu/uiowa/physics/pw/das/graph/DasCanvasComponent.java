@@ -94,7 +94,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         addKeyListener(mouseAdapter.getKeyAdapter());
         
         try {
-            setDasName("c_" + Integer.toString(this.hashCode()));
+            String name= DasApplication.getDefaultApplication().suggestNameFor(this);
+            setDasName(name);
         }
         catch (edu.uiowa.physics.pw.das.DasNameException dne) {
         }
@@ -112,6 +113,10 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         return row;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public DasColumn getColumn() {
         return column;
     }
@@ -180,7 +185,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     public String toString() {
-        return getClass().getName()+"'"+getName()+"'";
+        return getClass().getName()+"'"+getDasName()+"'";
     }
     
     /**
@@ -195,6 +200,10 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     private edu.uiowa.physics.pw.das.event.DasUpdateEvent devt;
     
+    /**
+     * posts an update event on the SystemEventQueue, indicating that work needs to be
+     * done to get the get the component back into a valid state.
+     */
     public void update() {
         java.awt.EventQueue eventQueue =
         Toolkit.getDefaultToolkit().getSystemEventQueue();
@@ -278,6 +287,10 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     void markDirty() {
         dirty = true;
     }
+    /**
+     * 
+     * @return 
+     */
     boolean isDirty() {
         return dirty;
     }
@@ -285,24 +298,34 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         dirty = false;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public DasCanvas getCanvas() {
         return (DasCanvas)getParent();
     }
     
+    /**
+     * 
+     * @return 
+     */
     public String getDasName() {
         return dasName;
     }
     
+    /**
+     * 
+     * @param name 
+     * @throws edu.uiowa.physics.pw.das.DasNameException 
+     */
     public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
         if (name.equals(dasName)) {
             return;
         }
         String oldName = dasName;
         dasName = name;
-        DasApplication app = null;
-        if (getCanvas() != null) {
-            app = getCanvas().getDasApplication();
-        }
+        DasApplication app = DasApplication.getDefaultApplication();
         if (app != null) {
             app.getNameContext().put(name, this);
             if (oldName != null) {
@@ -312,6 +335,9 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         this.firePropertyChange("name", oldName, name);
     }
     
+    /**
+     * returns the active region of the canvas component, which is not necessarily the bounds.
+     */
     public Shape getActiveRegion() {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
