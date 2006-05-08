@@ -101,13 +101,6 @@ public class PropertyEditor extends JComponent {
         editableTypes = Collections.unmodifiableSet(set);
     }
     
-    /*
-     * Set up the custom editors.
-     */
-    static {
-        BeansUtil.registerPropertyEditors();
-    }
-    
     private JTable table;
     
     private JButton closeButton;
