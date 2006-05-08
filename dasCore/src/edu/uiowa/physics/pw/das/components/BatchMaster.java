@@ -20,8 +20,8 @@ import java.util.List;
 
 
 /**
- *
- * @author  Jeremy
+ * BatchMaster is a object that runs through a batch file, controlling a time axis to produce a series of images.
+ * @author Jeremy
  */
 public class BatchMaster {
     
@@ -39,6 +39,10 @@ public class BatchMaster {
     public static class Timer {
         long t0= System.currentTimeMillis();;
         DecimalFormat df= new DecimalFormat( "00000.000" );
+        /**
+         *
+         * @param msg
+         */
         public void reportTime( String msg ) {
             Thread thread= Thread.currentThread();
             long elapsed= System.currentTimeMillis() - t0;
@@ -52,19 +56,23 @@ public class BatchMaster {
         public void completeTask( DatumRange range );
     }
     
-    private String insertRange( String filenameTemplate, DatumRange range ) {
-        String rangeString= range.toString().replaceAll(":","-").replaceAll(" ","_");
-        String s= filenameTemplate
-                .replaceAll( "BEGIN", range.min().toString().replaceAll(":","-") )
-                .replaceAll( "END", range.max().toString().replaceAll(":","-") )
-                .replaceAll( "RANGE", rangeString );
-        return s;
-    }
-    
+    /**
+     *
+     * @param pngFilenameTemplate  BEGIN,END,RANGE substituted to form name
+     * @return
+     */
     public TaskOutputDescriptor createPngsTaskOutputDescriptor( final String pngFilenameTemplate ) {
         return new TaskOutputDescriptor() {
+            private String insertRange( String filenameTemplate, DatumRange range ) {
+                String rangeString= range.toString().replaceAll(":","-").replaceAll(" ","_");
+                String s= filenameTemplate
+                        .replaceAll( "BEGIN", range.min().toString().replaceAll(":","-") )
+                        .replaceAll( "END", range.max().toString().replaceAll(":","-") )
+                        .replaceAll( "RANGE", rangeString );
+                return s;
+            }
             public void completeTask( DatumRange range ) {
-                Image image= BatchMaster.this.canvas.getImage( canvas.getWidth(), canvas.getHeight() );                
+                Image image= BatchMaster.this.canvas.getImage( canvas.getWidth(), canvas.getHeight() );
                 String s= insertRange( pngFilenameTemplate, range );
                 try {
                     OutputStream out= new FileOutputStream( s );
@@ -81,22 +89,31 @@ public class BatchMaster {
             }
         };
     }
-    
+
     private void readStartEndSpecFile( File specFile ) throws ParseException, IOException {
         BufferedReader r= new BufferedReader( new FileReader( specFile ) );
         String s= r.readLine();
         while ( s!=null ) {
             s= s.trim();
             if ( !( s.equals("") || s.startsWith("#" ) ) ) {
-                String[] s1= s.split(" ");
-                Datum begin= TimeUtil.create(s1[0]);
-                Datum end= TimeUtil.create(s1[1]);
+                DatumRange dr= DatumRangeUtil.parseTimeRange(s);
+                Datum begin= dr.min();
+                Datum end= dr.max();
                 addTask( begin, end );
             }
             s= r.readLine();
         }
     }
     
+    /**
+     *
+     * @param canvas
+     * @param specFile flat text file containing one parsable time range per line. (For example, "1990-01-01T00:00 1990-01-02T00:00" or "1990-01-01")
+     * @param pngFilenameTemplate (For example, "BEGIN_END.png")
+     * @throws java.text.ParseException
+     * @throws java.io.IOException
+     * @return BatchMaster object.
+     */
     public static BatchMaster createPngs( DasCanvas canvas, File specFile, String pngFilenameTemplate ) throws ParseException, IOException {
         List taskList= new ArrayList();
         BatchMaster result= new BatchMaster(canvas );
@@ -112,18 +129,40 @@ public class BatchMaster {
         itask= 0;
     }
     
+    /**
+     * Starts the batch process.
+     */
     public void start() {
         submitNextTask();
     }
     
+    /**
+     * @depricated use addTask( DatumRange )
+     */
     void addTask( Datum begin, Datum end ) {
         taskList.add( new DataRangeSelectionEvent( this, begin, end ) );
     }
     
+    /**
+     *
+     * @param range
+     */
+    void addTask( DatumRange range ) {
+        taskList.add( new DataRangeSelectionEvent( this, range.min(), range.max() ) );
+    }
+    
+    /**
+     *
+     * @param tod
+     */
     void setTaskOutputDescriptor( TaskOutputDescriptor tod ) {
         this.tod= tod;
     }
     
+    /**
+     *
+     * @param val If true, then System.exit is called after running batch.
+     */
     void setExitAfterCompletion( boolean val ) {
         this.exit= val;
     }
