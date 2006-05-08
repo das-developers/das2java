@@ -11,6 +11,7 @@ package edu.uiowa.physics.pw.das.util;
 
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
+import edu.uiowa.physics.pw.das.dasml.DOMBuilder;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.util.fileSystem.Glob;
 import java.awt.event.ActionEvent;
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,6 +51,8 @@ public class PersistentStateSupport {
     DasCanvas canvas;
     String ext;
     File currentFile;
+
+    private JMenuItem saveMenuItem;
     
     /**
      *  Provides a means for saving the application persistently, undo/redo support (TODO).
@@ -92,6 +96,7 @@ public class PersistentStateSupport {
             File f= chooser.getSelectedFile();
             if ( !f.getName().endsWith(ext) ) f= new File( f.getPath()+ext );
             currentFile= f;
+            if ( saveMenuItem!=null ) saveMenuItem.setText("Save "+currentFile);
             save();
         }
         
@@ -105,7 +110,11 @@ public class PersistentStateSupport {
             OutputStream out= new FileOutputStream( f );
             
             Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            Element element= SerializeUtil.getDOMElement(document, canvas, DasProgressPanel.createFramed("Serializing Canvas") );
+            
+            DOMBuilder builder= new DOMBuilder( canvas );
+            
+            Element element= builder.serialize( document, DasProgressPanel.createFramed("Serializing Canvas") );
+            
             document.appendChild( element );
             
             StringWriter writer = new StringWriter();
@@ -136,6 +145,14 @@ public class PersistentStateSupport {
         };
     }
     
+    public JMenuItem createSaveMenuItem() {
+        saveMenuItem= new JMenuItem(createSaveAction());
+        if (currentFile!=null ) {
+            saveMenuItem.setText("Save "+currentFile);
+        }
+        return saveMenuItem;
+    }
+    
     private static Document readDocument( File file ) throws IOException, ParserConfigurationException, SAXException {
         InputStream in= new FileInputStream(file);
         InputSource source = new InputSource();
@@ -163,6 +180,7 @@ public class PersistentStateSupport {
                             Element element= document.getDocumentElement();
                             SerializeUtil.processElement(element,canvas );
                             currentFile= chooser.getSelectedFile();
+                             if ( saveMenuItem!=null ) saveMenuItem.setText("Save "+currentFile);
                         } catch ( IOException e ) {
                             throw new RuntimeException(e);
                         } catch ( ParserConfigurationException e ) {
