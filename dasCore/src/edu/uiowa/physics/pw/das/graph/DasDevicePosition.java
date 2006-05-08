@@ -59,7 +59,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.parent = parent;
         this.minimum = minimum;
         this.maximum = maximum;
-        this.dasName = "dp_" + Integer.toString(this.hashCode());
+        this.dasName = DasApplication.getDefaultApplication().suggestNameFor(this);
         this.propertyChangeDelegate = new PropertyChangeSupport(this);
         if (parent != null) {
             parent.addComponentListener(new ComponentAdapter() {
