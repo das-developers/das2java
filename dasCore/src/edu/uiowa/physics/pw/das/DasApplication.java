@@ -26,10 +26,20 @@ package edu.uiowa.physics.pw.das;
 import edu.uiowa.physics.pw.das.client.InputStreamMeter;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetCache;
+import edu.uiowa.physics.pw.das.graph.DasAnnotation;
+import edu.uiowa.physics.pw.das.graph.DasAxis;
+import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import edu.uiowa.physics.pw.das.graph.DasColorBar;
+import edu.uiowa.physics.pw.das.graph.DasColumn;
+import edu.uiowa.physics.pw.das.graph.DasPlot;
+import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.system.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.*;
 import java.util.prefs.*;
 import javax.swing.*;
@@ -83,6 +93,35 @@ public class DasApplication {
     
     public NameContext getNameContext() {
         return nameContext;
+    }
+    
+    static ClassMap classNameMap= new ClassMap();
+    static {
+        classNameMap.put( DasPlot.class, "plot" );
+        classNameMap.put( DasAxis.class, "axis" );
+        classNameMap.put( DasColorBar.class, "colorbar" );
+        classNameMap.put( DasRow.class, "row");
+        classNameMap.put( DasColumn.class, "column");
+        classNameMap.put( DasAnnotation.class, "annotation");
+        classNameMap.put( Object.class, "object" );
+        classNameMap.put( DasCanvasComponent.class, "canvasComponent" );
+        classNameMap.put( DasCanvas.class, "canvas" );
+    }
+    
+    Map hitsMap= new HashMap();
+    
+    // note that only CanvasComponents have a name.
+    public String suggestNameFor( Object c ) {
+        String type= (String)classNameMap.get( c.getClass() );
+        Integer hits= (Integer)hitsMap.get(type);
+        int ihits;
+        if ( hits==null ) {
+            ihits=0;
+        } else {
+            ihits= (hits.intValue())+1;
+        }
+        hitsMap.put( type, new Integer(ihits));
+        return type+"_"+ihits;
     }
     
     public static DasApplication getDefaultApplication() {
