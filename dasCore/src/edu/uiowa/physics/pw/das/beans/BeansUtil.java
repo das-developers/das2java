@@ -10,6 +10,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
+import edu.uiowa.physics.pw.das.util.ClassMap;
 import java.awt.Color;
 import java.beans.*;
 import java.util.*;
@@ -28,22 +29,29 @@ public class BeansUtil {
         String[] beanInfoSearchPath = { "edu.uiowa.physics.pw.das.beans", "sun.beans.infos" };
         Introspector.setBeanInfoSearchPath(beanInfoSearchPath);
     }
-
+    
+    static ClassMap editorRegistry= new ClassMap();
+    
+    private static void registerEditor( Class beanClass, Class editorClass ) {
+        PropertyEditorManager.registerEditor( beanClass, editorClass );
+        editorRegistry.put( beanClass, editorClass );
+    }
+    
     /**
      * See that the known editors are registered with the PropertyEditorManager
      */
-    public static void registerPropertyEditors() {
-        PropertyEditorManager.registerEditor(Datum.class, DatumEditor.class);
-        PropertyEditorManager.registerEditor(DatumRange.class, DatumRangeEditor.class);
-        PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);
-        PropertyEditorManager.registerEditor(Units.class, UnitsEditor.class );
-        PropertyEditorManager.registerEditor(NumberUnits.class, UnitsEditor.class );
-        PropertyEditorManager.registerEditor(Boolean.TYPE, BooleanEditor.class);
-        PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
-        PropertyEditorManager.registerEditor(PsymConnector.class, EnumerationEditor.class);
+    static {
+        registerEditor(Datum.class, DatumEditor.class);
+        registerEditor(DatumRange.class, DatumRangeEditor.class);
+        registerEditor(Color.class, ColorEditor.class);
+        registerEditor(Units.class, UnitsEditor.class );
+        registerEditor(NumberUnits.class, UnitsEditor.class );
+        registerEditor(Boolean.TYPE, BooleanEditor.class);
+        registerEditor(Boolean.class, BooleanEditor.class);
+        registerEditor(PsymConnector.class, EnumerationEditor.class);
         
-        // PropertyEditorManager.registerEditor(Rectangle.class, RectangleEditor.class);
-        //PropertyEditorManager.registerEditor(DasServer.class, DasServerEditor.class);
+        // registerEditor(Rectangle.class, RectangleEditor.class);
+        //registerEditor(DasServer.class, DasServerEditor.class);
     }
     
     /**
@@ -57,101 +65,51 @@ public class BeansUtil {
      */
     static HashSet nullPropertyEditors= new HashSet();
     public static java.beans.PropertyEditor findEditor( Class propertyClass ) {
-        java.beans.PropertyEditor result;
+        java.beans.PropertyEditor result= null;
         if ( nullPropertyEditors.contains(propertyClass) ) {
             result= null;
         } else {
             result= PropertyEditorManager.findEditor( propertyClass );
+            
+            if ( result==null ) {
+                Class resultClass= (Class) editorRegistry.get( propertyClass );
+                if ( resultClass != null ) {
+                    try {
+                        result= (java.beans.PropertyEditor) resultClass.newInstance(); // TODO: this branch will cause excessive lookups for applets.
+                    } catch (InstantiationException ex) {
+                        ex.printStackTrace();
+                    } catch (IllegalAccessException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+            
+            // if still null, then keep track of the null so we don't have to search again.
             if ( result==null ) {
                 nullPropertyEditors.add( propertyClass );
             } else {
-                PropertyEditorManager.registerEditor( propertyClass, result.getClass() );
+                PropertyEditorManager.registerEditor( propertyClass, result.getClass() ); // TODO: this will cause problems when the super class comes before subclass
             }
+            
         }
         return result;
     }
     
     /**
-     * One-stop place to get the editor for the given propertyDescriptor.  
+     * One-stop place to get the editor for the given propertyDescriptor.
      */
     public static java.beans.PropertyEditor getEditor( PropertyDescriptor pd ) {
-            java.beans.PropertyEditor editor= null;
-                
-            try {
-                 Class editorClass= pd.getPropertyEditorClass();
-                 if ( editorClass!=null ) editor= (java.beans.PropertyEditor) editorClass.newInstance();
-            } catch (InstantiationException ex) {
-            } catch (IllegalAccessException ex) {
-            }
-                
-            if ( editor==null )  editor= BeansUtil.findEditor( pd.getPropertyType() );
-            return editor;
-    }
-    
-    /**
-     * Include/Exclude logic:
-     *   if the class is an instance of clas and the property matches the regex, and
-     *    the class is declared in the clas, then it is excluded.
-     *   likewise, if it's in the includes list, then it is included.
-     */
-    static HashMap excludes= new HashMap();
-    
-    private static void addExclude( Class clas, String property ) {
-        Set classExcludes= (Set)excludes.get( clas );
-        if ( classExcludes==null ) {
-            classExcludes= new HashSet();
-            excludes.put( clas, classExcludes );
+        java.beans.PropertyEditor editor= null;
+        
+        try {
+            Class editorClass= pd.getPropertyEditorClass();
+            if ( editorClass!=null ) editor= (java.beans.PropertyEditor) editorClass.newInstance();
+        } catch (InstantiationException ex) {
+        } catch (IllegalAccessException ex) {
         }
-        classExcludes.add( property );
-    }
-    
-    static {
-        addExclude( java.awt.Component.class, ".*" );
-        addExclude( javax.swing.JComponent.class, ".*" );
-        addExclude( javax.swing.JPanel.class, ".*" );
-        addExclude( javax.accessibility.AccessibleContext.class, ".*" );
-    }
-    
-    static HashMap includes= new HashMap();
-    
-    private static void addInclude( Class clas, String property ) {
-        Set classIncludes= (Set)includes.get( clas );
-        if ( classIncludes==null ) {
-            classIncludes= new HashSet();
-        }
-        classIncludes.add( property );
-    }
-    
-    static {
-        // addInclude();
-    }
-    
-    // TODO: not necessarily useful
-    private static boolean includeExclude( PropertyDescriptor pdthis ) {
-        boolean isUseable= true;
-        Class defClass= pdthis.getReadMethod().getDeclaringClass();
-        String name= pdthis.getName();
-        Set excludeSet= (Set) excludes.get(defClass);
-        if ( excludeSet!=null ) {
-            for ( Iterator i2=excludeSet.iterator(); i2.hasNext(); ) {
-                String regex= (String)i2.next();
-                if ( Pattern.matches( regex, name ) ) {
-                    log.finest( "property "+name+" of "+defClass.getName()+" is excluded" );
-                    isUseable= false;
-                }
-            }
-        }
-        Set includeSet= (Set) includes.get(defClass);
-        if ( includeSet!=null ) {
-            for ( Iterator i2=includeSet.iterator(); i2.hasNext(); ) {
-                String regex= (String)i2.next();
-                if ( Pattern.matches( regex, name ) ) {
-                    isUseable= true;
-                    log.finest( "property "+name+" of "+defClass.getName()+" is included" );
-                }
-            }
-        }
-        return isUseable;
+        
+        if ( editor==null )  editor= BeansUtil.findEditor( pd.getPropertyType() );
+        return editor;
     }
     
     /**
@@ -181,7 +139,6 @@ public class BeansUtil {
             for ( int i=0; i<pdthis.length; i++ ) {
                 boolean isWriteable= pdthis[i].getWriteMethod()!=null;
                 boolean isUseable= pdthis[i].getReadMethod()!=null && !excludePropertyNames.contains(pdthis[i].getName());
-                if ( isUseable ) isUseable= includeExclude( pdthis[i] );
                 if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor ) ) {
                     propertyList.add( pdthis[i] );
                 }
@@ -196,7 +153,6 @@ public class BeansUtil {
                         String name= pdthis[i].getName();
                         boolean isWriteable= pdthis[i].getWriteMethod()!=null;
                         boolean isUseable= pdthis[i].getReadMethod()!=null && !excludePropertyNames.contains(name);
-                        if ( isUseable ) isUseable= includeExclude( pdthis[i] );
                         if ( isUseable || ( pdthis[i] instanceof IndexedPropertyDescriptor  )) {
                             propertyList.add( pdthis[i] );
                         }
@@ -215,7 +171,7 @@ public class BeansUtil {
             return null;
         }
     }
-
+    
     public static BeanInfo getBeanInfo(final Class c) throws IntrospectionException {
         
         // goal: get BeanInfo for the class, or the AccessLevelBeanInfo if it exists.
@@ -284,7 +240,7 @@ public class BeansUtil {
         PropertyDescriptor[] propertyList= getPropertyDescriptors( c );
         return getPropertyNames( propertyList );
     }
-
+    
     /**
      * Returns an AccessLevelBeanInfo for the BeanInfo class, implementing the logic
      * of how to handle implicit properties.
