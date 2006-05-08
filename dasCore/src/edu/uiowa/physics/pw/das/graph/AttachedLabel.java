@@ -52,7 +52,9 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.*;
 
-/** TODO
+/**
+ * A canvas component for labeling things that is positioned just outside of a row,column box.
+ *
  * @author eew
  */
 public class AttachedLabel extends DasCanvasComponent implements Cloneable {
@@ -115,22 +117,26 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
     }
     private int debugColorIndex = 0;
     
-    /** TODO
-     * @param label
-     * @param orientation
+    /** constructs an AttachedLabel.
+     * @param label  The granny string to be displayed.
+     * @param orientation  identifies the side of the box.  See TOP, BOTTOM, LEFT, RIGHT.
+     * @param emOffset The offset from the edge of the box to the label, in "ems"-- the roughly the width of a letter "M," and
+     *   more precisely the size of the current font.
      */
     public AttachedLabel( String label, int orientation, double emOffset) {
+        super();
         this.orientation = orientation;
         this.emOffset = emOffset;
         this.axisLabel = label;
         setOpaque(false);
     }
     
-    /** TODO
-     * @param orientation
+    /** Sets the side of the row,column box to locate the label.
+     * @param orientation should be one of AttachedLabel.TOP, AttachedLabel.BOTTOM, AttachedLabel.LEFT, AttachedLabel.RIGHT
      */
     public void setOrientation(int orientation) {
         boolean oldIsHorizontal = isHorizontal();
+        setOrientationInternal(orientation);
     }
     
     /* This is a private internal implementation for
@@ -167,8 +173,11 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         return axisLabel;
     }
     
-    /** TODO
-     * @return
+    /**
+     * TODO
+     * @return 
+     * @deprecated It's not clear how this should be used, and it does not appear to be used
+     * within dasCore and dasApps.
      */
     public final int getDevicePosition() {
         if (orientation == BOTTOM) {
@@ -192,7 +201,10 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
             return getRow().getHeight();
     }
     
-    /** paints the axis component.  The tickV's and bounds should be calculated at this point */
+    /**
+     * paints the axis component.  The tickV's and bounds should be calculated at this point
+     * @param graphics 
+     */
     protected void paintComponent(Graphics graphics) {
         
         /* This was code was keeping axes from being printed on PC's
@@ -329,8 +341,8 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         }
     }
     
-    /** TODO
-     * @return
+    /** calculates the distance from the box to the label.
+     * @return integer distance in pixels.
      */
     protected int getTitlePositionOffset() {
         Font labelFont = getLabelFont();
@@ -348,22 +360,22 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         return offset;
     }
     
-    /** TODO
-     * @return
+    /** get the current font of the compoennt.
+     * @return Font of the component.
      */
     public Font getLabelFont() {
         return this.getFont();
     }
     
-    /** TODO
-     * @param labelFont
+    /** set the font of the label.
+     * @param labelFont Font for the component.  Currently this is ignored.
      */
     public void setLabelFont(Font labelFont) {
         // TODO: whah?--jbf
     }
     
-    /** TODO
-     * @return
+    /** clones the component
+     * @return clone of this.
      */
     public Object clone() {
         try {
@@ -373,15 +385,17 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         }
     }
     
-    /** TODO */
+    /** 
+     * revalidate component after resize.
+     */
     public void resize() {
         setBounds(getLabelBounds());
         invalidate();
         validate();
     }
     
-    /** TODO
-     * @return
+    /** get the Rectangle precisely enclosing the label.
+     * @return Rectangle in canvas space.
      */
     protected Rectangle getLabelBounds() {
         Rectangle bounds;
@@ -475,24 +489,24 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         }
     }
     
-    /** TODO
-     * @return
+    /** return orientation int
+     * @return AttachedLabel.TOP, etc.
      */
     public int getOrientation() {
         return orientation;
     }
     
     
-    /** TODO
-     * @return
+    /** true if the label is horizontal
+     * @return true if the  label is horizontal
      */
     public boolean isHorizontal() {
         return orientation == BOTTOM || orientation == TOP;
     }
     
-    /** TODO
+    /** return a string for the int orientation encoding.
      * @param i
-     * @return
+     * @return "top", "right", etc.
      */
     protected static String orientationToString(int i) {
         switch (i) {
@@ -508,9 +522,9 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         }
     }
     
-    /** TODO
-     * @param orientationString
-     * @return
+    /** 
+     * @param orientationString left, right, horizontal, etc.
+     * @return the int encoding for the orientation parameter,
      */
     protected static int parseOrientationString(String orientationString) {
         if (orientationString.equals("horizontal")) {
@@ -530,8 +544,8 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         }
     }
     
-    /** TODO
-     * @return
+    /** 
+     * @return the bounds of the label
      */
     public Shape getActiveRegion() {
         return getLabelBounds();
