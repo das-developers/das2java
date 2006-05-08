@@ -36,6 +36,7 @@ import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
+import edu.uiowa.physics.pw.das.system.UserMessageCenter;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
@@ -81,6 +82,7 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,24 +117,24 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
-/** TODO
+/** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
  * @author eew
  */
 public class DasCanvas extends JLayeredPane implements Printable, Editable, FormComponent {
     
-    /** TODO */
+    /** Default drawing layer of the JLayeredPane */
     public static final Integer DEFAULT_LAYER = JLayeredPane.DEFAULT_LAYER;
-    /** TODO */
+    /** Z-Layer for drawing the plot.  */
     public static final Integer PLOT_LAYER = new Integer(300);
-    /** TODO */
+    /** Z-Layer for vertical axis.  Presently lower than the horizontal axis, presumably to remove ambiguity */
     public static final Integer VERTICAL_AXIS_LAYER = new Integer(400);
-    /** TODO */
+    /** Z-Layer */
     public static final Integer HORIZONTAL_AXIS_LAYER = new Integer(500);
-    /** TODO */
+    /** Z-Layer */
     public static final Integer AXIS_LAYER = VERTICAL_AXIS_LAYER;
-    /** TODO */
+    /** Z-Layer */
     public static final Integer ANNOTATION_LAYER = new Integer(1000);
-    /** TODO */
+    /** Z-Layer */
     public static final Integer GLASS_PANE_LAYER = new Integer(30000);
     
     private static final Paint PAINT_ROW = new Color(0xff, 0xb2, 0xb2, 0x92);
@@ -345,12 +347,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public static Action[] getActions() {
         return new Action[] {
             ABOUT_ACTION,
-                    REFRESH_ACTION,
-                    EDIT_DAS_PROPERTIES_ACTION,
-                    PRINT_ACTION,
-                    SAVE_AS_PNG_ACTION,
-                    SAVE_AS_SVG_ACTION,
-                    SAVE_AS_PDF_ACTION,
+            REFRESH_ACTION,
+            EDIT_DAS_PROPERTIES_ACTION,
+            PRINT_ACTION,
+            SAVE_AS_PNG_ACTION,
+            SAVE_AS_SVG_ACTION,
+            SAVE_AS_PDF_ACTION,
         };
     }
     
@@ -380,6 +382,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      */
     public DasCanvas() {
         LookAndFeel.installColorsAndFont(this, "Panel.background", "Panel.foreground", "Panel.font");
+        String name= DasApplication.getDefaultApplication().suggestNameFor(this);
+        setName( name );
         setOpaque(true);
         setLayout(new RowColumnLayout());
         addComponentListener(createResizeListener());
@@ -437,7 +441,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         return popup;
     }
     
-    /** TODO
+    /** returns the GlassPane above all other components. This is used for drawing dragRenderers, etc.
      * @return
      */
     public Component getGlassPane() {
@@ -474,7 +478,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * Frees the lock the specified object has requested on the display.
      * The display will not be freed until all locks have been freed.
      *
-     * @param o the object releasing it's lock on the display
+     * @param o the object releasing its lock on the display
      * @see #lockDisplay(Object)
      */
     synchronized void freeDisplay(Object o) {
@@ -501,15 +505,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         return DasApplication.getDefaultApplication();
     }
     
-    /** TODO
-     * @return
+    /** simply returns getPreferredSize().
+     * @return getPreferredSize()
      */
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
     
-    /** TODO
-     * @param g
+    /** paints the canvas itself.  If printing, stamps the date on it as well.
+     * @param g the Graphics object
      */
     protected void paintComponent(Graphics g) {
         if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
@@ -544,11 +548,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
     
-    /** TODO
-     * @param printGraphics
-     * @param format
-     * @param pageIndex
-     * @return
+    /** Prints the canvas, scaling and possibly rotating it to improve fit.
+     * @param printGraphics the Graphics object.
+     * @param format the PageFormat object.
+     * @param pageIndex should be 0, since the image will be on one page.
+     * @return Printable.PAGE_EXISTS or Printable.NO_SUCH_PAGE
      */
     public int print(Graphics printGraphics, PageFormat format, int pageIndex) {
         
@@ -820,7 +824,24 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         waitUntilIdle();
         
         final Image image= new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
-        writeToImageImmediately(image);
+        
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            writeToImageImmediately(image);
+        } else {
+            Runnable run= new Runnable() {
+                public void run() {
+                    writeToImageImmediately(image);
+                }
+            };
+            try {
+                SwingUtilities.invokeAndWait(run);
+            } catch (InvocationTargetException ex) {
+                UserMessageCenter.getDefault().notifyUser(this,ex.getCause());
+            } catch (InterruptedException ex) {
+                UserMessageCenter.getDefault().notifyUser(this,ex);
+            }
+        }
+        
         return image;
     }
     
@@ -1172,8 +1193,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         private List acceptList = Arrays.asList(new DataFlavor[]{
             edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.PLOT_FLAVOR,
-                    edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.AXIS_FLAVOR,
-                    edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.COLORBAR_FLAVOR
+            edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.AXIS_FLAVOR,
+            edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent.COLORBAR_FLAVOR
         });
         
         private Rectangle getAxisRectangle(Rectangle rc, Rectangle t, int x, int y) {
@@ -1325,6 +1346,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
     }
     
+    /**
+     * JPanel that lives above all other components, and is capable of blocking keyboard and mouse input from
+     * all components underneath.
+     */
     private static class GlassPane extends JPanel implements MouseInputListener, KeyListener {
         
         boolean blocking = false;
