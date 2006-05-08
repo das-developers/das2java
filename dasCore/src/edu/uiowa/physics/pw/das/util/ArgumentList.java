@@ -179,7 +179,7 @@ public class ArgumentList {
             Iterator i= values.keySet().iterator();
             while ( i.hasNext() ) {
                 Object key= i.next();
-                if ( key.equals("help") ) {
+                if ( key.equals("help") || key.equals("--help" ) ) { // kludge
                     printUsage();
                     System.exit(-1);
                 }
