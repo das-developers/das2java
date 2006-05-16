@@ -79,12 +79,39 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 radString= "";
             }
             
-            setLabel( "\u0394x: " + runString + " \u0394y: " + riseString + radString );
+            String label= "\u0394x: " + runString + " \u0394y: " + riseString + radString ;
+            
+            if ( showSlope ) {
+                  label += "!c m: "+ UnitsUtil.divideToString( rise, run );
+            }
+                
+            setLabel( label );
         } else {
             setLabel( "" );
         }
         super.renderDrag( g, p1, p2 );
         return new Rectangle[] { dirtyBounds, myDirtyBounds };
+    }
+
+    /**
+     * Holds value of property showSlope.
+     */
+    private boolean showSlope= false;
+
+    /**
+     * Getter for property showSlope.
+     * @return Value of property showSlope.
+     */
+    public boolean isShowSlope() {
+        return this.showSlope;
+    }
+
+    /**
+     * Setter for property showSlope.
+     * @param showSlope New value of property showSlope.
+     */
+    public void setShowSlope(boolean showSlope) {
+        this.showSlope = showSlope;
     }
     
 }
