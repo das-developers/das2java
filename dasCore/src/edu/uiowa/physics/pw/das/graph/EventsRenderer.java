@@ -173,6 +173,7 @@ public class EventsRenderer extends Renderer {
     
     public void setColor( Color color ) {        
         this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );
+        parent.invalidateCacheImage();
     }
     
     private String widthPlaneId="xTagWidth";
