@@ -65,6 +65,13 @@ extends DasPlot implements DataPointSelectionListener {
         return new VerticalSpectrogramSlicer(plot, xAxis, yAxis);
     }
     
+    public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, DasAxis xAxis, TableDataSetConsumer dataSetConsumer) {
+        DasAxis sourceYAxis = plot.getYAxis();
+        DasAxis sourceZAxis = dataSetConsumer.getZAxis();
+        DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
+        return new VerticalSpectrogramSlicer(plot, xAxis, yAxis);
+    }
+    
     public void showPopup() {
         if (SwingUtilities.isEventDispatchThread()) {
             showPopupImpl();
