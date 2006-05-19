@@ -47,12 +47,15 @@ public class TimeRangeLabel extends DasCanvasComponent {
     
     private static final DatumFormatter MINUTES;
     private static final DatumFormatter SECONDS;
-    private static final DatumFormatter MILLESECONDS;
+    private static final DatumFormatter MILLISECONDS;
+
+    private boolean rangeLabel;
+    
     static {
         try {
             MINUTES = new TimeDatumFormatter("yyyy-MM-dd '('DDD')' HH:mm");
             SECONDS = new TimeDatumFormatter("yyyy-MM-dd '('DDD')' HH:mm:ss");
-            MILLESECONDS = new TimeDatumFormatter("yyyy-MM-dd '('DDD')' HH:mm:ss.SSS");
+            MILLISECONDS = new TimeDatumFormatter("yyyy-MM-dd '('DDD')' HH:mm:ss.SSS");
         }
         catch (java.text.ParseException pe) {
             //If this is happening, then there is a major problem.
@@ -83,9 +86,6 @@ public class TimeRangeLabel extends DasCanvasComponent {
         updateFormatter();
     }
     
-    private class mouseModule extends MouseModule {
-    }
-    
     protected void paintComponent(Graphics graphics) {
         Graphics2D g= (Graphics2D) graphics;
         g.setRenderingHints(DasProperties.getRenderingHints());
@@ -101,7 +101,14 @@ public class TimeRangeLabel extends DasCanvasComponent {
         g.translate(-getX(),-getY());
         
         int yLevel= y - (int)(getFont().getSize()*emOffset + 0.5);
-        g.drawString(df.format(min), x, yLevel );
+        
+        if ( this.rangeLabel ) {
+            String label= dataRange.getDatumRange().toString();
+            g.drawString( label, x, yLevel );
+            return;
+        } else {
+            g.drawString(df.format(min), x, yLevel );
+        }
         
         if (!startOnly) {
             String label= df.format(max);
@@ -127,7 +134,7 @@ public class TimeRangeLabel extends DasCanvasComponent {
         int minMS = (int)(min * 1000.);
         int maxMS = (int)(max * 1000.);
         if ((minMS % 1000) != 0 || (maxMS % 1000) != 0) {
-            df = MILLESECONDS;
+            df = MILLISECONDS;
         }
         else if ((minMS % 60000) != 0 || (maxMS % 60000) != 0) {
             df = SECONDS;
@@ -184,6 +191,18 @@ public class TimeRangeLabel extends DasCanvasComponent {
         if (isDisplayable()) {
             repaint();
         }
+    }
+    
+    /**
+     * Use strings like "2004-01-01 00:00 to 00:20" to identify times.
+     */
+    public void setRangeLabel( boolean b ) {
+        this.rangeLabel= b;
+        repaint();
+    }
+    
+    public boolean isRangeLabel(  ) {
+        return this.rangeLabel;
     }
     
     public double getEmOffset() {
