@@ -420,6 +420,13 @@ public class TickVDescriptor {
             firstTick= tickSize*Math.ceil((data_minimum - axisLengthData)/tickSize);
             lastTick= tickSize*Math.floor((data_maximum + axisLengthData)/tickSize);
 
+            if ( tickSize > 86400 ) {  // phase of the days is arbitary--pick so that first minor tick is major tick.
+                double minorTickSize= 86400;
+                firstTick= minorTickSize*Math.ceil(data_minimum/minorTickSize);
+                firstTick= firstTick - tickSize * 6; // we count off ticks to the left of the visible range.
+                lastTick= minorTickSize*Math.floor((data_maximum + axisLengthData)/minorTickSize);
+            }
+            
             nTicks= 1+(int)Math.round((lastTick-firstTick)/tickSize);
             if (nTicks<2) {
                 edu.uiowa.physics.pw.das.util.DasDie.println("Only able to find one major tick--sorry! ");
