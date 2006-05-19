@@ -57,13 +57,17 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
         
         String expString;
         switch (exponent) {
+            case -18: expString="a"; break;
+            case -15: expString="f"; break;
+            case -12: expString="p"; break;
             case -9: expString="n";break;
-            case -6: expString="u";break;
+            case -6: expString="\u03BC";break;
             case -3: expString="m";break;
             case 0: expString="";break;
-            case 3: expString="K";break;
+            case 3: expString="k";break;
             case 6: expString="M";break;
             case 9: expString="G";break;
+            case 12: expString="T"; break;
             default:  expString=""; exponent=0; break;
         }
         
