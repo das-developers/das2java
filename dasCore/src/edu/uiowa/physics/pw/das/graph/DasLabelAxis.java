@@ -64,6 +64,13 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         this.df = DatumUtil.bestFormatter( labels );
     }
     
+    /**
+     * vg1pws needed a way to explicitly set this.
+     */
+    public void setLabelFormatter( DatumFormatter df ) {
+        this.df= df;
+    }
+    
     protected DasLabelAxis(DatumVector labels, DataRange dataRange, int orientation) {
         super( dataRange, orientation );
         setLabels(labels);
