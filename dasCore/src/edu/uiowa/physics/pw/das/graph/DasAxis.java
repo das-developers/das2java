@@ -235,6 +235,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void copyFavorites() {
+        if ( DasApplication.getDefaultApplication().isHeadless() ) return;
         favoritesMenu.removeAll();
         List favorites= dataRange.getFavorites();
         for ( Iterator i=favorites.iterator(); i.hasNext(); ) {
@@ -257,6 +258,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void copyHistory( ) {
+        if ( DasApplication.getDefaultApplication().isHeadless() ) return;
         backMenu.removeAll();
         List history= dataRange.getHistory();
         int ii=0;
