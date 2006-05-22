@@ -62,6 +62,8 @@ public final class RequestProcessor {
     private static int threadCount = 0;
     private static final Object THREAD_COUNT_LOCK = new Object();
     
+    private final static Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
+    
     private static int threadOrdinal = 0;
     
     private RequestProcessor() {}
@@ -95,7 +97,7 @@ public final class RequestProcessor {
      * @param run the task to be executed.
      */    
     public static void invokeLater(Runnable run) {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("invokeLater "+run);
+        logger.info("invokeLater "+run);
         
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
@@ -113,7 +115,7 @@ public final class RequestProcessor {
      * @param lock associates run with other tasks.
      */
     public static void invokeLater(Runnable run, Object lock) {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("invokeLater "+run+" "+lock);        
+        logger.info("invokeLater "+run+" "+lock);        
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -139,7 +141,7 @@ public final class RequestProcessor {
      * @param lock associates run with other tasks.
      */
     public static void invokeAfter(Runnable run, Object lock) {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("invokeAfter "+run+" "+lock);
+        logger.info("invokeAfter "+run+" "+lock);
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -194,11 +196,11 @@ public final class RequestProcessor {
                 while (true) {
                     try {                        
                         Runnable run = queue.remove();
-                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("running "+run);
+                        logger.fine("running "+run);
                         if (run != null) {
                             setJob(run);
                             run.run();
-                            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("completed "+run);
+                            logger.fine("completed "+run);
                         }                             
                         synchronized (THREAD_COUNT_LOCK) {
                             if (threadCount > maxThreadCount) {
@@ -211,7 +213,7 @@ public final class RequestProcessor {
                         throw td;
                     }
                     catch (Throwable t) {
-                        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("uncaught exception "+t);
+                        logger.info("uncaught exception "+t);
                         DasExceptionHandler.handleUncaught(t);
                         //Clear interrupted status (if set)
                         Thread.interrupted();
