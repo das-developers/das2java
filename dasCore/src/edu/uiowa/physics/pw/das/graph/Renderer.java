@@ -52,8 +52,6 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     DasPlot parent;
     DataLoader loader;
     
-    private DataRequestThread drt;
-    
     protected Exception lastException;
     
     protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
