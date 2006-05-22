@@ -748,6 +748,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
     
+    /**
+     * Blocks the caller's thread until all events have been dispatched from the awt event thread, and
+     * then waits for the RequestProcessor to finish all tasks with this canvas as the lock object.
+     */
     public void waitUntilIdle() {
         
         String msg= "dasCanvas.waitUntilIdle";
