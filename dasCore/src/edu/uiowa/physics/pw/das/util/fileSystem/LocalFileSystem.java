@@ -26,7 +26,7 @@ public class LocalFileSystem extends FileSystem {
         if ( !("file".equals(root.getProtocol()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
-        localRoot= new File( root.toString().substring("file:/".length() ) );
+        localRoot=new File(root.getFile());
         if ( !localRoot.exists() ) {
             File[] roots= File.listRoots();
             if ( Arrays.asList(roots).contains(localRoot) ) {
