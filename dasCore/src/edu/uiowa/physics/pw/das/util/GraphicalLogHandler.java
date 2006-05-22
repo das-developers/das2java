@@ -136,7 +136,7 @@ public class GraphicalLogHandler extends Handler {
             legend.add( legend.getIcon( (Color)loggerMap.get(key) ), name );
         }
         
-        frame= DasApplication.getDefaultApplication().createMainFrame( );
+        frame= DasApplication.getDefaultApplication().createMainFrame( "GraphicalLogHandler" );
         JPanel appPanel= new JPanel( new BorderLayout() );
         appPanel.add( canvas, BorderLayout.CENTER );
         
@@ -285,7 +285,7 @@ public class GraphicalLogHandler extends Handler {
             g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
             
             int ix0= (int) xAxis.transform( xAxis.getDataMinimum() );
-            g.setColor( Color.gray );
+            g.setColor( Color.lightGray );
             for ( Iterator iterator= yaxisMap.keySet().iterator(); iterator.hasNext(); ) {
                 Object name= iterator.next();
                 Integer ithread= (Integer)yaxisMap.get(name);
