@@ -34,6 +34,8 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.*;
+import edu.uiowa.physics.pw.das.system.RequestProcessor;
+import edu.uiowa.physics.pw.das.system.UserMessageCenter;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -143,7 +145,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (DEBUG_GRAPHICS) {
             DEBUG_COLORS = new Color[] {
                 Color.BLACK, Color.RED, Color.GREEN, Color.BLUE,
-                        Color.GRAY, Color.CYAN, Color.MAGENTA, Color.YELLOW,
+                Color.GRAY, Color.CYAN, Color.MAGENTA, Color.YELLOW,
             };
         } else {
             DEBUG_COLORS = null;
@@ -155,7 +157,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private JMenu favoritesMenu;
     private JMenu backMenu;
 
-    private Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
+    private static final Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
 
     /** TODO
      * @param min
@@ -746,8 +748,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("dataPath", oldValue, dataset);
     }
 
-    private void updateDataSet() {
-        if (!drawTca || dataset.equals("") || dsd==null) return;
+    private final DataSetUpdateListener tcaListener= new DataSetUpdateListener() {
+        public void dataSetUpdated(DataSetUpdateEvent e) {
+            VectorDataSet ds = (VectorDataSet)e.getDataSet();
+            if ( ds==null ) {
+                UserMessageCenter.getDefault().notifyUser(DasAxis.this,e.getException());
+                return;
+            }
+            logger.fine("got TCADataSet");
+            List itemList = (List)ds.getProperty("plane-list");
+            VectorDataSet[] newData = new VectorDataSet[itemList.size()];
+            newData[0] = ds;
+            for (int i = 1; i < itemList.size(); i++) {
+                newData[i] = (VectorDataSet)ds.getPlanarView((String)itemList.get(i));
+            }
+            tcaData = newData;
+            update();
+        }
+    };
+
+    private void updateTCADataSet() {
+        logger.fine("updateTCADataSet");
         double [] tickV = getTickV().tickV.toDoubleArray(getUnits());
         Datum data_minimum;
         Datum data_maximum;
@@ -764,7 +785,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         data_maximum= data_maximum.add(iinterval);
         final Datum interval = iinterval;
         tcaData = null;
-        DataRequestor requestor = new DataRequestor() {
+
+        this.dsd.requestDataSet( data_minimum, data_maximum.add(Datum.create(1.0,Units.seconds)), interval, DasProgressMonitor.NULL, getCanvas(), tcaListener );
+
+/*        DataRequestor requestor = new DataRequestor() {
 
             public void currentByteCount(int byteCount) {
             }
@@ -808,7 +832,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } catch (InterruptedException ie) {
             DasExceptionHandler.handle(ie);
         }
-
+        */
     }
 
     /** TODO
@@ -1024,7 +1048,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         datumFormatter= tickV.getFormatter();
 
-        updateDataSet();
+         if ( drawTca && !dataset.equals("") && dsd!=null) updateTCADataSet();
     }
 
     public void updateTickV() {
