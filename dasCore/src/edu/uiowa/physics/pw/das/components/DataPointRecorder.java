@@ -133,7 +133,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             super(null);
         }
         public void fireUpdate() {
-            fireDataSetUpdateEvent( new DataSetUpdateEvent(this) );
+            fireDataSetUpdateEvent( new DataSetUpdateEvent((Object)this) );
         }
 
         protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, DasProgressMonitor monitor) throws DasException {
