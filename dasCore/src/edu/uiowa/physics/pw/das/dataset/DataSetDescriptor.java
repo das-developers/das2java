@@ -130,6 +130,8 @@ public abstract class DataSetDescriptor implements Displayable {
     
     /**
      * Request the dataset, and the dataset is returned only to the listener.
+     *
+     * @param lockObject object that is waiting for the result of this load, used to block other tasks which use that object.
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
             final DasProgressMonitor monitor, Object lockObject, final DataSetUpdateListener listener ) {
