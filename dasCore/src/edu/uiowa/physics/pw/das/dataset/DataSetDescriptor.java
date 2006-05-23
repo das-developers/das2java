@@ -132,7 +132,10 @@ public abstract class DataSetDescriptor implements Displayable {
      * Request the dataset, and the dataset is returned only to the listener.
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
-            final DasProgressMonitor monitor, final DataSetUpdateListener listener ) {
+            final DasProgressMonitor monitor, Object lockObject, final DataSetUpdateListener listener ) {
+        
+        if ( lockObject==null ) lockObject= listener;
+        
         if ( this instanceof ConstantDataSetDescriptor ) {
             try {
                 DataSet ds= getDataSet(null,null,null,null);
@@ -162,7 +165,7 @@ public abstract class DataSetDescriptor implements Displayable {
                     return "loadDataSet "+ new DatumRange( start, end );
                 }
             };
-            RequestProcessor.invokeLater( request, listener );
+            RequestProcessor.invokeLater( request, lockObject );
         }
         
     }
