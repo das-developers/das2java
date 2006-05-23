@@ -45,6 +45,7 @@ extends DasPlot implements DataPointSelectionListener {
     protected Datum yValue;    
     private long eventBirthMilli;
     private SymbolLineRenderer renderer;
+    private Color yMarkColor = new Color(230,230,230);
     
     protected VerticalSpectrogramSlicer(DasPlot parent, DasAxis xAxis, DasAxis yAxis) {
         super( xAxis, yAxis);
@@ -152,7 +153,7 @@ extends DasPlot implements DataPointSelectionListener {
         g.drawLine(ix+3,iy1,ix,iy1-3);
         g.drawLine(ix-3,iy1,ix,iy1-3);
         
-        g.setColor( new Color(230,230,230) );
+        g.setColor(yMarkColor);
         g.drawLine( ix, iy0+4, ix, iy1-4 );
         
         super.drawContent(g);
@@ -211,5 +212,13 @@ extends DasPlot implements DataPointSelectionListener {
             updateImmediately();
             resize();
         }
+    }
+
+    public Color getYMarkColor() {
+        return yMarkColor;
+    }
+
+    public void setYMarkColor(Color yMarkColor) {
+        this.yMarkColor = yMarkColor;
     }
 }
