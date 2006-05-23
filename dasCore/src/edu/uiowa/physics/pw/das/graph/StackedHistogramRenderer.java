@@ -272,7 +272,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             Line2D.Float lBase;
             
             if ( j==(data.getYLength(0)-1) ) {   /* Draw top grey line */
-                yBase= yAxis.getItemMin(data.getYTagDatum(0, j));
+                yBase= yAxis.getItemMin(data.getYTagDatum(0, j)); 
                 g.setColor(Color.lightGray);
                 g.drawLine(xDMin, yBase, xDMax, yBase );
                 g.setColor(BAR_COLOR);
