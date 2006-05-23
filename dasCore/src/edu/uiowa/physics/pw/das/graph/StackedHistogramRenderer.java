@@ -139,7 +139,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         littleRow= new DasRow( canvas, 0.5,0.6 );
         zAxisConnector= new RowRowConnector( canvas, littleRow, zAxis.getRow(), parent.getColumn(), zAxis.getColumn() );
         zAxisConnector.setVisible(false);
-        parent.getCanvas().add(zAxisConnector);
+        canvas.add(zAxisConnector);
         
         yAxis.setFloppyItemSpacing(true);
         yAxis.setOutsidePadding(1);
@@ -264,6 +264,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         DasLabelAxis yAxis= (DasLabelAxis)yAxis_1;
         
         int zmid= zAxis.getRow().getDMiddle();
+        boolean haveLittleRow= false;
         
         for (int j = 0; j < data.getYLength(0); j++) {
             
@@ -285,10 +286,12 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
             double canvasHeight= parent.getHeight();
             
-            if ( yBase1 <= zmid && zmid < yBase ) {
+            if ( !haveLittleRow && yBase1 <= zmid  ) {
                 littleRow.setDPosition(yBase1,yBase);
+                haveLittleRow= true;
                 this.zAxisConnector.setVisible(true);
-            }
+                this.zAxisConnector.repaint();
+            } 
             
             double [] binStarts= xbins.binStarts();
             double [] binStops= xbins.binStops();
