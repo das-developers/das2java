@@ -72,7 +72,8 @@ public class RowRowConnector extends DasCanvasComponent implements java.beans.Pr
     }
     
     public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
-        update();
+        resize();
+        repaint();
     }        
     
 }
