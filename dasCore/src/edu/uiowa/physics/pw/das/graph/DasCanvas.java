@@ -772,6 +772,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         }
                     });
                     lockObject.wait();
+                    logger.finer("event queue task complete");
                 }
             } catch ( InterruptedException ex ) {
                 throw new RuntimeException(ex);
@@ -791,6 +792,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             synchronized (lockObject) {
                 RequestProcessor.invokeAfter( request, this );
                 lockObject.wait();
+                logger.finer("requestProcessor.invokeAfter task complete");
             }
         } catch ( InterruptedException ex ) {
             throw new RuntimeException(ex);
