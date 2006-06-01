@@ -10,34 +10,36 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.SubTaskMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;
+import edu.uiowa.physics.pw.das.util.TimeParser.FieldHandler;
 import java.io.File;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.*;
 import java.util.regex.*;
 
 /**
- * Represents a method for storing data sets in a set of files by time.  The 
- * client provides a regex for the files and how each group of the regex is 
+ * Represents a method for storing data sets in a set of files by time.  The
+ * client provides a regex for the files and how each group of the regex is
  * interpreted as a time digit.  The model can then be used to provide the set
  * of files that cover a time range, etc.
  *
  * @author  Jeremy
  */
 public class FileStorageModelNew {
-    
+
     private Pattern pattern;
     private Pattern absPattern;
     private String regex;
-    
+
     FileStorageModelNew parent;
     FileSystem root;
-    
+
     TimeParser timeParser;
-    
+
     String template;
-    
+
     HashMap fileNameMap=null;
-    
+
     /* need to map back to TimeUtil's enums, note that we have an extra for the 2 digit year */
     private int toTimeUtilEnum( int i ) {
         if ( i<100 || i > 300 ) {
@@ -47,8 +49,8 @@ public class FileStorageModelNew {
         if ( i==0 ) i=1;
         return i;
     }
-    
-        
+
+
     /*
      * extract time range for file or directory from its name.
      * The least significant time digit is considered to be the implicitTimeWidth,
@@ -60,29 +62,34 @@ public class FileStorageModelNew {
      *'.../FULL1/T'YYMM_MM/TYYMMDD'.DAT'
      */
     private DatumRange getDatumRangeFor( String filename ) {
-        if ( pattern.matcher(filename).matches() ) {
-            timeParser.parse( filename );
-            return timeParser.getTimeRange();
-        } else {
-            throw new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+")");
+        try {
+            if ( pattern.matcher(filename).matches() ) {
+                timeParser.parse( filename );
+                return timeParser.getTimeRange();
+            } else {
+                throw new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+")");
+            }
+        } catch ( ParseException e ) {
+            IllegalArgumentException e2=new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+"), parse error in field",e);
+            throw e2;
         }
     }
-    
+
     public String getFilenameFor( Datum start, Datum end ) {
         return timeParser.format( start, end );
     }
-    
+
     public String[] getNamesFor( final DatumRange targetRange ) {
         return getNamesFor( targetRange, DasProgressMonitor.NULL );
     }
 
     public String[] getNamesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
-        
+
         String listRegex;
-        
+
         FileSystem[] fileSystems;
         String[] names;
-        
+
         if ( parent!=null ) {
             names= parent.getNamesFor(targetRange);
             fileSystems= new FileSystem[names.length];
@@ -95,7 +102,7 @@ public class FileStorageModelNew {
                 }
             }
             String parentRegex= getParentRegex(regex);
-            listRegex= regex.substring( parentRegex.length()+1 );        
+            listRegex= regex.substring( parentRegex.length()+1 );
         } else {
             fileSystems= new FileSystem[] { root };
             names= new String[] {""};
@@ -103,28 +110,35 @@ public class FileStorageModelNew {
         }
 
         List list= new ArrayList();
+
+        monitor.setTaskSize( fileSystems.length*10 );
+        monitor.started();
         
         for ( int i=0; i<fileSystems.length; i++ ) {
+            monitor.setTaskProgress(i*10);
             String[] files1= fileSystems[i].listDirectory( "/", listRegex );
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
                 if ( getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
+                monitor.setTaskProgress( i*10 + j * 10 / files1.length );
             }
         }
+        
+        monitor.finished();
         return (String[])list.toArray(new String[list.size()]);
     }
-    
+
     public File[] getFilesFor( final DatumRange targetRange ) {
         return getFilesFor( targetRange, DasProgressMonitor.NULL );
     }
-    
+
     public DatumRange getRangeFor( String name ) {
         return getDatumRangeFor( name );
     }
-    
+
     /**
-     * returns true if the file came (or could come) from this FileStorageModel.  
+     * returns true if the file came (or could come) from this FileStorageModel.
      */
     public boolean containsFile( File file ) {
         if ( !fileNameMap.containsKey(file) ) {
@@ -136,7 +150,7 @@ public class FileStorageModelNew {
             return m.matches();
         }
     }
-    
+
     /**
      * Need a way to recover the model name of a file.  The returned File from getFilesFor can be anywhere,
      * so it would be good to provide a way to get it back into a FSM name.
@@ -149,21 +163,21 @@ public class FileStorageModelNew {
             return result;
         }
     }
-    
+
     /**
-     * returns a list of files that can be used 
+     * returns a list of files that can be used
      */
     public File[] getFilesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
         String[] names= getNamesFor( targetRange );
         File[] files= new File[names.length];
-        
+
         if ( fileNameMap==null ) fileNameMap= new HashMap();
-        
+
         if ( names.length>0 ) monitor.setTaskSize( names.length * 10 );
         for ( int i=0; i<names.length; i++ ) {
             try {
                 FileObject o= root.getFileObject( names[i] );
-                files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));                
+                files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));
                 fileNameMap.put( files[i], names[i] );
             } catch ( Exception e ) {
                 throw new RuntimeException(e);
@@ -171,15 +185,15 @@ public class FileStorageModelNew {
         }
         return files;
     }
-    
-    
+
+
     private static int countGroups( String regex ) {
         int result=0;
         Pattern p= Pattern.compile( regex );
         Matcher m= p.matcher("");
         return m.groupCount();
     }
-    
+
     public static String getParentRegex( String regex ) {
         String[] s= regex.split( "/" );
         String dirRegex;
@@ -193,8 +207,21 @@ public class FileStorageModelNew {
         }
         String fileRegex= s[s.length-1];
         return dirRegex;
-    }   
-    
+    }
+
+    /**
+     * creates a FileStorageModel for the given template, which uses:
+     *    %Y-%m-%dT%H:%M:%S.%{milli}Z";
+     *    %Y  4-digit year
+     *    %m  2-digit month
+     *    %d  2-digit day of month
+     *    %j   3-digit julian day
+     *    %H  2-digit Hour
+     *    %M  2-digit Minute
+     *    %S  2-digit second
+     *    %{milli}  3-digit milliseconds
+     *
+     */
     public static FileStorageModelNew create( FileSystem root, String template ) {
         int i= template.lastIndexOf("/");
         int i2= template.lastIndexOf("%",i);
@@ -206,19 +233,39 @@ public class FileStorageModelNew {
             return new FileStorageModelNew( null, root, template );
         }
     }
-  
+
+    public static FileStorageModelNew create( FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler ) {
+        int i= template.lastIndexOf("/");
+        int i2= template.lastIndexOf("%",i);
+        if ( i2 != -1 ) {
+            String parentTemplate= template.substring(0,i);
+            FileStorageModelNew parentFSM= FileStorageModelNew.create( root, parentTemplate );
+            return new FileStorageModelNew( parentFSM, root, template, fieldName, fieldHandler );
+        } else {
+            return new FileStorageModelNew( null, root, template, fieldName, fieldHandler );
+        }
+    }
+
+    public FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler  ) {
+        this.root= root;
+        this.parent= parent;
+        this.template= template;
+        this.timeParser= TimeParser.create( template, fieldName, fieldHandler );
+        this.regex= timeParser.getRegex();
+        this.pattern= Pattern.compile(regex);
+    }
+
     public FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template ) {
         this.root= root;
         this.parent= parent;
         this.template= template;
         this.timeParser= TimeParser.create( template );
         this.regex= timeParser.getRegex();
-        this.pattern= Pattern.compile(regex); 
+        this.pattern= Pattern.compile(regex);
     }
-
-    
+ 
     public String toString() {
         return String.valueOf(root) + regex;
     }
-    
+
 }
