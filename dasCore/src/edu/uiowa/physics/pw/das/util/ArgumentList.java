@@ -2,6 +2,9 @@ package edu.uiowa.physics.pw.das.util;
 
 import edu.uiowa.physics.pw.das.DasApplication;
 import java.util.*;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 public class ArgumentList {
     
@@ -26,6 +29,11 @@ public class ArgumentList {
     HashMap isBoolean;
     
     ArrayList requireOneOfList;
+    
+    /**
+     * if false, then any unrecognized switch is an error.
+     */
+    boolean allowUndefinedSwitch= false;
     
     private String UNSPECIFIED = new String("__unspecified__");
     
@@ -55,6 +63,54 @@ public class ArgumentList {
         } else {
             throw new IllegalArgumentException( "No such key: "+key );
         }
+    }
+    
+    /**
+     * returns the options as a java.util.prefs.Preferences object, for batch processes.
+     */
+    public Preferences getPreferences() {
+        return new AbstractPreferences(null,"") {
+            protected void putSpi(String key, String value) {
+                formUsed.put(key,value);
+                values.put(key,value);
+            }
+            
+            protected String getSpi(String key) {
+                if ( formUsed.containsKey(key) ) {
+                    return (String) values.get(key);
+                } else {
+                    return null;
+                }
+            }
+            
+            protected void removeSpi(String key) {
+                // do nothing
+            }
+            
+            protected void removeNodeSpi() throws BackingStoreException {
+                // do nothing
+            }
+            
+            protected String[] keysSpi() throws BackingStoreException {
+                return (String[])values.keySet().toArray(new String[values.size()]);
+            }
+            
+            protected String[] childrenNamesSpi() throws BackingStoreException {
+                return new String[0];
+            }
+            
+            protected AbstractPreferences childSpi(String name) {
+                return null;
+            }
+            
+            protected void syncSpi() throws BackingStoreException {
+                // do nothing
+            }
+            
+            protected void flushSpi() throws BackingStoreException {
+                // do nothing
+            }
+        };
     }
     
     public boolean getBooleanValue(String key) {
@@ -107,6 +163,7 @@ public class ArgumentList {
     }
     
     public void addBooleanSwitchArgument(String name, String abbrev, String key, String description) {
+        if ( key.equals("commandLinePrefs") ) allowUndefinedSwitch=true;
         addOptionalSwitchArgument( name, abbrev, key, FALSE, description );
     }
     
@@ -189,7 +246,7 @@ public class ArgumentList {
                 if ( values.get( key )== this.REFERENCEWITHOUTVALUE ) {
                     errorList.add( "Switch requires argument: "+formUsed.get(key));
                 }
-                if ( values.get( key ) == this.UNDEFINED_SWITCH ) {
+                if ( values.get( key ) == this.UNDEFINED_SWITCH && !allowUndefinedSwitch ) {
                     errorList.add( "Not a valid switch: "+formUsed.get(key) );
                 }
             }
@@ -280,6 +337,9 @@ public class ArgumentList {
                         value= this.REFERENCEWITHOUTVALUE;
                     }
                 }
+                if ( value.startsWith("\"") ) {
+                    value= value.substring(1,value.length()-2);
+                }
                 DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("switch key: "+key+"="+value);
                 values.put( key, value );
             }
@@ -297,7 +357,7 @@ public class ArgumentList {
         DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("args: "+sb.toString());
         int iposition=0;
         
-        for ( int i=0; i<args.length; i++ ) {            
+        for ( int i=0; i<args.length; i++ ) {
             if ( args[i].startsWith("-") ) {
                 i= processSwitch( args, i );
             } else {
@@ -305,12 +365,49 @@ public class ArgumentList {
                 String value;
                 key= this.positionKeys[iposition];
                 DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("position key: "+key+"="+args[i]);
+                String vv= args[i];
+                if ( vv.startsWith("\"") ) {
+                    vv= vv.substring(1,vv.length()-2);
+                }
                 values.put( key, args[i] );
                 iposition= iposition+1;
                 formUsed.put( key, args[i] );
             }
         }
         checkArgs();
+    }
+    
+    public void printPrefsSettings() {
+        String s;
+        s= "Explicit Settings: \n";
+        s+= this.programName+" ";
+        
+        for ( int i=0; i<this.nposition; i++ ) {
+            Object key= positionKeys[i];
+            if ( formUsed.get(key)!=null ) {
+                s+= formUsed.get(key);
+            }
+        }
+        
+        Set set= names.keySet();
+        Iterator i= set.iterator();
+        
+        while ( i.hasNext() ) {
+            Object name= i.next();
+            Object key= names.get(name);
+            String value= (String)formUsed.get(key);
+            if ( value !=null ) {
+                if ( value==this.TRUE ) {
+                    s+= "--"+name;
+                } if ( value==this.FALSE ) {
+                    // do nothing
+                } else {
+                    s+= "--"+name+"="+value+" ";
+                }
+            } 
+        }
+        
+        System.err.println(s);
     }
     
 }
