@@ -53,7 +53,9 @@ public class DasApplication {
     private static final DasApplication DEFAULT = new DasApplication();
     
     private JFrame mainFrame;
-    private boolean applet;
+    
+    private Boolean applet;    // tristate: null, TRUE, FALSE  null->try to detect.  TRUE|FALSE->explicit setting by application
+    private Boolean headless;  // tristate: null, TRUE, FALSE
     
     private NameContext nameContext;
     
@@ -88,7 +90,7 @@ public class DasApplication {
     /** Creates a new instance of DasApplication */
     private DasApplication() {
         nameContext = new NameContext();        
-        applet= Thread.currentThread().getContextClassLoader().getClass().getName().indexOf("plugin") > -1;
+        applet= null;
     }
     
     public NameContext getNameContext() {
@@ -107,7 +109,7 @@ public class DasApplication {
         classNameMap.put( DasCanvasComponent.class, "canvasComponent" );
         classNameMap.put( DasCanvas.class, "canvas" );
     }
-    
+        
     Map hitsMap= new HashMap();
     
     // note that only CanvasComponents have a name.
@@ -128,10 +130,17 @@ public class DasApplication {
         return DEFAULT;
     }
     
-    private boolean headless= false;
-    
     public final boolean isApplet() {
-        return applet;
+        if ( applet==null ) {
+            return Thread.currentThread().getContextClassLoader().getClass().getName().indexOf("plugin") > -1;
+        } else {
+            return applet.booleanValue();
+        }
+    }
+    
+    // force the application state to be applet or application
+    public void setApplet( boolean applet ) {
+        this.applet= Boolean.valueOf(applet);
     }
     
     public void setReloadLoggingProperties( boolean v ) {
@@ -208,10 +217,15 @@ public class DasApplication {
             getLogger().info("setting headless to true");
             setHeadless( true );
         } */
-        return "true".equals(System.getProperty("java.awt.headless"));
+        if ( headless!=null ) {
+            return headless.booleanValue();
+        } else {
+            return "true".equals(System.getProperty("java.awt.headless"));
+        }
     }
     
     public void setHeadless( boolean headless ) {
+        this.headless= Boolean.valueOf(headless);
         if ( headless ) {
             System.setProperty("java.awt.headless","true");
         } else {
