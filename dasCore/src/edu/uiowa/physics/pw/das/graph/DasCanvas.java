@@ -41,13 +41,13 @@ import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
 import edu.uiowa.physics.pw.das.util.Splash;
+import edu.uiowa.physics.pw.das.util.awt.EventQueueBlocker;
 import edu.uiowa.physics.pw.das.util.awt.GraphicsOutput;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -747,12 +747,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             DasExceptionHandler.handleUncaught(iae);
         }
     }
-    
+
     /**
      * Blocks the caller's thread until all events have been dispatched from the awt event thread, and
      * then waits for the RequestProcessor to finish all tasks with this canvas as the lock object.
      */
-    public void waitUntilIdle() {
+    public void waitUntilIdle() throws InterruptedException {
         
         String msg= "dasCanvas.waitUntilIdle";
         java.util.logging.Logger logger= DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG);
@@ -761,23 +761,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         final Object lockObject= new Object();
         
         /* wait for all the events on the awt event thread to process */
-        if ( !EventQueue.isDispatchThread() ) {
-            try {
-                synchronized(lockObject) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            synchronized(lockObject) {
-                                lockObject.notifyAll();
-                            }
-                        }
-                    });
-                    lockObject.wait();
-                    logger.finer("event queue task complete");
-                }
-            } catch ( InterruptedException ex ) {
-                throw new RuntimeException(ex);
-            }
-        }
+        new EventQueueBlocker().clearEventQueue();
+        logger.finer("pending events processed");
         
         /* wait for all the RequestProcessor to complete */
         Runnable request= new Runnable() {
@@ -797,6 +782,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         } catch ( InterruptedException ex ) {
             throw new RuntimeException(ex);
         }
+        
+        /* wait for all the post data-load stuff to clear */
+        new EventQueueBlocker().clearEventQueue();
+        logger.finer("post data-load pending events processed");
         
         logger.fine("canvas is idle");
         /* should be in static state */
@@ -826,8 +815,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             this.setSize(getPreferredSize());
             this.validate();
         }
-        
-        waitUntilIdle();
+        try {
+            waitUntilIdle();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
         
         final Image image= new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
         
