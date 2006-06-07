@@ -27,19 +27,21 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
         totalSize= 0;
         this.totalSizeLimit= totalSizeLimitBytes;
     }
-
+    
     /* return a list of all the datasets that together cover the cacheTag */
-    private Entry findStored( DataSetDescriptor dsd, CacheTag cacheTag ) {        
+    private Entry findStored( DataSetDescriptor dsd, CacheTag cacheTag ) {
         Entry entry= new Entry( dsd, cacheTag, null );
         List result= new ArrayList();
         
         Entry iHit=null;
-        for ( Iterator i= entries.iterator(); i.hasNext(); ) {
-            Entry testEntry= (Entry)i.next();                        
-            if (testEntry.satifies(entry)) {
-                iHit= testEntry;            
+        synchronized (entries) {
+            for ( Iterator i= entries.iterator(); i.hasNext(); ) {
+                Entry testEntry= (Entry)i.next();
+                if (testEntry.satifies(entry)) {
+                    iHit= testEntry;
+                }
             }
-        }        
+        }
         return iHit;
     };
     
@@ -47,16 +49,16 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
         Entry entry= findStored( dsd, cacheTag );
         return ( entry!=null );
     }
-
+    
     public void reset() {
-        entries.removeAll(entries); 
+        entries.removeAll(entries);
         this.totalSize= 0;
     }
-
+    
     DataSet retrieveImpl(DataSetDescriptor dsd, CacheTag cacheTag) {
         Entry entry= findStored( dsd, cacheTag );
         if ( entry!=null ) {
-            entry.nhits++;            
+            entry.nhits++;
             return entry.getData();
         } else {
             throw new IllegalArgumentException("not found in cache");
@@ -65,7 +67,7 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     
     private Entry leastValuableEntry() {
         Entry result= (Entry)entries.get(0);
-        long value= this.cacheValue(result);        
+        long value= this.cacheValue(result);
         for ( Iterator i=entries.iterator(); i.hasNext(); ) {
             Entry test= (Entry)i.next();
             long testValue= cacheValue(test);
@@ -76,7 +78,7 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
         }
         return result;
     }
-        
+    
     public void store(DataSetDescriptor dsd, CacheTag cacheTag, DataSet data) {
         long sizeBytes= DataSetUtil.guessSizeBytes( data );
         if ( sizeBytes > this.totalSizeLimit ) return;
@@ -105,7 +107,7 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     
     public Datum getTotalSizeLimit() {
         return Units.kiloBytes.createDatum( this.totalSizeLimit/1000., 0.1 );
-    } 
+    }
     
     public void setTotalSizeLimit( Datum d ) {
         this.totalSizeLimit= (long)( d.doubleValue( Units.kiloBytes ) * 1000 );
@@ -114,5 +116,5 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     public Datum getHitRate() {
         return Units.percent.createDatum( this.hits * 100. / ( this.hits + this.misses ), 0.1 );
     }
-        
+    
 }
