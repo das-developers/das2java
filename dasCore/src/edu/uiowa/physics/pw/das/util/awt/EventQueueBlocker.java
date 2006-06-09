@@ -25,53 +25,63 @@ import javax.swing.SwingUtilities;
  *
  * @author Jeremy
  */
-public class EventQueueBlocker {
+public final class EventQueueBlocker {
+
     private static final Logger logger= DasLogger.getLogger(DasLogger.SYSTEM_LOG);
 
     /** Creates a new instance of EventQueueBlocker */
-    public EventQueueBlocker() {
+    private EventQueueBlocker() {
     }
 
-    class MyEventQueue extends EventQueue {
+
+    static class MyEventQueue extends EventQueue {
         protected void dispatchEvent(AWTEvent event) {
             super.dispatchEvent(event);
-        }
-        protected void pop() throws EmptyStackException {
-        }
-    }
-
-    private void clearEventQueueImmediately()  {
-        MyEventQueue eventQueue=  new MyEventQueue();
-        Toolkit.getDefaultToolkit().getSystemEventQueue().push( eventQueue );
-
-        /*
-        DasUpdateEvent evt= findUpdateEvent( eventQueue );
-        while ( evt!=null ) {
-            AWTEvent evt2;
-            try {
-                evt2 = eventQueue.getNextEvent(); //TODO: improve by poping all the non-update events until the update event is found               
-                eventQueue.dispatchEvent(evt2);
-                evt= findUpdateEvent( eventQueue );
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
+            if (myEventQueue.peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID) == null) {
+                synchronized (this) {
+                    pop();
+                    this.notifyAll();
+                }
             }
         }
+        /*
+        protected void pop() throws EmptyStackException {
+            super.pop();
+        }
          */
-        while (eventQueue.peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID) != null) {
+    }
+
+    static MyEventQueue myEventQueue= new MyEventQueue();
+
+    private static void clearEventQueueImmediately()  {
+        System.err.println( Thread.currentThread().getName() );
+
+        synchronized (myEventQueue) {
+            Toolkit.getDefaultToolkit().getSystemEventQueue().push( myEventQueue );
             try {
-                Thread.sleep(10);
+                myEventQueue.wait();
+            } catch (InterruptedException ie) {
+                throw new RuntimeException(ie);
+            }
+        }
+
+        /*
+        while (myEventQueue.peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID) != null) {
+            try {
+                Thread.sleep(40);
             }
             catch (InterruptedException ie) {
                 throw new RuntimeException(ie);
             }
         }
 
-        eventQueue.pop();
+        myEventQueue.pop();
+         */
         logger.info("no more pending events");
     }
 
 
-    private DasUpdateEvent findUpdateEvent( EventQueue eventQueue ) {
+    private static DasUpdateEvent findUpdateEvent( EventQueue eventQueue ) {
         Queue queue= new LinkedList();
         AWTEvent evt=null;
         DasUpdateEvent result=null;
@@ -91,7 +101,8 @@ public class EventQueueBlocker {
         return result;
     }
 
-    public synchronized void clearEventQueue() throws InterruptedException {
+    public static synchronized void clearEventQueue() throws InterruptedException {
+
         if ( SwingUtilities.isEventDispatchThread() ) {
             clearEventQueueImmediately();
         } else {
