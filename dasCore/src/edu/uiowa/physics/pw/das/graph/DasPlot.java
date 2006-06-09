@@ -269,7 +269,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected void paintComponent(Graphics graphics1) {
                 
         if ( ! EventQueue.isDispatchThread() ) {
-            throw new RuntimeException("not event thread");
+            throw new RuntimeException("not event thread: "+Thread.currentThread().getName());
         }
         
         logger.finer( "entering DasPlot.paintComponent" );
