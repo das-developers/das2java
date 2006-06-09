@@ -42,6 +42,7 @@ import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
 import edu.uiowa.physics.pw.das.util.Splash;
 import edu.uiowa.physics.pw.das.util.awt.EventQueueBlocker;
+import edu.uiowa.physics.pw.das.util.awt.EventQueueBlocker_1;
 import edu.uiowa.physics.pw.das.util.awt.GraphicsOutput;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -761,7 +762,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         final Object lockObject= new Object();
         
         /* wait for all the events on the awt event thread to process */
-        new EventQueueBlocker().clearEventQueue();
+        EventQueueBlocker_1.clearEventQueue();
         logger.finer("pending events processed");
         
         /* wait for all the RequestProcessor to complete */
@@ -784,7 +785,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         
         /* wait for all the post data-load stuff to clear */
-        new EventQueueBlocker().clearEventQueue();
+        EventQueueBlocker_1.clearEventQueue();
         logger.finer("post data-load pending events processed");
         
         logger.fine("canvas is idle");
