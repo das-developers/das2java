@@ -55,7 +55,7 @@ public final class DasExceptionHandler {
     
     public static void handle(Throwable t) {
         if ( DasApplication.getDefaultApplication().isHeadless() ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.CRITICAL, t.toString());
+            t.printStackTrace();
         }
         else {
             showExceptionDialog(t, "");
