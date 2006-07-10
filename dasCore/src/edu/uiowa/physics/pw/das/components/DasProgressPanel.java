@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  *
  * @author  eew
  */
-public class DasProgressPanel extends JPanel implements DasProgressMonitor {
+public class DasProgressPanel implements DasProgressMonitor {
     
     private long taskStartedTime;
     private long currentTaskPosition;
@@ -66,16 +66,31 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     
     private Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
     
-    /**
-     * Holds value of property showProgressRate.
-     */
     private boolean showProgressRate;
     
-    /** Creates new form DasProgressPanel */
+    private JPanel thePanel;
+    
+    class MyPanel extends JPanel {
+         protected void paintComponent(Graphics g1) {
+                Graphics2D g2= ( Graphics2D) g1;
+                
+                g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                        RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+                g2.setColor(new Color(0xdcFFFFFF, true));
+                Rectangle rect = g2.getClipBounds();
+                if (rect == null) {
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+                } else {
+                    g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+                }
+                super.paintComponent(g1);
+            }
+    }
     
     public DasProgressPanel(String label) {
+        thePanel= new MyPanel();
         this.label = label;
-        setOpaque(false);
+        thePanel.setOpaque(false);
         initComponents();
         transferRateFormat= new DecimalFormat();
         transferRateFormat.setMaximumFractionDigits(2);
@@ -89,14 +104,14 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     public static DasProgressPanel createComponentPanel( DasCanvasComponent component, String initialMessage ) {
         DasProgressPanel progressPanel= new DasProgressPanel( initialMessage );
         
-        progressPanel.setSize(progressPanel.getPreferredSize());
+        progressPanel.thePanel.setSize(progressPanel.thePanel.getPreferredSize());
         
         int x= component.getColumn().getDMiddle();
         int y= component.getRow().getDMiddle();
         
-        progressPanel.setLocation( x - progressPanel.getWidth()/2, y - progressPanel.getHeight()/2 );
+        progressPanel.thePanel.setLocation( x - progressPanel.thePanel.getWidth()/2, y - progressPanel.thePanel.getHeight()/2 );
         
-        ((Container)(component.getCanvas().getGlassPane())).add(progressPanel);
+        ((Container)(component.getCanvas().getGlassPane())).add(progressPanel.thePanel);
         
         progressPanel.setVisible(false);
         
@@ -115,7 +130,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         DasProgressPanel result;
         result= new DasProgressPanel( label );
         result.jframe= new JFrame("Das Progress Monitor");
-        result.jframe.getContentPane().add( result );
+        result.jframe.getContentPane().add( result.thePanel );
         result.jframe.pack();
         result.jframe.setVisible(true);
         result.jframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -125,7 +140,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     public void setLabel(String label) {
         messageLabel.setText(label);
         this.label = label;
-        repaint();
+        thePanel.repaint();
     }
     
     public String getLabel() {
@@ -184,9 +199,9 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         buttonPanel.setOpaque(false);
         buttonPanel.add(cancelButton);
         
-        setLayout(new BorderLayout());
-        add(mainPanel, BorderLayout.CENTER);
-        add(buttonPanel, BorderLayout.SOUTH);
+        thePanel.setLayout(new BorderLayout());
+        thePanel.add(mainPanel, BorderLayout.CENTER);
+        thePanel.add(buttonPanel, BorderLayout.SOUTH);
     }
     
     public void finished() {
@@ -232,7 +247,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         currentTaskPosition = position;
         
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
-        if ( elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
+        if ( elapsedTimeMs > hideInitiallyMilliSeconds && !thePanel.isVisible()) {
             setVisible(true);
         }
    /*     long tnow;
@@ -253,7 +268,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
             public void run() {
                 while( !DasProgressPanel.this.finished ) {
                     updateUIComponents();
-                    repaint();
+                    thePanel.repaint();
                     try { Thread.sleep( refreshPeriodMilliSeconds ); } catch ( InterruptedException e ) { };
                 }
             }
@@ -317,7 +332,7 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
     }
     
     public void setVisible( boolean visible ) {
-        super.setVisible(visible);
+        thePanel.setVisible(visible);
         if ( visible ) {
             startUpdateThread();
         }
@@ -358,22 +373,6 @@ public class DasProgressPanel extends JPanel implements DasProgressMonitor {
         cancelCheckFailures=0;
         cancelChecked= true;
         return isCancelled;
-    }
-    
-    protected void paintComponent(Graphics g1) {
-        Graphics2D g2= ( Graphics2D) g1;
-        
-        g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-        g2.setColor(new Color(0xdcFFFFFF, true));
-        Rectangle rect = g2.getClipBounds();
-        if (rect == null) {
-            g2.fillRect(0, 0, getWidth(), getHeight());
-        } else {
-            g2.fillRect(rect.x, rect.y, rect.width, rect.height);
-        }
-        
-        super.paintComponent(g1);
     }
     
     /**
