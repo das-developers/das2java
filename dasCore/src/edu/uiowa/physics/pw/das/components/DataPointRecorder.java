@@ -386,12 +386,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private class MyMouseAdapter extends MouseAdapter {
         JPopupMenu popup;
+        JMenuItem menuItem;
         final JTable parent;
 
         MyMouseAdapter(final JTable parent) {
             this.parent= parent;
             popup= new JPopupMenu("Options");
-            JMenuItem menuItem= new JMenuItem("Delete Row(s)");
+            menuItem= new JMenuItem("Delete Row(s)");
             menuItem.addActionListener( new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     int[] selectedRows= parent.getSelectedRows();
@@ -409,6 +410,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         MouseAdapter mm;
         public void mousePressed(MouseEvent e) {
             if ( e.getButton()==MouseEvent.BUTTON3 ) {
+                int rowCount= parent.getSelectedRows().length;
+                menuItem.setText( "Delete "+rowCount+" Row"+( rowCount!=1 ? "s" : "" ) );
                 popup.show( e.getComponent(), e.getX(), e.getY());
             }
         }
