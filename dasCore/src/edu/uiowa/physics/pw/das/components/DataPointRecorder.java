@@ -11,6 +11,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.BorderLayout;
 import java.awt.event.*;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.*;
 import javax.swing.*;
@@ -49,6 +51,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     Preferences prefs= Preferences.userNodeForPackage( this.getClass() );
 
+    static Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
+    
     protected class DataPoint implements Comparable {
         Datum[] data;
         HashMap planes;
@@ -860,8 +864,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @param event The event to be fired
      */
     private void fireDataPointSelectionListenerDataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
-
         if (listenerList == null) return;
+        logger.fine("firing data point selection event");
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class) {
