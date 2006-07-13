@@ -150,7 +150,7 @@ public class DasProgressPanel implements DasProgressMonitor {
     private void initComponents() {
         
         createComponentCount++;
-        System.err.println("createComponentCount="+createComponentCount );
+        //System.err.println("createComponentCount="+createComponentCount );
         JPanel mainPanel, buttonPanel;
         
         messageLabel = new JLabel();
