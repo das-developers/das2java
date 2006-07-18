@@ -168,6 +168,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     public void dataSetUpdated( DataSetUpdateEvent e ) {
         
         synchronized ( lockObject ) {
+            if ( renderer.getDataLoader()!=this ) return; // see bug 233
             
             logger.fine("got dataset update:"+e);
             // TODO make sure Exception is cleared--what if data set is non-null but Exception is as well?
