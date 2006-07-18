@@ -157,6 +157,7 @@ public abstract class Units implements Displayable {
     static {
         log10Ratio.registerConverter( logERatio, new UnitsConverter.ScaleOffset( Math.log(10), 0. ) );
         logERatio.registerConverter( percentIncrease, new PercentRatioConverter() );
+        dB.registerConverter( log10Ratio, new UnitsConverter.ScaleOffset( 10, 0 ) );
     }
     
    /* static {
