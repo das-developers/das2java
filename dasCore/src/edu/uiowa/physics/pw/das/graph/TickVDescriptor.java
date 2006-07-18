@@ -208,6 +208,9 @@ public class TickVDescriptor {
         double min= minD.doubleValue(ticks.units);
         double max= maxD.doubleValue(ticks.units);
 
+        if ( max<=0 ) max= 100.;
+        if ( min<= 0 ) min= max / 1000.;
+        
         double logMin= DasMath.log10( min );
         double logMax= DasMath.log10( max );
         int ntick0= (int)( Math.floor(logMax*0.999) - Math.ceil(logMin*1.001) + 1 );
