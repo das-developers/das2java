@@ -263,7 +263,7 @@ public class DasProgressPanel implements DasProgressMonitor {
         currentTaskPosition = position;
         
         long elapsedTimeMs= System.currentTimeMillis()-taskStartedTime;
-        if ( elapsedTimeMs > hideInitiallyMilliSeconds && !thePanel.isVisible()) {
+        if ( elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
             setVisible(true);
         }
    /*     long tnow;
@@ -298,6 +298,11 @@ public class DasProgressPanel implements DasProgressMonitor {
         
         long kb = currentTaskPosition ;
         
+        if ( maximumTaskPosition == -1 ) {
+            progressBar.setIndeterminate(true);
+        } else {
+            progressBar.setIndeterminate(false);
+        }
         if ( maximumTaskPosition > 0 ) {
             progressBar.setValue( (int) (kb * 100 / (maximumTaskPosition) ) );
         } else {
@@ -337,12 +342,10 @@ public class DasProgressPanel implements DasProgressMonitor {
     }
     
     public void setTaskSize(long taskSize) {
-        if (taskSize == -1) {
-            progressBar.setIndeterminate(true);
-        } else if ( taskSize<0 ) {
+        if ( taskSize<-1 ) {
             throw new IllegalArgumentException( "taskSize must be positive, -1, or 0, not "+taskSize );
         } else {
-            progressBar.setIndeterminate(false);
+            if (componentsInitialized ) progressBar.setIndeterminate(false);
         }
         maximumTaskPosition = taskSize;
     }
@@ -354,6 +357,10 @@ public class DasProgressPanel implements DasProgressMonitor {
         if ( visible ) {
             startUpdateThread();
         }
+    }
+    
+    public boolean isVisible() {
+        return ( !componentsInitialized || thePanel.isVisible() );
     }
     
     public void started() {
