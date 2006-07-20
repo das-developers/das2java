@@ -108,19 +108,23 @@ public class ImageVectorDataSetRenderer extends Renderer {
         // TODO: data breaks
         int ix0=0, iy0=0;
         for ( int i=firstIndex; i<=lastIndex; i++ ) {
-            int iy= (int)yAxis.transform( ds.getDatum(i) );
-            int ix= (int)xAxis.transform( ds.getXTagDatum(i) );
-            switch( state ) {
-                case STATE_MOVETO:
-                    g.fillRect( ix, iy, 1, 1 );
-                    ix0= ix; iy0=iy; break;
-                case STATE_LINETO:
-                    g.draw( new Line2D.Float( ix0, iy0, ix, iy ) );
-                    g.fillRect( ix, iy, 1, 1 );
-                    ix0= ix; iy0=iy;
-                    break;
+            if ( ds.getDatum(i).isFill() ) {
+                state= STATE_MOVETO;
+            } else {
+                int iy= (int)yAxis.transform( ds.getDatum(i) );
+                int ix= (int)xAxis.transform( ds.getXTagDatum(i) );
+                switch( state ) {
+                    case STATE_MOVETO:
+                        g.fillRect( ix, iy, 1, 1 );
+                        ix0= ix; iy0=iy; break;
+                    case STATE_LINETO:
+                        g.draw( new Line2D.Float( ix0, iy0, ix, iy ) );
+                        g.fillRect( ix, iy, 1, 1 );
+                        ix0= ix; iy0=iy;
+                        break;
+                }
+                state= STATE_LINETO;
             }
-            state= STATE_LINETO;
         }
         
         log.fine( "done" );
