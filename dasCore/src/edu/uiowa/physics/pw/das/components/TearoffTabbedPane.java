@@ -9,6 +9,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
@@ -24,6 +25,7 @@ import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 
@@ -126,11 +128,18 @@ public class TearoffTabbedPane extends JTabbedPane {
         };
     }
     
+    static Component getTornOffComponent() {
+        JPanel tornOffComponent= new JPanel();
+        tornOffComponent.setLayout( new BorderLayout() );
+        tornOffComponent.add( new JLabel("<html><i>This tab is torn off.  Right-click on the tab name and select dock.</i></html>"), BorderLayout.NORTH );
+        return tornOffComponent;
+    }
+    
     public void tearOff( int tabIndex, Container newContainer ) {
         Component c= getComponentAt(tabIndex);
         String title= super.getTitleAt(tabIndex);
         super.removeTabAt(tabIndex);
-        super.insertTab("("+title+")",null,new JLabel("<html><i>This tab is torn off.  Right-click on the tab name and select dock.</i></html>"),null,tabIndex);
+        super.insertTab("("+title+")",null,getTornOffComponent(),null,tabIndex);
         TabDesc td= ((TabDesc)tabs.get(c));
         td.babysitter= newContainer;
         setSelectedIndex(Math.max(tabIndex-1,0));
