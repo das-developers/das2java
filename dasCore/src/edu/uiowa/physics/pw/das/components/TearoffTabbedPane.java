@@ -11,7 +11,6 @@ package edu.uiowa.physics.pw.das.components;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -19,13 +18,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.HashMap;
+import java.util.Iterator;
 import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 
@@ -60,20 +58,69 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
     
     private MouseAdapter getMouseAdapter() {
+        
         return new MouseAdapter() {
             int selectedTab;
-            JPopupMenu menu= new JPopupMenu();
-            { menu.add( new JMenuItem( new AbstractAction( "tear off" ) {
+            JPopupMenu tearOffMenu= new JPopupMenu();
+            { tearOffMenu.add( new JMenuItem( new AbstractAction( "tear off" ) {
                   public void actionPerformed( ActionEvent event ) {
                       TearoffTabbedPane.this.tearOffIntoFrame( selectedTab );
                   }
               }
               ) );
             }
+            Component selectedComponent;
+            JPopupMenu dockMenu= new JPopupMenu();
+            {
+                dockMenu.add( new JMenuItem( new AbstractAction( "show" ) {
+                    public void actionPerformed( ActionEvent event ) {
+                        TabDesc desc=null;
+                        Component babyComponent=null;
+                        for ( Iterator i= tabs.keySet().iterator(); i.hasNext(); ) {
+                            Component key= (Component) i.next();
+                            TabDesc d= (TabDesc)tabs.get(key) ;
+                            if ( d.index==selectedTab ) {
+                                desc=d;
+                                babyComponent= key;
+                                break;
+                            }
+                        }
+                        desc.babysitter.setVisible(true);
+                    }
+                }
+                ) );
+                dockMenu.add( new JMenuItem( new AbstractAction( "dock" ) {
+                    public void actionPerformed( ActionEvent event ) {
+                        TabDesc desc=null;
+                        Component babyComponent=null;
+                        for ( Iterator i= tabs.keySet().iterator(); i.hasNext(); ) {
+                            Component key= (Component) i.next();
+                            TabDesc d= (TabDesc)tabs.get(key) ;
+                            if ( d.index==selectedTab ) {
+                                desc=d;
+                                babyComponent= key;
+                                break;
+                                
+                            }
+                        }
+                        
+                        if ( desc.babysitter instanceof JFrame ) {
+                            ((JFrame)desc.babysitter).dispose();
+                        }
+                        TearoffTabbedPane.this.dock( babyComponent );
+                    }
+                }
+                ) );
+            }
             public void mousePressed( MouseEvent event ) {
                 if ( event.getButton()==MouseEvent.BUTTON3 ) {
                     selectedTab= TearoffTabbedPane.this.indexAtLocation( event.getX(), event.getY() );
-                    menu.show( TearoffTabbedPane.this, event.getX(), event.getY() );
+                    selectedComponent= TearoffTabbedPane.this.getComponentAt(selectedTab);
+                    if ( tabs.get(selectedComponent)!=null ) {
+                        tearOffMenu.show( TearoffTabbedPane.this, event.getX(), event.getY() );
+                    } else {
+                        dockMenu.show( TearoffTabbedPane.this, event.getX(), event.getY() );
+                    }
                 }
             }
         };
@@ -81,15 +128,12 @@ public class TearoffTabbedPane extends JTabbedPane {
     
     public void tearOff( int tabIndex, Container newContainer ) {
         Component c= getComponentAt(tabIndex);
+        String title= super.getTitleAt(tabIndex);
         super.removeTabAt(tabIndex);
+        super.insertTab("("+title+")",null,new JLabel("<html><i>This tab is torn off.  Right-click on the tab name and select dock.</i></html>"),null,tabIndex);
         TabDesc td= ((TabDesc)tabs.get(c));
-        if ( newContainer instanceof JTabbedPane ) {
-            ((JTabbedPane)newContainer).add( td.title, c );
-        } else {
-            newContainer.add(c);
-        }
-        ((TabDesc)tabs.get(c)).babysitter= newContainer;        
-        setSelectedIndex(tabIndex-1);
+        td.babysitter= newContainer;
+        setSelectedIndex(Math.max(tabIndex-1,0));
     }
     
     private class AbstractWindowListener implements WindowListener {
@@ -129,15 +173,18 @@ public class TearoffTabbedPane extends JTabbedPane {
         } );
         JTabbedPane pane= new JTabbedPane( );
         babySitter.getContentPane().add( pane );
-        tearOff( tabIndex, pane );
+        
+        tearOff( tabIndex, babySitter );
+        pane.add( td.title, c );
+        
         babySitter.pack();
         babySitter.setVisible(true);
     }
     
     public void dock( Component c ) {
         TabDesc td= (TabDesc) tabs.get(c);
-        //TODO: this is incorrect...\
-        int index= getTabCount();
+        int index= td.index;
+        super.removeTabAt(index);
         super.insertTab( td.title, td.icon, c, td.tip, index );
         setSelectedIndex( index );
     }
