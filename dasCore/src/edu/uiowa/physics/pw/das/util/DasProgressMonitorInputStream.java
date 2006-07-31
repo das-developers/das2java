@@ -49,7 +49,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();
         this.deathTimeMilli= -1;
-        enableProgressPosition= true;
+        enableProgressPosition= true; // TODO: we don't know the size, but we use 1000 just because it's usually close.
         if ( monitor!=null ) {
             transferRateFormat= new DecimalFormat();
             transferRateFormat.setMaximumFractionDigits(2);
