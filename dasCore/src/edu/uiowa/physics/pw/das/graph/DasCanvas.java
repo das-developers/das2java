@@ -41,7 +41,6 @@ import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
 import edu.uiowa.physics.pw.das.util.Splash;
-import edu.uiowa.physics.pw.das.util.awt.EventQueueBlocker;
 import edu.uiowa.physics.pw.das.util.awt.EventQueueBlocker_1;
 import edu.uiowa.physics.pw.das.util.awt.GraphicsOutput;
 import java.awt.BasicStroke;
@@ -84,6 +83,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -327,9 +328,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     ex.printStackTrace();
                 }
             }
-            String aboutContent= "<html>release version: "+dasVersion+
+            String arch= System.getProperty("sun.arch.data.model");
+            DecimalFormat nf= new DecimalFormat("0.0");
+            String mem= nf.format( Runtime.getRuntime().maxMemory()/(1024*1024) );
+            String aboutContent= "<html>" +
+                    //"<img src='images/dasSplash.gif'><br>" +
+                    "release version: "+dasVersion+
                     "<br>build time: "+buildTime+
                     "<br>java version: "+javaVersion+
+                    "<br>max memory (Mb): "+mem+
+                    "<br>arch (bits): "+arch+
                     "<br></html>";
             
             JOptionPane.showConfirmDialog( currentCanvas, aboutContent, "about das2", JOptionPane.PLAIN_MESSAGE );
