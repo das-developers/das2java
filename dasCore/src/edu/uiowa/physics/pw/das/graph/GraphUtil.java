@@ -249,28 +249,32 @@ public class GraphUtil {
         return result;
     }
 
-    
-    public static DasPlot guessPlot( DataSet ds ) {
-        DasAxis xaxis= guessXAxis( ds );
-        DasAxis yaxis= guessYAxis( ds );
-        DasPlot plot= new DasPlot( xaxis, yaxis );
+    public static Renderer guessRenderer( DataSet ds ) {
+        Renderer rend=null;
         if ( ds instanceof VectorDataSet ) {
-            edu.uiowa.physics.pw.das.graph.Renderer rend;
             if ( ds.getXLength() > 10000 ) {
                 rend= new ImageVectorDataSetRenderer(new ConstantDataSetDescriptor(ds));
             } else {
                 rend= new SymbolLineRenderer( ds );
+                ((SymbolLineRenderer)rend).setPsym( Psym.DOTS );
+                ((SymbolLineRenderer)rend).setSymSize( 2.0 );
             }
-            plot.addRenderer(rend);
+            
         } else if (ds instanceof TableDataSet ) {
             Units zunits= ((TableDataSet)ds).getZUnits();
             DasAxis zaxis= guessZAxis(ds);
             DasColorBar colorbar= new DasColorBar( zaxis.getDataMinimum(), zaxis.getDataMaximum(), zaxis.isLog() );
             colorbar.setLabel( zaxis.getLabel() );
-            edu.uiowa.physics.pw.das.graph.Renderer rend= new SpectrogramRenderer( new ConstantDataSetDescriptor(ds), colorbar );
-            plot.addRenderer(rend);
+            rend= new SpectrogramRenderer( new ConstantDataSetDescriptor(ds), colorbar );
         }
-        
+        return rend;
+    }
+    
+    public static DasPlot guessPlot( DataSet ds ) {
+        DasAxis xaxis= guessXAxis( ds );
+        DasAxis yaxis= guessYAxis( ds );
+        DasPlot plot= new DasPlot( xaxis, yaxis );
+        plot.addRenderer( guessRenderer(ds) );
         return plot;
     }
      
