@@ -38,17 +38,24 @@ public class DataSetUtil {
         if ( ds.getProperty(DataSet.PROPERTY_Y_RANGE)!=null ) return (DatumRange)ds.getProperty(DataSet.PROPERTY_Y_RANGE);
         if ( ds instanceof VectorDataSet ) {
             VectorDataSet vds= ( VectorDataSet ) ds;
-            DatumRange result= null;
-            for ( int i=1; i<ds.getXLength(); i++ ) {
-                if ( !vds.getDatum(i).isFill() ) {
-                    if ( result==null ) {
-                        result= new DatumRange(vds.getDatum(i),vds.getDatum(i));
+            Datum min=null, max=null;
+            DatumRange result;
+            for ( int i=0; i<ds.getXLength(); i++ ) {
+                Datum d= vds.getDatum(i);
+                if ( !d.isFill() ) {
+                    if ( min==null ) {
+                        max= min= d;
                     } else {
-                        result= result.include(vds.getDatum(i));
+                        if ( d.lt(min) ) min=d;
+                        if ( d.gt(min) ) max=d;
                     }
                 }
             }
-            if ( result==null ) { result= new DatumRange(vds.getDatum(0),vds.getDatum(0)); } // fill,fill
+            if ( min==null ) { 
+                result= new DatumRange(0,10,ds.getYUnits());
+            } else {
+                result= new DatumRange( min, max );
+            }
             return result;
         } else if ( ds instanceof TableDataSet ) {
             TableDataSet tds= ( TableDataSet ) ds;
