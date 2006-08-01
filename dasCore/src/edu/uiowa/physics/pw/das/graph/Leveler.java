@@ -22,8 +22,6 @@ public class Leveler {
     
     ArrayList rows;  // DasDevicePositions
     ArrayList weights;  // doubles
-    double topMargin;
-    double bottomMargin;
     double interMargin;
     
     DasCanvas parent;
@@ -73,39 +71,61 @@ public class Leveler {
         }
 
         public void setDMinimum(int minimum) {
-
             super.setDMinimum(minimum);
         }
 
         public void setDMaximum(int maximum) {
-
             super.setDMaximum(maximum);
         }
     }
     
-    /** Creates a new instance of Leveler */
+    DasRow row;  // this row contains the Leveler
+    
     public Leveler( DasCanvas parent ) {
+        this( parent, new DasRow( parent, 0.05, 0.9 ) );
+    }
+    
+    public Leveler( DasCanvas parent, DasRow row ) {
         this.parent= parent;
+        this.row= row;
         rows= new ArrayList();
         weights= new ArrayList();
-        topMargin= 0.05;
-        bottomMargin= 0.10;
+        
         interMargin= 0.03;
     }
     
-    public DasRow getRow( double nposition, double weight ) {
+    public DasRow addRow( double nposition, double weight ) {
         LevelRow r= new LevelRow( parent, this, nposition, weight );
         return r;
     }
         
-    public DasRow getRow( double nposition ) {
+    public DasRow addRow( double nposition ) {
         LevelRow r= new LevelRow( parent, this, nposition );
         return r;
     }
 
-    public DasRow getRow( ) {
+    public DasRow addRow( ) {
         LevelRow r= new LevelRow( parent, this, 1.0 );
         return r;
+    }
+    
+    public DasRow whichRow( int y ) {
+        int i= objectIndexAt( y / parent.getHeight() );
+        if ( i>=0 && i<rows.size() ) {
+            return (DasRow) rows.get(i);
+        } else {
+            return null;
+        }
+    }
+    
+    public int rowCount() {
+        return rows.size();
+    }
+    
+    public void deleteRow( DasRow row ) {
+        int i= rows.indexOf( row );
+        rows.remove(i);
+        weights.remove(i);
     }
     
     void insertAt( double nposition, DasDevicePosition row ) {
@@ -124,13 +144,7 @@ public class Leveler {
         rows.add(i,row);
         weights.add(i,new Double(weight));
     }
-    
-    void remove( DasDevicePosition row ) {
-        int i= rows.indexOf(row);
-        rows.remove(i);
-        weights.remove(i);
-    }
-    
+        
     /*
      * return the index of the row that contains nPosition 
      */
@@ -163,10 +177,10 @@ public class Leveler {
         double totalWeight= integrateWeight(rows.size());
         double partialWeight= integrateWeight(i);
         
-        double alphaFt= 1.0 - bottomMargin - topMargin - ((rows.size()-1) * interMargin);
+        double alphaFt= 1.0 - (1.0 - row.getMaximum() ) - row.getMinimum() - ((rows.size()-1) * interMargin);
         double nWeight= ( partialWeight / totalWeight );
         double plotsFt= alphaFt * nWeight;
-        return topMargin + plotsFt + ( i * interMargin );
+        return row.getMinimum() + plotsFt + ( i * interMargin );
     }
     
     double getMinimum( DasDevicePosition row) {
@@ -225,14 +239,14 @@ public class Leveler {
      * sets the top margin in canvas-normal units.
      */
     public void setTopMargin( double nmargin ) {
-        topMargin= nmargin;        
+        row.setMinimum( nmargin );
     }
     
     /*
      * sets the bottom margin in canvas-normal units.
      */
     public void setBottomMargin( double nmargin ) {
-        bottomMargin= nmargin;
+        row.setMaximum( 1.0 - nmargin );
     }
     
     void setMaximum(DasDevicePosition row, double nposition ) {
@@ -245,10 +259,10 @@ public class Leveler {
         maxima[i]= nposition;
         
         double alpha1= nposition;
-        double alpha2= 1.-bottomMargin;
+        double alpha2= 1.- (1.0 - this.row.getMaximum() );
         
         if (i==(rows.size()-1)) {
-            bottomMargin= 1.-nposition;
+            this.row.setMaximum( nposition );
         } else {
             int nBelow= rows.size()-1-i;
             double weight3= integrateWeight(rows.size()) - integrateWeight(i+1);
@@ -279,11 +293,11 @@ public class Leveler {
         
         minima[i]= nposition;
         
-        double alpha1= topMargin;
+        double alpha1= this.row.getMinimum();
         double alpha2= nposition;
         
         if (i==0) {
-            topMargin= nposition;
+            this.row.setMinimum( nposition );
         } else {
             int nAbove= i;
             double weight3= integrateWeight(i);
