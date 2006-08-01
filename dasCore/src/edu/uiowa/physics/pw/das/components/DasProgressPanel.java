@@ -33,6 +33,7 @@ import javax.swing.border.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.util.*;
 import java.util.logging.Logger;
+import javax.swing.event.MouseInputAdapter;
 
 /**
  *
@@ -91,7 +92,15 @@ public class DasProgressPanel implements DasProgressMonitor {
         }
     }
     
+    // provides details button, which shows who creates and who consumes the ProgressPanel
+    final static boolean useDetails= false;
+    
+    Exception source;
+    Exception consumer;
+    
     public DasProgressPanel(String label) {
+        if (useDetails) source= new Exception();
+        
         componentsInitialized= false;
         this.label = label;
         transferRateFormat= new DecimalFormat();
@@ -101,6 +110,25 @@ public class DasProgressPanel implements DasProgressMonitor {
         showProgressRate= true;
         isCancelled= false;
         running= false;
+    }
+    
+    private void details() {
+        System.err.println("Source: ");
+        source.printStackTrace();
+        System.err.println("Consumer: ");
+        consumer.printStackTrace();
+        String stateString;
+        if ( finished ) {
+            stateString= "finished";
+        } else if ( running ) {
+            stateString= "running";
+        } else if ( isCancelled ) {
+            stateString= "cancelled";
+        }
+        System.err.println("State: ");
+        System.err.println("  running: "+running );
+        System.err.println("  cancelled: "+isCancelled );
+        System.err.println("  finished: "+finished );
     }
     
     /**
@@ -149,6 +177,8 @@ public class DasProgressPanel implements DasProgressMonitor {
     
     private void initComponents() {
         
+        if (useDetails) consumer= new Exception();
+        
         createComponentCount++;
         //System.err.println("createComponentCount="+createComponentCount );
         JPanel mainPanel, buttonPanel;
@@ -187,6 +217,19 @@ public class DasProgressPanel implements DasProgressMonitor {
         Border emptyBorder = new EmptyBorder(2, 2, 2, 2);
         CompoundBorder border = new CompoundBorder(lineBorder, emptyBorder);
         
+        JButton detailsButton;
+        if ( useDetails ) {
+            detailsButton= new JButton("details");
+            detailsButton.setOpaque(false);
+            detailsButton.setBorder(border);
+            detailsButton.setFocusPainted(false);
+            detailsButton.addActionListener( new ActionListener() {
+                public void actionPerformed( ActionEvent e ) {
+                    details();
+                }
+            } );
+        }
+        
         cancelButton = new JButton("cancel");
         cancelButton.setEnabled(false);
         cancelButton.setOpaque(false);
@@ -200,6 +243,8 @@ public class DasProgressPanel implements DasProgressMonitor {
         
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setOpaque(false);
+        
+        if ( useDetails ) buttonPanel.add(detailsButton);
         buttonPanel.add(cancelButton);
         
         thePanel= new MyPanel();
@@ -216,11 +261,11 @@ public class DasProgressPanel implements DasProgressMonitor {
             ((Container)(parentComponent.getCanvas().getGlassPane())).add(thePanel);
             thePanel.setVisible(false);
         }
-
+        
         componentsInitialized= true;
     }
     
-    public void finished() {
+    public synchronized void finished() {
         running = false;
         finished= true;
         if ( jframe==null ) {
@@ -350,9 +395,9 @@ public class DasProgressPanel implements DasProgressMonitor {
         maximumTaskPosition = taskSize;
     }
     
-    public void setVisible( boolean visible ) {
+    public synchronized void setVisible( boolean visible ) {
         if ( ! componentsInitialized && !visible ) return;
-        if ( ! componentsInitialized ) initComponents();
+        if ( ! componentsInitialized && !finished ) initComponents();
         thePanel.setVisible(visible);
         if ( visible ) {
             startUpdateThread();
@@ -398,6 +443,14 @@ public class DasProgressPanel implements DasProgressMonitor {
         cancelCheckFailures=0;
         cancelChecked= true;
         return isCancelled;
+    }
+    
+    public Exception getSource() {
+        return source;
+    }
+    
+    public Exception getConsumer() {
+        return consumer;
     }
     
     /**
