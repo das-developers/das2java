@@ -190,6 +190,9 @@ public class GrannyTextRenderer {
         //    baseFont = c.getFont().deriveFont( fontSize );
             baseFont= c.getFont();
         }
+        if ( baseFont==null ) {
+            baseFont= Font.decode("sans-10");
+        }
         
         int lineNum=1;
         
