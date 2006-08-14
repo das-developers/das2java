@@ -14,6 +14,7 @@ import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
 import edu.uiowa.physics.pw.das.dasml.DOMBuilder;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.util.fileSystem.Glob;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,11 +25,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
@@ -48,11 +54,39 @@ import org.xml.sax.SAXException;
  */
 public class PersistentStateSupport {
     
-    DasCanvas canvas;
     String ext;
     File currentFile;
-
+    JMenu openRecentMenu;
+    SerializationStrategy strategy;
+    Component component;
+    
     private JMenuItem saveMenuItem;
+    private JLabel currentFileLabel;
+    private List recentFiles;
+    
+    public interface SerializationStrategy {
+        // give me a document to serialize
+        public Element serialize( Document document, DasProgressMonitor monitor );
+        
+        // here's a document you gave me
+        public void deserialize( Document doc, DasProgressMonitor monitor );
+    }
+    
+    private static SerializationStrategy getCanvasStrategy( final DasCanvas canvas ) {
+        return new SerializationStrategy() {
+            public Element serialize(Document document, DasProgressMonitor monitor) {
+                DOMBuilder builder= new DOMBuilder( canvas );
+                Element element= builder.serialize( document, DasProgressPanel.createFramed("Serializing Canvas") );
+                return element;
+            }
+            
+            public void deserialize(Document document, DasProgressMonitor monitor) {
+                Element element= document.getDocumentElement();
+                SerializeUtil.processElement(element,canvas );
+            }
+        };
+    }
+    
     
     /**
      *  Provides a means for saving the application persistently, undo/redo support (TODO).
@@ -60,13 +94,59 @@ public class PersistentStateSupport {
      *  internal changes to das may break saved files.
      */
     public PersistentStateSupport( DasCanvas canvas, String extension ) {
-        this.canvas= canvas;
+        this( canvas, getCanvasStrategy( canvas ), extension );
+        
+    }
+    
+    private void refreshRecentFilesMenu() {
+        if ( openRecentMenu!=null ) {
+            openRecentMenu.removeAll();
+            for ( int i=0; i<recentFiles.size(); i++ ) {
+                final File f= (File) recentFiles.get(i);
+                Action a= new AbstractAction( String.valueOf(f) ) {
+                    public void actionPerformed( ActionEvent e ) {
+                        open(f);
+                    }
+                };
+                openRecentMenu.add( a );
+            }
+        }
+    }
+    
+    private void setRecentFiles( String code ) {
+        recentFiles= new ArrayList();
+        if ( code.equals("") ) return;
+        String[] ss= code.split("::");
+        for ( int i=0; i<ss.length; i++ ) {
+            File f= new File( ss[i] );
+            if ( !recentFiles.contains(f) ) {
+                recentFiles.add( f );
+            }
+        }
+        refreshRecentFilesMenu();
+    }
+    
+    private String getRencentFilesString() {
+        if (recentFiles.size()==0 ) {
+            return "";
+        } else {
+            String result= String.valueOf( recentFiles.get(0) );
+            for ( int i=1; i<recentFiles.size(); i++ ) {
+                result+= "::"+String.valueOf(recentFiles.get(i));
+            }
+            return result;
+        }
+    }
+    
+    public PersistentStateSupport( Component parent, SerializationStrategy strategy, String extension ) {
+        this.strategy= strategy;
         this.ext= "."+extension;
         Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
         String currentFileString= prefs.get( "PersistentStateSupport"+ext, "" );
         if ( !currentFileString.equals("") ) currentFile= new File( currentFileString );
+        String recentFileString= prefs.get( "PersistentStateSupport"+ext+"_recent", "" );
+        setRecentFiles( recentFileString );
     }
-    
     
     private FileFilter simpleFilter( final String glob ) {
         final Pattern pattern= Glob.getPattern(glob);
@@ -91,46 +171,51 @@ public class PersistentStateSupport {
         if ( currentFile!=null ) chooser.setCurrentDirectory(currentFile.getParentFile());
         if ( currentFile!=null ) chooser.setSelectedFile( currentFile );
         chooser.setFileFilter( simpleFilter("*"+ext ) );
-        int result= chooser.showSaveDialog(canvas);
+        int result= chooser.showSaveDialog(this.component);
         if ( result==JFileChooser.APPROVE_OPTION ) {
             File f= chooser.getSelectedFile();
             if ( !f.getName().endsWith(ext) ) f= new File( f.getPath()+ext );
             currentFile= f;
-            if ( saveMenuItem!=null ) saveMenuItem.setText("Save "+currentFile);
+            if ( saveMenuItem!=null ) saveMenuItem.setText("Save");
+            if ( currentFileLabel!=null ) currentFileLabel.setText( String.valueOf( currentFile ) );
+            addToRecent(currentFile);
             save();
         }
         
     }
     
     private void save( ) {
-        try {
-            File f= currentFile;
-            if ( !f.getName().endsWith(ext) ) f= new File( f.getPath()+ext );
-            
-            OutputStream out= new FileOutputStream( f );
-            
-            Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            
-            DOMBuilder builder= new DOMBuilder( canvas );
-            
-            Element element= builder.serialize( document, DasProgressPanel.createFramed("Serializing Canvas") );
-            
-            document.appendChild( element );
-            
-            StringWriter writer = new StringWriter();
-            OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
-            XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
-            
-            serializer.serialize(document);
-            out.close();
-            
-            Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
-            prefs.put( "PersistentStateSupport"+ext, currentFile.getAbsolutePath() );
-        } catch ( IOException ex ) {
-            throw new RuntimeException(ex);
-        } catch ( ParserConfigurationException ex ) {
-            throw new RuntimeException(ex);
-        }
+        Runnable run= new Runnable() {
+            public void run() {
+                try {
+                    File f= currentFile;
+                    if ( !f.getName().endsWith(ext) ) f= new File( f.getPath()+ext );
+                    
+                    OutputStream out= new FileOutputStream( f );
+                    
+                    Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+                    
+                    Element element= strategy.serialize( document, DasProgressPanel.createFramed("Serializing") );
+                    
+                    document.appendChild( element );
+                    
+                    StringWriter writer = new StringWriter();
+                    OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
+                    XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
+                    
+                    serializer.serialize(document);
+                    out.close();
+                    
+                    Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
+                    prefs.put( "PersistentStateSupport"+ext, currentFile.getAbsolutePath() );
+                } catch ( IOException ex ) {
+                    throw new RuntimeException(ex);
+                } catch ( ParserConfigurationException ex ) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+        new Thread( run, "PersistentStateSupport.save" ).start();
     }
     
     public Action createSaveAction() {
@@ -148,9 +233,22 @@ public class PersistentStateSupport {
     public JMenuItem createSaveMenuItem() {
         saveMenuItem= new JMenuItem(createSaveAction());
         if (currentFile!=null ) {
-            saveMenuItem.setText("Save "+currentFile);
+            saveMenuItem.setText("Save");
         }
         return saveMenuItem;
+    }
+    
+    public JMenu createOpenRecentMenu() {
+        JMenu menu= new JMenu("Open recent");
+        menu.add( String.valueOf(currentFile) );
+        openRecentMenu= menu;
+        refreshRecentFilesMenu();
+        return menu;
+    }
+    
+    public JLabel createCurrentFileLabel() {
+        currentFileLabel= new JLabel( String.valueOf(currentFile) );
+        return currentFileLabel;
     }
     
     private static Document readDocument( File file ) throws IOException, ParserConfigurationException, SAXException {
@@ -166,6 +264,17 @@ public class PersistentStateSupport {
         return document;
     }
     
+    private void addToRecent( File file ) {
+        if ( recentFiles.contains(file) ) return;
+        recentFiles.add(0,file);
+        while (recentFiles.size()>7) {
+            recentFiles.remove(7);
+        }
+        Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
+        prefs.put( "PersistentStateSupport"+ext+"_recent", getRencentFilesString() );
+        refreshRecentFilesMenu();
+    }
+    
     public Action createOpenAction() {
         return new AbstractAction("Open...") {
             public void actionPerformed( ActionEvent ev ) {
@@ -173,28 +282,36 @@ public class PersistentStateSupport {
                     JFileChooser chooser = new JFileChooser();
                     if ( currentFile!=null ) chooser.setCurrentDirectory(currentFile.getParentFile());
                     chooser.setFileFilter( simpleFilter( "*"+ext ) );
-                    int result = chooser.showOpenDialog(canvas);
+                    int result = chooser.showOpenDialog(component);
                     if (result == JFileChooser.APPROVE_OPTION) {
-                        try {
-                            Document document= readDocument( chooser.getSelectedFile() );
-                            Element element= document.getDocumentElement();
-                            SerializeUtil.processElement(element,canvas );
-                            currentFile= chooser.getSelectedFile();
-                             if ( saveMenuItem!=null ) saveMenuItem.setText("Save "+currentFile);
-                        } catch ( IOException e ) {
-                            throw new RuntimeException(e);
-                        } catch ( ParserConfigurationException e ) {
-                            throw new RuntimeException(e);
-                        } catch ( SAXException e ) {
-                            throw new RuntimeException(e);
-                        }
-                        
+                        open( chooser.getSelectedFile() );
+                        currentFile= chooser.getSelectedFile();
+                        addToRecent(currentFile);
+                        if ( saveMenuItem!=null ) saveMenuItem.setText("Save");
                     }
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);
                 }
             }
         };
+    }
+    
+    private void open( final File file ) {
+        Runnable run = new Runnable() {
+            public void run() {
+                try {
+                    Document document= readDocument( file );
+                    strategy.deserialize( document, DasProgressPanel.createFramed("deserializing") );
+                } catch ( IOException e ) {
+                    throw new RuntimeException(e);
+                } catch ( ParserConfigurationException e ) {
+                    throw new RuntimeException(e);
+                } catch ( SAXException e ) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        new Thread( run, "PersistentStateSupport.open" ).start();
     }
     
     public void close() {
