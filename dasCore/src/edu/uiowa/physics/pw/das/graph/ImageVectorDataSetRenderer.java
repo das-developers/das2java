@@ -80,9 +80,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int ny= yAxis.getRow().getHeight();
         int nx= xAxis.getColumn().getWidth();
         
-        Logger log= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
-        
-        log.fine( "create Image" );
+        logger.fine( "create Image" );
         BufferedImage image= new BufferedImage( nx, ny, BufferedImage.TYPE_INT_ARGB );
         Graphics2D g= (Graphics2D)image.getGraphics();
         
@@ -96,6 +94,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         DatumRange visibleRange= xAxis.getDatumRange();
         //if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
         
+        
         int firstIndex= DataSetUtil.getPreviousColumn( ds, visibleRange.min() );
         int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );
         
@@ -107,27 +106,29 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
         // TODO: data breaks
         int ix0=0, iy0=0;
-        for ( int i=firstIndex; i<=lastIndex; i++ ) {
-            if ( ds.getDatum(i).isFill() ) {
-                state= STATE_MOVETO;
-            } else {
-                int iy= (int)yAxis.transform( ds.getDatum(i) );
-                int ix= (int)xAxis.transform( ds.getXTagDatum(i) );
-                switch( state ) {
-                    case STATE_MOVETO:
-                        g.fillRect( ix, iy, 1, 1 );
-                        ix0= ix; iy0=iy; break;
-                    case STATE_LINETO:
-                        g.draw( new Line2D.Float( ix0, iy0, ix, iy ) );
-                        g.fillRect( ix, iy, 1, 1 );
-                        ix0= ix; iy0=iy;
-                        break;
+        if ( ds.getXLength()>0 ) {
+            for ( int i=firstIndex; i<=lastIndex; i++ ) {
+                if ( ds.getDatum(i).isFill() ) {
+                    state= STATE_MOVETO;
+                } else {
+                    int iy= (int)yAxis.transform( ds.getDatum(i) );
+                    int ix= (int)xAxis.transform( ds.getXTagDatum(i) );
+                    switch( state ) {
+                        case STATE_MOVETO:
+                            g.fillRect( ix, iy, 1, 1 );
+                            ix0= ix; iy0=iy; break;
+                        case STATE_LINETO:
+                            g.draw( new Line2D.Float( ix0, iy0, ix, iy ) );
+                            g.fillRect( ix, iy, 1, 1 );
+                            ix0= ix; iy0=iy;
+                            break;
+                    }
+                    state= STATE_LINETO;
                 }
-                state= STATE_LINETO;
             }
         }
         
-        log.fine( "done" );
+        logger.fine( "done" );
         plotImage= image;
         imageXRange= xAxis.getDatumRange();
         imageYRange= yAxis.getDatumRange();
@@ -138,18 +139,21 @@ public class ImageVectorDataSetRenderer extends Renderer {
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         WritableTableDataSet tds= WritableTableDataSet.newSimple( ddx.numberOfBins(), ddx.getUnits(),
                 ddy.numberOfBins(), ddy.getUnits(), Units.dimensionless );
-        Units xunits= ddx.getUnits();
-        Units yunits= ddy.getUnits();
-        Units zunits= Units.dimensionless;
         
-        int i= DataSetUtil.getPreviousColumn( ds, ddx.binStart(0) );
-        int n= DataSetUtil.getNextColumn( ds, ddx.binStop(ddx.numberOfBins()-1) );
-        for ( ; i<=n; i++ ) {
-            int ix= ddx.whichBin( ds.getXTagDouble( i, xunits ), xunits );
-            int iy= ddy.whichBin( ds.getDouble( i, yunits ), yunits );
-            if ( ix!=-1 && iy!=-1 ) {
-                double d= tds.getDouble(ix,iy, zunits );
-                tds.setDouble( ix, iy, d + 1, zunits );
+        if ( ds.getXLength()>0 ) {
+            Units xunits= ddx.getUnits();
+            Units yunits= ddy.getUnits();
+            Units zunits= Units.dimensionless;
+            
+            int i= DataSetUtil.getPreviousColumn( ds, ddx.binStart(0) );
+            int n= DataSetUtil.getNextColumn( ds, ddx.binStop(ddx.numberOfBins()-1) );
+            for ( ; i<=n; i++ ) {
+                int ix= ddx.whichBin( ds.getXTagDouble( i, xunits ), xunits );
+                int iy= ddy.whichBin( ds.getDouble( i, yunits ), yunits );
+                if ( ix!=-1 && iy!=-1 ) {
+                    double d= tds.getDouble(ix,iy, zunits );
+                    tds.setDouble( ix, iy, d + 1, zunits );
+                }
             }
         }
         return tds;
