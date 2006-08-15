@@ -38,16 +38,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
     DatumRange imageXRange;
     DatumRange imageYRange;
     
-    SymbolLineRenderer symbolLineRenderer;
-    
     /** Creates a new instance of LotsaPointsRenderer */
     public ImageVectorDataSetRenderer( DataSetDescriptor dsd ) {
         super(dsd);
-        symbolLineRenderer= new SymbolLineRenderer((DataSet)null);
-        //highResRenderer= new SymbolLineRenderer(dsd);
-        //highResRenderer.setPsym(Psym.NONE);
-        //highResRenderer.setPsymConnector(PsymConnector.SOLID);
-        //        xTagWidth= (Datum)dsd.getProperty("xTagWidth");
     }
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
