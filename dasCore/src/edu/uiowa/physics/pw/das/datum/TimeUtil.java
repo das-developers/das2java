@@ -225,14 +225,16 @@ public final class TimeUtil {
         return result;
     }
 
+    /**
+     * returns int[] { year, month, day, hour, minute, second, millis, micros }
+     */
     public static int[] toTimeArray( Datum time ) {
-        // returns intarr[] { year, month, day, hour, minute, second, millis, micros }
         TimeStruct ts= toTimeStruct( time );
         int seconds= (int)( ts.seconds+0.0000005 );
         int micros= (int)( ( ts.seconds+0.0000005 - seconds ) * 1000000 );
         int millis= micros / 1000;
         micros= micros - millis * 1000 + ts.micros + ts.millis*1000;
-        return new int[] { ts.year, ts.month, ts.minute, ts.hour, ts.minute, seconds, millis, micros };
+        return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, millis, micros };
     }
 
     public static Datum toDatum( int[] timeArray ) {
