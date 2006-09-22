@@ -370,6 +370,12 @@ public class DatumRangeUtil {
                 for ( int i=1; i<ss.length; i++ ) {
                     result= result + "-" + ss[i];
                 }
+            } else if ( ss.length==2 ) { // kludgy check for YYYY to YYYY, everything else is error
+                String s0= ss[0].trim();
+                String s1= ss[1].trim();
+                if ( !isYear(s0) || !isYear(s1) ) {
+                    result= s0 + " " + s1;
+                }
             }
             return result;
         }
@@ -857,8 +863,8 @@ public class DatumRangeUtil {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
     }
 
-    public static DatumRange parseDatumRange( String str, DatumRange orig ) throws ParseException {
-        if ( orig.getUnits() instanceof TimeLocationUnits ) {
+    public static DatumRange parseDatumRange( String str, Units units ) throws ParseException {
+        if ( units instanceof TimeLocationUnits ) {
             return parseTimeRange( str );
         } else {
             // consider Patterns -- dash not handled because of negative sign.
@@ -875,11 +881,26 @@ public class DatumRangeUtil {
                 }
             }
 
-            Units contextUnits= orig.getUnits(); // TODO: handle "124.0 to 140.0 kHz" when contextUnits= Units.hertz
-            Datum d2= contextUnits.parse( ss[1] );
-            Datum d1= contextUnits.parse( ss[0] );
-            return new DatumRange( d1, d2 );
+            // TODO: handle "124.0 to 140.0 kHz" when units= Units.hertz
+            Datum d2;
+            try {
+                d2= DatumUtil.parse(ss[1]);
+                if ( d2.getUnits()==Units.dimensionless ) d2= units.parse( ss[1] );
+            } catch ( ParseException e ) {
+                d2= units.parse( ss[1] );
+            }
+            Datum d1= d2.getUnits().parse( ss[0] );
+            
+            if ( d1.getUnits().isConvertableTo(units) ) {
+                return new DatumRange( d1.convertTo(units), d2.convertTo(units) );
+            } else {
+                throw new ParseException( "Can't convert parsed unit ("+d1.getUnits()+") to "+units, 0 );
+            }
         }
+    }
+    
+    public static DatumRange parseDatumRange( String str, DatumRange orig ) throws ParseException {
+        return parseDatumRange( str, orig.getUnits() );
     }
 
 }
