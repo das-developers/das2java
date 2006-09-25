@@ -126,6 +126,10 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             formData.append("&compress=true");
         }
 
+        if ( !devel.equals("") ) {
+            formData.append("&devel="+devel);
+        }
+        
         InputStream in= openURLConnection( dsd, start, end, formData );
 
         in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
@@ -379,6 +383,26 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
      */
     public Key getKey() {
         return this.key;
+    }
+
+    private String devel="";
+
+    /**
+     * use the develop version of the reader instead of the
+     * production version.
+     */
+    public String getDevel() {
+        return this.devel;
+    }
+
+    /**
+     * use the develop version of the reader instead of the
+     * production version.  If a reader was in dasHome/readers,
+     * then use the one in /home/<devel>/readers/ instead.
+     *
+     */
+    public void setDevel(String devel) {
+        this.devel = devel;
     }
 
 }
