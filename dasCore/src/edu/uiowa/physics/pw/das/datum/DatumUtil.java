@@ -259,6 +259,12 @@ public final class DatumUtil {
         }
     }
     
+    /**
+     * attempt to parse the string as a datum.  Note that if the
+     * units aren't specified, then of course the Datum will be
+     * assumed to be dimensionless.
+     * @throws ParseException when the double can't be parsed or the units aren't recognized.
+     */
     public static Datum parse(java.lang.String s) throws ParseException {
         String[] ss= s.trim().split("\\s");
         Units units;
