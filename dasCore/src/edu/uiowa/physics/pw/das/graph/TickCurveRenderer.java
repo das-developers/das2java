@@ -209,8 +209,15 @@ public class TickCurveRenderer extends Renderer {
 
     // TODO: it's likely this fails to meet the contract of animation interactive
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+        
+        if ( ds==null ) {
+            return;
+        }
+        
         Graphics2D g= (Graphics2D)g1;
         g.setStroke( stroke );
+        
+        g.setColor( Color.black );
         
         DataSet ds= getDataSet();
         xds= (VectorDataSet) ds.getPlanarView(xplane);
@@ -229,18 +236,24 @@ public class TickCurveRenderer extends Renderer {
         }
         
         double[] findex;
-        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.minorTickV.toDoubleArray(xds.getXUnits()) );
+        double[] xxx= VectorUtil.getXTagArrayDouble( xds,xds.getXUnits() );
+        double[] xx= tickv.minorTickV.toDoubleArray(xds.getXUnits());
+        findex= DasMath.findex( xxx, xx );
 
-        tickLabeller= new GrannyTickLabeller( xAxis ); // xAxis is a convenient Component
+        tickLabeller= new GrannyTickLabeller( parent ); 
         tickLabeller.init( tickv );
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
-            drawTick( g, findex[i] );
+            if ( findex[i]>=0 && findex[i]<xxx.length ) {
+                drawTick( g, findex[i] );
+            }
         }
 
         findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.tickV.toDoubleArray(xds.getXUnits()) );
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
-            drawLabelTick( g, findex[i], i );            
+            if ( findex[i]>=0 && findex[i]<xxx.length ) {
+                drawLabelTick( g, findex[i], i );      
+            }
         }
         
         tickLabeller.finished();
@@ -265,6 +278,7 @@ public class TickCurveRenderer extends Renderer {
      */
     public void setTickStyle(TickStyle tickStyle) {
         this.tickStyle = tickStyle;
+        invalidateParentCacheImage();
     }
     
     /** Getter for property lineWidth.
@@ -282,6 +296,7 @@ public class TickCurveRenderer extends Renderer {
     public void setLineWidth(double lineWidth) {
         this.lineWidth = lineWidth;
         stroke= new BasicStroke((float)lineWidth);
+        invalidateParentCacheImage();
     }
     
     /** Getter for property tickLength.
@@ -298,11 +313,20 @@ public class TickCurveRenderer extends Renderer {
      */
     public void setTickLength(float tickLength) {
         this.tickLength = tickLength;
+        invalidateParentCacheImage();
     }
 
         
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
         throw new UnsupportedOperationException();
     }    
+
+    /**
+     * set the ticks for the renderer.
+     */
+    public void setTickVDescriptor(TickVDescriptor ticks) {
+        this.tickv= ticks;
+        this.invalidateParentCacheImage();
+    }
     
 }
