@@ -116,7 +116,7 @@ public class DasMath {
     }
     
     public final static double findex( double[] datax, double x, int guess ) {
-        int index= guess;
+        int index= Math.max( Math.min( guess, datax.length-1 ), 0 );
         while ( index<datax.length-1 && datax[index+1]<x ) index++;
         while ( index>0 && datax[index]>x ) index--;
         if ( index==datax.length-1 ) index--;
