@@ -80,4 +80,8 @@ public class SubTaskMonitor implements DasProgressMonitor {
     public String toString() {
         return parent.toString()+">"+label;
     }
+
+    public void setProgressMessage(String message) {
+        parent.setProgressMessage(message);
+    }
 }
