@@ -11,6 +11,7 @@ import java.net.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.xerces.utils.Base64;
 
 /**
  *
@@ -24,7 +25,7 @@ public class HtmlUtil {
     }
     
     public static URL[] getDirectoryListing( URL url ) throws IOException {
-        FileSystem.logger.finer("listing "+url);        
+        FileSystem.logger.finer("listing "+url);
         
         String file= url.getFile();
         if ( file.charAt(file.length()-1)!='/' ) {
@@ -34,20 +35,23 @@ public class HtmlUtil {
         ArrayList urlList= new ArrayList();
         
         long t0= System.currentTimeMillis();
-        URLConnection urlConnection = url.openConnection();        
+        URLConnection urlConnection = url.openConnection();
         urlConnection.setAllowUserInteraction(false);
         
         int contentLength=10000;
         
         //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
-        
-        InputStream urlStream = url.openStream();
+        if ( url.getUserInfo()!=null ) {
+            String encode= new String( Base64.encode(url.getUserInfo().getBytes()) );
+            urlConnection.setRequestProperty("Authorization", "Basic " + encode);
+        }
+        InputStream urlStream = urlConnection.getInputStream();
         
         // search the input stream for links
         // first, read in the entire URL
         byte b[] = new byte[10000];
         int numRead = urlStream.read(b);
-        StringBuffer contentBuffer = new StringBuffer( contentLength ); 
+        StringBuffer contentBuffer = new StringBuffer( contentLength );
         contentBuffer.append( new String( b, 0, numRead ) );
         while (numRead != -1) {
             FileSystem.logger.finest("download listing");
@@ -66,7 +70,7 @@ public class HtmlUtil {
         Pattern hrefPattern= Pattern.compile( hrefRegex );
         
         Matcher matcher= hrefPattern.matcher( content );
-                
+        
         while ( matcher.find() ) {
             FileSystem.logger.finest("parse listing");
             String strLink= matcher.group(2);
@@ -82,7 +86,7 @@ public class HtmlUtil {
             
             if ( urlLink.toString().startsWith(url.toString()) && null==urlLink.getQuery() ) {
                 urlList.add( urlLink );
-            }            
+            }
         }
         
         return (URL[]) urlList.toArray( new URL[urlList.size()] );
