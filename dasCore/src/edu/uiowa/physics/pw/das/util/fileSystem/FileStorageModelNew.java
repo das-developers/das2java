@@ -6,15 +6,17 @@
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
+import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.SubTaskMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;
-import edu.uiowa.physics.pw.das.util.TimeParser.FieldHandler;
 import java.io.File;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.*;
 
 /**
@@ -38,8 +40,11 @@ public class FileStorageModelNew {
 
     String template;
 
+    static Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
+    
     HashMap fileNameMap=null;
 
+    
     /* need to map back to TimeUtil's enums, note that we have an extra for the 2 digit year */
     private int toTimeUtilEnum( int i ) {
         if ( i<100 || i > 300 ) {
@@ -70,6 +75,9 @@ public class FileStorageModelNew {
                 throw new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+")");
             }
         } catch ( ParseException e ) {
+            IllegalArgumentException e2=new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+"), parse error in field",e);
+            throw e2;
+        } catch ( NumberFormatException e ) {
             IllegalArgumentException e2=new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+"), parse error in field",e);
             throw e2;
         }
@@ -120,7 +128,11 @@ public class FileStorageModelNew {
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                if ( getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
+                try { 
+                    if ( getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
+                } catch ( IllegalArgumentException e ) {
+                    logger.fine("ignoring file "+ff);
+                }
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
             }
         }
@@ -129,6 +141,25 @@ public class FileStorageModelNew {
         return (String[])list.toArray(new String[list.size()]);
     }
 
+    public static CacheTag getCacheTagFor( FileStorageModelNew fsm, DatumRange range, String[] names ) {
+        Datum min= range.min();
+        Datum max= range.max();
+        for ( int i=0; i<names.length; i++ ) {
+            DatumRange r= fsm.getRangeFor( names[i] );
+            min= min.gt(range.min()) ? r.min() : min;
+            max= max.lt(range.max()) ? r.max() : max;
+        }
+        return new CacheTag( min, max, null );
+    }
+    
+    public static CacheTag getCacheTagFor( FileStorageModelNew fsm, DatumRange range, File[] files ) {
+        String[] names= new String[files.length];
+        for ( int i=0; i<files.length; i++ ) {
+            names[i]= fsm.getNameFor(files[i]);
+        }
+        return getCacheTagFor( fsm, range, names );
+    }
+    
     public File[] getFilesFor( final DatumRange targetRange ) {
         return getFilesFor( targetRange, DasProgressMonitor.NULL );
     }
@@ -174,6 +205,7 @@ public class FileStorageModelNew {
         if ( fileNameMap==null ) fileNameMap= new HashMap();
 
         if ( names.length>0 ) monitor.setTaskSize( names.length * 10 );
+        monitor.started();
         for ( int i=0; i<names.length; i++ ) {
             try {
                 FileObject o= root.getFileObject( names[i] );
@@ -183,6 +215,7 @@ public class FileStorageModelNew {
                 throw new RuntimeException(e);
             }
         }
+        monitor.finished();
         return files;
     }
 
@@ -245,7 +278,7 @@ public class FileStorageModelNew {
             return new FileStorageModelNew( null, root, template, fieldName, fieldHandler );
         }
     }
-
+    
     public FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler  ) {
         this.root= root;
         this.parent= parent;
