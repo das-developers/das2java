@@ -205,8 +205,14 @@ public class GraphUtil {
             Units yunits= ds.getYUnits();
             
             DatumRange range= DataSetUtil.yRange( dsz );
-            
+            if ( range.width().doubleValue(yunits.getOffsetUnits())==0. ) {
+                range= range.include(yunits.createDatum(0));
+                if ( range.width().doubleValue(yunits.getOffsetUnits())==0. ) {
+                    range= new DatumRange( 0, 10, yunits );
+                }
+            }
             result= new DasAxis( range.min(), range.max(), DasAxis.LEFT, log );
+            
         } else {
             throw new IllegalArgumentException( "not supported: "+dsz );
         }
