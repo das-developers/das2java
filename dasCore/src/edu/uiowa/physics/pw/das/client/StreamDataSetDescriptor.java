@@ -240,8 +240,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                     throw new InterruptedIOException("Operation cancelled");
                 }
                 
-                monitor.started();
-                
                 final DasProgressMonitorInputStream mpin = new DasProgressMonitorInputStream(pin, monitor);
                 //InputStream mpin = pin;
                 
