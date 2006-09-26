@@ -38,42 +38,46 @@ import java.util.logging.Logger;
 import org.w3c.dom.*;
 
 public abstract class Renderer implements DataSetConsumer, Editable {
-    
+
     // dsd reloads ds when plot params change.
     //  private DataSetDescriptor dsd;
     String dataSetId;
-    
+
     // avoid get/set methods unless you know what you're doing.
     protected DataSet ds;
-    
+
     private DasAxis.Memento xmemento;
     private DasAxis.Memento ymemento;
-    
+
     DasPlot parent;
     DataLoader loader;
-    
+
     protected Exception lastException;
-    
+
     protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
-    
+
     protected Renderer( DataSetDescriptor dsd ) {
         // this.dsd = dsd;
         this.loader= new XAxisDataLoader( this, dsd );
     }
-    
+
     protected Renderer( DataSet ds ) {
         this.ds= ds;
         this.loader= null;
     }
-    
+
     protected Renderer() {
         this((DataSetDescriptor)null);
     }
-    
+
     public DasPlot getParent() { return this.parent; }
-    
+
+    protected void invalidateParentCacheImage() {
+        if ( parent!=null ) parent.invalidateCacheImage();
+    }
+
     public DataSet getDataSet() { return this.ds; }
-    
+
     private boolean dumpDataSet;
     /** Getter for property dumpDataSet.
      * @return Value of property dumpDataSet.
@@ -82,7 +86,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public boolean isDumpDataSet() {
         return this.dumpDataSet;
     }
-    
+
     /** Setter for property dumpDataSet.
      * @param dumpDataSet New value of property dumpDataSet.
      *
@@ -115,27 +119,28 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             this.dumpDataSet= dumpDataSet;
         }
     }
-    
+
     public void setLastException( Exception e ) {
         this.lastException= e;
     }
-    
+
     public Exception getLastException() {
         return this.lastException;
     }
-    
+
     public void setDataSet(DataSet ds) {
         logger.finer("Renderer.setDataSet: "+ds);
         this.ds= ds;
         refresh();
+        invalidateParentCacheImage();
     }
-    
+
     public void setException( Exception e ) {
         logger.finer("Renderer.setException: "+e);
         this.lastException= e;
         refresh();
     }
-    
+
     public void setDataSetID(String id) throws edu.uiowa.physics.pw.das.DasException {
         if (id == null) throw new NullPointerException("Null dataPath not allowed");
         if (id.equals("")) {
@@ -145,7 +150,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         DataSetDescriptor dsd = DataSetDescriptor.create(id);
         setDataSetDescriptor(dsd);
     }
-    
+
     public String getDataSetID() {
         if ( getDataSetDescriptor()==null ) {
             return "";
@@ -153,9 +158,9 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             return getDataSetDescriptor().getDataSetID();
         }
     }
-    
-    
-    
+
+
+
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.
@@ -174,24 +179,24 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             return at;
         }
     }
-    
+
     /** Render is called whenever the image needs to be refreshed or the content
      * has changed.  This operation should occur with an animation-interactive
      * time scale, and an image should be cached when this is not possible.
      */
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
-    
+
     protected void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
-        
+
         ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
+
         int x= xAxis.getColumn().getDMiddle();
         int y= yAxis.getRow().getDMiddle();
-        
+
         String s;
         String message;
         FontMetrics fm= g.getFontMetrics();
-        
+
         if ( e instanceof NoDataInIntervalException ) {
             s= "no data in interval";
             message= e.getMessage();
@@ -202,23 +207,23 @@ public abstract class Renderer implements DataSetConsumer, Editable {
                 s= e.toString();
             }
         }
-        
+
         if ( !message.equals("") ) {
             s+= ":!c"+message;
         }
-        
+
         GrannyTextRenderer gtr= new GrannyTextRenderer();
         gtr.setString( parent, s );
         gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
-        
+
         int width= (int)gtr.getWidth();
-        
+
         Color color0= g.getColor();
         g.setColor(Color.lightGray);
         gtr.draw(g,x-width/2,y);
         g.setColor(color0);
     }
-    
+
     /** updatePlotImage is called once the expensive operation of loading
      * the data is completed.  This operation should occur on an interactive
      * time scale.  This is an opportunity to create a cache
@@ -228,15 +233,15 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * the same state as it was when updatePlotImage was called, so use
      * the getAffineTransform method.  Only Renderer should call this method!
      */
-    protected void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
     }
-    
+
     protected void refreshImage() {
         if ( getParent()!=null ) {
             refresh();
         }
     }
-    
+
     public void update() {
         if ( getParent()!=null ) getParent().repaint();
         logger.fine("Renderer.update");
@@ -249,7 +254,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             logger.fine("update but parent was null");
         }
     }
-    
+
     /**
      * updateImmediately is called from DasPlot when it gets an update event from the
      * AWT Event thread.  This should trigger a data load and eventually a refresh to
@@ -259,17 +264,17 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         if (parent == null || !parent.isDisplayable() ) {
             return;
         }
-        
+
         // If there's a loader, then tell him he might want to load new data.
         if ( loader!=null ) {
             loader.update();
         }
-        
+
         // The parent has already used an AffineTransform to preview the image, but
         // we might as well re-render using the dataset we have.
         refresh();
     }
-    
+
     /*
      * recalculate the plot image and repaint.  The dataset or exception have
      * been updated, or the axes have changed, so we need to perform updatePlotImage
@@ -285,9 +290,9 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             logger.fine("parent not displayable");
             return;
         }
-                
+
         final DasProgressMonitor progressPanel= DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage" );
-                
+
         Runnable run= new Runnable() {
             public void run() {
                 logger.fine("update plot image");
@@ -309,22 +314,22 @@ public abstract class Renderer implements DataSetConsumer, Editable {
                         progressPanel.finished();
                     }
                 }
-                
+
                 logger.fine("invalidate parent cacheImage and repaint");
-                
+
                 parent.invalidateCacheImage();
                 parent.repaint();
             }
         };
-        
+
         //if ( EventQueue.isDispatchThread() ) {
         //    new Thread( run, "updatePlotImage" ).start();
         //} else {
             run.run();
         //}
     }
-    
-    
+
+
     public void setDataSetDescriptor(DataSetDescriptor dsd) {
         if ( loader==null ) {
             logger.warning("installing loader--danger!");
@@ -340,18 +345,18 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         } else {
             throw new RuntimeException("loader is not based on DataSetDescriptor");
         }
-        
+
     }
-    
+
     public DataLoader getDataLoader() {
         return this.loader;
     }
-    
+
     public void setDataSetLoader( DataLoader loader ) {
         this.loader= loader;
         if ( loader!=null ) loader.update();
     }
-    
+
     public DataSetDescriptor getDataSetDescriptor() {
         if ( loader==null ) {
             return null;
@@ -363,15 +368,15 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             }
         }
     }
-    
+
     protected abstract void installRenderer();
-    
+
     protected abstract void uninstallRenderer();
-    
+
     protected abstract Element getDOMElement( Document document );
-    
+
     private boolean overloading=false;
-    
+
     public boolean isOverloading() {
         return this.overloading;
     }
@@ -379,12 +384,12 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         this.overloading = overloading;
         update();
     }
-    
+
     /**
      * Holds value of property active.
      */
     private boolean active= true;
-    
+
     /**
      * Getter for property active.
      * @return Value of property active.
@@ -392,7 +397,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public boolean isActive() {
         return this.active;
     }
-    
+
     /**
      * Setter for property active.
      * @param active New value of property active.
