@@ -105,20 +105,26 @@ public class FTPFileSystem extends WebFileSystem {
     }
     
     void downloadFile(String filename, java.io.File f, DasProgressMonitor monitor ) throws java.io.IOException {
-        filename= toCanonicalFilename( filename );
-        URL url= new URL( root + filename.substring(1) );
-        URLConnection urlc = url.openConnection();
-        monitor.setTaskSize( urlc.getContentLength() );
-        FileOutputStream out= new FileOutputStream( f );
-        InputStream is = urlc.getInputStream(); // To download
+        FileOutputStream out=null;
+        InputStream is= null;
         try {
+            filename= toCanonicalFilename( filename );
+            URL url= new URL( root + filename.substring(1) );
+            
+            URLConnection urlc = url.openConnection();
+            
+            int i= urlc.getContentLength();
+            monitor.setTaskSize( i );
+            out= new FileOutputStream( f );
+            is = urlc.getInputStream(); // To download
+            
             copyStream(is, out, monitor );
             monitor.finished();
             out.close();
             is.close();
         } catch ( IOException e ) {
-            out.close();
-            is.close();
+            if ( out!=null ) out.close();
+            if ( is!=null ) is.close();
             f.delete();
             throw e;
         }
