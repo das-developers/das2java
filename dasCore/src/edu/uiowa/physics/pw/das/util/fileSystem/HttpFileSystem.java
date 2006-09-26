@@ -9,7 +9,6 @@
  */
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
-import edu.uiowa.physics.pw.das.CancelledOperationException;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.fileSystem.FileSystem.FileSystemOfflineException;
@@ -17,6 +16,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
+import org.apache.xerces.utils.Base64;
 
 
 /**
@@ -34,6 +34,8 @@ public class HttpFileSystem extends WebFileSystem {
      */
     private HashMap downloads= new HashMap();
     
+    private String userPass;
+    
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URL root, File localRoot) {
         super( root, localRoot );
@@ -46,9 +48,13 @@ public class HttpFileSystem extends WebFileSystem {
             return (HttpFileSystem)instances.get(root);
         } else {
             try {
-                // verify URL is valid an accessible
+                // verify URL is valid and accessible
                 HttpURLConnection urlc= (HttpURLConnection)root.openConnection();
                 urlc.setRequestMethod("HEAD");
+                if ( root.getUserInfo()!=null ) {
+                    String encode= new String( Base64.encode(root.getUserInfo().getBytes()) );
+                    urlc.setRequestProperty("Authorization", "Basic " + encode);
+                }
                 urlc.connect();
                 if ( urlc.getResponseCode()!=HttpURLConnection.HTTP_OK ) {
                     throw new FileSystemOfflineException( "" + urlc.getResponseCode() + ": " + urlc.getResponseMessage() );
@@ -98,6 +104,10 @@ public class HttpFileSystem extends WebFileSystem {
             URL remoteURL= new URL( root.toString()+filename );
             
             URLConnection urlc = remoteURL.openConnection();
+            if ( root.getUserInfo()!=null ) {
+                String encode= new String( Base64.encode(root.getUserInfo().getBytes()) );
+                urlc.setRequestProperty("Authorization", "Basic " + encode);
+            }
             
             HttpURLConnection hurlc= (HttpURLConnection)urlc;
             if ( hurlc.getResponseCode()!=200 ) {
