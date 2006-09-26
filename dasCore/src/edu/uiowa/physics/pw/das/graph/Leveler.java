@@ -13,10 +13,9 @@
 // overlapping.
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import java.util.ArrayList;
-import javax.swing.*;
+import java.util.Collections;
+import java.util.List;
 
 public class Leveler {
     
@@ -94,6 +93,15 @@ public class Leveler {
         interMargin= 0.03;
     }
     
+    public double getWeight( DasRow row ) {
+        int index= rows.indexOf(row);
+        return ((Double)this.weights.get(index)).doubleValue();
+    }
+    
+    public double getPosition( DasRow row ) {
+        return row.getMaximum();
+    }
+    
     public DasRow addRow( double nposition, double weight ) {
         LevelRow r= new LevelRow( parent, this, nposition, weight );
         return r;
@@ -134,15 +142,17 @@ public class Leveler {
     
     void insertAt( double nposition, DasDevicePosition row, double weight ) {
         int i;
-        if ( nposition==0 ) {
-            i=0;
-        } else if ( nposition==1.0 ) {
-            i=rows.size();
-        } else {
-            throw new IllegalArgumentException( "nposition must be 0.0 or 1.0" );
+        double [] tops= new double[rows.size()];
+        for ( i=0; i<rows.size(); i++ ) {
+            if ( ((DasRow)rows.get(i)).getMaximum() >= nposition ) {
+                break;
+            }
         }
         rows.add(i,row);
         weights.add(i,new Double(weight));
+        for ( int ii=0; ii<rows.size(); ii++ ) {
+            ((DasRow)rows.get(ii)).fireUpdate();
+        }
     }
         
     /*
@@ -329,6 +339,13 @@ public class Leveler {
         }
         result+= "-------------\n";
         return result;
+    }
+
+    /**
+     * returns a copy of the List of the Row objects.
+     */
+    public List getRows() {
+        return new ArrayList(this.rows);
     }
     
  
