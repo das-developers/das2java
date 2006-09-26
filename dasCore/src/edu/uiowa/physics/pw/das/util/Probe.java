@@ -118,7 +118,7 @@ public class Probe {
             plot.addRenderer(renderer);
             
             if ( underplotAgent==null ) {
-                DasRow row= leveler.getRow(0.);
+                DasRow row= leveler.addRow(0.);
                 canvas.add( plot, row, column );                
             } else {
                 underplotAgent.addToLegend(this);
