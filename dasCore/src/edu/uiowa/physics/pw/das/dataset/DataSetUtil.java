@@ -28,10 +28,29 @@ public class DataSetUtil {
             return new CacheTag( start, end, resolution );
         }
     }
-                
+    
     public static DatumRange xRange( DataSet ds ) {
         int n=ds.getXLength();
         return new DatumRange( ds.getXTagDatum(0), ds.getXTagDatum(n-1) );
+    }
+    
+    private static DatumRange yRangeTDS( TableDataSet ds ) {
+        DatumRange result=null;
+        if ( ds.tableCount()==0 ) {
+            return new DatumRange(0,10,ds.getYUnits());
+        } else {
+            for ( int i=0; i<ds.tableCount(); i++ ) {
+                int n= ds.getYLength(i);
+                DatumRange d= new DatumRange( ds.getYTagDatum(i,0), ds.getYTagDatum(i,n-1) );
+                
+                if ( result==null ) {
+                    result= d;
+                } else {
+                    result= result.include( d.min() ).include( d.max() );
+                }
+            }
+            return result;
+        }
     }
     
     public static DatumRange yRange( DataSet ds ) {
@@ -51,24 +70,30 @@ public class DataSetUtil {
                     }
                 }
             }
-            if ( min==null ) { 
+            if ( min==null ) {
                 result= new DatumRange(0,10,ds.getYUnits());
             } else {
                 result= new DatumRange( min, max );
             }
             return result;
         } else if ( ds instanceof TableDataSet ) {
-            TableDataSet tds= ( TableDataSet ) ds;
-            int n=tds.getYLength(0);
-            return new DatumRange( tds.getYTagDatum(0,0), tds.getYTagDatum(0,n-1) );
+            
+            return yRangeTDS( ( TableDataSet ) ds );
+            
         } else throw new IllegalArgumentException("unsupported: "+ds);
     }
     
+    /**
+     * @depricated use GraphUtil.visualize( ds );
+     */
     public static DasPlot visualize( DataSet ds ) {
-        return GraphUtil.visualize( ds );        
+        return GraphUtil.visualize( ds );
     }
     
-    public static DasPlot visualize( DataSet ds, boolean ylog ) {    
+    /**
+     * @depricated use GraphUtil.visualize( ds, ylog );
+     */
+    public static DasPlot visualize( DataSet ds, boolean ylog ) {
         return GraphUtil.visualize( ds, ylog );
     }
     
