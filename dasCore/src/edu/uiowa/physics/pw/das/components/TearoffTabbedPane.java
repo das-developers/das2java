@@ -195,7 +195,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         int index= td.index;
         super.removeTabAt(index);
         super.insertTab( td.title, td.icon, c, td.tip, index );
-        setSelectedIndex( index );
+       // setSelectedIndex( index );
     }
     
     public void addTab(String title, Icon icon, Component component) {
