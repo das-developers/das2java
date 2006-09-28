@@ -726,7 +726,7 @@ public class DatumRangeUtil {
 
         String timeString;
 
-        int stopRes= 3;
+        int stopRes= 4;
         if ( TimeUtil.getSecondsSinceMidnight(time)==0. && time.equals(context.max()) ) {
             ts.hour=24;
             ts.day--;
