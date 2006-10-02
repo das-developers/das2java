@@ -191,12 +191,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             int choice = JOptionPane.showOptionDialog(currentCanvas, pngFileNamePanel,
                     "Write to PNG", 0, JOptionPane.QUESTION_MESSAGE, null, options, "Ok");
             if (choice == 0) {
-                DasCanvas canvas = currentCanvas;
-                try {
-                    canvas.writeToPng(pngFileTextField.getText());
-                } catch (java.io.IOException ioe) {
-                    edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
-                }
+                final DasCanvas canvas = currentCanvas;
+                Runnable run= new Runnable() {
+                    public void run() {
+                        try {
+                            canvas.writeToPng(pngFileTextField.getText());
+                        } catch (java.io.IOException ioe) {
+                            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                        }
+                    }
+                };
+                new Thread( run, "writeToPng" ).start();
             }
         }
     };
@@ -756,7 +761,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             DasExceptionHandler.handleUncaught(iae);
         }
     }
-
+    
     /**
      * Blocks the caller's thread until all events have been dispatched from the awt event thread, and
      * then waits for the RequestProcessor to finish all tasks with this canvas as the lock object.
