@@ -25,9 +25,19 @@ public class GrannyTickLabeller implements TickLabeller {
         this.parent= parent;
     }
     
+    /**
+     * sets the ticks and DatumFormatter before drawing.
+     */
     public void init(TickVDescriptor ticks) {
-        this.ticks= ticks;        
-        this.df= DatumUtil.bestFormatter( ticks.getMajorTicks() );
+        this.ticks= ticks;
+        this.df= ticks.getFormatter();
+    }
+    
+    /**
+     * override the formatter in the TickVDescriptor.
+     */
+    public void setFormatter( DatumFormatter df ) {
+        this.df= df;
     }
     
     private double length(Line2D line) {
