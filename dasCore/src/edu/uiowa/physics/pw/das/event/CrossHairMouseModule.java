@@ -32,8 +32,9 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
  */
 public class CrossHairMouseModule extends MouseModule {
     
-    DasAxis xaxis;
-    DasAxis yaxis;
+    private DasAxis xaxis;
+    private DasAxis yaxis;
+    private DasPlot plot;
     
     protected DataPointSelectionEvent de;
     
@@ -48,6 +49,7 @@ public class CrossHairMouseModule extends MouseModule {
     
     public CrossHairMouseModule( DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
         super(parent,new CrossHairRenderer(parent,dataSetConsumer,xAxis,yAxis),"Crosshair Digitizer");
+        this.plot= parent;
         this.dataSetConsumer= dataSetConsumer;
         this.xaxis= xAxis;
         this.yaxis= yAxis;
@@ -55,14 +57,17 @@ public class CrossHairMouseModule extends MouseModule {
     }
     
     public static CrossHairMouseModule create( DasPlot parent ) {
-        DasAxis xaxis= parent.getXAxis();
-        DasAxis yaxis= parent.getYAxis();
-        return new CrossHairMouseModule(parent,xaxis,yaxis);
+        DasAxis xaxis= null;
+        DasAxis yaxis= null;
+        return new CrossHairMouseModule(parent,parent,xaxis,yaxis);
     }
     
     protected DataPointSelectionEvent getDataPointSelectionEvent(MousePointSelectionEvent e) {
         de.setDataSet(dataSetConsumer.getDataSet());
-        de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
+        DasAxis xa, ya;
+        xa= ( this.xaxis==null ) ? plot.getXAxis() : xaxis;
+        ya= ( this.yaxis==null ) ? plot.getYAxis() : yaxis;
+        de.set(xa.invTransform(e.getX()),ya.invTransform(e.getY()));
         return de;
     }
     
