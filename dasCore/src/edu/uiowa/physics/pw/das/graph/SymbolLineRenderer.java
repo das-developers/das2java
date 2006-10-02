@@ -365,8 +365,6 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
         DasPlot p= parent;
         mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
-        
-        mouseAdapter.addMouseModule( new BoxZoomMouseModule( p, this, p.getXAxis(), p.getYAxis() ) );
     }
     
     protected void uninstallRenderer() {
