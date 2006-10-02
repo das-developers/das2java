@@ -21,8 +21,10 @@ public class TimerConsoleFormatter extends Formatter {
     String lastLoggerName;
     
     public String format( LogRecord rec ) {
+        String resetMessage= "firing data point selection event";
         StackTraceElement[] st= new Throwable().getStackTrace();
-        if ( lastLoggerName==null || lastLoggerName!=rec.getLoggerName() ) {
+        //if ( lastLoggerName==null || lastLoggerName!=rec.getLoggerName() ) {
+        if ( rec.getMessage().contains(resetMessage)) {
             lastLoggerName= rec.getLoggerName();
             t0=System.currentTimeMillis();
         }
