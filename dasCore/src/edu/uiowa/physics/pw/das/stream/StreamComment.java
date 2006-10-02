@@ -37,6 +37,7 @@ public class StreamComment {
     Element element;
     
     public final String TYPE_TASK_PROGRESS="taskProgress";
+    public final String TYPE_LOG="log:(.*)";
     
     public StreamComment( Element element ) {
         this.element= element;
