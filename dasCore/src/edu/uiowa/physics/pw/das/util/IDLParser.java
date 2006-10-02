@@ -211,6 +211,12 @@ public class IDLParser {
                 expr1 = parseIDLArrayTokens(expr, EXPR);
                 expr1 = IDLValue.alog10(expr1);
             }
+            else if ( tokens[0].equalsIgnoreCase("sin")) {
+                String [] expr = new String[tokens.length - 3];
+                for (int i = 0; i < expr.length; i++) expr[i] = tokens[i+2];
+                expr1 = parseIDLArrayTokens(expr, EXPR);
+                expr1 = IDLValue.sin(expr1);
+            }
             else {
                 
                 return null;

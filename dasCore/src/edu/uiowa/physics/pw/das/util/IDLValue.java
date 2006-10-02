@@ -37,12 +37,12 @@ public class IDLValue {
     IDLValue() {
     }
     
-    IDLValue(double a) {
+    public IDLValue(double a) {
         sValue= a;
         type= SCALAR;
     }
     
-    IDLValue(double[] a) {
+    public IDLValue(double[] a) {
         aValue= a;
         type= ARRAY;
     }
@@ -214,5 +214,20 @@ public class IDLValue {
         }
     }
     
+    public static IDLValue sin(IDLValue x) {
+        if (x.type == IDLValue.SCALAR) {
+            return new IDLValue(Math.sin(x.sValue));
+        }
+        else if (x.type == IDLValue.ARRAY) {
+            double[] aValue = new double[x.aValue.length];
+            for (int index = 0; index < x.aValue.length; index++) {
+                aValue[index] = Math.sin(x.aValue[index]);
+            }
+            return new IDLValue(aValue);
+        }
+        else {
+            throw new AssertionError("Unrecognized IDLValue type: " + x.type);
+        }
+    }
 }
 
