@@ -196,7 +196,7 @@ public class GraphUtil {
             
             DatumRange yrange= DataSetUtil.yRange(dsz);
             Datum dy= TableUtil.guessYTagWidth( ds );
-            if ( dy.getUnits().isConvertableTo( Units.logERatio ) ) log=true;
+            if ( dy.getUnits()!=Units.dimensionless && dy.getUnits().isConvertableTo( Units.logERatio ) ) log=true;
             
             result= new DasAxis( yrange.min(), yrange.max(), DasAxis.LEFT, log );
             
