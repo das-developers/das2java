@@ -11,6 +11,7 @@ import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
@@ -32,6 +33,7 @@ public class PolynomialDataSetDescriptor extends DataSetDescriptor {
     private double[] c;
     private double minDx;
     private double xOffset;
+    private double ymin=Double.NEGATIVE_INFINITY; // hack to limit size of datasets
     
     /** Creates a new instance of PolynomialDataSetDescriptor */
     public PolynomialDataSetDescriptor(double[] c, Units xUnits, Units yUnits, Datum resolution) {
@@ -46,6 +48,13 @@ public class PolynomialDataSetDescriptor extends DataSetDescriptor {
         this(c, xUnits, yUnits, resolution);
         this.xOffset = xOffset.doubleValue(xUnits);
     }
+    
+    /**
+     * limit the range of the calculated function to here.
+     */
+    public void setYMin( Datum ymin ) {
+        this.ymin= ymin.doubleValue(yUnits);
+    }
 
     protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor dasProgressMonitor) throws DasException {
         double x0 = start.doubleValue(xUnits) - xOffset;
@@ -56,10 +65,10 @@ public class PolynomialDataSetDescriptor extends DataSetDescriptor {
         
         double x = x0;
         for (int i = 0; x < x1; i++, x=x0+i*dx) {
-            builder.insertY(x, eval(x));
+            double y= eval(x);
+            if ( y>ymin ) builder.insertY(x, eval(x));
         }
-        builder.insertY(x1, eval(x1));
-        
+        if ( eval(x1)>ymin ) builder.insertY(x1, eval(x1));
         return builder.toVectorDataSet();
     }
     
