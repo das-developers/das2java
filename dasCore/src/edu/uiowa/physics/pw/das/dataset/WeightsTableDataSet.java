@@ -44,7 +44,7 @@ public class WeightsTableDataSet implements TableDataSet {
     }
 
     public double getDouble(int i, int j, edu.uiowa.physics.pw.das.datum.Units units) {        
-        return ( source.getDouble( i, j, sourceUnits ) != fill ) ? 1.0 : 0.0;
+        return ( sourceUnits.isFill(source.getDouble( i, j, sourceUnits )) ) ? 0.0 : 1.0;
     }
 
     public double[] getDoubleScan(int i, edu.uiowa.physics.pw.das.datum.Units units) {
