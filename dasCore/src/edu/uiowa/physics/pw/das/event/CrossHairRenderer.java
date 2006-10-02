@@ -163,8 +163,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         
         if (crossHairLocation==null) {
             
-            Datum x= XAxis.invTransform(p2.x+parent.getX());
-            Datum y= YAxis.invTransform(p2.y+parent.getY());
+            DasAxis xa, ya;
+            xa= ( this.XAxis==null ) ? parent.getXAxis() : XAxis;
+            ya= ( this.YAxis==null ) ? parent.getYAxis() : YAxis;
+            
+            Datum x= xa.invTransform(p2.x+parent.getX());
+            Datum y= ya.invTransform(p2.y+parent.getY());
             
             nfy= y.getFormatter();
             
