@@ -957,8 +957,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
     
     public void setBaseFont( Font font ) {
+        Font oldFont= getFont();
         this.baseFont= font;
         setFont( getFontForSize( getWidth(), getHeight() ) );
+        firePropertyChange("font",oldFont,getFont());
         repaint();
     }
     
