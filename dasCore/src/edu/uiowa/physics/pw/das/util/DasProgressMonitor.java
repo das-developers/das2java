@@ -52,6 +52,7 @@ public interface DasProgressMonitor {
         public void setTaskSize(long taskSize) {} ;
         public long getTaskSize( ) { return 1; }
         public void setTaskProgress(long position) throws IllegalArgumentException {};
+        public void setProgressMessage( String message ) {} ;
         public long getTaskProgress() { return 0; };
         public void started() {};
         public void finished() {};
@@ -77,6 +78,14 @@ public interface DasProgressMonitor {
      */
     void setTaskProgress(long position) throws IllegalArgumentException;
     
+    /**
+     * Provides additional feedback as to what's going on in the process. 
+     * This message should be set by the service provider, not the client,
+     * and refer to the implementation of the task.  e.g. "Reading file myData.dat"
+     * @param message the message describing the state of progress.
+     */
+    void setProgressMessage( String message );
+    
     /** Returns the current progress of the monitored task.
      * @return the current progress of the monitored task.
      */
@@ -85,8 +94,9 @@ public interface DasProgressMonitor {
     /**
      * Set a consise string that describes the task being performed.  Monitors
      * don't necessarily need to display this label, and this request may be
-     * ignored.  It is only provided so a process can provide more information
-     * about what's happening.
+     * ignored.  It is only provided so a process can describe the task that
+     * is going on.  This is usually set by the client of the process to indicate
+     * what service we are waiting for.  e.g. "Loading Data"
      */
     public void setLabel( String label );
     
@@ -126,7 +136,10 @@ public interface DasProgressMonitor {
      */
     boolean isCancelled();
     
-    /** additional information to be displayed alongside the progress. */
+    /** additional information to be displayed alongside the progress.  That
+     * might be of interest.
+     * "85 of 100 (50KB/s)"
+     */
     public void setAdditionalInfo(String s);
     
 }
