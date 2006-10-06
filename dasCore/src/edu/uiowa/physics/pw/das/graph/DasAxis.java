@@ -167,9 +167,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param min
      * @param max
-     * @param row
-     * @param column
-     * @param orientation
+     * @param orientation DasAxis.VERTICAL, DasAxis.HORIZONTAL, DasAxis.RIGHT, etc.
      */
     public DasAxis( Datum min, Datum max, int orientation ) {
         this(min, max, orientation, false);
@@ -178,8 +176,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param min
      * @param max
-     * @param row
-     * @param column
      * @param orientation
      * @param log
      */
@@ -197,8 +193,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** TODO
      * @param range
-     * @param row
-     * @param column
      * @param orientation
      */
     protected DasAxis(DataRange range, int orientation) {
