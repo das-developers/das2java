@@ -153,11 +153,7 @@ public class DasColorBar extends DasAxis {
     }
     
     public static DasColumn getColorBarColumn(DasColumn column) {
-        return new AttachedColumn(column,1.05,1.10);
-        /*    double xmin= column.getMinimum();
-        double nsize= column.getMaximum() - column.getMinimum();
-        DasColumn result= new DasColumn(column.parent,xmin+nsize*1.01,xmin+nsize*1.05);
-        return result; */
+        return column.createAttachedColumn(1.05,1.10);
     }
     
     /** Process a <code>&lt;colorbar&gt;</code> element.
