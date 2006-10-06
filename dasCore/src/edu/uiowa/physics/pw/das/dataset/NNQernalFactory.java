@@ -11,6 +11,7 @@ package edu.uiowa.physics.pw.das.dataset;
 import edu.uiowa.physics.pw.das.dataset.QernalTableRebinner.Qernal;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.UnitsUtil;
 import edu.uiowa.physics.pw.das.util.DasMath;
 
 /**
@@ -74,7 +75,7 @@ public class NNQernalFactory implements QernalTableRebinner.QernalFactory {
         int dx0= i/2;
         int dx1= i/2;
         int dy0,dy1;
-        if ( yTagWidth.getUnits()!=Units.dimensionless && yTagWidth.getUnits().isConvertableTo( Units.log10Ratio ) ) {
+        if ( UnitsUtil.isRatiometric(yTagWidth.getUnits()) ) {
             if (!ddy.isLog() ) throw new IllegalArgumentException("need log axis");
             d= ddy.binCenter(0);
             double f= yTagWidth.doubleValue( Units.log10Ratio );

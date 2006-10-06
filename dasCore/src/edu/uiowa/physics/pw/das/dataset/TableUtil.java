@@ -251,7 +251,7 @@ public class TableUtil {
             DataTransferType xTransferType;
             
             if ( asciiTransferTypes ) {
-                if ( tds.getXUnits().isConvertableTo(Units.us2000) ) {
+                if ( UnitsUtil.isTimeLocation(tds.getXUnits()) ) {
                     xTransferType= DataTransferType.getByName("time24");                  
                 } else {
                     xTransferType= DataTransferType.getByName("ascii24");

@@ -73,7 +73,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
                             for ( int j=0; j<jmap[itable].length; j++ ) {
                                 jmap[itable][j]= TableUtil.closestRow(source,itable,yy[j], ddY.getUnits());
                                 Units yunits= yTagWidth.getUnits();
-                                if ( yunits!=Units.dimensionless && yunits.isConvertableTo( Units.logERatio ) ) {
+                                if ( UnitsUtil.isRatiometric(yunits) ) {
                                     double yclose= source.getYTagDouble(itable, jmap[itable][j], ddY.getUnits() );
                                     if ( Math.abs( Math.log( yy[j] / yclose ) ) > yTagWidth.doubleValue(Units.logERatio) ) jmap[itable][j]=-1;
                                 } else {

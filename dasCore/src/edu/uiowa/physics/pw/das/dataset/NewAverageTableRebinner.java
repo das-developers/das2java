@@ -364,7 +364,7 @@ public class NewAverageTableRebinner implements DataSetRebinner {
                 ySampleWidth[j]= d;
             }
         } else {
-            if ( yTagWidth.getUnits().isConvertableTo(Units.percentIncrease) ) {
+            if ( UnitsUtil.isRatiometric( yTagWidth.getUnits() ) ) {
                 double perc= yTagWidth.doubleValue(Units.percentIncrease);
                 for ( int j=0; j<ny; j++ ) {
                     ySampleWidth[j]= yTags[j] * perc / 100 * fudge;

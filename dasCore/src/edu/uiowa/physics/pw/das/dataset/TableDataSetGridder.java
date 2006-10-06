@@ -10,6 +10,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.UnitsUtil;
 import edu.uiowa.physics.pw.das.util.DasMath;
 
 /**
@@ -29,7 +30,7 @@ public class TableDataSetGridder {
         Units units= tds.getYUnits();
         double[] ytag= new double[ tds.getYLength(itable) -1 ] ;
         
-        if ( !error.getUnits().isConvertableTo( Units.logERatio ) ) throw new IllegalArgumentException("error units must be ratiometric");
+        if ( ! UnitsUtil.isRatiometric(error.getUnits()) ) throw new IllegalArgumentException("error units must be ratiometric");
         for ( int i=0; i<ytag.length; i++ ) ytag[i]= Math.log( tds.getYTagDouble( itable, i+1, units ) / tds.getYTagDouble( itable, i, units ) );        
         double gcd= DasMath.gcd( ytag, error.doubleValue( Units.logERatio ) );
         return Units.logERatio.createDatum(gcd);
