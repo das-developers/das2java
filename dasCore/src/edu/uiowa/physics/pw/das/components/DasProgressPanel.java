@@ -46,7 +46,13 @@ public class DasProgressPanel implements DasProgressMonitor {
     private long maximumTaskPosition;
     private DecimalFormat transferRateFormat;
     private String transferRateString;
-    private JLabel messageLabel;
+    private JLabel taskLabel;
+    private boolean labelDirty= false;
+    
+    private JLabel progressMessageLabel;
+    private String progressMessageString;
+    private boolean progressMessageDirty= false;
+    
     private JLabel kbLabel;
     private JProgressBar progressBar;
     private JFrame jframe;  // created when createFramed() is used.
@@ -166,8 +172,8 @@ public class DasProgressPanel implements DasProgressMonitor {
     }
     
     public void setLabel(String label) {
-        messageLabel.setText(label);
         this.label = label;
+        this.labelDirty= true;
         thePanel.repaint();
     }
     
@@ -176,19 +182,34 @@ public class DasProgressPanel implements DasProgressMonitor {
     }
     
     private void initComponents() {
-        
+        // get a stack trace so we can see what caused this.
         if (useDetails) consumer= new Exception();
         
         createComponentCount++;
         //System.err.println("createComponentCount="+createComponentCount );
         JPanel mainPanel, buttonPanel;
         
-        messageLabel = new JLabel();
-        messageLabel.setOpaque(false);
-        messageLabel.setFont(new Font("Dialog", 1, 18));
-        messageLabel.setHorizontalAlignment(JLabel.CENTER);
-        messageLabel.setText(label);
-        messageLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        taskLabel = new JLabel();
+        taskLabel.setOpaque(false);
+        taskLabel.setFont(new Font("Dialog", 1, 18));
+        taskLabel.setHorizontalAlignment(JLabel.CENTER);
+        taskLabel.setText(label);
+        taskLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        
+        progressMessageLabel= new JLabel() {
+            public void paint( Graphics g ) {
+                ((java.awt.Graphics2D) g).setRenderingHint(
+                        java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
+                        java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+                        );
+                super.paint(g);
+            }
+        };
+        progressMessageLabel.setOpaque(false);
+        progressMessageLabel.setFont(new Font("Dialog", 1, 8));
+        progressMessageLabel.setHorizontalAlignment(JLabel.CENTER);
+        progressMessageLabel.setText(" ");
+        progressMessageLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         
         progressBar = new JProgressBar();
         progressBar.setOpaque(false);
@@ -209,7 +230,8 @@ public class DasProgressPanel implements DasProgressMonitor {
         mainPanel = new JPanel();
         mainPanel.setOpaque(false);
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.add(messageLabel);
+        mainPanel.add(taskLabel);
+        mainPanel.add(progressMessageLabel);
         mainPanel.add(progressBar);
         mainPanel.add(kbLabel);
         
@@ -361,6 +383,20 @@ public class DasProgressPanel implements DasProgressMonitor {
             bytesReadLabel= "" + kb + "";
         }
         
+        if ( progressMessageDirty ) {
+            if ( progressMessageString.length()>33 ) {
+                int n= progressMessageString.length();
+                progressMessageString= progressMessageString.substring(0,10)+"..."+progressMessageString.substring(n-22,n);
+            }
+            progressMessageLabel.setText(progressMessageString);
+            progressMessageDirty=false;
+        }
+        
+        if ( labelDirty ) {
+            taskLabel.setText(label);
+            labelDirty= false;
+        }
+        
         if ( showProgressRate && elapsedTimeMs > 1000 && transferRateString!=null ) {
             double transferRate = ((double)currentTaskPosition * 1000) / ( elapsedTimeMs );
             kbLabel.setText(bytesReadLabel+" "+transferRateString );
@@ -471,6 +507,11 @@ public class DasProgressPanel implements DasProgressMonitor {
         } else {
             return "waiting for start";
         }
+    }
+    
+    public void setProgressMessage(String message) {
+        this.progressMessageString= message;
+        this.progressMessageDirty= true;
     }
     
     
