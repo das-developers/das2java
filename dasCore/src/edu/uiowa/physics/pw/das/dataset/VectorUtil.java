@@ -171,7 +171,7 @@ public class VectorUtil {
             DataTransferType yTransferType;
             
             if ( asciiTransferTypes ) {
-                if ( vds.getXUnits().isConvertableTo(Units.us2000) ) {
+                if ( UnitsUtil.isTimeLocation(vds.getXUnits()) ) {
                     xTransferType= DataTransferType.getByName("time24");
                 } else {
                     xTransferType= DataTransferType.getByName("ascii10");
