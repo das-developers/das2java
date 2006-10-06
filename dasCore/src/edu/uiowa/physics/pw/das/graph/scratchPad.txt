@@ -1,0 +1,6 @@
+2006-10-4 jbf
+   For purposes of consistency, we define an "em" as being the contextual font's size, as in
+   Graphics2D g;
+   int em = g.getFont().getSize();
+
+
