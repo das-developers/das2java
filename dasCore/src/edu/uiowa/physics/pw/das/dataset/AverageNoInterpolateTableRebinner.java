@@ -13,6 +13,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.datum.UnitsUtil;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasMath;
 import java.util.ArrayList;
@@ -77,7 +78,7 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
     
     private static DatumRange[] getYTagRanges( TableDataSet ds, int itable ) {
         Datum tagWidth= TableUtil.guessYTagWidth(ds, itable).divide(2);
-        boolean isLog= tagWidth.getUnits().isConvertableTo(Units.log10Ratio);
+        boolean isLog= UnitsUtil.isRatiometric(tagWidth.getUnits());
         if ( isLog ) return getLogYTagRanges( ds, itable );
         DatumRange[] result= new DatumRange[ ds.getYLength(itable) ];
         for ( int i=0; i<result.length; i++ ) {
