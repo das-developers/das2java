@@ -53,7 +53,8 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         } else {
             if ((value instanceof Double) || (value instanceof Float)) {
                 double doubleValue = ((Number)value).doubleValue();
-                if (doubleValue < 0.0001 || doubleValue >= 10000.0) {
+                double mag= Math.abs(doubleValue);
+                if ( doubleValue!=0.0 && mag < 0.0001 || mag >= 10000.0) {
                     value = expFormat.format(doubleValue);
                 }
             }
