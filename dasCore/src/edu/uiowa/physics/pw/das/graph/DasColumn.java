@@ -35,54 +35,21 @@ import org.w3c.dom.Element;
 public class DasColumn extends DasDevicePosition {
 
     public DasColumn(DasCanvas parent, double left, double right) {
-        super(parent,left,right);
+        super(parent,left,right,true);
     }
     
-    static final class NullDasColumn extends DasColumn {
-        private NullDasColumn() {
-            super( null,0,0);
-        }
-        public int getDMinimum() {
-            throw new RuntimeException("null column, column was not set before layout");
-        }
-        public int getDMaximum() {
-            throw new RuntimeException("null column, column was not set before layout");
-        }        
+    public DasColumn( DasCanvas canvas, DasColumn parent, double nMin, double nMax, 
+            double emMin, double emMax, int ptMin, int ptMax ) {
+        super( canvas, true, parent, nMin, nMax, emMin, emMax, ptMin, ptMax );
+    }
         
-        public void addPropertyChangeListener(String propertyName, java.beans.PropertyChangeListener listener) {
-            throw new RuntimeException( "NULL.addPropertyChangeListener" );
-        }
-        
-        public void removePropertyChangeListener(String propertyName, java.beans.PropertyChangeListener listener) {
-            throw new RuntimeException( "NULL.removePropertyChangeListener" );
-        }
-        
-        public void addpwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
-            throw new RuntimeException( "NULL.addpwUpdateListener" );
-        }
-        
-        public void removepwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
-            throw new RuntimeException( "NULL.removepwUpdateListener" );
-        }
-                
-        protected void fireUpdate() {
-            throw new RuntimeException( "NULL.fireUpdate" );
-        }
-        
-    }    
-    
-    public static final DasColumn NULL= new NullDasColumn();
+    public static final DasColumn NULL= new DasColumn(null,null,0,0,0,0,0,0);
     
     public DasColumn createSubColumn( double pleft, double pright ) {
         double left= getMinimum();
         double right= getMaximum();
         double delta= right-left;
-        return new DasColumn(this.parent,left+pleft*delta,left+pright*delta);
-    }
-    
-    protected int getDeviceSize()
-    {
-        return parent.getWidth();
+        return new DasColumn(getCanvas(),left+pleft*delta,left+pright*delta);
     }
     
     public int getWidth() {
@@ -100,7 +67,7 @@ public class DasColumn extends DasDevicePosition {
     }
     
     public DasColumn createAttachedColumn(double pleft, double pright) {
-        return new AttachedColumn(this,pleft,pright);
+        return new DasColumn(null,this,pleft,pright,0,0,0,0);
     }
     
     /** Process a <code>&lt;column7gt;</code> element.

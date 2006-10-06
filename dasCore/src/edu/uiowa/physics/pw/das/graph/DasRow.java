@@ -34,54 +34,22 @@ import org.w3c.dom.Element;
  */
 public class DasRow extends DasDevicePosition {
     
-    public DasRow(DasCanvas parent, double top, double bottom) {
-        super(parent,top,bottom);
+    public DasRow( DasCanvas parent, double top, double bottom) {
+        super(parent,top,bottom,false );
     }
     
-    static class NullDasRow extends DasRow {
-        public NullDasRow() {
-            super(null, 0,0);
-        }
-        public int getDMinimum() {
-            throw new RuntimeException("null row, row was not set before layout");
-        }
-        public int getDMaximum() {
-            throw new RuntimeException("null row, row was not set before layout");
-        }
-        
-        public void addPropertyChangeListener(String propertyName, java.beans.PropertyChangeListener listener) {
-            throw new RuntimeException( "NULL.addPropertyChangeListener" );
-        }
-        
-        public void removePropertyChangeListener(String propertyName, java.beans.PropertyChangeListener listener) {
-            throw new RuntimeException( "NULL.removePropertyChangeListener" );
-        }
-        
-        public void addpwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
-            throw new RuntimeException( "NULL.addpwUpdateListener" );
-        }
-        
-        public void removepwUpdateListener(edu.uiowa.physics.pw.das.graph.event.DasUpdateListener l) {
-            throw new RuntimeException( "NULL.removepwUpdateListener" );
-        }
-        
-        protected void fireUpdate() {
-            throw new RuntimeException( "NULL.fireUpdate" );
-        }
-        
+    public DasRow( DasCanvas canvas, DasRow parent, double nMin, double nMax, 
+            double emMin, double emMax, int ptMin, int ptMax ) {
+        super( canvas, false, parent, nMin, nMax, emMin, emMax, ptMin, ptMax );
     }
-    
-    public static final DasRow NULL= new NullDasRow();
-    
-    protected int getDeviceSize() {
-        return parent.getHeight();
-    }
+        
+    public static final DasRow NULL= new DasRow(null,null,0,0,0,0,0,0);
     
     public DasRow createSubRow(double ptop, double pbottom) {
         double top= getMinimum();
         double bottom= getMaximum();
         double delta= top-bottom;
-        return new DasRow(this.parent,bottom+ptop*delta,bottom+pbottom*delta);
+        return new DasRow(getCanvas(),bottom+ptop*delta,bottom+pbottom*delta);
     }
     
     public int getHeight() {
@@ -99,7 +67,7 @@ public class DasRow extends DasDevicePosition {
     }
     
     public DasRow createAttachedRow(double ptop, double pbottom) {
-        return new AttachedRow(this,ptop,pbottom);
+        return new DasRow(null,this,ptop,pbottom,0,0,0,0);
     }
         
     /** Process a <code>&lt;row&gt;</code> element.
