@@ -300,7 +300,7 @@ public class TableUtil {
     
     public static int getNextRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
-        if ( i<ds.getXLength()-1 && ds.getYTagDatum(itable,i).lt(datum) ) {
+        if ( i<ds.getYLength(itable)-1 && ds.getYTagDatum(itable,i).lt(datum) ) {
             return i+1;
         } else {
             return i;
