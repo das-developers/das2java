@@ -128,10 +128,16 @@ public class VectorDataSetBuilder {
         }
     }
     
+    /** 
+     * insert a datum for the default plane
+     */
     public void insertY(Datum x, Datum y) {
         insertY(x, y, "");
     }
     
+    /**
+     * insert a datum for the plane.
+     */
     public void insertY(Datum x, Datum y, String planeID) {
         if (!planeIDs.contains(planeID)) {
             throw new IllegalArgumentException("invalid planeID: "+planeID+", have "+planeIDs);
