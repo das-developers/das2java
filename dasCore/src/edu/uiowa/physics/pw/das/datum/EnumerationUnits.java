@@ -146,8 +146,9 @@ public class EnumerationUnits extends Units {
     public Datum parse(String s) throws java.text.ParseException {
         Datum result=null;
         for ( Iterator i= objects.keySet().iterator(); i.hasNext(); ) {
-            Object key= objects.get(i.next());
-            if ( key.toString().equals(s) ) {
+            Object key = i.next();
+            Object value= objects.get(key);
+            if ( key.toString().equals(s) ) { // if the look the same, they are the same
                 if ( result==null ) {
                     result= (Datum)objects.get(key);
                 } else {
