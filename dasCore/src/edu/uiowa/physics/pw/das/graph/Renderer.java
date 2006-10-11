@@ -281,6 +281,8 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * to do the expensive parts of rendering.
      */
     protected void refresh() {
+        if ( !isActive() ) return;
+        
         logger.fine("entering Renderer.refresh");
         if ( parent==null ) {
             logger.fine("null parent in refresh");
