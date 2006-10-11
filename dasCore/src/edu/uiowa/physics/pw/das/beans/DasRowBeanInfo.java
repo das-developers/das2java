@@ -34,8 +34,12 @@ public class DasRowBeanInfo extends AccessLevelBeanInfo {
         new Property("name", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
         new Property("minimum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getMinimum", "setMinimum", null),
         new Property("maximum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getMaximum", "setMaximum", null),
-        new Property("Dminimum", AccessLevel.DASML, "getDMinimum", "setDMinimum", null),
-        new Property("Dmaximum", AccessLevel.DASML, "getDMaximum", "setDMaximum", null), 
+        new Property("dminimum", AccessLevel.DASML, "getDMinimum", "setDMinimum", null),
+        new Property("dmaximum", AccessLevel.DASML, "getDMaximum", "setDMaximum", null), 
+        new Property("emMinimum", AccessLevel.DASML, "getEmMinimum", "setEmMinimum", null),
+        new Property("emMaximum", AccessLevel.DASML, "getEmMaximum", "setEmMaximum", null), 
+        new Property("ptMinimum", AccessLevel.DASML, "getPtMinimum", "setPtMinimum", null),
+        new Property("ptMaximum", AccessLevel.DASML, "getPtMaximum", "setPtMaximum", null), 
     /*    new Property("top", AccessLevel.DASML, "getTop", "setTop", null),
         new Property("bottom", AccessLevel.DASML, "getBottom", "setBottom", null), */
         
