@@ -32,8 +32,8 @@ import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.util.*;
-import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  *
@@ -113,7 +113,12 @@ public class DataSetStreamHandler implements StreamHandler {
         DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream comment: "+sc);
         if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
             if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );            
-        } 
+        } else if ( sc.getType().matches(sc.TYPE_LOG) ) {
+            String level= sc.getType().substring(4);
+            Level l= Level.parse(level.toUpperCase());
+            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).log(l,sc.getValue());
+            monitor.setProgressMessage(sc.getValue());
+        }
     }
     
     public DataSet getDataSet() {
