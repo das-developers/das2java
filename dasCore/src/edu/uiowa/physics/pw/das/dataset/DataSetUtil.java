@@ -208,8 +208,14 @@ public class DataSetUtil {
         return result;
     }
     
+    /**
+     * returns the first column that is before the given datum.  Note the
+     * if the datum identifies (==) an xtag, then the previous column is
+     * returned.
+     */
     public static int getPreviousColumn( DataSet ds, Datum datum ) {
         int i= closestColumn( ds, datum );
+        // TODO: consider the virtue of ge
         if ( i>0 && ds.getXTagDatum(i).ge(datum) ) {
             return i-1;
         } else {
@@ -217,8 +223,14 @@ public class DataSetUtil {
         }
     }
     
+    /**
+     * returns the first column that is after the given datum.  Note the
+     * if the datum identifies (==) an xtag, then the previous column is
+     * returned.
+     */
     public static int getNextColumn( DataSet ds, Datum datum ) {
         int i= closestColumn( ds, datum );
+        // TODO: consider the virtue of le
         if ( i<ds.getXLength()-1 && ds.getXTagDatum(i).le(datum) ) {
             return i+1;
         } else {
