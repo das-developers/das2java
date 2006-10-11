@@ -122,7 +122,7 @@ public class PropertyEditor extends JComponent {
         setLayout(new BorderLayout());
         this.bean= bean;
         
-        DefaultTreeModel treeModel = new DefaultTreeModel(root, true);        
+        DefaultTreeModel treeModel = new DefaultTreeModel(root, true);
         root.setTreeModel(treeModel);
         TreeTableCellRenderer tree = new TreeTableCellRenderer(treeModel);
         tree.setRootVisible(false);
@@ -155,7 +155,7 @@ public class PropertyEditor extends JComponent {
         table.getSelectionModel().addListSelectionListener( getListSelectionListener() );
     }
     
-    public PropertyEditor( Object bean ) {                
+    public PropertyEditor( Object bean ) {
         this( new PropertyTreeNode(bean), bean );
         if ( bean instanceof PropertyTreeNodeInterface ) throw new IllegalArgumentException("whoops!");
     }
@@ -165,8 +165,8 @@ public class PropertyEditor extends JComponent {
         for ( int i=0; i<peers.length; i++ ) {
             peerNodes[i]= new PropertyTreeNode( peers[i] );
         }
-        PeerPropertyTreeNode root= new PeerPropertyTreeNode( null, 
-                new PropertyTreeNode( leader ),  
+        PeerPropertyTreeNode root= new PeerPropertyTreeNode( null,
+                new PropertyTreeNode( leader ),
                 peerNodes );
         return new PropertyEditor( root, null );
     }
@@ -202,7 +202,7 @@ public class PropertyEditor extends JComponent {
                 } else if ( event.getKeyCode()==KeyEvent.VK_LEFT ) {
                     TreeTableModel model = (TreeTableModel)table.getModel();
                     model.collapse(focusRow);
-                } 
+                }
             }
             
         };
@@ -290,7 +290,7 @@ public class PropertyEditor extends JComponent {
                 PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(focusRow);
                 int[] selected= table.getSelectedRows();
                 if ( selected.length==1 ) {
-                    p= new PropertyEditor( node.getValue() );                    
+                    p= new PropertyEditor( node.getValue() );
                 } else {
                     Object[] peers= new Object[ selected.length ];
                     for ( int i=0; i<selected.length; i++ ) {
@@ -318,10 +318,12 @@ public class PropertyEditor extends JComponent {
         }
         final JButton apply = new JButton("Apply Changes");
         closeButton = new JButton("Dismiss");
+        
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == apply) {
                     globalApplyChanges();
+                    refresh();
                 } else if (e.getSource() == closeButton) {
                     dismissDialog();
                 }
@@ -333,10 +335,7 @@ public class PropertyEditor extends JComponent {
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                TreeTableModel model = (TreeTableModel)table.getModel();
-                PropertyTreeNodeInterface root = (PropertyTreeNodeInterface)model.getRoot();
-                root.refresh();
-                model.fireTableDataChanged();
+                refresh();
             }
         });
         
@@ -347,10 +346,17 @@ public class PropertyEditor extends JComponent {
         add(buttonPanel, BorderLayout.SOUTH);
     }
     
+    private void refresh() {
+        TreeTableModel model = (TreeTableModel)table.getModel();
+        PropertyTreeNodeInterface root = (PropertyTreeNodeInterface)model.getRoot();
+        root.refresh();
+        model.fireTableDataChanged();
+    }
+    
     private void globalApplyChanges() {
         TreeTableModel model = (TreeTableModel)table.getModel();
         PropertyTreeNodeInterface root = (PropertyTreeNodeInterface)model.getRoot();
-        root.flush();        
+        root.flush();
     }
     
     private void dismissDialog() {
@@ -358,7 +364,7 @@ public class PropertyEditor extends JComponent {
         if (root.isDirty()) {
             String[] message = new String[] {
                 "You have unsaved changes",
-                        "Would you like to apply them?"
+                "Would you like to apply them?"
             };
             int result = JOptionPane.showConfirmDialog(this, message, "", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (result == JOptionPane.CANCEL_OPTION) {
