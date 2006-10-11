@@ -148,7 +148,7 @@ public class VectorDataSetBuilder {
     }
     
     public void append(VectorDataSet vds) {
-        String[] planeIds= vds.getPlaneIds();
+        String[] planeIds= DataSetUtil.getAllPlaneIds(vds);
         for ( int iplane=0; iplane<planeIds.length; iplane++ ) {
             String plane= planeIds[iplane];
             VectorDataSet planeDs= (VectorDataSet)vds.getPlanarView(plane);
