@@ -70,7 +70,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
             throw new IllegalArgumentException( "minimum>maximum" );
         }
         
-        boolean isNull= ( canvas==null ) || ( parent==null );
+        // isNull indicates this is the NULL row or column.
+        boolean isNull= ( canvas==null ) && ( parent==null );
         
         if ( parent!=null ) {
             canvas= parent.getCanvas();
@@ -110,7 +111,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
                 canvas.addDevicePosition(this);
             }
         }
-        
+        if ( !isNull ) {
+            revalidate();
+        }
     }
     
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum, boolean width) {
