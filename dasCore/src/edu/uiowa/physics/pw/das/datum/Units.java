@@ -113,10 +113,26 @@ public abstract class Units implements Displayable {
         meters.registerConverter(kiloMeters, UnitsConverter.KILO);
     }
     
+    /**
+     * Microseconds since midnight Jan 1, 2000.
+     */
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
+    
+    /**
+     * Seconds since midnight Jan 1, 2000.
+     */    
     public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
+
+    /**
+     * seconds since midnight Jan 1, 1970.
+     */
     public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
+    
+    /**
+     * roughtly days since noon on some day in 1958, Julian - 2436204.5 to be more precise.
+     */
     public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
+    
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
