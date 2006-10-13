@@ -174,7 +174,7 @@ public class DasProgressPanel implements DasProgressMonitor {
     public void setLabel(String label) {
         this.label = label;
         this.labelDirty= true;
-        thePanel.repaint();
+        if ( thePanel!=null ) thePanel.repaint();
     }
     
     public String getLabel() {
