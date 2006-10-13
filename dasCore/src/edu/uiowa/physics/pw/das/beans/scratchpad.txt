@@ -1,0 +1,43 @@
+Definition of a property.  A property is an adjustable parameter of an object.  A property may be read-only and used to peek
+at the status of an object.  A property may be another object.  A property may be an array of objects.  This is all beany.
+
+1. Attributes of Properties.
+  1. Security model
+     1.  that allows us to restrict which properties may be adjusted by the end-user.
+     2.  that allows us to restrict the properties which may be stored persistently.
+  2. Properties should be editable and serializable "for free," meaning that no effort is required to get these features for new objects.
+  3. Properties of new objects should be discovered in a reasonable and safe way.
+
+2. Example uses.
+   1. application development
+      1. layout, labels, colorbar, etc are set interactively by the application developer.
+      2. satisfied, the developer releases the application, but limiting adjustable properties to the time axis range.
+   2. non-persistent properties
+      1. the developer wishes to add a new parameter for testing which is used interactively 
+      2. this parameter should not be serialized to persistent storage, however, since its meaning may change.
+
+3. discovery of properties.
+   1. a "BeanInfo" object for the object class identifies the properties explicitly
+   2. or the java beans convention for getX/setX is used to identify implicit properties.
+
+4. Access Levels--not implemented
+   1. ALL -- the property may be adjusted freely, no restrictions
+   2. DEVELOPER -- adjustable by the application developer  ( This is the default for implicit properties. )
+   3. END_USER -- adjustable by the end-user.
+
+5. Persistence.
+   1. none -- the property should never be used as a part of the state.  Including within session.
+   2. transient -- the property is only persistent on a per-session basis.  For example, undo/redo should include this.
+   3. persistent -- the property may be serialized and stored.
+
+6. Arbitary xml to application
+   1. bean requirements
+      1. no-argument constructor
+      2. properties adjusted in any order--this is a bean requirement because of property editor as well.
+      3. must be named
+   2. update messages
+      1. propertyChanged messages used to implement bean inter-dependence.
+      2. "listens to" notation needed.
+      3. message-coalescing mechanism needs to be preserved.
+   3. missing objects 
+      1. some sort of canvas layout manager that manages rows
