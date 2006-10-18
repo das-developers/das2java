@@ -90,7 +90,7 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
     }
     
     /**
-     * @param datum
+     * @param value the Datum object to be editted.
      * @throws IllegalArgumentException if value is not a Datum
      */
     public void setValue(Object value) {
@@ -102,7 +102,10 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
         }
     }
     
-    public void setDatum(Datum datum) {
+    /**
+     * @param datum the Datum object to be editted.
+     */
+    private void setDatum(Datum datum) {
         Datum oldValue = value;
         value = datum;
         Units u= datum.getUnits();

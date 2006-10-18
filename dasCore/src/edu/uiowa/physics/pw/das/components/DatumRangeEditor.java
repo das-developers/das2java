@@ -90,7 +90,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
     }
     
     /**
-     * @param datum
+     * @param value the DatumRange to be editted.
      * @throws IllegalArgumentException if value is not a Datum
      */
     public void setValue(Object value) {
@@ -101,7 +101,10 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         }
     }
     
-    public void setDatumRange(DatumRange datumRange ) {
+    /**
+     * @param datumRange the DatumRange to be editted.
+     */
+    private void setDatumRange(DatumRange datumRange ) {
         DatumRange oldValue = value;
         value = datumRange;
         Units u= datumRange.getUnits();
