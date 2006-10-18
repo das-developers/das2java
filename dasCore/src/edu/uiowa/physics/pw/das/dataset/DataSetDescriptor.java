@@ -44,24 +44,25 @@ import javax.swing.event.*;
  * for "discharge of the Iowa River measured at Iowa City."  Clients of the class get
  * DataSets from the DataSetDescriptor via the getDataSet( Start, End, Resolution ) method.  So for
  * example, you might ask what is the discharge from June 1 to August 31st, 2005, at a resolution of
- * 1 day.  Presently it's implicit that this means to give bin averages of the data.
+ * 1 day.  Presently, it's implicit that this means to give bin averages of the data.
  *
- * DataSetDescriptors are identified with a URL-like string:
- * http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy
+ * <p>DataSetDescriptors are identified with a URL-like string:
+ * <pre>http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy</pre></p>
  *
- * The protocol of the string indicates how the DataSetDescriptor is to be constructed, and presently
+ * <p>The protocol of the string indicates how the DataSetDescriptor is to be constructed, and presently
  * there are:
+ *<pre>
  *   http     a das2Server provides the specification of the datasetdescriptor.
- *   class    refers to a loadable java class that is an instanceof DataSetDescriptor.
- *
+ *   class    refers to a loadable java class that is an instanceof DataSetDescriptor and
+ *            has the method newDataSetDescriptor( Map params )
+ *</pre>
+ * </P>
  * @author jbf
  */
 public abstract class DataSetDescriptor implements Displayable {
-    /* defaultCaching means that the abstract DataSetDescriptor is allowed to handle
-     * repeat getDataSet calls by returning a cached dataset.  If a dataSetUpdate event
-     * is thrown, the defaultCache is reset.
-     */
+
     protected Map properties = new HashMap();
+
     private boolean defaultCaching= true;
     
     private DataSetCache dataSetCache;
@@ -74,18 +75,26 @@ public abstract class DataSetDescriptor implements Displayable {
         dataSetCache= DasApplication.getDefaultApplication().getDataSetCache();
         this.dataSetID= dataSetID;
     }
+           
     protected DataSetDescriptor() {
         this("");
     }
     
-    /* getDataSetImpl implements the getDataSet for this DataSetDescriptor implementation.  The
+    /**
+     * getDataSetImpl implements the getDataSet for this DataSetDescriptor implementation.  The
      * getDataSet call of the abstract DataSetDescriptor uses this routine to satisfy requests and
-     * fill its cache.  This caching may be disabled via setDefaultCaching;
+     * fill its cache.  This caching may be disabled via setDefaultCaching.  To satisfy the request,
+     * a DataSet should be returned with an x tag range that contains start and end, with a 
+     * resolution finer than that requested.
+     * 
+     * @param start beginning of range for the request.
+     * @param end end of the range for the request.
+     * @param resolution the resolution requirement for the reqeust.  <code>null</code> may be used to request the finest resolution available or intrinic resolution.
      */
     protected abstract DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException ;
     
     /**
-     * return the x units of the DataSetDescriptor.
+     * @return the x units of the DataSetDescriptor that parameterize the data.  This is used to identify dataSet requests.
      */
     public abstract Units getXUnits();
     
@@ -172,7 +181,8 @@ public abstract class DataSetDescriptor implements Displayable {
         
     }
     
-    /* Retrieve the dataset for this interval and resolution.  The contract for this function is that
+    /**
+     * Retrieve the dataset for this interval and resolution.  The contract for this function is that
      * identical start,end,resolution parameters will yield an identical dataSet, except for when an
      * DataSetUpdate has been fired in the meantime.
      *
@@ -209,14 +219,20 @@ public abstract class DataSetDescriptor implements Displayable {
         }
     }
     
-    /*
-     * clear any state that's developed, in particular any data caches
+    /**
+     * clear any state that's developed, in particular any data caches.  Note
+     * this currently deletes all cached datasets, regardless of the DataSetDescriptor
+     * that produced them.
      */
     public void reset() {
         dataSetCache.reset();
     }
     
-    /*
+    /**
+     * defaultCaching means that the abstract DataSetDescriptor is allowed to handle
+     * repeat getDataSet calls by returning a cached dataset.  If a dataSetUpdate event
+     * is thrown, the defaultCache is reset.
+     *
      * Use caution when using this.  Note that caching may only be turned off
      * with this call.
      */
@@ -248,6 +264,9 @@ public abstract class DataSetDescriptor implements Displayable {
         }
     }
     
+    /**
+     * @returns the string that uniquely identifies this dataset.
+     */
     public String getDataSetID() {
         return this.dataSetID;
     }
@@ -255,6 +274,20 @@ public abstract class DataSetDescriptor implements Displayable {
     private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z0-9_\\.]+)(?:\\?(.*))?");
     private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.-]+)=([_0-9a-zA-Z%+.-]+)");
     
+    /**
+     * creates a DataSetDescriptor for the given identification string.  The identification
+     * string is a URL-like string, for example <code>http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy</code>
+     * The protocol of the string indicates how the DataSetDescriptor is to be constructed, and presently
+     * there are:
+     *<pre>
+     *   http     a das2Server provides the specification of the DataSetDescriptor, and a
+     *            StreamDataSetDescriptor is created.
+     *   class    refers to a loadable java class that is an instanceof DataSetDescriptor and
+     *            has the method newDataSetDescriptor( Map params )
+     *</pre>
+     * Note that DataSetDescriptors are stateless, the same DataSetDescriptor object
+     * may be returned to multiple clients.
+     */
     public static DataSetDescriptor create( final String dataSetID ) throws DasException {
         java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);
         DataSetDescriptor result;
@@ -334,6 +367,10 @@ public abstract class DataSetDescriptor implements Displayable {
         return this.dataSetID;
     }
     
+    /**
+     * @return the DataSetCache object used to store cached copies of the
+     * DataSets created by this object.
+     */
     public DataSetCache getDataSetCache() {
         return this.dataSetCache;
     }

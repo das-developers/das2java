@@ -255,7 +255,7 @@ public class DasApplication {
     }
         
     /**
-     * @deprecated.  Use createMainFrame( String title, Container container );
+     * @deprecated  use createMainFrame( String title, Container container );
      */
     public JFrame createMainFrame( java.awt.Container container ) {
         return createMainFrame( "Das2", container );
@@ -270,7 +270,7 @@ public class DasApplication {
     }
   
     /**
-     * @deprecated.  Use createMainFrame(String title) 
+     * @deprecated use createMainFrame(String title) 
      */
     public JFrame createMainFrame() {
         return createMainFrame("Das2");

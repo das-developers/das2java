@@ -101,8 +101,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
      * Reads data for the given start and end dates and returns an array of floats
      *
      * @author eew
-     * @param start A Datum object representing the start time for the interval requested
-     * @param end A Datum object representing the end time for the interval requested
      * @return array of floats containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
@@ -120,8 +118,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
      * Reads data for the given start and end dates and returns an array of doubles
      *
      * @author eew
-     * @param start A Datum object representing the start time for the interval requested
-     * @param end A Datum object representing the end time for the interval requested
      * @return array of doubles containing the data returned by the reader
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
@@ -146,12 +142,9 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     /**
      * Auxiliary method used by readDoubles(InputStream, Object, Datum, Datum);
      *
-     *
      * Read data for the given start and end dates and returns an array of bytes
      *
      * @author eew
-     * @param start A Datum object representing the start time for the interval requested
-     * @param end A Datum object representing the end time for the interval requested
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
     protected byte[] readBytes(InputStream in) throws DasException {

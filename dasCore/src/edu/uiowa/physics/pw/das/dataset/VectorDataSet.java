@@ -25,8 +25,8 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
 
-/** Interface definition for datasets comprized of a vector of y values
- * each with an associated x tag.
+/** Interface definition for datasets comprised of a y value
+ * for each x tag such that y(x).
  *
  * @author  eew
  */

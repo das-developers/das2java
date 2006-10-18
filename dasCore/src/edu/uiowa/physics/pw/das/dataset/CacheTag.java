@@ -59,8 +59,8 @@ public class CacheTag {
     }
     
     /**
-     * @returns true if the tag has a lower resolution and its bounds are within
-     * this.
+     * @return true if the tag has a lower resolution and its bounds are within
+     * this CacheTag.
      */
     public boolean contains( CacheTag tag ) {
         return ( this.range.contains( tag.range ) 

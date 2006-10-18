@@ -59,7 +59,7 @@ public class BatchMaster {
     /**
      *
      * @param pngFilenameTemplate  BEGIN,END,RANGE substituted to form name
-     * @return
+     * @return TaskOutputDescriptor describing the task.
      */
     public TaskOutputDescriptor createPngsTaskOutputDescriptor( final String pngFilenameTemplate ) {
         return new TaskOutputDescriptor() {

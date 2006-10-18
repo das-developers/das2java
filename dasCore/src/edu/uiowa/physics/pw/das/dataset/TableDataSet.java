@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
 
-/** A <code>DataSet</code> implementation for 3 dimensional (x,y,z) data sets
+/** A <code>DataSet</code> implementation for 3 dimensional z(x,y) data sets
  * where the data is arranged in a sequence of tables.  Each table will have
  * a set of monotonically increasing x tags and y tags.  The x tags for all
  * the tables, when taken together in the order that the table are in, will

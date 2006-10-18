@@ -176,7 +176,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private MyDataSetDescriptor dataSetDescriptor;
     
     /**
-     * @depricated  use getDataSet() and getSelectedDataSet() instead
+     * @deprecated  use getDataSet() and getSelectedDataSet() instead
      */
     public DataSetDescriptor getDataSetDescriptor() {
         if ( dataSetDescriptor==null ) {
@@ -931,8 +931,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private boolean snapToGrid= false;
     
     /**
-     * Getter for property fuzzyOverwrite.
-     * @return Value of property fuzzyOverwrite.
+     * Getter for property snapToGrid.
+     * @return Value of property snapToGrid.
      */
     public boolean isSnapToGrid()  {
         
@@ -940,8 +940,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     /**
-     * Setter for property fuzzyOverwrite.
-     * @param fuzzyOverwrite New value of property fuzzyOverwrite.
+     * Setter for property snapToGrid.  true indicates the xtag will be reset
+     * so that the tags are equally spaced, each xTagWidth apart.
+     * @param snapToGrid New value of property snapToGrid.
      */
     public void setSnapToGrid(boolean snapToGrid)  {
         

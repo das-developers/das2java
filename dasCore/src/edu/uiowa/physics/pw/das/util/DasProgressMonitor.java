@@ -27,18 +27,31 @@ package edu.uiowa.physics.pw.das.util;
  * keeping track of the progress of an operation.  This interface also allows
  * the operation being tracked to be notified if the user wishes to cancel the
  * operation.  Code using this interface to track progress should call
- * {@link #isCancelled()} prior to calling {@link #setTaskProgress(int)}.
+ * {@link #isCancelled()} prior to calling {@link #setTaskProgress(long)}.
  * Implementations of this interface should throw an
  * <code>IllegalArgumentException</code> when <code>setTaskProgress(int)</code>
  * is called after the operation has been cancelled.
  * <p>
  * Code using the <code>ProgressMonitor</code> should call {@link started()}
- * before <code>setTaskProgress()</code> is called for the first time.
+ * before <code>setTaskProgress(long)</code> is called for the first time.
  * <code>setTaskProgress()</code> should not be called after
- * <code>cancel()</code> or <code>finisheded</code> has been called.  An
+ * <code>cancel()</code> or <code>finished()</code> has been called.  Therefore,
+ * monitored processes should check isCancelled() before setTaskProgress(long)
+ * is called.  An
  * implementation may throw an <code>IllegalArgumentException</code> if
  * <code>setTaskProgress(int)</code> is called before <code>started()</code> or
  * after <code>finished()</code> is called.
+ * 
+ * <p>A client codes receiving a monitor must do one of two things.
+ * It should either call setTaskSize(long), started(), setTaskProgress(long) zero or more times, then
+ * finished(); or it should do nothing with the monitor, possibly passing the
+ * monitor to a subprocess.  This is to ensure that it's easy to see that
+ * the monitor lifecycle is properly performed. </p>
+ *
+ * TODO: check this, I think it's legal now for a process to ignore cancelled,
+ * and the monitor should disable the client's ability to cancel in this case.
+ *
+ * TODO: what about exceptions and the monitor lifecycle?
  *
  * @author  jbf
  */
@@ -125,7 +138,7 @@ public interface DasProgressMonitor {
      * called, implementations should return <code>true</code> on
      * any subsequent calls to {@link #isCancelled()} and should
      * throw an IllegalStateException on any subsequent calls to
-     * {@link #setTaskProgress(int)}.
+     * {@link #setTaskProgress(long)}.
      */
     void cancel();
     

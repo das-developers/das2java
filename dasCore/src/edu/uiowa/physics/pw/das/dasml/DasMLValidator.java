@@ -116,7 +116,7 @@ public class DasMLValidator extends DefaultHandler {
      * @param source The source of the XML document
      * @param errorHandler The ErrorHandler instance that will receive
      *    error messages from the parser.  This can be null
-     * @returns true if the document is a valid dasML document.
+     * @return true if the document is a valid dasML document.
      * @throws IOException if the there is an error while reading the document.
      */
     public boolean validate(InputSource source, ErrorHandler errorHandler) throws java.io.IOException {
@@ -214,7 +214,7 @@ public class DasMLValidator extends DefaultHandler {
     
     /** Receive notification of the start of an element.
      *
-     * @param name The element type name.
+     * @param qName The element type name.
      * @param attributes The specified or defaulted attributes.
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
