@@ -1,0 +1,16 @@
+<body>
+    <p>Provides BeanInfos that wrap das2 objects to control the properties
+that are exposed.  When the PropertyEditor is used to edit an object, it 
+uses java bean conventions for identifying its properties.  Properties of 
+objects that do not have a corresponding BeanInfo are discovered using the 
+java beans convention of looking for methods
+of the form getX() and setX() where X is the property name.  </p>
+<p>The BeanInfos also provide a mechanism where the writable property set can be 
+reduced depending on the role of the person using the application.  For example,
+application developers would have the ability to freely adjust all parameters,
+such as layout, datasets and rendering methods, while end users would only be
+able to control the timeaxis.  This mechanism has never been used, but it's worth
+mentioning since the implementing code is in there.
+</p>
+Also a utility class, BeansUtil, provides methods for discovering object properties.
+</body>
