@@ -478,14 +478,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return result;
     }
     
-    public edu.uiowa.physics.pw.das.graph.DasAxis getDefaultXAxis(edu.uiowa.physics.pw.das.graph.DasRow row, edu.uiowa.physics.pw.das.graph.DasColumn column) {
-        return null;
-    }
-    
-    public edu.uiowa.physics.pw.das.graph.Renderer getRenderer(edu.uiowa.physics.pw.das.graph.DasPlot plot) {
-        return null;
-    }
-    
     public void setServerSideReduction(boolean x) {
         serverSideReduction= x;
     }
