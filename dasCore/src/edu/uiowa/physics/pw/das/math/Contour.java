@@ -1,6 +1,6 @@
 /*
  * Contour.java
- *
+ * See http://www.mactech.com/articles/mactech/Vol.13/13.09/ContourPlottinginJava/index.html
  * Created on May 20, 2004, 7:49 PM
  */
 
@@ -13,7 +13,9 @@ import java.awt.*;
 import java.io.*;
 
 /**
- *
+ * Contouring based on code published in Javatech, Volume 13 Issue 9, "Contour Plotting In Java"
+ * by David Rand.  This code is based on Fortran code implementing 1978 article by W. V. Snyder.
+ * W. V. Snyder, "Algorithm 531, Contour plotting [J6]," ACM Trans. Math. Softw. 4, 3 (Sept. 1978), 290-294.
  * @author  Owner
  */
 public class Contour {
