@@ -41,7 +41,6 @@ public class DeflaterChannel implements WritableByteChannel {
     private ByteBuffer buf;
     private byte[] inBuf;
     
-    /** Creates a new instance of InflaterChannel */
     public DeflaterChannel(WritableByteChannel out) {
         this.out = out;
         byte[] array = new byte[4096];

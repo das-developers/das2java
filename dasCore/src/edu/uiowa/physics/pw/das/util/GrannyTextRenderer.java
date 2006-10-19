@@ -29,7 +29,7 @@ import java.util.Stack;
 import java.util.Vector;
 
 /**
- *
+ * Renders Grandle and Nystrom strings, like "E=mc!e2"
  * @author  Edward West
  */
 public class GrannyTextRenderer {
