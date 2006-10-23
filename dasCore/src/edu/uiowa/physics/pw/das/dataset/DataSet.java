@@ -71,6 +71,15 @@ public interface DataSet {
     final static String PROPERTY_Z_RANGE="zRange";
     
     /**
+     * suggest render method to use.  These are 
+     * canonical:
+     *    spectrogram
+     *    symbolLine
+     *    stackedHistogram
+     */
+    final static String PROPERTY_RENDERER="renderer";
+    
+    /**
      * String "log" or "linear" 
      */
     final static String PROPERTY_Y_SCALETYPE="yScaleType";
