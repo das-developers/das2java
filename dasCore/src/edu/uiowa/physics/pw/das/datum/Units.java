@@ -134,13 +134,14 @@ public abstract class Units implements Displayable {
     public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
     
     /**
-     * cdf epoch milliseconds since 01-Jan-0000.
+     * cdf epoch milliseconds since midnight, 01-Jan-0000.  There must be skipped days, because this doesn't yeild 01-Jan-0000 for 0.,
+     * but works fine at 1-1-2000.
      */
     public static final TimeLocationUnits cdfEpoch= new TimeLocationUnits("cdfEpoch","milliseconds since 01-Jan-0000", Units.milliseconds);
     
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
-        ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1000,63113904000000L ));
+        ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1/1000.,63113904000000L ));
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 1.534e4));
     }
