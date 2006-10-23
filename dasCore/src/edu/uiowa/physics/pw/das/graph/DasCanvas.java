@@ -33,6 +33,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
+import edu.uiowa.physics.pw.das.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
@@ -312,7 +313,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     };
     
     public static final Action REFRESH_ACTION = new CanvasAction("Refresh") {
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {      
+            DasCanvasComponent[] comps= currentCanvas.getCanvasComponents();
+            for ( int i=0; i<comps.length; i++ ) {
+                comps[i].update();
+            }
         }
     };
     
@@ -1627,6 +1632,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param position
      */
     public void removepwDevicePosition(DasDevicePosition position) {
+
         devicePositionList.remove(position);
         if (position instanceof DasRow) {
             removeRow((DasRow)position);
