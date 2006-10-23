@@ -264,7 +264,7 @@ public class DataRange implements Cloneable {
     
     private void setRange( DatumRange range, boolean pushHistory ) {
         
-        if ( range.getUnits()!=this.units ) {
+        if ( ! range.getUnits().isConvertableTo( this.units ) ) {
             throw new IllegalArgumentException("units may not be changed");
         }
         
