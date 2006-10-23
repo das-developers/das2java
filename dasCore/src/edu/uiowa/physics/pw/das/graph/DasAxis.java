@@ -487,11 +487,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         createAndFireRangeSelectionEvent();
     }
 
-    public void update() {
-        logger.finer("DasAxis.update");
-        super.update();
-    }
-
     public void clearHistory() {
         dataRange.clearHistory();
     }
@@ -2172,6 +2167,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     protected void updateImmediately() {
         super.updateImmediately();
+        logger.finer(""+getDatumRange());
         updateTickV();
     }
 

@@ -29,6 +29,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,6 +41,8 @@ import java.util.logging.*;
  * @author  eew
  */
 public abstract class DasCanvasComponent extends JComponent implements Editable {
+    
+    private Logger logger= DasLogger.getLogger(DasLogger.GUI_LOG);
     
     protected static abstract class CanvasComponentAction extends DasCanvas.CanvasAction {
         private static DasCanvasComponent currentCanvasComponent;
@@ -196,6 +199,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * the AWT Event Queue can coalesce update events.
      */
     protected void updateImmediately() {
+        logger.finer("updateImmediately for "+this.getClass().getName() );
     }
     
     private edu.uiowa.physics.pw.das.event.DasUpdateEvent devt;
@@ -205,6 +209,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * done to get the get the component back into a valid state.
      */
     public void update() {
+        logger.finer("update for "+this.getClass().getName() );
         java.awt.EventQueue eventQueue =
         Toolkit.getDefaultToolkit().getSystemEventQueue();
         if (devt == null) devt = new edu.uiowa.physics.pw.das.event.DasUpdateEvent(this);
