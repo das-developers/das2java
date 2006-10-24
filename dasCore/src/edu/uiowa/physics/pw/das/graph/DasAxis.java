@@ -639,7 +639,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * changes the units of the axis to a new unit, probably breaking all sorts of things!
      */
     public void resetRange( DatumRange range ) {
+        logger.finest( "replaceRange("+range+")");
         dataRange.resetRange( range );
+        markDirty();
         update();
     }
 
