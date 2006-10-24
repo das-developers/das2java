@@ -1,0 +1,8 @@
+1. event package
+  1. mouse events / drag renderers / mouse modules
+    1. difficult to reuse existing objects because a lack of composition.
+    2. too much typeness in drag renderers, should let composing code enforce typeness.
+    3. poor definition of the role of each class.
+    4. need definition of how key strokes can be used, which are used by the DMIA which
+         can the mousemodule use.
+   
