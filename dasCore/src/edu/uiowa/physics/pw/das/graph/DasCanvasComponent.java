@@ -84,6 +84,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     protected DasMouseInputAdapter mouseAdapter;
     private String dasName;
     
+    /**
+     * constructs a DasCanvasComponent, creating the
+     * DasMouseInputAdapter for it and assigning a
+     * default name to it.
+     */
     public DasCanvasComponent() {
         setOpaque(false);
         rl = new ResizeListener();
@@ -105,21 +110,36 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         }
     }
     
+    /**
+     * Add the MouseModule to the list of MouseModules 
+     * attached to the component via the DasMouseInputAdapter.
+     * MouseModules will appear the in the order that they
+     * are added.
+     */
     public void addMouseModule(MouseModule module) {
         mouseAdapter.addMouseModule(module);
     }
     
+    /**
+     * Remove the MouseModule from the list of MouseModules 
+     * attached to the component via the DasMouseInputAdapter.
+     */
     public void removeMouseModule(MouseModule module) {
         mouseAdapter.removeMouseModule(module);
     }        
     
+        
+    /**
+     * accessor for the DasRow used for positioning the component.
+     * @return DasRow used for positioning the component.
+     */
     public DasRow getRow() {
         return row;
     }
     
     /**
-     * 
-     * @return 
+     * accessor for the DasColumn used for positioning the component.
+     * @return DasColumn used for positioning the component.
      */
     public DasColumn getColumn() {
         return column;
@@ -140,6 +160,9 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         }
     }
     
+    /**
+     * class for handling resize events.
+     */
     private class ResizeListener implements DasUpdateListener {
         
         public void update(edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent e) {
@@ -149,6 +172,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         
     }
     
+    /**
+     * set the DasRow for positioning the component vertically.
+     * The current row is disconnected, and a propertyChange is 
+     * fired.
+     */
     public void setRow(DasRow r) {
         if (row == r) {
             return;
@@ -166,6 +194,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         firePropertyChange("row", oldValue, r);
     }
     
+    /**
+     * set the DasColumn for positioning the component horizontally.
+     * The current column is disconnected, and a propertyChange is 
+     * fired.
+     */
     public void setColumn(DasColumn c) {
         if (column == c) {
             return;
@@ -183,11 +216,18 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         firePropertyChange("column", oldValue, c);
     }
     
+    /**
+     * popup the PropertyEditor for editing the state
+     * of this component.
+     */
     public void showProperties() {
         PropertyEditor editor = new PropertyEditor(this);
         editor.showDialog(this);
     }
     
+    /**
+     * @return a concise String representation of the object.
+     */
     public String toString() {
         return getClass().getName()+"'"+getDasName()+"'";
     }
