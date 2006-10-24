@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
+import edu.uiowa.physics.pw.das.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.system.DasLogger;
@@ -289,39 +290,61 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     boolean dirty = true;
+    
+    /**
+     * set the dirty flag indicating the state has changed and work is to be
+     * done to restore a valid state.  For example, a DasAxis' minimum is 
+     * changed, so we will need to recalculate the ticks.  (But we don't want
+     * to recalculate the ticks immediately, since the maximum may change
+     * as well.
+     */
     void markDirty() {
         dirty = true;
     }
     /**
-     * 
-     * @return 
+     * @return true if the component has been marked as dirty, meaning
+     * work needs to be done to restore it to a valid state.
      */
     boolean isDirty() {
         return dirty;
     }
+    
+    /**
+     * clear the dirty flag, indicating the component is in a self-consistent
+     * state.
+     */
     void markClean() {
         dirty = false;
     }
     
     /**
-     * 
-     * @return 
+     * get the DasCanvas which contains this DasCanvasComponent.
+     * @return the DasCanvas which contains this DasCanvasComponent.
      */
     public DasCanvas getCanvas() {
         return (DasCanvas)getParent();
     }
     
     /**
-     * 
-     * @return 
+     * Get the String identifier for the component which identifies
+     * the component within the application.  This name should be 
+     * consistent between sessions of an application, where
+     * applicable, for persistent state support.
+     *
+     * @return the name of the component.
      */
     public String getDasName() {
         return dasName;
     }
     
     /**
-     * 
-     * @param name 
+     * Set the String identifier for the component which identifies
+     * the component within the application.  This name should be 
+     * consistent between sessions of an application, where
+     * applicable, for persistent state support.  For example, 
+     * "timeAxis1" or "theTimeAxis"
+     * @param name unique String identifying the component within
+     * the application.
      * @throws edu.uiowa.physics.pw.das.DasNameException 
      */
     public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
@@ -351,6 +374,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         return new Rectangle(x, y, width, height);
     }
     
+    /**
+     * accessor to the DasMouseInputAdapter handling mouse input for the component.
+     * Note there is also getDasMouseInputAdapter.
+     * @return DasMouseInputAdaptor handling mouse input for the component.
+     */
     public DasMouseInputAdapter getMouseAdapter() {
         return mouseAdapter;
     }
@@ -362,7 +390,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     /**
-     * Getter for property dasMouseInputAdapter.
+     * Getter for property dasMouseInputAdapter, the DasMouseInputAdapter handling mouse input for the component.
      * @return Value of property dasMouseInputAdapter.
      */
     public DasMouseInputAdapter getDasMouseInputAdapter() {
