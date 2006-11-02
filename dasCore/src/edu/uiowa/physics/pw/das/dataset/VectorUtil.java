@@ -146,13 +146,12 @@ public class VectorUtil {
     public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
         dumpToAsciiStream(vds, out);
     }
-        
+    
     private static void dumpToDas2Stream( VectorDataSet vds, WritableByteChannel out, boolean asciiTransferTypes ) {
         if (vds.getXLength() == 0) {
             try {
                 out.close();
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 //Do nothing.
             }
             return;
@@ -162,11 +161,13 @@ public class VectorUtil {
             StreamDescriptor sd = new StreamDescriptor();
             
             Map properties= vds.getProperties();
-            for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
-                String key= (String)i.next();                
-                sd.setProperty(key, properties.get(key));
+            if ( properties!=null) {
+                for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
+                    String key= (String)i.next();
+                    sd.setProperty(key, properties.get(key));
+                }
             }
-                        
+            
             DataTransferType xTransferType;
             DataTransferType yTransferType;
             
@@ -202,7 +203,7 @@ public class VectorUtil {
                 yDescriptor.setUnits(((VectorDataSet)vds.getPlanarView(planeIds[i])).getYUnits());
                 pd.addYDescriptor(yDescriptor);
             }
-                        
+            
             producer.packetDescriptor(pd);
             for (int i = 0; i < vds.getXLength(); i++) {
                 Datum xTag = vds.getXTagDatum(i);
@@ -212,8 +213,7 @@ public class VectorUtil {
                 producer.packet(pd, xTag, yValues);
             }
             producer.streamClosed(sd);
-        }
-        catch (StreamException se) {
+        } catch (StreamException se) {
             throw new RuntimeException(se);
         }
     }
@@ -223,7 +223,7 @@ public class VectorUtil {
         return DatumVector.newDatumVector(array, d.getUnits());
     }
     
-    public static String toString( VectorDataSet ds ) {        
+    public static String toString( VectorDataSet ds ) {
         return "[VectorDataSet "+ds.getXLength()+" xTags ]";
     }
     
@@ -233,15 +233,15 @@ public class VectorUtil {
      * Because we don't have a general-purpose way to divide units, the units returned
      * are dimensionless.
      */
-    public static VectorDataSet finiteDerivative( VectorDataSet ds, int n ) { 
+    public static VectorDataSet finiteDerivative( VectorDataSet ds, int n ) {
         VectorDataSetBuilder builder= new VectorDataSetBuilder( ds.getXUnits(), Units.dimensionless );
         Units xunits= ds.getXUnits();
         Units yunits= ds.getYUnits();
         for ( int i=n; i<ds.getXLength(); i++ ) {
             double dx= ds.getXTagDouble( i, xunits ) - ds.getXTagDouble( i-n, xunits );
-            double dy= ds.getDouble( i, yunits ) - ds.getDouble( i-n, yunits );            
-            builder.insertY( ds.getXTagDouble(i-n, xunits) + dx / 2 , dy / dx );                    
-        } 
+            double dy= ds.getDouble( i, yunits ) - ds.getDouble( i-n, yunits );
+            builder.insertY( ds.getXTagDouble(i-n, xunits) + dx / 2 , dy / dx );
+        }
         
         for ( Iterator i=ds.getProperties().keySet().iterator(); i.hasNext(); ) {
             String key= (String)i.next();
