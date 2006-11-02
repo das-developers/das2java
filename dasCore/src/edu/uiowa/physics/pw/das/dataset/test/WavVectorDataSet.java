@@ -93,6 +93,7 @@ public abstract class WavVectorDataSet implements VectorDataSet {
     }
     
     public DataSet getPlanarView(String planeID) {
+        if ( planeID.equals("") ) return this;
         int ch= Integer.parseInt(planeID.substring(7));
         if ( ch==channel ) {
             return this;
