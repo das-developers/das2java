@@ -126,7 +126,7 @@ public class Legend extends DasCanvasComponent {
     
     public void paintComponent( Graphics g1 ) {
         if ( elements.size()==0 ) {
-            logger.info("no elements in legend, returning.");
+            logger.fine("no elements in legend, returning.");
             return;
         }
         Graphics2D g= (Graphics2D) g1;
