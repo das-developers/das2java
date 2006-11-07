@@ -219,13 +219,7 @@ public class TableDataSetBuilder {
     
     public String toString() {
         int index = 0;
-        StringBuffer result = new StringBuffer();
-        for (Iterator i = zValues.iterator(); i.hasNext();) {
-            MultiYScan scan = (MultiYScan)i.next();
-            result.append(toString(xTags.toArray(), index, index+1)).append(toString(scan.get(""))).append('\n');
-            index++;
-        }
-        return result.toString();
+        return "TableDataSetBuilder ["+xTags.size()+" xtags, "+getTableCount(zValues)+"tables]";
     }
     
     public TableDataSet toTableDataSet() {
