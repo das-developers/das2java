@@ -345,7 +345,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             if (colorBar != null) {
                 if (colorBar.getColumn() == DasColumn.NULL ) {
                     DasColumn column = parent.getColumn();
-                    colorBar.setColumn( column.createAttachedColumn( 1.05, 1.10 ) );
+                    colorBar.setColumn( new DasColumn( null, column, 1.0, 1.0, 1, 2, 0, 0  ) );
                 }
                 parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
                 if (!"true".equals(System.getProperty("java.awt.headless"))) {
