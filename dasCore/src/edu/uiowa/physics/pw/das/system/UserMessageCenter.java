@@ -76,6 +76,7 @@ public class UserMessageCenter {
         HashMap sourceMessages= (HashMap)sources.get( source );
         if ( sourceMessages!=null ) {
             if ( sourceMessages.containsKey(message.getText() ) ) {
+                frame.setVisible(true);
                 return;
             }
         }
