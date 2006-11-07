@@ -303,17 +303,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    private ActionListener createActionListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String command = e.getActionCommand();
-                if (command.equals("back")) {
-                    setDataRangePrev();
-                }
-            }
-        };
-    }
-
     private ActionListener createScanActionListener() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -2633,6 +2622,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int bottomPosition = getRow().getDMaximum();
             int DMax = getColumn().getDMaximum();
             int DMin = getColumn().getDMinimum();
+
 
             boolean bottomTicks = (orientation == BOTTOM || oppositeAxisVisible);
             boolean bottomTickLabels = (orientation == BOTTOM && tickLabelsVisible);
