@@ -27,7 +27,12 @@ import java.util.logging.Logger;
 public class TimeParser {
     
     final static Logger logger= Logger.getLogger("TimeParser");
+    
+    /**
+     * %Y-%m-%dT%H:%M:%S.%{milli}Z
+     */
     public static final String TIMEFORMAT_Z= "%Y-%m-%dT%H:%M:%S.%{milli}Z";
+    
     TimeStruct time;
     TimeStruct timeWidth;
     
@@ -181,6 +186,7 @@ public class TimeParser {
     }
     
     /**
+     * <pre>
      *  %[fieldLength]<1-char code>  or
      *  %[fieldLength]{<code>}
      *
@@ -195,7 +201,7 @@ public class TimeParser {
      *  %M    2-digit minute
      *  %S     2-digit second
      *  %{milli}  3-digit milliseconds
-     *
+     *  </pre>
      *
      */
     public static TimeParser create( String formatString ) {
