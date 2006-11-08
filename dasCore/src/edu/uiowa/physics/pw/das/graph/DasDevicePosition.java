@@ -236,8 +236,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         int pmax= getParentMax();
         int em= getEmSize();
         int length= pmax - pmin;
-        double nmin= ( minimum -  emMinimum * em - ptMinimum ) / length;
-        double nmax= ( maximum -  emMaximum * em - ptMaximum ) / length;
+        double nmin= ( minimum -  emMinimum * em - ptMinimum - pmin ) / length;
+        double nmax= ( maximum -  emMaximum * em - ptMaximum - pmin ) / length;
         setPosition( nmin, nmax );
     }
     
