@@ -45,6 +45,10 @@ public class DasColumn extends DasDevicePosition {
         
     public static final DasColumn NULL= new DasColumn(null,null,0,0,0,0,0,0);
     
+    /**
+     * @deprecated.  This created a column that was not attached to anything, so
+     * it was simply a convenience method that didn't save much effort.
+     */
     public DasColumn createSubColumn( double pleft, double pright ) {
         double left= getMinimum();
         double right= getMaximum();
