@@ -99,8 +99,7 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
     }
     
     public void refresh() {
-        throw new IllegalArgumentException("not implemented");
-        // leader.refresh();
+        leader.refresh();
     }
     
     public void setValueAt(Object value, int column) {
