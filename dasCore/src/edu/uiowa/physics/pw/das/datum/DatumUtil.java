@@ -190,8 +190,9 @@ public final class DatumUtil {
                     if ( ee<smallestExp ) smallestExp=ee;
                 }
             }
-            
-            if ( smallestExp < -3 || smallestExp > 3 ) {
+            if ( smallestExp < -60 || smallestExp > 60 ) {
+                return DefaultDatumFormatterFactory.getInstance().defaultFormatter();
+            } else if ( smallestExp < -3 || smallestExp > 3 ) {
                 return new ExponentialDatumFormatter( smallestExp - (-1*fracDigits) +1 , smallestExp );
             } else {
                 int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
