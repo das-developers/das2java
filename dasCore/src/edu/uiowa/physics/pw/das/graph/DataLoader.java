@@ -30,7 +30,9 @@ public abstract class DataLoader {
         this.renderer= renderer;
     }
     
-    // an update message that something might have changed
+    /**
+     * an update message sent by the Renderer to indicate that something might have changed
+     */
     abstract public void update();
     
     private boolean fullResolution = false;
