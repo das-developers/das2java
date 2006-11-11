@@ -6,7 +6,6 @@
 
 package edu.uiowa.physics.pw.das.math.fft;
 
-import edu.uiowa.physics.pw.apps.auralization.EZVectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 
@@ -21,7 +20,7 @@ public class FFTUtil {
     }
     
     public static VectorDataSet getWindowUnity( final int size ) {
-        VectorDataSet unity= new EZVectorDataSet() {
+        VectorDataSet unity= new QuickVectorDataSet() {
             public double getDouble(int i, Units units) {
                 return 1.0;
             }
@@ -55,7 +54,7 @@ public class FFTUtil {
         for ( int i=lim; i<size-lim; i++ ) {
             ww[i]= 1.0;
         }
-        VectorDataSet result= new EZVectorDataSet() {
+        VectorDataSet result= new QuickVectorDataSet() {
             public double getDouble(int i, Units units) {
                 return ww[i];
             }
