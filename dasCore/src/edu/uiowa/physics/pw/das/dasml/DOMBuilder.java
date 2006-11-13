@@ -32,7 +32,6 @@ public class DOMBuilder {
     
     Object bean;
     HashMap serializedObjects;
-    DasApplication application;
     NameContext nameContext;
     
     /** Creates a new instance of Serializer */
@@ -193,9 +192,8 @@ public class DOMBuilder {
     }
     
     
-    public synchronized Element serialize( Document document, DasProgressMonitor monitor ) {
-        application= DasApplication.getDefaultApplication();
-        nameContext= application.getNameContext();
+    public synchronized Element serialize( Document document, DasProgressMonitor monitor ) {        
+        nameContext= DasApplication.getDefaultApplication().getNameContext();
         serializedObjects= new HashMap();
         
         return getDOMElement( document, this.bean, monitor );

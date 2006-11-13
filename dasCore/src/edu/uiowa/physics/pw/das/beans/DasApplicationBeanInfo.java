@@ -30,7 +30,6 @@ import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo.Property;
 
 
 public class DasApplicationBeanInfo extends AccessLevelBeanInfo {
-    DasApplication app;
     
     private static final Property[] properties = {
         new Property("reloadLoggingProperties", AccessLevel.DASML, "isReloadLoggingProperties", "setReloadLoggingProperties", null),
