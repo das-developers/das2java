@@ -27,8 +27,8 @@ public class GraphUtil {
     public static DasPlot newDasPlot( DasCanvas canvas, DatumRange x, DatumRange y ) {
         DasAxis xaxis= new DasAxis( x.min(), x.max(), DasAxis.HORIZONTAL );
         DasAxis yaxis= new DasAxis( y.min(), y.max(), DasAxis.VERTICAL );
-        DasRow row= DasRow.create(canvas);
-        DasColumn col= DasColumn.create(canvas);
+        DasRow row= new DasRow( canvas, null, 0, 1, 2, -3, 0, 0 );
+        DasColumn col= new DasColumn( canvas, null, 0, 1, 5, -3, 0, 0 );
         DasPlot result= new DasPlot( xaxis, yaxis );
         canvas.add( result, row, col );
         return result;
