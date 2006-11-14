@@ -239,9 +239,11 @@ public class DasApplication {
 
     public DataSetCache getDataSetCache() {
         if ( dataSetCache==null ) {
-            //dataSetCache= new SimpleDataSetCache();
-            //dataSetCache= new LimitCountDataSetCache(10);
-            dataSetCache= new LimitSizeBytesDataSetCache(30000000);
+            if ( isHeadless() ) {
+                dataSetCache= new NullDataSetCache();
+            } else {
+                dataSetCache= new LimitSizeBytesDataSetCache(30000000);
+            }
         }
         return dataSetCache;
     }
@@ -333,7 +335,11 @@ public class DasApplication {
     
     public MonitorFactory getMonitorFactory() {
         if ( monitorFactory==null ) {
-            monitorFactory= new MonitorFactory();
+            if ( !isHeadless() ) {
+                monitorFactory= new DefaultMonitorFactory();
+            } else {
+                monitorFactory= new NullMonitorFactory();
+            }
         }
         return monitorFactory;
     }
