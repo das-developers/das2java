@@ -32,6 +32,7 @@ public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
         new Property("rebinner", AccessLevel.DASML,  PersistenceLevel.PERSISTENT, "getRebinner", "setRebinner", EnumerationEditor.class),  
         new Property("colorBar", AccessLevel.DASML,  PersistenceLevel.PERSISTENT, "getColorBar", "setColorBar", null),
         new Property("sliceRebinnedData", AccessLevel.DASML, "isSliceRebinnedData", "setSliceRebinnedData", null),
+        new Property("print300dpi", AccessLevel.DASML, "isPrint300dpi", "setPrint300dpi", null),
     };
     
     public SpectrogramRendererBeanInfo() {

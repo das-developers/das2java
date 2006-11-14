@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasNameException;
 import edu.uiowa.physics.pw.das.DasPropertyException;
@@ -43,6 +42,7 @@ import java.awt.*;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.geom.*;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
@@ -205,7 +205,22 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             } else if (plotImage!=null) {
                 Point2D p;
                 p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
-                g2.drawImage( plotImage,(int)(p.getX()+0.5),(int)(p.getY()+0.5), getParent() );
+                int x= (int)(p.getX()+0.5);
+                int y= (int)(p.getY()+0.5);
+                if ( parent.getCanvas().isPrintingThread() && print300dpi ) {
+                    AffineTransformOp atop= new AffineTransformOp( AffineTransform.getScaleInstance(4,4), AffineTransformOp.TYPE_NEAREST_NEIGHBOR );
+                    BufferedImage image300= atop.filter( (BufferedImage)plotImage, null );
+                    AffineTransform atinv= atop.getTransform();
+                    try {
+                        atinv.invert();
+                    } catch (NoninvertibleTransformException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    atinv.translate( x*4, y*4 );
+                    g2.drawImage( image300, atinv, getParent() );
+                } else {
+                    g2.drawImage( plotImage,x,y, getParent() );
+                }
             }
         }
         g2.dispose();
@@ -253,7 +268,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     private void reportCount() {
-       // System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+        // System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
     }
     
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
@@ -507,6 +522,27 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         // TODO: preserve plotImage until updatePlotImage is done
         this.plotImage= null;
         super.setDataSet(ds);
+    }
+    
+    /**
+     * Holds value of property print300dpi.
+     */
+    private boolean print300dpi;
+    
+    /**
+     * Getter for property draw300dpi.
+     * @return Value of property draw300dpi.
+     */
+    public boolean isPrint300dpi() {
+        return this.print300dpi;
+    }
+    
+    /**
+     * Setter for property draw300dpi.
+     * @param draw300dpi New value of property draw300dpi.
+     */
+    public void setPrint300dpi(boolean print300dpi) {
+        this.print300dpi = print300dpi;
     }
     
 }
