@@ -210,9 +210,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 if ( parent.getCanvas().isPrintingThread() && print300dpi ) {
                     AffineTransformOp atop= new AffineTransformOp( AffineTransform.getScaleInstance(4,4), AffineTransformOp.TYPE_NEAREST_NEIGHBOR );
                     BufferedImage image300= atop.filter( (BufferedImage)plotImage, null );
-                    AffineTransform atinv= atop.getTransform();
+                    AffineTransform atinv;
                     try {
-                        atinv.invert();
+                        atinv= atop.getTransform().createInverse();
                     } catch (NoninvertibleTransformException ex) {
                         throw new RuntimeException(ex);
                     }
