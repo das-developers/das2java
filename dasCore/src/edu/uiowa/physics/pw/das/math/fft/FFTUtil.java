@@ -75,8 +75,9 @@ public class FFTUtil {
     }
         
     /**
-     * returns the power spectrum of the dataset.  This is the length of the fourier
-     * components squared.  The result dataset has dimensionless yunits.
+     * Produces the power spectrum of the dataset.  This is the length of the fourier
+     * components squared, normalized by the bandwidth.  The result dataset has dimensionless yunits.
+     * @param vds VectorDataSet with x units TimeLocationUnits.
      */
     public static VectorDataSet fftPower( GeneralFFT fft, VectorDataSet vds, VectorDataSet weights ) {
         vds= new ClippedVectorDataSet( vds, 0, fft.n );
@@ -88,9 +89,13 @@ public class FFTUtil {
         fft.transform( ca );
         DatumVector xtags= getFrequencyDomainTags( DataSetUtil.getXTags(vds) );
         Units xUnits= xtags.getUnits();
+        
+        double binsize=  2 * ( xtags.get( xtags.getLength()/2 ).doubleValue(Units.hertz) ) / fft.n;
+        
         VectorDataSetBuilder builder= new VectorDataSetBuilder( xtags.getUnits(), Units.dimensionless );
+        
         for ( int i=0; i<xtags.getLength()/2; i++ ) {
-            builder.insertY(xtags.get(i).doubleValue(xUnits), (i==0?1:2)*ComplexArray.magnitude2(ca,i) );
+            builder.insertY(xtags.get(i).doubleValue(xUnits), (i==0?1:4)*ComplexArray.magnitude2(ca,i) / binsize );
         }
         return builder.toVectorDataSet();
     }
@@ -105,6 +110,24 @@ public class FFTUtil {
         return ca;
     }
     
+    /**
+     * @return the frequencies of the bins 
+     * @param fs the sampling frequency
+     */
+    public static double[] getFrequencyDomainTags( double fs, int size ) {
+        double[] result= new double[size];
+        
+        int n= size;
+        int n21= n/2+1;
+        for ( int i=0; i<n21; i++ ) {
+            result[i]= fs/n * i ;
+        }
+        for ( int i=0; i<n21-2; i++ ) {
+            result[i+n21]= fs/n * (n21-n+i);
+        }
+        return result;
+    }
+        
     static DatumVector getFrequencyDomainTags( DatumVector timeDomainTags ) {
         Units timeUnit= timeDomainTags.getUnits();
         double[] x= timeDomainTags.toDoubleArray(timeUnit);
