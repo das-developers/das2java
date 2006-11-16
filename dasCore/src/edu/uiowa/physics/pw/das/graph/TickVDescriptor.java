@@ -140,13 +140,17 @@ public class TickVDescriptor {
 
         int targetTicks= Math.max( Math.min( 6, nTicksMax ), nTicksMin );
 
-        double maj= (maximum-minimum)/targetTicks;
+        double maj= (maximum-minimum)/(targetTicks-1);
         double mag= DasMath.exp10(Math.floor(DasMath.log10(maj)));
         double absissa= maj/mag;
 
         if (absissa<1.666) absissa=1.0;
         else if (absissa<3.333) absissa=2.0;
-        else absissa=5.0;
+        else if ( absissa<9.0 ) absissa=5.0;
+        else {
+            absissa=1.;
+            mag*=10;
+        }
 
         double axisLengthData= maximum-minimum;
 
