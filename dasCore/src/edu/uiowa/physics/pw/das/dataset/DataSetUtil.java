@@ -66,7 +66,7 @@ public class DataSetUtil {
                         max= min= d;
                     } else {
                         if ( d.lt(min) ) min=d;
-                        if ( d.gt(min) ) max=d;
+                        if ( d.gt(max) ) max=d;
                     }
                 }
             }
