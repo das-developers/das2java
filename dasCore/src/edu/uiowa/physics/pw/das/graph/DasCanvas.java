@@ -320,6 +320,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
     };
+
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds( x, y, width, height );
+    }
+
+    public void invalidate() {
+        super.invalidate();
+    }
     
     public static final Action ABOUT_ACTION = new CanvasAction("About") {
         public void actionPerformed(ActionEvent e) {
@@ -406,6 +414,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setLayout(new RowColumnLayout());
         addComponentListener(createResizeListener());
         setBackground(Color.white);
+        setPreferredSize( new Dimension(400,300) );
         this.setDoubleBuffered(true);
         //setFont( new Font( "dialog.bolditalic", Font.PLAIN, 12 ) );
         //setFont( new Font( "Zapf Elliptical 711 Italic BT", Font.PLAIN, 12 ) );
@@ -605,7 +614,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
     }
     
-    /** TODO */
+    /**
+     * Layout manager for manageing the Row, Column layout implemented by swing.
+     * This will probably change in the future when we move away from using 
+     * swing to handle the DasCanvasComponents.
+     */
     protected static class RowColumnLayout implements LayoutManager {
         /** TODO
          * @param target
@@ -630,14 +643,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
          * @return
          */
         public Dimension minimumLayoutSize(Container target) {
-            synchronized (target.getTreeLock()) {
-                int count = target.getComponentCount();
-                Rectangle r = new Rectangle(0, 0, 0, 0);
-                for (int i = 0; i < count; i++) {
-                    r.add(target.getComponent(i).getBounds());
-                }
-                return new Dimension(r.width, r.height);
-            }
+            return new Dimension(0,0);
         }
         
         /** TODO
@@ -645,7 +651,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
          * @return
          */
         public Dimension preferredLayoutSize(Container target) {
-            return minimumLayoutSize(target);
+            return new Dimension(400,300);
         }
         
         /** TODO
@@ -996,7 +1002,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private ComponentListener createResizeListener() {
         return new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
-                setFont( getFontForSize( getWidth(), getHeight() ) );
+                Font aFont= getFontForSize( getWidth(), getHeight() );
+                if ( !aFont.equals(getFont() ) ) {
+                    setFont( aFont );
+                }
+                System.err.println( "min="+getMinimumSize() );
+                System.err.println( "pref="+getPreferredSize() );
             }
         };
     }
