@@ -70,7 +70,7 @@ public class StippledTableRenderer extends Renderer {
     }
     
     RebinListener rebinListener= new RebinListener();
-
+    
     public StippledTableRenderer(DataSetDescriptor dsd ) {
         super( dsd );
     }
@@ -85,21 +85,18 @@ public class StippledTableRenderer extends Renderer {
         this( dsd );
         this.parent = parent;
     }
-      
+    
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
-        AffineTransform at= getAffineTransform( xAxis, yAxis );
-        if ( at==null ) {
-            return;
-        }
         Graphics2D g2= (Graphics2D)g.create();
-        g2.transform(at);
         
         if (getDataSet()==null && lastException!=null ) {
             renderException(g2,xAxis,yAxis,lastException);
-        }
-        else if (plotImage!=null) {
-            int x = xAxis.getColumn().getDMinimum();
-            int y = yAxis.getRow().getDMinimum();
+        } else if (plotImage!=null) {
+            Point2D p;
+            p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
+            int x= (int)(p.getX()+0.5);
+            int y= (int)(p.getY()+0.5);
+            
             g2.drawImage( plotImage,x,y, getParent() );
         }
         g2.dispose();
@@ -117,8 +114,7 @@ public class StippledTableRenderer extends Renderer {
             if (monitor != null) {
                 if (monitor.isCancelled()) {
                     return;
-                }
-                else {
+                } else {
                     monitor.setTaskSize(-1);
                     monitor.started();
                 }
@@ -130,7 +126,7 @@ public class StippledTableRenderer extends Renderer {
             if (getParent()==null  || w<=1 || h<=1 ) {
                 DasDie.println("canvas not useable!!!");
                 return;
-            }                        
+            }
             
             if ( getDataSet() == null) {
                 Units xUnits = getParent().getXAxis().getUnits();
@@ -147,14 +143,14 @@ public class StippledTableRenderer extends Renderer {
             } else {
                 RebinDescriptor xRebinDescriptor;
                 xRebinDescriptor = new RebinDescriptor(
-                xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-                w,
-                xAxis.isLog());
+                        xAxis.getDataMinimum(), xAxis.getDataMaximum(),
+                        w,
+                        xAxis.isLog());
                 
                 RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-                h,
-                yAxis.isLog());
+                        yAxis.getDataMinimum(), yAxis.getDataMaximum(),
+                        h,
+                        yAxis.isLog());
                 
                 DataSetRebinner rebinner= new AverageTableRebinner();
                 
@@ -165,30 +161,37 @@ public class StippledTableRenderer extends Renderer {
                 int ny= rebinData.getYLength(itable);
                 int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
                 
+                
                 BufferedImage image= new BufferedImage( w, h, BufferedImage.TYPE_4BYTE_ABGR );
                 Graphics2D g= (Graphics2D)image.getGraphics();
+                g.setColor( Color.BLACK );
+                
+                Units zunits= rebinData.getZUnits();
                 
                 double maxn=0;
-                for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {                    
+                for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
                     for (int j=0; j<rebinData.getYLength(0); j++) {
-                        double z= rebinData.getDouble(i,j,zUnits)*200;                        
-                        double n= DasMath.log10(Math.max(z,0.000001));                            
+                        
+                        double z= rebinData.getDouble(i,j,zUnits);
+                        if ( zunits.isFill(z) ) continue;
+                        z*= 200;
+                        
+                        double n= DasMath.log10(Math.max(z,0.000001));
                         if ( n>maxn ) maxn=n;
-                        if ( Math.random() < n ) {                            
+                        if ( Math.random() < n ) {
                             g.fillOval(i,j,2,2);
                         }
                     }
                 }
                 System.out.println("maxn="+maxn);
                 plotImage= image;
-             }
+            }
             
         } finally {
             if (monitor != null) {
                 if (monitor.isCancelled()) {
                     return;
-                }
-                else {
+                } else {
                     monitor.finished();
                 }
             }
@@ -197,7 +200,7 @@ public class StippledTableRenderer extends Renderer {
         }
     }
     
-    protected void installRenderer() {        
+    protected void installRenderer() {
     }
     
     protected void uninstallRenderer() {
@@ -218,8 +221,7 @@ public class StippledTableRenderer extends Renderer {
         if (colorbar == null) {
             try {
                 colorbar = (DasColorBar)form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
-            }
-            catch (DasPropertyException dpe) {
+            } catch (DasPropertyException dpe) {
                 dpe.setPropertyName("colorbar");
                 throw dpe;
             }
@@ -228,8 +230,7 @@ public class StippledTableRenderer extends Renderer {
         SpectrogramRenderer renderer = new SpectrogramRenderer(parent, null, colorbar);
         try {
             renderer.setDataSetID(dataSetID);
-        }
-        catch (DasException de) {
+        } catch (DasException de) {
             DasExceptionHandler.handle(de);
         }
         return renderer;
@@ -239,7 +240,7 @@ public class StippledTableRenderer extends Renderer {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
-            if (node instanceof Element) {                
+            if (node instanceof Element) {
             }
         }
         return null;
@@ -248,11 +249,11 @@ public class StippledTableRenderer extends Renderer {
     public Element getDOMElement(Document document) {
         
         Element element = document.createElement("stippledTable");
-        element.setAttribute("dataSetID", getDataSetID());                
+        element.setAttribute("dataSetID", getDataSetID());
         
         return element;
     }
-        
+    
     /** Getter for property sliceRebinnedData.
      * @return Value of property sliceRebinnedData.
      *
@@ -268,5 +269,5 @@ public class StippledTableRenderer extends Renderer {
     public void setSliceRebinnedData(boolean sliceRebinnedData) {
         this.sliceRebinnedData = sliceRebinnedData;
     }
-        
+    
 }

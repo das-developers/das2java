@@ -39,7 +39,18 @@ public final class RipplesDataSet extends FunctionTableDataSet implements TableD
         this( 2, 3, 1, 13, 15, 2, 30, 30 );
     }
     
-    /** Creates a new instance of RipplesDataSetDescriptor */
+    /**  
+     * creates a dataset that is the sum of two rippley functions that look appealling
+     * and are useful for testing.
+     * @param x1 the x coordinate of the first ripple source
+     * @param y1 the y coordinate of the first ripple source
+     * @param p1 the radius of the first ripple
+     * @param x2 the x coordinate of the first ripple source
+     * @param y2 the y coordinate of the first ripple source
+     * @param p2 the radius of the first ripple
+     * @param nx the number of columns in the dataset.
+     * @param ny the number of rows in the dataset.
+     */
     public RipplesDataSet( double x1, double y1, double p1, double x2, double y2, double p2, int xlength, int ylength ) {
         super(xlength,ylength);
         this.x1= x1;
@@ -49,7 +60,6 @@ public final class RipplesDataSet extends FunctionTableDataSet implements TableD
         this.y2= y2;
         this.p2= p2;
         fillCache();
-        /** Creates a new instance of RipplesDataSet */
     }    
     
     public double getDoubleImpl(int i, int j, Units units) {
