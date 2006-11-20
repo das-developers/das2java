@@ -213,7 +213,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                             if ( rebinWeights[ii][iy]>0.0 ) continue;
                             if ( wds.getDouble(ix,j0,wunits) * wds.getDouble(ix,j1,wunits) == 0. ) continue;
                             rebinData[ii][iy]= ( 1-alpha ) * tds.getDouble(ix,j0,zunits)
-                            + alpha * tds.getDouble(ix,j1,zunits) ;
+                                    + alpha * tds.getDouble(ix,j1,zunits) ;
                             rebinWeights[ii][iy]= 1.0;
                         }
                     }
@@ -371,8 +371,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if (ii1 > -1) {
                         i1[i] = -1;
                         i2[i] = -1;
-                        for (int ii = i - 1; ii >= ii1; ii--) {
-                            ii2 = i;
+                        ii2 = i;
+                        for ( int ii = ii1 +1; ii < i; ii++ ) {
                             i1[ii] = ii1;
                             i2[ii] = ii2;
                         }
@@ -386,8 +386,8 @@ public class AverageTableRebinner implements DataSetRebinner {
             
             for (int i = 0; i < nx; i++) {
                 
-                if (i1[i] != -1) {
-                    if ( (xTags[i2[i]] - xTags[i1[i]]) < xSampleWidth * 1.5 ) {
+                if (i1[i] != -1) { // needs to be interpolated
+                    if ( (xTags[i2[i]] - xTags[i1[i]]) <= xSampleWidth * 2.0 ) {
                         a2 = (float)((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));
                         a1 = 1.f - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
@@ -449,8 +449,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if ((ii1 > -1)) {   // need restriction on Y gap size
                         i1[j] = -1;
                         i2[j] = -1;
+                        ii2 = j;
                         for (int jj=j-1; jj>=ii1; jj--) {
-                            ii2 = j;
                             i1[jj] = ii1;
                             i2[jj] = ii2;
                         }
