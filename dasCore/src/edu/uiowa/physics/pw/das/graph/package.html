@@ -1,0 +1,18 @@
+  <body>
+<p>Mostly contains DasCanvasComponents, which are components that live within
+the DasCanvas, and Renderers which draw on DasPlots.  DasCanvas, a subclass of
+JComponent, is the container for drawing graphics in das2.  DasCanvasComponents
+are added to the DasCanvas to set up the graphic.  DasCanvasComponents include
+objects like DasAxis, DasColorBar, and DasPlot, but are simply objects that
+occupy a region of the canvas specified with a DasRow (vertical position) and 
+DasColumn (horizontal position).  Note too the CanvasComponents can be
+heirarchitical, for example a DasPlot contains two DasAxes.  Each CanvasComponent
+has a DasMouseInputAdapter that handles mouse and keyboard events for the
+component.
+</p>
+<p>To add new 2-D plotting capabilities, Renderers are introduced to paint
+the space defined by an x and y axis.  Examples of Renderers are SymbolLineRenderer 
+(line plots) and SpectrogramRenderer (spectrograms).
+</p>
+
+  </body>
