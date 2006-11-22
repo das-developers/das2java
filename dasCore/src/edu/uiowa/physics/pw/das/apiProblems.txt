@@ -6,3 +6,13 @@
     4. need definition of how key strokes can be used, which are used by the DMIA which
          can the mousemodule use.
    
+2. system/das package
+  1. DasApplication
+    1. DasApplication.getDefaultApplication() does not allow for multiple applications to
+       run within the same java context, as in a web applications server.
+    2. Perhaps the application object should be explicitly created, then canvases and JPanels attached to
+       it.  An implicit application object, perhaps the legacy DasApplication.getDefaultApplication()
+       could be used as well.
+
+    
+     
