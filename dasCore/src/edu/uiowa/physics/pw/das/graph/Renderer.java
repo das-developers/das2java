@@ -39,25 +39,49 @@ import org.w3c.dom.*;
 
 public abstract class Renderer implements DataSetConsumer, Editable {
 
-    // dsd reloads ds when plot params change.
-    //  private DataSetDescriptor dsd;
+    /**
+     * identifies the dataset (in the DataSetDescriptor sense) being plotted
+     * by the Renderer.  May be null if no such identifier exists.  See 
+     * DataSetDescriptor.create( String id ).
+     */
     String dataSetId;
 
-    // avoid get/set methods unless you know what you're doing.
+    /**
+     * The dataset that is being plotted by the Renderer.  
+     */
     protected DataSet ds;
 
+    /**
+     * Memento for x axis state last time updatePlotImage was called.
+     */
     private DasAxis.Memento xmemento;
+
+    /**
+     * Memento for y axis state last time updatePlotImage was called.
+     */
     private DasAxis.Memento ymemento;
 
+    /**
+     * plot containing this renderer
+     */
     DasPlot parent;
+    
+    /**
+     * the responsibility of keeping a relevant dataset loaded.  Can be null
+     * if a loading mechanism is not used.  The DataLoader will be calling
+     * setDataSet and setException.
+     */
     DataLoader loader;
 
+    /**
+     * When a dataset cannot be loaded, the exception causing the failure
+     * will be rendered instead.
+     */
     protected Exception lastException;
 
     protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
 
     protected Renderer( DataSetDescriptor dsd ) {
-        // this.dsd = dsd;
         this.loader= new XAxisDataLoader( this, dsd );
     }
 
@@ -79,6 +103,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public DataSet getDataSet() { return this.ds; }
 
     private boolean dumpDataSet;
+    
     /** Getter for property dumpDataSet.
      * @return Value of property dumpDataSet.
      *
@@ -87,7 +112,8 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         return this.dumpDataSet;
     }
 
-    /** Setter for property dumpDataSet.
+    /** Setter for property dumpDataSet setting this to 
+     * true causes the dataSet to be dumped.
      * @param dumpDataSet New value of property dumpDataSet.
      *
      */
