@@ -40,8 +40,16 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
     Datum period;
     Datum phase;
     
-    /** Creates a new instance of SineWaveDataSetDescriptor */
     public SineWaveDataSetDescriptor( Datum amplitude, Datum period ) {
+        this( amplitude, period, null );
+    }
+    
+    /** 
+     * Creates a new instance of SineWaveDataSetDescriptor
+     * @param the value of x where the angle is zero.  Period is in the offset units of phase.   null indicates that the phase is arbitrary.
+     * 
+     */
+    public SineWaveDataSetDescriptor( Datum amplitude, Datum period, Datum phase ) {
         super(null);
         if ( 0. == period.doubleValue(period.getUnits() ) ) {
             throw new IllegalArgumentException( "period is zero" );
@@ -49,7 +57,7 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
             
         this.amplitude= amplitude;        
         this.period= period;
-        this.phase= null; // arbitary by intent        
+        this.phase= phase;
     }
     
     public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {        
