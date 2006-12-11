@@ -52,7 +52,7 @@ public class DumpToFileMouseModule extends MouseModule {
         xrange= new DatumRange( xAxis.invTransform(e.getXMinimum()), xAxis.invTransform(e.getXMaximum()) );
         yrange= new DatumRange( yAxis.invTransform(e.getYMaximum()), yAxis.invTransform(e.getYMinimum()) );
         
-        DataSet ds= dsConsumer.getDataSet();
+        DataSet ds= dsConsumer.getConsumedDataSet();
         
         if ( ds==null ) {
             UserMessageCenter.getDefault().notifyUser( this, "This renderer doesn't have a dataset loaded" );

@@ -94,7 +94,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     }
     
     private void recalculate( ) {
-        TableDataSet tds= (TableDataSet)dataSetConsumer.getDataSet();
+        TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
         tds= new ClippedTableDataSet( tds, xrange, yrange );
         
         // average the data down to xResolution
@@ -317,7 +317,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         
         public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
             this.lastSelectedPoint= event;
-            TableDataSet tds= (TableDataSet)dataSetConsumer.getDataSet();
+            TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
             
             this.xValue= event.getX();
             this.yValue= event.getY();

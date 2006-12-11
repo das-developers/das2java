@@ -75,7 +75,7 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
             Datum yMax = yAxis.invTransform(e.getYMaximum());
             BoxSelectionEvent evt = new BoxSelectionEvent(this, xMin, xMax, yMin, yMax);
             if (consumer != null) {
-                evt.setDataSet(consumer.getDataSet());
+                evt.setDataSet(consumer.getConsumedDataSet());
             }
             fireBoxSelected(evt);
         }

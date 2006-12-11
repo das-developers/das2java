@@ -187,7 +187,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
     }
     
     private void recalculate( ) {
-        TableDataSet tds= (TableDataSet)dataSetConsumer.getDataSet();
+        TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
         tds= new ClippedTableDataSet( tds, xrange, yrange );
         
         DatumRange range= DataSetUtil.xRange( tds );
@@ -457,7 +457,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             logger.fine("got DataPointSelectionEvent: "+event.getX() );
             this.lastSelectedPoint= event;
             
-            TableDataSet tds= (TableDataSet)dataSetConsumer.getDataSet();
+            TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
             
             this.xValue= event.getX();
             this.yValue= event.getY();

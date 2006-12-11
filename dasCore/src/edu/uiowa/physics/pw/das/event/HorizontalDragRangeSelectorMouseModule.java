@@ -98,7 +98,7 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
      */
     private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event) {
         if ( dataSetConsumer instanceof TableDataSetConsumer ) {
-            event.setDataSet(dataSetConsumer.getDataSet());
+            event.setDataSet(dataSetConsumer.getConsumedDataSet());
         }
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();

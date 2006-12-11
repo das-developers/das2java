@@ -158,7 +158,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {        
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHints((RenderingHints)edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
-        ds= dataSetConsumer.getDataSet();        
+        ds= dataSetConsumer.getConsumedDataSet();        
         Rectangle[] superDirty= null;
         
         if (crossHairLocation==null) {

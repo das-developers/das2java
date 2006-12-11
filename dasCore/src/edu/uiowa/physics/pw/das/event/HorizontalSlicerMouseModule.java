@@ -78,7 +78,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     }
     
     public void mousePointSelected(MousePointSelectionEvent e) {
-        edu.uiowa.physics.pw.das.dataset.DataSet ds= dataSetConsumer.getDataSet();
+        edu.uiowa.physics.pw.das.dataset.DataSet ds= dataSetConsumer.getConsumedDataSet();
         de.setDataSet(ds);
         de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
 

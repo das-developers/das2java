@@ -173,10 +173,17 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     };
     
     public DataSet getDataSet() {
+        // TODO: get rid of this!!!
+        return Data;
+    }
+    
+    public DataSet getConsumedDataSet() {
+        // TODO: get rid of this!!!
         return Data;
     }
     
     public DataSet getData() {
+        // TODO: get rid of this!!!
         return Data;
     }
     
@@ -537,6 +544,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     public void setData(DataSet ds) {
+        // TODO: get rid of this!!!
         this.Data= ds;
         markDirty();
     }

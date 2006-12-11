@@ -63,7 +63,7 @@ public class CrossHairMouseModule extends MouseModule {
     }
     
     protected DataPointSelectionEvent getDataPointSelectionEvent(MousePointSelectionEvent e) {
-        de.setDataSet(dataSetConsumer.getDataSet());
+        de.setDataSet(dataSetConsumer.getConsumedDataSet());
         DasAxis xa, ya;
         xa= ( this.xaxis==null ) ? plot.getXAxis() : xaxis;
         ya= ( this.yaxis==null ) ? plot.getYAxis() : yaxis;
