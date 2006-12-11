@@ -268,7 +268,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     private void reportCount() {
-        // System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+        if ( updateImageCount%10 == 0 ) {
+            //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );    
+        }
+        
     }
     
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
@@ -509,7 +512,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return null;
     }
     
-    public DataSet getDataSet() {
+    public DataSet getConsumedDataSet() {
         if ( sliceRebinnedData ) {
             return rebinDataSet;
         } else {
