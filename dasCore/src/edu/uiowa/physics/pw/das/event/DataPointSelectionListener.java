@@ -28,5 +28,5 @@ package edu.uiowa.physics.pw.das.event;
  * @author  jbf
  */
 public abstract interface DataPointSelectionListener extends java.util.EventListener {
-    public void DataPointSelected(DataPointSelectionEvent e);
+    public void dataPointSelected(DataPointSelectionEvent e);
 }
