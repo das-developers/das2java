@@ -42,13 +42,13 @@ public class Legend extends DasCanvasComponent {
         }
         
         /**
-         * return the Renderer or null if no renderer is associated with the 
+         * return the Renderer or null if no renderer is associated with the
          * legendElement.
          */
         Renderer getRenderer() {
             return rend;
         }
-
+        
         private String getLabel() {
             return label;
         }
@@ -76,7 +76,7 @@ public class Legend extends DasCanvasComponent {
     
     public Legend(  ) {
         elements= new ArrayList();
-        getMouseAdapter().addMenuItem( new JMenuItem( getEditAction() ) );        
+        getMouseAdapter().addMenuItem( new JMenuItem( getEditAction() ) );
     }
     
     private Action getEditAction() {
@@ -92,11 +92,11 @@ public class Legend extends DasCanvasComponent {
         };
     }
     
-    public static Icon getIcon( Color color ) {        
+    public static Icon getIcon( Color color ) {
         Image image= new BufferedImage(6,10,BufferedImage.TYPE_INT_RGB);
         Graphics g2= image.getGraphics();
         g2.setColor(color);
-        g2.fillRect(0,0,6,10);        
+        g2.fillRect(0,0,6,10);
         return new ImageIcon( image );
     }
     
@@ -121,12 +121,18 @@ public class Legend extends DasCanvasComponent {
     }
     
     public void resize() {
-        setBounds( DasRow.toRectangle(getRow(), getColumn()) );
+        int xmin=getColumn().getDMinimum();
+        int ymin=getRow().getDMinimum();
+        Rectangle r=  new java.awt.Rectangle(xmin,ymin,
+                getColumn().getDMaximum()-xmin + 1,
+                getRow().getDMaximum()-ymin + 1);
+        setBounds( r );
     }
     
     public void paintComponent( Graphics g1 ) {
         if ( elements.size()==0 ) {
             logger.fine("no elements in legend, returning.");
+            getMouseAdapter().paint(g1);
             return;
         }
         Graphics2D g= (Graphics2D) g1;
@@ -135,7 +141,7 @@ public class Legend extends DasCanvasComponent {
         int x= 5; //pixels
         int y= 5;
         FontMetrics fm= g.getFontMetrics();
-                
+        
         Color color0= g.getColor();
         
         locator= new ObjectLocator();
@@ -158,7 +164,7 @@ public class Legend extends DasCanvasComponent {
         }
         
         if ( !allVisible ) {
-            Font font0= g.getFont();            
+            Font font0= g.getFont();
             g.setFont( font0.deriveFont(font0.getSize()*0.66f) );
             y+= g.getFontMetrics().getHeight()/2;
             g.setFont(font0);
@@ -171,10 +177,10 @@ public class Legend extends DasCanvasComponent {
         g.setColor( Color.DARK_GRAY );
         
         g.draw( new Rectangle( 0,0, maxWidth+10, y-1 ) );
-                
+        
         x= 5;
         y= 5;
-                
+        
         for ( int i=0; i<elements.size(); i++ ) {
             LegendElement e= (LegendElement)elements.get(i);
             Icon icon= e.getIcon();
@@ -186,12 +192,12 @@ public class Legend extends DasCanvasComponent {
             }
             g.drawString( e.getLabel()+invisibleString, x+20, y+icon.getIconHeight() );
             int itemHeight= ( fm.getHeight() > icon.getIconHeight() ? fm.getHeight() : icon.getIconHeight() + border );
-            locator.addObject( new Rectangle( x, y-border/2, maxWidth, itemHeight ), e );          
+            locator.addObject( new Rectangle( x, y-border/2, maxWidth, itemHeight ), e );
             y+= ( fm.getHeight() > icon.getIconHeight() ? fm.getHeight() : icon.getIconHeight() + border );
         }
-
+        
         if ( !allVisible ) {
-            Font font0= g.getFont();            
+            Font font0= g.getFont();
             g.setFont( font0.deriveFont(font0.getSize()*0.66f) );
             y+= g.getFontMetrics().getHeight()/2;
             g.setColor( Color.DARK_GRAY );
@@ -199,26 +205,13 @@ public class Legend extends DasCanvasComponent {
             g.setFont(font0);
             y+= g.getFontMetrics().getHeight()/2;
         }
-                
+        
         g.setColor( color0 );
         int width= maxWidth+10+1;
         int height= y;
         
-        /* experiment with resetting the row and column bounds.
-         if ( width != getColumn().getWidth() ||  height!=getRow().getHeight() ) {
-            Rectangle oldBounds= getBounds();
-            int ymin= getRow().getDMinimum();
-            int xmin= getColumn().getDMinimum();
-            System.out.println( ""+(maxWidth+10)+"  "+ y );
-            getRow().setDPosition( ymin, ymin + height );
-            getColumn().setDPosition( xmin, xmin+width );
-            
-            oldBounds.width= oldBounds.width+1;
-            oldBounds.height= oldBounds.height+1;
-            
-            getCanvas().repaint( oldBounds );
-        }
-        */
+        getMouseAdapter().paint(g1);
+        
     }
     
 }
