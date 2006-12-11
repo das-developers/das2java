@@ -28,8 +28,14 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 
 /**
+ * This class wraps a DataSet to use where DataSetDescriptors are required.  This 
+ * trivially returns the wrapped DataSet regardless of the getDataSet parameters.
+ * Originally this class was used with Renderers, which needed a DataSetDescriptor 
+ * for their operation.  Now that they interact only with DataSets, and this
+ * class should not be used with them, use Renderer.setDataSet instead.
  *
- * @author  eew
+ * @author eew
+ * 
  */
 public class ConstantDataSetDescriptor extends DataSetDescriptor {
     
