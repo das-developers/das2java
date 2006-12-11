@@ -25,9 +25,9 @@ public class WaveformToSpectrum {
                 throw new IllegalArgumentException( "units not supported: "+unit );
             }
         }
-    }    
-
-    static DatumVector getFrequencyDomainTags( DatumVector timeDomainTags ) {                
+    }
+    
+    static DatumVector getFrequencyDomainTags( DatumVector timeDomainTags ) {
         Units timeUnit= timeDomainTags.getUnits();
         double[] x= timeDomainTags.toDoubleArray(timeUnit);
         double[] result= new double[x.length];
@@ -121,6 +121,38 @@ public class WaveformToSpectrum {
         return array;
     }
     
+    public static TableDataSet getTableDataSet2( VectorDataSet vds, int windowSize ) {
+        GeneralFFT fft= GeneralFFT.newDoubleFFT( windowSize );
+        
+        if ( !checkXTagsGrid(vds) ) {
+            throw new IllegalArgumentException( "xtags don't appear to be gridded" );
+        }
+        
+        Units xUnits= vds.getXUnits();
+        
+        double[] yt= FFTUtil.getFrequencyDomainTags( 1 / ( vds.getXTagDouble(1,xUnits) - vds.getXTagDouble(0,xUnits) ), windowSize/2 );
+        DatumVector yTags= DatumVector.newDatumVector(yt,UnitsUtil.getInverseUnit(xUnits.getOffsetUnits()));
+        
+        Units zUnits= vds.getYUnits();
+        TableDataSetBuilder tdsb= new TableDataSetBuilder( vds.getXUnits(), yTags.getUnits(), zUnits );
+        
+        int nTableXTags= vds.getXLength() / windowSize;
+        
+        VectorDataSet window= FFTUtil.getWindow10PercentEdgeCosine(windowSize);
+        double[] d= new double[windowSize/2];
+        for ( int i=0; i<nTableXTags; i++ ) {
+            VectorDataSet ds= FFTUtil.fftPower( fft, new ClippedVectorDataSet( vds, i*windowSize, windowSize ) );
+//            tdsb.insertYScan( vds.getXTagDatum((int)((i+0.5)*windowSize)), yTags, DatumVector.newDatumVector( zBuf, zUnits ) );
+            Units u= ds.getYUnits();
+            for ( int j=0; j<d.length; j++ ) d[j]= ds.getDouble(j,u);
+            tdsb.insertYScan( vds.getXTagDatum((int)((i+0.5)*windowSize)),
+                    yTags,
+                    DatumVector.newDatumVector(d,u) );
+        }
+        
+        return tdsb.toTableDataSet();
+    }
+    
     public static TableDataSet getTableDataSet( VectorDataSet vds, int windowSize ) {
         
         if ( !checkXTagsGrid(vds) ) {
@@ -132,9 +164,9 @@ public class WaveformToSpectrum {
             Units xUnits;
             Units xOffsetUnits;
             xUnits= vds.getXUnits();
-            xOffsetUnits= xUnits.getOffsetUnits();            
-            Units timeDomainUnits= xOffsetUnits;     
-
+            xOffsetUnits= xUnits.getOffsetUnits();
+            Units timeDomainUnits= xOffsetUnits;
+            
             double[] buf= new double[windowSize];
             double base= vds.getXTagDouble( 0, vds.getXUnits() ); /* getDouble used here accidentally--API need work? */
             for ( int i=0; i<windowSize; i++ ) {
@@ -162,7 +194,7 @@ public class WaveformToSpectrum {
                 zBuf[j-1]= Math.sqrt( buf[0][j]*buf[0][j] + buf[1][j]*buf[1][j]  );
             }
             tdsb.insertYScan( vds.getXTagDatum((int)((i+0.5)*windowSize)), yTags, DatumVector.newDatumVector( zBuf, zUnits ) );
-        }        
+        }
         return tdsb.toTableDataSet();
     }
     
