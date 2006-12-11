@@ -31,6 +31,8 @@ import java.awt.Rectangle;
 public class EventsRenderer extends Renderer {
     
     int[] eventMap;
+
+    private EventsRenderer.ColorSpecifier colorSpecifier=null;
     
     public EventsRenderer( DataSetDescriptor dsd ) {
         super(dsd);
@@ -38,6 +40,23 @@ public class EventsRenderer extends Renderer {
     
     public EventsRenderer( ) {
         super();
+    }
+    
+    public interface ColorSpecifier {
+        /**
+         * returns a color for the given datum.  null may be returned, indicating the 
+         * default color should be used.
+         */
+        Color getColor( Datum d );
+    }
+    
+    /**
+     * set this to be an object implementing ColorSpecifier interface, if more than 
+     * one color is to be used when drawing the bars.  Setting this to null will
+     * restore the initial behavior of drawing all bars in one color.
+     */
+    public void setColorSpecifier( ColorSpecifier spec ) {
+        this.colorSpecifier= spec;
     }
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
@@ -87,8 +106,6 @@ public class EventsRenderer extends Renderer {
         
     }
     
-    
-    
     private MouseModule getMouseModule() {
         return new MouseModule( parent, new DragRenderer(parent), "event lookup" );
     }
@@ -126,6 +143,7 @@ public class EventsRenderer extends Renderer {
                 int ivds0= 0;
                 int ivds1= vds.getXLength();
                 for ( int i=ivds0; i<ivds1; i++ ) {
+                    
                     Datum x= vds.getXTagDatum(i);
                     int ix= (int)xAxis.transform(x);
                     int iwidth;
@@ -135,6 +153,12 @@ public class EventsRenderer extends Renderer {
                     } else {
                         iwidth= 1;
                     }
+                    
+                    if ( colorSpecifier!=null ) {
+                        Datum sz= vds.getDatum(i);
+                        g.setColor( colorSpecifier.getColor(sz) );
+                    }
+                    
                     if ( column.getDMinimum() < ( ix+iwidth ) ||
                             column.getDMaximum() > (ix) ) {
                         if ( iwidth==0 ) iwidth=1;
