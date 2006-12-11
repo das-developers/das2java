@@ -15,6 +15,7 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DataLoader;
 import edu.uiowa.physics.pw.das.graph.Renderer;
 import edu.uiowa.physics.pw.das.system.DasLogger;
+import edu.uiowa.physics.pw.das.system.RequestProcessor;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.util.logging.Logger;
 
@@ -83,35 +84,38 @@ public class MendelbrotDataLoader extends DataLoader {
                 }
             }
             
+            final String taskDescription= "mendelbrot x:"+xAxis.getMemento()+" y:"+ yAxis.getMemento();
+            
             if ( completedRequest!=null ) {
                 if ( ( xAxis.getMemento().equals( completedRequest.xmem ) && yAxis.getMemento().equals( completedRequest.ymem ) ) ) {
-                    logger.fine( "ignore satisfied request" );
+                    logger.fine( "ignore satisfied request "+taskDescription );
                     return;
                 }
             }
             
-            final String taskDescription= "mendelbrot x:"+xAxis.getMemento()+" y:"+ yAxis.getMemento();
             currentRequest= new DataLoader.Request( getMonitor(taskDescription), xAxis.getMemento(), yAxis.getMemento() );
             
-            Thread t= new Thread( new Runnable() {
+            Runnable run= new Runnable() {
                 public void run( ) {
                     try {
-                        DataSet result= getDataSet( xRebinDescriptor, yRebinDescriptor, getMonitor(taskDescription) );
+                        logger.fine( "calculate dataset for "+taskDescription );
+                        DataSet result= getDataSet( xRebinDescriptor, yRebinDescriptor, getMonitor(taskDescription) , taskDescription );
+                        System.err.println( result.getProperty("TaskDescription") );
                         getRenderer().setDataSet( result );
                         completedRequest= currentRequest;
+                        logger.fine( "completed "+taskDescription );
                         currentRequest= null;
                     } catch ( DasException e ) {
                         getRenderer().setException( e );
                     }
                     
                 }
-            } );
-            
-            t.start();
+            };
+            RequestProcessor.invokeAfter( run, this.getRenderer() );
         }
     }
     
-    private DataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, DasProgressMonitor monitor) throws DasException {
+    private DataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, DasProgressMonitor monitor, String desc) throws DasException {
         
         double xstart, xend, xresolution;
         xstart= ddx.binCenter(0, Units.dimensionless );
@@ -154,7 +158,7 @@ public class MendelbrotDataLoader extends DataLoader {
         
         result.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, Units.dimensionless.createDatum(yresolution*2) );
         result.setProperty( DataSet.PROPERTY_Y_TAG_WIDTH, Units.dimensionless.createDatum(yresolution*2.) );
-        
+        result.setProperty( "TaskDescription", desc );
         return result;
         
     }
@@ -162,7 +166,7 @@ public class MendelbrotDataLoader extends DataLoader {
     public void setLimit( int limit ) {
         if ( this.limit!=limit ) {
             this.limit= limit;
-            getRenderer().update();
+            update();
         }
     }
     
@@ -186,7 +190,7 @@ public class MendelbrotDataLoader extends DataLoader {
         if ( this.overSampleFactor!=overSampleFactor ) {
             this.overSampleFactor = overSampleFactor;
             completedRequest=null;
-            getRenderer().update();
+            update();
         }
     }
     
