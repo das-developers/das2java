@@ -28,5 +28,5 @@ package edu.uiowa.physics.pw.das.event;
  * @author  jbf
  */
 public abstract interface DataRangeSelectionListener extends java.util.EventListener {
-    public void DataRangeSelected(DataRangeSelectionEvent e);    
+    public void dataRangeSelected(DataRangeSelectionEvent e);    
 }
