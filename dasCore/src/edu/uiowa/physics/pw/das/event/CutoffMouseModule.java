@@ -242,7 +242,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
                     new VerticalSliceSelectionRenderer(topPlot), "tweak cutoff" );
             tweakSlicer.setDragEvents(true); // only key events fire
             tweakSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
-                public void DataPointSelected( DataPointSelectionEvent e ) {
+                public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum x= e.getX();
                     HashMap properties= new HashMap();
                     if ( e.getPlane("keyChar")!=null ) {
@@ -262,7 +262,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
                     new DataPointSelectorMouseModule( topPlot, levelRenderer,
                     new HorizontalSliceSelectionRenderer(topPlot), "cutoff level" );
             levelSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
-                public void DataPointSelected( DataPointSelectionEvent e ) {
+                public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum y= e.getY();
                     CutoffMouseModule.this.setLevelMin( y );                    
                 }
@@ -291,7 +291,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
                     new DataPointSelectorMouseModule( plot, levelRenderer,
                     new HorizontalSliceSelectionRenderer( plot ), "slope level" );
             slopeSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
-                public void DataPointSelected( DataPointSelectionEvent e ) {
+                public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum y= e.getY();
                     CutoffMouseModule.this.setSlopeMin( y );                    
                 }
@@ -312,10 +312,10 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         }
         
         private void recalculate( ) {
-            DataPointSelected(lastSelectedPoint);
+            dataPointSelected(lastSelectedPoint);
         }
         
-        public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
+        public void dataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
             this.lastSelectedPoint= event;
             TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
             

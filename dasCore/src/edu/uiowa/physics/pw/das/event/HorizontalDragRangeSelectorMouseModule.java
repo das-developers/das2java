@@ -104,7 +104,7 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.DataRangeSelectionListener)listeners[i+1]).DataRangeSelected(event);
+                ((edu.uiowa.physics.pw.das.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
             }
         }
     }

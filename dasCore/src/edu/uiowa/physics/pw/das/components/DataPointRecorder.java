@@ -389,7 +389,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 
                 DataPointSelectionEvent e;
                 e= new DataPointSelectionEvent(this, x, y, planes );
-                DataPointSelected(e);
+                dataPointSelected(e);
             } catch ( ParseException e ) {
                 throw new RuntimeException(e);
             }
@@ -768,7 +768,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         };
     }
     
-    public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
+    public void dataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
         String comment="";
         HashMap planesMap;
         if ( e instanceof CommentDataPointSelectionEvent ) {
@@ -898,7 +898,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).DataPointSelected(event);
+                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).dataPointSelected(event);
             }
         }
     }

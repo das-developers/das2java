@@ -124,7 +124,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y + height);
     }
     
-    public void DataPointSelected(DataPointSelectionEvent e) {
+    public void dataPointSelected(DataPointSelectionEvent e) {
                 
         DataSet ds = e.getDataSet();
         if (ds==null || !(ds instanceof TableDataSet)) {

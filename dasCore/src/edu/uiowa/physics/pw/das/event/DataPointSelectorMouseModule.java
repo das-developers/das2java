@@ -121,7 +121,7 @@ public class DataPointSelectorMouseModule extends MouseModule {
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).DataPointSelected(event);
+                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).dataPointSelected(event);
             }
         }
     }

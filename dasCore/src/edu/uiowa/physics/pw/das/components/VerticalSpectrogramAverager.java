@@ -135,7 +135,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         g.drawLine(ix-3,iy1,ix,iy1-3);*/
     }
     
-    public void DataRangeSelected(DataRangeSelectionEvent e) {
+    public void dataRangeSelected(DataRangeSelectionEvent e) {
         DataSet ds = e.getDataSet();
         if (ds==null || !(ds instanceof TableDataSet))
             return;

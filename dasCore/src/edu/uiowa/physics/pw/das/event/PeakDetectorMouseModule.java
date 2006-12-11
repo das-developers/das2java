@@ -349,7 +349,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             public void actionPerformed( ActionEvent e ) {
                 Datum xnew= xValue.subtract( xResolution );
                 DataPointSelectionEvent evNew= new DataPointSelectionEvent( this, xnew, yValue );
-                PeakSlicer.this.DataPointSelected(evNew);
+                PeakSlicer.this.dataPointSelected(evNew);
             }
         } ;
         
@@ -357,7 +357,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             public void actionPerformed( ActionEvent e ) {
                 Datum xnew= xValue.add( xResolution );
                 DataPointSelectionEvent evNew= new DataPointSelectionEvent( this, xnew, yValue );
-                PeakSlicer.this.DataPointSelected(evNew);
+                PeakSlicer.this.dataPointSelected(evNew);
             }
         } ;
         
@@ -412,13 +412,13 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
                     } else if ( event.getKeyCode()==KeyEvent.VK_UP ) {
                         Datum xnew= xValue.subtract( xResolution );
                         DataPointSelectionEvent evNew= new DataPointSelectionEvent( this, xnew, yValue );
-                        PeakSlicer.this.DataPointSelected(evNew);
+                        PeakSlicer.this.dataPointSelected(evNew);
                     }
                 }
             };
             tweakSlicer.setDragEvents(true); // only key events fire
             tweakSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
-                public void DataPointSelected( DataPointSelectionEvent e ) {
+                public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum x= e.getX();
                     HashMap properties= new HashMap();
                     if ( e.getPlane("keyChar")!=null ) {
@@ -438,7 +438,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
                     new DataPointSelectorMouseModule( topPlot, levelRenderer,
                     new HorizontalSliceSelectionRenderer(topPlot), "peak S/N level" );
             levelSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
-                public void DataPointSelected( DataPointSelectionEvent e ) {
+                public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum y= e.getY();
                     PeakDetectorMouseModule.this.setLevelMin( y );
                 }
@@ -453,7 +453,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
         }
         
         
-        public void DataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
+        public void dataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
             logger.fine("got DataPointSelectionEvent: "+event.getX() );
             this.lastSelectedPoint= event;
             

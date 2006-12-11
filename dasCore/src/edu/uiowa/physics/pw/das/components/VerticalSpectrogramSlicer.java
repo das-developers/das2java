@@ -165,7 +165,7 @@ extends DasPlot implements DataPointSelectionListener {
         return ( popupWindow != null && popupWindow.isVisible()) && getCanvas() != null;
     }
     
-    public void DataPointSelected(DataPointSelectionEvent e) {    
+    public void dataPointSelected(DataPointSelectionEvent e) {    
         long xxx[]= { 0,0,0,0 };
         xxx[0] = System.currentTimeMillis()-e.birthMilli;    
         

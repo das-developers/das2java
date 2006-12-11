@@ -38,14 +38,14 @@ public class DasEventMulticaster extends java.awt.AWTEventMulticaster
         super(a, b);
     }
 
-    public void DataPointSelected(DataPointSelectionEvent e) {
-        ((DataPointSelectionListener)a).DataPointSelected(e);
-        ((DataPointSelectionListener)b).DataPointSelected(e);
+    public void dataPointSelected(DataPointSelectionEvent e) {
+        ((DataPointSelectionListener)a).dataPointSelected(e);
+        ((DataPointSelectionListener)b).dataPointSelected(e);
     }
 
-    public void DataRangeSelected(DataRangeSelectionEvent e) {
-        ((DataRangeSelectionListener)a).DataRangeSelected(e);
-        ((DataRangeSelectionListener)b).DataRangeSelected(e);
+    public void dataRangeSelected(DataRangeSelectionEvent e) {
+        ((DataRangeSelectionListener)a).dataRangeSelected(e);
+        ((DataRangeSelectionListener)b).dataRangeSelected(e);
     }
 
     public void timeRangeSelected(TimeRangeSelectionEvent e) {

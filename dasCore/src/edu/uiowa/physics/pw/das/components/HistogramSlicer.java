@@ -129,7 +129,7 @@ public class HistogramSlicer extends DasPlot implements DataPointSelectionListen
         popupWindow.setLocation(parentLocation.x + renderer.getParent().getCanvas().getWidth(),parentLocation.y + height);
     }
     
-    public void DataPointSelected(DataPointSelectionEvent e) {
+    public void dataPointSelected(DataPointSelectionEvent e) {
                 
         DataSet ds = e.getDataSet();
         if (ds==null || !(ds instanceof TableDataSet)) {

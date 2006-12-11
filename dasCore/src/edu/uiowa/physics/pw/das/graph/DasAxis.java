@@ -2087,7 +2087,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param e
      */
-    public void DataRangeSelected(DataRangeSelectionEvent e) {
+    public void dataRangeSelected(DataRangeSelectionEvent e) {
         this.setDataRange(e.getMinimum(),e.getMaximum());
     }
 
