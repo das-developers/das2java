@@ -30,5 +30,5 @@ import edu.uiowa.physics.pw.das.dataset.DataSet;
  * @author  jbf
  */
 public interface DataSetConsumer {
-    public DataSet getDataSet();
+    public DataSet getConsumedDataSet();
 }
