@@ -186,6 +186,10 @@ public final class TimeUtil {
         return Datum.create( us2000 + d.millis * 1000 + d.micros, Units.us2000 );
     }
 
+    /**
+     * splits the time location datum into y,m,d,etc components.  Note that
+     * seconds is a double, and micros will be 0.
+     */
     public static TimeStruct toTimeStruct(Datum datum) {
         int jalpha, j1, j2, j3, j4, j5;
         int year, month, day, hour, minute;
