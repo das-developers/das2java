@@ -31,7 +31,10 @@ public abstract class DataLoader {
     }
     
     /**
-     * an update message sent by the Renderer to indicate that something might have changed
+     * an update message sent by the Renderer to indicate that something might have changed.  
+     * Presently, the axis will send an update message to the plot, the plot will send an
+     * update message to the renderer, who will send an update message to the loader.  
+     * THIS WILL PROBABLY CHANGE.
      */
     abstract public void update();
     
@@ -43,6 +46,7 @@ public abstract class DataLoader {
     public void setFullResolution(boolean b) {
         if (fullResolution == b) return;
         fullResolution = b;
+        update();
     }
     
     // reloadDataSet is a dummy property that is Jeremy's way of telling the thing to
