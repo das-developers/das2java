@@ -254,6 +254,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
         this.dsd.reset();
     }
     
+    //TODO: this shadows the same property of the super class.  This should be cleaned up.
     private boolean fullResolution = false;
     public boolean isFullResolution() {
         return fullResolution;
