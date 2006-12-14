@@ -93,7 +93,7 @@ public class DatumRange implements Comparable {
      * returns true if the Datum is in the range, inclusive of the
      * lesser point but exclusive of the greater point.
      * @param d
-     * @return
+     * @return true if d is in the range, exclusive of max.
      */
     public boolean contains( Datum d ) {
         return this.s1.le(d) && d.lt(this.s2);
@@ -103,7 +103,7 @@ public class DatumRange implements Comparable {
      * returns the width of the range, which is simply the greater minus the lessor.
      * Note that the units of the result will not necessarily be the same as the
      * endpoints, for example with LocationDatums.
-     * @return
+     * @return Datum that is the width of the range (max.subtract(min)).
      */
     public Datum width() {
         return this.s2.subtract(this.s1);
@@ -156,6 +156,11 @@ public class DatumRange implements Comparable {
         }
     }
     
+    /**
+     * returns a scaled DatumRange, with a new width that is the this
+     * datumRange's width multiplied by factor, and the same center.
+     * 1.0 is the same range, 2.0 has twice the width, etc.
+     */
     public DatumRange zoomOut( double factor ) {
         double add= (factor-1)/2;
         return rescale( -add, 1+add );
@@ -196,26 +201,52 @@ public class DatumRange implements Comparable {
         return s2;
     }
     
+    /**
+     * returns the next DatumRange covering the space defined by Units.  Some
+     * implementations of DatumRange may return a range with a different width
+     * than this DatumRange's width, for example, when advancing month-by-month
+     * with a MonthDatumRange.
+     */
     public DatumRange next() {
         return rescale(1,2);
     }
     
+    /**
+     * returns the previous DatumRange covering the space defined by Units.  See
+     * next().
+     */
     public DatumRange previous() {
         return rescale(-1,0);
     }
     
+    /**
+     * return a new DatumRange that includes the given Datum, extending the
+     * range if necessary.  For example, 
+     * <pre> [0,1).include(2)->[0,2)
+     * [0,1).include(-1)->[-1,1).
+     * [0,1).include(0.5)->[0,1]  (and returns the same DatumRange object)
+     * </pre>
+     * Also, including a fill Datum returns the same DatumRange as well.
+     */
     public DatumRange include(Datum d) {
         if ( d.isFill() ) return this;
-        if ( this.contains(d) ) return this;
+        if ( this.contains(d) || this.max().equals(d) ) return this;
         Datum min= ( this.min().le(d) ? this.min() : d );
         Datum max= ( this.max().ge(d) ? this.max() : d );
         return new DatumRange( min, max );
     }
     
+    /**
+     * return the units of the DatumRange.
+     */
     public Units getUnits() {
         return this.s1.getUnits();
     }
     
+    /**
+     * creates a new DatumRange object with the range specified in the space
+     * identified by units.  Note that min must be <= max.
+     */
     public static DatumRange newDatumRange(double min, double max, Units units) {
         return new DatumRange( Datum.create(min,units), Datum.create(max,units) );
     }
