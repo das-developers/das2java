@@ -260,6 +260,22 @@ public class TimeParser {
         double us2000= ( mjd1958 - 15340 ) * 86400000000. + seconds + d.millis * 1000 + d.micros;
         return us2000;
     }
+    
+    
+    private double toUs1980( TimeStruct d ) {
+        int year = (int)d.year;
+        int month = (int)d.month;
+        int day = (int)d.day;
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                275 * month / 9 + day + 1721029;
+        int hour = (int)d.hour;
+        int minute = (int)d.minute;
+        double seconds = d.seconds + hour*(float)3600.0 + minute*(float)60.0;
+        double us1980= ( jd - 2436205 - 8035 ) * 86400000000. + seconds * 1e6 + d.millis * 1e3 + d.micros;
+        return us1980;
+    }
+    
     public TimeParser parse( String timeString ) throws ParseException {
         int offs= 0;
         int len= 0;
@@ -332,7 +348,11 @@ public class TimeParser {
     }
     
     public Datum getTimeDatum() {
-        return Units.us2000.createDatum( toUs2000( time ) );
+        if ( time.year < 1990 ) {
+            return Units.us1980.createDatum( toUs1980( time ) );
+        } else {
+            return Units.us2000.createDatum( toUs2000( time ) );
+        }
     }
     
     /**

@@ -117,7 +117,12 @@ public abstract class Units implements Displayable {
      * Microseconds since midnight Jan 1, 2000.
      */
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
-    
+
+    /**
+     * Microseconds since midnight Jan 1, 1980.
+     */
+    public static final TimeLocationUnits us1980= new TimeLocationUnits("us1980", "Microseconds since midnight Jan 1, 1980.",Units.microseconds);
+
     /**
      * Seconds since midnight Jan 1, 2000.
      */    
@@ -141,6 +146,7 @@ public abstract class Units implements Displayable {
     
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
+        ((Units)us1980).registerConverter(us2000, new UnitsConverter.ScaleOffset(1.0, -631152000000000L ) );
         ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1/1000.,63113904000000L ));
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 1.534e4));
