@@ -858,7 +858,23 @@ public class DatumRangeUtil {
         }
     }
     
+    /**
+     * return a list of DatumRanges that together cover the space identified 
+     * by bounds.  The list should contain one DatumRange that is equal to 
+     * element, which should define the phase and period of the list elements.
+     * For example, 
+     * <pre> DatumRange bounds= DatumRangeUtil.parseTimeRangeValid( '2006' );
+     * DatumRange first= DatumRangeUtil.parseTimeRangeValid( 'Jan 2006' );
+     * List list= generateList( bounds, first );</pre>
+     * Note the procedure calls element.previous until bound.min() is contained,
+     * then calls bound.max until bound.max() is contained.
+     *
+     * @param bounds range to be covered.
+     * @param element range defining the width and phase of each list DatumRange.
+     *
+     */
     public static List generateList( DatumRange bounds, DatumRange element ) {
+        
         ArrayList result= new ArrayList();
         DatumRange dr= element;
         while ( dr.max().gt(bounds.min()) ) {

@@ -319,7 +319,14 @@ public class DataSetUtil {
      * provides convenient method for appending datasets together.  The first
      * dataset may be null, in which case the second is trivially returned.
      * Presently a builder is used to create the new dataset, but in the future
-     * more efficient methods will be used.  ds2 must not be null!
+     * more efficient methods will be used.  If both ds1 and ds2 are null, then
+     * null is returned.
+     *
+     * @param ds1 the first data set.  May be null.
+     * @param ds2 the second data set.  This data set should be after ds1, and
+     *    may be null.
+     * @param ct the cache tag for the second dataset.  May be null, in which
+     *    case guessCacheTag is used to identify the dataset cache tag.
      */
     public static DataSet append( DataSet ds1, DataSet ds2, CacheTag ct ) {
         CacheTag resultTag=null;
@@ -354,6 +361,17 @@ public class DataSetUtil {
         }
     }
     
+    /**
+     * provides convenient method for appending datasets together.  The first
+     * dataset may be null, in which case the second is trivially returned.
+     * Presently a builder is used to create the new dataset, but in the future
+     * more efficient methods will be used.  If both ds1 and ds2 are null, then
+     * null is returned.
+     *
+     * @param ds1 the first data set.  May be null.
+     * @param ds2 the second data set.  This data set should be after ds1, and
+     *    may be null.
+     */
     public static DataSet append( DataSet ds1, DataSet ds2 ) {
         return append( ds1, ds2, null );
     }
