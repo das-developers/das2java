@@ -14,8 +14,7 @@ import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
-import java.lang.reflect.InvocationTargetException;
-import java.util.EmptyStackException;
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Logger;
@@ -68,6 +67,29 @@ public final class EventQueueBlocker_1 {
             } else {
                 logger.finer("no update events found, no runnable submitted ");
             }
+        }
+    }
+    
+    /**
+     * method for inspecting the event queue.
+     */
+    public static void dumpEventQueue( PrintStream out ) {
+        
+        EventQueue eventQueue= Toolkit.getDefaultToolkit().getSystemEventQueue();
+        
+        Queue queue= new LinkedList();
+        AWTEvent evt=null;
+        DasUpdateEvent result=null;
+        while ( eventQueue.peekEvent()!=null ) {
+            try {
+                evt= eventQueue.getNextEvent();
+                out.println(evt);
+            } catch (InterruptedException ex) {
+            }
+            queue.add(evt);
+        }
+        while ( queue.size() > 0 ) {
+            eventQueue.postEvent((AWTEvent)queue.remove());
         }
     }
 }
