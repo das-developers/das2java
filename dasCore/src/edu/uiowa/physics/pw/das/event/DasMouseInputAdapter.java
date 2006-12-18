@@ -64,6 +64,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     protected JPopupMenu primaryPopup;
     protected JPopupMenu secondaryPopup;
+    
     private Point primaryPopupLocation;
     private Point secondaryPopupLocation;
     
@@ -79,6 +80,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     
     Logger log= DasLogger.getLogger(DasLogger.GUI_LOG);
     
+    /**
+     * number of additional inserted popup menu items.
+     */
     int numInserted;
     
     protected ActionListener popupListener;
@@ -137,6 +141,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         primaryActionButtonMap= new HashMap();
         secondaryActionButtonMap= new HashMap();
         
+        numInserted= 0;
+        
         if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
             primaryPopup= createPopup();
             secondaryPopup= createPopup();
@@ -148,7 +154,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         
         resizeRenderer= new BoxRenderer(parent);
         
-        numInserted= 0; // number of additional inserted items
         
         dirtyBoundsList= new Rectangle[0];
     }
@@ -179,8 +184,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 
                 String name= module.getLabel();
                 
-                //        popup.setVisible(false);
-                
                 JCheckBoxMenuItem primaryNewItem = new JCheckBoxMenuItem(name);
                 JCheckBoxMenuItem secondaryNewItem = new JCheckBoxMenuItem(name);
                 
@@ -192,8 +195,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 primaryActionButtonMap.put(module,primaryNewItem);
                 secondaryActionButtonMap.put(module,secondaryNewItem);
                 
-                primaryPopup.add( primaryNewItem, primaryActionButtonMap.size()-1 );
-                secondaryPopup.add( secondaryNewItem, secondaryActionButtonMap.size()-1 );
+                // insert the check box after the separator, and at the end of the actions list.
+                primaryPopup.add( primaryNewItem, numInserted + 1 + primaryActionButtonMap.size()-1 );
+                secondaryPopup.add( secondaryNewItem, numInserted + 1 + secondaryActionButtonMap.size()-1 );
                 
             }
         }
@@ -282,7 +286,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         tertiary= module;
     }
     
-    
+    /**
+     * create the popup for the component.  This popup has three
+     * sections:
+     * <pre>1. component actions
+     *2. mouse modules
+     *3. canvas actions</pre>
+     * The variable numInserted is the number of actions inserted, and
+     * is used to calculate the position of inserted mouse modules.
+     */
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
         popupListener = createPopupMenuListener();
@@ -293,7 +305,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             item.setAction(componentActions[iaction]);
             popup.add(item);
         }
+        numInserted= componentActions.length;
         
+        popup.addSeparator();
+        // mouse modules go here
         popup.addSeparator();
         
         Action[] canvasActions = DasCanvas.getActions();
@@ -302,8 +317,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             item.setAction(canvasActions[iaction]);
             popup.add(item);
         }
-        
-        popup.addSeparator();
         
         return popup;
     }
@@ -552,7 +565,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                     result= MouseMode.move;
                     cursor= new Cursor(Cursor.MOVE_CURSOR);
                 }
-            } 
+            }
             
         }
         
