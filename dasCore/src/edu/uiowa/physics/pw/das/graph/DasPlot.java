@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -33,6 +34,7 @@ import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import org.w3c.dom.Document;
@@ -79,13 +81,19 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     static Logger logger= DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG );
     
-    /* cacheImage is a cached image that all the renderers have drawn on.  This
+    /**
+     * cacheImage is a cached image that all the renderers have drawn on.  This
      * relaxes the need for renderers' render method to execute in
      * animation-interactive time.
      */
     boolean cacheImageValid= false;
-    Image cacheImage;
+    BufferedImage cacheImage;
+    BufferedImage rendererMap;
     
+    /**
+     * property preview.  If set, the cache image may be scaled to reflect
+     * the new axis position in animation-interactive time.
+     */
     boolean preview= false;
     
     private int repaintCount=0;
@@ -119,6 +127,44 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
     
+    /**
+     * return the index of the renderer at canvas location (x,y), or -1 if
+     * no renderer is found at the position.  RendererMap uses a BufferedImage
+     * where the RGB value is 0x0F000000 | (rendererIndex).
+     */
+    private int findRendererAt( int x, int y ) {
+        int ir=0;
+        x-= getColumn().getDMinimum();
+        y-= getRow().getDMinimum();
+        int istop= Math.min( rendererMap.getWidth(), x+5 );
+        int jstop= Math.min( rendererMap.getHeight(), y+5 );
+        for ( int j= Math.max(0,y-4); j<jstop; j++ ) {
+            for ( int i=Math.max(0,x-4); i<istop; i++ ) {
+                ir= Math.max( rendererMap.getRGB( i, j ), ir );
+            }
+        }
+        if ( ir==0 ) {
+            return -1;
+        } else {
+            return ( ir & 0xff );
+        }
+    }
+    
+    private Action getEditAction() {
+        return new AbstractAction("Renderer Properties") {
+            public void actionPerformed(ActionEvent e) {
+                Point p= getMouseAdapter().getMousePressPosition();
+                int i= findRendererAt(p.x+ getX(),p.y + getY());
+                if ( i>-1 ) {
+                    Renderer rend= getRenderer(i);
+                    PropertyEditor editor= new PropertyEditor( rend );
+                    editor.showDialog(DasPlot.this);
+                }
+            }
+        };
+    }
+    
+    
     private void addDefaultMouseModules() {
         
         HorizontalRangeSelectorMouseModule hrs=
@@ -144,6 +190,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         x= new MouseModule( this, new LengthDragRenderer( this, null, null ), "Length" );
         mouseAdapter.addMouseModule(x);
+        
+        getMouseAdapter().addMenuItem( new JMenuItem( getEditAction() ) );
         
         JMenuItem dumpMenuItem= new JMenuItem( DUMP_TO_FILE_ACTION );
         mouseAdapter.addMenuItem(dumpMenuItem);
@@ -331,7 +379,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             throw new RuntimeException("not event thread: "+Thread.currentThread().getName());
         }
         //paintComponentCount++;
-        //System.err.println("repaintCount="+repaintCount+"  paintComponentCount="+paintComponentCount );
         logger.finer( "entering DasPlot.paintComponent" );
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
@@ -376,43 +423,59 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             
         } else {
             
-            Graphics2D plotGraphics;
-            if ( getCanvas().isPrintingThread() ) {
-                plotGraphics = (Graphics2D)graphics.create(x-1, y-1, xSize+2, ySize+2);
-                logger.finest( " printing thread, drawing" );
-            } else {
-                cacheImage= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
-                plotGraphics= (Graphics2D)cacheImage.getGraphics();
-                plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
-                logger.finest( " rebuilding cacheImage" );
-            }
-            
-            plotGraphics.translate(-x + 1, -y + 1);
-            
-            if ( drawGrid ) {
-                drawGrid(plotGraphics);
-            }
-            
-            drawContent(plotGraphics);
-            
-            boolean noneActive=true;
-            for ( int i=0; i<renderers.size(); i++ ) {
-                Renderer rend= (Renderer)renderers.get(i);
-                if ( rend.isActive() ) {
-                    rend.render(plotGraphics,xAxis,yAxis);
-                    noneActive= false;
+            synchronized (this) {
+                Graphics2D plotGraphics;
+                if ( getCanvas().isPrintingThread() ) {
+                    plotGraphics = (Graphics2D)graphics.create(x-1, y-1, xSize+2, ySize+2);
+                    logger.finest( " printing thread, drawing" );
+                } else {
+                    cacheImage= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
+                    rendererMap= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
+                    plotGraphics= (Graphics2D)cacheImage.getGraphics();
+                    plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
+                    logger.finest( " rebuilding cacheImage" );
                 }
-            }
-            
-            if ( renderers.size()==0 ) {
-                graphics.setColor(Color.gray);
-                String s= "(no renderers)";
-                logger.info("dasPlot has no renderers");
-                graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
-            } else if ( noneActive ) {
-                graphics.setColor(Color.gray);
-                String s= "(no active renderers)";
-                graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+                
+                plotGraphics.translate(-x + 1, -y + 1);
+                
+                if ( drawGrid ) {
+                    drawGrid(plotGraphics);
+                }
+                
+                drawContent(plotGraphics);
+                
+                boolean noneActive=true;
+                for ( int i=0; i<renderers.size(); i++ ) {
+                    Renderer rend= (Renderer)renderers.get(i);
+                    if ( rend.isActive() ) {
+                        logger.finest( "rendering #"+i+": "+rend );
+                        WritableRaster raster= cacheImage.copyData( null );
+                        BufferedImage before=  new BufferedImage( cacheImage.getColorModel(), raster, cacheImage.isAlphaPremultiplied(), null );
+                        rend.render(plotGraphics,xAxis,yAxis);
+                        int pixelCount=0;
+                        for ( int ii=0; ii<before.getWidth(); ii++ ) {
+                            for ( int jj=0; jj<before.getHeight(); jj++ ) {
+                                // TODO: this has intolerably poor performance on java 1.6!!!
+                                if ( before.getRGB(ii,jj)!=cacheImage.getRGB(ii,jj) ) {
+                                    rendererMap.setRGB( ii, jj, 0x0F000000 | i );
+                                }
+                            }
+                        }
+                        noneActive= false;
+                    }
+                }
+                
+                if ( renderers.size()==0 ) {
+                    graphics.setColor(Color.gray);
+                    String s= "(no renderers)";
+                    logger.info("dasPlot has no renderers");
+                    graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+                } else if ( noneActive ) {
+                    graphics.setColor(Color.gray);
+                    String s= "(no active renderers)";
+                    graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+                }
+                //cacheImage= rendererMap;
             }
             
             if ( !getCanvas().isPrintingThread() ) {
@@ -592,7 +655,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         rend.update();
         invalidateCacheImage();
-        repaint(); // unneccessary
     }
     
     public void removeRenderer(Renderer rend) {
@@ -947,7 +1009,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         super.repaint();
         repaintCount++;
     }
-    protected void invalidateCacheImage() {
+    protected synchronized void invalidateCacheImage() {
         cacheImageValid= false;
         repaint();
     }
@@ -959,12 +1021,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     /**
-     * Holds value of property drawGrid.
+     * property drawGrid.  If true, faint grey lines continue the axis major
+     * ticks across the plot.
      */
     private boolean drawGrid= false;
     
     /**
-     * Getter for property drawGrid.
+     * Getter for property drawGrid.  If true, faint grey lines continue the axis major
+     * ticks across the plot.
      * @return Value of property drawGrid.
      */
     public boolean isDrawGrid() {
@@ -972,7 +1036,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     /**
-     * Setter for property drawGrid.
+     * Setter for property drawGrid.  If true, faint grey lines continue the axis major
+     * ticks across the plot.
      * @param drawGrid New value of property drawGrid.
      */
     public void setDrawGrid(boolean drawGrid) {
