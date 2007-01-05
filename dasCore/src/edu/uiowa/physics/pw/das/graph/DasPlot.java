@@ -35,6 +35,7 @@ import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -134,7 +135,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * where the RGB value is 0x0F000000 | (rendererIndex).
      */
     private int findRendererAt( int x, int y ) {
-        int ir=0;
+        return 0;
+        /*int ir=0;
         x-= getColumn().getDMinimum();
         y-= getRow().getDMinimum();
         int istop= Math.min( rendererMap.getWidth(), x+5 );
@@ -148,7 +150,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             return -1;
         } else {
             return ( ir & 0xff );
-        }
+        }*/
     }
     
     private Action getEditAction() {
@@ -309,6 +311,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
     
+    /**
+     * @return a string representation of the affine transforms used in DasPlot for
+     * debugging.
+     */
     private String getATScaleTranslateString( AffineTransform at ) {
         String atDesc;
         NumberFormat nf= new DecimalFormat( "0.00" );
@@ -342,7 +348,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     /**
      * at.isIdentity returns false if the at is not precisely identity,
-     * so this is used to account for fuzz.
+     * so this allows for some fuzz.
      */
     private boolean isIdentity( AffineTransform at ) {
         return at.isIdentity() ||
@@ -466,15 +472,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                         WritableRaster raster= cacheImage.copyData( null );
                         BufferedImage before=  new BufferedImage( cacheImage.getColorModel(), raster, cacheImage.isAlphaPremultiplied(), null );
                         rend.render(plotGraphics,xAxis,yAxis);
-                        int pixelCount=0;
-                        for ( int ii=0; ii<before.getWidth(); ii++ ) {
-                            for ( int jj=0; jj<before.getHeight(); jj++ ) {
-                                // TODO: this has intolerably poor performance on java 1.6!!!
-                                if ( before.getRGB(ii,jj)!=cacheImage.getRGB(ii,jj) ) {
-                                    rendererMap.setRGB( ii, jj, 0x0F000000 | i );
-                                }
-                            }
-                        }
+                        compareImage(i, before);
                         noneActive= false;
                     }
                 }
@@ -525,6 +523,29 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         /*if ( saveClip!=null ) {
             graphics1.setClip( saveClip );
+        }*/
+    }
+
+    private void compareImage(final int mark, final BufferedImage before) {
+        return;
+        /*int pixelCount=0;
+        DataBuffer bufBefore= before.getRaster().getDataBuffer();
+        DataBuffer bufAfter= cacheImage.getRaster().getDataBuffer();
+        DataBuffer bufMap= rendererMap.getRaster().getDataBuffer();
+        int dataTypeSize=4; 
+        int size= bufBefore.getSize();
+        int bandSize= size/dataTypeSize; // assumes ARGB
+        int width= rendererMap.getWidth();
+        
+        for ( int ii=0; ii<bandSize; ii++ ) {
+            if (  bufBefore.getElem(ii*4)!=bufAfter.getElem(ii*4) ) {
+                //rendererMap.setRGB( ii, jj, 0x0F000000 | mark );
+                bufMap.setElem(ii*4+1, mark );
+                bufMap.setElem(ii*4, 15 );
+                int i= ii % width;
+                int j= ii / width;
+                System.err.println( rendererMap.getRGB(i,j) );
+            }
         }*/
     }
     
