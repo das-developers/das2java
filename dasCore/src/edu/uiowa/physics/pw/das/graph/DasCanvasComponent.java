@@ -60,8 +60,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
             DasCanvasComponent dcc;
             if (e.getSource() instanceof DasCanvasComponent) {
                 dcc = (DasCanvasComponent)e.getComponent();
-            }
-            else {
+            } else {
                 dcc = (DasCanvasComponent)SwingUtilities.getAncestorOfClass(DasCanvasComponent.class, e.getComponent());
             }
             CanvasComponentAction.currentCanvasComponent = dcc;
@@ -97,21 +96,22 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         column= DasColumn.NULL;
         
         mouseAdapter= new DasMouseInputAdapter(this);
-        addMouseListener(mouseAdapter);
-        addMouseMotionListener(mouseAdapter);
-        addMouseListener(currentComponentListener);
-        addKeyListener(mouseAdapter.getKeyAdapter());
+        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+            addMouseListener(mouseAdapter);
+            addMouseMotionListener(mouseAdapter);
+            addMouseListener(currentComponentListener);
+            addKeyListener(mouseAdapter.getKeyAdapter());
+        }
         
         try {
             String name= DasApplication.getDefaultApplication().suggestNameFor(this);
             setDasName(name);
-        }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
+        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
         }
     }
     
     /**
-     * Add the MouseModule to the list of MouseModules 
+     * Add the MouseModule to the list of MouseModules
      * attached to the component via the DasMouseInputAdapter.
      * MouseModules will appear the in the order that they
      * are added.
@@ -121,14 +121,14 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     /**
-     * Remove the MouseModule from the list of MouseModules 
+     * Remove the MouseModule from the list of MouseModules
      * attached to the component via the DasMouseInputAdapter.
      */
     public void removeMouseModule(MouseModule module) {
         mouseAdapter.removeMouseModule(module);
-    }        
+    }
     
-        
+    
     /**
      * accessor for the DasRow used for positioning the component.
      * @return DasRow used for positioning the component.
@@ -150,13 +150,12 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      */
     public void resize() {
         if (column == DasColumn.NULL || row == DasRow.NULL ) {
-            Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.warning("Null row and/or column in resize: row=" + row
-            + " column=" + column);
+                    + " column=" + column);
         } else {
             setBounds(column.getDMinimum(),row.getDMinimum(),
-            (column.getDMaximum()-column.getDMinimum()),
-            (row.getDMaximum()-row.getDMinimum()));
+                    (column.getDMaximum()-column.getDMinimum()),
+                    (row.getDMaximum()-row.getDMinimum()));
         }
     }
     
@@ -174,7 +173,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     /**
      * set the DasRow for positioning the component vertically.
-     * The current row is disconnected, and a propertyChange is 
+     * The current row is disconnected, and a propertyChange is
      * fired.
      */
     public void setRow(DasRow r) {
@@ -196,7 +195,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     /**
      * set the DasColumn for positioning the component horizontally.
-     * The current column is disconnected, and a propertyChange is 
+     * The current column is disconnected, and a propertyChange is
      * fired.
      */
     public void setColumn(DasColumn c) {
@@ -252,7 +251,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     public void update() {
         logger.finer("update for "+this.getClass().getName() );
         java.awt.EventQueue eventQueue =
-        Toolkit.getDefaultToolkit().getSystemEventQueue();
+                Toolkit.getDefaultToolkit().getSystemEventQueue();
         if (devt == null) devt = new edu.uiowa.physics.pw.das.event.DasUpdateEvent(this);
         eventQueue.postEvent(devt);
     }
@@ -333,7 +332,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     /**
      * set the dirty flag indicating the state has changed and work is to be
-     * done to restore a valid state.  For example, a DasAxis' minimum is 
+     * done to restore a valid state.  For example, a DasAxis' minimum is
      * changed, so we will need to recalculate the ticks.  (But we don't want
      * to recalculate the ticks immediately, since the maximum may change
      * as well.
@@ -367,7 +366,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     /**
      * Get the String identifier for the component which identifies
-     * the component within the application.  This name should be 
+     * the component within the application.  This name should be
      * consistent between sessions of an application, where
      * applicable, for persistent state support.
      *
@@ -379,13 +378,13 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     /**
      * Set the String identifier for the component which identifies
-     * the component within the application.  This name should be 
+     * the component within the application.  This name should be
      * consistent between sessions of an application, where
-     * applicable, for persistent state support.  For example, 
+     * applicable, for persistent state support.  For example,
      * "timeAxis1" or "theTimeAxis"
      * @param name unique String identifying the component within
      * the application.
-     * @throws edu.uiowa.physics.pw.das.DasNameException 
+     * @throws edu.uiowa.physics.pw.das.DasNameException
      */
     public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
         if (name.equals(dasName)) {
@@ -422,7 +421,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     public DasMouseInputAdapter getMouseAdapter() {
         return mouseAdapter;
     }
-        
+    
     public Action[] getActions() {
         return new Action[] {
             PROPERTIES_ACTION,
