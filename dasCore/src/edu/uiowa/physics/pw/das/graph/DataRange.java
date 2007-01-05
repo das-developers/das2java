@@ -44,17 +44,25 @@ public class DataRange implements Cloneable {
     
     private Units units;
     
-    /* minimum, possibly with log applied */
+    /**
+     * minimum, possibly with log applied 
+     */
     private double minimum;
     
-    /* maximum, possibly with log applied */
+    /**
+     * maximum, possibly with log applied 
+     */
     private double maximum;
     
-    /* storage for values of temporary invalid states during state transition.*/
+    /**
+     * storage for values of temporary invalid states during state transition.
+     */
     private Datum pendingMin=null, pendingMax=null;
     
-    /* range is the min and max, not in the log space.  This is the range that controls the DataRange, as opposed
-       to minimum and maximum, which are simply to implement it. */
+    /** range is the min and max, not in the log space.  This is the 
+     * range that controls the DataRange, as opposed to minimum and 
+     * maximum, which are simply to implement it. 
+     */
     private DatumRange range;
     
     private boolean log;
