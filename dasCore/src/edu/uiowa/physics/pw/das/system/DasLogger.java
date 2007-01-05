@@ -70,28 +70,44 @@ public class DasLogger {
         }
     }
     
-    /* messages having to do with the application-specific Das 2 Application */
+    /**
+     * messages having to do with the application-specific Das 2 Application 
+     */
     public static final LoggerId APPLICATION_LOG= new LoggerId( "" );
     
-    /* system messages such as RequestProcessor activity */
+    /** 
+     * system messages such as RequestProcessor activity 
+     */
     public static final LoggerId SYSTEM_LOG= new LoggerId( "das2.system" );
     
-    /* events, gestures, user feedback */
+    /**
+     * events, gestures, user feedback 
+     */
     public static final LoggerId GUI_LOG= new LoggerId( "das2.gui" );
     
-    /* renders, drawing */
+    /**
+     * renders, drawing 
+     */
     public static final LoggerId GRAPHICS_LOG= new LoggerId( "das2.graphics" );
     
-    /* rebinning */
+    /**
+     * rebinning  and dataset operators
+     */
     public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId( "das2.dataOperations" );
     
-    /* internet transactions, file I/O */
+    /**
+     * internet transactions, file I/O 
+     */
     public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( "das2.dataTransfer" );
 
-    /* virtual file system activities */
+    /**
+     * virtual file system activities 
+     */
     public static final LoggerId FILESYSTEM_LOG= new LoggerId( "das2.filesystem" );
 
-    /* das2 application description files */
+    /**
+     * das2 application description files 
+     */
     public static final LoggerId DASML_LOG= new LoggerId( "das2.dasml" );
 
     
