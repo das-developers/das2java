@@ -45,16 +45,34 @@ import java.util.prefs.*;
 import javax.swing.*;
 
 /**
+ * DasApplication object manages per-application resources:
+ *   1. name space
+ *   2. dataset caching
+ *   3. progress monitoring
+ *   4. network speed limiter
  *
  * @author  Edward West
  */
 public class DasApplication {
     
-    private static final DasApplication DEFAULT = new DasApplication();
+    private static DasApplication DEFAULT;
     
     private JFrame mainFrame;
     
-    private Boolean applet;    // tristate: null, TRUE, FALSE  null->try to detect.  TRUE|FALSE->explicit setting by application
+    /**
+     * three-state register for keeping track of is applet: null, TRUE, FALSE
+     *   null->try to detect.
+     *   TRUE|FALSE->explicit setting by application
+     */
+    private Boolean applet;
+    
+    /**
+     * three-state register for keeping track of headless: null, TRUE, FALSE
+     *   null->try to detect.
+     *   TRUE|FALSE->explicit setting by application
+     * in headless, we assume non-interactive.  progress monitor factory always returns ProgressMonitor.NULL, dataSetCache is trivial.
+     *
+     */
     private Boolean headless;  // tristate: null, TRUE, FALSE
     
     private NameContext nameContext;
@@ -89,7 +107,7 @@ public class DasApplication {
     
     /** Creates a new instance of DasApplication */
     private DasApplication() {
-        nameContext = new NameContext();        
+        nameContext = new NameContext();
         applet= null;
     }
     
@@ -109,8 +127,8 @@ public class DasApplication {
         classNameMap.put( DasCanvasComponent.class, "canvasComponent" );
         classNameMap.put( DasCanvas.class, "canvas" );
     }
-        
-    Map hitsMap= new HashMap();
+    
+    private Map hitsMap= new HashMap();
     
     // note that only CanvasComponents have a name.
     public String suggestNameFor( Object c ) {
@@ -127,8 +145,19 @@ public class DasApplication {
     }
     
     public static DasApplication getDefaultApplication() {
+         if ( DEFAULT==null ) {
+             DEFAULT= new DasApplication();
+         }
         return DEFAULT;
     }
+    
+    /**
+     * nasty, evil method for releasing resources on a server.  DO NOT USE THIS!!!!
+     */
+    public static void resetDefaultApplication() {
+        DEFAULT= null;
+    }
+    
     
     public final boolean isApplet() {
         if ( applet==null ) {
@@ -166,17 +195,17 @@ public class DasApplication {
     
     /**
      * returns the location of the local directory sandbox.  For example,
-     * The web filesystem object downloads temporary files to here, logging 
+     * The web filesystem object downloads temporary files to here, logging
      * properties file, etc.
      *
      * Assume that this File is local, so I/O is quick, and that the process
      * has write access to this area.
-     * For definition, assume that at least 1Gb of storage is available as 
+     * For definition, assume that at least 1Gb of storage is available as
      * well.
      */
     public static File getDas2UserDirectory() {
         File local;
-         if ( System.getProperty("user.name").equals("Web") ) {
+        if ( System.getProperty("user.name").equals("Web") ) {
             local= new File("/tmp");
         } else {
             local= new File( System.getProperty("user.home") );
@@ -236,17 +265,6 @@ public class DasApplication {
         }
     }
     
-
-    public DataSetCache getDataSetCache() {
-        if ( dataSetCache==null ) {
-            if ( isHeadless() ) {
-                dataSetCache= new NullDataSetCache();
-            } else {
-                dataSetCache= new LimitSizeBytesDataSetCache(30000000);
-            }
-        }
-        return dataSetCache;
-    }
     
     InputStreamMeter meter;
     public InputStreamMeter getInputStreamMeter() {
@@ -255,7 +273,7 @@ public class DasApplication {
         }
         return meter;
     }
-        
+    
     /**
      * @deprecated  use createMainFrame( String title, Container container );
      */
@@ -270,14 +288,14 @@ public class DasApplication {
         frame.setVisible(true);
         return frame;
     }
-  
+    
     /**
-     * @deprecated use createMainFrame(String title) 
+     * @deprecated use createMainFrame(String title)
      */
     public JFrame createMainFrame() {
         return createMainFrame("Das2");
     }
-
+    
     public JFrame createMainFrame( String title ) {
         mainFrame= new JFrame(title);
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
@@ -292,17 +310,17 @@ public class DasApplication {
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         System.setProperty( "sun.awt.exception.handler", DasExceptionHandler.class.getName() );
         return mainFrame;
-    }        
-        
+    }
+    
     public JFrame getMainFrame() {
         return this.mainFrame;
     }
-
+    
     public void quit() {
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
         prefs.putInt( "xlocation", mainFrame.getLocation().x );
         prefs.putInt( "ylocation", mainFrame.getLocation().y );
-        System.out.println("bye!"+mainFrame.getLocation());     
+        System.out.println("bye!"+mainFrame.getLocation());
         System.exit(0);
     }
     
@@ -310,7 +328,7 @@ public class DasApplication {
      * Holds value of property interactive.
      */
     private boolean interactive=true;
-
+    
     /**
      * Getter for property interactive.
      * @return Value of property interactive.
@@ -318,7 +336,7 @@ public class DasApplication {
     public boolean isInteractive() {
         return this.interactive;
     }
-
+    
     /**
      * Setter for property interactive.
      * @param interactive New value of property interactive.
@@ -344,5 +362,28 @@ public class DasApplication {
         return monitorFactory;
     }
     
-
+    public DataSetCache getDataSetCache() {
+        if ( dataSetCache==null ) {
+            if ( isHeadless() ) {
+                dataSetCache= new NullDataSetCache();
+            } else {
+                dataSetCache= new LimitSizeBytesDataSetCache(30000000);
+            }
+        }
+        return dataSetCache;
+    }
+    
+    ExceptionHandler exceptionHandler;
+    
+    public ExceptionHandler getExceptionHandler() {
+        if ( exceptionHandler==null ) {
+            if ( isHeadless() ) {
+                exceptionHandler= new ThrowRuntimeExceptionHandler();
+            } else {
+                exceptionHandler= new DefaultExceptionHandler();
+            }
+        }
+        return exceptionHandler;
+    }
+    
 }
