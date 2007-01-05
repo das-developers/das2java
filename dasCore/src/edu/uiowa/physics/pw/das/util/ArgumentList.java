@@ -1,7 +1,9 @@
 package edu.uiowa.physics.pw.das.util;
 
 import edu.uiowa.physics.pw.das.DasApplication;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -44,6 +46,8 @@ public class ArgumentList {
     private String FALSE = new String("__false__");
     
     private String TRUE = new String("__true__");
+    
+    private static final Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
     
     public ArgumentList(String programName) {
         this.programName= programName;
@@ -320,7 +324,7 @@ public class ArgumentList {
             key= args[i];
             values.put( key, this.UNDEFINED_SWITCH );
             formUsed.put( key, args[i] );
-            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("undefined switch: "+key);
+            logger.finer("undefined switch: "+key);
         } else {
             String value;
             formUsed.put( key,args[i] );
@@ -340,7 +344,7 @@ public class ArgumentList {
                 if ( value.startsWith("\"") ) {
                     value= value.substring(1,value.length()-2);
                 }
-                DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("switch key: "+key+"="+value);
+                logger.finer("switch key: "+key+"="+value);
                 values.put( key, value );
             }
         }
@@ -354,7 +358,7 @@ public class ArgumentList {
             sb.append(args[i]);
             sb.append(" ");
         }
-        DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info("args: "+sb.toString());
+        logger.info("args: "+sb.toString());
         int iposition=0;
         
         for ( int i=0; i<args.length; i++ ) {
@@ -364,7 +368,7 @@ public class ArgumentList {
                 String key;
                 String value;
                 key= this.positionKeys[iposition];
-                DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).finer("position key: "+key+"="+args[i]);
+                logger.finer("position key: "+key+"="+args[i]);
                 String vv= args[i];
                 if ( vv.startsWith("\"") ) {
                     vv= vv.substring(1,vv.length()-2);
