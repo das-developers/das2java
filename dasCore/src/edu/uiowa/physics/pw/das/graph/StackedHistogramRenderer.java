@@ -373,10 +373,10 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             try {
                 DataSet result;
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                    DasApplication.getDefaultApplication().getLogger().fine("using rebinner "+highResRebinner);
+                    logger.fine("using rebinner "+highResRebinner);
                     result= highResRebinner.rebin( ds, x, y );
                 } else {
-                    DasApplication.getDefaultApplication().getLogger().fine("using rebinner "+lowResRebinner);
+                    logger.fine("using rebinner "+lowResRebinner);
                     result= lowResRebinner.rebin( ds, x, y );
                 }
                 return result;
