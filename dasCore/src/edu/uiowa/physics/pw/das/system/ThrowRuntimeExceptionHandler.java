@@ -10,6 +10,9 @@
 package edu.uiowa.physics.pw.das.system;
 
 /**
+ * ExceptionHandler that throws a RuntimeException caused by the Exception.
+ * This is useful for server-side applications that need to handle the 
+ * exception externally.
  *
  * @author jbf
  */

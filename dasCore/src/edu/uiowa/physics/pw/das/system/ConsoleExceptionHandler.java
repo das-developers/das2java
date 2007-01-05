@@ -10,7 +10,7 @@
 package edu.uiowa.physics.pw.das.system;
 
 /**
- *
+ * ExceptionHandler that prints stack traces out to the stderr.
  * @author jbf
  */
 public class ConsoleExceptionHandler implements ExceptionHandler {

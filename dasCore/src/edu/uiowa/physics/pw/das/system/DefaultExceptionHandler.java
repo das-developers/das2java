@@ -12,6 +12,8 @@ package edu.uiowa.physics.pw.das.system;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 
 /**
+ * Wrapper for DasExceptionHandler, a dialog box for endusers with options
+ * to get at the debugging information.
  *
  * @author jbf
  */
