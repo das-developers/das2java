@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.datum;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.text.*;
 import java.util.*;
@@ -381,9 +382,9 @@ public class DatumRangeUtil {
         }
         
         public DatumRange parse( String stringIn ) throws ParseException {
-            
-            Logger logger= DasApplication.getDefaultApplication().getLogger( DasApplication.SYSTEM_LOG );
-            
+
+            Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
+
             this.string= stringIn+" ";
             this.ipos= 0;
             
