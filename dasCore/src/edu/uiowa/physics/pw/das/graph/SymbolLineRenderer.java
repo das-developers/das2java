@@ -85,12 +85,14 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     private void reportCount() {
-        //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+        //if ( renderCount % 100 ==0 ) {
+        //    System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+        //}
     }
     
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
         renderCount++;
-        reportCount();
+       // reportCount();
         
         long timer0= System.currentTimeMillis();
         
@@ -103,6 +105,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         
         if (dataSet == null || dataSet.getXLength() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
+            renderException( g, xAxis, yAxis, new Exception("null data set") );
             return;
         }
         
@@ -119,7 +122,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
         
-        log.finest("drawing pym in "+color);
+        log.finest("drawing psym in "+color);
         
         // draw the stored path that we calculated in updatePlotImage
         if (path != null) {
@@ -183,14 +186,24 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         }
         
         long milli= System.currentTimeMillis();
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
+        logger.finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
         lastUpdateMillis= milli;
         
     }
     
+    boolean updating=false;
+    
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
-        updateImageCount++;
-        reportCount();
+        /*
+         *This was an experiment to see if updates were being performed on multiple threads.
+            if ( updating ) {
+            System.err.println("hello, "+Thread.currentThread().getName() );
+            return;
+        }*/
+        updating= true;
+        
+        //updateImageCount++;
+        //reportCount();
         
         try {
             super.updatePlotImage( xAxis, yAxis, monitor );
@@ -251,12 +264,13 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             double i0 = Double.NaN;
             double j0 = Double.NaN;
             boolean skippedLast = true;
+            
             for (int index = ixmin; index <= ixmax; index++) {
                 double x = dataSet.getXTagDouble(index, xUnits);
                 double y = dataSet.getDouble(index, yUnits);
                 double i = xAxis.transform(x, xUnits);
                 double j = yAxis.transform(y, yUnits);
-                if ( dataSet.getDatum(index).isFill() || Double.isNaN(y) ) {
+                if ( yUnits.isFill( dataSet.getDouble(index,yUnits) ) || Double.isNaN(y) ) {
                     skippedLast = true;
                 } else if (skippedLast) {
                     newPath.moveTo((float)i, (float)j);
@@ -291,6 +305,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             getParent().repaint();
         }
         DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine( "done updatePlotImage" );
+        updating=false;
     }
     
     
@@ -362,9 +377,11 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     protected void installRenderer() {
-        DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
-        DasPlot p= parent;
-        mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
+        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+            DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
+            DasPlot p= parent;
+            mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
+        }
     }
     
     protected void uninstallRenderer() {
