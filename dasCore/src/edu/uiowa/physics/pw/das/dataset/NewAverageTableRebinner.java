@@ -23,12 +23,10 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.*;
-import java.io.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.util.*;
-import java.util.Collections;
 import java.util.logging.*;
 
 /**
@@ -37,7 +35,7 @@ import java.util.logging.*;
  */
 public class NewAverageTableRebinner implements DataSetRebinner {
     
-    private static Logger logger = DasApplication.getDefaultApplication().getLogger();
+    private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG);
     
     /**
      * Holds value of property interpolate.

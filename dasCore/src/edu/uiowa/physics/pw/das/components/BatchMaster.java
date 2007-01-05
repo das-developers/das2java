@@ -10,6 +10,7 @@ import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.image.*;
@@ -173,7 +174,7 @@ public class BatchMaster {
                 if ( itask>=taskList.size() ) {
                     if ( exit ) System.exit(0);
                 } else {
-                    DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).info( "itask="+taskList.get(itask) );
+                    DasLogger.getLogger(DasApplication.SYSTEM_LOG).info( "itask="+taskList.get(itask) );
                     DataRangeSelectionEvent ev=  (DataRangeSelectionEvent) taskList.get(itask++);
                     fireDataRangeSelectionListenerDataRangeSelected( ev );
                     try {

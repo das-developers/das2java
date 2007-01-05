@@ -26,8 +26,10 @@ package edu.uiowa.physics.pw.das.dataset;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.text.*;
 import java.util.*;
+import java.util.logging.Logger;
 /**
  * Keeps keep track of cache statistics and to give consistent
  * log messages, and provides the Entry class.
@@ -93,6 +95,8 @@ public abstract class AbstractDataSetCache implements DataSetCache {
 
     }
         
+    private static final Logger logger= DasLogger.getLogger(DasApplication.SYSTEM_LOG);
+            
     public int hits=0;
     public int misses=0;
     
@@ -103,10 +107,10 @@ public abstract class AbstractDataSetCache implements DataSetCache {
     public boolean haveStored( DataSetDescriptor dsd, CacheTag cacheTag ) {
         boolean result= haveStoredImpl( dsd, cacheTag );
         if ( result ) {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("cache hit "+dsd+" "+cacheTag);            
+            logger.fine("cache hit "+dsd+" "+cacheTag);            
             hits++;
         } else {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.SYSTEM_LOG).fine("cache miss "+dsd+" "+cacheTag);
+            logger.fine("cache miss "+dsd+" "+cacheTag);
             misses++;
         }
         return result;

@@ -23,14 +23,12 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.format.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasMath;
 import java.text.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import java.util.regex.*;
 
 /**
  *
@@ -202,7 +200,7 @@ public final class DatumUtil {
             }
         }
         catch (java.text.ParseException pe) {
-            Logger logger = DasApplication.getDefaultApplication().getLogger();
+            Logger logger = DasLogger.getLogger();
             //Should not happen under normal circumstances, so bail.
             RuntimeException re = new RuntimeException(pe);
             logger.log(Level.SEVERE, pe.getMessage(), re);

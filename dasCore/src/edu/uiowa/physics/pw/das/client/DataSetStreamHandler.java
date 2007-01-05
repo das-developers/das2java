@@ -31,9 +31,11 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -49,13 +51,15 @@ public class DataSetStreamHandler implements StreamHandler {
     int taskSize= -1;
     int packetCount= 0;
        
+    private static final Logger logger= DasLogger.getLogger(DasApplication.DATA_TRANSFER_LOG);
+    
     public DataSetStreamHandler( Map extraProperties, DasProgressMonitor monitor ) {        
         this.extraProperties = new HashMap(extraProperties);
         this.monitor= monitor==null ? DasProgressMonitor.NULL : monitor;        
     }
     
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream descriptor");
+        logger.finest("got stream descriptor");
         this.sd = sd;
         Object o;
         if ( ( o= sd.getProperty("taskSize") )!=null ) {
@@ -66,20 +70,20 @@ public class DataSetStreamHandler implements StreamHandler {
             monitor.setTaskSize( totalPacketCount );
         } 
         if ( ( o=sd.getProperty("pid") )!=null ) {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("stream pid="+o);
+            logger.fine("stream pid="+o);
         }
     }
     
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {               
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got packet descriptor");
+        logger.finest("got packet descriptor");
         if (delegate == null) {
             SkeletonDescriptor descriptor = pd.getYDescriptor(0);
             if (descriptor instanceof StreamMultiYDescriptor) {
-                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("using VectorDS delegate");
+                logger.fine("using VectorDS delegate");
                 delegate = new VectorDataSetStreamHandler(pd);
             }
             else if (descriptor instanceof StreamYScanDescriptor) {
-                DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("using TableDS delegate");
+                logger.fine("using TableDS delegate");
                 delegate = new TableDataSetStreamHandler(pd);
             }
         }
@@ -89,7 +93,7 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {                
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got packet");
+        logger.finest("got packet");
         ensureNotNullDelegate();
         delegate.packet(pd, xTag, vectors);
         packetCount++;
@@ -99,24 +103,24 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public void streamClosed(StreamDescriptor sd) throws StreamException {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got streamClosed");
+        logger.finest("got streamClosed");
         if (delegate != null) {
             delegate.streamClosed(sd);
         }
     }
     
     public void streamException(StreamException se) throws StreamException {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream exception");
+        logger.finest("got stream exception");
     }
     
     public void streamComment(StreamComment sc) throws StreamException {
-        DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).finest("got stream comment: "+sc);
+        logger.finest("got stream comment: "+sc);
         if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
             if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );            
         } else if ( sc.getType().matches(sc.TYPE_LOG) ) {
             String level= sc.getType().substring(4);
             Level l= Level.parse(level.toUpperCase());
-            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).log(l,sc.getValue());
+            logger.log(l,sc.getValue());
             monitor.setProgressMessage(sc.getValue());
         }
     }
@@ -185,7 +189,7 @@ public class DataSetStreamHandler implements StreamHandler {
         }
         
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).fine("got packet descriptor: "+pd);
+            logger.fine("got packet descriptor: "+pd);
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(),y.getUnits());

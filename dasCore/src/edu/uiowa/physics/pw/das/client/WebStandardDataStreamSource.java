@@ -33,15 +33,12 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.stream.*;
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
-
-import javax.swing.*;
 import java.io.*;
 import java.net.*;
-import java.util.Properties;
 
 /*
  * Web standard data stream source */
@@ -172,7 +169,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
             this.lastRequestURL= String.valueOf( serverURL );
 
-            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("opening "+serverURL.toString());
+            DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).info("opening "+serverURL.toString());
 
             URLConnection urlConnection = serverURL.openConnection();
             urlConnection.connect();

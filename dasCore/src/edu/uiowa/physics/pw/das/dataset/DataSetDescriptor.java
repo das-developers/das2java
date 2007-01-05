@@ -27,15 +27,16 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.stream.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
 
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
 import java.lang.reflect.*;
+import java.util.logging.Logger;
 import javax.swing.event.*;
 
 /**
@@ -80,6 +81,8 @@ public abstract class DataSetDescriptor implements Displayable {
         this("");
     }
     
+    private static final Logger logger= DasLogger.getLogger(DasApplication.GRAPHICS_LOG);
+    
     /**
      * getDataSetImpl implements the getDataSet for this DataSetDescriptor implementation.  The
      * getDataSet call of the abstract DataSetDescriptor uses this routine to satisfy requests and
@@ -109,7 +112,7 @@ public abstract class DataSetDescriptor implements Displayable {
         
         Runnable request = new Runnable() {
             public void run() {
-                DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("requestDataSet: "+start+" "+end+" "+resolution);
+                logger.info("requestDataSet: "+start+" "+end+" "+resolution);
                 try {
                     DataSet ds= getDataSet( start, end, resolution, monitor );
                     if ( ds==null ) throw new NoDataInIntervalException( new DatumRange(start,end).toString() );
@@ -126,7 +129,7 @@ public abstract class DataSetDescriptor implements Displayable {
                 return "loadDataSet "+ new DatumRange( start, end );
             }
         };
-        DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("submit data request");
+        logger.info("submit data request");
         
         CacheTag tag= new CacheTag( start, end, resolution );
         if ( dataSetCache.haveStored( this, tag ) ) {
@@ -160,7 +163,7 @@ public abstract class DataSetDescriptor implements Displayable {
         } else {
             Runnable request = new Runnable() {
                 public void run() {
-                    DasApplication.getDefaultApplication().getLogger(DasApplication.GRAPHICS_LOG).info("request data from dsd: "+start+" "+end+" "+resolution);
+                    logger.info("request data from dsd: "+start+" "+end+" "+resolution);
                     try {
                         DataSet ds= getDataSet( start, end, resolution, monitor );
                         DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);

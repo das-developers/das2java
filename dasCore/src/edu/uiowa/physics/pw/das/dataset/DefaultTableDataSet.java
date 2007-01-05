@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.io.PrintStream;
 
 import java.util.*;
@@ -54,6 +55,8 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     private int[] tableOffsets;
     
     private String[] planeIDs;
+    
+    private static final Logger logger= DasLogger.getLogger();
     
     /** Creates a new instance of DefaultTableDataSet for tables where the
      * table geometry changes, and the DataSet contains multiple planes.
@@ -183,7 +186,6 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         if (i < 0 || i >= tableData[0].length) {
             IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
                     ("x index is out of bounds: " + i + " xLength: " + getXLength());
-            Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.throwing(DefaultTableDataSet.class.getName(),
                     "getDatum(int,int)", ioobe);
             throw ioobe;
@@ -191,7 +193,6 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         if (j < 0 || j >= this.yTags[table].length) {
             IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
                     ("y index is out of bounds: " + i + " yLength(" + table + "): " + getYLength(table));
-            Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.throwing(DefaultTableDataSet.class.getName(),
                     "getDatum(int,int)", ioobe);
             throw ioobe;
@@ -210,7 +211,6 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         if (i < 0 || i >= tableData[0].length) {
             IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
                     ("x index is out of bounds: " + i + " xLength: " + getXLength());
-            Logger logger = DasApplication.getDefaultApplication().getLogger();
             logger.throwing(DefaultTableDataSet.class.getName(),
                     "getDatum(int,int)", ioobe);
             throw ioobe;
@@ -463,7 +463,6 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             if (i < 0 || i >= tableData[0].length) {
                 IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
                         ("x index is out of bounds: " + i + " xLength: " + getXLength());
-                Logger logger = DasApplication.getDefaultApplication().getLogger();
                 logger.throwing(DefaultTableDataSet.class.getName(),
                         "getDatum(int,int)", ioobe);
                 throw ioobe;

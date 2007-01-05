@@ -29,6 +29,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import javax.swing.event.EventListenerList;
 
 
@@ -127,7 +128,7 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class) {
                 String logmsg= "fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event;                
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine(logmsg);
+                DasLogger.getLogger( DasApplication.GUI_LOG ).fine(logmsg);
                 ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }
