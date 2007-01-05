@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -79,7 +80,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     DnDSupport dndSupport;
     
-    static Logger logger= DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG );
+    final static Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
     
     /**
      * cacheImage is a cached image that all the renderers have drawn on.  This
@@ -375,20 +376,33 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     protected void paintComponent(Graphics graphics1) {
         
-        if ( ! EventQueue.isDispatchThread() ) {
+        if ( !getCanvas().isPrintingThread() && ! EventQueue.isDispatchThread() ) {
             throw new RuntimeException("not event thread: "+Thread.currentThread().getName());
         }
         //paintComponentCount++;
         logger.finer( "entering DasPlot.paintComponent" );
+        logger.info( "entering DasPlot.paintComponent" );
+        
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
+        
         int xSize= getColumn().getDMaximum() - x;
         int ySize= getRow().getDMaximum() - y;
+                
+        /*Shape saveClip;        
+        if (getCanvas().isPrintingThread()) {
+            saveClip = graphics1.getClip();
+            graphics1.setClip( new Rectangle( 0, 0, getWidth(),  getHeight() ) );
+        } else {
+            saveClip=null;
+        }*/
         
+        logger.info( "DasPlot clip="+ graphics1.getClip() );
+
         Rectangle clip= graphics1.getClipBounds();
         if ( ( clip.y + getY() ) >= ( y + ySize ) ) {
             return;
-        }
+        }        
         
         Graphics2D graphics= (Graphics2D)graphics1;
         graphics.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -508,6 +522,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         graphics.translate(getX(), getY());
         getMouseAdapter().paint(graphics);
+        
+        /*if ( saveClip!=null ) {
+            graphics1.setClip( saveClip );
+        }*/
     }
     
     private void drawGrid( Graphics2D g ) {
@@ -551,6 +569,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 bounds.y -= titleHeight;
                 bounds.height += titleHeight;
             }
+            // TODO check bounds.height<10
             setBounds(bounds);
         }
     }
