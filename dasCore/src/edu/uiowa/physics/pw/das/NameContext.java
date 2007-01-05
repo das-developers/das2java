@@ -29,10 +29,12 @@ import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.datum.*;
 
 import java.beans.*;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,8 +61,8 @@ public class NameContext {
     public static final Pattern floatPattern = Pattern.compile("-?[0-9]*(\\.[0-9]*)?([eE]-?[0-9]+)?");
     
     
-    private HashMap nameMap;
-    private HashMap propertyMap;
+    private Map nameMap;
+    private Map propertyMap;
     
     /** Creates a new instance of NameContext */
     NameContext() {
@@ -77,7 +79,7 @@ public class NameContext {
     public void put(String name, Object value) throws DasNameException {
         Matcher m = SIMPLE_NAME.matcher(name);
         if (m.matches()) {
-            nameMap.put(name, value);
+            nameMap.put(name, new WeakReference( value ) );
         }
         else {
             throw new DasNameException(name + " must match " + SIMPLE_NAME_STRING);
@@ -90,7 +92,7 @@ public class NameContext {
         }
         Matcher m = SIMPLE_NAME.matcher(name);
         if (m.matches()) {
-            return nameMap.get(name);
+            return ((WeakReference)nameMap.get(name)).get();
         }
         int index = name.lastIndexOf('.');
         Object obj = get(name.substring(0, index));
