@@ -217,8 +217,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      */
     protected AffineTransform getAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
         if ( xmemento==null ) {
-            DasApplication.getDefaultApplication().getLogger( DasApplication.GRAPHICS_LOG )
-            .fine( "unable to calculate AT, because old transform is not defined." );
+            logger.fine( "unable to calculate AT, because old transform is not defined." );
             return null;
         } else {
             AffineTransform at= new AffineTransform();
@@ -323,8 +322,8 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         // we might as well re-render using the dataset we have.
         refresh();
     }
-    
-    /*
+
+    /**
      * recalculate the plot image and repaint.  The dataset or exception have
      * been updated, or the axes have changed, so we need to perform updatePlotImage
      * to do the expensive parts of rendering.
@@ -341,17 +340,16 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             logger.fine("parent not displayable");
             return;
         }
-        
-        final DasProgressMonitor progressPanel= DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage" );
-        
+
         Runnable run= new Runnable() {
             public void run() {
                 logger.fine("update plot image");
                 try {
+                    final DasProgressMonitor progressPanel= DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage" );
                     updatePlotImage( parent.getXAxis(), parent.getYAxis(), progressPanel );
                     xmemento= parent.getXAxis().getMemento();
                     ymemento= parent.getYAxis().getMemento();
-                    parent.repaint();
+
                 } catch ( DasException de ) {
                     logger.warning("exception: "+de);
                     ds = null;
@@ -360,10 +358,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
                     ds = null;
                     throw re;
                 } finally {
-                    if (progressPanel != null) {
-                        logger.fine("progressPanel.finished()");
-                        progressPanel.finished();
-                    }
+                    // this code used to call finished() on the progressPanel
                 }
                 
                 logger.fine("invalidate parent cacheImage and repaint");
