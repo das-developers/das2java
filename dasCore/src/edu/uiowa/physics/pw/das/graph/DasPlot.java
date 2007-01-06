@@ -469,10 +469,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     Renderer rend= (Renderer)renderers.get(i);
                     if ( rend.isActive() ) {
                         logger.finest( "rendering #"+i+": "+rend );
-                        WritableRaster raster= cacheImage.copyData( null );
-                        BufferedImage before=  new BufferedImage( cacheImage.getColorModel(), raster, cacheImage.isAlphaPremultiplied(), null );
-                        rend.render(plotGraphics,xAxis,yAxis);
-                        compareImage(i, before);
+                        BufferedImage before;
+                        if ( !getCanvas().isPrintingThread() ) {
+                            WritableRaster raster= cacheImage.copyData( null );
+                            before=  new BufferedImage( cacheImage.getColorModel(), raster, cacheImage.isAlphaPremultiplied(), null );
+                            rend.render(plotGraphics,xAxis,yAxis);
+                            compareImage(i, before);
+                        }  else {                      
+                            rend.render(plotGraphics,xAxis,yAxis);
+                        }                        
                         noneActive= false;
                     }
                 }
@@ -1082,7 +1087,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      */
     public void setDrawGrid(boolean drawGrid) {
         this.drawGrid = drawGrid;
-        this.update();
+        this.invalidateCacheImage();
+        this.repaint();
     }
     
     public void setPreviewEnabled( boolean preview ) {
