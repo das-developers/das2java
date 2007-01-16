@@ -268,7 +268,7 @@ public abstract class DataSetDescriptor implements Displayable {
     }
     
     /**
-     * @returns the string that uniquely identifies this dataset.
+     * @return the string that uniquely identifies this dataset.
      */
     public String getDataSetID() {
         return this.dataSetID;
