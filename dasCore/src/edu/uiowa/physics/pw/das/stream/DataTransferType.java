@@ -206,7 +206,12 @@ public class DataTransferType {
                     buffer.putDouble(d);
                 } break;
                 case I_ASCII: {
-                    String s = doubleFormatter.format(d) + " ";
+                    String s = doubleFormatter.format(d);
+                    if ( s.length()==sizeBytes-2 ) {
+                        s= " "+s+" "; 
+                    } else if ( s.length()==sizeBytes-1 ) {
+                        s= s+" ";
+                    }
                     if (sizeBytes < 10) {
                         s = FixedWidthFormatter.format(s, sizeBytes - 1);
                     }
