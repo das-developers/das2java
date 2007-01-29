@@ -12,4 +12,7 @@ Single Key MouseModule Activation:
 Should DragRenderers only be allowed to communicate science events?  If so,
 then what is the purpose of a MouseModule?
 
+2007-01-29: eew
+   Ed suggests the mouseModules have a hook that is called when the MM is selected, so it can pop up a dialog, etc.
+
   
