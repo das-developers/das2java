@@ -63,9 +63,6 @@ public class DataRequestThread extends Thread {
      * 
      * @param dsd the <code>DataSetDescriptor</code> used to obtain
      *      the <code>DataSet</code>
-     * @param params extra parameters passed to the {@link
-     *      DataSetDescriptor#getDataSet(edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.DasProgressMonitor)
-     *      getDataSet()} method.
      * @param start the start of the requested time interval
      * @param end the end of the requested time interval
      * @param resolution the requested resolution of the data set
@@ -92,8 +89,8 @@ public class DataRequestThread extends Thread {
      * @param dsd the <code>DataSetDescriptor</code> used to obtain
      *      the <code>DataSet</code>
      * @param params extra parameters passed to the {@link
-     *      DataSetDescriptor#getDataSet(Object,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,double)
-     *      getDataSet()} method.
+     *      DataSetDescriptor#getDataSet(edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.DasProgressMonitor)
+     *      getDataSet()} method.  (TODO: these are ignored)
      * @param start the start of the requested time interval
      * @param end the end of the requested time interval
      * @param resolution the requested resolution of the data set
