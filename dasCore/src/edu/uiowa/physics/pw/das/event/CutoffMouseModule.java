@@ -35,6 +35,7 @@ import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
 import java.awt.Color;
 import java.util.HashMap;
+import javax.crypto.NullCipher;
 import javax.swing.JFrame;
 
 /**
@@ -42,7 +43,7 @@ import javax.swing.JFrame;
  * @author Jeremy
  */
 public class CutoffMouseModule extends BoxSelectorMouseModule {
-        
+    
     DasAxis xaxis, yaxis;
     DataSetConsumer dataSetConsumer;
     DatumRange xrange;
@@ -50,11 +51,11 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     String lastComment;
     CutoffSlicer cutoffSlicer;
     
-     public CutoffMouseModule( DasPlot parent, DataSetConsumer consumer ) {
-         super( parent, parent.getXAxis(), parent.getYAxis(), consumer, new BoxRenderer(parent,true), "Cutoff" );
-         this.dataSetConsumer= consumer;
-     }
-
+    public CutoffMouseModule( DasPlot parent, DataSetConsumer consumer ) {
+        super( parent, parent.getXAxis(), parent.getYAxis(), consumer, new BoxRenderer(parent,true), "Cutoff" );
+        this.dataSetConsumer= consumer;
+    }
+    
     protected void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
         
         DatumRange xrange0= xrange;
@@ -95,6 +96,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     
     private void recalculate( ) {
         TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
+        if ( tds==null ) return; 
         tds= new ClippedTableDataSet( tds, xrange, yrange );
         
         // average the data down to xResolution
@@ -113,7 +115,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         VectorDataSetBuilder builder= new VectorDataSetBuilder( tds.getXUnits(), tds.getYUnits() );
         for ( int i=0; i<tds.getXLength(); i++ ) {
             VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
-            int icutoff= cutoff( spec, slopeMin, nave, 1, levelMin );
+            int icutoff= cutoff( spec, slopeMin, nave, isLowCutoff() ? 1 : -1, levelMin );
             if ( icutoff>-1 ) {
                 builder.insertY( tds.getXTagDatum(i), tds.getYTagDatum( tds.tableOfIndex(i), icutoff ) );
             } else {
@@ -161,6 +163,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         
         for ( int i=1; i<nfr; i++ ) icof[i]=true;
         icof[0]= false;  // let's be explicit
+        icof[nfr-1]= false; // the tests can't reach this one as well.
         
         for ( int k=1; k<=nave; k++ ) {
             double[] ave= new double[nfr];
@@ -172,7 +175,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             for ( int j=k; j<nfr-k; j++ ) {
                 double slopeTest= ( ave[j+1]-ave[j-k] ) / k;
                 slopeBuilder.insertY( ds.getXTagDatum(j+1), units.createDatum(slopeTest) );
-                if ( slopeTest*mult <= slope ) icof[j]= false;
+                if ( slopeTest*mult <= slope*mult ) icof[j]= false;
                 double uave= mult>0 ? ave[j+k] :  ave[j];
                 if ( uave <= level ) icof[j]=false;
                 icofBuilder.insertY( ds.getXTagDatum(j), icof[j] ? units.dimensionless.createDatum(1) : units.dimensionless.createDatum(0) );
@@ -202,7 +205,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         DataPointSelectionEvent lastSelectedPoint;
         Datum cutoff;
         Datum yValue;
-        Datum xValue;        
+        Datum xValue;
         
         SymbolLineRenderer levelRenderer;
         SymbolLineRenderer contextLevelRenderer;
@@ -210,22 +213,47 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         SymbolLineRenderer contextSlopeRenderer;
         SymbolLineRenderer icofRenderer;
         DasPlot topPlot;
+        DasPlot slopePlot;
+        
         JFrame frame;
         
         CutoffSlicer( DasPlot parent, DasAxis xaxis ) {
             frame= new JFrame("Cutoff Slice");
             DasCanvas canvas= new DasCanvas( 300, 600 );
+            
             frame.getContentPane().add( canvas );
             frame.pack();
             frame.setVisible(false);
             frame.setDefaultCloseOperation( JFrame.HIDE_ON_CLOSE );
             
-            DasColumn col= DasColumn.create( canvas );
-            DasRow row1= DasRow.create( canvas, 0, 3 );
-            DasRow row2= DasRow.create( canvas, 1, 3 );
-            DasRow row3= DasRow.create( canvas, 2, 3 );
+            DasColumn col= new DasColumn( canvas, null, 0, 1, 5, -1.5, 0, 0 );
+            DasRow row1= new DasRow( canvas, null, 0/3., 1/3., 2, -1, 0, 0 );
+            DasRow row2= new DasRow( canvas, null, 1/3., 2/3., 1.5, -1.5, 0, 0 );
+            DasRow row3= new DasRow( canvas, null, 2/3., 3/3., 1, -2, 0, 0 );
             
-            DasPlot plot= new CutoffDasPlot( xaxis, new DasAxis( new DatumRange( -8,0,Units.dimensionless ), DasAxis.VERTICAL ) );
+            DasPlot plot= new DasPlot( xaxis, new DasAxis( new DatumRange( -8,0,Units.dimensionless ), DasAxis.VERTICAL ) ) {
+                protected void drawContent(java.awt.Graphics2D g) {
+                    super.drawContent(g);
+                    
+                    int iy;
+                    int ix= getColumn().getDMinimum();
+                    
+                    g.setColor( Color.GRAY );
+                    
+                    iy= (int)getYAxis().transform( levelMin );
+                    g.drawLine( ix, iy, ix+getWidth(), iy );
+                    
+                    ix= (int)getXAxis().transform( cutoff );
+                    g.drawLine( ix, 0, ix, getHeight() );
+                    
+                    g.setColor( Color.pink );
+                    ix= (int)getXAxis().transform( yValue );
+                    g.drawLine( ix, 0, ix, getHeight() );
+                    
+                }
+                
+            };
+            
             plot.getYAxis().setLabel("level");
             plot.getXAxis().setTickLabelsVisible(false);
             levelRenderer= new SymbolLineRenderer();
@@ -264,7 +292,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             levelSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
                 public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum y= e.getY();
-                    CutoffMouseModule.this.setLevelMin( y );                    
+                    CutoffMouseModule.this.setLevelMin( y );
                 }
             } );
             levelSlicer.setDragEvents(false);
@@ -274,13 +302,43 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             
             canvas.add( plot, row1, col );
             
-            plot= new CutoffDasPlot( xaxis.createAttachedAxis(), new DasAxis( new DatumRange( -0.3,.3,Units.dimensionless ), DasAxis.VERTICAL )  );
+            plot= new DasPlot( xaxis.createAttachedAxis(), new DasAxis( new DatumRange( -0.3,.3,Units.dimensionless ), DasAxis.VERTICAL )  ) {
+                protected void drawContent(java.awt.Graphics2D g) {
+                    super.drawContent(g);
+                    
+                    int iy;
+                    
+                    iy= (int)getYAxis().transform( slopeMin );
+                    int ix= getColumn().getDMinimum();
+                    g.setColor( Color.lightGray);
+                    if ( lowCutoff ) {
+                        g.drawString( "slope greater than", ix+3, iy );
+                    } else {
+                        g.drawString( "slope less than", ix+3, iy );
+                    }
+                    
+                    g.setColor( Color.GRAY );
+                    g.drawLine( ix, iy, ix+getWidth(), iy );
+                    
+                    ix= (int)getXAxis().transform( cutoff );
+                    g.drawLine( ix, 0, ix, getHeight() );
+                    
+                    g.setColor( Color.pink );
+                    ix= (int)getXAxis().transform( yValue );
+                    g.drawLine( ix, 0, ix, getHeight() );
+                    
+                    
+                }
+                
+            };
+            
+            slopePlot= plot;
+            
             plot.getYAxis().setLabel("slope");
-            plot.getXAxis().setTickLabelsVisible(false);
             slopeRenderer= new SymbolLineRenderer();
             contextSlopeRenderer= new SymbolLineRenderer();
             contextSlopeRenderer.setColor( Color.GRAY );
-            plot.addRenderer(contextSlopeRenderer);
+            //plot.addRenderer(contextSlopeRenderer);
             plot.addRenderer(slopeRenderer);
             
             // TODO: here's a bug mode to check into (topPlot should be plot):
@@ -293,7 +351,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             slopeSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
                 public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum y= e.getY();
-                    CutoffMouseModule.this.setSlopeMin( y );                    
+                    CutoffMouseModule.this.setSlopeMin( y );
                 }
             } );
             slopeSlicer.setDragEvents(false);
@@ -303,7 +361,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             
             canvas.add( plot, row2, col );
             
-            plot= new CutoffDasPlot( xaxis.createAttachedAxis(), new DasAxis( new DatumRange( -0.3,1.3,Units.dimensionless ), DasAxis.VERTICAL )  );
+            plot= new DasPlot( xaxis.createAttachedAxis(), new DasAxis( new DatumRange( -0.3,1.3,Units.dimensionless ), DasAxis.VERTICAL )  );
             plot.getYAxis().setLabel("icof");
             icofRenderer= new SymbolLineRenderer();
             plot.addRenderer(icofRenderer);
@@ -351,8 +409,12 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             
             VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
             
-            int icutoff= cutoff( spec, slopeMin, nave, 1, levelMin );
-            cutoff= spec.getXTagDatum(icutoff);
+            int icutoff= cutoff( spec, slopeMin, nave, isLowCutoff() ? 1 : -1, levelMin );
+            if ( icutoff==-1 ) {
+                cutoff= spec.getXUnits().getFillDatum();
+            } else {
+                cutoff= spec.getXTagDatum(icutoff);
+            }
             
             showPopup();
         }
@@ -361,33 +423,6 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             if ( !frame.isVisible() ) frame.setVisible(true);
         }
         
-        class CutoffDasPlot extends DasPlot {
-            CutoffDasPlot( DasAxis x, DasAxis y ) {
-                super(x,y);
-            }
-            protected void drawContent(java.awt.Graphics2D g) {
-                super.drawContent(g);
-                
-                int iy;
-                
-                g.setColor( Color.GRAY );
-                
-                iy= (int)getYAxis().transform( levelMin );
-                g.drawLine( 0, iy, getWidth(), iy );
-                
-                iy= (int)getYAxis().transform( slopeMin );
-                g.drawLine( 0, iy, getWidth(), iy );
-                
-                int ix= (int)getXAxis().transform( cutoff );
-                g.drawLine( ix, 0, ix, getHeight() );
-                
-                g.setColor( Color.pink );
-                ix= (int)getXAxis().transform( yValue );
-                g.drawLine( ix, 0, ix, getHeight() );
-                
-                
-            }
-        }
     }
     
     public  DataPointSelectionListener getSlicer( DasPlot plot, TableDataSetConsumer consumer ) {
@@ -405,21 +440,21 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         // see /home/jbf/voyager/cutoff/input.txt
         double[] spec= new double[] {
             -12.7093, -12.8479, -13.0042, -13.1509, -13.3007, -13.4671,
-                    -13.5536, -13.6603, -13.8000, -13.8873, -13.9908, -14.1162,
-                    -14.2016, -14.2694, -14.2844, -14.3126, -14.3507, -14.3841,
-                    -14.4252, -14.4779, -14.4972, -14.5226, -14.6059, -14.6517,
-                    -14.6545, -14.2863, -13.9616, -13.6898, -13.7407, -13.8821,
-                    -14.1541, -14.4287, -14.6663, -14.8647, -15.0540, -15.0863,
-                    -15.1190, -15.1464, -15.1479, -15.1399, -15.1284, -15.2001,
-                    -15.2780, -15.3611, -15.3976, -15.4230, -15.4467, -15.4879,
-                    -15.5437, -15.6058, -15.6501, -15.6606, -15.6737, -15.6867,
-                    -15.6955, -15.7425, -15.8222, -15.9376, -16.0174, -16.0091,
+            -13.5536, -13.6603, -13.8000, -13.8873, -13.9908, -14.1162,
+            -14.2016, -14.2694, -14.2844, -14.3126, -14.3507, -14.3841,
+            -14.4252, -14.4779, -14.4972, -14.5226, -14.6059, -14.6517,
+            -14.6545, -14.2863, -13.9616, -13.6898, -13.7407, -13.8821,
+            -14.1541, -14.4287, -14.6663, -14.8647, -15.0540, -15.0863,
+            -15.1190, -15.1464, -15.1479, -15.1399, -15.1284, -15.2001,
+            -15.2780, -15.3611, -15.3976, -15.4230, -15.4467, -15.4879,
+            -15.5437, -15.6058, -15.6501, -15.6606, -15.6737, -15.6867,
+            -15.6955, -15.7425, -15.8222, -15.9376, -16.0174, -16.0091,
         };
         double[] tags= new double[ spec.length ];
         for ( int i=0; i< tags.length; i++ ) { tags[i]= i+1; }
         double slope= 0.266692;
         int nave=3;
-        int mult= 1;
+        int mult= isLowCutoff() ? 1 : -1;
         double level= -14;
         int icut= cutoff(
                 new DefaultVectorDataSet( spec, Units.hertz, spec, Units.v2pm2Hz, new HashMap() ),
@@ -471,7 +506,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * Setter for property slopeMin.
      * @param slopeMin New value of property slopeMin.
      */
-    public void setSlopeMin(Datum slopeMin) {        
+    public void setSlopeMin(Datum slopeMin) {
         this.slopeMin = slopeMin;
         recalculate();
     }
@@ -529,5 +564,29 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     public void setXResolution(Datum xResolution) {
         this.xResolution = xResolution;
     }
-     
+    
+    /**
+     * Holds value of property lowCutoff.  true indicates this is a low
+     * cutoff (look for peak in slope).  false indicates this is a
+     * high cutoff (look for valley in slope).
+     */
+    private boolean lowCutoff;
+    
+    /**
+     * Getter for property lowCutoff.
+     * @return Value of property lowCutoff.
+     */
+    public boolean isLowCutoff() {
+        return this.lowCutoff;
+    }
+    
+    /**
+     * Setter for property lowCutoff.
+     * @param lowCutoff New value of property lowCutoff.
+     */
+    public void setLowCutoff(boolean lowCutoff) {
+        this.lowCutoff = lowCutoff;
+        if ( this.cutoffSlicer != null ) this.cutoffSlicer.slopePlot.repaint();
+    }
+    
 }
