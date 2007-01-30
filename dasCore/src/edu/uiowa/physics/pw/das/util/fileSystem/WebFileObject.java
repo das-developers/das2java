@@ -183,7 +183,8 @@ public class WebFileObject extends FileObject {
             }
             
             if ( download ) {
-                try {                    
+                try {                   
+                    if ( !localFile.getParentFile().exists() ) localFile.getParentFile().mkdirs();
                     wfs.downloadFile( pathname,localFile, monitor );
                 } catch ( FileNotFoundException e ) {
                     throw e;
