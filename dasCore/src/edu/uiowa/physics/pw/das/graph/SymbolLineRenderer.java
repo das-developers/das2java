@@ -51,8 +51,8 @@ import java.util.logging.Logger;
 public class SymbolLineRenderer extends Renderer implements Displayable {
     
     private Psym psym = Psym.NONE;
-    private double symSize = 1.0; // radius in pixels
-    private float lineWidth = 1.5f; // width in pixels
+    private double symSize = 3.0; // radius in pixels
+    private float lineWidth = 1.0f; // width in pixels
     private boolean histogram = false;
     //private Stroke stroke;
     private PsymConnector psymConnector = PsymConnector.SOLID;
@@ -76,10 +76,17 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         super();
     }
     
+    /**
+     * @deprecated use SymbolLineRenderer() and setDataSet() instead.  Note that
+     * behavior may be slightly different since a DataLoader is created.
+     */
     public SymbolLineRenderer(DataSet ds) {
         super(ds);
     }
     
+    /**
+     * @deprecated use SymbolLineRenderer() and setDataSetDescriptor() instead.
+     */
     public SymbolLineRenderer(DataSetDescriptor dsd) {
         super(dsd);
     }
