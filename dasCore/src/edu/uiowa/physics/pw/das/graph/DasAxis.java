@@ -439,18 +439,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     public void setDataRange(Datum minimum, Datum maximum) {
         
+        Units units= dataRange.getUnits();
+        if (minimum.getUnits()!=units) {
+            minimum= minimum.convertTo(units);
+            maximum= maximum.convertTo(units);
+        }
+        
         DatumRange newRange= new DatumRange( minimum, maximum );
         logger.fine( "enter dasAxis.setDataRange( "+newRange+" )" );
         
         if ( ! rangeIsAcceptable( newRange ) ) {
             logger.warning( "invalid range ignored" );
             return;
-        }
-        
-        Units units= dataRange.getUnits();
-        if (minimum.getUnits()!=units) {
-            minimum.convertTo(units);
-            maximum.convertTo(units);
         }
         
         double min, max, min0, max0;
@@ -2047,8 +2047,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public Datum invTransform(double idata) {
         double data;
         DasDevicePosition range = (isHorizontal()
-                ? (DasDevicePosition) getColumn()
-                : (DasDevicePosition) getRow());
+        ? (DasDevicePosition) getColumn()
+        : (DasDevicePosition) getRow());
         
         double alpha= (idata-range.getDMinimum())/(double)getDLength();
         if ( !isHorizontal() ) alpha= 1.0 - alpha;
