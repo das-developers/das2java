@@ -104,7 +104,7 @@ public class FTPFileSystem extends WebFileSystem {
         }
     }
     
-    void downloadFile(String filename, java.io.File f, DasProgressMonitor monitor ) throws java.io.IOException {
+    protected void downloadFile(String filename, java.io.File f, DasProgressMonitor monitor ) throws java.io.IOException {
         FileOutputStream out=null;
         InputStream is= null;
         try {
