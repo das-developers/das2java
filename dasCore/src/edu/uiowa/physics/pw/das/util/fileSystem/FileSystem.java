@@ -84,7 +84,8 @@ public abstract class FileSystem  {
     /**
      * returns the canonical name /a/b/c.dat of a string that
      * contains backslashes and might not have the leading /
-     * and trailing slashes.  Note this is the name of the FileObject 
+     * and trailing slashes.  Also, double slashes (//) are
+     * removed.  Note this is the name of the FileObject 
      * within the FileSystem.
      */    
     protected static String toCanonicalFilename( String filename ) {
@@ -92,6 +93,14 @@ public abstract class FileSystem  {
         if ( filename.length()==0 || filename.charAt(0)!='/' ) {
             filename= "/"+filename;
         }        
+        String[] s= filename.split("//");
+        if ( s.length>1 ) {
+            StringBuffer nf= new StringBuffer(s[0]);
+            for ( int i=1; i<s.length; i++ ) {
+                nf.append("/").append(s[i]);
+            }
+            filename= nf.toString();
+        }
         return filename;
     }
     
@@ -121,5 +130,17 @@ public abstract class FileSystem  {
      * not be part of the regex.
      */
     abstract public String[] listDirectory( String directory, String regex );
+ 
+    /**
+     * create a new filesystem that is a part of this filesystem, rooted at
+     * directory.
+     */
+    public FileSystem createFileSystem( String directory ) {
+        try {
+            return new SubFileSystem( this, toCanonicalFolderName(directory) );
+        } catch ( MalformedURLException e ) {
+            throw new IllegalArgumentException("invalid directory: "+directory);
+        }
+    }
     
 }
