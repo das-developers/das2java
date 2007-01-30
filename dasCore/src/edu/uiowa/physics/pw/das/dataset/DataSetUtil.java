@@ -84,14 +84,14 @@ public class DataSetUtil {
     }
     
     /**
-     * @depricated use GraphUtil.visualize( ds );
+     * @deprecated use GraphUtil.visualize( ds );
      */
     public static DasPlot visualize( DataSet ds ) {
         return GraphUtil.visualize( ds );
     }
     
     /**
-     * @depricated use GraphUtil.visualize( ds, ylog );
+     * @deprecated use GraphUtil.visualize( ds, ylog );
      */
     public static DasPlot visualize( DataSet ds, boolean ylog ) {
         return GraphUtil.visualize( ds, ylog );
