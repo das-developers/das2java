@@ -87,8 +87,8 @@ public class DataRange implements Cloneable {
     
     public DataRange( DasAxis parent, Datum min, Datum max, boolean log ) {
         if (min.gt(max)) throw new IllegalArgumentException("data min on axis is greater than data max");
-        if (!min.isValid()) throw new IllegalArgumentException("data_minimum on axis is NaN");
-        if (!max.isValid()) throw new IllegalArgumentException("data_maximum on axis is NaN");
+        if (!min.isFinite()) throw new IllegalArgumentException("data_minimum on axis is not finite");
+        if (!max.isFinite()) throw new IllegalArgumentException("data_maximum on axis is not finite");
         if (min.getUnits()!=max.getUnits())  throw new IllegalArgumentException("units don't match on range");
         this.parent= parent;
         units= min.getUnits();
