@@ -362,8 +362,7 @@ public class FileStorageModel {
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
-                    URL url= new URL( root.getRootURL(), names[i] );
-                    fileSystems[i]= FileSystem.create( url );
+                    fileSystems[i]= root.createFileSystem( names[i] );
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);
                 }
@@ -565,6 +564,10 @@ public class FileStorageModel {
     
     public String toString() {
         return String.valueOf(root) + regex;
+    }
+    
+    public FileSystem getFileSystem() {
+        return this.root;
     }
 
 }
