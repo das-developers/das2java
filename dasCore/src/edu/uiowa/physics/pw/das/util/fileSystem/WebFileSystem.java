@@ -34,16 +34,18 @@ public abstract class WebFileSystem extends FileSystem {
     
     static protected File localRoot( URL root ) {
         File local;
+        
         if ( System.getProperty("user.name").equals("Web") ) {
             local= new File("/tmp");
         } else {
             local= new File( System.getProperty("user.home") );
         }
-        local= new File( local, ".das2/fileSystemCache/WebFileSystem/" );
-              
-        local= new File( local, root.getProtocol() );
-        local= new File( local, root.getHost() );
-        local= new File( local, root.getFile() );
+        local= new File( local, ".das2/fsCache/wfs/" );
+       
+        String s= root.getProtocol() + "/"+ root.getHost() + "/" + root.getFile();
+        
+        local= new File( local, s );
+
         local.mkdirs();
         return local;
     }
@@ -52,7 +54,7 @@ public abstract class WebFileSystem extends FileSystem {
      * Transfers the file from the remote store to a local copy f.  This should only be
      * used within the class and subclasses, clients should use getFileObject( String ).getFile().
      */
-    abstract void downloadFile( String filename, File f, DasProgressMonitor monitor ) throws IOException;
+    protected abstract void downloadFile( String filename, File f, DasProgressMonitor monitor ) throws IOException;
     
     protected File getLocalRoot() {
         return this.localRoot;
@@ -83,6 +85,10 @@ public abstract class WebFileSystem extends FileSystem {
         }
     }
     
+    /**
+     * return the name of the File within the FileSystem, where File is a local
+     * file within the local copy of the filesystem.
+     */
     public String getLocalName( File file ) {
         if ( !file.toString().startsWith(localRoot.toString() ) ) {
             throw new IllegalArgumentException( "file \""+file+"\"is not of this web file system" );
