@@ -10,7 +10,6 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.util.DasMath;
 import java.util.*;
-import javax.swing.*;
 
 /**
  *
@@ -253,6 +252,14 @@ public class DataSetUtil {
         return DatumVector.newDatumVector(data,ds.getXUnits());
     }
     
+    /**
+     * guess a range that characterizes the data.  The DataSet property name
+     * DataSet.PROPERTY_Z_RANGE can be used by the dataset to explicitly 
+     * set this.
+     * 
+     * @return a DatumRange useful for setting axis range.
+     * @throws UnsupportedOperationException if the dataset is not a TableDataSet.
+     */
     public static DatumRange zRange( DataSet ds ) {
         if ( !( ds instanceof TableDataSet ) ) {
             throw new UnsupportedOperationException("only TableDataSets supported");
@@ -289,8 +296,9 @@ public class DataSetUtil {
         return DatumRange.newDatumRange( min, max, zunits );
         
     }
-    
-    /* Give an estimate of the size of the data set, or PROPERTY_SIZE_BYTES if available.
+
+            
+    /** Give an estimate of the size of the data set, or PROPERTY_SIZE_BYTES if available.
      * Generally this would be used as a penalty against the dataset, and it's probably
      * better to overestimate the dataset size.
      */
