@@ -93,42 +93,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         setProperties(properties, false);
     }
     
-    /**
-     * Reads data for the given start and end dates and returns an array of floats
-     *
-     * @author eew
-     * @return array of floats containing the data returned by the reader
-     * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
-     */
-    protected float[] readFloats(InputStream in) throws DasException {
-        float[] f;
-        byte[] data = readBytes(in);
-        f = new float[data.length/4];
-        ByteBuffer buff = ByteBuffer.wrap(data);
-        FloatBuffer fbuff = buff.asFloatBuffer();
-        fbuff.get(f);
-        return f;
-    }
-    
-    /**
-     * Reads data for the given start and end dates and returns an array of doubles
-     *
-     * @author eew
-     * @return array of doubles containing the data returned by the reader
-     * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
-     */
-    protected double[] readDoubles(InputStream in) throws DasException {
-        double[] d;
-        byte[] data = readBytes(in);
-        d = new double[data.length/4];
-        ByteBuffer buff = ByteBuffer.wrap(data);
-        FloatBuffer fbuff = buff.asFloatBuffer();
-        for (int i = 0; i < d.length; i++) {
-            d[i] = fbuff.get();
-        }
-        return d;
-    }
-    
     private ByteBuffer getByteBuffer(InputStream in) throws DasException {
         byte[] data = readBytes(in);
         ByteBuffer buffer = ByteBuffer.wrap(data);
