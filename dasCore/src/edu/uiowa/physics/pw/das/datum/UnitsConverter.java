@@ -77,7 +77,14 @@ public abstract class UnitsConverter {
         private final double scale;
         private final int hashCode;
     
-        /** Creates a new instance of UnitsConverter.ScaleOffset */
+        /** 
+         * Creates a new UnitsConverter.ScaleOffset.  This
+         * converter multiplies by scale and adds offset, so
+         * offset is in the target Units.  For example,
+         * deg C to deg F would be 
+         * <pre>new UnitsConverter.ScaleOffset( 9./5, 32 )</pre>.
+         * 
+         */
         public ScaleOffset(double scale, double offset) {
             this(scale, offset, null);
         }
