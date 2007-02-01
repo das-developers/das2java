@@ -33,36 +33,36 @@ import java.text.ParseException;
  * @author  jbf
  */
 public final class TimeUtil {
-
+    
     private TimeUtil() {
     }
-
+    
     private final static int[][] daysInMonth = {
         {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0},
         {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0}
     };
-
+    
     private final static int[][] dayOffset = {
         {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365},
         {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366}
     };
-
+    
     public static int daysInMonth(int month, int year) {
         return daysInMonth[isLeapYear(year)?1:0][month];
     }
-
+    
     public static int julday( int month, int day, int year ) {
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
         return jd;
     }
-
+    
     public static int dayOfYear( int month, int day, int year ) {
         return day + dayOffset[isLeapYear(year)?1:0][month];
     }
-
-
+    
+    
     public final static class TimeStruct {
         /**
          * year containing the time datum
@@ -92,24 +92,24 @@ public final class TimeUtil {
          * seconds since the last minute boundary of the time datum
          */
         public double seconds; // remaining number of seconds past minute boundary
-
+        
         /**
          * additional milliseconds since minute boundary
          */
         public int millis;
-
+        
         /**
          * additional microseconds since minute boundary
          */
         public int micros;
-
+        
         public boolean isLocation= false;
-
+        
         public String toString() {
             return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
         }
         public boolean[] want;
-
+        
         public TimeStruct copy() {
             TimeStruct result= new TimeStruct();
             result.year= this.year;
@@ -122,11 +122,11 @@ public final class TimeUtil {
             result.micros= this.micros;
             return result;
         }
-
+        
         public TimeStruct add( TimeStruct offset ) {
             if ( offset.isLocation && this.isLocation ) throw new IllegalArgumentException("can't add two times!");
             TimeStruct result= new TimeStruct();
-
+            
             result.year= this.year + offset.year;
             result.month= this.month + offset.month;
             result.day= this.day + offset.day;
@@ -135,13 +135,13 @@ public final class TimeUtil {
             result.seconds= this.seconds + offset.seconds;
             result.millis= this.millis + offset.millis ;
             result.micros= this.micros + offset.micros ;
-
+            
             result.isLocation= this.isLocation || offset.isLocation;
-
+            
             return result;
         }
     }
-
+    
     public static final int YEAR = 1;
     public static final int MONTH = 2;
     public static final int DAY = 3;
@@ -151,8 +151,8 @@ public final class TimeUtil {
     public static final int NANO = 7;
     public static final int WEEK = 97;
     public static final int QUARTER = 98;
-
-
+    
+    
     public static double getSecondsSinceMidnight(Datum datum) {
         double xx= datum.doubleValue(Units.t2000);
         if (xx<0) {
@@ -166,12 +166,12 @@ public final class TimeUtil {
             return xx % 86400;
         }
     }
-
+    
     public static int getJulianDay( Datum datum ) {
         double xx= datum.doubleValue(Units.mj1958);
         return (int)Math.floor( xx ) + 2436205;
     }
-
+    
     public static Datum toDatum( TimeStruct d ) {
         int year = (int)d.year;
         int month = (int)d.month;
@@ -185,7 +185,38 @@ public final class TimeUtil {
         double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 ) + seconds / 86400. );
         return Datum.create( us2000 + d.millis * 1000 + d.micros, Units.us2000 );
     }
-
+    
+    /**
+     *Break the Julian day apart into month, day year.  This is based on
+     *http://en.wikipedia.org/wiki/Julian_day (GNU Public License), and 
+     *was introduced when toTimeStruct failed when the year was 1886.
+     *@param julian the (integer) number of days that have elapsed since the initial epoch at noon Universal Time (UT) Monday, January 1, 4713 BC
+     *@return a TimeStruct with the month, day and year fields set.
+     */
+    public static TimeStruct julianToGregorian( int julian ) {
+        int j = julian + 32044;
+        int g = j / 146097;
+        int dg = j % 146097;
+        int c = (dg / 36524 + 1) * 3 / 4;
+        int dc = dg - c * 36524;
+        int b = dc / 1461;
+        int db = dc % 1461;
+        int a = (db / 365 + 1) * 3 / 4;
+        int da = db - a * 365;
+        int y = g * 400 + c * 100 + b * 4 + a;
+        int m = (da * 5 + 308) / 153 - 2;
+        int d = da - (m + 4) * 153 / 5 + 122;
+        int Y = y - 4800 + (m + 2) / 12;
+        int M = (m + 2) % 12 + 1;
+        int D = d + 1;
+        TimeStruct result= new TimeStruct();
+        result.year= Y;
+        result.month= M;
+        result.day= D;
+        return result;
+    }
+    
+    
     /**
      * splits the time location datum into y,m,d,etc components.  Note that
      * seconds is a double, and micros will be 0.
@@ -194,41 +225,24 @@ public final class TimeUtil {
         int jalpha, j1, j2, j3, j4, j5;
         int year, month, day, hour, minute;
         double justSeconds;
-
+        
         int jd= getJulianDay(datum);
         double seconds= getSecondsSinceMidnight(datum);
-
-        jalpha = (int)(((double)(jd - 1867216) - 0.25)/36524.25);
-        j1 = jd + 1 + jalpha - jalpha/4;
-        j2 = j1 + 1524;
-        j3 = 6680 + (int)(((j2-2439870)-122.1)/365.25);
-        j4 = 365*j3 + j3/4;
-        j5 = (int)((j2-j4)/30.6001);
-
-        day = j2 - j4 - (int)(30.6001*j5);
-        month = j5-1;
-        month = ((month - 1) % 12) + 1;
-        year = j3 - 4715;
-        year = year - (month > 2 ? 1 : 0);
-        year = year - (year <= 0 ? 1 : 0);
-
+        
+        TimeStruct result= julianToGregorian( jd );
+        
         hour = (int)(seconds/3600.0);
         minute = (int)((seconds - hour*3600.0)/60.0);
         justSeconds = seconds - hour*(double)3600.0 - minute*(double)60.0;
-
-        TimeStruct result= new TimeStruct();
-
-        result.year= year;
-        result.month= month;
-        result.day= day;
-        result.doy = dayOfYear(month, day, year);
+        
+        result.doy = dayOfYear(result.month, result.day, result.year);
         result.hour= hour;
         result.minute= minute;
         result.seconds= justSeconds;
-
+        
         return result;
     }
-
+    
     /**
      * returns int[] { year, month, day, hour, minute, second, millis, micros }
      */
@@ -240,7 +254,7 @@ public final class TimeUtil {
         micros= micros - millis * 1000 + ts.micros + ts.millis*1000;
         return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, millis, micros };
     }
-
+    
     public static Datum toDatum( int[] timeArray ) {
         int year = timeArray[0];
         int month = timeArray[1];
@@ -257,14 +271,14 @@ public final class TimeUtil {
         double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 ) + seconds / 86400. );
         return Datum.create( us2000, Units.us2000 );
     }
-
+    
     public static boolean isLeapYear( int year ) {
         return (year % 4)==0;
     }
-
+    
     public static TimeStruct carry(TimeStruct t) {
         TimeStruct result= t;
-
+        
         if (result.seconds>=60) {
             result.seconds-=60;
             result.minute++;
@@ -277,7 +291,7 @@ public final class TimeUtil {
             result.hour-=24;
             result.day++;
         }
-
+        
         int daysThisMonth= daysInMonth(result.month,result.year);
         if (result.day>daysThisMonth) {
             result.day-=daysThisMonth;
@@ -289,10 +303,10 @@ public final class TimeUtil {
         }
         return result;
     }
-
+    
     public static TimeStruct borrow(TimeStruct t) {
         TimeStruct result= t;
-
+        
         if (result.seconds<0.) {
             result.seconds+=60.;
             result.minute--;
@@ -305,7 +319,7 @@ public final class TimeUtil {
             result.hour+=24;
             result.day--;
         }
-
+        
         if (result.day<0 || result.month<1) {
             // we're going to abort here.  The problem is how to decrement the month?
             // What does MONTH=-1, DAY=31 mean?  The "digits" are not independent as
@@ -323,19 +337,19 @@ public final class TimeUtil {
             result.day+=daysLastMonth;
             result.month--;
         }
-
+        
         if (result.month==0) {
             result.month+=12;
             result.year--;
         }
-
+        
         return result;
     }
-
+    
     public static TimeStruct normalize( TimeStruct t ) {
         return carry(borrow(t));
     }
-
+    
     public static Datum next( int step, Datum datum ) {
         if ( step >= HOUR && step<WEEK ) throw new IllegalArgumentException("not tested");
         TimeStruct array= toTimeStruct(datum);
@@ -364,7 +378,7 @@ public final class TimeUtil {
             array.minute=0;
             array.seconds=0.;
         }
-
+        
         if (array.month>12) {
             array.year++;
             array.month-=12;
@@ -372,15 +386,15 @@ public final class TimeUtil {
         Datum result= toDatum(array);
         return result;
     }
-
+    
     public static Datum nextMonth(Datum datum) {
         return next(MONTH,datum);
     }
-
+    
     public static Datum prev( int step, Datum datum ) {
-
+        
         TimeStruct t= toTimeStruct(datum);
-
+        
         switch(step) {
             case YEAR:
                 t.month=1;
@@ -397,21 +411,21 @@ public final class TimeUtil {
             case SECOND:
                 t.seconds= (int)t.seconds;
         }
-
+        
         Datum result= toDatum(t);
         if ( result.equals(datum) ) {
             return prev(step, datum.subtract( 500, Units.microseconds ));
         } else {
             return result;
         }
-
+        
     }
-
+    
     public static Datum now() {
         double us2000= ( System.currentTimeMillis() - 946684800e3 ) * 1000;
         return Units.us2000.createDatum(us2000);
     }
-
+    
     /**
      * @param year
      * @param month
@@ -434,18 +448,18 @@ public final class TimeUtil {
             jd = julday(month1,day1,year);
             jd+= ( day - 1 );
         }
-
+        
         second+= hour*3600.0 + minute*60.0;
-
+        
         double us2000 = (jd-2451545)*86400000000. + second * 1000000;
-
+        
         if ( units==Units.us2000 ) {
             return us2000;
         } else {
             return Units.us2000.convertDoubleTo(units, us2000);
         }
     }
-
+    
     /**
      * returns 1..12 for the month name
      *
@@ -462,19 +476,19 @@ public final class TimeUtil {
         }
         throw new ParseException("Unable to parse month", 0 );
     }
-
+    
     public class TimeParser {
         String regex;
         int[] digits;
-
+        
     }
-
+    
     public static final TimeStruct parseTime(String s) throws java.text.ParseException {
         int year, month, day_month, day_year, hour, minute;
         //String s;
         double second;
         int c;
-
+        
         final int DATE = 0;
         final int YEAR = 1;
         final int MONTH = 2;
@@ -482,7 +496,7 @@ public final class TimeUtil {
         final int HOUR = 4;
         final int MINUTE = 5;
         final int SECOND = 6;
-
+        
         final String DELIMITERS = " \t/-:,_;";
         final String PDSDELIMITERS = " \t/-T:,_;";
         final String[] months = {
@@ -493,8 +507,8 @@ public final class TimeUtil {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         };
-
-
+        
+        
         String delimiters;
         int end_of_date;
         //GregorianCalendar curdate;
@@ -502,7 +516,7 @@ public final class TimeUtil {
         String[] tok = new String[10];
         boolean[] want = new boolean[7];
         int[] format= new int[7];
-
+        
         java.util.Arrays.fill(want, false);
         int ptr;
         int number;
@@ -510,11 +524,11 @@ public final class TimeUtil {
         int hold;
         int leap;
         int tokIndex;
-
+        
         StringTokenizer st;
-
+        
         /* handl PDS time format */
-
+        
         delimiters = DELIMITERS;
         if ((c = s.indexOf((int)'Z')) != -1) s = s.substring(0, c);
         end_of_date = s.indexOf((int)'T');
@@ -523,9 +537,9 @@ public final class TimeUtil {
             if (Character.isDigit(s.charAt(c))) delimiters = PDSDELIMITERS;
             else end_of_date = -1;
         }
-
+        
         /* if not PDS then coiunt out 3 non-space delimiters */
-
+        
         if (end_of_date == -1) {
             n = 0;
             len = s.length();
@@ -537,12 +551,12 @@ public final class TimeUtil {
                 }
             }
         }
-
+        
         /* default to current year */
-
+        
         //curdate = new GregorianCalendar();
         //curdate.setTime(new Date());
-
+        
         year = 0;
         month = 0;
         day_month = 0;
@@ -550,28 +564,28 @@ public final class TimeUtil {
         hour = 0;
         minute = 0;
         second= 0.0;
-
+        
         /* tokenize the time string */
         st = new StringTokenizer(s, delimiters);
-
+        
         if (!st.hasMoreTokens()) throw new java.text.ParseException( "No tokens in '"+s+"'", 0 );
-
+        
         for (n = 0; n < 10 && st.hasMoreTokens(); n++) tok[n] = st.nextToken();
-
+        
         want[DATE] = want[YEAR] = want[MONTH] = want[DAY] = true;
         hold = 0;
-
+        
         tokIndex = -1;
-
+        
         for (i = 0; i < n; i++) {
             tokIndex = s.indexOf(tok[i], tokIndex+1);
             if ((end_of_date != -1) && want[DATE] && tokIndex > end_of_date) {
                 want[DATE] = false;
                 want[HOUR] = want[MINUTE] = want[SECOND] = true;
             }
-
+            
             len = tok[i].length();
-
+            
             try {
                 value = Double.parseDouble(tok[i]);
             } catch (NumberFormatException e) {
@@ -592,23 +606,23 @@ public final class TimeUtil {
                 if (want[MONTH]) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 continue;
             }
-
+            
             if (Math.IEEEremainder(value, 1.0) != 0.0) {
                 if (want[SECOND]) {
                     second = value;
                     break;
                 } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
             }
-
+            
             number = (int)value;
             if (number < 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
-
+            
             if (want[DATE]) {
-
+                
                 if (number == 0) throw new java.text.ParseException( "m,d, or y can't be 0 in '"+s+"'", 0 );
-
+                
                 if (number > 31) {
-
+                    
                     if (want[YEAR]) {
                         year = number;
                         if (year < 1000) year += 1900;
@@ -619,9 +633,9 @@ public final class TimeUtil {
                         day_year = number;
                         want[DAY] = false;
                     } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
-
+                    
                 } else if (number > 12) {
-
+                    
                     if (want[DAY]) {
                         if (hold > 0) {
                             month = hold;
@@ -635,9 +649,9 @@ public final class TimeUtil {
                         } else day_month = number;
                         want[DAY] = false;
                     } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
-
+                    
                 } else if (!want[MONTH]) {
-
+                    
                     if (month > 0) {
                         day_month = number;
                         day_year = 0;
@@ -646,15 +660,15 @@ public final class TimeUtil {
                         day_month = 0;
                     }
                     want[DAY] = false;
-
+                    
                 } else if (!want[DAY]) {
-
+                    
                     if (day_year > 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     month = number;
                     want[MONTH] = false;
-
+                    
                 } else if (!want[YEAR]) {
-
+                    
                     if (len == 3) {
                         if (month > 0) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                         day_year = number;
@@ -669,24 +683,24 @@ public final class TimeUtil {
                         }
                     }
                     want[MONTH] = false;
-
+                    
                 } else if (hold > 0) {
-
+                    
                     month = hold;
                     hold = 0;
                     want[MONTH] = false;
                     day_month = number;
                     want[DAY] = false;
-
+                    
                 } else hold = number;
-
+                
                 if (!(want[YEAR] || want[MONTH] || want[DAY])) {
                     want[DATE] = false;
                     want[HOUR] = want[MINUTE] = want[SECOND] = true;
                 }
-
+                
             } else if (want[HOUR]) {
-
+                
                 if (len == 4) {
                     hold = number / 100;
                     // TODO: handle times like Jan-1-2001T24:00 --> Jan-2-2001T00:00,  for ease of modifying times
@@ -701,28 +715,28 @@ public final class TimeUtil {
                     hour = number;
                 }
                 want[HOUR] = false;
-
+                
             } else if (want[MINUTE]) {
                 // TODO: handle times like 0:90 --> 1:30,  for ease of modifying times
                 if (number > 59) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 minute = number;
                 want[MINUTE] = false;
-
+                
             } else if (want[SECOND]) {
-
+                
                 if (number > 61) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 second = number;
                 want[SECOND] = false;
-
+                
             } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
-
+            
         } /* for all tokens */
-
+        
         if (month > 12) throw new java.text.ParseException("Month is greater than 12 in '"+s+"'",0);
         if (month > 0 && day_month <= 0) day_month = 1;
-
+        
         leap = ((year & 3) > 0 ? 0 : ((year % 100) > 0 ? 1 : ((year % 400) > 0 ? 0 : 1)) );
-
+        
         if ((month > 0) && (day_month > 0) && (day_year == 0)) {
             if (day_month > daysInMonth[leap][month]) throw new java.text.ParseException( "day of month too high in '"+s+"'",0 );
             day_year = dayOffset[leap][month] + day_month;
@@ -735,7 +749,7 @@ public final class TimeUtil {
         } else {
             throw new java.text.ParseException( "Need month/day or doy in '"+s+"'",0 );
         }
-
+        
         TimeStruct result= new TimeStruct();
         result.year = year;
         result.month = month;
@@ -745,12 +759,12 @@ public final class TimeUtil {
         result.minute = minute;
         result.seconds = second;
         result.isLocation= true;
-
+        
         result.want= want;
-
+        
         return result;
     }
-
+    
     /** Creates a datum from a string
      * @param s
      * @throws ParseException
@@ -760,7 +774,7 @@ public final class TimeUtil {
         TimeStruct ts= parseTime(s);
         return toDatum(ts);
     }
-
+    
     /** creates a Datum from a string which is known to contain
      * a valid time format.  Throws a RuntimeException if the
      * string is not valid.
@@ -774,7 +788,7 @@ public final class TimeUtil {
             throw new RuntimeException( ex );
         }
     }
-
+    
     public static boolean isValidTime( String string ) {
         try {
             create( string );
@@ -783,31 +797,31 @@ public final class TimeUtil {
             return false;
         }
     }
-
+    
     public static void main(String[] args) throws Exception {
         System.out.println( TimeUtil.now() );
         System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 ));
         Datum x=create( "2000-1-1 0:00:33.45" );
         System.out.println( x );
-
+        
         TimeStruct ts= TimeUtil.toTimeStruct(x);
         System.out.println( TimeUtil.toDatum(ts) );
-
+        
         TimeDatumFormatter tf = TimeDatumFormatter.DEFAULT;
-
+        
         for ( int i=0; i<44; i++ ) {
             System.out.println(tf.format(x)+"\t"+(long)x.doubleValue(Units.us2000));
             x= TimeUtil.prev(SECOND,x);
         }
     }
-
+    
     public static Datum prevMidnight(Datum datum) {
         return datum.subtract(getSecondsSinceMidnight(datum), Units.seconds);
     }
-
+    
     public static Datum createTimeDatum( int year, int month, int day, int hour, int minute, int second, int nano ) {
         if ( year<1960 ) throw new IllegalArgumentException("year must be > 1960, and no 2 digit years (year="+year+")");
-
+        
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
@@ -815,5 +829,5 @@ public final class TimeUtil {
         double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 )) + microseconds;
         return Datum.create( us2000, Units.us2000 );
     }
-
+    
 }
