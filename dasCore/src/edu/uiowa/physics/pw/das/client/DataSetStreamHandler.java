@@ -24,15 +24,19 @@
 package edu.uiowa.physics.pw.das.client;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetBuilder;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumUtil;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
+import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
+import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +72,19 @@ public class DataSetStreamHandler implements StreamHandler {
         } else if ( ( o= sd.getProperty("packetCount" ) )!=null ) {
             this.totalPacketCount= ((Integer)o).intValue();
             monitor.setTaskSize( totalPacketCount );
+        } 
+        if ( ( o= sd.getProperty("cacheTagString" ) ) !=null ) {
+            // kludge to xmit cacheTags.  "start,resolution,end"
+            try {
+                String[] ss= ((String)o).split(",");
+                Datum min= TimeUtil.create(ss[0]);
+                Datum max= TimeUtil.create(ss[2]);
+                Datum res= DatumUtil.parse(ss[1]);            
+                if ( res.doubleValue( res.getUnits() ) == 0 ) res= null; // intrisic resolution
+                extraProperties.put( DataSet.PROPERTY_CACHE_TAG, new CacheTag( min, max, res ) );
+            } catch ( ParseException e ) {
+                e.printStackTrace();
+            }       
         } 
         if ( ( o=sd.getProperty("pid") )!=null ) {
             logger.fine("stream pid="+o);
