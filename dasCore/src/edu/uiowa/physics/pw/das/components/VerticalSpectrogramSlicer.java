@@ -50,7 +50,7 @@ extends DasPlot implements DataPointSelectionListener {
     protected VerticalSpectrogramSlicer(DasPlot parent, DasAxis xAxis, DasAxis yAxis) {
         super( xAxis, yAxis);
         this.parentPlot = parent;
-        renderer= new SymbolLineRenderer((DataSet)null);
+        renderer= new SymbolLineRenderer();
         addRenderer(renderer);                
     }
         
