@@ -8,6 +8,11 @@ import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+/**
+ * Utility class for processing the String[] arguments passed into the main routine,
+ * handing positional and switch parameters.  Also automatically generates the
+ * usage documentation.
+ */
 public class ArgumentList {
     
     int nposition;
@@ -49,6 +54,11 @@ public class ArgumentList {
     
     private static final Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
     
+    /**
+     * creates the processor for the program.  <tt>programName</tt> is provided
+     * for the usage statement.  After creating the object, arguments are
+     * specified one by one, and then the process method is called.
+     */
     public ArgumentList(String programName) {
         this.programName= programName;
         positionKeys= new String[10];
@@ -61,6 +71,11 @@ public class ArgumentList {
         requireOneOfList= new ArrayList();
     }
     
+    /**
+     * get the value for this parameter
+     * @return the parameter's value.
+     * @throw IllegalArgumentException if the parameter name was never described.
+     */
     public String getValue(String key) {
         if ( values.containsKey(key) ) {
             return (String)values.get( key );
@@ -70,7 +85,13 @@ public class ArgumentList {
     }
     
     /**
-     * returns the options as a java.util.prefs.Preferences object, for batch processes.
+     * returns the options as a java.util.prefs.Preferences object, for
+     * batch processes.  The idea is that a process which grabs default
+     * settings from the user Preferences can instead get them from the command
+     * line, to support batch processes.  See the Vg1pws app for an example of
+     * how this is used.
+     *
+     * @return a Preferences object, loaded with the command line values.
      */
     public Preferences getPreferences() {
         return new AbstractPreferences(null,"") {
@@ -121,6 +142,13 @@ public class ArgumentList {
         return values.get( key ) == this.TRUE;
     }
     
+    /**
+     * Specify the ith positional argument.
+     *
+     * @param position the position number, 0 is the first argument position after the class name.
+     * @param key the internal reference name to get the value specified.
+     * @param description a short (40 character) description of the argument.
+     */
     public void addPositionArgument(int position, String key, String description) {
         if ( position>nposition ) {
             throw new IllegalArgumentException( "Position arguments must be specified 0,1,2,3: position="+position );
@@ -134,15 +162,37 @@ public class ArgumentList {
         values.put( key, UNSPECIFIED );
     }
     
+    /**
+     * requires the user specify one of these values, otherwise the usage
+     * statement is printed.
+     * @param keyNames an array of internal key names that identify parameters.
+     */
     public void requireOneOf( String[] keyNames ) {
         requireOneOfList.add(keyNames);
     }
     
+    /**
+     * Specify the ith positional argument, which may be left unspecified by
+     * the user.  Note that all positional arguments after this one must also be
+     * optional.
+     *
+     * @param position the position number, 0 is the first argument position after the class name.
+     * @param key the internal reference name to get the value specified.
+     * @param defaultValue the value that is returned if a value is not provided by the user.
+     * @param description a short (40 character) description of the argument.
+     */
     public void addOptionalPositionArgument(int position, String key, String defaultValue, String description) {
         addPositionArgument( position, key, description );
         values.put(key,defaultValue);
     }
     
+    /**
+     * specify a named switch argument that must be specified by the user.  For example, --level=3 or -l=3
+     * @param name the long parameter name, which the user may enter. e.g. "level"
+     * @param abbrev short (one letter) parameter version.  e.g. "l" for -l=3
+     * @param key the internal reference name to get the value specified, not necessarily but often the same as name.
+     * @param description a short (40 character) description of the argument.
+     */
     public void addSwitchArgument(String name, String abbrev, String key, String description) {
         if ( abbrev==null && name==null ) {
             throw new IllegalArgumentException( "both abbrev and name are null, one must be specified" );
@@ -160,17 +210,35 @@ public class ArgumentList {
         }
         values.put( key, UNSPECIFIED );
     }
-    
+
+    /**
+     * specify a named switch argument that may be specified by the user.  For example, --level=3 or -l=3
+     * @param name the long parameter name, which the user may enter. e.g. "level"
+     * @param abbrev short (one letter) parameter version.  e.g. "l" for -l=3
+     * @param defaultValue value to return if the user doesn't specify.
+     * @param key the internal reference name to get the value specified, not necessarily but often the same as name.
+     * @param description a short (40 character) description of the argument.
+     */
     public void addOptionalSwitchArgument(String name, String abbrev, String key, String defaultValue, String description) {
         addSwitchArgument( name, abbrev, key, description );
         values.put( key, defaultValue );
     }
     
+    /**
+     * specify a named switch argument that is named, and we only care whether it was used or not.  e.g. --debug
+     * @param name the long parameter name, which the user may enter. e.g. "level"
+     * @param abbrev short (one letter) parameter version.  e.g. "l" for -l=3
+     * @param key the internal reference name to get the value specified, not necessarily but often the same as name.
+     * @param description a short (40 character) description of the argument.
+     */
     public void addBooleanSwitchArgument(String name, String abbrev, String key, String description) {
         if ( key.equals("commandLinePrefs") ) allowUndefinedSwitch=true;
         addOptionalSwitchArgument( name, abbrev, key, FALSE, description );
     }
     
+    /**
+     * print the usage statement out to stderr.
+     */
     public void printUsage() {
         String s;
         s= "Usage: "+this.programName+" ";
@@ -226,6 +294,9 @@ public class ArgumentList {
         }
     }
     
+    /**
+     * check that the user's specified arguments are valid.
+     */
     private void checkArgs() {
         boolean error= false;
         java.util.List errorList= new java.util.ArrayList(); // add strings to here
@@ -284,12 +355,19 @@ public class ArgumentList {
         
     }
     
+    /**
+     * return a Map of all the specified values.  The keys are all the internal
+     * String keys, and the values are all Strings.
+     * @return a Map of the specified values, including defaults.
+     */
     public Map getMap() {
         return new HashMap( values );
     }
     
     /**
-     * returns a Map of optional arguments that were specified
+     * returns a Map of optional arguments that were specified, so you can see
+     * exactly what was specified.
+     * @return a Map of the specified values, without defaults.
      */
     public Map getOptions() {
         HashMap result= new HashMap();
@@ -351,6 +429,16 @@ public class ArgumentList {
         return i;
     }
     
+    /**
+     * given the specification, process the argument list.  If the list is in error, the
+     * usage statement is generated, and the System.exit is called (sorry!).  Otherwise
+     * the method returns and getValue() may be used to retrieve the values.
+     *
+     * Again, note that System.exit may be called.  This is probably a bad idea and another
+     * method will probably be added that would return true if processing was successful.
+     *
+     * @param args, as in public static void main( String[] args ).
+     */
     public void process(String[] args) {
         
         StringBuffer sb= new StringBuffer();
@@ -381,6 +469,9 @@ public class ArgumentList {
         checkArgs();
     }
     
+    /**
+     * see Vg1pws app for example use.
+     */
     public void printPrefsSettings() {
         String s;
         s= "Explicit Settings: \n";
@@ -408,7 +499,7 @@ public class ArgumentList {
                 } else {
                     s+= "--"+name+"="+value+" ";
                 }
-            } 
+            }
         }
         
         System.err.println(s);
