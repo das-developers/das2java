@@ -11,12 +11,12 @@ import java.io.*;
 import java.nio.channels.*;
 
 /**
- * Class for describing and accessing files in file systems.  This 
+ * <p>Class for describing and accessing files in file systems.  This 
  * is similar to java.io.File, except that it can describe files on remote
- * file systems like an ftp site.
+ * file systems like an ftp site.</p>
  *
- * Note: this is modelled after the NetBeans fileSystem FileObject, with the
- * thought that we might use it later. 
+ * <p>Note: this is modelled after the NetBeans fileSystem FileObject, with the
+ * thought that we might use it later. </p>
  *
  * @author Jeremy
  */
