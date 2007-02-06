@@ -478,7 +478,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     /** Setter for property rebinner.
-     * @param rebinner New value of property rebinner.
+     * @param rebinnerEnum New value of property rebinner.
      *
      */
     public void setRebinner( RebinnerEnum rebinnerEnum) {
@@ -542,7 +542,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     /**
      * Setter for property draw300dpi.
-     * @param draw300dpi New value of property draw300dpi.
+     * @param print300dpi New value of property draw300dpi.
      */
     public void setPrint300dpi(boolean print300dpi) {
         this.print300dpi = print300dpi;

@@ -581,14 +581,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
     
     /**
-     * Layout manager for manageing the Row, Column layout implemented by swing.
+     * Layout manager for managing the Row, Column layout implemented by swing.
      * This will probably change in the future when we move away from using 
      * swing to handle the DasCanvasComponents.
      */
     protected static class RowColumnLayout implements LayoutManager {
-        /** TODO
-         * @param target
-         */
         public void layoutContainer(Container target) {
             synchronized (target.getTreeLock()) {
                 int count = target.getComponentCount();
@@ -604,35 +601,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
         
-        /** TODO
-         * @param target
-         * @return
-         */
         public Dimension minimumLayoutSize(Container target) {
             return new Dimension(0,0);
         }
         
-        /** TODO
-         * @param target
-         * @return
-         */
         public Dimension preferredLayoutSize(Container target) {
             return new Dimension(400,300);
         }
         
-        /** TODO
-         * @param name
-         * @param comp
-         */
         public void addLayoutComponent(String name, Component comp){}
-        /** TODO
-         * @param comp
-         */
+
         public void removeLayoutComponent(Component comp){}
     }
     
-    /** Returns true if the current thread is registered as thread is
-     * printing this component.
+    /** 
+     * @return true if the current thread is registered as the one printing this component.
      */
     protected final boolean isPrintingThread() {
         synchronized (this) {
@@ -1162,11 +1145,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     
     
-    /** TODO
+    /** 
      * @param name
      * @param width
      * @param height
-     * @return
+     * @return DasCanvas with a name.
      */
     public static DasCanvas createFormCanvas(String name, int width, int height) {
         DasCanvas canvas = new DasCanvas(width, height);

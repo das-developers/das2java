@@ -142,8 +142,7 @@ public class GraphUtil {
     
     /**
      * calculates the AffineTransform between two sets of x and y axes, if possible.  
-     * @returns null if no such transform exists, or the AffineTransform that transforms
-     * data located with xaxis0 and yaxis0 on xaxis1 and yaxis1.
+     * @return an AffineTransform that transforms data positioned with xaxis0 and yaxis0 on xaxis1 and yaxis1, or null if no such transform exists.
      */
     public static AffineTransform calculateAT( DasAxis xaxis0, DasAxis yaxis0, DasAxis xaxis1, DasAxis yaxis1 ) {
         AffineTransform at= new AffineTransform();

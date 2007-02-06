@@ -74,7 +74,7 @@ public class ArgumentList {
     /**
      * get the value for this parameter
      * @return the parameter's value.
-     * @throw IllegalArgumentException if the parameter name was never described.
+     * @throws IllegalArgumentException if the parameter name was never described.
      */
     public String getValue(String key) {
         if ( values.containsKey(key) ) {
@@ -437,7 +437,7 @@ public class ArgumentList {
      * Again, note that System.exit may be called.  This is probably a bad idea and another
      * method will probably be added that would return true if processing was successful.
      *
-     * @param args, as in public static void main( String[] args ).
+     * @param args as in public static void main( String[] args ).
      */
     public void process(String[] args) {
         

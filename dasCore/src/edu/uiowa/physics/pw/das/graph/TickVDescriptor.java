@@ -57,7 +57,8 @@ public class TickVDescriptor {
      * @param xDatum  find the tick closest to this.
      * @param direction  -1 previous, 1 next, 0 closest
      * @param minor  find closest minor tick, major if false.
-     * @return
+     * @return the closest tick.  If there is no tick in the given direction, then
+     *   the behavior is undefined.
      */
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         int majorLen;

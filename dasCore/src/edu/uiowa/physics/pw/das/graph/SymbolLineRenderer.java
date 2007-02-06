@@ -351,7 +351,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     /** Setter for property symsize.
-     * @param symsize New value of property symsize.
+     * @param symSize New value of property symsize.
      */
     public void setSymSize(double symSize) {
         this.symSize= symSize;

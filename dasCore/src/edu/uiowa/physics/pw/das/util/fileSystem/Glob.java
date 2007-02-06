@@ -71,9 +71,9 @@ public class Glob {
     }
     
     /**
-     *
-     * @param glob
-     * @return
+     * converts a glob into a Pattern.
+     * @param glob a string like '*.dat'
+     * @return a Pattern for the glob, for example *.dat -> .*\.dat
      */
     public static Pattern getPattern( String glob ) {
         final String regex= getRegex( glob );
@@ -81,14 +81,17 @@ public class Glob {
         return absPattern;
     }
     
+    /**
+     * converts a glob into a regex.
+     */
     private static String getRegex( String glob ) {
         return glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
     }
     
     /**
-     *
+     * unglob the glob into an array of the matching FileObjects.
      * @param glob
-     * @return
+     * @return an array of FileObjects that match the glob.
      */
     public static FileObject[] unGlob( FileSystem fs, String glob ) {
         return unGlob( fs, glob, false );

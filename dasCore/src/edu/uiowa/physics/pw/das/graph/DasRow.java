@@ -46,7 +46,7 @@ public class DasRow extends DasDevicePosition {
     public static final DasRow NULL= new DasRow(null,null,0,0,0,0,0,0);
     
     /**
-     * @deprecated.  This created a row that was not attached to anything, so
+     * @deprecated This created a row that was not attached to anything, so
      * it was simply a convenience method that didn't save much effort.
      */
     public DasRow createSubRow(double ptop, double pbottom) {

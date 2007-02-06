@@ -419,7 +419,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
     
     /** Setter for property floppyltemSpacing.
-     * @param floppyltemSpacing New value of property floppyltemSpacing.
+     * @param floppyItemSpacing New value of property floppyltemSpacing.
      *
      */
     public void setFloppyItemSpacing(boolean floppyItemSpacing) {
