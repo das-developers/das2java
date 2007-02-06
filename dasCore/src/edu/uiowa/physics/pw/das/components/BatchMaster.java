@@ -53,7 +53,7 @@ public class BatchMaster {
     
     public static Timer timer= new Timer();
     
-    public interface TaskOutputDescriptor {
+    private interface TaskOutputDescriptor {
         public void completeTask( DatumRange range );
     }
     
