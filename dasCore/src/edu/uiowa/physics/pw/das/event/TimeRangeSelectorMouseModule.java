@@ -36,7 +36,7 @@ import javax.swing.event.EventListenerList;
 /**
  *
  * @author  jbf
- * @depricated  Use HorizontalRangeSelectorMouseModule.
+ * @deprecated  Use HorizontalRangeSelectorMouseModule.
  */
 public class TimeRangeSelectorMouseModule extends MouseModule {
     

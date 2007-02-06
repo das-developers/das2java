@@ -892,8 +892,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         if ( mm!=null ) setSecondaryModule( mm );
     }
     /**
+     * //TODO: check this
      * Setter for property mouseModules.
-     * @param mouseModules New value of property mouseModules.
+     * @param mouseModule the new mouseModule to use.
      */
     public void setMouseModule( int i, MouseModule mouseModule ) {
         this.modules.set(i,mouseModule);

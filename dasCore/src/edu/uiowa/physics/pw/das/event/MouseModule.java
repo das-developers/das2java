@@ -70,7 +70,7 @@ public class MouseModule implements Editable, Displayable, KeyListener {
     
     /**
      * No longer used
-     * @depricated.  No longer supported
+     * @deprecated  No longer supported
      */
     public Vector getHotSpots() {
         return null;

@@ -427,14 +427,14 @@ public final class TimeUtil {
     }
     
     /**
-     * @param year
-     * @param month
-     * @param day if month==0, then day is day of year.
-     * @param hour
-     * @param minute
-     * @param second
-     * @param units
-     * @return
+     * @param year the year 
+     * @param month the month
+     * @param day the day of month, unless month==0, then day is day of year.
+     * @param hour additional hours
+     * @param minute additional minutes
+     * @param second additional seconds
+     * @param units the Units to return the result in.
+     * @return a double in the context of units.
      */
     public static double convert(int year, int month, int day, int hour, int minute, double second, TimeLocationUnits units) {
         // if month==0, then day is doy (day of year).

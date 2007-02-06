@@ -154,7 +154,6 @@ public abstract class FileObject {
      * not available.
      *
      * @return the last modified Date, or new Date(0) if it is not available.
-     * @see File.lastModified()
      */
     public abstract java.util.Date lastModified();
     

@@ -289,8 +289,8 @@ public class FileStorageModelNew {
      *
      * @param root FileSystem source of the files.
      * @param template describes how filenames are constructed.
-     * @param the custom field name
-     * @param the TimeParser.FieldHandler to call with the field contents.
+     * @param fieldName custom field name
+     * @param fieldHandler TimeParser.FieldHandler to call with the field contents.
      * @return a newly-created FileStorageModelNew.
      */
     public static FileStorageModelNew create( FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler ) {

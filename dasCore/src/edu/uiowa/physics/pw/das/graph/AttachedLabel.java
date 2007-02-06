@@ -174,10 +174,8 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
     }
     
     /**
-     * TODO
-     * @return 
-     * @deprecated It's not clear how this should be used, and it does not appear to be used
-     * within dasCore and dasApps.
+     * @return the pixel position of the label.
+     * @deprecated It's not clear how this should be used, and it does not appear to be used within dasCore and dasApps.
      */
     public final int getDevicePosition() {
         if (orientation == BOTTOM) {
