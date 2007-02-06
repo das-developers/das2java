@@ -25,6 +25,9 @@ import java.util.regex.*;
  * interpreted as a time digit.  The model can then be used to provide the set
  * of files that cover a time range, etc.
  *
+ * This new implementation uses a TimeParser object to more quickly process 
+ * file names.
+ *
  * @author  Jeremy
  */
 public class FileStorageModelNew {
@@ -56,7 +59,7 @@ public class FileStorageModelNew {
     }
 
 
-    /*
+    /**
      * extract time range for file or directory from its name.
      * The least significant time digit is considered to be the implicitTimeWidth,
      * and if the width is not stated explicitly, it will be used.  When
@@ -169,7 +172,7 @@ public class FileStorageModelNew {
     }
 
     /**
-     * returns true if the file came (or could come) from this FileStorageModel.
+     * @return true if the file came (or could come) from this FileStorageModel.
      */
     public boolean containsFile( File file ) {
         if ( !fileNameMap.containsKey(file) ) {
@@ -183,8 +186,13 @@ public class FileStorageModelNew {
     }
 
     /**
-     * Need a way to recover the model name of a file.  The returned File from getFilesFor can be anywhere,
-     * so it would be good to provide a way to get it back into a FSM name.
+     * Provides a way to recover the model name of a file.  The returned File from getFilesFor can be anywhere,
+     * so it would be good to provide a way to get it back into a FSM name.  For example, a filesystem
+     * might download the remote file to a cache directory, which is the File that is provided to the
+     * client, sometimes the client will need to recover the name of the corresponding FileObject, so
+     * this maps the File back to the name.
+     *
+     * @return the canonical name of the file.
      */
     public String getNameFor( File file ) {
         String result= (String)fileNameMap.get(file);
@@ -196,7 +204,7 @@ public class FileStorageModelNew {
     }
 
     /**
-     * returns a list of files that can be used
+     * @return a list of files that can be used
      */
     public File[] getFilesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
         String[] names= getNamesFor( targetRange );
@@ -227,7 +235,11 @@ public class FileStorageModelNew {
         return m.groupCount();
     }
 
-    public static String getParentRegex( String regex ) {
+    /**
+     * Split off the end of the regex to get a regex for use in the parent system.
+     * Note: changed from public to private as no one is using this internal routine.
+     */
+    private static String getParentRegex( String regex ) {
         String[] s= regex.split( "/" );
         String dirRegex;
         if ( s.length>1 ) {
@@ -248,12 +260,15 @@ public class FileStorageModelNew {
      *    %Y  4-digit year
      *    %m  2-digit month
      *    %d  2-digit day of month
-     *    %j   3-digit julian day
+     *    %j  3-digit julian day
      *    %H  2-digit Hour
      *    %M  2-digit Minute
      *    %S  2-digit second
      *    %{milli}  3-digit milliseconds
      *
+     * @param root FileSystem source of the files.
+     * @param template describes how filenames are constructed.
+     * @return a newly-created FileStorageModelNew.
      */
     public static FileStorageModelNew create( FileSystem root, String template ) {
         int i= template.lastIndexOf("/");
@@ -267,6 +282,17 @@ public class FileStorageModelNew {
         }
     }
 
+    
+    /**
+     * creates a FileStorageModel for the given template, but with a custom FieldHandler and
+     * field.
+     *
+     * @param root FileSystem source of the files.
+     * @param template describes how filenames are constructed.
+     * @param the custom field name
+     * @param the TimeParser.FieldHandler to call with the field contents.
+     * @return a newly-created FileStorageModelNew.
+     */
     public static FileStorageModelNew create( FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler ) {
         int i= template.lastIndexOf("/");
         int i2= template.lastIndexOf("%",i);
@@ -279,7 +305,7 @@ public class FileStorageModelNew {
         }
     }
     
-    public FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler  ) {
+    private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler  ) {
         this.root= root;
         this.parent= parent;
         this.template= template;
@@ -288,7 +314,7 @@ public class FileStorageModelNew {
         this.pattern= Pattern.compile(regex);
     }
 
-    public FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template ) {
+    private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template ) {
         this.root= root;
         this.parent= parent;
         this.template= template;
