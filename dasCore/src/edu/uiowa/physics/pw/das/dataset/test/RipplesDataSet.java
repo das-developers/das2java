@@ -48,8 +48,8 @@ public final class RipplesDataSet extends FunctionTableDataSet implements TableD
      * @param x2 the x coordinate of the first ripple source
      * @param y2 the y coordinate of the first ripple source
      * @param p2 the radius of the first ripple
-     * @param nx the number of columns in the dataset.
-     * @param ny the number of rows in the dataset.
+     * @param xlength the number of columns in the dataset.
+     * @param ylength the number of rows in the dataset.
      */
     public RipplesDataSet( double x1, double y1, double p1, double x2, double y2, double p2, int xlength, int ylength ) {
         super(xlength,ylength);

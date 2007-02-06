@@ -64,7 +64,6 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
      * @param yValues array of double y values
      * @param yUnits untis for the y values
      * @param yValuesMap map of String plane IDs to their y values
-     * @param unitsMap map of String plane IDs to their y units
      * @param properties map of String property names to their values
      */
     public DefaultVectorDataSet(double[] xTags, Units xUnits,

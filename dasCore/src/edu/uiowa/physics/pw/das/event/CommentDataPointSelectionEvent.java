@@ -10,7 +10,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.event.DataPointSelectionEvent;
 
 /**
- * @depricated  use DataPointSelectionEvent planes hashmap "comment" key
+ * @deprecated  use DataPointSelectionEvent planes hashmap "comment" key
  * @author  jbf
  */
 public class CommentDataPointSelectionEvent extends DataPointSelectionEvent {

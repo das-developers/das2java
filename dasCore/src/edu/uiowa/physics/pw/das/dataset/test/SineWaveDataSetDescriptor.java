@@ -40,13 +40,21 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
     Datum period;
     Datum phase;
     
+    /** 
+     * Creates a new instance of SineWaveDataSetDescriptor with arbitrary phase.
+     * @param amplitude the amplitude of the signal.
+     * @param period is in the offset units of phase.   
+     * 
+     */
     public SineWaveDataSetDescriptor( Datum amplitude, Datum period ) {
         this( amplitude, period, null );
     }
     
     /** 
      * Creates a new instance of SineWaveDataSetDescriptor
-     * @param the value of x where the angle is zero.  Period is in the offset units of phase.   null indicates that the phase is arbitrary.
+     * @param amplitude the amplitude of the signal.
+     * @param period is in the offset units of phase.   
+     * @param phase datum in the same units as period.  null indicates that the phase is arbitrary and will change based on the data request.
      * 
      */
     public SineWaveDataSetDescriptor( Datum amplitude, Datum period, Datum phase ) {

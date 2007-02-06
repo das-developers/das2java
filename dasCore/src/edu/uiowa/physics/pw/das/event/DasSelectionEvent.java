@@ -76,7 +76,6 @@ public class DasSelectionEvent extends EventObject
     /** Creates a new instance of DasSelectionEvent
      *
      * @param source The source of the event.
-     * @param ds The DataSet object associated with the source.
      * @param selectionType The type of selection.
      * @param isShiftDown <code>true</code> if the shift buttons was
      *    down when the selection was made, <code>false</code> otherwise.

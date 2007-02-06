@@ -131,7 +131,7 @@ public interface TableDataSet extends DataSet {
     int tableCount();
     
     /** Returns the table number that the specified index is in.
-     * @param j x tag index
+     * @param i x tag index
      * @return the table number that the specified index is in
      */
     int tableOfIndex(int i);

@@ -101,9 +101,8 @@ public interface DataSet {
      */
     Object getProperty(String name);
     
-    /** Returns the property value associated with the string <code>name</code>
-     * @param name the name of the property requested
-     * @return the property value for <code>name</code> or null
+    /** Returns all dataset properties in a Map.
+     * @return a Map of all properties.
      */
     Map getProperties();
     
