@@ -41,6 +41,9 @@ public class Datum implements Comparable {
     private double resolution;
     private DatumFormatter formatter;
     
+    /**
+     * class backing Datums with a double.
+     */
     public static class Double extends Datum {
         
         Double( Number value, Units units ) {
@@ -71,17 +74,20 @@ public class Datum implements Comparable {
     }
     
     /**
-     * 
-     * @return 
+     * returns the datum's double value.  This protected method allows subclasses and classes 
+     * within the package to peek at the double value.
+     *
+     * @return the double value of the datum in the context of its units.
      */
     protected double doubleValue() {
         return this.getValue().doubleValue();
     }
     
     /**
-     * 
-     * @param units 
-     * @return 
+     * returns a double representing the datum in the context of <code>units</code>.
+     *
+     * @param units the Units in which the double should be returned
+     * @return a double in the context of the provided units.
      */
     public double doubleValue(Units units) {
         if ( units!=getUnits() ) {
@@ -92,9 +98,13 @@ public class Datum implements Comparable {
     }
     
     /**
-     * 
-     * @param units 
-     * @return 
+     * returns the resolution (or precision) of the datum.  This is metadata for the datum, used
+     * primarily to limit the number of decimal places displayed in a string representation,
+     * but operators like add and multiply will propogate errors through the calculation.
+     *
+     * @param units the Units in which the double resolution should be returned.  Note
+     *   the units must be convertable to this.getUnits().getOffsetUnits().
+     * @return the double resolution of the datum in the context of units.
      */
     public double getResolution( Units units ) {
         Units offsetUnits= getUnits().getOffsetUnits();
@@ -106,17 +116,22 @@ public class Datum implements Comparable {
     }
     
     /**
-     * 
-     * @return 
+     * returns the datum's int value.  This protected method allows subclasses and classes 
+     * within the package to peek at the value as an integer.  (The intent was that a
+     * Datum might be backed by an integer instead of a double, so that numerical 
+     * round-off issues can be avoided.)
+     *
+     * @return the integer value of the datum in the context of its units.
      */
     protected int intValue() {
         return this.getValue().intValue();
     }
     
     /**
-     * 
-     * @param units 
-     * @return 
+     * returns a int representing the datum in the context of <code>units</code>.
+     *
+     * @param units the Units in which the int should be returned
+     * @return a double in the context of the provided units.
      */
     public int intValue(Units units) {
         if ( units!=getUnits() ) {
@@ -127,18 +142,23 @@ public class Datum implements Comparable {
     }
     
     /**
-     * 
-     * @return 
+     * returns the datum's units.  For example, UT times might have the units
+     * Units.us2000.
+     *
+     * @return the datum's units.
      */
     public Units getUnits() {
         return this.units;
     }
     
     /**
-     * 
-     * @return 
+     * returns the Number representing the datum's location in the space indentified by its units. 
+     * This protected method allows subclasses and classes 
+     * within the package to peek at the value.  (The intent was that a
+     * Datum might be backed by an integer, float, or double, depending on the application.)
+     * @return a Number in the context of the provided units.
      */
-    public Number getValue() {
+    protected Number getValue() {
         return this.value;
     }
    
@@ -151,12 +171,9 @@ public class Datum implements Comparable {
     }
     
     /**
-     * returns a Datum whose value is the sum of the <tt>this</tt> and <tt>datum</tt>, in <tt>this.getUnits()</tt>.
-     * 
-     * @param datum Datum to add, that is convertable to this.getUnits().
+     * returns a Datum whose value is the sum of <tt>this</tt> and <tt>datum</tt>, in <tt>this.getUnits()</tt>.
      * @return a Datum that is the sum of the two values in this Datum's units.
-     * @throws IllegalArgumentException if the units are not convertable or addition operator 
-     * is not allowed.  For example, "1970-001 00:00" + "1970-001 00:00".
+     * @param datum Datum to add, that is convertable to this.getUnits().
      */
     public Datum add( Datum datum ) { 
         Datum result= add( datum.getValue(), datum.getUnits() ); 
@@ -165,9 +182,8 @@ public class Datum implements Comparable {
     }    
     
     /**
-     * returns a Datum whose value is the sum of the <tt>this</tt> and value in 
+     * returns a Datum whose value is the sum of <tt>this</tt> and value in 
      * the context of <tt>units</tt>, in <tt>this.getUnits()</tt>.
-     * 
      * @param value a Number to add in the context of units.
      * @param units units defining the context of value.  There should be a converter from
      * units to this Datum's units.
@@ -176,10 +192,9 @@ public class Datum implements Comparable {
     public Datum add( Number value, Units units ) {  return getUnits().add( getValue(), value, units ); }
     
     /**
-     * returns a Datum whose value is the sum of the <tt>this</tt> and value in 
+     * returns a Datum whose value is the sum of <tt>this</tt> and value in 
      * the context of <tt>units</tt>, in <tt>this.getUnits()</tt>.
-     * 
-     * @param value a Number to add in the context of units.
+     * @param d a Number to add in the context of units.
      * @param units units defining the context of value.  There should be a converter from
      * units to this Datum's units.
      * @return value Datum that is the sum of the two values in this Datum's units.
@@ -188,13 +203,14 @@ public class Datum implements Comparable {
     
     /**
      * returns a Datum whose value is the difference of <tt>this</tt> and <tt>value</tt>.
-     * The returned Datum's has units 
+     * The returned Datum will have units according to the type of units subtracted.
+     * For example, "1979-01-02T00:00" - "1979-01-01T00:00" = "24 hours" (this datum's unit's offset units),
+     * while "1979-01-02T00:00" - "1 hour" = "1979-01-01T23:00" (this datum's units.)
      *
-     * 
-     * @param datum Datum to add, that is convertable to this.getUnits().
+     * Note also the resolution of the result is calculated.
+     *
      * @return a Datum that is the sum of the two values in this Datum's units.
-     * @throws IllegalArgumentException if the units are not convertable or addition operator 
-     * is not allowed.  For example, "1970-001 00:00" + "1970-001 00:00".
+     * @param datum Datum to add, that is convertable to this.getUnits() or offset units.
      */
     public Datum subtract( Datum datum ) { 
         Datum result= subtract( datum.getValue(), datum.getUnits() );
@@ -203,31 +219,112 @@ public class Datum implements Comparable {
     }
                 
     /**
+     * returns a Datum whose value is the difference of <tt>this</tt> and value in 
+     * the context of <tt>units</tt>.  
+     * The returned Datum will have units according to the type of units subtracted.
+     * For example, "1979-01-02T00:00" - "1979-01-01T00:00" = "24 hours" (this datum's unit's offset units),
+     * while "1979-01-02T00:00" - "1 hour" = "1979-01-01T23:00" (this datum's units.)
      * 
-     * @param a 
-     * @param units 
-     * @return 
+     * @param a a Number to add in the context of units.
+     * @param units units defining the context of value.  There should be a converter from
+     * units to this Datum's units or offset units.
+     * @return value Datum that is the difference of the two values in this Datum's units.
      */
     public Datum subtract( Number a, Units units ) { 
         Datum result= getUnits().subtract( getValue(), a, units );        
         return result; 
     }
+    
     /**
+     * returns a Datum whose value is the difference of <tt>this</tt> and value in 
+     * the context of <tt>units</tt>.
+     * The returned Datum will have units according to the type of units subtracted.
+     * For example, "1979-01-02T00:00" - "1979-01-01T00:00" = "24 hours" (this datum's unit's offset units),
+     * while "1979-01-02T00:00" - "1 hour" = "1979-01-01T23:00" (this datum's units.)
      * 
-     * @param d 
-     * @param units 
-     * @return 
+     * @param d a Number to add in the context of units.
+     * @param units units defining the context of value.  There should be a converter from
+     * units to this Datum's units or offset units.
+     * @return value Datum that is the difference of the two values in this Datum's units.
      */
     public Datum subtract( double d, Units units ) {  return subtract( new java.lang.Double(d), units ); }    
     
+    /**
+     * divide this by the datum <tt>a</tt>.  Currently, only division is only supported:<pre>
+     *   between convertable units, resulting in a Units.dimensionless quantity, or
+     *   by a Units.dimensionless quantity, and a datum with this datum's units is returned.</pre>
+     * This may change, as a generic SI units class is planned.
+     *   
+     * @param a the datum divisor.
+     * @return the quotient.
+     */
     public Datum divide( Datum a ) { return getUnits().divide( getValue(), a.getValue(), a.getUnits() ); }
+    
+    /**
+     * divide this by the Number provided in the context of units.  Currently, only division is only supported:<pre>
+     *   between convertable units, resulting in a Units.dimensionless quantity, or
+     *   by a Units.dimensionless quantity, and a datum with this datum's units is returned.</pre>
+     * This may change, as a generic SI units class is planned.
+     * @param a the magnitude of the divisor.
+     * @param units the units of the divisor.
+     * @return the quotient.
+     */
     public Datum divide( Number a, Units units ) { return getUnits().divide( getValue(), a, units ); }
+    
+    /**
+     * divide this by the dimensionless double.
+     * @param d the magnitude of the divisor.
+     * @return the quotient.
+     */
     public Datum divide( double d ) {  return divide( new java.lang.Double(d), Units.dimensionless ); }
     
+    /**
+     * multiply this by the datum <tt>a</tt>.  Currently, only multiplication is only supported:<pre>
+     *   by a dimensionless datum, or when this is dimensionless.
+     * This may change, as a generic SI units class is planned.
+     *
+     * This should also throw an IllegalArgumentException if the units are LocationUnits (e.g. UT time), but doesn't.  This may
+     * change.
+     *   
+     * @param a the datum to multiply
+     * @return the product.
+     */
     public Datum multiply( Datum a ) { return getUnits().multiply( getValue(), a.getValue(), a.getUnits() ); }
+    
+    /**
+     * multiply this by the Number provided in the context of units.  Currently, only multiplication is only supported:<pre>
+     *   by a dimensionless datum, or when this is dimensionless.
+     * This may change, as a generic SI units class is planned.
+     *
+     * This should also throw an IllegalArgumentException if the units are LocationUnits (e.g. UT time), but doesn't.  This may
+     * change.
+     *
+     * @param a the magnitude of the multiplier.
+     * @param units the units of the multiplier.
+     * @return the product.
+     */
     public Datum multiply( Number a, Units units ) { return getUnits().multiply( getValue(), a, units ); }
+    
+    /**
+     * multiply by a dimensionless number.
+     *
+     * This should also throw an IllegalArgumentException if the units are LocationUnits (e.g. UT time), but doesn't.  This may
+     * change.
+     *
+     * @param d the multiplier.
+     * @return the product.
+     */
     public Datum multiply( double d ) {  return multiply( new java.lang.Double(d), Units.dimensionless ); }
     
+    /**
+     * creates an equivalent datum using a different unit.  For example,<code>
+     *  x= Datum.create( 5, Units.seconds );
+     *  System.err.println( x.convertTo( Units.seconds ) );
+     * </code>
+     * @param units the new Datum's units
+     * @throws java.lang.IllegalArgumentException if the datum cannot be converted to the given units.
+     * @return a datum with the new units, that is equal to the original datum.
+     */
     public Datum convertTo( Units units ) throws IllegalArgumentException {
         UnitsConverter muc= this.units.getConverter(units);
         Datum result= units.createDatum( muc.convert( this.getValue() ) );
@@ -238,6 +335,10 @@ public class Datum implements Comparable {
         return result;
     }
     
+    /**
+     * returns a hashcode that is a function of the value and the units.
+     * @return a hashcode for the datum
+     */
     public int hashCode() {
         long bits = (long) getValue().hashCode();
         int doubleHash= (int)(bits ^ (bits >>> 32));
@@ -245,35 +346,71 @@ public class Datum implements Comparable {
         return doubleHash ^ unitsHash;
     }
     
+    /**
+     * returns true if the two datums are equal.  That is, their double values are equal when converted to the same units.
+     * @param a the Object to compare to.
+     * @throws java.lang.IllegalArgumentException if the Object is not a datum or the units are not convertable.
+     * @return true if the datums are equal.
+     */
     public boolean equals( Object a ) throws IllegalArgumentException {
         return ((a instanceof Datum) && this.equals( (Datum)a ) );
     }
     
+    /**
+     * returns true if the two datums are equal.  That is, their double values are equal when converted to the same units.
+     * @param a the datum to compare
+     * @throws java.lang.IllegalArgumentException if the units are not convertable.
+     * @return true if the datums are equal.
+     */
     public boolean equals( Datum a ) throws IllegalArgumentException {
         return ( a.units==this.units && a.value.equals(this.value) );
     }
     
+    /**
+     * returns true if this is less than <tt>a</tt>.
+     * @param a a datum convertable to this Datum's units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @return true if this is less than <tt>a</tt>.
+     */
     public boolean lt( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)<0);
     }
     
+    /**
+     * returns true if this is greater than <tt>a</tt>.
+     * @param a a datum convertable to this Datum's units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @return true if this is greater than <tt>a</tt>.
+     */
     public boolean gt( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)>0);
     }
     
+    /**
+     * returns true if this is less than or equal to <tt>a</tt>.
+     * @param a a datum convertable to this Datum's units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @return true if this is less than or equal to <tt>a</tt>.
+     */
     public boolean le( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)<=0);
     }
     
+    /**
+     * returns true if this is greater than or equal to <tt>a</tt>.
+     * @param a a datum convertable to this Datum's units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @return true if this is greater than or equal to <tt>a</tt>.
+     */
     public boolean ge( Datum a ) throws IllegalArgumentException {
         return (this.compareTo(a)>=0);
     }
     
     /**
-     * @return an int <0 if this comes before Datum a in this Datum's units space,
-     * 0 if they are equal, and >0 otherwise.
-     * @throws IllegalArgumentException if a is not convertable to this Datum's
-     * units.
+     * compare the datum to the object.
+     * @return an int <0 if this comes before Datum a in this Datum's units space, 0 if they are equal, and >0 otherwise.
+     * @param a the Object to compare this datum to.
+     * @throws IllegalArgumentException if a is not a Datum or is not convertable to this Datum's units.
      */
     public int compareTo( Object a ) throws IllegalArgumentException {
         if ( ! (a instanceof Datum) ) throw new IllegalArgumentException("comparable type mismatch");
@@ -281,8 +418,10 @@ public class Datum implements Comparable {
     }
     
     /**
+     * compare this to another datum.
      * @return an int <0 if this comes before Datum a in this Datum's units space,
      * 0 if they are equal, and >0 otherwise.
+     * @param a the Datum to compare this datum to.
      * @throws IllegalArgumentException if a is not convertable to this Datum's
      * units.
      */
@@ -303,6 +442,7 @@ public class Datum implements Comparable {
     }
     
     /**
+     * returns true if the value is non NaN.
      * @return true if the value is non NaN.
      * @deprecated Use isFinite instead, or getValue.
      */
@@ -311,6 +451,7 @@ public class Datum implements Comparable {
     }
     
     /**
+     * returns true if the value is finite, that is not INFINITY or NaN.
      * @return true if the value is finite, that is not INFINITY or NaN.
      */
     public boolean isFinite() {
@@ -319,6 +460,12 @@ public class Datum implements Comparable {
         && ( value.doubleValue()!=java.lang.Double.NaN );
     }
     
+    /**
+     * returns a human readable String representation of the Datum, which should also be parseable with
+     * Units.parse()
+     * @return a human readable String representation of the Datum, which should also be parseable with
+     * Units.parse()
+     */
     public String toString() {
         if (formatter==null) {
             return units.getDatumFormatterFactory().defaultFormatter().format(this);
@@ -328,6 +475,8 @@ public class Datum implements Comparable {
     }
     
     /**
+     * convenient method for creating a dimensionless Datum with the given value.
+     * @param value the magnitude of the datum.
      * @return a dimensionless Datum with the given value.
      */
     public static Datum create(double value) {
@@ -335,6 +484,10 @@ public class Datum implements Comparable {
     }
     
     /**
+     * creates a datum with the given units and value, for example,
+     * <tt>Datum.create( 54, Units.milliseconds )</tt>
+     * @param value the magnitude of the datum.
+     * @param units the units of the datum.
      * @return a Datum with the given units and value.
      */
     public static Datum create( double value, Units units ) {
@@ -346,8 +499,11 @@ public class Datum implements Comparable {
      * it.  This was was used to limit resolution before limited resolution
      * Datums were introduced.
      *
-     * @return a Datum with the given units and value, that should
-     * return the given formatter when asked.  
+     * @param value the magnitude of the datum.
+     * @param units the units of the datum.
+     * @param formatter the DatumFormatter that should be used to format this datum, which will be
+     *   returned by getFormatter().
+     * @return a Datum with the given units and value, that should return the given formatter when asked.  
      */
     public static Datum create( double value, Units units, DatumFormatter formatter ) {
         Datum result= create( value, units);
@@ -359,6 +515,10 @@ public class Datum implements Comparable {
      * Returns a Datum with the given value and limited to the given resolution.
      * When formatted, the formatter should use this resolution to limit the 
      * precision displayed.
+     * @param value the magnitude of the datum, or value to be interpretted in the context of units.
+     * @param units the units of the datum.
+     * @param resolution the limit to which the datum's precision is known.
+     * @return a Datum with the given units and value.
      */
     public static Datum create( double value, Units units, double resolution ) {
         Datum result= units.createDatum( value, resolution );
@@ -367,20 +527,26 @@ public class Datum implements Comparable {
     }
     
     /**
+     * creates a dimensionless datum backed by an int.
      * @return a dimensionless Datum with the given value.
+     * @param value the magnitude of the dimensionless datum.
      */
     public static Datum create( int value ) {
         return Units.dimensionless.createDatum( value );
     }
     
     /**
+     * creates a datum backed by an int with the given units.
      * @return a Datum with the given units and value.
+     * @param value the magnitude of the datum
+     * @param units the units of the datum
      */
     public static Datum create( int value, Units units ) {
         return units.createDatum( value );
     }
     
     /**
+     * returns a formatter suitable for formatting this datum as a string.
      * @return a formatter to be used to format this Datum into a String.
      */
     public DatumFormatter getFormatter() {
