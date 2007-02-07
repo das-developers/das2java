@@ -433,7 +433,7 @@ public final class TimeUtil {
      * @param hour additional hours
      * @param minute additional minutes
      * @param second additional seconds
-     * @param units the Units to return the result in.
+     * @param units the Units in which to return the result.
      * @return a double in the context of units.
      */
     public static double convert(int year, int month, int day, int hour, int minute, double second, TimeLocationUnits units) {
@@ -819,8 +819,22 @@ public final class TimeUtil {
         return datum.subtract(getSecondsSinceMidnight(datum), Units.seconds);
     }
     
+    /**
+     * creates a Datum representing the time given in integer years, months, ..., seconds, nanoseconds.  The year
+     * must be at least 1960, and must be a four-digit year.  A double in Units.us2000 is used to represent the 
+     * Datum, so resolution will drop as the year drops away from 2000.
+     *
+     * @param year four digit year >= 1960.
+     * @param month integer month, 1..12.
+     * @param day integer day of month.
+     * @param hour additional hours
+     * @param minute additional minutes
+     * @param second additional seconds
+     * @param nano additional nanoseconds
+     * @return a Datum with units Units.us2000.
+     */
     public static Datum createTimeDatum( int year, int month, int day, int hour, int minute, int second, int nano ) {
-        if ( year<1960 ) throw new IllegalArgumentException("year must be > 1960, and no 2 digit years (year="+year+")");
+        if ( year<1960 ) throw new IllegalArgumentException("year must not be < 1960, and no 2 digit years (year="+year+")");
         
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
