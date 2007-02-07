@@ -331,14 +331,14 @@ public class ArgumentList {
             for ( int i=0; i<requireOneOfList.size(); i++ ) {
                 String[] keys= (String[])requireOneOfList.get(i);
                 boolean haveValue=false;
-                for ( i=0;i<keys.length;i++ ) {
-                    if ( !values.get(keys[i]).equals(UNSPECIFIED) &
-                            !values.get(keys[i]).equals(UNDEFINED_SWITCH) &
-                            !values.get(keys[i]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
+                for ( int j=0;j<keys.length;j++ ) {
+                    if ( !values.get(keys[j]).equals(UNSPECIFIED) &
+                            !values.get(keys[j]).equals(UNDEFINED_SWITCH) &
+                            !values.get(keys[j]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
                 }
                 if ( !haveValue ) {
                     StringBuffer list= new StringBuffer( (String)reverseNames.get( keys[0] ) );
-                    for ( i=1;i<keys.length;i++ ) list.append(", "+(String)reverseNames.get( keys[0] ) );
+                    for ( int j=1;j<keys.length;j++ ) list.append(", "+(String)reverseNames.get( keys[j] ) );
                     errorList.add("One of the following needs to be specified: "+list.toString());
                 }
             }
