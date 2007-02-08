@@ -29,6 +29,8 @@ import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetBuilder;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.datum.DatumUtil;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
@@ -51,15 +53,15 @@ public class DataSetStreamHandler implements StreamHandler {
     StreamDescriptor sd;
     Map extraProperties;
     DasProgressMonitor monitor;
-    int totalPacketCount= -1;   
+    int totalPacketCount= -1;
     int taskSize= -1;
     int packetCount= 0;
-       
+    
     private static final Logger logger= DasLogger.getLogger(DasApplication.DATA_TRANSFER_LOG);
     
-    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor monitor ) {        
+    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor monitor ) {
         this.extraProperties = new HashMap(extraProperties);
-        this.monitor= monitor==null ? DasProgressMonitor.NULL : monitor;        
+        this.monitor= monitor==null ? DasProgressMonitor.NULL : monitor;
     }
     
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
@@ -72,44 +74,42 @@ public class DataSetStreamHandler implements StreamHandler {
         } else if ( ( o= sd.getProperty("packetCount" ) )!=null ) {
             this.totalPacketCount= ((Integer)o).intValue();
             monitor.setTaskSize( totalPacketCount );
-        } 
+        }
         if ( ( o= sd.getProperty("cacheTagString" ) ) !=null ) {
             // kludge to xmit cacheTags.  "start,resolution,end"
             try {
                 String[] ss= ((String)o).split(",");
                 Datum min= TimeUtil.create(ss[0]);
                 Datum max= TimeUtil.create(ss[2]);
-                Datum res= DatumUtil.parse(ss[1]);            
+                Datum res= DatumUtil.parse(ss[1]);
                 if ( res.doubleValue( res.getUnits() ) == 0 ) res= null; // intrisic resolution
                 extraProperties.put( DataSet.PROPERTY_CACHE_TAG, new CacheTag( min, max, res ) );
             } catch ( ParseException e ) {
                 e.printStackTrace();
-            }       
-        } 
+            }
+        }
         if ( ( o=sd.getProperty("pid") )!=null ) {
             logger.fine("stream pid="+o);
         }
     }
     
-    public void packetDescriptor(PacketDescriptor pd) throws StreamException {               
+    public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         logger.finest("got packet descriptor");
         if (delegate == null) {
             SkeletonDescriptor descriptor = pd.getYDescriptor(0);
             if (descriptor instanceof StreamMultiYDescriptor) {
                 logger.fine("using VectorDS delegate");
                 delegate = new VectorDataSetStreamHandler(pd);
-            }
-            else if (descriptor instanceof StreamYScanDescriptor) {
+            } else if (descriptor instanceof StreamYScanDescriptor) {
                 logger.fine("using TableDS delegate");
                 delegate = new TableDataSetStreamHandler(pd);
             }
-        }
-        else {
+        } else {
             delegate.packetDescriptor(pd);
         }
     }
     
-    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {                
+    public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         logger.finest("got packet");
         ensureNotNullDelegate();
         delegate.packet(pd, xTag, vectors);
@@ -133,7 +133,7 @@ public class DataSetStreamHandler implements StreamHandler {
     public void streamComment(StreamComment sc) throws StreamException {
         logger.finest("got stream comment: "+sc);
         if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
-            if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );            
+            if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );
         } else if ( sc.getType().matches(sc.TYPE_LOG) ) {
             String level= sc.getType().substring(4);
             Level l= Level.parse(level.toUpperCase());
@@ -145,8 +145,7 @@ public class DataSetStreamHandler implements StreamHandler {
     public DataSet getDataSet() {
         if (delegate == null) {
             return null;
-        }
-        else {
+        } else {
             return delegate.getDataSet();
         }
     }
@@ -160,8 +159,7 @@ public class DataSetStreamHandler implements StreamHandler {
     private static double getXWithBase(Datum base, Datum x) {
         if (base == null) {
             return x.doubleValue(x.getUnits());
-        }
-        else {
+        } else {
             return base.doubleValue(base.getUnits()) + x.doubleValue(base.getUnits().getOffsetUnits());
         }
     }
@@ -174,6 +172,8 @@ public class DataSetStreamHandler implements StreamHandler {
         
         private VectorDataSetBuilder builder;
         
+        private DatumRange validRange=null;
+        
         private double[] doubles = new double[1];
         
         private VectorDataSetStreamHandler(PacketDescriptor pd) throws StreamException {
@@ -182,6 +182,14 @@ public class DataSetStreamHandler implements StreamHandler {
             Units xUnits = base == null ? pd.getXDescriptor().getUnits() : base.getUnits();
             Units yUnits = y.getUnits();
             builder = new VectorDataSetBuilder(xUnits,yUnits);
+            String srange= (String)y.getProperty("valid_range");
+            if ( srange!=null ) {
+                try {
+                    validRange= DatumRangeUtil.parseDatumRange( srange, yUnits );
+                } catch ( ParseException ex ) {
+                    throw new StreamException("Unable to parse valid_range:"+srange);
+                }
+            }
             this.packetDescriptor(pd);
         }
         
@@ -192,14 +200,18 @@ public class DataSetStreamHandler implements StreamHandler {
                 if (pd.getYDescriptor(i) instanceof StreamMultiYDescriptor) {
                     StreamMultiYDescriptor my = (StreamMultiYDescriptor)pd.getYDescriptor(i);
                     double y = vectors[i].doubleValue(0, my.getUnits());
+                    if ( validRange!=null ) {
+                        if ( !validRange.contains( Datum.create( y, my.getUnits() ) ) ) {
+                            y= my.getUnits().getFillDouble();
+                        }
+                    }
                     if (i != 0) {
                         builder.insertY(x, y, my.getName());
-                    }
-                    else {
+                    } else {
                         builder.insertY(x, y);
                     }
-                }
-                else {
+                    
+                } else {
                     throw new StreamException("Mixed data sets are not currently supported");
                 }
             }
