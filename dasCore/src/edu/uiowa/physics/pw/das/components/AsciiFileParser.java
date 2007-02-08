@@ -6,16 +6,23 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -23,6 +30,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.MouseInputAdapter;
 
 /**
+ * Interactive GUI for parsing ascii tables into VectorDataSets
  *
  * @author  Jeremy
  */
@@ -31,6 +39,11 @@ public class AsciiFileParser extends javax.swing.JPanel {
     /** Creates new form AsciiFileParser */
     public AsciiFileParser() {
         initComponents();
+        jTextField1.addFocusListener( new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
+                updateSkipLines();
+            }
+        });
         model= new AsciiTableModel();
     }
     
@@ -40,10 +53,75 @@ public class AsciiFileParser extends javax.swing.JPanel {
         int[] columnWidths= new int[50];
         Units[] units= new Units[50];
         String[] names= new String[50];
+        int skipLines=0;
     }
     
     AsciiTableModel model;
     File file;
+    
+    public DataSet parse() throws FileNotFoundException, IOException, ParseException {
+        
+        ArrayList usableColumns= new ArrayList();
+        for ( int i=0; i<model.columnCount; i++ ) {
+            if ( model.units[i]!=null ) {
+                usableColumns.add( new Integer(i) );
+            }
+        }
+        
+        if ( usableColumns.size()<2 ) throw new IllegalArgumentException( "not enough columns" );
+        
+        int[] iu= new int[usableColumns.size()];
+        for ( int i=0; i<iu.length; i++ ) {
+            iu[i]= ((Integer)usableColumns.get(i)).intValue();
+        }
+        
+        int col0= ((Integer)usableColumns.get(0)).intValue();
+        int col1= ((Integer)usableColumns.get(1)).intValue();
+        
+        VectorDataSetBuilder builder= new VectorDataSetBuilder( model.units[col0], model.units[col1] );
+        for ( int i=2; i<iu.length; i++ ) {
+            builder.addPlane( model.names[iu[i]], model.units[iu[i]] );
+        }
+        
+        BufferedReader reader= new BufferedReader( new FileReader( file ) );
+        
+        for ( int iskip=0; iskip<model.skipLines; iskip++ ) {
+            reader.readLine();
+        }
+        
+        int iline= model.skipLines;
+        
+        String s= reader.readLine();
+        iline++;
+        
+        while ( s!=null ) {
+            try {
+                Datum d0= model.units[col0].parse( s.substring( model.columnOffsets[col0], model.columnOffsets[col0]+model.columnWidths[col0] ) );
+                Datum d1= model.units[col1].parse( s.substring( model.columnOffsets[col1], model.columnOffsets[col1]+model.columnWidths[col1] ) );
+                builder.insertY( d0, d1 );
+                for ( int i=2; i<iu.length; i++ ) {
+                    Datum di= model.units[iu[i]].parse( s.substring( model.columnOffsets[iu[i]], model.columnOffsets[iu[i]]+model.columnWidths[iu[i]] ) );
+                    builder.insertY( d0, di, model.names[iu[i]] );
+                }
+                s= reader.readLine();
+                iline++;
+            } catch ( ParseException ex ) {
+                throw new ParseException( "Parse error at line "+iline, iline );
+            }
+        }
+        
+        reader.close();
+        
+        return builder.toVectorDataSet();
+    }
+    
+    private void updateSkipLines() {
+        try {
+            model.skipLines= Integer.parseInt( jTextField1.getText() );
+        } catch ( NumberFormatException e ) {
+        }
+        jTextField1.setText( ""+model.skipLines );
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -62,6 +140,8 @@ public class AsciiFileParser extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jTextArea1 = new FixedColumnTextArea();
         jTextArea2 = new FixedColumnTextArea();
+        jLabel4 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
 
         jLabel1.setText("File:");
 
@@ -102,6 +182,15 @@ public class AsciiFileParser extends javax.swing.JPanel {
 
         jScrollPane1.setViewportView(jPanel1);
 
+        jLabel4.setText("SkipLines:");
+
+        jTextField1.setText("0");
+        jTextField1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jTextField1PropertyChange(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -120,7 +209,12 @@ public class AsciiFileParser extends javax.swing.JPanel {
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(delimSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(firstColumnTimeCheckBox))
+                    .add(layout.createSequentialGroup()
+                        .add(firstColumnTimeCheckBox)
+                        .add(77, 77, 77)
+                        .add(jLabel4)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -136,12 +230,19 @@ public class AsciiFileParser extends javax.swing.JPanel {
                     .add(delimSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(firstColumnTimeCheckBox)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(firstColumnTimeCheckBox)
+                    .add(jLabel4)
+                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+    
+    private void jTextField1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jTextField1PropertyChange
+        updateSkipLines();
+    }//GEN-LAST:event_jTextField1PropertyChange
     
     private void delimSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delimSelectorActionPerformed
         try {
@@ -168,7 +269,6 @@ public class AsciiFileParser extends javax.swing.JPanel {
     }
     
     private void setFile(File file) throws IOException {
-        VectorDataSetBuilder builder= new VectorDataSetBuilder( Units.us2000, Units.dimensionless );
         this.file= file;
         resetDelims();
     }
@@ -187,6 +287,9 @@ public class AsciiFileParser extends javax.swing.JPanel {
     public void resetDelims() throws IOException {
         String regex= getDelimRegex();
         BufferedReader reader= new BufferedReader( new FileReader( file ) );
+        
+        for ( int i=0; i<model.skipLines; i++ ) reader.readLine();
+        
         String line= reader.readLine();
         
         String[] ss= line.split(regex);
@@ -200,9 +303,11 @@ public class AsciiFileParser extends javax.swing.JPanel {
             model.columnWidths[i-1]= model.columnOffsets[i] - model.columnOffsets[i-1];
         }
         
-        StringBuffer text= new StringBuffer( line+'\n' );;
+        model.columnWidths[ss.length-1]= line.length()- model.columnOffsets[ss.length-1];
+        
+        StringBuffer text= new StringBuffer( line+'\n' );
         int linenum=1;
-        while ( line!=null && linenum<10 ) {
+        while ( line!=null && linenum<100 ) {
             text.append(line+'\n');
             line= reader.readLine();
             linenum++;
@@ -214,6 +319,9 @@ public class AsciiFileParser extends javax.swing.JPanel {
         ((FixedColumnTextArea)jTextArea1).setColumnDividers(colDiv);
         ((FixedColumnTextArea)jTextArea2).setColumnDividers(colDiv);
         
+        jTextArea1.setCaretPosition(0);
+        
+        reader.close();
     }
     
     void resetColumnLabels() {
@@ -229,7 +337,8 @@ public class AsciiFileParser extends javax.swing.JPanel {
             }
         }
         jTextArea2.setText(buf.toString());
-        jScrollPane1.getHorizontalScrollBar().getModel().setValue(0);
+        jTextArea2.setCaretPosition(0);
+        
     }
     
     class ColumnMouseInputAdapter extends MouseInputAdapter {
@@ -314,10 +423,12 @@ public class AsciiFileParser extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
     
 }
