@@ -35,6 +35,9 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 
+/**
+ * JTree veiw of a Das2Server's available data sets, with drag-n-drop of data set id's.
+ */
 public class DataSetBrowser extends JPanel implements DragSourceListener, DragGestureListener {
     
     DasServer dasServer;
