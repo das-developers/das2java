@@ -28,6 +28,8 @@ import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -156,6 +158,16 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         catch (CloneNotSupportedException cnse) {
             throw new RuntimeException(cnse);
         }
+    }
+
+    Map properties= new HashMap();
+    
+    public Object getProperty(String name) {
+        return properties.get(name);
+    }
+
+    public Map getProperties() {
+        return new HashMap(properties);
     }
     
 }
