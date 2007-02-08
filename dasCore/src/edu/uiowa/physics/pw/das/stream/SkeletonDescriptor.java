@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -39,5 +40,9 @@ public interface SkeletonDescriptor {
     Element getDOMElement(Document document);
     
     Object clone();
+    
+    Object getProperty(String name);
+    
+    public Map getProperties();
     
 }

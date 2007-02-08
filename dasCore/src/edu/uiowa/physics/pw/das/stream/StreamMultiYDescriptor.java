@@ -25,9 +25,13 @@ package edu.uiowa.physics.pw.das.stream;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     
@@ -54,6 +58,11 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     	String unitsString = element.getAttribute("units");
 	if (unitsString != null) {
             units = Units.getByName(unitsString);
+        }
+        NamedNodeMap attrs= element.getAttributes();
+        for ( int i=0; i<attrs.getLength(); i++ ) {
+            Node n= attrs.item(i);
+            properties.put( n.getNodeName(), n.getNodeValue() );
         }
     if (type != null) {
             transferType = type;
@@ -134,6 +143,17 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
             throw new RuntimeException(cnse);
         }
    }
+
+    Map properties= new HashMap();
+    
+    public Object getProperty(String name) {
+        return properties.get(name);
+    }
+
+    public Map getProperties() {
+        return new HashMap(properties);
+    }
+
     
 }
 
