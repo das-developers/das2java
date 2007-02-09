@@ -42,9 +42,9 @@ public class GrannyTextRenderer {
     private ArrayList lineBounds;
     private String str;
     private String[] tokens;
-    private int alignment = LEFT_ALIGNMENT;        
+    private int alignment = LEFT_ALIGNMENT;
     private Component parent;
-            
+    
     /**
      * Holds value of property fontSize.
      */
@@ -54,7 +54,16 @@ public class GrannyTextRenderer {
         this.fontSize= 12.0f;
     }
     
+    /**
+     * returns the bounds of the current string.  The lower-left corner of
+     * the first character will be roughly (0,0), to be compatible with
+     * FontMetrics.getStringBounds().
+     *
+     * @return a Rectangle indicating the text boundaries.
+     * @throws IllegalArgumentException if the string has not been set.
+     */
     public Rectangle getBounds() {
+        if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
         maybeInitBounds();
         return new Rectangle(bounds); // defensive copy
     }
@@ -68,36 +77,77 @@ public class GrannyTextRenderer {
         }
     }
     
+    /**
+     * returns the width of the bounding box, in pixels.
+     * @return the width of the bounding box, in pixels.
+     * @throws IllegalArgumentException if the string has not been set.
+     */
     public double getWidth() {
+        if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
         maybeInitBounds();
         return bounds.getWidth();
     }
     
+    /**
+     * returns the width in pixels of the first line.
+     * @return the width in pixels of the first line.
+     * @throws IllegalArgumentException if the string has not been set.
+     *
+     */
     public double getLineOneWidth() {
+        if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
         return getLineWidth(1);
     }
     
-    public double getLineWidth(int lineNumber) {
+    /**
+     * returns the calculated width each line.
+     * @param lineNumber the index of the line, starting with 1.
+     * @return the width of the bounding box, in pixels.
+     * @throws IndexOutOfBoundsException if no such line exists.
+     */
+    private double getLineWidth(int lineNumber) {
+        if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
         return ((Rectangle)lineBounds.get(lineNumber - 1)).getWidth();
     }
     
+    /**
+     * returns the hieght of the calculated bounding box.
+     * @return the height of the bounding box, in pixels.
+     * @throws IllegalArgumentException if the string has not been set.
+     */
     public double getHeight() {
+        if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
         maybeInitBounds();
         return bounds.getHeight();
     }
     
+    /**
+     * return the amount that the bounding box will go above the baseline.
+     * This is also the height of the first line.
+     * @return the amount that the bounding box will go above the baseline.
+     * @throws IllegalArgumentException if the string has not been set.
+     */
     public double getAscent() {
+        if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
         return -1*((Rectangle)lineBounds.get(0)).getY();
     }
     
+    /**
+     * return the amount that the bounding box will go below the baseline.
+     * @return the amount that the bounding box will go below the baseline.
+     * @throws IllegalArgumentException if the string has not been set.
+     */
     public double getDescent() {
+        if ( lineBounds==null ) throw new IllegalArgumentException("string is not set");
         maybeInitBounds();
         return bounds.getHeight() + bounds.getY();
     }
     
     /**
-     * reset the current string for the GTR to draw, calculating the boundaries 
-     * of the string.  
+     * reset the current string for the GTR to draw, calculating the boundaries
+     * of the string.
+     * @param c the component which will provide the graphics.
+     * @param str the granny string, such as "E=mc!e2"
      */
     public void setString(Component c, String str) {
         this.parent= c;
@@ -108,10 +158,18 @@ public class GrannyTextRenderer {
         this.draw(null, 0f, 0f, c, false);
     }
     
+    /**
+     * returns the current alignment, by default LEFT_ALIGNMENT.
+     * @return the current alignment.
+     */
     public int getAlignment() {
         return alignment;
     }
     
+    /**
+     * set the alignment for rendering, one of LEFT_ALIGNMENT  CENTER_ALIGNMENT or RIGHT_ALIGNMENT.
+     * @param a the alignment, one of LEFT_ALIGNMENT  CENTER_ALIGNMENT or RIGHT_ALIGNMENT.
+     */
     public void setAlignment(int a) {
         if (a != LEFT_ALIGNMENT && a != CENTER_ALIGNMENT && a != RIGHT_ALIGNMENT) {
             throw new IllegalArgumentException();
@@ -119,6 +177,14 @@ public class GrannyTextRenderer {
         alignment = a;
     }
     
+    /**
+     * draw the current string.  Note the first line will be above iy, and following lines will
+     * be below iy.  This is to be consistent with Graphics2D.drawString.
+     *
+     * @param ig Graphic object to use to render the text.
+     * @param ix The x position of the first character of text.
+     * @param iy The y position of the baseline of the first line of text.
+     */
     public void draw(Graphics ig, float ix, float iy) {
         this.draw(ig, ix, iy, null, true);
     }
@@ -136,7 +202,6 @@ public class GrannyTextRenderer {
      *
      * @param ig Graphic object to use to render the text.  This can be <code>null</code> if
      *    draw is <code>false</code>.
-     * @param str The <code>String</code> object to be rendered, and/or measured for bounds.
      * @param ix The x position of the first character of text.
      * @param iy The y position of the baseline of the first line of text.
      * @param c The <code>Component</code> that the <code>String</code> will be rendered in.
@@ -152,7 +217,7 @@ public class GrannyTextRenderer {
         if (draw) {
             g = (Graphics2D)ig.create();
             RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON);
+                    RenderingHints.VALUE_ANTIALIAS_ON);
             hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g.setRenderingHints(hints);
         }
@@ -169,12 +234,12 @@ public class GrannyTextRenderer {
         final int SUB_B = 12;
         
         class TextPosition {
-            public TextPosition(int sub, int ei, float x, float y)
-            { this.sub = sub; this.ei = ei; this.x = x; this.y = y; }
-            public TextPosition(TextPosition p)
-            { copy(p); }
-            public void copy(TextPosition p)
-            { sub = p.sub; ei = p.ei; x = p.x; y = p.y; }
+            public TextPosition(int sub, int ei, float x, float y) {
+                this.sub = sub; this.ei = ei; this.x = x; this.y = y; }
+            public TextPosition(TextPosition p) {
+                copy(p); }
+            public void copy(TextPosition p) {
+                sub = p.sub; ei = p.ei; x = p.x; y = p.y; }
             public int sub;
             public int ei;
             public float x;
@@ -183,11 +248,10 @@ public class GrannyTextRenderer {
         
         Font baseFont;
         if (draw) {
-        //    baseFont = g.getFont().deriveFont( fontSize );
+            //    baseFont = g.getFont().deriveFont( fontSize );
             baseFont= g.getFont();
-        }
-        else {
-        //    baseFont = c.getFont().deriveFont( fontSize );
+        } else {
+            //    baseFont = c.getFont().deriveFont( fontSize );
             baseFont= c.getFont();
         }
         if ( baseFont==null ) {
@@ -200,8 +264,7 @@ public class GrannyTextRenderer {
         if (draw) {
             if (alignment == CENTER_ALIGNMENT) {
                 current.x += (getWidth() - getLineOneWidth()) / 2.0;
-            }
-            else if (alignment == RIGHT_ALIGNMENT) {
+            } else if (alignment == RIGHT_ALIGNMENT) {
                 current.x += (getWidth() - getLineOneWidth());
             }
         }
@@ -236,8 +299,7 @@ public class GrannyTextRenderer {
                             g.setFont(baseFont);
                             if (alignment == CENTER_ALIGNMENT) {
                                 current.x += (getWidth() - getLineWidth(lineNum)) / 2.0;
-                            }
-                            else if (alignment == RIGHT_ALIGNMENT) {
+                            } else if (alignment == RIGHT_ALIGNMENT) {
                                 current.x += (getWidth() - getLineWidth(lineNum));
                             }
                         }
@@ -292,8 +354,7 @@ public class GrannyTextRenderer {
                         break;
                     default:break;
                 }
-            }
-            else {
+            } else {
                 Font font = baseFont;
                 float size = baseFont.getSize2D();
                 float y = current.y;
@@ -343,11 +404,10 @@ public class GrannyTextRenderer {
                     //bounds.translate((int)ix,(int)iy);
                     //g.draw(bounds);  //useful for debugging
                     //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
-                }
-                else {
+                } else {
                     FontMetrics fm= c.getFontMetrics(font);
                     bounds.add(current.x, y+fm.getDescent());
-                    bounds.add(current.x+fm.stringWidth(tokens[i]),y-fm.getAscent() ); // removed -5.0 pixels 
+                    bounds.add(current.x+fm.stringWidth(tokens[i]),y-fm.getAscent() ); // removed -5.0 pixels
                     current.x += c.getFontMetrics(font).stringWidth(tokens[i]);
                 }
             }
@@ -366,8 +426,7 @@ public class GrannyTextRenderer {
             begin = end;
             if (str.charAt(begin) == '!') {
                 end = begin + 2;
-            }
-            else {
+            } else {
                 end = str.indexOf('!', begin);
                 if (end == -1) end = str.length();
             }
@@ -389,7 +448,10 @@ public class GrannyTextRenderer {
         return buffer.toString();
     }
     
-    public void drawBounds(Graphics g, int ix, int iy) {
+    /**
+     * useful for debugging.
+     */
+    private void drawBounds(Graphics g, int ix, int iy) {
         g.setColor(Color.BLUE);
         g.drawRect(bounds.x + ix, bounds.y + iy, bounds.width, bounds.height);
         g.setColor(Color.GREEN);
@@ -398,22 +460,24 @@ public class GrannyTextRenderer {
             g.drawRect(rc.x + ix, rc.y + iy, rc.width, rc.height);
         }
     }
-
+    
     /**
-     * Getter for property fontSize.
+     * Getter for property fontSize.  The parent component's font will be used
+     * to derive a font of this size.
      * @return Value of property fontSize.
      */
     public float getFontSize() {
         return this.fontSize;
     }
-
+    
     /**
-     * Setter for property fontSize.
-     * @param fontSize New value of property fontSize.
+     * Getter for property fontSize.  The parent component's font will be used
+     * to derive a font of this size.
+     * @param fontSize the size in points (also pixels) of the font.
      */
     public void setFontSize(float fontSize) {
         this.fontSize = fontSize;
         if ( this.parent!=null ) setString( parent, this.str );
     }
-        
+    
 }
