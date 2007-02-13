@@ -45,13 +45,8 @@ public class GrannyTextRenderer {
     private int alignment = LEFT_ALIGNMENT;
     private Component parent;
     
-    /**
-     * Holds value of property fontSize.
-     */
-    private float fontSize;
-    
     public GrannyTextRenderer( ) {
-        this.fontSize= 12.0f;
+    
     }
     
     /**
@@ -145,7 +140,9 @@ public class GrannyTextRenderer {
     
     /**
      * reset the current string for the GTR to draw, calculating the boundaries
-     * of the string.
+     * of the string.  For greek and math symbols, unicode characters should be
+     * used.  (See www.unicode.org).
+     *
      * @param c the component which will provide the graphics.
      * @param str the granny string, such as "E=mc!e2"
      */
@@ -254,6 +251,7 @@ public class GrannyTextRenderer {
             //    baseFont = c.getFont().deriveFont( fontSize );
             baseFont= c.getFont();
         }
+        
         if ( baseFont==null ) {
             baseFont= Font.decode("sans-10");
         }
@@ -459,25 +457,6 @@ public class GrannyTextRenderer {
             Rectangle rc = (Rectangle)i.next();
             g.drawRect(rc.x + ix, rc.y + iy, rc.width, rc.height);
         }
-    }
-    
-    /**
-     * Getter for property fontSize.  The parent component's font will be used
-     * to derive a font of this size.
-     * @return Value of property fontSize.
-     */
-    public float getFontSize() {
-        return this.fontSize;
-    }
-    
-    /**
-     * Getter for property fontSize.  The parent component's font will be used
-     * to derive a font of this size.
-     * @param fontSize the size in points (also pixels) of the font.
-     */
-    public void setFontSize(float fontSize) {
-        this.fontSize = fontSize;
-        if ( this.parent!=null ) setString( parent, this.str );
     }
     
 }
