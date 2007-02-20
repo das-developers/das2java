@@ -10,6 +10,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
@@ -131,9 +132,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         public Object getValueAt(int i, int j) {
             DataPoint x= (DataPoint)dataPoints.get(i);
             if ( j<x.data.length ) {
-                return x.get(j).toString(); // formerly one formatter was use for the whole column
+                Datum d= x.get(j);
+                DatumFormatter format= d.getFormatter();
+                return format.format( d, unitsArray[j] ); 
             } else {
-                return x.getPlane(planesArray[j]);
+                Object o= x.getPlane(planesArray[j]);
+                if ( o instanceof Datum ) {
+                    Datum d= (Datum)o;
+                    return d.getFormatter().format( d, unitsArray[j] );
+                } else {
+                    return (String) o;
+                }
             }
         }
         
@@ -265,7 +274,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             DataPoint x= (DataPoint)dataPoints.get(i);
             StringBuffer s= new StringBuffer();
             for ( int j=0; j<2; j++ ) {
-                s.append( String.valueOf(x.get(j)) + "\t");
+                DatumFormatter formatter= x.get(j).getFormatter();
+                s.append( formatter.format( x.get(j), unitsArray[j] ) + "\t");
             }
             for ( int j=2; j<planesArray.length; j++ ) {
                 Object o= x.getPlane(planesArray[j]);
@@ -273,7 +283,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     if ( o==null ) o="";
                     s.append( "\"" + o +"\"\t" );
                 } else {
-                    s.append( o+"\t" );
+                    Datum d= (Datum)o;
+                    DatumFormatter f= d.getFormatter();
+                    s.append( f.format(d,unitsArray[j])+"\t" );
                 }
             }
             r.write(s.toString());
