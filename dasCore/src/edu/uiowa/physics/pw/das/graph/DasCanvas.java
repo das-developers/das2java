@@ -213,7 +213,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         }
                     }
                 };
-                new Thread( run, "writeSvg" ).start();                
+                new Thread( run, "writeSvg" ).start();
             }
         }
     };
@@ -275,11 +275,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
     };
-
+    
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds( x, y, width, height );
     }
-
+    
     public void invalidate() {
         super.invalidate();
     }
@@ -582,7 +582,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     /**
      * Layout manager for managing the Row, Column layout implemented by swing.
-     * This will probably change in the future when we move away from using 
+     * This will probably change in the future when we move away from using
      * swing to handle the DasCanvasComponents.
      */
     protected static class RowColumnLayout implements LayoutManager {
@@ -610,11 +610,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         
         public void addLayoutComponent(String name, Component comp){}
-
+        
         public void removeLayoutComponent(Component comp){}
     }
     
-    /** 
+    /**
      * @return true if the current thread is registered as the one printing this component.
      */
     protected final boolean isPrintingThread() {
@@ -711,7 +711,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
     
     public void writeToGraphicsOutput(String filename, String graphicsOutput)
-            throws IOException, ClassNotFoundException,
+    throws IOException, ClassNotFoundException,
             InstantiationException, IllegalAccessException {
         FileOutputStream out = new FileOutputStream(filename);
         Class goClass = Class.forName(graphicsOutput);
@@ -904,11 +904,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             ((DasAxis)comp).putClientProperty(LAYER_PROPERTY, AXIS_LAYER);
         } else if (comp instanceof Legend ) {
             ((Legend)comp).putClientProperty( LAYER_PROPERTY, AXIS_LAYER );
-        }
-        //            else if (comp instanceof DasAnnotation) {
-        //                ((DasLabel)comp).putClientProperty(LAYER_PROPERTY, ANNOTATION_LAYER);
-        //            }
-        else if (comp instanceof JComponent) {
+        } else if (comp instanceof DasAnnotation) {
+            ((DasAnnotation)comp).putClientProperty(LAYER_PROPERTY, ANNOTATION_LAYER);
+        } else if (comp instanceof JComponent) {
             ((JComponent)comp).putClientProperty(LAYER_PROPERTY, DEFAULT_LAYER);
         }
         super.addImpl(comp, constraints, index);
@@ -1080,7 +1078,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @return
      */
     public static DasCanvas processCanvasElement(Element element, FormBase form)
-            throws DasPropertyException, DasNameException, DasException, ParsedExpressionException, java.text.ParseException {
+    throws DasPropertyException, DasNameException, DasException, ParsedExpressionException, java.text.ParseException {
         try {
             Logger log= DasLogger.getLogger(DasLogger.DASML_LOG);
             
@@ -1145,7 +1143,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     
     
-    /** 
+    /**
      * @param name
      * @param width
      * @param height
@@ -1915,7 +1913,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
          */
         public String toString() {
             return "{" + devicePosition.getDasName()
-                    + (minOrMax == MIN ? ", MIN, " : ", MAX, ") + position + "}";
+            + (minOrMax == MIN ? ", MIN, " : ", MAX, ") + position + "}";
         }
         
         /** TODO
