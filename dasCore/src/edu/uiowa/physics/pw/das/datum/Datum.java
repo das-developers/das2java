@@ -527,6 +527,23 @@ public class Datum implements Comparable {
     }
     
     /**
+     * Returns a Datum with the given value and limited to the given resolution.
+     * When formatted, the formatter should use this resolution to limit the 
+     * precision displayed.
+     * @param value the magnitude of the datum, or value to be interpretted in the context of units.
+     * @param units the units of the datum.
+     * @param resolution the limit to which the datum's precision is known.
+     * @param formatter the DatumFormatter that should be used to format this datum, which will be
+     *   returned by getFormatter().
+     * @return a Datum with the given units and value.
+     */
+    public static Datum create( double value, Units units, double resolution, DatumFormatter formatter ) {
+        Datum result= units.createDatum( value, resolution );
+        result.formatter= formatter;
+        return result;
+    }
+    
+    /**
      * creates a dimensionless datum backed by an int.
      * @return a dimensionless Datum with the given value.
      * @param value the magnitude of the dimensionless datum.
