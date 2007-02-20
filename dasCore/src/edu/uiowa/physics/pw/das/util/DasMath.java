@@ -144,6 +144,14 @@ public class DasMath {
         double result= x % t;
         return result >= 0 ? result : t + result;
     }
+
+    /**
+     * just like modulo (%) function, but negative numbers return positive phase. 
+     */
+    public static int modp( int x, int t) {
+        int result= x % t;
+        return result >= 0 ? result : t + result;
+    }
     
     public static double biggerOf(double x1, double x2) {
         return ( x1>x2 ) ? x1 : x2;
