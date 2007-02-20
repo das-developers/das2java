@@ -28,8 +28,12 @@ import edu.uiowa.physics.pw.das.datum.format.*;
 import java.util.*;
 
 /**
- *
- * @author  Owner
+ * Units class for mapping arbitary objects to Datums.  Nothing about the contract
+ * for a Datum requires that they correspond to physical quanities, and we can
+ * assign a mapping from numbers to objects using this class.  This allows 
+ * information such as "Cluster 1" or "Spin Flip" to be encoded.
+ * 
+ * @author  Jeremy
  */
 public class EnumerationUnits extends Units {
     
@@ -83,7 +87,7 @@ public class EnumerationUnits extends Units {
         if ( ordinals.containsKey(key) ) {
             return (Datum)ordinals.get(key);
         } else {
-            throw new IllegalArgumentException("No Datum exists for this ordinal");
+            throw new IllegalArgumentException("No Datum exists for this ordinal: "+value);
         }
     }            
     
