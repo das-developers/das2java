@@ -288,7 +288,9 @@ public class TableUtil {
         }
     }
     
-    
+    /**
+     * @return the row which is less than or equal to the datum
+     */
     public static int getPreviousRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
         if ( i>0 && ds.getYTagDatum(itable,i).gt(datum) ) {
@@ -298,6 +300,9 @@ public class TableUtil {
         }
     }
     
+    /**
+     * @return the row which is greater than or equal to the datum
+     */
     public static int getNextRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
         if ( i<ds.getYLength(itable)-1 && ds.getYTagDatum(itable,i).lt(datum) ) {
