@@ -103,10 +103,25 @@ public abstract class Units implements Displayable {
     }
     
     public static final Units eV= new NumberUnits("eV");
+    
+    /**
+     * 1 / cm<sup>3</sup>
+     */
     public static final Units pcm3= new NumberUnits("cm!a-3!n");    
+    
     public static final Units kelvin= new NumberUnits("K");
     public static final Units cmps= new NumberUnits("cm/s");
+    
+    /**
+     * volts / m<sup>2</sup> Hz 
+     */
     public static final Units v2pm2Hz= new NumberUnits("V!a2!nm!a-2!nHz!a-1");
+    
+    /**
+     * Watts / m<sup>2</sup>
+     */
+    public static final Units wpm2= new NumberUnits("W/m!a-2!n");
+    
     public static final Units meters = new NumberUnits("m");
     public static final Units kiloMeters = new NumberUnits("km");
     static {
