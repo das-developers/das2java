@@ -117,7 +117,11 @@ public class TimeDatumFormatter extends DatumFormatter {
         return format.format(array);
     }
     
-    private String parseTimeFormatString(String input) throws ParseException {
+    protected Format getFormat() {
+        return format;
+    }
+    
+    protected String parseTimeFormatString(String input) throws ParseException {
         final String formatPattern = "(([yMDdHmsS])\\2*)";
         final String delimiterPattern = "([-/:.,_ \t]+)";
         final String literalPattern = "('(?:[^']|'')*')";
