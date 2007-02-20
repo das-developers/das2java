@@ -50,7 +50,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     private static final Logger logger= DasLogger.getLogger(DasApplication.DATA_TRANSFER_LOG);
     
     public Units getXUnits() {
-        return defaultPacketDescriptor.getXDescriptor().getUnits();
+        return Units.us2000;
     }
     
     /**
