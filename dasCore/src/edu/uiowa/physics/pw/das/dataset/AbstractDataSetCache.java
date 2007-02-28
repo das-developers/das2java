@@ -95,7 +95,7 @@ public abstract class AbstractDataSetCache implements DataSetCache {
 
     }
         
-    private static final Logger logger= DasLogger.getLogger(DasApplication.SYSTEM_LOG);
+    private static final Logger logger= DasLogger.getLogger(DasLogger.SYSTEM_LOG);
             
     public int hits=0;
     public int misses=0;

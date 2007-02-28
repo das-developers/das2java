@@ -339,7 +339,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     private DasApplication application;
     
-    private static final Logger logger= DasLogger.getLogger(DasApplication.GRAPHICS_LOG);
+    private static final Logger logger= DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     
     private final GlassPane glassPane;
     
@@ -873,6 +873,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param c the component to be added to this canvas
      * Note that the canvas will need to be revalidated after the component
      * is added.
+     * @param row DasRow specifying the layout of the component.
+     * @param column  DasColumn specifying the layout of the component.
      */
     public void add(DasCanvasComponent c, DasRow row, DasColumn column) {
         if (c.getRow() == DasRow.NULL
@@ -949,6 +951,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /**
      * The base font is the font from which all other fonts should be derived.  When the
      * canvas is resized, the base font size is scaled.
+     * @param font the font used to derive all other fonts.
      */
     public void setBaseFont( Font font ) {
         Font oldFont= getFont();

@@ -57,7 +57,7 @@ public class DataSetStreamHandler implements StreamHandler {
     int taskSize= -1;
     int packetCount= 0;
     
-    private static final Logger logger= DasLogger.getLogger(DasApplication.DATA_TRANSFER_LOG);
+    private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     
     public DataSetStreamHandler( Map extraProperties, DasProgressMonitor monitor ) {
         this.extraProperties = new HashMap(extraProperties);

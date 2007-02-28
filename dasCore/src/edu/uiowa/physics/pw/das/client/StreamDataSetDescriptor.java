@@ -47,7 +47,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     private boolean serverSideReduction = true;
     private PacketDescriptor defaultPacketDescriptor;
     
-    private static final Logger logger= DasLogger.getLogger(DasApplication.DATA_TRANSFER_LOG);
+    private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     
     public Units getXUnits() {
         return Units.us2000;

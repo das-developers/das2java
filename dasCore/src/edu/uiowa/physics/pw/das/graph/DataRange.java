@@ -279,7 +279,7 @@ public class DataRange implements Cloneable {
         if ( pushHistory ) {
             List oldHistory= new ArrayList( history );
             history.push(this.range);
-            DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( "push history: "+range );
+            DasLogger.getLogger( DasLogger.GUI_LOG ).fine( "push history: "+range );
             forwardHistory.removeAllElements();
             firePropertyChange( "history", new ArrayList(), new ArrayList(history) );
         }

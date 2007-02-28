@@ -2480,7 +2480,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class) {
                 String logmsg= "fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event;
-                DasApplication.getDefaultApplication().getLogger( DasApplication.GUI_LOG ).fine( logmsg );
+                DasLogger.getLogger( DasLogger.GUI_LOG ).fine( logmsg );
                 ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }

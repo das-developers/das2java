@@ -174,7 +174,7 @@ public class BatchMaster {
                 if ( itask>=taskList.size() ) {
                     if ( exit ) System.exit(0);
                 } else {
-                    DasLogger.getLogger(DasApplication.SYSTEM_LOG).info( "itask="+taskList.get(itask) );
+                    DasLogger.getLogger(DasLogger.SYSTEM_LOG).info( "itask="+taskList.get(itask) );
                     DataRangeSelectionEvent ev=  (DataRangeSelectionEvent) taskList.get(itask++);
                     fireDataRangeSelectionListenerDataRangeSelected( ev );
                     try {

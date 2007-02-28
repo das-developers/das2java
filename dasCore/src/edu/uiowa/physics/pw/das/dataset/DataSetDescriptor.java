@@ -81,7 +81,7 @@ public abstract class DataSetDescriptor implements Displayable {
         this("");
     }
     
-    private static final Logger logger= DasLogger.getLogger(DasApplication.GRAPHICS_LOG);
+    private static final Logger logger= DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     
     /**
      * getDataSetImpl implements the getDataSet for this DataSetDescriptor implementation.  The
@@ -199,7 +199,7 @@ public abstract class DataSetDescriptor implements Displayable {
         CacheTag tag=null;
         if ( defaultCaching ) {
             tag= new CacheTag( start, end, resolution );
-            DasApplication.getDefaultApplication().getLogger(DasApplication.DATA_TRANSFER_LOG).info("getDataSet " + this +" " + tag);
+            DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).info("getDataSet " + this +" " + tag);
         }
         
         if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {

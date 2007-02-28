@@ -45,11 +45,8 @@ import java.util.prefs.*;
 import javax.swing.*;
 
 /**
- * DasApplication object manages per-application resources:
- *   1. name space
- *   2. dataset caching
- *   3. progress monitoring
- *   4. network speed limiter
+ * DasApplication object manages per-application resources, like object name space, 
+ * dataset caching, progress monitoring, exception handling and a network speed limiter.
  *
  * @author  Edward West
  */
@@ -79,28 +76,13 @@ public class DasApplication {
     
     private DataSetCache dataSetCache;
     
-    /* messages having to do with the application-specific Das 2 Application */
-    public static final LoggerId APPLICATION_LOG= new LoggerId( "" );
-    
-    /* system messages such as RequestProcessor activity */
-    public static final LoggerId SYSTEM_LOG= new LoggerId( "das2.system" );
-    
-    /* events, gestures, user feedback */
-    public static final LoggerId GUI_LOG= new LoggerId( "das2.gui" );
-    
-    /* renders, drawing */
-    public static final LoggerId GRAPHICS_LOG= new LoggerId( "das2.graphics" );
-    
-    /* rebinning */
-    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId( "das2.dataOperations" );
-    
-    /* internet transactions, file I/O */
-    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( "das2.dataTransfer" );
-    
     public Logger getLogger() {
         return DasLogger.getLogger();
     }
     
+    /**
+     * @deprecated use DasLogger.getLogger( LoggerId )
+     */
     public Logger getLogger( LoggerId id ) {
         return DasLogger.getLogger(id);
     }
