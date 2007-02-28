@@ -16,9 +16,8 @@ public class DatumRange implements Comparable {
     
     /**
      * Creates valid DatumRange from two Datums.
-     * @param s1
-     * @param s2
-     * @throws IllegalArgumentException if the first Datum is greater than the second, or the units are incompatible.
+     * @param s1 the start or smaller value of the range.
+     * @param s2 the stop or bigger value of the range.
      */
     public DatumRange(Datum s1, Datum s2) {
         if ( s2.lt(s1) ) throw new IllegalArgumentException( "s2<s1: "+s2+"<"+s1 ) ;
@@ -26,6 +25,12 @@ public class DatumRange implements Comparable {
         this.s2=s2;
     }
     
+    /**
+     * create a datum range from two doubles in the context of units.
+     * @param s1 the start or smaller value of the range.
+     * @param s2 the stop or bigger value of the range.
+     * @param units the units in which to interpret s1 and s2.
+     */
     public DatumRange( double s1, double s2, Units units ) {
         this( Datum.create( s1, units ), Datum.create( s2, units ) );
     }
@@ -33,8 +38,8 @@ public class DatumRange implements Comparable {
     /**
      * returns true of the DatumRange overlaps this.  Note that the endpoints are not
      * included in the comparison, so that Tuesday.intersects(Wednesday)==false.
-     * @param dr
-     * @return
+     * @param dr a valid datum range
+     * @return true of the DatumRange overlaps this
      */
     public boolean intersects(DatumRange dr) {
         return this.s2.gt( dr.s1 ) && this.s1.lt( dr.s2 );
@@ -42,9 +47,10 @@ public class DatumRange implements Comparable {
     
 
     /**
-     * returns the intersection of the two intersecting ranges.
-     * @throws IllegalArgumentException if the two do not intersect.
-     * @param dr     
+     * returns the intersection of the two intersecting ranges.  This is a range that contains(d) if 
+     * and only if this.contains(d) and dr.contains(d).
+     * @return the intersection of the two intersecting ranges.
+     * @param dr a valid datum range.
      */
     public DatumRange intersection( DatumRange dr ) {
         if ( this.intersects(dr) ) {
@@ -110,7 +116,8 @@ public class DatumRange implements Comparable {
     }
     
     /**
-     *
+     * returns a human consumable representation of the string.  This should also be parsable with 
+     * DatumRangeUtil.parseDatumRange, but this has not been verified to complete certainty.
      * @return the DatumRange as a String.
      */
     public String toString() {
@@ -160,6 +167,9 @@ public class DatumRange implements Comparable {
      * returns a scaled DatumRange, with a new width that is the this
      * datumRange's width multiplied by factor, and the same center.
      * 1.0 is the same range, 2.0 has twice the width, etc.
+     * @param factor double representing the new range's width divided by this range's width.
+     * @return a scaled DatumRange, with a new width that is the this
+     * datumRange's width multiplied by factor, and the same center.
      */
     public DatumRange zoomOut( double factor ) {
         double add= (factor-1)/2;
@@ -169,10 +179,11 @@ public class DatumRange implements Comparable {
     /**
      * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum.
      * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
-     *
-     *@param min
-     *@param max
-     *@return new Datum
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * min-width.
+     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * min-width.
+     * @return new DatumRange.
      */
     public DatumRange rescale( double min, double max ) {
         Datum w= width();
@@ -187,25 +198,37 @@ public class DatumRange implements Comparable {
     }
     
     /**
-     * returns the position within this, where 0. is the minimum, and 1. is the maximum
+     * returns the position within this, where 0. is the min(), and 1. is the max()
+     * @param d a datum to normalize with respect to the range.
+     * @return a double indicating the normalized datum.
      */
     public double normalize( Datum d ) {
         return d.subtract(s1).divide(width()).doubleValue(Units.dimensionless);
     }
     
+    /**
+     * returns the smaller value or start of the range.
+     * @return the smaller value or start of the range.
+     */
     public Datum min() {
         return s1;
     }
     
+    /**
+     * returns the bigger value or stop of the range.
+     * @return the bigger value or stop of the range.
+     */
     public Datum max() {
         return s2;
     }
     
     /**
-     * returns the next DatumRange covering the space defined by Units.  Some
-     * implementations of DatumRange may return a range with a different width
+     * returns the next DatumRange covering the space defined by Units.  Typically,
+     * this will be a range with a min equal to this datum's max, and the same width.
+     * Some implementations of DatumRange may return a range with a different width
      * than this DatumRange's width, for example, when advancing month-by-month
      * with a MonthDatumRange.
+     * @return the next DatumRange covering the space defined by Units. 
      */
     public DatumRange next() {
         return rescale(1,2);
@@ -214,6 +237,7 @@ public class DatumRange implements Comparable {
     /**
      * returns the previous DatumRange covering the space defined by Units.  See
      * next().
+     * @return the previous DatumRange covering the space defined by Units
      */
     public DatumRange previous() {
         return rescale(-1,0);
