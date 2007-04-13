@@ -44,7 +44,7 @@ public class Splash extends JWindow {
         //DName: das_20030505_01_beta D
         String cvsTagName= "$Name$";
         String version;
-        if (cvsTagName.length()==9) {
+        if (cvsTagName.length()<=9) {
             version="untagged_version";
         } else {
             version= cvsTagName.substring(6,cvsTagName.length()-2);

@@ -31,7 +31,18 @@ import edu.uiowa.physics.pw.das.datum.Units;
  */
 public abstract class UnitsConverter {
     
-    public static final UnitsConverter IDENTITY = new ScaleOffset(1.0, 0.0);
+    public static final UnitsConverter IDENTITY = new UnitsConverter() {
+        public UnitsConverter getInverse() {
+            return this;
+        }
+        public double convert(double value) {
+            return value;
+        }
+        public String toString() {
+            return "IDENTITY UnitsConverter";
+        }
+    };
+    
     public static final UnitsConverter TERA = new ScaleOffset(1e-12, 0.0);
     public static final UnitsConverter GIGA = new ScaleOffset(1e-9, 0.0);
     public static final UnitsConverter MEGA = new ScaleOffset(1e-6, 0.0);
