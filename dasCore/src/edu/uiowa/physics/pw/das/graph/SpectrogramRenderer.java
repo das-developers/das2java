@@ -521,11 +521,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     public void setDataSet(DataSet ds) {
-        this.raster= null;
-        // TODO: preserve plotImage until updatePlotImage is done
-        this.plotImage= null;
+        DataSet oldDs= this.ds;
+        this.ds= ds;
+        if ( parent!=null && oldDs!=ds ) {
+            this.raster= null;
+            // TODO: preserve plotImage until updatePlotImage is done
+            this.plotImage= null;
+        }
         super.setDataSet(ds);
     }
+
     
     /**
      * Holds value of property print300dpi.
