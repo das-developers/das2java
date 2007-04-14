@@ -187,7 +187,9 @@ public class DOMBuilder {
         } catch ( IllegalAccessException e ) {
             throw new RuntimeException(e);
         } catch ( InvocationTargetException e ) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e);      
+        } finally {
+            monitor.finished();
         }
     }
     
