@@ -55,7 +55,7 @@ public class DasProgressPanel implements DasProgressMonitor {
     
     private JLabel kbLabel;
     private JProgressBar progressBar;
-    private JFrame jframe;  // created when createFramed() is used.
+    private JFrame jframe=null;  // created when createFramed() is used.
     private boolean isCancelled = false;
     private JButton cancelButton;
     private int cancelCheckFailures= 0; // number of times client codes failed to check cancelled before setTaskProgress.
@@ -166,7 +166,7 @@ public class DasProgressPanel implements DasProgressMonitor {
         result.initComponents();
         result.jframe.getContentPane().add( result.thePanel );
         result.jframe.pack();
-        result.jframe.setVisible(true);
+        result.jframe.setVisible(false);
         result.jframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         return result;
     }
@@ -435,6 +435,8 @@ public class DasProgressPanel implements DasProgressMonitor {
         if ( ! componentsInitialized && !visible ) return;
         if ( ! componentsInitialized && !finished ) initComponents();
         thePanel.setVisible(visible);
+        if ( this.jframe!=null ) this.jframe.setVisible(visible);
+        
         if ( visible ) {
             startUpdateThread();
         }
