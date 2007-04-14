@@ -625,8 +625,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * changes the units of the axis to a new unit, probably breaking all sorts of things!
      */
     public void resetRange( DatumRange range ) {
-        logger.finest( "replaceRange("+range+")");
-        dataRange.resetRange( range );
+        if ( range.getUnits()!=this.getUnits() ) {
+            if ( dasPlot!=null ) dasPlot.invalidateCacheImage();
+            logger.finest( "replaceRange("+range+")");
+            dataRange.resetRange( range );
+        } else {
+            dataRange.setRange( range );
+        }
+        updateTickV();
         markDirty();
         update();
     }
@@ -1209,6 +1215,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int tickLengthMajor = labelFont.getSize() * 2 / 3;
         int tickLengthMinor = tickLengthMajor / 2;
         int tickLength;
+        
+        if ( ticks.getMajorTicks().getUnits() != getUnits() ) {
+            System.err.println("why are the units not the same");
+        }
         
         for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
             double tick1= ticks.tickV.doubleValue(i, getUnits());
@@ -2001,7 +2011,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param units the units of the given data value.
      * @return Horizontal or vertical position on the canvas.
      */
-    double transform( double data, Units units ) {
+    protected double transform( double data, Units units ) {
         DasDevicePosition range;
         // TODO: consider optimization here
         if (isHorizontal()) {
@@ -2013,7 +2023,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
     
-    double transform( double data, Units units, int dmin, int dmax ) {
+    protected double transform( double data, Units units, int dmin, int dmax ) {
         if ( units!=dataRange.getUnits() ) {
             data= units.convertDoubleTo(dataRange.getUnits(), data);
         }
