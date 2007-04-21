@@ -522,7 +522,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     public void setDataSet(DataSet ds) {
         DataSet oldDs= this.ds;
-        this.ds= ds;
         if ( parent!=null && oldDs!=ds ) {
             this.raster= null;
             // TODO: preserve plotImage until updatePlotImage is done
