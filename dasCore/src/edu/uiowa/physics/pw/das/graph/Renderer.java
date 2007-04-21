@@ -165,15 +165,12 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public void setDataSet(DataSet ds) {
         logger.finer("Renderer.setDataSet: "+ds);
         DataSet oldDs= this.ds;
-        if ( parent!=null && oldDs!=ds ) {
+       
+        if ( oldDs!=ds ) {
             this.ds= ds;
-            //parent.markDirty();
-            //parent.update();
             refresh();
             invalidateParentCacheImage();
         }
-        //refresh();
-        //invalidateParentCacheImage();
     }
     
     public void setException( Exception e ) {
