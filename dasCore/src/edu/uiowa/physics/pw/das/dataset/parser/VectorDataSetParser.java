@@ -141,9 +141,9 @@ public class VectorDataSetParser {
     }
     
     /**
-     * internal implementation of the parser.
+     * Parse the stream using the current settings.
      */
-    private VectorDataSet readStream( InputStream in ) throws IOException {
+    public VectorDataSet readStream( InputStream in ) throws IOException {
         BufferedReader reader= new BufferedReader( new InputStreamReader(in ) );
         String line;
         int iline=0;
