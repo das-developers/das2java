@@ -409,6 +409,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private JPopupMenu createPopupMenu() {
         JPopupMenu popup= new JPopupMenu();
         
+        JMenuItem props= new JMenuItem(PROPERTIES_ACTION);
+        popup.add(props);
+        
+        popup.addSeparator();
+        
         Action[] actions = getActions();
         for (int iaction = 0; iaction < actions.length; iaction++) {
             JMenuItem item =new JMenuItem();
@@ -417,17 +422,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         
         popup.addSeparator();
-        
-        JMenuItem props= new JMenuItem(PROPERTIES_ACTION);
-        popup.add(props);
-        
+     
         JMenuItem close = new JMenuItem("close");
         close.setToolTipText("close this popup");
         popup.add(close);
         
         return popup;
-    }
-    
+    }    
     /** returns the GlassPane above all other components. This is used for drawing dragRenderers, etc.
      * @return
      */
