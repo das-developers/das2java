@@ -8,6 +8,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.AverageTableRebinner;
 import edu.uiowa.physics.pw.das.dataset.ClippedTableDataSet;
@@ -23,7 +24,6 @@ import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
-import edu.uiowa.physics.pw.das.dataset.VectorUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.Units;
@@ -33,10 +33,12 @@ import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
-import javax.crypto.NullCipher;
 import javax.swing.JFrame;
+import javax.swing.text.PlainDocument;
 
 /**
  *
@@ -50,9 +52,11 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     DatumRange yrange;
     String lastComment;
     CutoffSlicer cutoffSlicer;
+    DasApplication application;
     
     public CutoffMouseModule( DasPlot parent, DataSetConsumer consumer ) {
         super( parent, parent.getXAxis(), parent.getYAxis(), consumer, new BoxRenderer(parent,true), "Cutoff" );
+        application= parent.getCanvas().getApplication();
         this.dataSetConsumer= consumer;
     }
     
@@ -70,7 +74,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         }
         
         try {
-            recalculate();
+            recalculateSoon( );
         } catch ( RuntimeException ex ) {
             xrange= xrange0;
             yrange= yrange0;
@@ -94,9 +98,21 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         return ddx;
     }
     
-    private void recalculate( ) {
+    private void recalculateSoon(  ) {
+        Runnable run= new Runnable() {
+            public void run() {
+                DasProgressMonitor mon= application.getMonitorFactory().getMonitor( parent, "calculating cutoffs", "calculating cutoffs" );
+                recalculate( mon );
+            }
+        };
+        new Thread( run, "digitizer recalculate" ).start();
+    }
+    
+    private synchronized void recalculate( DasProgressMonitor mon) {
         TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
-        if ( tds==null ) return; 
+        if ( tds==null ) return;
+        if ( xrange==null ) return;
+        
         tds= new ClippedTableDataSet( tds, xrange, yrange );
         
         // average the data down to xResolution
@@ -113,7 +129,13 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         }
         
         VectorDataSetBuilder builder= new VectorDataSetBuilder( tds.getXUnits(), tds.getYUnits() );
+        
+        mon.setTaskSize( tds.getXLength() );
+        mon.started();
+        
         for ( int i=0; i<tds.getXLength(); i++ ) {
+            mon.setTaskProgress( i );
+            if ( mon.isCancelled() ) break;
             VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
             int icutoff= cutoff( spec, slopeMin, nave, isLowCutoff() ? 1 : -1, levelMin );
             if ( icutoff>-1 ) {
@@ -123,6 +145,10 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
                 builder.insertY( tds.getXTagDatum(i), yunits.createDatum(yunits.getFillDouble()) );
             }
         }
+        
+        mon.finished();
+        
+        if ( mon.isCancelled() ) return;
         
         String comment= "Ondrej:"+levelMin+":"+slopeMin+":"+nave;
         if ( lastComment!=null ) {
@@ -231,7 +257,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             DasRow row2= new DasRow( canvas, null, 1/3., 2/3., 1.5, -1.5, 0, 0 );
             DasRow row3= new DasRow( canvas, null, 2/3., 3/3., 1, -2, 0, 0 );
             
-            DasPlot plot= new DasPlot( xaxis, new DasAxis( new DatumRange( -8,0,Units.dimensionless ), DasAxis.VERTICAL ) ) {
+            DasPlot plot= new DasPlot( xaxis, new DasAxis( new DatumRange( -18,-10,Units.dimensionless ), DasAxis.VERTICAL ) ) {
                 protected void drawContent(java.awt.Graphics2D g) {
                     super.drawContent(g);
                     
@@ -507,8 +533,13 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * @param slopeMin New value of property slopeMin.
      */
     public void setSlopeMin(Datum slopeMin) {
-        this.slopeMin = slopeMin;
-        recalculate();
+        Datum oldVal= this.slopeMin;
+        if ( !this.slopeMin.equals( slopeMin ) ) {
+            this.slopeMin = slopeMin;
+            PropertyChangeEvent e= new PropertyChangeEvent( this, "slope", oldVal, slopeMin );
+            firePropertyChangeListenerPropertyChange( e );
+            recalculateSoon();
+        }
     }
     
     /**
@@ -529,8 +560,17 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * @param levelMin New value of property levelMin.
      */
     public void setLevelMin(Datum levelMin) {
-        this.levelMin = levelMin;
-        recalculate();
+        Datum oldVal= this.levelMin;
+        if ( !this.levelMin.equals( levelMin ) ) {
+            this.levelMin = levelMin;
+            PropertyChangeEvent e= new PropertyChangeEvent( this, "level", oldVal, levelMin );
+            firePropertyChangeListenerPropertyChange( e );
+            
+            levelMin.getFormatter().format(levelMin);
+            
+            recalculateSoon();
+            
+        }
     }
     
     /**
@@ -551,8 +591,13 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * @param nave New value of property nave.
      */
     public void setNave(int nave) {
-        this.nave = nave;
-        recalculate();
+        int oldVal= this.nave;
+        if ( this.nave!=nave ) {
+            this.nave = nave;
+            PropertyChangeEvent e= new PropertyChangeEvent( this, "nave", new Integer(oldVal), new Integer(nave) );
+            firePropertyChangeListenerPropertyChange( e );
+            recalculateSoon();
+        }
     }
     
     private Datum xResolution= Units.milliseconds.createDatum(1000);
@@ -562,7 +607,13 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     }
     
     public void setXResolution(Datum xResolution) {
-        this.xResolution = xResolution;
+        Datum oldVal= this.xResolution;
+        if ( !this.xResolution.equals( xResolution ) ) {
+            this.xResolution = xResolution;
+            PropertyChangeEvent e= new PropertyChangeEvent( this, "timeResolution", oldVal, this.xResolution );
+            firePropertyChangeListenerPropertyChange( e );
+            recalculateSoon();
+        }
     }
     
     /**
@@ -585,8 +636,53 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * @param lowCutoff New value of property lowCutoff.
      */
     public void setLowCutoff(boolean lowCutoff) {
-        this.lowCutoff = lowCutoff;
-        if ( this.cutoffSlicer != null ) this.cutoffSlicer.slopePlot.repaint();
+        Boolean oldVal= Boolean.valueOf( this.lowCutoff );
+        if ( this.lowCutoff!=lowCutoff ) {
+            this.lowCutoff = lowCutoff;
+            PropertyChangeEvent e= new PropertyChangeEvent( this, "lowCutoff", oldVal, Boolean.valueOf(lowCutoff) );
+            firePropertyChangeListenerPropertyChange( e );
+            recalculateSoon();
+            if ( this.cutoffSlicer != null ) this.cutoffSlicer.slopePlot.repaint();
+        }
+    }
+    
+    /**
+     * Utility field used by event firing mechanism.
+     */
+    private javax.swing.event.EventListenerList listenerList =  null;
+    
+    /**
+     * Registers PropertyChangeListener to receive events.
+     * @param listener The listener to register.
+     */
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        if (listenerList == null ) {
+            listenerList = new javax.swing.event.EventListenerList();
+        }
+        listenerList.add(java.beans.PropertyChangeListener.class, listener);
+    }
+    
+    /**
+     * Removes PropertyChangeListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        listenerList.remove(java.beans.PropertyChangeListener.class, listener);
+    }
+    
+    /**
+     * Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void firePropertyChangeListenerPropertyChange(java.beans.PropertyChangeEvent event) {
+        if (listenerList == null) return;
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i]==java.beans.PropertyChangeListener.class) {
+                ((java.beans.PropertyChangeListener)listeners[i+1]).propertyChange(event);
+            }
+        }
     }
     
 }
