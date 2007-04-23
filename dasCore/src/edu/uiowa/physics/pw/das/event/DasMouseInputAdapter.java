@@ -631,7 +631,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         }
     }
     
-    private void showPopup( JPopupMenu menu, Point p ) {
+    private void showPopup( JPopupMenu menu, MouseEvent ev ) {
         log.finest("showPopup");
         HashMap map=null;
         if ( menu==primaryPopup ) {
@@ -646,7 +646,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
             JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(mm);
             j.setText(mm.getLabel());
         }
-        menu.show( parent, p.x, p.y);
+        menu.show( ev.getComponent(), ev.getX(), ev.getY());
     }
     
     public void setPinned(boolean b) {
@@ -705,9 +705,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
                 
                 if ( e.isControlDown() || button==MouseEvent.BUTTON3 ) {
                     if (button==MouseEvent.BUTTON1 || button==MouseEvent.BUTTON3 ) {
-                        showPopup( primaryPopup, e.getPoint() );
+                        showPopup( primaryPopup, e );
                     } else {
-                        showPopup( secondaryPopup, e.getPoint() );
+                        showPopup( secondaryPopup, e );
                     }
                 } else {
                     
