@@ -61,7 +61,7 @@ public class DasColumn extends DasDevicePosition {
     }
     
     public static DasColumn create(DasCanvas parent) {
-           return new DasColumn(parent,null,0.0,1.0,5,3,0,0);
+           return new DasColumn(parent,null,0.0,1.0,5,-3,0,0);
     }
     
     public static DasColumn create( DasCanvas parent, int iplot, int nplot ) {
