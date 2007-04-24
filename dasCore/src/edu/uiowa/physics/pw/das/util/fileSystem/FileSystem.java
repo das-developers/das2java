@@ -92,15 +92,8 @@ public abstract class FileSystem  {
         filename= filename.replaceAll( "\\\\", "/" );
         if ( filename.length()==0 || filename.charAt(0)!='/' ) {
             filename= "/"+filename;
-        }        
-        String[] s= filename.split("//");
-        if ( s.length>1 ) {
-            StringBuffer nf= new StringBuffer(s[0]);
-            for ( int i=1; i<s.length; i++ ) {
-                nf.append("/").append(s[i]);
-            }
-            filename= nf.toString();
         }
+        filename= filename.replaceAll( "//", "/" );
         return filename;
     }
     
