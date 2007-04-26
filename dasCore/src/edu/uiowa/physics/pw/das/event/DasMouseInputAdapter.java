@@ -654,7 +654,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     }
     
     public void mousePressed(MouseEvent e) {
-        log.finest("mousePressed "+mouseMode);
+        log.finer("mousePressed "+mouseMode);
         if ( pinned ) {
             active=null;
             refresh();

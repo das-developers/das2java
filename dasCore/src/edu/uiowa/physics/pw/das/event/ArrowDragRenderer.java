@@ -20,6 +20,7 @@ import java.awt.Rectangle;
  */
 public class ArrowDragRenderer implements DragRenderer {
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
+        g.setClip( null );
         Arrow.paintArrow( (Graphics2D)g, p2, p1, 12 );
         Rectangle result= new Rectangle(p1);
         result.add(p2);

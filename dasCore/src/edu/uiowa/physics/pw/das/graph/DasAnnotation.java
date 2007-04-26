@@ -7,8 +7,15 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.event.ArrowDragRenderer;
+import edu.uiowa.physics.pw.das.event.MouseModule;
+import edu.uiowa.physics.pw.das.event.MoveComponentMouseModule;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
 
 /**
  * This component-izes a GrannyTextRenderer, composes with an Arrow, and
@@ -29,6 +36,54 @@ public class DasAnnotation extends DasCanvasComponent {
         super();
         this.gtr= new GrannyTextRenderer();
         this.string= string;
+        this.getMouseAdapter().addMenuItem( new JMenuItem( new AbstractAction( "remove" ) {
+            public void actionPerformed( ActionEvent e ) {
+                DasCanvas canvas= getCanvas();
+                // TODO: confirm dialog
+                canvas.remove( DasAnnotation.this );
+                canvas.revalidate();
+            }
+        } ) );
+        MouseModule mm= new MoveComponentMouseModule( this );
+        this.getMouseAdapter().addMouseModule( mm );
+        this.getMouseAdapter().setPrimaryModule( mm );
+        
+        mm= createArrowToMouseModule( this );
+        this.getMouseAdapter().addMouseModule( mm );
+        this.getMouseAdapter().setSecondaryModule( mm );
+    }
+    
+    private MouseModule createArrowToMouseModule( final DasAnnotation anno ) {
+        return new MouseModule( DasAnnotation.this, new ArrowDragRenderer(), "Point At" ) {
+            Point head;
+            Point tail;
+            
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                tail= e.getPoint();
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                head= e.getPoint();
+                head.translate( anno.getX(), anno.getY() );
+                DasCanvasComponent c= parent.getCanvas().getCanvasComponentAt( head.x, head.y );
+                if ( c instanceof DasPlot ) {
+                    final DasPlot p= (DasPlot) c;
+                    final Datum x= p.getXAxis().invTransform( head.x );
+                    final Datum y= p.getYAxis().invTransform( head.y );
+                    anno.setPointAt( new DasAnnotation.PointDescriptor() {
+                        public Point getPoint() {
+                            int ix= (int)(p.getXAxis().transform(x));
+                            int iy= (int)(p.getYAxis().transform(y));
+                            return new Point(ix,iy);
+                        }
+                    } );
+                    setBounds( calcBounds() );
+                }
+            }
+
+        };
     }
     
     public void setText( String string ) {
@@ -44,10 +99,24 @@ public class DasAnnotation extends DasCanvasComponent {
     
     public void resize() {
         super.resize();
-        setBounds( DasDevicePosition.toRectangle( getRow(), getColumn() ) ) ;
+        this.gtr.setString( this, this.string );
+        setBounds( calcBounds() ) ;
+    }
+    
+    private Rectangle calcBounds() {
+        Rectangle bounds= gtr.getBounds();
+        bounds.translate( getX(), getY() );
+        if ( pointAt!=null ) {
+            Point head= pointAt.getPoint();
+            //bounds.add(head);
+        }
+        return bounds;
     }
     
     public void paintComponent( Graphics g1 ) {
+        
+        // TODO: need to draw based on row, col, not on bounds which may move with arrow.
+        
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         Rectangle r= gtr.getBounds();
