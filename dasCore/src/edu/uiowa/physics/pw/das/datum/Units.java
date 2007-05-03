@@ -391,6 +391,10 @@ public abstract class Units implements Displayable {
         }
     }
     
+    public boolean isValid( double value ) {
+        return !Double.isNaN(value) && value>FILL_DOUBLE/10 ;
+    }
+    
     public abstract DatumFormatterFactory getDatumFormatterFactory();
     
     public abstract Datum parse(String s) throws ParseException;
