@@ -147,6 +147,10 @@ public class VectorUtil {
         dumpToAsciiStream(vds, out);
     }
     
+    public static void dumpToBinaryStream( VectorDataSet vds, OutputStream out ) {
+        dumpToDas2Stream( vds, Channels.newChannel(out), false );
+    }
+    
     private static void dumpToDas2Stream( VectorDataSet vds, WritableByteChannel out, boolean asciiTransferTypes ) {
         if (vds.getXLength() == 0) {
             try {
