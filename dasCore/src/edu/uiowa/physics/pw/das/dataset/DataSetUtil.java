@@ -282,7 +282,7 @@ public class DataSetUtil {
             for (int i=tds.tableStart(itable); i<tds.tableEnd(itable); i++) {
                 for (int j=0; j<ny; j++) {
                     double d= tds.getDouble(i,j,zunits);
-                    if ( d!=fill ) {
+                    if ( zunits.isValid(d) ) {
                         max= Math.max( d, max );
                         min= Math.min( d, min );
                     }
