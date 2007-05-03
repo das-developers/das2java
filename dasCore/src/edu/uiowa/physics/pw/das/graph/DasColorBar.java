@@ -153,7 +153,7 @@ public class DasColorBar extends DasAxis {
     }
     
     public static DasColumn getColorBarColumn(DasColumn column) {
-        return column.createAttachedColumn(1.05,1.10);
+        return new DasColumn( null, column, 1.0, 1.0, 1, 2, 0, 0  );
     }
     
     /** Process a <code>&lt;colorbar&gt;</code> element.
