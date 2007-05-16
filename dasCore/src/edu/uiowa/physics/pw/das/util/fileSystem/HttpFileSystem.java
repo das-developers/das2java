@@ -16,7 +16,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
-import org.apache.xerces.utils.Base64;
 
 
 /**
@@ -52,7 +51,8 @@ public class HttpFileSystem extends WebFileSystem {
                 HttpURLConnection urlc= (HttpURLConnection)root.openConnection();
                 urlc.setRequestMethod("HEAD");
                 if ( root.getUserInfo()!=null ) {
-                    String encode= new String( Base64.encode(root.getUserInfo().getBytes()) );
+                    String encode= Base64.encodeBytes(root.getUserInfo().getBytes());
+                    // xerces String encode= new String( Base64.encode(root.getUserInfo().getBytes()) );
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
                 urlc.connect();
@@ -105,7 +105,7 @@ public class HttpFileSystem extends WebFileSystem {
             
             URLConnection urlc = remoteURL.openConnection();
             if ( root.getUserInfo()!=null ) {
-                String encode= new String( Base64.encode(root.getUserInfo().getBytes()) );
+                String encode= new String( Base64.encodeBytes(root.getUserInfo().getBytes()) );
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
             

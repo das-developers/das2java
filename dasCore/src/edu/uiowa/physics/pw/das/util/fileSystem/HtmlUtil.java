@@ -6,12 +6,12 @@
 
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
+import edu.uiowa.physics.pw.das.util.Base64;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.xerces.utils.Base64;
 
 /**
  *
@@ -42,7 +42,7 @@ public class HtmlUtil {
         
         //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
         if ( url.getUserInfo()!=null ) {
-            String encode= new String( Base64.encode(url.getUserInfo().getBytes()) );
+            String encode= new String( Base64.encodeBytes(url.getUserInfo().getBytes()) );
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
         InputStream urlStream = urlConnection.getInputStream();
