@@ -475,6 +475,9 @@ public class DasColorBar extends DasAxis {
             if (colorBar.isHorizontal()) {
                 throw new IllegalArgumentException("Axis orientation is not vertical");
             }
+            if ( parent==null ) {
+                throw new IllegalArgumentException("Parent is null");
+            }
             this.parent= parent;
             //  this.dragRenderer= (DragRenderer)HorizontalRangeRenderer.renderer;
             this.dragRenderer= new HorizontalSliceSelectionRenderer(parent.getParent());
@@ -502,7 +505,12 @@ public class DasColorBar extends DasAxis {
                 colorBar.setAnimated(animated0);
                 int lastTopColor= this.lastTopColor;
                 setColorBar( colorBar.getRow().getDMinimum() );
-                DatumRange dr= range0.rescale( 0, lastTopColor / ( 1.*COLORTABLE_SIZE) );
+                DatumRange dr;
+                if ( isLog() ) {
+                    dr= DatumRangeUtil.rescaleLog( range0, 0, lastTopColor / ( 1.*COLORTABLE_SIZE) );
+                } else {
+                    dr= range0.rescale( 0, lastTopColor / ( 1.*COLORTABLE_SIZE) );
+                }
                 colorBar.type.initializeColorTable( COLORTABLE_SIZE, COLORTABLE_SIZE );
                 colorBar.setDatumRange( dr );
             }
