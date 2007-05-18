@@ -358,7 +358,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     DatumRange outerRange= getDatumRange();
                     DatumRange range= event.getXRange();
                     range= getTickV().enclosingRange( range, true );
-                    DatumRange newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
+                    DatumRange newRange;
+                    if ( isLog() ) {
+                        newRange= DatumRangeUtil.rescaleLog( outerRange,
+                                DatumRangeUtil.normalizeLog( range, outerRange.min() ),
+                                DatumRangeUtil.normalizeLog( range, outerRange.max() ) );
+                    } else {
+                        newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
+                    }
                     setDatumRange( newRange );
                 }
             } );
@@ -375,8 +382,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     System.out.println(event.getYRange());
                     DatumRange outerRange= getDatumRange();
                     DatumRange range= event.getYRange();
+                    DatumRange newRange;
+                    if ( isLog() ) {
+                        newRange= DatumRangeUtil.rescaleLog( outerRange,
+                                DatumRangeUtil.normalizeLog( range, outerRange.min() ),
+                                DatumRangeUtil.normalizeLog( range, outerRange.max() ) );
+                    } else {
+                        newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
+                    }
                     range= getTickV().enclosingRange( range, true );
-                    DatumRange newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
                     setDatumRange( newRange );
                 }
             } );
