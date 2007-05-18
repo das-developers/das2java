@@ -184,6 +184,7 @@ public class DatumRange implements Comparable {
      * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is 
      * min-width.
      * @return new DatumRange.
+     * @deprecated.  Use DatumRangeUtil.rescale
      */
     public DatumRange rescale( double min, double max ) {
         Datum w= width();
@@ -201,6 +202,7 @@ public class DatumRange implements Comparable {
      * returns the position within this, where 0. is the min(), and 1. is the max()
      * @param d a datum to normalize with respect to the range.
      * @return a double indicating the normalized datum.
+     * @deprecated. Use DatumRangeUtil.normalize
      */
     public double normalize( Datum d ) {
         return d.subtract(s1).divide(width()).doubleValue(Units.dimensionless);
