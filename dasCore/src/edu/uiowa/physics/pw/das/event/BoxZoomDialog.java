@@ -186,7 +186,18 @@ public class BoxZoomDialog extends javax.swing.JPanel {
 
     private void disablePopupCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disablePopupCheckBoxActionPerformed
         if ( disablePopupCheckBox.isSelected() ) {
-            JOptionPane.showConfirmDialog(this,"Popup may be re-enabled via the plot's property editor");
+            int result= JOptionPane.showConfirmDialog(this,
+                    "<html>Hitting OK will disable this popup and will perform the zoom.  " +
+                    "Popup may be re-enabled via the plot's property editor.</html>",
+                    "hiding box zoom popup",
+                    JOptionPane.OK_CANCEL_OPTION );
+            if ( result==JOptionPane.OK_OPTION ) {
+                module.setAutoUpdate(true);
+                module.zoomBox();
+                this.module.dialog.setVisible(false);
+            } else {
+                disablePopupCheckBox.setSelected(false);
+            }   
         }
         module.guiChanged();
     }//GEN-LAST:event_disablePopupCheckBoxActionPerformed
