@@ -6,7 +6,6 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
-import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
@@ -935,4 +934,74 @@ public class DatumRangeUtil {
         return parseDatumRange( str, orig.getUnits() );
     }
     
+    /**
+     * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum.
+     * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
+     * @param dr a DatumRange with nonzero width.
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * min-width.
+     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * min-width.
+     * @return new DatumRange.
+     */
+    public static DatumRange rescale( DatumRange dr, double min, double max ) {
+        Datum w= dr.width();
+        if ( !w.isFinite() ) {
+            throw new RuntimeException("width is not finite");
+        }
+        if ( w.doubleValue( w.getUnits() )==0. ) {
+            // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
+            throw new RuntimeException("width is zero!");
+        }
+        return new DatumRange( dr.min().add( w.multiply(min) ), dr.min().add( w.multiply(max) ) );        
+    }
+    
+    /**
+     * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum, but the
+     * scaling is done in the log space.
+     * For example, rescaleLog( [0.1,1.0], -1, 2 )-> [ 0.01, 10.0 ]
+     * @param dr a DatumRange with nonzero width.
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * min-width.
+     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * min-width.
+     * @return new DatumRange.
+     */
+    public static DatumRange rescaleLog( DatumRange dr, double min, double max ) {
+        Units u= dr.getUnits();
+        double s1= DasMath.log10( dr.min().doubleValue(u) );
+        double s2= DasMath.log10( dr.max().doubleValue(u) );
+        double w= s2 - s1;
+        if ( w==0. ) {
+            // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
+            throw new RuntimeException("width is zero!");
+        }
+        s2= DasMath.exp10( s1 + max * w ); // danger
+        s1= DasMath.exp10( s1 + min * w );
+        return new DatumRange( s1, s2, u );        
+    }
+ 
+    /**
+     * returns the position within dr, where 0. is the dr.min(), and 1. is dr.max()
+     * @param dr a datum range with non-zero width.
+     * @param d a datum to normalize with respect to the range.
+     * @return a double indicating the normalized datum.
+     */
+    public static double normalize( DatumRange dr, Datum d ) {
+        return d.subtract(dr.min()).divide(dr.width()).doubleValue(Units.dimensionless);
+    }
+    
+    /**
+     * returns the position within dr, where 0. is the dr.min(), and 1. is dr.max()
+     * @param dr a datum range with non-zero width.
+     * @param d a datum to normalize with respect to the range.
+     * @return a double indicating the normalized datum.
+     */    
+    public static double normalizeLog( DatumRange dr, Datum d ) {
+        Units u= dr.getUnits();
+        double d0= Math.log( dr.min().doubleValue( u ) );
+        double d1= Math.log( dr.max().doubleValue( u ) );
+        double dd= Math.log( d.doubleValue( u ) );
+        return (dd-d0) / ( d1-d0 );
+    }
 }
