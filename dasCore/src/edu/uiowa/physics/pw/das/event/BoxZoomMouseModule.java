@@ -37,7 +37,9 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     
     JDialog getDialog() {
         if ( dialog==null ) {
-            dialog= new JDialog( DasApplication.getDefaultApplication().getMainFrame() );
+            dialog= new JDialog( (Frame)null );
+            dialog.setLocationRelativeTo( parent );
+            
             Container content= dialog.getContentPane();
             bzdialog= new BoxZoomDialog( this );
             content.add( bzdialog );
