@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasProperties;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
+import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetUtil;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
@@ -36,6 +37,7 @@ import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.system.DasLogger;
+import edu.uiowa.physics.pw.das.util.DasMath;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -84,6 +86,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
     /** The 'image' of the data */
     private GeneralPath path;
     private GeneralPath fillToRefPath;
+
+    
+    /* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
+    private int firstIndex;
+    
+    /* the non-inclusive index of the last point drawn. */
+    private int lastIndex;
     
     private Logger log= DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     
@@ -137,6 +146,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         
         edu.uiowa.physics.pw.das.datum.Units xUnits= xAxis.getUnits();
         edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();
+        final boolean xlog=xAxis.isLog(), ylog=yAxis.isLog();
         
         double dstMin, dstMax, srcMin, srcMax;
         
@@ -144,13 +154,21 @@ public class SeriesRenderer extends Renderer implements Displayable {
         srcMax= xAxis.getDataMaximum( xAxis.getUnits() );
         dstMax= xAxis.transform(  srcMax, xUnits );
         dstMin= xAxis.transform(  srcMin, xUnits );
+        if ( xlog ) {
+            srcMin= Math.log(srcMin);
+            srcMax= Math.log(srcMax);
+        }
+        // TODO: floats in TimeLocationUnits will need an offset applied to avoid roundoff errors, which will be picked up in the AT.
         AffineTransform at= getAffineTransform( dstMin, dstMax, srcMin, srcMax, 0, null );
         
         srcMin= yAxis.getDataMinimum( yAxis.getUnits() );
         srcMax= yAxis.getDataMaximum( yAxis.getUnits() );
         dstMax= yAxis.transform(  srcMax, yUnits );
         dstMin= yAxis.transform(  srcMin, yUnits );
-        
+        if ( ylog ) {
+            srcMin= Math.log(srcMin);
+            srcMax= Math.log(srcMax);
+        }
         at= getAffineTransform( dstMin, dstMax, srcMin, srcMax, 1, at );
         
         System.err.println( "X: " +
@@ -158,7 +176,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 at.getScaleY() + " " + at.getTranslateY() );
         
         if ( this.fillToReference && fillToRefPath!=null ) {
-            GeneralPath pixelFillPath= new GeneralPath();
+            GeneralPath pixelFillPath= new GeneralPath(  GeneralPath.WIND_NON_ZERO, 200 * ( lastIndex - firstIndex ) / 100  );
             pixelFillPath.append( fillToRefPath, false );
             pixelFillPath.transform( at );
             graphics.setColor( fillColor );
@@ -172,7 +190,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         GeneralPath pixelPath;
         // draw the stored path that we calculated in updatePlotImage
         
-        pixelPath= new GeneralPath();
+        pixelPath= new GeneralPath( GeneralPath.WIND_NON_ZERO,  110 * ( lastIndex - firstIndex ) / 100 ); // DANGER--should be exactly the same length as path to avoid copies.
         pixelPath.append( path, false );
         pixelPath.transform(at);
         
@@ -194,26 +212,15 @@ public class SeriesRenderer extends Renderer implements Displayable {
             ymax= yAxis.invTransform((int)(r.getY()+r.getHeight())).doubleValue(yUnits);
         }
         
-        //Support flipped axes
-        if (xmax < xmin) {
-            double tmp = xmax;
-            xmax = xmin;
-            xmin = tmp;
-        }
-        if (ymax < ymin) {
-            double tmp = ymax;
-            ymax = ymin;
-            ymin = tmp;
-        }
-        
-        DatumRange visibleRange= new DatumRange( xmin, xmax, xUnits );
-        
         g.setColor( color );
+        
+        Units zunits=null;
         
         if ( psym!=Psym.NONE ) { // optimize for common case
             
             if ( colorByDataSetId!=null ) {
                 colorByDataSet= (VectorDataSet) dataSet.getPlanarView( colorByDataSetId );
+                zunits= colorBar.getUnits();
             }
             
             PathIterator it= pixelPath.getPathIterator( null );
@@ -222,14 +229,26 @@ public class SeriesRenderer extends Renderer implements Displayable {
             
             ((Graphics2D)g).setStroke(new BasicStroke(lineWidth));
             
-            while ( ! it.isDone() ) {
-                it.currentSegment( coords );
-                psym.draw( g, coords[0], coords[1], (float)symSize );
-                it.next();
+            if ( colorByDataSet!=null ) {
+                int i=firstIndex;
+                while ( ! it.isDone() ) {
+                    it.currentSegment( coords );
+                    g.setColor( new Color( colorBar.rgbTransform( colorByDataSet.getDouble(i,zunits), zunits ) ) );
+                    psym.draw( g, coords[0], coords[1], (float)symSize );
+                    it.next();
+                    i++;
+                }
+            } else {
+                while ( ! it.isDone() ) {
+                    it.currentSegment( coords );
+                    psym.draw( g, coords[0], coords[1], (float)symSize );
+                    it.next();
+                }
             }
+            
         }
         
-        g.drawString( "renderCount="+renderCount+" updateCount="+updateImageCount,xAxis.getColumn().getDMinimum()+5, yAxis.getRow().getDMinimum()+20 );
+        //g.drawString( "renderCount="+renderCount+" updateCount="+updateImageCount,xAxis.getColumn().getDMinimum()+5, yAxis.getRow().getDMinimum()+20 );
         long milli= System.currentTimeMillis();
         logger.finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
         lastUpdateMillis= milli;
@@ -239,7 +258,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     boolean updating=false;
     
     /**
-     * return the AffineTransform that goes from dmin0, dmax0 to dmin1, dmax1.
+     * return the AffineTransform that goes from [dmin0, dmax0] to [dmin1, dmax1], where both spaces are linear.
      * at= getAffineTransform( 0, 100, 32, 212, 0, null );
      * at.getScaleX() --> 9/5
      * at.getTranslateX() --> 32
@@ -263,12 +282,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
         return at;
     }
     
-    /*public static void main( String[] args ) {
-        AffineTransform at= getAffineTransform( 32, 212, 0, 100, 0, null );
-        System.err.println( at.getScaleX()+ "==9./5" );
-         System.err.println( at.getTranslateX() + "==32 ");
-         System.err.println( at.transform( new Point2D.Double( 100, 0 ), new Point2D.Double(0,0) ) );
-    }*/
     
     /**
      * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
@@ -309,11 +322,19 @@ public class SeriesRenderer extends Renderer implements Displayable {
         ymax= yAxis.getDataMaximum().doubleValue(yUnits);
         ymin= yAxis.getDataMinimum().doubleValue(yUnits);
         
-        ixmin= DataSetUtil.getPreviousColumn( dataSet, visibleRange.min() );
-        ixmax= DataSetUtil.getNextColumn( dataSet, visibleRange.max() );
+        Boolean xMono= (Boolean) dataSet.getProperty( DataSet.PROPERTY_X_MONOTONIC );
+        if ( xMono!=null && xMono.booleanValue() ) {
+            ixmin= DataSetUtil.getPreviousColumn( dataSet, visibleRange.min() );
+            ixmax= DataSetUtil.getNextColumn( dataSet, visibleRange.max() )+1;
+        } else {
+            ixmin= 0;
+            ixmax= dataSet.getXLength();
+        }
         
         GeneralPath newPath = new GeneralPath( GeneralPath.WIND_NON_ZERO, 110 * ( ixmax - ixmin ) / 100 );
         GeneralPath fillPath=  new GeneralPath( GeneralPath.WIND_NON_ZERO, 110 * ( ixmax - ixmin ) / 100 );
+        firstIndex= ixmin;
+        lastIndex= ixmax;
         
         double xSampleWidth;
         if (dataSet.getProperty("xTagWidth") != null) {
@@ -341,18 +362,26 @@ public class SeriesRenderer extends Renderer implements Displayable {
             reference=null;
         }
         
+        final boolean ylog= yAxis.isLog();
+        final boolean xlog= xAxis.isLog();
+        
         if ( reference==null ) {
-            reference= yUnits.createDatum( yAxis.isLog() ? 1.0 : 0.0 );
+            reference= yUnits.createDatum( ylog ? 1.0 : 0.0 );
         }
         
         float ref= (float) reference.doubleValue( yUnits );
         
         float x=Float.NaN, y=Float.NaN;
-        for (int index = ixmin; index <= ixmax; index++) {
-            x = (float)dataSet.getXTagDouble(index, xUnits);
-            y = (float)dataSet.getDouble(index, yUnits);
+        for (int index = ixmin; index < ixmax; index++) {
             
-            if ( yUnits.isFill( y ) || Double.isNaN(y) ) {
+            x = (float)dataSet.getXTagDouble(index, xUnits);
+            y= (float)dataSet.getDouble(index, yUnits);
+            final boolean yfill= ! yUnits.isValid(y);
+            
+            if ( ylog ) y= (float) Math.log(y);
+            if ( xlog ) x= (float) Math.log(x);
+            
+            if ( yfill ) {
                 skippedLast = true;
                 if ( Float.isNaN(x0)) {
                     fillPath.moveTo( x,ref );
