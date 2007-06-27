@@ -28,6 +28,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
@@ -299,7 +300,9 @@ public class DasProgressPanel implements DasProgressMonitor {
     
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
-        logger.finest( "progressPosition="+position );
+        if ( logger.isLoggable( Level.FINEST ) ) {
+            logger.finest( "progressPosition="+position );
+        }
         
         if (isCancelled) {
             // note that the monitored process should check isCancelled before setTaskProgress, but this is no longer required.
