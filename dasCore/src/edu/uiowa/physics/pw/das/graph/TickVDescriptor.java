@@ -218,7 +218,7 @@ public class TickVDescriptor {
         
         double logMin= DasMath.log10( min );
         double logMax= DasMath.log10( max );
-        int ntick0= (int)( Math.floor(logMax*0.999) - Math.ceil(logMin*1.001) + 1 );
+        int ntick0= (int)( Math.floor(logMax*1.001) - Math.ceil(logMin*0.999) + 1 );
 
         if ( ntick0 < 2 ) {
             return bestTickVLinear( minD, maxD, nTicksMin, nTicksMax );
