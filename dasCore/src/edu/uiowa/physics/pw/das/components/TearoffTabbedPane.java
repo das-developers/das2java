@@ -117,11 +117,13 @@ public class TearoffTabbedPane extends JTabbedPane {
             public void mousePressed( MouseEvent event ) {
                 if ( event.getButton()==MouseEvent.BUTTON3 ) {
                     selectedTab= TearoffTabbedPane.this.indexAtLocation( event.getX(), event.getY() );
-                    selectedComponent= TearoffTabbedPane.this.getComponentAt(selectedTab);
-                    if ( tabs.get(selectedComponent)!=null ) {
-                        tearOffMenu.show( TearoffTabbedPane.this, event.getX(), event.getY() );
-                    } else {
-                        dockMenu.show( TearoffTabbedPane.this, event.getX(), event.getY() );
+                    if ( selectedTab!=-1 ) {
+                        selectedComponent= TearoffTabbedPane.this.getComponentAt(selectedTab);
+                        if ( tabs.get(selectedComponent)!=null ) {
+                            tearOffMenu.show( TearoffTabbedPane.this, event.getX(), event.getY() );
+                        } else {
+                            dockMenu.show( TearoffTabbedPane.this, event.getX(), event.getY() );
+                        }
                     }
                 }
             }
@@ -195,7 +197,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         int index= td.index;
         super.removeTabAt(index);
         super.insertTab( td.title, td.icon, c, td.tip, index );
-       // setSelectedIndex( index );
+        // setSelectedIndex( index );
     }
     
     public void addTab(String title, Icon icon, Component component) {
