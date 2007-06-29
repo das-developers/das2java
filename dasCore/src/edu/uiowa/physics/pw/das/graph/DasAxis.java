@@ -352,50 +352,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             ((HorizontalRangeSelectorMouseModule)zoom).addDataRangeSelectionListener(this);
             mouseAdapter.addMouseModule(zoom);
             mouseAdapter.setPrimaryModule(zoom);
-            BoxSelectorMouseModule zoomOut= new BoxSelectorMouseModule( this, this, null, null, new BoxRenderer(this), "Zoom Out" );
-            zoomOut.addBoxSelectionListener( new BoxSelectionListener() {
-                public void BoxSelected( BoxSelectionEvent event ) {
-                    DatumRange outerRange= getDatumRange();
-                    DatumRange range= event.getXRange();
-                    range= getTickV().enclosingRange( range, true );
-                    DatumRange newRange;
-                    if ( isLog() ) {
-                        newRange= DatumRangeUtil.rescaleLog( outerRange,
-                                DatumRangeUtil.normalizeLog( range, outerRange.min() ),
-                                DatumRangeUtil.normalizeLog( range, outerRange.max() ) );
-                    } else {
-                        newRange= DatumRangeUtil.rescale( outerRange, 
-                                DatumRangeUtil.normalize( range, outerRange.min() ), 
-                                DatumRangeUtil.normalize( range, outerRange.max() ) );
-                    }
-                    setDatumRange( newRange );
-                }
-            } );
-            mouseAdapter.addMouseModule(zoomOut);
+            MouseModule zoomOut= new ZoomOutMouseModule( this );
+            mouseAdapter.addMouseModule( zoomOut );
             mouseAdapter.setSecondaryModule(zoomOut);
         } else {
             zoom= new VerticalRangeSelectorMouseModule(this,this);
             ((VerticalRangeSelectorMouseModule)zoom).addDataRangeSelectionListener(this);
             mouseAdapter.addMouseModule(zoom);
             mouseAdapter.setPrimaryModule(zoom);
-            BoxSelectorMouseModule zoomOut= new BoxSelectorMouseModule( this, null, this, null, new BoxRenderer(this), "Zoom Out" );
-            zoomOut.addBoxSelectionListener( new BoxSelectionListener() {
-                public void BoxSelected( BoxSelectionEvent event ) {
-                    System.out.println(event.getYRange());
-                    DatumRange outerRange= getDatumRange();
-                    DatumRange range= event.getYRange();
-                    DatumRange newRange;
-                    if ( isLog() ) {
-                        newRange= DatumRangeUtil.rescaleLog( outerRange,
-                                DatumRangeUtil.normalizeLog( range, outerRange.min() ),
-                                DatumRangeUtil.normalizeLog( range, outerRange.max() ) );
-                    } else {
-                        newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
-                    }
-                    range= getTickV().enclosingRange( range, true );
-                    setDatumRange( newRange );
-                }
-            } );
+            MouseModule zoomOut=  new ZoomOutMouseModule( this );
             mouseAdapter.addMouseModule(zoomOut);
             mouseAdapter.setSecondaryModule(zoomOut);
         }
