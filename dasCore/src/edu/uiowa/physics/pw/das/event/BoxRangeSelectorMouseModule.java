@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
@@ -73,7 +74,7 @@ public class BoxRangeSelectorMouseModule extends MouseModule {
             Datum xMax = xAxis.invTransform(e.getXMaximum());
             Datum yMin = yAxis.invTransform(e.getYMinimum());
             Datum yMax = yAxis.invTransform(e.getYMaximum());
-            BoxSelectionEvent evt = new BoxSelectionEvent(this, xMin, xMax, yMin, yMax);
+            BoxSelectionEvent evt = new BoxSelectionEvent(this, new DatumRange( xMin, xMax ), new DatumRange( yMin, yMax) );
             if (consumer != null) {
                 evt.setDataSet(consumer.getConsumedDataSet());
             }
