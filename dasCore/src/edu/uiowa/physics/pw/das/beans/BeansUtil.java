@@ -49,6 +49,7 @@ public class BeansUtil {
         registerEditor(Boolean.TYPE, BooleanEditor.class);
         registerEditor(Boolean.class, BooleanEditor.class);
         registerEditor(PsymConnector.class, EnumerationEditor.class);
+        registerEditor(Psym.class, EnumerationEditor.class);
         
         // registerEditor(Rectangle.class, RectangleEditor.class);
         //registerEditor(DasServer.class, DasServerEditor.class);
