@@ -221,7 +221,20 @@ public class TickVDescriptor {
         int ntick0= (int)( Math.floor(logMax*1.001) - Math.ceil(logMin*0.999) + 1 );
 
         if ( ntick0 < 2 ) {
-            return bestTickVLinear( minD, maxD, nTicksMin, nTicksMax );
+            TickVDescriptor result= bestTickVLinear( minD, maxD, nTicksMin, nTicksMax );
+            int ii= 0;
+
+            DatumVector majortics= result.getMajorTicks();
+            while ( ii<majortics.getLength() && DatumUtil.magnitude( majortics.get( ii ) ) <= 0 ) ii++;
+            majortics= majortics.getSubVector( ii, majortics.getLength() );
+
+            DatumVector minortics= result.getMinorTicks();
+            while ( ii<minortics.getLength() && DatumUtil.magnitude( minortics.get( ii ) ) <= 0 ) ii++;
+            minortics= minortics.getSubVector( ii, minortics.getLength() );
+            
+            result= TickVDescriptor.newTickVDescriptor( majortics, minortics );
+            return result;
+            
         }
 
         if ( ntick0 > nTicksMax) {
