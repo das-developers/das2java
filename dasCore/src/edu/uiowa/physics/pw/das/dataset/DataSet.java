@@ -95,6 +95,8 @@ public interface DataSet {
     
     final static String PROPERTY_Z_LABEL="zLabel";
     
+    final static String PROPERTY_X_MONOTONIC="xMonotonic";
+    
     /** Returns the property value associated with the string <code>name</code>
      * @param name the name of the property requested
      * @return the property value for <code>name</code> or null
