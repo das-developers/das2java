@@ -364,7 +364,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                                 DatumRangeUtil.normalizeLog( range, outerRange.min() ),
                                 DatumRangeUtil.normalizeLog( range, outerRange.max() ) );
                     } else {
-                        newRange= outerRange.rescale( range.normalize( outerRange.min() ), range.normalize( outerRange.max() ) );
+                        newRange= DatumRangeUtil.rescale( outerRange, 
+                                DatumRangeUtil.normalize( range, outerRange.min() ), 
+                                DatumRangeUtil.normalize( range, outerRange.max() ) );
                     }
                     setDatumRange( newRange );
                 }
