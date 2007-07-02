@@ -38,7 +38,7 @@ public class GraphUtil {
         try {
             Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             document.appendChild(canvas.getDOMElement(document));
-            StringWriter writer = new StringWriter(); 
+            StringWriter writer = new StringWriter();
             OutputFormat format = new OutputFormat(Method.XML, "UTF-8", true);
             XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
             serializer.serialize(document);
@@ -74,7 +74,7 @@ public class GraphUtil {
         ymax= yAxis.getDataMaximum().doubleValue(yUnits);
         ymin= yAxis.getDataMinimum().doubleValue(yUnits);
         
-        /* need consider how to handle clipping.  Presumably java does this efficiently, 
+        /* need consider how to handle clipping.  Presumably java does this efficiently,
          * so there is no longer a need to worry about this.
          */
         
@@ -92,8 +92,7 @@ public class GraphUtil {
             if (xSampleWidthString != null) {
                 double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
                 xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
-            }
-            else {
+            } else {
                 xSampleWidth = 1e31;
             }
         }
@@ -103,7 +102,7 @@ public class GraphUtil {
         double y0 = -Double.MAX_VALUE;
         double i0 = -Double.MAX_VALUE;
         double j0 = -Double.MAX_VALUE;
-        boolean skippedLast = true;        
+        boolean skippedLast = true;
         int n= xds.getXLength();
         for (int index = 0; index < n; index++) {
             double t= xds.getXTagDouble(index, xUnits);
@@ -113,35 +112,32 @@ public class GraphUtil {
             double j = yAxis.transform(y, yUnits);
             if ( yUnits.isFill(y) || Double.isNaN(y)) {
                 skippedLast = true;
-            }
-            else if (skippedLast || (t - t0) > xSampleWidth) {
+            } else if (skippedLast || (t - t0) > xSampleWidth) {
                 newPath.moveTo((float)i, (float)j);
                 skippedLast = false;
-            }
-            else {
+            } else {
                 if (histogram) {
                     double i1 = (i0 + i)/2;
                     newPath.lineTo((float)i1, (float)j0);
                     newPath.lineTo((float)i1, (float)j);
                     newPath.lineTo((float)i, (float)j);
-                }
-                else {
+                } else {
                     newPath.lineTo((float)i, (float)j);
                 }
                 skippedLast = false;
             }
             t0= t;
             x0= x;
-            y0= y;            
+            y0= y;
             i0= i;
             j0= j;
         }
         return newPath;
-
+        
     }
     
     /**
-     * calculates the AffineTransform between two sets of x and y axes, if possible.  
+     * calculates the AffineTransform between two sets of x and y axes, if possible.
      * @param xaxis0 the original reference frame x axis
      * @param yaxis0 the original reference frame y axis
      * @param xaxis1 the new reference frame x axis
@@ -158,11 +154,11 @@ public class GraphUtil {
         
         double scalex= ( dmin0 - dmax0 ) / ( dmin1 - dmax1 );
         double transx= -1* dmin1 * scalex + dmin0;
-                
+        
         at.translate( transx, 0 );
         at.scale( scalex, 1. );
         
-        if ( at.getDeterminant() == 0.000 ) {            
+        if ( at.getDeterminant() == 0.000 ) {
             return null;
         }
         
@@ -257,7 +253,7 @@ public class GraphUtil {
         }
         return result;
     }
-
+    
     public static Renderer guessRenderer( DataSet ds ) {
         Renderer rend=null;
         if ( ds instanceof VectorDataSet ) {
@@ -286,7 +282,7 @@ public class GraphUtil {
         plot.addRenderer( guessRenderer(ds) );
         return plot;
     }
-     
+    
     public static DasPlot visualize( DataSet ds ) {
         
         JFrame jframe= new JFrame("DataSetUtil.visualize");
@@ -323,5 +319,48 @@ public class GraphUtil {
         jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         return result;
     }
-
+    
+    /**
+     * Returns the input GeneralPath filled with new points which will be rendered identically to the input path,
+     * but contains a minimal number of points.  Successive points occupying the same pixel are
+     * culled.
+     * @return a new GeneralPath which will be rendered identically to the input path,
+     * but contains a minimal number of points.
+     * @param it A path iterator with minute details that will be lost when rendering.
+     * @param result A GeneralPath to put the result into.
+     */
+    public static GeneralPath reducePath( PathIterator it, GeneralPath result ) {
+        
+        float[] p= new float[6];
+        
+        float x0=Float.MAX_VALUE;
+        float y0=Float.MAX_VALUE;
+        int type0=-999;
+        
+        float xres= 1;
+        float yres= 1;
+        
+        String[] types= new String[] { "M", "L", "QUAD", "CUBIC", "CLOSE"  };
+        
+        while ( ! it.isDone() ) {
+            int type= it.currentSegment(p);
+            it.next();
+            float dx=  p[0] - x0;
+            float dy=  p[1] - y0;
+            //System.err.println( "type: "+types[type]+"   "+String.format( "[ %f %f ] ", p[0], p[1] ) );
+            if ( ( type==PathIterator.SEG_MOVETO || type==type0 ) &&  Math.abs(dx)<xres && Math.abs(dy)<yres ) continue;
+            if (  Math.abs(dx)>=xres || Math.abs(dy)>=yres ) {
+                x0= p[0];
+                y0= p[1];
+                type0= type;
+            }
+            switch ( type ) {
+                case PathIterator.SEG_LINETO: result.lineTo( x0, y0 ); break;
+                case PathIterator.SEG_MOVETO: result.moveTo( x0, y0 ); break;
+                default: throw new IllegalArgumentException("not supported");
+            }
+            
+        }
+        return result;
+    }
 }
