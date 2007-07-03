@@ -225,11 +225,13 @@ public class TickVDescriptor {
             int ii= 0;
 
             DatumVector majortics= result.getMajorTicks();
-            while ( ii<majortics.getLength() && DatumUtil.magnitude( majortics.get( ii ) ) <= 0 ) ii++;
+            Units u= majortics.getUnits();
+            
+            while ( ii<majortics.getLength() && majortics.get( ii ).doubleValue(u) <= 0 ) ii++;
             majortics= majortics.getSubVector( ii, majortics.getLength() );
 
             DatumVector minortics= result.getMinorTicks();
-            while ( ii<minortics.getLength() && DatumUtil.magnitude( minortics.get( ii ) ) <= 0 ) ii++;
+            while ( ii<minortics.getLength() && minortics.get( ii ).doubleValue(u) <= 0 ) ii++;
             minortics= minortics.getSubVector( ii, minortics.getLength() );
             
             result= TickVDescriptor.newTickVDescriptor( majortics, minortics );
