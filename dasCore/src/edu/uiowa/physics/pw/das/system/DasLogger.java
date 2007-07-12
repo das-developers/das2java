@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.system;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.*;
 
 /**
@@ -38,15 +39,28 @@ public class DasLogger {
             }
             if ( logConfigURL==null ) {
                 System.err.println("unable to locate logging properties file logging.properties, using defaults");
-            } else {                
+            } else {
+                //dumpUrl(logConfigURL);
                 InputStream in=  logConfigURL.openStream();
                 LogManager.getLogManager().readConfiguration( in );
                 in.close();
                 System.err.println( "read log configuration from "+logConfigURL );
-            }            
+                //printStatus();
+            }
         } catch ( MalformedURLException e ) {
             throw new RuntimeException(e); // this shouldn't happen
         }
+    }
+    
+    private static void dumpUrl( URL url ) throws IOException {
+        BufferedReader reader= new BufferedReader( new InputStreamReader( url.openStream() ) );
+        String s= reader.readLine();
+        while( s!=null ) {
+            System.out.println(s);
+            s= reader.readLine();
+        }
+        reader.close();
+        
     }
     
     public static void printStatus() {
@@ -60,7 +74,7 @@ public class DasLogger {
             }
             System.err.println( loggers[i]+" logging at "+l );
         }
-    }    
+    }
     
     static {
         try {
@@ -71,24 +85,29 @@ public class DasLogger {
     }
     
     /**
-     * messages having to do with the application-specific Das 2 Application 
+     * messages having to do with the application-specific Das 2 Application
      */
     public static final LoggerId APPLICATION_LOG= new LoggerId( "" );
     
-    /** 
-     * system messages such as RequestProcessor activity 
+    /**
+     * system messages such as RequestProcessor activity
      */
     public static final LoggerId SYSTEM_LOG= new LoggerId( "das2.system" );
     
     /**
-     * events, gestures, user feedback 
+     * events, gestures, user feedback
      */
     public static final LoggerId GUI_LOG= new LoggerId( "das2.gui" );
     
     /**
-     * renders, drawing 
+     * renders, drawing
      */
     public static final LoggerId GRAPHICS_LOG= new LoggerId( "das2.graphics" );
+    
+    /**
+     * renderer's logger
+     */
+    public static final LoggerId RENDERER_LOG= new LoggerId( "das2.graphics" );
     
     /**
      * rebinning  and dataset operators
@@ -96,20 +115,19 @@ public class DasLogger {
     public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId( "das2.dataOperations" );
     
     /**
-     * internet transactions, file I/O 
+     * internet transactions, file I/O
      */
     public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( "das2.dataTransfer" );
-
+    
     /**
-     * virtual file system activities 
+     * virtual file system activities
      */
     public static final LoggerId FILESYSTEM_LOG= new LoggerId( "das2.filesystem" );
-
+    
     /**
-     * das2 application description files 
+     * das2 application description files
      */
     public static final LoggerId DASML_LOG= new LoggerId( "das2.dasml" );
-
     
     /**
      * logger for messages to end users
@@ -119,10 +137,10 @@ public class DasLogger {
     }
     
     public static Logger getLogger( LoggerId loggerId ) {
-        return loggerId.getLogger();        
+        return loggerId.getLogger();
     }
     
-    public static Logger getLogger( LoggerId loggerId, String identifier ) {        
+    public static Logger getLogger( LoggerId loggerId, String identifier ) {
         String id= loggerId.toString()+"."+identifier;
         return Logger.getLogger(id);
     }
