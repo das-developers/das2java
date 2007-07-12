@@ -1061,6 +1061,37 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return ( getDataMaximum().doubleValue(units) - getDataMinimum().doubleValue(units) ) / getDLength();
     }
     
+    private String errorMessage;
+    
+    /**
+     * checks the validity of the state, setting variable errorMessage to non-null if there is a problem.
+     */
+    private void checkState() {
+        double dmin=  getDataMinimum(dataRange.getUnits());
+        double dmax= getDataMaximum(dataRange.getUnits());
+        
+        String em="";
+        
+        if ( Double.isNaN(dmin) ) em+="dmin is NaN, ";
+        if ( Double.isNaN(dmax) ) em+="dmax is NaN, ";
+        
+        if ( Double.isInfinite(dmin) ) em+="dmin is infinite, ";
+        if ( Double.isInfinite(dmax) ) em+="dmax is infinite, ";
+        
+        if ( dmin>=dmax ) {
+            em+= "min => max, ";
+        }
+        if ( dataRange.isLog() && dmin<=0 ) {
+            em+= "min<= 0 and log, ";
+        }
+        
+        if (em.length()==0 ) {
+            this.errorMessage= null;
+        } else {
+            this.errorMessage= em;
+        }
+    }
+    
     /** paints the axis component.  The tickV's and bounds should be calculated at this point */
     protected void paintComponent(Graphics graphics) {
         logger.info("enter DasAxis.paintComponent");
@@ -2145,7 +2176,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     protected void updateImmediately() {
         super.updateImmediately();
-        logger.finer(""+getDatumRange());
+        logger.finer(""+getDatumRange()+" "+isLog());
         updateTickV();
     }
     
