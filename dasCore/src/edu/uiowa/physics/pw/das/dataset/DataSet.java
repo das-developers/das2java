@@ -95,6 +95,10 @@ public interface DataSet {
     
     final static String PROPERTY_Z_LABEL="zLabel";
     
+    /**
+     * Boolean assuring that the dataset is monotonic in X.  This allows 
+     * some optimizations to be made.
+     */
     final static String PROPERTY_X_MONOTONIC="xMonotonic";
     
     /** Returns the property value associated with the string <code>name</code>
