@@ -193,7 +193,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         logger.finer("entering SpectrogramRenderer.render");
         Graphics2D g2= (Graphics2D)g.create();
         

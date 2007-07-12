@@ -15,13 +15,11 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
-import java.util.logging.Logger;
 
 /**
  *
@@ -65,7 +63,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
     
     
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         renderGhostly( g1, xAxis, yAxis );
     }
     

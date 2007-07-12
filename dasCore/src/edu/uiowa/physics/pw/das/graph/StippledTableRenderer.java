@@ -86,7 +86,7 @@ public class StippledTableRenderer extends Renderer {
         this.parent = parent;
     }
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         Graphics2D g2= (Graphics2D)g.create();
         
         if (getDataSet()==null && lastException!=null ) {

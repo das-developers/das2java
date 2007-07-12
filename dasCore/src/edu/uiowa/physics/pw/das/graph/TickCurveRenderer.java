@@ -208,7 +208,7 @@ public class TickCurveRenderer extends Renderer {
     }
 
     // TODO: it's likely this fails to meet the contract of animation interactive
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         
         if ( ds==null ) {
             return;

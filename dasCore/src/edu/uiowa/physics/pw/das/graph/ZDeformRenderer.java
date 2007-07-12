@@ -8,6 +8,7 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -28,7 +29,7 @@ public class ZDeformRenderer extends Renderer {
     protected void installRenderer() {
     }
     
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         Graphics2D g= (Graphics2D) g1;
         TableDataSet tds= (TableDataSet) getDataSet();
         double zmax= TableUtil.tableMax(tds,tds.getZUnits());

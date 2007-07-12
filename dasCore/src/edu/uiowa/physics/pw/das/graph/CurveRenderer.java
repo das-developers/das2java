@@ -71,7 +71,7 @@ public class CurveRenderer extends Renderer {
     protected void installRenderer() {
     }
     
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         long timer0= System.currentTimeMillis();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();

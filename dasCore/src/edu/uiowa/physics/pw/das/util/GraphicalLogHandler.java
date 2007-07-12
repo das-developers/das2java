@@ -279,7 +279,7 @@ public class GraphicalLogHandler extends Handler {
             update();
         }
         
-        public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis) {
+        public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
             
             Graphics2D g= (Graphics2D)g1;
             g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );

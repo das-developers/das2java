@@ -97,7 +97,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         //}
     }
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         renderCount++;
        // reportCount();
         

@@ -117,7 +117,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     }
     
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         
         Graphics2D g2= (Graphics2D)g.create();
         

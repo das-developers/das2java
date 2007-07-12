@@ -24,16 +24,16 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.system.*;
+import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.geom.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.w3c.dom.*;
 
@@ -65,6 +65,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * plot containing this renderer
      */
     DasPlot parent;
+    DasPlot2 parent2;
     
     /**
      * the responsibility of keeping a relevant dataset loaded.  Can be null
@@ -79,7 +80,16 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      */
     protected Exception lastException;
     
-    protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
+    /**
+     * This is the exception to be renderered.  This is so if an exception occurs during drawing, then this will be drawn instead.
+     */
+    protected Exception renderException;
+    
+    protected Logger logger= DasLogger.getLogger( DasLogger.RENDERER_LOG );
+    {
+        logger.setLevel( Level.ALL );
+    }
+            
     
     protected Renderer( DataSetDescriptor dsd ) {
         this.loader= new XAxisDataLoader( this, dsd );
@@ -156,6 +166,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     
     public void setLastException( Exception e ) {
         this.lastException= e;
+        this.renderException= lastException;
     }
     
     public Exception getLastException() {
@@ -165,7 +176,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public void setDataSet(DataSet ds) {
         logger.finer("Renderer.setDataSet: "+ds);
         DataSet oldDs= this.ds;
-       
+        
         if ( oldDs!=ds ) {
             this.ds= ds;
             refresh();
@@ -177,6 +188,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         logger.finer("Renderer.setException: "+e);
         Exception oldException= this.lastException;
         this.lastException= e;
+        this.renderException= lastException;
         if ( parent!=null && oldException!=e ) {
             //parent.markDirty();
             //parent.update();
@@ -228,7 +240,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * has changed.  This operation should occur with an animation-interactive
      * time scale, and an image should be cached when this is not possible.
      */
-    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis);
+    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon);
     
     protected void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
         
@@ -247,7 +259,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         } else {
             s= e.getMessage();
             message= "";
-            if ( s == null || s.equals("") ) {
+            if ( s == null || s.length() < 10 ) {
                 s= e.toString();
             }
         }
@@ -258,7 +270,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         
         GrannyTextRenderer gtr= new GrannyTextRenderer();
         gtr.setString( parent, s );
-        gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
+        gtr.setAlignment(GrannyTextRenderer.LEFT_ALIGNMENT);
         
         int width= (int)gtr.getWidth();
         
@@ -319,7 +331,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         // we might as well re-render using the dataset we have.
         refresh();
     }
-
+    
     /**
      * recalculate the plot image and repaint.  The dataset or exception have
      * been updated, or the axes have changed, so we need to perform updatePlotImage
@@ -337,7 +349,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             logger.fine("parent not displayable");
             return;
         }
-
+        
         Runnable run= new Runnable() {
             public void run() {
                 logger.fine("update plot image");
@@ -346,13 +358,17 @@ public abstract class Renderer implements DataSetConsumer, Editable {
                     updatePlotImage( parent.getXAxis(), parent.getYAxis(), progressPanel );
                     xmemento= parent.getXAxis().getMemento();
                     ymemento= parent.getYAxis().getMemento();
-
+                    renderException= null;
                 } catch ( DasException de ) {
+                    // TODO: there's a problem here, that the Renderer can set its own exeception and dataset.  This needs to be addressed, or handled as an invalid state.
                     logger.warning("exception: "+de);
                     ds = null;
-                    lastException = de;
+                    renderException = de;
                 } catch (RuntimeException re) {
-                    ds = null;
+                    logger.warning("exception: "+re);
+                    renderException= re;
+                    parent.invalidateCacheImage();
+                    parent.repaint();
                     throw re;
                 } finally {
                     // this code used to call finished() on the progressPanel

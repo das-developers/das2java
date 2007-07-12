@@ -473,10 +473,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                         if ( !getCanvas().isPrintingThread() ) {
                             WritableRaster raster= cacheImage.copyData( null );
                             before=  new BufferedImage( cacheImage.getColorModel(), raster, cacheImage.isAlphaPremultiplied(), null );
-                            rend.render(plotGraphics,xAxis,yAxis);
+                            rend.render(plotGraphics, xAxis, yAxis, DasProgressMonitor.NULL );
                             compareImage(i, before);
                         }  else {                      
-                            rend.render(plotGraphics,xAxis,yAxis);
+                            rend.render( plotGraphics, xAxis, yAxis, DasProgressMonitor.NULL );
                         }                        
                         noneActive= false;
                     }
