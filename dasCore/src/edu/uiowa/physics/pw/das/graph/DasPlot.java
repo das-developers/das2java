@@ -452,6 +452,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     cacheImage= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
                     rendererMap= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
                     plotGraphics= (Graphics2D)cacheImage.getGraphics();
+                    plotGraphics.setBackground( getBackground() );
                     plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
                     logger.finest( " rebuilding cacheImage" );
                 }
