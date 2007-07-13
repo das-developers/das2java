@@ -813,6 +813,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         parent.getColumn().setDPosition(dxLeft,dxRight);
         parent.getRow().setDPosition(dyTop,dyBottom);
         
+        xOffset+= dx;
+        yOffset+= dy;
+        
         parent.resize();
         getGlassPane().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
@@ -969,6 +972,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         int dx= moveEnd.x - mouseMode.moveStart.x;
         int dy= moveEnd.y - mouseMode.moveStart.y;
         
+        this.xOffset+= dx;
+        this.yOffset+= dy;
+        
         int min= parent.getColumn().getDMinimum();
         int max= parent.getColumn().getDMaximum();
         parent.getColumn().setDPosition( min+dx, max+dx );
@@ -976,6 +982,5 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         min= parent.getRow().getDMinimum();
         max= parent.getRow().getDMaximum();
         parent.getRow().setDPosition( min+dy, max+dy );
-        
     }
 }
