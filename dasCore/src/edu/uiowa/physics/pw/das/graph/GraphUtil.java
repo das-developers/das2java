@@ -9,10 +9,11 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.dasml.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import javax.swing.*;
 import javax.xml.parsers.*;
 import org.apache.xml.serialize.*;
@@ -362,5 +363,21 @@ public class GraphUtil {
             
         }
         return result;
+    }
+    
+    public static String getATScaleTranslateString(AffineTransform at) {
+        String atDesc;
+        NumberFormat nf= new DecimalFormat( "0.00" );
+        
+        if ( at==null ) {
+            return "null";
+        } else if ( !at.isIdentity() ) {
+            atDesc= "scaleX:"+nf.format(at.getScaleX()) +" translateX:"+ nf.format(at.getTranslateX());
+            atDesc+= "!c"+ "scaleY:"+nf.format(at.getScaleY()) +" translateY:"+ nf.format(at.getTranslateY());
+            return atDesc;
+        } else {
+            return "identity";
+        }
+        
     }
 }
