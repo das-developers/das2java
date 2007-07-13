@@ -1548,7 +1548,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     this.axis==m.axis );
         }
         public String toString() {
-            return ( log ? "log " : "" ) + range.toString()+" "+(dmax-dmin)+" pixels";
+            return ( log ? "log " : "" ) + range.toString()+" "+(dmax-dmin)+" pixels @ "+dmin;
         }
     }
     
@@ -1580,7 +1580,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     /**
-     * return the AffineTransform, or null.  The transform will be applyed after the input
+     * return the AffineTransform, or null.  The transform will be applied after the input
      * transform is applied.  So to just get the transform, pass in identity.
      */
     public AffineTransform getAffineTransform( Memento memento, AffineTransform at ) {
@@ -1604,11 +1604,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             at.translate( 0., transy );
             at.scale( 1., scaley );
             
-            scaley= ( dmin1 - dmax1 ) / ( memento.dmin - memento.dmax );
-            transy= -1* memento.dmin * scaley + dmin1;
+            double swingscaley= ( dmin1 - dmax1 ) / ( memento.dmin - memento.dmax );
+            double swingtransy= -1* memento.dmin * swingscaley + dmin1;
             
-            at.translate( 0., transy );
-            at.scale( 1., scaley );
+            //at.translate( 0., -swingtransy );
+            //at.scale( 1., swingscaley );
+            
+            //if ( dmin1!=memento.dmin ) {
+           //     System.err.println( ""+dmin1 +"  " + memento.dmin + ( dmin1!=memento.dmin )  );
+            //}
             
         } else {
             double dmin1= getColumn().getDMinimum();
@@ -1619,11 +1623,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             at.translate( transx, 0 );
             at.scale( scalex, 1. );
             
-            scalex= ( dmin1 - dmax1 ) / ( memento.dmin - memento.dmax );
-            transx= -1* memento.dmin * scalex + dmin1;
+            //double swingscalex= ( dmin1 - dmax1 ) / ( memento.dmin - memento.dmax );
+            //double swingtransx= -1* memento.dmin * swingscalex + dmin1;
             
-            at.translate( transx, 0 );
-            at.scale( scalex, 1. );
+            //at.translate( -swingtransx, 0 );
+            //at.scale( swingscalex, 1. );
+            
+            //if ( dmin1!=memento.dmin ) {
+            //    System.err.println( ""+dmin1 +"  " + memento.dmin + ( dmin1!=memento.dmin )  );
+            //}
             
         }
         
