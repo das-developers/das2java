@@ -65,7 +65,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * plot containing this renderer
      */
     DasPlot parent;
-    DasPlot2 parent2;
+    //DasPlot2 parent2;
     
     /**
      * the responsibility of keeping a relevant dataset loaded.  Can be null
