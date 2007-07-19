@@ -43,7 +43,8 @@ public class Psym implements Enumeration, Displayable {
         "dots",      //1
         "circles",   //2
         "triangles", //3
-        "cross"      //4        
+        "cross",      //4        
+                
     };
     
     public static final Psym NONE = new Psym(0);
@@ -58,7 +59,6 @@ public class Psym implements Enumeration, Displayable {
     
     private int nameIndex;
     
-    
     private Line2D line = new Line2D.Double();
     private Ellipse2D ellipse = new Ellipse2D.Double();
     
@@ -68,12 +68,13 @@ public class Psym implements Enumeration, Displayable {
         this.nameIndex = nameIndex;
         this.line= new Line2D.Double();
         Image i= new BufferedImage(10,10,BufferedImage.TYPE_INT_RGB);
-        Graphics2D g= ( Graphics2D) i.getGraphics();        
+        Graphics2D g= ( Graphics2D) i.getGraphics();
+        g.setBackground( Color.white );
         g.setRenderingHints(DasProperties.getRenderingHints());
-        g.setColor( Color.lightGray );
+        g.setColor( Color.white );
         g.fillRect(0,0, 10,10);
         g.setColor( Color.black );
-        draw(g,5,5,2.f);  
+        draw(g,5,5,2.f);
         
         this.imageIcon= new ImageIcon(i);
     }
