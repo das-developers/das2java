@@ -226,6 +226,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         g2.dispose();
     }
     
+    
     int count = 0;
     
     private boolean sliceRebinnedData= true;
@@ -550,6 +551,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public void setPrint300dpi(boolean print300dpi) {
         this.print300dpi = print300dpi;
+    }
+
+    public boolean acceptContext(int x, int y) {
+        return true;
     }
     
 }
