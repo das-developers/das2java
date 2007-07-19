@@ -103,12 +103,13 @@ public class DataSetUtil {
     public static Datum guessXTagWidth( DataSet table ) {
         if ( table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH)!=null ) return (Datum)table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
         if ( table.getXLength()>2 ) {
-            Datum min= table.getXTagDatum(1).subtract( table.getXTagDatum(0) );
+            Units units= table.getXUnits();
+            double min= table.getXTagDouble(1,units) - table.getXTagDouble( 0,units) ;
             for ( int i=2; i<table.getXLength(); i++ ) {
-                Datum min0= table.getXTagDatum(i).subtract( table.getXTagDatum(i-1) );
-                if ( min0.lt(min) ) min= min0;
+                double min0= table.getXTagDouble(i,units) - table.getXTagDouble( i-1,units) ;
+                if ( min0 < min ) min= min0;
             }
-            return min;
+            return units.createDatum( min );
         } else {
             // We're in trouble now!
             return table.getXUnits().getOffsetUnits().createDatum(0);
