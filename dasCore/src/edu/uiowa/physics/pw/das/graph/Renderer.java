@@ -238,9 +238,17 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     
     /** Render is called whenever the image needs to be refreshed or the content
      * has changed.  This operation should occur with an animation-interactive
-     * time scale, and an image should be cached when this is not possible.
+     * time scale, and an image should be cached when this is not possible.  The graphics
+     * object will have its origin at the upper-left corner of the screen.
      */
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon);
+    
+    /**
+     * x,y in the canvas coordinate system.
+     */
+    public boolean acceptContext( int x, int y ) {
+        return false;
+    }
     
     protected void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
         
