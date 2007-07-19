@@ -60,7 +60,7 @@ public class BeansUtil {
      * There's an annoyance with PropertyEditorManager.findEditor, in that it
      * always goes looking for the editor with the classLoader.  This is annoying
      * for applets, because this causes an applet codebase hit each time its called,
-     * even if it's already been called for the given class.  This is problemmatic
+     * even if it's already been called for the given class.  This is problematic
      * with the propertyEditor, which calls this for each property, making it
      * sub-interactive at best.  Here we keep track of the results, either in a
      * list of nullPropertyEditors or by registering the editor we just found.
