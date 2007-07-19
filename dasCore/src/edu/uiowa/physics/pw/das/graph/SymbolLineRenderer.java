@@ -97,6 +97,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         //}
     }
     
+    
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         renderCount++;
        // reportCount();
@@ -479,5 +480,9 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         g.setStroke(stroke0);
         psym.draw( g, 7, 5, 3.f );
         return new ImageIcon(i);
+    }
+
+    public boolean acceptContext(int x, int y) {
+        return path.intersects( x-5, y-5, 10, 10 );
     }
 }
