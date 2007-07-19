@@ -142,7 +142,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             srcMin = Math.log(srcMin);
             srcMax = Math.log(srcMax);
         }
-        at = getAffineTransform(dstMin, dstMax, srcMin, srcMax, 1, at);        
+        at = getAffineTransform(dstMin, dstMax, srcMin, srcMax, 1, at);
         return at;
     }
     
@@ -198,36 +198,15 @@ public class SeriesRenderer extends Renderer implements Displayable {
         edu.uiowa.physics.pw.das.datum.Units xUnits = xAxis.getUnits();
         edu.uiowa.physics.pw.das.datum.Units yUnits = yAxis.getUnits();
         
-        AffineTransform at= getMyAffineTransform( xAxis, yAxis );
-        
-        if (this.fillToReference && fillToRefPath != null) {
-            GeneralPath pixelFillPath;
-            if (simplifyPaths) {
-                pixelFillPath = GraphUtil.reducePath(fillToRefPath.getPathIterator(at), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
-            } else {
-                pixelFillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 200 * (lastIndex - firstIndex) / 100);
-                pixelFillPath.append(fillToRefPath, false);
-                pixelFillPath.transform(at);
-            }
-            
+        if (this.fillToReference && fillToRefPath != null) {            
             graphics.setColor(fillColor);
-            graphics.fill(pixelFillPath);
+            graphics.fill(fillToRefPath);
         }
         
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
-        
-        GeneralPath pixelPath;
-        // draw the stored path that we calculated in updatePlotImage
-        if (simplifyPaths && colorByDataSet == null) {
-            pixelPath = GraphUtil.reducePath(path.getPathIterator(at), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
-        } else {
-            pixelPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100); // DANGER--should be exactly the same length as path to avoid copies.
-            pixelPath.append(path, false);
-            pixelPath.transform(at);
-        }
-        
-        psymConnector.draw(graphics, pixelPath, lineWidth);
+                
+        psymConnector.draw(graphics, path, lineWidth);
         
         double xmin;
         double xmax;
@@ -263,7 +242,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 zunits = colorBar.getUnits();
             }
             
-            PathIterator it = pixelPath.getPathIterator(null);
+            PathIterator it = path.getPathIterator(null);
             
             double[] coords = new double[6];
             
@@ -287,7 +266,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 while (!it.isDone()) {
                     int type = it.currentSegment(coords);
                     if (i == colorByDataSet.getXLength()) {
-                        System.err.println("here");
+                        //System.err.println("here");
                     }
                     g.setColor(new Color(colorBar.rgbTransform(colorByDataSet.getDouble(i, zunits), zunits)));
                     if (type == PathIterator.SEG_LINETO) {
@@ -362,7 +341,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      *@param axis 0=xaxis, 1=yaxis.
      *@param at if non-null, then append the AffineTransform onto at.
      */
-    public static AffineTransform getAffineTransform(double dstMin, double dstMax, double srcMin, double srcMax, int axis, AffineTransform at) {
+    private static AffineTransform getAffineTransform(double dstMin, double dstMax, double srcMin, double srcMax, int axis, AffineTransform at) {
         
         if (at == null) {
             at = new AffineTransform();
@@ -566,6 +545,34 @@ public class SeriesRenderer extends Renderer implements Displayable {
         path = newPath;
         this.fillToRefPath = fillPath;
         
+        // now do the AffineTransform in one sweep.
+        AffineTransform at= getMyAffineTransform( xAxis, yAxis );
+        
+        if (this.fillToReference && fillToRefPath != null) {
+            GeneralPath pixelFillPath;
+            if (simplifyPaths) {
+                pixelFillPath = GraphUtil.reducePath(fillToRefPath.getPathIterator(at), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+            } else {
+                pixelFillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 200 * (lastIndex - firstIndex) / 100);
+                pixelFillPath.append(fillToRefPath, false);
+                pixelFillPath.transform(at);
+            }
+            
+            fillToRefPath= pixelFillPath;
+        }
+        
+        GeneralPath pixelPath;
+        // draw the stored path that we calculated in updatePlotImage
+        if (simplifyPaths && colorByDataSet == null) {
+            pixelPath = GraphUtil.reducePath(path.getPathIterator(at), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+        } else {
+            pixelPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100); // DANGER--should be exactly the same length as path to avoid copies.
+            pixelPath.append(path, false);
+            pixelPath.transform(at);
+        }
+        
+        path= pixelPath;
+        
         if (getParent() != null) {
             getParent().repaint();
         }
@@ -704,6 +711,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) i.getGraphics();
         g.setRenderingHints(DasProperties.getRenderingHints());
+        g.setBackground( parent.getBackground( ) );
         
         // leave transparent if not white
         if (color.equals(Color.white)) {
@@ -950,21 +958,26 @@ public class SeriesRenderer extends Renderer implements Displayable {
     
     public boolean acceptContext(int x, int y) {
         boolean accept= false;
-        AffineTransform at= getMyAffineTransform( parent.getXAxis(), parent.getYAxis() );
-        Point2D.Double p= new Point2D.Double( x, y );
-        Point2D.Double dp= new Point2D.Double();
-        try {
-            at.inverseTransform( p, dp );
-        } catch ( NoninvertibleTransformException e ) {
-            throw new RuntimeException(e);
-        }
-                
+        //AffineTransform at= getMyAffineTransform( parent.getXAxis(), parent.getYAxis() );
+        //Point2D.Double p= new Point2D.Double( x, y );
+       // Point2D.Double dp= new Point2D.Double();
+       // try {
+       //     at.inverseTransform( p, dp );
+       // } catch ( NoninvertibleTransformException e ) {
+       //     throw new RuntimeException(e);
+       // }
+        
+        Point2D.Double dp= new Point2D.Double( x, y );
+        
         if ( fillToReference && fillToRefPath!=null && fillToRefPath.contains( dp ) ) {
             accept= true;
         }
-        double sx= Math.abs( at.getScaleX() );
-        double sy= Math.abs( at.getScaleY() );
-        if ( (!accept) && path.intersects( dp.x-5/sx, dp.y-5/sy, 10/sx, 10/sy ) ) {
+        //double sx= Math.abs( at.getScaleX() );
+       // double sy= Math.abs( at.getScaleY() );
+        //if ( (!accept) && path.intersects( dp.x-5/sx, dp.y-5/sy, 10/sx, 10/sy ) ) {
+        //    accept= true;
+        //}
+        if ( (!accept) && path.intersects( dp.x-5, dp.y-5, 10, 10 ) ) {
             accept= true;
         }
         return accept;
