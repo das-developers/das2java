@@ -112,7 +112,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         //}
     }
     
-    private AffineTransform getMyAffineTransform( DasAxis xAxis, DasAxis yAxis ) {
+    private AffineTransform getMyAffineTransform( DasAxis xAxis, double xBase, DasAxis yAxis ) {
         edu.uiowa.physics.pw.das.datum.Units xUnits = xAxis.getUnits();
         edu.uiowa.physics.pw.das.datum.Units yUnits = yAxis.getUnits();
         final boolean xlog = xAxis.isLog();
@@ -133,7 +133,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
         // TODO: floats in TimeLocationUnits will need an offset applied to avoid roundoff errors, which will be picked up in the AT.
         AffineTransform at = getAffineTransform(dstMin, dstMax, srcMin, srcMax, 0, null);
-        
+        at.translate( xBase * at.getScaleX(), 0 );
         srcMin = yAxis.getDataMinimum(yAxis.getUnits());
         srcMax = yAxis.getDataMaximum(yAxis.getUnits());
         dstMax = yAxis.transform(srcMax, yUnits);
@@ -198,14 +198,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
         edu.uiowa.physics.pw.das.datum.Units xUnits = xAxis.getUnits();
         edu.uiowa.physics.pw.das.datum.Units yUnits = yAxis.getUnits();
         
-        if (this.fillToReference && fillToRefPath != null) {            
+        if (this.fillToReference && fillToRefPath != null) {
             graphics.setColor(fillColor);
             graphics.fill(fillToRefPath);
         }
         
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
-                
+        
         psymConnector.draw(graphics, path, lineWidth);
         
         double xmin;
@@ -431,53 +431,33 @@ public class SeriesRenderer extends Renderer implements Displayable {
             reference = null;
         }
         
-        final boolean ylog = yAxis.isLog();
-        final boolean xlog = xAxis.isLog();
-        
         if (reference == null) {
-            reference = yUnits.createDatum(ylog ? 1.0 : 0.0);
+            reference = yUnits.createDatum(yAxis.isLog() ? 1.0 : 0.0);
         }
         
-        float yref = (float) reference.doubleValue( yUnits );
-        if (ylog) {
-            if (yref <= 0) {
-                yref = (float) ymin / 100f;
-                System.err.println(""+yref);
-            }
-            yref = (float) Math.log(yref);
-        }
+        double yref = (double) reference.doubleValue( yUnits );
         
-        float x = Float.NaN;
-        float y = Float.NaN;
+        double x =Double.NaN;
+        double y = Double.NaN;
         
-        float x0 = Float.NaN; /* the last plottable point */
-        float y0 = Float.NaN; /* the last plottable point */
+        double x0 = Double.NaN; /* the last plottable point */
+        double y0 = Double.NaN; /* the last plottable point */
+        
+        float fyref= (float) yAxis.transform( yref, yUnits );
+        float fx= Float.NaN;
+        float fy= Float.NaN;
+        float fx0= Float.NaN;
+        float fy0= Float.NaN;
         
         int index;
         
-        // find the first valid point, set x0, y0.
+        // find the first valid point, set x0, y0 //
         for (index = ixmin; index < ixmax; index++) {
-            x = (float) dataSet.getXTagDouble(index, xUnits);
-            y = (float) dataSet.getDouble(index, yUnits);
+            x = (double) dataSet.getXTagDouble(index, xUnits);
+            y = (double) dataSet.getDouble(index, yUnits);
             
             final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
             if (isValid) {
-                if (ylog)  y = (float) Math.log(y);
-                if (xlog)  x = (float) Math.log(x);
-                
-                if (histogram) {
-                    float x1 = x - (float) xSampleWidth / 2;
-                    newPath.moveTo(x1, y);
-                    newPath.lineTo(x, y);
-                    fillPath.moveTo(x1, yref);
-                    fillPath.lineTo(x1, y);
-                    fillPath.lineTo(x, y);
-                } else {
-                    newPath.moveTo(x, y);
-                    newPath.lineTo(x, y);
-                    fillPath.moveTo(x, yref);
-                    fillPath.lineTo(x, y);
-                }
                 x0 = x;
                 y0 = y;
                 index++;
@@ -485,77 +465,94 @@ public class SeriesRenderer extends Renderer implements Displayable {
             }
         }
         
-        // now loop through all of them.
+        // first point //
+        fx= (float)xAxis.transform( x, xUnits );
+        fy= (float)yAxis.transform( y, yUnits );
+        
+        if (histogram) {
+            float fx1 = ( float ) xAxis.transform( x - xSampleWidth / 2, xUnits );
+            newPath.moveTo(fx1,fy);
+            newPath.lineTo(fx, fy);
+            fillPath.moveTo(fx1, fyref);
+            fillPath.lineTo(fx1, fy);
+            fillPath.lineTo(fx, fy);
+        } else {
+            newPath.moveTo(fx,fy);
+            newPath.lineTo(fx, fy);
+            fillPath.moveTo(fx, fyref);
+            fillPath.lineTo(fx, fy);
+        }
+        fx0= fx;
+        fy0= fy;
+        
+        // now loop through all of them. //
         for (; index < ixmax; index++) {
             
-            x = (float) dataSet.getXTagDouble(index, xUnits);
-            y = (float) dataSet.getDouble(index, yUnits);
+            x = dataSet.getXTagDouble(index, xUnits) ;
+            y = dataSet.getDouble(index, yUnits);
             
             final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
             
-            if (ylog) {
-                y = (float) Math.log(y);
-            }
-            if (xlog) {
-                x = (float) Math.log(x);
-            }
+            fx= (float) xAxis.transform( x, xUnits );
+            fy= (float) yAxis.transform( y, yUnits );
+            
             if (isValid) {
+                
                 if ((x - x0) < xSampleWidth) {
                     // draw connect-a-dot between last valid and here
                     if (histogram) {
-                        float x1 = (x0 + x) / 2;
-                        newPath.lineTo(x1, y0);
-                        newPath.lineTo(x1, y);
-                        newPath.lineTo(x, y);
-                        fillPath.lineTo(x1, y0);
-                        fillPath.lineTo(x1, y);
-                        fillPath.lineTo(x, y);
+                        float fx1 = (fx0 +fx) / 2;
+                        newPath.lineTo(fx1, fy0);
+                        newPath.lineTo(fx1, fy);
+                        newPath.lineTo(fx, fy);
+                        fillPath.lineTo(fx1, fy0);
+                        fillPath.lineTo(fx1, fy);
+                        fillPath.lineTo(fx, fy);
                     } else {
-                        newPath.lineTo(x, y); // this is the typical path
-                        fillPath.lineTo(x, y);
+                        newPath.lineTo(fx, fy); // this is the typical path
+                        fillPath.lineTo(fx, fy);
                     }
                 } else {
                     // introduce break in line
                     if (histogram) {
-                        float x1 = x0 + (float) xSampleWidth / 2;
-                        newPath.lineTo(x1, y0);
-                        fillPath.lineTo(x1, y0);
-                        fillPath.lineTo(x1, yref);
+                        float fx1 = (float)  xAxis.transform( x0 + xSampleWidth / 2, xUnits );
+                        newPath.lineTo(fx1, fy0);
+                        fillPath.lineTo(fx1, fy0);
+                        fillPath.lineTo(fx1, fyref);
                         
-                        x1 = x - (float) xSampleWidth / 2;
-                        newPath.moveTo(x1, y);
-                        newPath.lineTo(x, y);
-                        fillPath.moveTo(x1, yref);
-                        fillPath.lineTo(x1, y);
-                        fillPath.lineTo(x, y);
+                        fx1 = (float)  xAxis.transform( x - xSampleWidth / 2, xUnits );
+                        newPath.moveTo(fx1, fy);
+                        newPath.lineTo(fx, fy);
+                        fillPath.moveTo(fx1, fyref);
+                        fillPath.lineTo(fx1, fy);
+                        fillPath.lineTo(fx, fy);
                     } else {
-                        newPath.moveTo(x, y);
-                        newPath.lineTo(x, y);
-                        fillPath.lineTo(x0, yref);
-                        fillPath.moveTo(x, yref);
-                        fillPath.lineTo(x, y);
+                        newPath.moveTo(fx, fy);
+                        newPath.lineTo(fx, fy);
+                        fillPath.lineTo(fx0, fyref);
+                        fillPath.moveTo(fx, fyref);
+                        fillPath.lineTo(fx, fy);
                     }
                 } // else introduce break in line
                 x0 = x;
                 y0 = y;
+                fx0= fx;
+                fy0= fy;
+                
             }
         } // for (int index = ixmin; index <= ixmax; index++)
-        fillPath.lineTo(x, yref);
+        fillPath.lineTo(fx, fyref);
         
         path = newPath;
         this.fillToRefPath = fillPath;
-        
-        // now do the AffineTransform in one sweep.
-        AffineTransform at= getMyAffineTransform( xAxis, yAxis );
-        
+                
         if (this.fillToReference && fillToRefPath != null) {
             GeneralPath pixelFillPath;
             if (simplifyPaths) {
-                pixelFillPath = GraphUtil.reducePath(fillToRefPath.getPathIterator(at), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+                pixelFillPath = GraphUtil.reducePath(fillToRefPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
             } else {
                 pixelFillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 200 * (lastIndex - firstIndex) / 100);
                 pixelFillPath.append(fillToRefPath, false);
-                pixelFillPath.transform(at);
             }
             
             fillToRefPath= pixelFillPath;
@@ -564,11 +561,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
         GeneralPath pixelPath;
         // draw the stored path that we calculated in updatePlotImage
         if (simplifyPaths && colorByDataSet == null) {
-            pixelPath = GraphUtil.reducePath(path.getPathIterator(at), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+            pixelPath = GraphUtil.reducePath(path.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
         } else {
             pixelPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100); // DANGER--should be exactly the same length as path to avoid copies.
             pixelPath.append(path, false);
-            pixelPath.transform(at);
         }
         
         path= pixelPath;
@@ -960,12 +956,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
         boolean accept= false;
         //AffineTransform at= getMyAffineTransform( parent.getXAxis(), parent.getYAxis() );
         //Point2D.Double p= new Point2D.Double( x, y );
-       // Point2D.Double dp= new Point2D.Double();
-       // try {
-       //     at.inverseTransform( p, dp );
-       // } catch ( NoninvertibleTransformException e ) {
-       //     throw new RuntimeException(e);
-       // }
+        // Point2D.Double dp= new Point2D.Double();
+        // try {
+        //     at.inverseTransform( p, dp );
+        // } catch ( NoninvertibleTransformException e ) {
+        //     throw new RuntimeException(e);
+        // }
         
         Point2D.Double dp= new Point2D.Double( x, y );
         
@@ -973,7 +969,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             accept= true;
         }
         //double sx= Math.abs( at.getScaleX() );
-       // double sy= Math.abs( at.getScaleY() );
+        // double sy= Math.abs( at.getScaleY() );
         //if ( (!accept) && path.intersects( dp.x-5/sx, dp.y-5/sy, 10/sx, 10/sy ) ) {
         //    accept= true;
         //}
