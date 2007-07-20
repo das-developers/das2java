@@ -155,14 +155,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
         
         VectorDataSet dataSet = (VectorDataSet) getDataSet();
         
-        try {
-            for (int i = 0; i < 20; i++) {
-                Thread.sleep(50);
-            }
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-        
         //if ( this.renderException!=null ) {
         //    renderException( g, xAxis, yAxis, renderException );
         //    return;
@@ -495,6 +487,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
             
             fx= (float) xAxis.transform( x, xUnits );
             fy= (float) yAxis.transform( y, yUnits );
+            
+            //double tx= xAxis.transformFast( x, xUnits );
+            
+            //System.err.println( ""+(float)tx+ "   " + fx );
             
             if (isValid) {
                 
