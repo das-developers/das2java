@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
@@ -35,10 +36,9 @@ import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.WritableRaster;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import javax.swing.event.MouseInputAdapter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -83,6 +83,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     final static Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
     
+    private JMenuItem editRendererMenuItem;
+    
     /**
      * cacheImage is a cached image that all the renderers have drawn on.  This
      * relaxes the need for renderers' render method to execute in
@@ -90,7 +92,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      */
     boolean cacheImageValid= false;
     BufferedImage cacheImage;
-    BufferedImage rendererMap;
     
     /**
      * property preview.  If set, the cache image may be scaled to reflect
@@ -103,6 +104,28 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
+        
+        addMouseListener( new MouseInputAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if ( e.getButton()==MouseEvent.BUTTON3 ) {
+                    int ir= findRendererAt( getX() + e.getX(), getY() +  e.getY() );
+                    editRendererMenuItem.setText( "Renderer Properties" );
+                    if ( ir>-1 ) {
+                        editRendererMenuItem.setEnabled( true );
+                        Renderer r= (Renderer) renderers.get(ir);
+                        if ( r instanceof Displayable ) {
+                            Displayable d= (Displayable) r;
+                            editRendererMenuItem.setIcon( d.getListIcon() );
+                        } else {
+                            editRendererMenuItem.setIcon( null );
+                        }
+                    } else {
+                        editRendererMenuItem.setEnabled( false );
+                        editRendererMenuItem.setIcon( null );
+                    }
+                }
+            }
+        } );
         
         setOpaque(false);
         
@@ -135,22 +158,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * where the RGB value is 0x0F000000 | (rendererIndex).
      */
     private int findRendererAt( int x, int y ) {
-        return 0;
-        /*int ir=0;
-        x-= getColumn().getDMinimum();
-        y-= getRow().getDMinimum();
-        int istop= Math.min( rendererMap.getWidth(), x+5 );
-        int jstop= Math.min( rendererMap.getHeight(), y+5 );
-        for ( int j= Math.max(0,y-4); j<jstop; j++ ) {
-            for ( int i=Math.max(0,x-4); i<istop; i++ ) {
-                ir= Math.max( rendererMap.getRGB( i, j ), ir );
-            }
+        for ( int i= renderers.size()-1; i>=0; i-- ) {
+            Renderer rend= (Renderer)renderers.get(i);
+            if ( rend.isActive() && rend.acceptContext( x, y ) ) return i;
         }
-        if ( ir==0 ) {
-            return -1;
-        } else {
-            return ( ir & 0xff );
-        }*/
+        return -1;
     }
     
     private Action getEditAction() {
@@ -166,7 +178,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
         };
     }
-    
     
     private void addDefaultMouseModules() {
         
@@ -194,7 +205,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         x= new MouseModule( this, new LengthDragRenderer( this, null, null ), "Length" );
         mouseAdapter.addMouseModule(x);
         
-        getMouseAdapter().addMenuItem( new JMenuItem( getEditAction() ) );
+        editRendererMenuItem= new JMenuItem( getEditAction() );
+        getMouseAdapter().addMenuItem( editRendererMenuItem );
         
         JMenuItem dumpMenuItem= new JMenuItem( DUMP_TO_FILE_ACTION );
         mouseAdapter.addMenuItem(dumpMenuItem);
@@ -311,24 +323,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
     
-    /**
-     * @return a string representation of the affine transforms used in DasPlot for
-     * debugging.
-     */
-    private String getATScaleTranslateString( AffineTransform at ) {
-        String atDesc;
-        NumberFormat nf= new DecimalFormat( "0.00" );
-        
-        if ( at==null ) {
-            return "null";
-        } else if ( !at.isIdentity() ) {
-            atDesc= "scaleX:"+nf.format(at.getScaleX()) +" translateX:"+ nf.format(at.getTranslateX());
-            atDesc+= "!c"+ "scaleY:"+nf.format(at.getScaleY()) +" translateY:"+ nf.format(at.getTranslateY());
-            return atDesc;
-        } else {
-            return "identity";
-        }
-    }
     
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
@@ -370,7 +364,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             atGraphics.setColor( Color.DARK_GRAY );
             
             atGraphics.drawString( "moment...", x+10, y+10 );
-            String atstr= getATScaleTranslateString( at );
+            String atstr= GraphUtil.getATScaleTranslateString( at );
             
             GrannyTextRenderer gtr= new GrannyTextRenderer();
             gtr.setString(this,atstr);
@@ -394,8 +388,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         int xSize= getColumn().getDMaximum() - x;
         int ySize= getRow().getDMaximum() - y;
-                
-        /*Shape saveClip;        
+        
+        /*Shape saveClip;
         if (getCanvas().isPrintingThread()) {
             saveClip = graphics1.getClip();
             graphics1.setClip( new Rectangle( 0, 0, getWidth(),  getHeight() ) );
@@ -404,11 +398,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }*/
         
         logger.info( "DasPlot clip="+ graphics1.getClip() );
-
+        
         Rectangle clip= graphics1.getClipBounds();
         if ( ( clip.y + getY() ) >= ( y + ySize ) ) {
             return;
-        }        
+        }
         
         Graphics2D graphics= (Graphics2D)graphics1;
         graphics.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -425,7 +419,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             } else {
                 String atDesc;
                 NumberFormat nf= new DecimalFormat( "0.00" );
-                atDesc= getATScaleTranslateString( at );
+                atDesc= GraphUtil.getATScaleTranslateString( at );
                 
                 if ( !at.isIdentity() ) {
                     logger.finest( " using cacheImage w/AT "+atDesc );
@@ -450,7 +444,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     logger.finest( " printing thread, drawing" );
                 } else {
                     cacheImage= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
-                    rendererMap= new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR );
                     plotGraphics= (Graphics2D)cacheImage.getGraphics();
                     plotGraphics.setBackground( getBackground() );
                     plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
@@ -470,15 +463,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     Renderer rend= (Renderer)renderers.get(i);
                     if ( rend.isActive() ) {
                         logger.finest( "rendering #"+i+": "+rend );
-                        BufferedImage before;
-                        if ( !getCanvas().isPrintingThread() ) {
-                            WritableRaster raster= cacheImage.copyData( null );
-                            before=  new BufferedImage( cacheImage.getColorModel(), raster, cacheImage.isAlphaPremultiplied(), null );
-                            rend.render(plotGraphics, xAxis, yAxis, DasProgressMonitor.NULL );
-                            compareImage(i, before);
-                        }  else {                      
-                            rend.render( plotGraphics, xAxis, yAxis, DasProgressMonitor.NULL );
-                        }                        
+                        rend.render( plotGraphics, xAxis, yAxis, DasProgressMonitor.NULL );
                         noneActive= false;
                     }
                 }
@@ -493,8 +478,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     String s= "(no active renderers)";
                     graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
                 }
-                //cacheImage= rendererMap;
             }
+            
             
             if ( !getCanvas().isPrintingThread() ) {
                 cacheImageValid= true;
@@ -509,8 +494,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 logger.finest( "recalc cacheImage, xmemento="+xmemento + " dr="+dr );
             }
         }
-        
-        
+                
         graphics.setColor(getForeground());
         graphics.drawRect(x-1, y-1, xSize + 1, ySize + 1);
         
@@ -531,29 +515,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             graphics1.setClip( saveClip );
         }*/
     }
-
-    private void compareImage(final int mark, final BufferedImage before) {
-        return;
-        /*int pixelCount=0;
-        DataBuffer bufBefore= before.getRaster().getDataBuffer();
-        DataBuffer bufAfter= cacheImage.getRaster().getDataBuffer();
-        DataBuffer bufMap= rendererMap.getRaster().getDataBuffer();
-        int dataTypeSize=4; 
-        int size= bufBefore.getSize();
-        int bandSize= size/dataTypeSize; // assumes ARGB
-        int width= rendererMap.getWidth();
-        
-        for ( int ii=0; ii<bandSize; ii++ ) {
-            if (  bufBefore.getElem(ii*4)!=bufAfter.getElem(ii*4) ) {
-                //rendererMap.setRGB( ii, jj, 0x0F000000 | mark );
-                bufMap.setElem(ii*4+1, mark );
-                bufMap.setElem(ii*4, 15 );
-                int i= ii % width;
-                int j= ii / width;
-                System.err.println( rendererMap.getRGB(i,j) );
-            }
-        }*/
-    }
+    
     
     private void drawGrid( Graphics2D g ) {
         g.setColor( Color.lightGray );
