@@ -97,6 +97,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     protected DataRange dataRange;
     
+    /* Affine Transform, dependent on min, max and axis position
+     * pixel= at_m * data + at_b
+     * where data is data point in linear space (i.e. log property implemented)
+     */
+    double at_m;
+    double at_b;
+    
     private int orientation;
     private int tickDirection=1;  // 1=down or left, -1=up or right
     protected String axisLabel = "";
@@ -1611,7 +1618,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //at.scale( 1., swingscaley );
             
             //if ( dmin1!=memento.dmin ) {
-           //     System.err.println( ""+dmin1 +"  " + memento.dmin + ( dmin1!=memento.dmin )  );
+            //     System.err.println( ""+dmin1 +"  " + memento.dmin + ( dmin1!=memento.dmin )  );
             //}
             
         } else {
@@ -1686,6 +1693,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /** TODO */
     public void resize() {
+        resetTransform();
         setBounds(getAxisBounds());
         invalidate();
         validate();
@@ -2025,6 +2033,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return transform( datum.doubleValue(getUnits()), getUnits() );
     }
     
+    protected double transformFast( double data, Units units ) {
+        if ( dataRange.isLog() ) {
+            if ( data<=0. ) {
+                data= dataRange.getMinimum() - 3; // TODO verify that dataRange.getMinimum() is log.
+            } else {
+                data= DasMath.log10(data);
+            }
+        }
+        double result= at_m * data + at_b;
+        return result;
+    }
+    
     /** Transforms a double in the given units in data coordinates to a horizontal or vertical
      * position on the parent canvas.
      * @param data a data value
@@ -2069,8 +2089,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             result= (device_range*(data-minimum)/data_range ) + dmin;
         }
         
-        if ( result > 10000 ) result=10000;
-        if ( result < -10000 ) result=-10000;
+        if ( result > 10000 ) {
+            result=10000;
+        }
+        if ( result < -10000 ) {
+            result=-10000;
+        }
         return result;
     }
     
@@ -2185,6 +2209,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected void updateImmediately() {
         super.updateImmediately();
         logger.finer(""+getDatumRange()+" "+isLog());
+        resetTransform();
         updateTickV();
     }
     
@@ -2864,6 +2889,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setFlipped(boolean b) {
         update();
         this.flipped = b;
+    }
+    
+    private void resetTransform() {
+        DasDevicePosition pos;
+        if ( isHorizontal() ) {
+            pos= getColumn();
+        } else {
+            pos= getRow();
+        }
+        double dmin= pos.getDMinimum();
+        double dmax= pos.getDMaximum();
+        if ( isFlipped() ) {
+            double t= dmin;
+            dmin= dmax;
+            dmax= t;
+        }
+        double [] at= GraphUtil.getSlopeIntercept( dataRange.getMinimum(), dmin, dataRange.getMaximum(), dmax );
+        at_m= at[0];
+        at_b= at[1];
     }
     
 }
