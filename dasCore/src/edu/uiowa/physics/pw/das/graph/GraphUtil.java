@@ -388,7 +388,7 @@ public class GraphUtil {
      * calculates the slope and intercept of a line going through two points.
      * @return a double array with two elements [ slope, intercept ].
      */
-    private static double[] getSlopeIntercept( double x0, double y0, double x1, double y1 ) {
+    public static double[] getSlopeIntercept( double x0, double y0, double x1, double y1 ) {
         double slope= ( y1 - y0 ) / ( x1 - x0 );
         double intercept= y0 - slope * x0;
         return new double[] { slope, intercept };
