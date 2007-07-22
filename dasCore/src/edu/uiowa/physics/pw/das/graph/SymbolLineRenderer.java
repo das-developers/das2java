@@ -447,14 +447,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     public void setHistogram(final boolean b) {
         if (b != histogram) {
             histogram = b;
-            if (getParent() != null && getParent().getCanvas() != null) {
-                new Runnable() {
-                    {RequestProcessor.invokeLater(this, getParent().getCanvas());}
-                    public void run() {
-                        updatePlotImage(getParent().getXAxis(), getParent().getYAxis(), null);
-                    }
-                };
-            }
+            refreshImage();
         }
     }
     
