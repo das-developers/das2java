@@ -109,7 +109,7 @@ public class DataSetUtil {
                 double min0= table.getXTagDouble(i,units) - table.getXTagDouble( i-1,units) ;
                 if ( min0 < min ) min= min0;
             }
-            return units.createDatum( min );
+            return units.getOffsetUnits().createDatum( min );
         } else {
             // We're in trouble now!
             return table.getXUnits().getOffsetUnits().createDatum(0);
