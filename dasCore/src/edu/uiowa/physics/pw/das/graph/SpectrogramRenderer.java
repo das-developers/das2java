@@ -52,6 +52,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.w3c.dom.*;
 
 /**
@@ -127,11 +128,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }*/
         
         public Icon getListIcon() {
-            return null;
+            return new ImageIcon( SpectrogramRenderer.class.getResource("/images/icons/rebin."+label+".png" ) );
         }
+        
         public String toString() {
             return this.label;
         }
+        
         DataSetRebinner getRebinner() {
             return this.rebinner;
         }
