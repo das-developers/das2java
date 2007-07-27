@@ -205,7 +205,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         double ymin;
         double ymax;
         
-        Rectangle r = g.getClipBounds();
+        Rectangle r = graphics.getClipBounds();
         
         if (r == null) {
             xmax = xAxis.getDataMaximum().doubleValue(xUnits);
@@ -219,7 +219,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             ymax = yAxis.invTransform((int) (r.getY()+r.getHeight())).doubleValue(yUnits);
         }
         
-        g.setColor(color);
+        graphics.setColor(color);
         
         Units zunits = null;
         
@@ -250,7 +250,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             
             double lastX = Double.NaN;
             
-            ((Graphics2D) g).setStroke(new BasicStroke(lineWidth));
+            graphics.setStroke(new BasicStroke(lineWidth));
             
             int i = firstIndex;
             
@@ -260,9 +260,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
                     if (i == colorByDataSet.getXLength()) {
                         //System.err.println("here");
                     }
-                    g.setColor(new Color(colorBar.rgbTransform(colorByDataSet.getDouble(i, zunits), zunits)));
+                    graphics.setColor(new Color(colorBar.rgbTransform(colorByDataSet.getDouble(i, zunits), zunits)));
                     if (type == PathIterator.SEG_LINETO) {
-                        psym.draw((Graphics2D) g, coords[0], coords[1], fsymSize, fillStyle);
+                        psym.draw( graphics, coords[0], coords[1], fsymSize, fillStyle);
                         i++;
                     }
                     it.next();
@@ -300,7 +300,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                     }
                     
                     if (drawIt) {
-                        psym.draw((Graphics2D) g, coords[0], coords[1], fsymSize, fillStyle);
+                        psym.draw( graphics, coords[0], coords[1], fsymSize, fillStyle);
                     }
                     it.next();
                     i++;
@@ -969,7 +969,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         //if ( (!accept) && path.intersects( dp.x-5/sx, dp.y-5/sy, 10/sx, 10/sy ) ) {
         //    accept= true;
         //}
-        if ( (!accept) && path.intersects( dp.x-5, dp.y-5, 10, 10 ) ) {
+        if ( (!accept) && path!=null && path.intersects( dp.x-5, dp.y-5, 10, 10 ) ) {
             accept= true;
         }
         return accept;
