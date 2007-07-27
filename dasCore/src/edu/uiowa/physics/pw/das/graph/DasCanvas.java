@@ -507,8 +507,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** paints the canvas itself.  If printing, stamps the date on it as well.
      * @param g the Graphics object
      */
-    protected void paintComponent(Graphics g) {
+    protected void paintComponent(Graphics g1) {
         logger.info("entering DasCanvas.paintComponent");
+        
+        Graphics2D g= ( Graphics2D ) g1;
+        
+        g.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, 
+                textAntiAlias ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF ); 
+
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, 
+                antiAlias ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF ); 
+        
         if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
             g.setColor(getBackground());
             //g.fillRect(0, 0, getWidth(), getHeight());
@@ -2042,6 +2051,48 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      */
     public void setPrintingTag(String printingTag) {
         this.printingTag = printingTag;
+    }
+
+    /**
+     * Holds value of property textAntiAlias.
+     */
+    private boolean textAntiAlias;
+
+    /**
+     * Getter for property textAntiAlias.
+     * @return Value of property textAntiAlias.
+     */
+    public boolean isTextAntiAlias() {
+        return this.textAntiAlias;
+    }
+
+    /**
+     * Setter for property textAntiAlias.
+     * @param textAntiAlias New value of property textAntiAlias.
+     */
+    public void setTextAntiAlias(boolean textAntiAlias) {
+        this.textAntiAlias = textAntiAlias;
+    }
+
+    /**
+     * Holds value of property antiAlias.
+     */
+    private boolean antiAlias;
+
+    /**
+     * Getter for property antiAlias.
+     * @return Value of property antiAlias.
+     */
+    public boolean isAntiAlias() {
+        return this.antiAlias;
+    }
+
+    /**
+     * Setter for property antiAlias.
+     * @param antiAlias New value of property antiAlias.
+     */
+    public void setAntiAlias(boolean antiAlias) {
+        this.antiAlias = antiAlias;
     }
     
 }
