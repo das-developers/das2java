@@ -31,6 +31,7 @@ import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
+import edu.uiowa.physics.pw.das.graph.GraphUtil;
 import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
@@ -61,7 +62,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     private DatumFormatter nfz;
     
     private FontMetrics fm;
-    private int dxMax=-999999;    
+    private int dxMax=-999999;
     private Rectangle hDirtyBounds;
     private Rectangle vDirtyBounds;
     private Point crossHairLocation=null;
@@ -89,7 +90,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         this.XAxis= xAxis;
         this.YAxis= yAxis;
         this.parent= parent;
-        this.dataSetConsumer= dataSetConsumer;        
+        this.dataSetConsumer= dataSetConsumer;
         hDirtyBounds = new Rectangle();
         vDirtyBounds = new Rectangle();
     }
@@ -127,8 +128,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             } else  {
                 nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.000");
             }
-        }
-        catch (java.text.ParseException pe) {
+        } catch (java.text.ParseException pe) {
             edu.uiowa.physics.pw.das.DasProperties.getLogger().severe("failure to create formatter");
             DasAxis axis = ((TableDataSetConsumer)dataSetConsumer).getZAxis();
             axis.getUnits().getDatumFormatterFactory().defaultFormatter();
@@ -140,35 +140,39 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         } else {
             result= nfz.grannyFormat(zValue);
         }
-        if (allPlanesReport) {    
+        if (allPlanesReport) {
             if ( debugging ) result+= "!c"+tds.toString();
             String [] planeIds= tds.getPlaneIds();
-            for ( int iplane=0; iplane<planeIds.length; iplane++ ) {                
+            for ( int iplane=0; iplane<planeIds.length; iplane++ ) {
                 if ( !planeIds[iplane].equals("") ) {
                     result= result+"!c";
                     result+= planeIds[iplane]+":"+nfz.grannyFormat(((TableDataSet)tds.getPlanarView(planeIds[iplane])).getDatum(i,j));
                     if ( debugging ) result+= " "+((TableDataSet)tds.getPlanarView(planeIds[iplane])).toString();
                 }
             }
-            if ( debugging ) result+="!ci:"+i+" j:"+j;            
+            if ( debugging ) result+="!ci:"+i+" j:"+j;
         }
         return result;
     }
     
-    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {        
+    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHints((RenderingHints)edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
-        ds= dataSetConsumer.getConsumedDataSet();        
+        ds= dataSetConsumer.getConsumedDataSet();
+        
         Rectangle[] superDirty= null;
+        
+        Datum x=null;
+        Datum y=null;
+        
+        DasAxis xa, ya;
+        xa= ( this.XAxis==null ) ? parent.getXAxis() : XAxis;
+        ya= ( this.YAxis==null ) ? parent.getYAxis() : YAxis;
         
         if (crossHairLocation==null) {
             
-            DasAxis xa, ya;
-            xa= ( this.XAxis==null ) ? parent.getXAxis() : XAxis;
-            ya= ( this.YAxis==null ) ? parent.getYAxis() : YAxis;
-            
-            Datum x= xa.invTransform(p2.x+parent.getX());
-            Datum y= ya.invTransform(p2.y+parent.getY());
+            x= xa.invTransform(p2.x+parent.getX());
+            y= ya.invTransform(p2.y+parent.getY());
             
             nfy= y.getFormatter();
             
@@ -187,27 +191,49 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             if (ds instanceof TableDataSet) {
                 TableDataSet tds= (TableDataSet)ds;
                 String zAsString;
-                if (snapping) {
+                if ( tds!=null && snapping) {
                     int[] ij = new int[2];
                     zAsString= getZString(tds,x,y, ij);
                     x = tds.getXTagDatum(ij[0]);
                     xAsString = nfx.format(x);
                     y = tds.getYTagDatum(tds.tableOfIndex(ij[0]), ij[1]);
                     yAsString = nfy.format(y);
-                }
-                else {
+                } else {
                     zAsString= getZString(tds,x,y, null);
                 }
                 report= "x:"+xAsString + nl + "y:"+yAsString + nl + "z:"+zAsString;
             } else {
+                if ( ds==null && dataSetConsumer instanceof DasPlot ) {
+                    ds= ((DasPlot)dataSetConsumer).getRenderer(0).getDataSet();
+                }
+                VectorDataSet vds= (VectorDataSet)ds;
+                if ( vds!=null && snapping ) {
+                    int i= DataSetUtil.closestColumn( ds, x );
+                    x= vds.getXTagDatum(i);
+                    y= vds.getDatum(i);
+                    xAsString= nfx.format(x);
+                    yAsString= nfy.format(y);
+                }
                 report= "x:"+xAsString + nl + "y:"+yAsString;
             }
             
             setLabel( report );
-            super.renderDrag( g, p1, p2 );                        
-        }                
-            
-        drawCrossHair(g,p2);
+            super.renderDrag( g, p1, p2 );
+        }
+        
+        
+        if ( snapping && x!=null && y!=null ) {
+            Point p3= new Point( (int) xa.transform( x ), (int) ya.transform( y ) );
+            p3.translate( -parent.getX(), -parent.getY() );
+            drawCrossHair(g,p3);
+        /*
+            //p2= GraphUtil.moveTowards( p2, p3, 4 );
+            g.drawLine( p2.x, p2.y, p3.x, p3.y );
+            dirtyBounds.add( p3 );
+            dirtyBounds.add( p2 );*/
+        } else {
+            drawCrossHair(g,p2);
+        } 
         
         return new Rectangle[] { this.hDirtyBounds, this.vDirtyBounds, dirtyBounds };
     }
@@ -215,19 +241,19 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     
     private void drawCrossHair(Graphics g0, Point p) {
         
-       Graphics2D g= (Graphics2D)g0.create();
+        Graphics2D g= (Graphics2D)g0.create();
         
-       Color color0= Color.black;
-       
+        Color color0= Color.black;
+        
         g.setColor(color0);
         
         Dimension d= parent.getSize();
         hDirtyBounds.setBounds(0, p.y-1, d.width, 3);
-                
+        
         Stroke stroke0= g.getStroke();
         
-        g.setColor( ghostColor );        
-        g.setStroke(new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );        
+        g.setColor( ghostColor );
+        g.setStroke(new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
         g.drawLine( 0,  p.y,  d.width,  p.y );
         g.drawLine( p.x,  0,  p.x,  d.height );
         
@@ -236,7 +262,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         
         g.drawLine( 0,  p.y,  d.width,  p.y);
         vDirtyBounds.setBounds(p.x-1, 0, 3, d.height);
-        g.drawLine( p.x,  0,  p.x,  d.height );        
+        g.drawLine( p.x,  0,  p.x,  d.height );
         
         g.dispose();
         
@@ -245,7 +271,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     public void clear(Graphics g) {
         super.clear(g);
         parent.paintImmediately(hDirtyBounds);
-        parent.paintImmediately(vDirtyBounds);        
+        parent.paintImmediately(vDirtyBounds);
     }
     
     public boolean isPointSelection() {
@@ -287,7 +313,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     public void setDebugging(boolean debugging) {
         this.debugging = debugging;
     }
-
+    
     public Rectangle[] getDirtyBounds() {
         return new Rectangle[] { super.dirtyBounds, this.hDirtyBounds, this.vDirtyBounds };
     }
@@ -299,27 +325,27 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     public void setSnapping(boolean b) {
         snapping = b;
     }
-
+    
     /**
      * Holds value of property multiLine.
      */
     private boolean multiLine= false;
-
+    
     /**
      * Getter for property multiLine.
      * @return Value of property multiLine.
      */
     public boolean isMultiLine() {
-
+        
         return this.multiLine;
     }
-
+    
     /**
      * Setter for property multiLine.
      * @param multiLine New value of property multiLine.
      */
     public void setMultiLine(boolean multiLine) {
-
+        
         this.multiLine = multiLine;
     }
 }
