@@ -66,7 +66,7 @@ public class GraphUtilDemo {
         
         while( !pi.isDone() ) {
             int type= pi.currentSegment( point );
-            System.err.println( pathIteratorTypeString(type)+"   "+String.format( "[ %f %f ] ", point[0], point[1] ) );
+            //System.err.println( pathIteratorTypeString(type)+"   "+String.format( "[ %f %f ] ", point[0], point[1] ) );
             pi.next();
         }
         
@@ -74,11 +74,11 @@ public class GraphUtilDemo {
         
         pi= path2.getPathIterator(null);
         
-        System.err.println( "---- reduces to ----" );
+        //System.err.println( "---- reduces to ----" );
         
         while( !pi.isDone() ) {
             int type= pi.currentSegment( point );
-            System.err.println( pathIteratorTypeString(type)+"   "+String.format( "[ %f %f ] ", point[0], point[1] ) );
+            //System.err.println( pathIteratorTypeString(type)+"   "+String.format( "[ %f %f ] ", point[0], point[1] ) );
             pi.next();
         }
         
