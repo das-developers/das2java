@@ -476,6 +476,6 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
 
     public boolean acceptContext(int x, int y) {
-        return path.intersects( x-5, y-5, 10, 10 );
+        return path!=null && path.intersects( x-5, y-5, 10, 10 );
     }
 }
