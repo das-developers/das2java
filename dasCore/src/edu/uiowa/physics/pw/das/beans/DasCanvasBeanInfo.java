@@ -35,9 +35,14 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
         new Property("name", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
         new Property("width", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getWidth", "setPreferredWidth", null),
         new Property("height", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getHeight", "setPreferredHeight", null),
-          new Property("baseFont", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getBaseFont", "setBaseFont", null),
-        new Property("application", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getApplication", null, null),
+        new Property("backgroundColor", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getBackground", "setBackground", null), 
+        new Property("foregroundColor", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getForeground", "setForeground", null), 
+        new Property("baseFont", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getBaseFont", "setBaseFont", null),
+        new Property("printTag", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getPrintingTag", "setPrintingTag", null ),
+        new Property("textAntiAlias", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "isTextAntiAlias", "setTextAntiAlias", null ),
+        new Property("antiAlias", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "isAntiAlias", "setAntiAlias", null ),
         new Property("components", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getCanvasComponents", null, "getCanvasComponents", null, null ), 
+        new Property("application", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getApplication", null, null),
     };
     
     private static MethodDescriptor[] methods;
