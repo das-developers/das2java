@@ -81,15 +81,11 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     protected Exception lastException;
     
     /**
-     * This is the exception to be renderered.  This is so if an exception occurs during drawing, then this will be drawn instead.
+     * This is the exception to be rendered.  This is so if an exception occurs during drawing, then this will be drawn instead.
      */
     protected Exception renderException;
     
-    protected Logger logger= DasLogger.getLogger( DasLogger.RENDERER_LOG );
-    {
-        logger.setLevel( Level.ALL );
-    }
-            
+    protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );        
     
     protected Renderer( DataSetDescriptor dsd ) {
         this.loader= new XAxisDataLoader( this, dsd );
