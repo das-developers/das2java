@@ -2056,7 +2056,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /**
      * Holds value of property textAntiAlias.
      */
-    private boolean textAntiAlias;
+    private boolean textAntiAlias= true;
 
     /**
      * Getter for property textAntiAlias.
@@ -2077,7 +2077,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /**
      * Holds value of property antiAlias.
      */
-    private boolean antiAlias;
+    private boolean antiAlias= false;
 
     /**
      * Getter for property antiAlias.
