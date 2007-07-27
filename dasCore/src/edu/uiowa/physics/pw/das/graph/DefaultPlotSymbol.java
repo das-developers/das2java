@@ -133,6 +133,19 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         STAR= new DefaultPlotSymbol( path, "stars" );
     }
     
+    public static final DefaultPlotSymbol DIAMOND;
+    static {
+        GeneralPath path= new GeneralPath();
+        for ( int i=0; i<5; i++ ) {
+            double radius=1.0;
+            double angle= Math.PI * ( i * 90 ) / 180;
+            float x= (float)( radius * Math.sin( angle ) );
+            float y= (float)( radius * -1 * Math.cos( angle ) );
+            if ( i==0 ) path.moveTo( x, y ); else path.lineTo( x, y );
+        }
+        DIAMOND= new DefaultPlotSymbol( path, "diamonds" );
+    }
+    
     public static final DefaultPlotSymbol BOX= new DefaultPlotSymbol( new Rectangle.Double( -0.5, -0.5, 1, 1 ), "boxes" );
     
     // temporary //
