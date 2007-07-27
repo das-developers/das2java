@@ -45,6 +45,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         at.translate(x/size,y/size);
         if ( style==FillStyle.STYLE_FILL ) {
             g.fill( path.createTransformedShape( at ) );
+            g.draw( path.createTransformedShape( at ) );
         } else if ( style==FillStyle.STYLE_OUTLINE ) {
             Color back= g.getBackground();
             Color fore= g.getColor();
@@ -125,7 +126,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
     static {
         GeneralPath path= new GeneralPath();
         for ( int i=0; i<11; i++ ) {
-            double radius= ( i % 2 == 0 ) ? 1 : 0.5;
+            double radius= ( i % 2 == 0 ) ? 0.8 : 0.4;
             float x= (float)( radius * Math.sin( Math.PI * i * 36 / 180 ) );
             float y= (float)( radius * -1 * Math.cos( Math.PI * i * 36 / 180 ) );
             if ( i==0 ) path.moveTo( x, y ); else path.lineTo( x, y );
@@ -137,7 +138,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
     static {
         GeneralPath path= new GeneralPath();
         for ( int i=0; i<5; i++ ) {
-            double radius=1.0;
+            double radius=0.6;
             double angle= Math.PI * ( i * 90 ) / 180;
             float x= (float)( radius * Math.sin( angle ) );
             float y= (float)( radius * -1 * Math.cos( angle ) );
