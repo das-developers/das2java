@@ -150,6 +150,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* DEBUGGING INSTANCE MEMBERS */
     private static final boolean DEBUG_GRAPHICS = false;
     private static final Color[] DEBUG_COLORS;
+
+    private String PROPERTY_DATUMRANGE="datumRange";
+    
     static {
         if (DEBUG_GRAPHICS) {
             DEBUG_COLORS = new Color[] {
@@ -456,9 +459,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         animateChange( min0, max0, min, max );
         
+        DatumRange oldRange= dataRange.getDatumRange();
         dataRange.setRange( newRange );
         update();
         createAndFireRangeSelectionEvent();
+        firePropertyChange( PROPERTY_DATUMRANGE, oldRange, newRange );
     }
     
     public void clearHistory() {
@@ -476,15 +481,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     public void setDataRangePrev() {
         logger.fine( "enter dasAxis.setDataRangePrev()" );
-        
+        DatumRange oldRange= dataRange.getDatumRange();
         double min0= dataRange.getMinimum();
         double max0= dataRange.getMaximum();
         dataRange.setRangePrev();
+        DatumRange newRange= dataRange.getDatumRange();
         double min1= dataRange.getMinimum();
         double max1= dataRange.getMaximum();
         animateChange(min0,max0,min1,max1);
         update();
         createAndFireRangeSelectionEvent();
+        firePropertyChange( PROPERTY_DATUMRANGE, oldRange, newRange );
     }
     
     /** TODO */
@@ -492,12 +499,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         logger.fine( "enter dasAxis.setDataRangeForward()" );
         double min0= dataRange.getMinimum();
         double max0= dataRange.getMaximum();
+        DatumRange oldRange= dataRange.getDatumRange();
         dataRange.setRangeForward();
+        DatumRange newRange= dataRange.getDatumRange();
         double min1= dataRange.getMinimum();
         double max1= dataRange.getMaximum();
         animateChange(min0,max0,min1,max1);
         update();
         createAndFireRangeSelectionEvent();
+        firePropertyChange( PROPERTY_DATUMRANGE, oldRange, newRange );
     }
     
     /** TODO */
@@ -509,9 +519,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double min= t1-delta;
         double max= t2+delta;
         animateChange(t1,t2,min,max);
+        DatumRange oldRange= dataRange.getDatumRange();
         dataRange.setRange(min,max);
+        DatumRange newRange= dataRange.getDatumRange();
         update();
         createAndFireRangeSelectionEvent();
+        firePropertyChange( PROPERTY_DATUMRANGE, oldRange, newRange );
     }
     
     /** TODO
@@ -544,6 +557,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * This is the preferred method for getting the range of the axis.
      * @return a DatumRange indicating the range of the axis.
+     * @deprecated use getDatumRange instead.
      */
     public DatumRange getRange() {
         return dataRange.getDatumRange();
@@ -2910,5 +2924,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         at_m= at[0];
         at_b= at[1];
     }
+
     
 }
