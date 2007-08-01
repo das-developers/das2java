@@ -102,7 +102,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
     }
     
     /**
-     * @param datumRange the DatumRange to be editted.
+     * @param datumRange the DatumRange to be edited.
      */
     private void setDatumRange(DatumRange datumRange ) {
         DatumRange oldValue = value;
