@@ -44,7 +44,7 @@ public class DasLogger {
                 InputStream in=  logConfigURL.openStream();
                 LogManager.getLogManager().readConfiguration( in );
                 in.close();
-                System.err.println( "read log configuration from "+logConfigURL );
+                //System.err.println( "read log configuration from "+logConfigURL );
                 //printStatus();
             }
         } catch ( MalformedURLException e ) {
