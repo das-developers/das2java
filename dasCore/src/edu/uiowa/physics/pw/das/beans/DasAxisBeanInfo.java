@@ -34,7 +34,7 @@ import java.beans.BeanInfo;
 public class DasAxisBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
-        new Property("range", AccessLevel.END_USER, "getDatumRange", "setDatumRange", null ),
+        new Property("datumRange", AccessLevel.END_USER, "getDatumRange", "setDatumRange", null ),
         new Property("dataMaximum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDataMaximum", "setDataMaximum", null),
         new Property("dataMinimum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDataMinimum", "setDataMinimum", null),
         new Property("label", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getLabel", "setLabel", null),
