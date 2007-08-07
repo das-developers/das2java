@@ -184,7 +184,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
-                            canvas.writeToPng(fileChooser.getSelectedFile().toString());
+                            String fname= pngFileChooser.getSelectedFile().toString();
+                            if ( !fname.toLowerCase().endsWith(".png") ) fname+= ".png";
+                            canvas.writeToPng(fname);
                         } catch (java.io.IOException ioe) {
                             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                         }
@@ -207,7 +209,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
-                            canvas.writeToSVG(svgFileChooser.getSelectedFile().toString());
+                            String fname= svgFileChooser.getSelectedFile().toString();
+                            if ( !fname.toLowerCase().endsWith(".svg") ) fname+= ".svg";
+                            canvas.writeToSVG(fname);
                         } catch (java.io.IOException ioe) {
                             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                         }
@@ -234,7 +238,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
-                            canvas.writeToPDF(pngFileChooser.getSelectedFile().toString());
+                            String fname= pngFileChooser.getSelectedFile().toString();
+                            if ( !fname.toLowerCase().endsWith(".pdf") ) fname+= ".pdf";
+                            canvas.writeToPDF(fname);
                         } catch (java.io.IOException ioe) {
                             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                         }
@@ -394,6 +400,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 dndSupport = new CanvasDnDSupport();
             }
         }
+        CanvasAction.currentCanvas = this;
     }
     
     private MouseInputAdapter createMouseInputAdapter() {
