@@ -395,11 +395,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     ch= new DumpToFileMouseModule( parent, this, parent.getXAxis(), parent.getYAxis() );
                     mouseAdapter.addMouseModule(ch);
                     
-                    DasPlot p= parent;
-                    mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
-                    
-                    mouseAdapter.addMouseModule( new BoxZoomMouseModule( p, this, p.getXAxis(), p.getYAxis() ) );
-                    
                 }
             }
         }
@@ -486,10 +481,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      *
      */
     public void setRebinner( RebinnerEnum rebinnerEnum) {
-        this.rebinnerEnum = rebinnerEnum;
-        this.raster= null;
-        this.plotImage= null;
-        refreshImage();
+        RebinnerEnum old= this.rebinnerEnum;
+        if ( old!=rebinnerEnum ) {
+            this.rebinnerEnum = rebinnerEnum;
+            this.raster= null;
+            this.plotImage= null;
+            refreshImage();
+            propertyChangeSupport.firePropertyChange( "rebinner", old, rebinnerEnum );
+        }
     }
     
     /** Getter for property sliceRebinnedData.
@@ -558,6 +557,27 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     public boolean acceptContext(int x, int y) {
         return true;
+    }
+
+    /**
+     * Holds value of property fillColor.
+     */
+    private Color fillColor= Color.GRAY;
+
+    /**
+     * Getter for property fillColor.
+     * @return Value of property fillColor.
+     */
+    public Color getFillColor() {
+        return this.fillColor;
+    }
+
+    /**
+     * Setter for property fillColor.
+     * @param fillColor New value of property fillColor.
+     */
+    public void setFillColor(Color fillColor) {
+        this.fillColor = fillColor;
     }
     
 }
