@@ -101,6 +101,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
             addMouseMotionListener(mouseAdapter);
             addMouseListener(currentComponentListener);
             addKeyListener(mouseAdapter.getKeyAdapter());
+            addMouseWheelListener(mouseAdapter);
         }
         
         try {
