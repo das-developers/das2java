@@ -36,14 +36,17 @@ import java.util.Vector;
  * for science analysis.  Each component has a mouseInputAdapter
  * that manages a set of mouseModules, one is active at any
  * given time.
+ *
+ * The DasMouseInputAdapter will delegate mouse events, key events, and mouse wheel 
+ * events to the active
  * @author jbf
  */
-public class MouseModule implements Editable, Displayable, KeyListener {
+public class MouseModule implements Editable, Displayable, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener  {
     
     //protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
     private String label;
-    protected DasCanvasComponent parent;    
+    protected DasCanvasComponent parent;
     
     protected MouseModule() {
         label= "unlabelled MM";
@@ -51,8 +54,8 @@ public class MouseModule implements Editable, Displayable, KeyListener {
     }
     
     public MouseModule(DasCanvasComponent parent) {
-       this( parent, EmptyDragRenderer.renderer, "unlabelled MM" );
-       setLabel(this.getClass().getName());
+        this( parent, EmptyDragRenderer.renderer, "unlabelled MM" );
+        setLabel(this.getClass().getName());
     }
     
     public MouseModule(DasCanvasComponent parent, DragRenderer dragRenderer, String label) {
@@ -61,9 +64,9 @@ public class MouseModule implements Editable, Displayable, KeyListener {
         this.label= label;
     }
     
-    /** 
-     * returns a string that identifies the module 
-     */    
+    /**
+     * returns a string that identifies the module
+     */
     public String getLabel() {
         return label;
     }
@@ -76,7 +79,7 @@ public class MouseModule implements Editable, Displayable, KeyListener {
         return null;
     }
     
-    /** return a cursor that indicates the selected module. */    
+    /** return a cursor that indicates the selected module. */
     public Cursor getCursor() {
         return new Cursor(Cursor.DEFAULT_CURSOR);
     }
@@ -88,19 +91,36 @@ public class MouseModule implements Editable, Displayable, KeyListener {
         return dragRenderer;
     }
     
-    /** Action to take when a mouse range (click, drag, release) has been selected. */    
+    /** Action to take when a mouse range (click, drag, release) has been selected. */
     public void mouseRangeSelected(MouseDragEvent e) {
     }
     
-    /** Action to take when a point (click or drag) is selected. */    
+    /** Action to take when a point (click or drag) is selected. */
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
-    public void setLabel(java.lang.String label) {        
+    public void setLabel(java.lang.String label) {
         this.label= label;
     }
-        
-    public void mouseReleased(MouseEvent e) {        
+    
+    public javax.swing.Icon getListIcon() {
+        return null;
+    }
+    
+    public String getListLabel() {
+        return getLabel();
+    }
+    
+    public void keyPressed(KeyEvent keyEvent) {
+    }
+    
+    public void keyReleased(KeyEvent keyEvent) {
+    }
+    
+    public void keyTyped(KeyEvent keyEvent) {
+    }
+    
+    public void mouseReleased(MouseEvent e) {
     }
     
     public void mousePressed(MouseEvent e) {
@@ -108,21 +128,19 @@ public class MouseModule implements Editable, Displayable, KeyListener {
     
     public void mouseDragged(MouseEvent e) {
     }
-
-    public javax.swing.Icon getListIcon() {
-        return null;
+    
+    public void mouseClicked(MouseEvent e) {
     }
-
-    public String getListLabel() {
-        return getLabel();
+    
+    public void mouseEntered(MouseEvent e) {
     }
-
-    public void keyPressed(KeyEvent keyEvent) {
+    
+    public void mouseExited(MouseEvent e) {
     }
-
-    public void keyReleased(KeyEvent keyEvent) {
+    
+    public void mouseMoved(MouseEvent e) {
     }
-
-    public void keyTyped(KeyEvent keyEvent) {
+    
+    public void mouseWheelMoved(MouseWheelEvent e) {
     }
 }
