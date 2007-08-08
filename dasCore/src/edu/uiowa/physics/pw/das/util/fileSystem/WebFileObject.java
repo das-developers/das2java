@@ -185,8 +185,11 @@ public class WebFileObject extends FileObject {
             if ( download ) {
                 try {                   
                     if ( !localFile.getParentFile().exists() ) localFile.getParentFile().mkdirs();
-                    wfs.downloadFile( pathname,localFile, monitor );
+                    File partFile= new File( localFile.toString() + ".part" );
+                    wfs.downloadFile( pathname,partFile, monitor );
+                    partFile.renameTo( localFile );
                 } catch ( FileNotFoundException e ) {
+                    // TODO: do something with part file.
                     throw e;
                 }
             }
