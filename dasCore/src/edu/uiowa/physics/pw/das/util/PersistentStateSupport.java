@@ -66,7 +66,7 @@ public class PersistentStateSupport {
     
     public interface SerializationStrategy {
         // give me a document to serialize
-        public Element serialize( Document document, DasProgressMonitor monitor );
+        public Element serialize( Document document, DasProgressMonitor monitor ) throws IOException;
         
         // here's a document you gave me
         public void deserialize( Document doc, DasProgressMonitor monitor );
@@ -179,38 +179,48 @@ public class PersistentStateSupport {
             if ( saveMenuItem!=null ) saveMenuItem.setText("Save");
             if ( currentFileLabel!=null ) currentFileLabel.setText( String.valueOf( currentFile ) );
             addToRecent(currentFile);
-            save();
+            save(currentFile);
         }
         
     }
     
-    private void save( ) {
+    /**
+     * override me
+     */
+    protected void saveImpl( File f ) throws Exception {
+        OutputStream out= new FileOutputStream( f );
+        
+        Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        
+        Element element= strategy.serialize( document, DasProgressPanel.createFramed("Serializing") );
+        
+        document.appendChild( element );
+        
+        StringWriter writer = new StringWriter();
+        OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
+        XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
+        
+        serializer.serialize(document);
+        out.close();
+        
+    }
+    
+    private void save( final File file ) {
         Runnable run= new Runnable() {
             public void run() {
                 try {
-                    File f= currentFile;
+                    File f= file;
                     if ( !f.getName().endsWith(ext) ) f= new File( f.getPath()+ext );
                     
-                    OutputStream out= new FileOutputStream( f );
-                    
-                    Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                    
-                    Element element= strategy.serialize( document, DasProgressPanel.createFramed("Serializing") );
-                    
-                    document.appendChild( element );
-                    
-                    StringWriter writer = new StringWriter();
-                    OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
-                    XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
-                    
-                    serializer.serialize(document);
-                    out.close();
+                    saveImpl(f);
                     
                     Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
                     prefs.put( "PersistentStateSupport"+ext, currentFile.getAbsolutePath() );
                 } catch ( IOException ex ) {
                     throw new RuntimeException(ex);
                 } catch ( ParserConfigurationException ex ) {
+                    throw new RuntimeException(ex);
+                } catch ( Exception ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -224,11 +234,23 @@ public class PersistentStateSupport {
                 if ( currentFile==null ) {
                     saveAs();
                 } else {
-                    save();
+                    save(currentFile);
                 }
             }
         };
     }
+    
+    /**
+     * In the future, this should prompt for save if the app is dirty.
+     */
+    public Action createQuitAction() {
+        return new AbstractAction("Quit") {
+            public void actionPerformed( ActionEvent e ) {
+                System.exit(0);
+            }
+        };
+    }
+    
     
     public JMenuItem createSaveMenuItem() {
         saveMenuItem= new JMenuItem(createSaveAction());
@@ -296,17 +318,26 @@ public class PersistentStateSupport {
         };
     }
     
+    /**
+     * override me
+     */
+    protected void openImpl( File file ) throws Exception {
+        Document document= readDocument( file );
+        strategy.deserialize( document, DasProgressPanel.createFramed("deserializing") );
+    }
+    
     private void open( final File file ) {
         Runnable run = new Runnable() {
             public void run() {
                 try {
-                    Document document= readDocument( file );
-                    strategy.deserialize( document, DasProgressPanel.createFramed("deserializing") );
+                    openImpl(file);
                 } catch ( IOException e ) {
                     throw new RuntimeException(e);
                 } catch ( ParserConfigurationException e ) {
                     throw new RuntimeException(e);
                 } catch ( SAXException e ) {
+                    throw new RuntimeException(e);
+                } catch ( Exception e ) {
                     throw new RuntimeException(e);
                 }
             }
