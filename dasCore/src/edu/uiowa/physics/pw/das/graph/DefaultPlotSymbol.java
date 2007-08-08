@@ -18,6 +18,7 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
@@ -34,10 +35,12 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
     GeneralPath path;
     String label;
     Icon icon;
+    final boolean empty;
     
     public DefaultPlotSymbol( Shape p, String label ) {
         this.path= new GeneralPath(p);
         this.label= label;
+        empty= new Area( this.path ).isEmpty();
     }
     
     public void draw(Graphics2D g, double x, double y, float size, FillStyle style ) {
@@ -45,7 +48,7 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         at.translate(x/size,y/size);
         if ( style==FillStyle.STYLE_FILL ) {
             g.fill( path.createTransformedShape( at ) );
-            g.draw( path.createTransformedShape( at ) );
+            if ( empty ) g.draw( path.createTransformedShape( at ) ); // for crosses and symbols with no volume
         } else if ( style==FillStyle.STYLE_OUTLINE ) {
             Color back= g.getBackground();
             Color fore= g.getColor();
