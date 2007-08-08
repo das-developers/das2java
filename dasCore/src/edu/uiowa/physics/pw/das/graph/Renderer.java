@@ -177,6 +177,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             this.ds= ds;
             refresh();
             invalidateParentCacheImage();
+            propertyChangeSupport.firePropertyChange( "dataSet", oldDs, ds );
         }
     }
     
@@ -469,5 +470,26 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         this.active = active;
         update();
     }
-    
+
+    /**
+     * Utility field used by bound properties.
+     */
+    protected java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+
+    /**
+     * Adds a PropertyChangeListener to the listener list.
+     * @param l The listener to add.
+     */
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Removes a PropertyChangeListener from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
 }
