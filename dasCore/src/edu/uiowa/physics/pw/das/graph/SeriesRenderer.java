@@ -56,6 +56,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.w3c.dom.Document;
@@ -70,12 +71,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
     
     private DefaultPlotSymbol psym = DefaultPlotSymbol.STAR;
     private double symSize = 3.0; // radius in pixels
-    private float lineWidth = 1.0f; // width in pixels
+    private double lineWidth = 1.0; // width in pixels
     private boolean histogram = false;
     //private Stroke stroke;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     
-    private FillStyle fillStyle = FillStyle.STYLE_FILL;
+    private FillStyle fillStyle = FillStyle.STYLE_DRAW;
     
     private int renderCount = 0;
     private int updateImageCount = 0;
@@ -198,7 +199,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
         
-        psymConnector.draw(graphics, path, lineWidth);
+        psymConnector.draw(graphics, path, (float)lineWidth);
         
         double xmin;
         double xmax;
@@ -250,7 +251,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             
             double lastX = Double.NaN;
             
-            graphics.setStroke(new BasicStroke(lineWidth));
+            graphics.setStroke(new BasicStroke((float)lineWidth));
             
             int i = firstIndex;
             
@@ -617,10 +618,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param symSize New value of property symsize.
      */
     public void setSymSize(double symSize) {
+        double old= this.symSize;
         if (this.symSize != symSize) {
             this.symSize = symSize;
             setPsym(this.psym);
             refreshImage();
+            propertyChangeSupport.firePropertyChange( "symSize", new Double(old), new Double(symSize) );
         }
     }
     
@@ -635,20 +638,24 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param color New value of property color.
      */
     public void setColor(Color color) {
+        Color old= this.color;
         if (!this.color.equals(color)) {
             this.color = color;
             refreshImage();
+            propertyChangeSupport.firePropertyChange( "color", old, color );
         }
     }
     
-    public float getLineWidth() {
+    public double getLineWidth() {
         return lineWidth;
     }
     
-    public void setLineWidth(float f) {
+    public void setLineWidth(double f) {
+        double old= this.lineWidth;
         if (this.lineWidth != f) {
             lineWidth = f;
             refreshImage();
+            propertyChangeSupport.firePropertyChange( "lineWidth", new Double(old), new Double(f) );
         }
     }
     
