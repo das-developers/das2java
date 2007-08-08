@@ -44,16 +44,36 @@ import java.util.logging.Logger;
 
 
 /**
+ * DasMouseInputAdapter delegates mouse and key events to mouse modules, which 
+ * do something with the events.  Also, mouse events are promoted to MouseDragEvents
+ * which conveniently store information about the entire drag gesture.
+ *
+ * The base class of MouseModule has do-nothing stubs for KeyListener, MouseListener, 
+ * MouseMotionListener, and MouseWheelListener, which can be implemented if the 
+ * module wants to do something with these events.  Also MouseDragEvents will be
+ * sent to the module as its DragRenderer has requested: after the mouse release, 
+ * during the drag, or when keys are pressed.
+ *
+ * The module will first receive the low-level events before receiving the MouseDragEvents.
  *
  * @author  jbf
  */
-public class DasMouseInputAdapter extends MouseInputAdapter implements Editable {
+public class DasMouseInputAdapter extends MouseInputAdapter implements Editable, MouseWheelListener {
     
     private MouseModule primary=null;
     private MouseModule secondary=null;
+    
+    /**
+     * this will be removed, as the right mouse button is reserved for context menus.
+     */
     private MouseModule tertiary=null;
     
-    private Vector active=null; // array of active modules
+    /*
+     * array of active modules.  This will be removed, as the idea was
+     * that a few modules could be used together simultaneously, but this implementation
+     * only allows for one to be active at a time.
+     */
+    private Vector active=null; 
     
     private boolean pinned= false;
     
@@ -107,7 +127,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
     private DragRenderer resizeRenderer= null;
     private Point resizeStart= null;
     
+    /*
+     *this will be removed, and the component can add its own popup buttons.
+     */
     Vector hotSpots = null;
+    
     Rectangle dirtyBounds= null;
     
     private boolean hasFocus=false;
@@ -982,5 +1006,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable 
         min= parent.getRow().getDMinimum();
         max= parent.getRow().getDMaximum();
         parent.getRow().setDPosition( min+dy, max+dy );
+    }
+
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        secondary.mouseWheelMoved( e );
     }
 }
