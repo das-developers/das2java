@@ -148,7 +148,11 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
                 model.fireIntervalAdded(model, 0, model.getSize() - 1);
             }
         }
+        Object oldValue= selected;
         selected = obj;
+        if ( oldValue!=obj ) {
+            pcSupport.firePropertyChange("value", oldValue, selected);
+        }
     }
     
     private Class getTypeClass(Object obj) {
@@ -281,14 +285,17 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
             return list.size();
         }
 
+        //TODO: remove?
         protected void fireIntervalRemoved(Object source, int index0, int index1) {
             super.fireIntervalRemoved(source, index0, index1);
         }
 
+        //TODO: remove?
         protected void fireIntervalAdded(Object source, int index0, int index1) {
             super.fireIntervalAdded(source, index0, index1);
         }
 
+        //TODO: remove?
         protected void fireContentsChanged(Object source, int index0, int index1) {
             super.fireContentsChanged(source, index0, index1);
         }
