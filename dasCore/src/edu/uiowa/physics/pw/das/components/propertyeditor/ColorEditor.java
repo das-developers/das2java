@@ -82,7 +82,16 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
 
     public boolean supportsCustomEditor() { return true; }
     
-    public String getAsText() { return "#"+Integer.toHexString(((Color)editorSupport.getValue()).getRGB() ).substring(2); }
+    public String getAsText() { 
+        int rgb= ((Color)editorSupport.getValue()).getRGB();
+        String hex;
+        if ( rgb==0 ) {
+            hex= "#000000";
+        } else {
+            hex= "#"+Integer.toHexString( rgb ).substring(2); 
+        }
+        return hex;
+    }
     
     public Component getCustomEditor() {
         Color c = (Color)getValue();
