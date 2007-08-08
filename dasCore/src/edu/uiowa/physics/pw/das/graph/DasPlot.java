@@ -199,7 +199,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         mouseAdapter.setPrimaryModule(x);
         
-        mouseAdapter.addMouseModule( new BoxZoomMouseModule( this, this, getXAxis(), getYAxis() ) );
+        mouseAdapter.addMouseModule( new BoxZoomMouseModule( this, null, getXAxis(), getYAxis() ) );
         // TODO: support setYAxis, setXAxis.
         
         x= new MouseModule( this, new LengthDragRenderer( this, null, null ), "Length" );
