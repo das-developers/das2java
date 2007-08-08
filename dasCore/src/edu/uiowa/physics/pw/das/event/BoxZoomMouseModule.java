@@ -44,51 +44,6 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
             bzdialog= new BoxZoomDialog( this );
             content.add( bzdialog );
             
-            /* Box b= Box.createVerticalBox();
-            content.add(b);
-             
-            b.add( xrangeLabel= new JLabel("X: ") );
-            xrangeLabel.setPreferredSize( new Dimension( 110, 20 ) );
-            b.add( yrangeLabel= new JLabel("Y: ") );
-            yrangeLabel.setPreferredSize( new Dimension( 110, 20 ) );
-             
-            JPanel zoomButtonPanel= new JPanel();
-            zoomButtonPanel.setLayout(new BorderLayout());
-            JButton zx = new JButton(getZoomXAction());
-            JButton zy = new JButton(getZoomYAction());
-            Insets i = zy.getMargin();
-            i.left = 5;
-            i.right = 5;
-            zy.setMargin(i);
-            JButton zb = new JButton(getZoomBoxAction());
-            zoomButtonPanel.add(zy, BorderLayout.WEST);
-            zoomButtonPanel.add(zb, BorderLayout.CENTER);
-            zoomButtonPanel.add(zx, BorderLayout.SOUTH);
-             
-            b.add(zoomButtonPanel);
-             
-            final JCheckBox cb= new JCheckBox( "auto box zoom" );
-            cb.setSelected( autoUpdate );
-            b.add( cb );
-            cb.addActionListener( new ActionListener() {
-                public void actionPerformed( ActionEvent e ) {
-                    autoUpdate= cb.isSelected();
-                }
-            } );
-            autoUpdateCB= cb;
-             
-            if ( xAxis.getUnits()==yAxis.getUnits() ) {
-                final JCheckBox cp= new JCheckBox( "constrain proportions" );
-                cp.setSelected(constrainProportions);
-                b.add(cp);
-                cp.addActionListener( new ActionListener() {
-                    public void actionPerformed( ActionEvent e ) {
-                        constrainProportions= cp.isSelected();
-                    }
-                } );
-                constrainProportionsCB= cp;
-            }
-             */
             dialog.pack();
         }
         
@@ -164,14 +119,14 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                 yrange= new DatumRange( yAxis.invTransform(e.getYMaximum()), yAxis.invTransform(e.getYMinimum()) );
             }
             
-            getDialog();
-            
-            bzdialog.setXRange( xrange.toString() );
-            bzdialog.setYRange(yrange.toString());
-            
-            if ( autoUpdate ) {
+            if ( ! autoUpdate ) {
+                getDialog();
+                bzdialog.setXRange( xrange.toString() );
+                bzdialog.setYRange(yrange.toString());
+            } else {
                 zoomBox();
             }
+            
         } else if ( e0.isGesture() ) {
             if ( e0.getGesture()==Gesture.ZOOMOUT ) {
                 xAxis.setDataRangeZoomOut();
@@ -192,7 +147,6 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
      * @return Value of property autoUpdate.
      */
     public boolean isAutoUpdate() {
-        
         return this.autoUpdate;
     }
     
