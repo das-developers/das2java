@@ -94,7 +94,8 @@ public class LocalFileObject extends FileObject {
         return getFile( DasProgressMonitor.NULL );
     }
 
-    public File getFile(edu.uiowa.physics.pw.das.util.DasProgressMonitor monitor) throws FileNotFoundException {        
+    public File getFile(edu.uiowa.physics.pw.das.util.DasProgressMonitor monitor) throws FileNotFoundException {
+        if ( !localFile.exists() ) throw new FileNotFoundException("file not found: "+localFile);
         return localFile;
     }
     
