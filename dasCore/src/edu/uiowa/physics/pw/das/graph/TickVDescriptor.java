@@ -234,7 +234,10 @@ public class TickVDescriptor {
             while ( ii<minortics.getLength() && minortics.get( ii ).doubleValue(u) <= 0 ) ii++;
             minortics= minortics.getSubVector( ii, minortics.getLength() );
             
+            DatumFormatter df= result.datumFormatter;
             result= TickVDescriptor.newTickVDescriptor( majortics, minortics );
+            result.datumFormatter= df;
+            
             return result;
             
         }
