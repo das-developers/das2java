@@ -170,9 +170,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
     
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
-        JFileChooser pngFileChooser;
-        JPanel pngFileNamePanel;
-        JTextField pngFileTextField;
         
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
@@ -184,7 +181,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
-                            String fname= pngFileChooser.getSelectedFile().toString();
+                            File f= fileChooser.getSelectedFile();
+                            String fname= f.toString();
                             if ( !fname.toLowerCase().endsWith(".png") ) fname+= ".png";
                             canvas.writeToPng(fname);
                         } catch (java.io.IOException ioe) {
@@ -223,10 +221,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     };
     
     public static final Action SAVE_AS_PDF_ACTION = new CanvasAction("Save as PDF") {
-        JFileChooser pdfFileChooser;
-        JPanel pdfFileNamePanel;
-        JTextField pdfFileTextField;
-        
         public void actionPerformed(ActionEvent e) {
             final JFileChooser pngFileChooser = new JFileChooser();
             pngFileChooser.setApproveButtonText("Select File");
