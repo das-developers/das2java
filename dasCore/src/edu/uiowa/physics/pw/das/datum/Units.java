@@ -37,7 +37,7 @@ public abstract class Units implements Displayable {
     
     private static Map unitsMap = new HashMap();
     
-    public static final Units dimensionless= new NumberUnits("");
+    public static final Units dimensionless= new NumberUnits("","dimensionless quantities");
     public static final Units dB = new NumberUnits("dB");
     public static final Units radians= new NumberUnits("radian");
     public static final Units degrees= new NumberUnits("degrees");
@@ -170,9 +170,9 @@ public abstract class Units implements Displayable {
     public static final Units percent= new NumberUnits("%","");
 
     /**
-     * Define a set of units to describe ratiometric (logarythmic) spacing.  Note that Units.percent
+     * Define a set of units to describe ratiometric (logarithmic) spacing.  Note that Units.percent
      * is no longer the defacto ratiometric spacing, and Units.percentIncrease takes its place.  
-     * Note the log10Ratio is the preferred method for expressing spacing, but all are convertable
+     * Note the log10Ratio is the preferred method for expressing spacing, but all are convertible
      * See logERatio, log10Ratio and google for "fold change."
      */
 
