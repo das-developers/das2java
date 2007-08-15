@@ -96,6 +96,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -169,22 +170,30 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         };
     }
     
+    private static File currentPngFile;
+    
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
         
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Write to PNG");
             fileChooser.setFileFilter( getFileNameExtensionFilter( "png files", "png" ) );
+            Preferences prefs= Preferences.userNodeForPackage( DasCanvas.class ) ;
+            String savedir= prefs.get( "savedir", null );
+            if ( savedir!=null ) fileChooser.setCurrentDirectory( new File( savedir ) );
+            if ( currentPngFile!=null ) fileChooser.setSelectedFile( currentPngFile );
             int choice = fileChooser.showSaveDialog(currentCanvas);
             if (choice == JFileChooser.APPROVE_OPTION) {
                 final DasCanvas canvas = currentCanvas;
+                String fname= fileChooser.getSelectedFile().toString();
+                if ( !fname.toLowerCase().endsWith(".png") ) fname+= ".png";
+                final String ffname= fname;
+                prefs.put( "savedir", new File( ffname ).getParent() );
+                currentPngFile= new File( ffname );
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
-                            File f= fileChooser.getSelectedFile();
-                            String fname= f.toString();
-                            if ( !fname.toLowerCase().endsWith(".png") ) fname+= ".png";
-                            canvas.writeToPng(fname);
+                            canvas.writeToPng(ffname);
                         } catch (java.io.IOException ioe) {
                             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                         }
@@ -423,13 +432,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         
         popup.addSeparator();
-     
+        
         JMenuItem close = new JMenuItem("close");
         close.setToolTipText("close this popup");
         popup.add(close);
         
         return popup;
-    }    
+    }
     /** returns the GlassPane above all other components. This is used for drawing dragRenderers, etc.
      * @return
      */
@@ -513,11 +522,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         
         Graphics2D g= ( Graphics2D ) g1;
         
-        g.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, 
-                textAntiAlias ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF ); 
-
-        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, 
-                antiAlias ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF ); 
+        g.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING,
+                textAntiAlias ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
+        
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
+                antiAlias ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF );
         
         if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
             g.setColor(getBackground());
@@ -2051,14 +2060,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param printingTag New value of property printingTag.
      */
     public void setPrintingTag(String printingTag) {
+        String old= this.printingTag;
         this.printingTag = printingTag;
+        firePropertyChange( "printingTag", old, printingTag );
     }
-
+    
     /**
      * Holds value of property textAntiAlias.
      */
     private boolean textAntiAlias= true;
-
+    
     /**
      * Getter for property textAntiAlias.
      * @return Value of property textAntiAlias.
@@ -2066,20 +2077,22 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public boolean isTextAntiAlias() {
         return this.textAntiAlias;
     }
-
+    
     /**
      * Setter for property textAntiAlias.
      * @param textAntiAlias New value of property textAntiAlias.
      */
     public void setTextAntiAlias(boolean textAntiAlias) {
+        boolean old= this.textAntiAlias;
         this.textAntiAlias = textAntiAlias;
+        firePropertyChange( "textAntiAlias", old, textAntiAlias );
     }
-
+    
     /**
      * Holds value of property antiAlias.
      */
     private boolean antiAlias= false;
-
+    
     /**
      * Getter for property antiAlias.
      * @return Value of property antiAlias.
@@ -2087,13 +2100,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public boolean isAntiAlias() {
         return this.antiAlias;
     }
-
+    
     /**
      * Setter for property antiAlias.
      * @param antiAlias New value of property antiAlias.
      */
     public void setAntiAlias(boolean antiAlias) {
+        boolean old= this.antiAlias;
         this.antiAlias = antiAlias;
+        firePropertyChange( "antiAlias", old, antiAlias );
     }
     
 }
