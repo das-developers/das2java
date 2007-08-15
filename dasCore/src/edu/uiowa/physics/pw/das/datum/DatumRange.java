@@ -138,7 +138,11 @@ public class DatumRange implements Comparable {
         if (!(o instanceof DatumRange)) {
             return false;
         }
-        return ( this==o ) || 0==compareTo(o);
+        if ( !this.getUnits().isConvertableTo( ((DatumRange)o).getUnits() ) ) {
+            return false;
+        } else {
+            return ( this==o ) || 0==compareTo(o);
+        }
     }
     
     /**
