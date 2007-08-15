@@ -173,7 +173,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private static File currentPngFile;
     
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
-        
+         
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Write to PNG");
