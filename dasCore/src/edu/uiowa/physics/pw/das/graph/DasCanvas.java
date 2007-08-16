@@ -170,7 +170,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         };
     }
     
-    private static File currentPngFile;
+    private static File currentFile;
     
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
          
@@ -181,7 +181,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             Preferences prefs= Preferences.userNodeForPackage( DasCanvas.class ) ;
             String savedir= prefs.get( "savedir", null );
             if ( savedir!=null ) fileChooser.setCurrentDirectory( new File( savedir ) );
-            if ( currentPngFile!=null ) fileChooser.setSelectedFile( currentPngFile );
+            if ( currentFile!=null ) fileChooser.setSelectedFile( currentFile );
             int choice = fileChooser.showSaveDialog(currentCanvas);
             if (choice == JFileChooser.APPROVE_OPTION) {
                 final DasCanvas canvas = currentCanvas;
@@ -189,7 +189,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 if ( !fname.toLowerCase().endsWith(".png") ) fname+= ".png";
                 final String ffname= fname;
                 prefs.put( "savedir", new File( ffname ).getParent() );
-                currentPngFile= new File( ffname );
+                currentFile= new File( ffname.substring(0,ffname.length()-4) );
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
@@ -206,19 +206,26 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     public static final Action SAVE_AS_SVG_ACTION = new CanvasAction("Save as SVG") {
         public void actionPerformed(ActionEvent e) {
-            final JFileChooser svgFileChooser = new JFileChooser();
-            svgFileChooser.setApproveButtonText("Select File");
-            svgFileChooser.setDialogTitle("Write to SVG");
-            svgFileChooser.setFileFilter( getFileNameExtensionFilter( "svg files", "svg" ) );
-            int choice = svgFileChooser.showSaveDialog(currentCanvas);
+            final JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setApproveButtonText("Select File");
+            fileChooser.setDialogTitle("Write to SVG");
+            fileChooser.setFileFilter( getFileNameExtensionFilter( "svg files", "svg" ) );
+            Preferences prefs= Preferences.userNodeForPackage( DasCanvas.class ) ;
+            String savedir= prefs.get( "savedir", null );
+            if ( savedir!=null ) fileChooser.setCurrentDirectory( new File( savedir ) );
+            if ( currentFile!=null ) fileChooser.setSelectedFile( currentFile );
+            int choice = fileChooser.showSaveDialog(currentCanvas);
             if (choice == JFileChooser.APPROVE_OPTION) {
                 final DasCanvas canvas = currentCanvas;
+                String fname= fileChooser.getSelectedFile().toString();
+                if ( !fname.toLowerCase().endsWith(".svg") ) fname+= ".svg";
+                final String ffname= fname;
+                prefs.put( "savedir", new File( ffname ).getParent() );
+                currentFile= new File( ffname.substring(0,ffname.length()-4) );
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
-                            String fname= svgFileChooser.getSelectedFile().toString();
-                            if ( !fname.toLowerCase().endsWith(".svg") ) fname+= ".svg";
-                            canvas.writeToSVG(fname);
+                            canvas.writeToSVG(ffname);
                         } catch (java.io.IOException ioe) {
                             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                         }
@@ -231,19 +238,26 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     public static final Action SAVE_AS_PDF_ACTION = new CanvasAction("Save as PDF") {
         public void actionPerformed(ActionEvent e) {
-            final JFileChooser pngFileChooser = new JFileChooser();
-            pngFileChooser.setApproveButtonText("Select File");
-            pngFileChooser.setDialogTitle("Write to PDF");
-            pngFileChooser.setFileFilter( getFileNameExtensionFilter( "pdf files", "pdf" ) );
-            int choice = pngFileChooser.showDialog(currentCanvas, "Select File");
+            final JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setApproveButtonText("Select File");
+            fileChooser.setDialogTitle("Write to PDF");
+            fileChooser.setFileFilter( getFileNameExtensionFilter( "pdf files", "pdf" ) );
+            Preferences prefs= Preferences.userNodeForPackage( DasCanvas.class ) ;
+            String savedir= prefs.get( "savedir", null );
+            if ( savedir!=null ) fileChooser.setCurrentDirectory( new File( savedir ) );
+            if ( currentFile!=null ) fileChooser.setSelectedFile( currentFile );
+            int choice = fileChooser.showDialog(currentCanvas, "Select File");
             if (choice == JFileChooser.APPROVE_OPTION) {
                 final DasCanvas canvas = currentCanvas;
+                String fname= fileChooser.getSelectedFile().toString();
+                if ( !fname.toLowerCase().endsWith(".pdf") ) fname+= ".pdf";
+                final String ffname= fname;
+                prefs.put( "savedir", new File( ffname ).getParent() );
+                currentFile= new File( ffname.substring(0,ffname.length()-4) );
                 Runnable run= new Runnable() {
                     public void run() {
                         try {
-                            String fname= pngFileChooser.getSelectedFile().toString();
-                            if ( !fname.toLowerCase().endsWith(".pdf") ) fname+= ".pdf";
-                            canvas.writeToPDF(fname);
+                            canvas.writeToPDF(ffname);
                         } catch (java.io.IOException ioe) {
                             edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
                         }
