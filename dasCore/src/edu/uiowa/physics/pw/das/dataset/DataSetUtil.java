@@ -127,7 +127,7 @@ public class DataSetUtil {
             result = 0; //insertion point is 0
         } else if (result < 0) {
             result= ~result; // usually this is the case
-            if ( result >= xx.length-1 ) {
+            if ( result == xx.length ) {
                 result= xx.length-1;
             } else {
                 result= ( ( x-xx[result-1] ) / ( xx[result] - xx[result-1] ) < 0.5 ? result-1 : result );
@@ -200,7 +200,8 @@ public class DataSetUtil {
         double x= xdatum.doubleValue(units);
         while ( result<(len-1) && table.getXTagDouble(result,units)<x ) result++;
         while ( result>0 && table.getXTagDouble(result,units)>x ) result--;
-        if ( result<len-2 ) {
+        // result should now point to the guy to the left of x, unless x>the last guy or <the first guy
+        if ( result<len-1 ) {
             double alpha= ( x - table.getXTagDouble( result, units ) ) /
                     ( table.getXTagDouble( result+1, units ) - table.getXTagDouble( result, units ) );
             result= ( alpha < 0.5 ? result : result+1 );
