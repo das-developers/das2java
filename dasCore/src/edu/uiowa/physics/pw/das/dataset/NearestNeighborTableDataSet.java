@@ -75,10 +75,10 @@ public class NearestNeighborTableDataSet implements TableDataSet {
                                 Units yunits= yTagWidth.getUnits();
                                 if ( UnitsUtil.isRatiometric(yunits) ) {
                                     double yclose= source.getYTagDouble(itable, jmap[itable][j], ddY.getUnits() );
-                                    if ( Math.abs( Math.log( yy[j] / yclose ) ) > yTagWidth.doubleValue(Units.logERatio) ) jmap[itable][j]=-1;
+                                    if ( Math.abs( Math.log( yy[j] / yclose ) ) > yTagWidth.doubleValue(Units.logERatio)/1.90  ) jmap[itable][j]=-1;
                                 } else {
                                     Datum yclose= source.getYTagDatum( itable, jmap[itable][j] );
-                                    if ( Math.abs( yclose.subtract(yy[j],ddY.getUnits()).doubleValue(yunits)) > yTagWidth.doubleValue(yunits) ) {
+                                    if ( Math.abs( yclose.subtract(yy[j],ddY.getUnits()).doubleValue(yunits)) > yTagWidth.doubleValue(yunits)/1.90 ) {
                                         jmap[itable][j]= -1;
                                     }
                                 }
