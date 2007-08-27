@@ -98,6 +98,10 @@ public class LocalFileObject extends FileObject {
         if ( !localFile.exists() ) throw new FileNotFoundException("file not found: "+localFile);
         return localFile;
     }
+
+    public boolean isLocal() {
+        return true;
+    }
     
     
 }

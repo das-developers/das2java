@@ -134,7 +134,16 @@ public abstract class FileObject {
     public abstract boolean isRoot();
     
     /**
-     * returns true if the file exists
+     * returns true is the file is locally available, meaning clients can 
+     * call getFile() and the readble File reference will be available in
+     * interactive time.  Note that isLocal does not imply exists().  Also,
+     * This may result in side effects such as a website hit.
+     */
+    public abstract boolean isLocal();
+    
+    /**
+     * returns true if the file exists.  This may have the side effect of 
+     * downloading the file.
      * @return true if the file exists
      */
     public abstract boolean exists();
