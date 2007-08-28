@@ -69,14 +69,14 @@ import org.w3c.dom.Element;
  */
 public class SeriesRenderer extends Renderer implements Displayable {
     
-    private DefaultPlotSymbol psym = DefaultPlotSymbol.STAR;
+    private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     private double symSize = 3.0; // radius in pixels
     private double lineWidth = 1.0; // width in pixels
     private boolean histogram = false;
     //private Stroke stroke;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     
-    private FillStyle fillStyle = FillStyle.STYLE_DRAW;
+    private FillStyle fillStyle = FillStyle.STYLE_FILL;
     
     private int renderCount = 0;
     private int updateImageCount = 0;
@@ -291,10 +291,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
                             drawIt = true;
                             coords[0] = h1x;
                             coords[1] = h1y;
-                            System.err.println("  ***");
                         } else {
                             drawIt = false;
-                            System.err.println(" ");
                         }
                     } else {
                         drawIt = type == PathIterator.SEG_LINETO;
@@ -313,7 +311,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             }
             
             double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
-            System.err.println("simplify factor=" + simplifyFactor);
             
             mon.finished();
         }
@@ -421,7 +418,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
         boolean skippedLast = true; // true if the last point was skipped
         boolean penUp = true; // pen is up because data gap needs to be rendered.
         if (reference != null && reference.getUnits() != yAxis.getUnits()) {
-            reference = null;
+            // switch the units to the axis units.
+            reference = yAxis.getUnits().createDatum( reference.doubleValue( reference.getUnits() ) );
         }
         
         if (reference == null) {
@@ -579,9 +577,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
     
     public void setPsymConnector(PsymConnector p) {
+        PsymConnector old= this.psymConnector;
         if (!p.equals(psymConnector)) {
             psymConnector = p;
             refreshImage();
+            propertyChangeSupport.firePropertyChange("psymConnector",old,p);
         }
     }
     
@@ -604,6 +604,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             Object oldValue = this.psym;
             this.psym = (DefaultPlotSymbol) psym;
             refreshImage();
+            propertyChangeSupport.firePropertyChange("psym",oldValue,psym);
         }
     }
     
@@ -687,8 +688,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
      *
      */
     public void setAntiAliased(boolean antiAliased) {
+        boolean old= this.antiAliased;
         this.antiAliased = antiAliased;
         refreshImage();
+        propertyChangeSupport.firePropertyChange( "antiAliased", old, antiAliased );
     }
     
     public boolean isHistogram() {
@@ -696,9 +699,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
     
     public void setHistogram(final boolean b) {
+        boolean old= b;
         if (b != histogram) {
             histogram = b;
             refresh();
+            propertyChangeSupport.firePropertyChange( "histogram", old, antiAliased );
         }
     }
     
@@ -773,9 +778,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param fillReference New value of property fillReference.
      */
     public void setFillColor(Color color) {
+        Color old= this.fillColor;
         if (!this.fillColor.equals(color)) {
             this.fillColor = color;
             refresh();
+            propertyChangeSupport.firePropertyChange("fillColor",old,color);
         }
     }
     
@@ -847,16 +854,18 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param fillToReference New value of property fillToReference.
      */
     public void setFillToReference(boolean fillToReference) {
+        boolean old= this.fillToReference;
         if (this.fillToReference != fillToReference) {
             this.fillToReference = fillToReference;
             refresh();
+            propertyChangeSupport.firePropertyChange( "fillToReference", old, fillToReference );
         }
     }
     
     /**
      * Holds value of property reference.
      */
-    private Datum reference = null;
+    private Datum reference = Units.dimensionless.createDatum(0);
     
     /**
      * Getter for property reference.
@@ -871,9 +880,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param reference New value of property reference.
      */
     public void setReference(Datum reference) {
+        Datum old= this.reference;
         if (!this.reference.equals(reference)) {
             this.reference = reference;
             refresh();
+            propertyChangeSupport.firePropertyChange("reference",old,reference);
         }
     }
     
