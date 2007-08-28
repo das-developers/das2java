@@ -72,7 +72,9 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
     
-    protected void downloadFile( String filename, File f, DasProgressMonitor monitor ) throws IOException {
+    protected void downloadFile( String filename, File f, File partFile, DasProgressMonitor monitor ) throws IOException {
+        
+        logger.fine("downloadFile("+filename+")");
         
         boolean waitForAnother;
         synchronized ( downloads ) {
@@ -86,6 +88,7 @@ public class HttpFileSystem extends WebFileSystem {
                     try { downloads.wait(100); } catch ( InterruptedException e ) { throw new RuntimeException(e); }
                     mon= (DasProgressMonitor) downloads.get( filename );
                     logger.finest( "waiting for download" );
+                    
                 }
                 if ( f.exists() ) {
                     return;
@@ -121,31 +124,32 @@ public class HttpFileSystem extends WebFileSystem {
                 logger.fine("make dirs "+f.getParentFile());
                 f.getParentFile().mkdirs();
             }
-            if ( f.exists() ) {
+            if ( partFile.exists() ) {
                 logger.fine("clobber file "+f);
-                if ( !f.delete() ) {
+                if ( !partFile.delete() ) {
                     logger.info("Unable to clobber file "+f+", better use it for now." );
                     return;
                 }
             }
             
-            if ( f.createNewFile() ) {
+            if ( partFile.createNewFile() ) {
                 InputStream in;
                 in= urlc.getInputStream();
                 
                 in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
                 logger.fine("transferring bytes of "+filename);
-                FileOutputStream out= new FileOutputStream( f );
+                FileOutputStream out= new FileOutputStream( partFile );
                 monitor.setLabel( "downloading file" );
                 try {
                     copyStream( in, out, monitor );
                     monitor.finished();
                     out.close();
                     in.close();
+                    partFile.renameTo(f);
                 } catch ( IOException e ) {
                     out.close();
                     in.close();
-                    f.delete();
+                    partFile.delete();
                     throw e;
                 }
             } else {

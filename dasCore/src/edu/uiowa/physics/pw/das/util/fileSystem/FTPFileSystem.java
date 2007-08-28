@@ -95,7 +95,8 @@ public class FTPFileSystem extends WebFileSystem {
             new File( localRoot, directory ).mkdirs();
             File listing= new File( localRoot, directory + ".listing" );
             if ( !listing.canRead() ) {
-                downloadFile( directory, listing, DasProgressMonitor.NULL );
+                File partFile= listing;
+                downloadFile( directory, listing, partFile, DasProgressMonitor.NULL );
             }
             listing.deleteOnExit();
             return parseLsl( directory, listing );
@@ -104,7 +105,7 @@ public class FTPFileSystem extends WebFileSystem {
         }
     }
     
-    protected void downloadFile(String filename, java.io.File f, DasProgressMonitor monitor ) throws java.io.IOException {
+    protected void downloadFile(String filename, java.io.File targetFile, File partFile, DasProgressMonitor monitor ) throws java.io.IOException {
         FileOutputStream out=null;
         InputStream is= null;
         try {
@@ -115,17 +116,18 @@ public class FTPFileSystem extends WebFileSystem {
             
             int i= urlc.getContentLength();
             monitor.setTaskSize( i );
-            out= new FileOutputStream( f );
+            out= new FileOutputStream( partFile );
             is = urlc.getInputStream(); // To download
             
             copyStream(is, out, monitor );
             monitor.finished();
             out.close();
             is.close();
+            partFile.renameTo( targetFile );
         } catch ( IOException e ) {
             if ( out!=null ) out.close();
             if ( is!=null ) is.close();
-            f.delete();
+            partFile.delete();
             throw e;
         }
         

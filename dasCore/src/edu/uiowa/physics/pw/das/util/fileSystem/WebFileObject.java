@@ -54,7 +54,8 @@ public class WebFileObject extends FileObject {
         }
         if ( !localFile.exists() ) {
             try {
-                wfs.downloadFile( pathname,localFile,monitor );
+                File partFile= new File( localFile.toString() + ".part" );
+                wfs.downloadFile( pathname, localFile, partFile, monitor );
             } catch ( FileNotFoundException e ) {
                 throw e;
             } catch ( IOException e ) {
@@ -108,8 +109,10 @@ public class WebFileObject extends FileObject {
             return true;
         } else {
             try {
+                // TODO: use HTTP HEAD, etc
                 DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).info("This implementation of WebFileObject.exists() is not optimal");
-                wfs.downloadFile( pathname,localFile, DasProgressMonitor.NULL );
+                File partFile= new File( localFile.toString() + ".part" );
+                wfs.downloadFile( pathname, localFile, partFile, DasProgressMonitor.NULL );
                 return localFile.exists();
             } catch ( FileNotFoundException e ) {
                 return false;
@@ -186,8 +189,7 @@ public class WebFileObject extends FileObject {
                 try {
                     if ( !localFile.getParentFile().exists() ) localFile.getParentFile().mkdirs();
                     File partFile= new File( localFile.toString() + ".part" );
-                    wfs.downloadFile( pathname,partFile, monitor );
-                    partFile.renameTo( localFile );
+                    wfs.downloadFile( pathname, localFile, partFile, monitor );
                 } catch ( FileNotFoundException e ) {
                     // TODO: do something with part file.
                     throw e;

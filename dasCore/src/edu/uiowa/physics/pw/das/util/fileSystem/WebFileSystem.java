@@ -53,8 +53,12 @@ public abstract class WebFileSystem extends FileSystem {
     /**
      * Transfers the file from the remote store to a local copy f.  This should only be
      * used within the class and subclasses, clients should use getFileObject( String ).getFile().
+     * Subclasses implementing this should download data to partfile, then rename partfile to
+     * f after the download is complete.
+     *
+     * @param partfile the temporary file during download.
      */
-    protected abstract void downloadFile( String filename, File f, DasProgressMonitor monitor ) throws IOException;
+    protected abstract void downloadFile( String filename, File f, File partfile, DasProgressMonitor monitor ) throws IOException;
     
     protected File getLocalRoot() {
         return this.localRoot;
