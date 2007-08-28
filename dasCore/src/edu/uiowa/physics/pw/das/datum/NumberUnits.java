@@ -103,7 +103,7 @@ public class NumberUnits extends Units {
             }
         }
     }
- 
+    
     // note + and - are left out because of ambiguity with sign.
     private static Pattern expressionPattern= Pattern.compile( "(.+)(\\*)(.+)" );
     
@@ -112,7 +112,7 @@ public class NumberUnits extends Units {
         if ( !m.matches() ) throw new IllegalArgumentException("not an expression");
         String operator= m.group(2);
         Datum operand1;
-        try { 
+        try {
             operand1= Units.dimensionless.parse( m.group(1) );
         } catch ( IllegalArgumentException e ) {
             operand1= this.parse( m.group(1) );
@@ -125,9 +125,9 @@ public class NumberUnits extends Units {
         }
         Datum result;
         if ( operator.equals("*") ) {
-             result= operand1.multiply(operand2);
+            result= operand1.multiply(operand2);
         } else if ( operator.equals("/") ) {
-             result= operand1.divide(operand2);
+            result= operand1.divide(operand2);
         } else {
             throw new IllegalArgumentException("Bad operator: "+operator+" of expression "+s);
         }
@@ -171,9 +171,13 @@ public class NumberUnits extends Units {
                     return Datum.create( uc.convert(dd[0]), this, uc.convert(dd[1]) );
                 }
             } catch (NumberFormatException nfe) {
-                ParseException pe = new ParseException(nfe.getMessage(), 0);
-                pe.initCause(nfe);
-                throw pe;
+                if ( s.equals("fill") ) {
+                    return getFillDatum();
+                } else {
+                    ParseException pe = new ParseException(nfe.getMessage(), 0);
+                    pe.initCause(nfe);
+                    throw pe;
+                }
             }
         }
     }
