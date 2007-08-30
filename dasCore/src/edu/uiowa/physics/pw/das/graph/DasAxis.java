@@ -148,7 +148,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private DataRequestThread drt;
     
     /* DEBUGGING INSTANCE MEMBERS */
-    private static final boolean DEBUG_GRAPHICS = false;
+    private static final boolean DEBUG_GRAPHICS = true;
     private static final Color[] DEBUG_COLORS;
 
     private String PROPERTY_DATUMRANGE="datumRange";
@@ -2479,6 +2479,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return primaryBounds;
         }
     }
+    
+    /**
+     * Adds a MouseWheelListener to the DasAxis.  Special care must be taken
+     * with the DasAxis, because it is composed of two sub panels, and their 
+     * parent panel (this), must not recieve the events.  (This is because
+     * the DasPlot between them should get the events, and the DasPlot does
+     * not have a simple rectangular boundary.
+     */
+    public void addMouseWheelListener( MouseWheelListener l ) {
+        maybeInitializeInputPanels();
+        primaryInputPanel.addMouseWheelListener(l);
+        secondaryInputPanel.addMouseWheelListener(l);
+    }
+    
+    
+    public void removeMouseWheelListener(MouseWheelListener l) {
+        maybeInitializeInputPanels();
+        primaryInputPanel.removeMouseWheelListener(l);
+        secondaryInputPanel.removeMouseWheelListener(l);
+    }
+
     
     /** TODO
      * @param l
