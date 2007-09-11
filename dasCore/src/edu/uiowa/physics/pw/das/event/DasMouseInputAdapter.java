@@ -929,7 +929,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     
     public void mouseEntered(MouseEvent e) {
         hasFocus= true;
-        parent.repaint();
+        if ( e.isShiftDown() ) parent.repaint();
         if (primary!=null) {
             hotSpots= primary.getHotSpots();
             getGlassPane().setCursor(primary.getCursor());
@@ -938,7 +938,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     
     public void mouseExited(MouseEvent e) {
         hasFocus= false;
-        parent.repaint();
+        if ( e.isShiftDown() ) parent.repaint();
         if (mouseMode==MouseMode.hotSpot) {
             parent.repaint(dirtyBounds);
             mouseMode= MouseMode.idle;
