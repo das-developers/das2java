@@ -437,7 +437,7 @@ public class DasProgressPanel implements DasProgressMonitor {
     public synchronized void setVisible( boolean visible ) {
         if ( ! componentsInitialized && !visible ) return;
         if ( ! componentsInitialized && !finished ) initComponents();
-        thePanel.setVisible(visible);
+        if ( thePanel!=null ) thePanel.setVisible(visible);
         if ( this.jframe!=null ) this.jframe.setVisible(visible);
         
         if ( visible ) {
