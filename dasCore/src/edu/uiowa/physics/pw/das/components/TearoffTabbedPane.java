@@ -12,6 +12,7 @@ package edu.uiowa.physics.pw.das.components;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -22,12 +23,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
 
 /**
@@ -133,7 +136,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     static Component getTornOffComponent() {
         JPanel tornOffComponent= new JPanel();
         tornOffComponent.setLayout( new BorderLayout() );
-        tornOffComponent.add( new JLabel("<html><i>This tab is torn off.  Right-click on the tab name and select dock.</i></html>"), BorderLayout.NORTH );
+        tornOffComponent.add( new JLabel("<html><i>This tab is undocked.  Right-click on the tab name and select dock.</i></html>"), BorderLayout.NORTH );
         return tornOffComponent;
     }
     
@@ -174,7 +177,8 @@ public class TearoffTabbedPane extends JTabbedPane {
         final Component c= getComponentAt(tabIndex);
         Point p= c.getLocationOnScreen();
         TabDesc td= (TabDesc)tabs.get( c );
-        JFrame babySitter= new JFrame(td.title);
+        //JFrame babySitter= new JFrame(td.title);
+        JDialog babySitter= new JDialog( (Frame) SwingUtilities.getWindowAncestor(this), td.title  );
         p.translate( 20, 20 );
         babySitter.setLocation(p);
         babySitter.addWindowListener( new AbstractWindowListener() {
