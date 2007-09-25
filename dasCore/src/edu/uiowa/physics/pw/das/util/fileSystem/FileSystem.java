@@ -9,20 +9,21 @@ import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 /**
- * Filesystems provide an abstraction layer so that clients can access 
+ * Filesystems provide an abstraction layer so that clients can access
  * any heirarchy of files in a implementation-independent way.  For example,
- * remote filesystems accessible via http are accessible through the same 
+ * remote filesystems accessible via http are accessible through the same
  * interface as a local filesystem.
  *
  * @author  Jeremy
  */
 
 
-public abstract class FileSystem  {   
-        
+public abstract class FileSystem  {
+    
     URL root;
     protected static Logger logger= DasLogger.getLogger( DasLogger.FILESYSTEM_LOG );
     
@@ -43,7 +44,7 @@ public abstract class FileSystem  {
      * Creates a FileSystem by parsing the URL and creating the correct FS type.
      * Presently, only "file://" and "http://" are supported.
      */
-    public static FileSystem create( URL root ) throws FileSystemOfflineException {          
+    public static FileSystem create( URL root ) throws FileSystemOfflineException {
         logger.fine("create filesystem "+root);
         if ( "file".equals(root.getProtocol()) ) {
             return new LocalFileSystem( root );
@@ -64,7 +65,7 @@ public abstract class FileSystem  {
             } catch ( MalformedURLException e ) {
                 throw new RuntimeException(e);
             }
-        }        
+        }
         this.root= root;
     }
     
@@ -73,21 +74,21 @@ public abstract class FileSystem  {
     }
     
     private static String getRegexFromGlob( String glob ) {
-        final String regex= glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");     
+        final String regex= glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
         return regex;
     }
     
     protected void handleException( Exception e ) {
         DasExceptionHandler.handle(e);
     }
-
+    
     /**
      * returns the canonical name /a/b/c.dat of a string that
      * contains backslashes and might not have the leading /
      * and trailing slashes.  Also, double slashes (//) are
-     * removed.  Note this is the name of the FileObject 
+     * removed.  Note this is the name of the FileObject
      * within the FileSystem.
-     */    
+     */
     protected static String toCanonicalFilename( String filename ) {
         filename= filename.replaceAll( "\\\\", "/" );
         if ( filename.length()==0 || filename.charAt(0)!='/' ) {
@@ -113,17 +114,28 @@ public abstract class FileSystem  {
     /**
      * returns a list of the names of the files in a directory.  Names ending
      * in "/" are themselves directories, and the "/" is not part of the name.
-     * 
+     *
      */
     abstract public String[] listDirectory( String directory );
     
     /**
      * returns a list of the names of the files in a directory that match regex.
-     * Trailing slashes on directory names are not part of the name and need 
+     * Trailing slashes on directory names are not part of the name and need
      * not be part of the regex.
      */
     abstract public String[] listDirectory( String directory, String regex );
- 
+    
+    /**
+     * Boolean.TRUE if the filesystem ignores case, such as Windows local filesystem.
+     */
+    public static final String PROP_CASE_INSENSITIVE= "caseInsensitive";
+            
+    private static HashMap properties;
+    
+    public Object getProperty( String name ) {
+        return properties.get(name);
+    }
+    
     /**
      * create a new filesystem that is a part of this filesystem, rooted at
      * directory.
@@ -136,4 +148,63 @@ public abstract class FileSystem  {
         }
     }
     
+    /**
+     * returns a String[5]:
+     *   [0] is proto "http://"
+     *   [1] will be the host
+     *   [2] is proto + path
+     *   [3] is proto + path + file
+     *   [4] is file ext
+     *   [5] is params, not including ?.
+     * @param surl an url string to parse.
+     */
+    public static String[] splitUrl( String surl ) {
+        
+        if ( !( surl.startsWith("file://") || surl.startsWith("ftp://") || surl.startsWith("http://") || surl.startsWith("https://") ) ) {
+            surl= "file://"+surl;
+        }
+           
+        int i;
+        
+        String params=null;
+        
+        int fileEnd;
+        // check for just one ?
+        i= surl.indexOf( "?" );
+        if ( i != -1 ) {
+            fileEnd= i;
+            params= surl.substring(i+1);
+            i= surl.indexOf("?",i+1);
+            if ( i!=-1 ) {
+                throw new IllegalArgumentException("too many ??'s!");
+            }
+        } else {
+            fileEnd= surl.length();
+        }
+        
+        i= surl.lastIndexOf("/");
+        String surlDir= surl.substring(0,i);
+        
+        String file= surl.substring(i,fileEnd);
+        i= file.lastIndexOf('.');
+        String ext;
+        if ( i!=-1 ) {
+            ext= file.substring(i+1);
+        } else {
+            ext= "";
+        }
+        
+        int i2= surl.indexOf("://");
+        
+        String[] result= new String[6];
+        result[0]= surl.substring(0,i2+3);
+        result[1]= null;
+        result[2]= surlDir+"/";
+        result[3]= surl.substring(0,fileEnd);
+        result[4]= ext;
+        result[5]= params;
+        
+        return result;
+        
+    }
 }
