@@ -140,6 +140,7 @@ public class HttpFileSystem extends WebFileSystem {
                 logger.fine("transferring bytes of "+filename);
                 FileOutputStream out= new FileOutputStream( partFile );
                 monitor.setLabel( "downloading file" );
+                monitor.started();
                 try {
                     copyStream( in, out, monitor );
                     monitor.finished();
@@ -240,5 +241,5 @@ public class HttpFileSystem extends WebFileSystem {
         return (String[])result.toArray(new String[result.size()]);
         
     }
-    
+
 }
