@@ -118,7 +118,7 @@ public class FTPFileSystem extends WebFileSystem {
             monitor.setTaskSize( i );
             out= new FileOutputStream( partFile );
             is = urlc.getInputStream(); // To download
-            
+            monitor.started();
             copyStream(is, out, monitor );
             monitor.finished();
             out.close();
