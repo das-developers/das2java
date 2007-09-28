@@ -235,6 +235,9 @@ public class StreamTool {
         private byte[] four = new byte[4];
         private StreamHandler handler;
         private Map descriptors = new HashMap();
+        private int byteOffset=0;  // byte offset into file
+        private int descriptorCount=0; // successfully read descriptors
+        private int packetCount=0; // successfully read packets
         private ReadStreamStructure(ReadableByteChannel stream, StreamHandler handler) {
             this.stream = stream;
             this.handler = handler;
@@ -249,9 +252,12 @@ public class StreamTool {
                 stream = getInflaterChannel(stream);
             }
             handler.streamDescriptor(sd);
+            struct.descriptorCount++;
             while (stream.read(struct.bigBuffer) != -1) {
                 struct.bigBuffer.flip();
-                while (getChunk(struct));
+                while ( getChunk(struct) ) {
+                    // this block is empty
+                }
                 struct.bigBuffer.compact();
             }
             handler.streamClosed(sd);
@@ -275,11 +281,13 @@ public class StreamTool {
         struct.bigBuffer.get(struct.four);
         if (isStreamDescriptorHeader(struct.four)) {
             int contentLength = getContentLength(struct.bigBuffer);
+            struct.byteOffset+= struct.bigBuffer.position();
             struct.bigBuffer.clear().limit(contentLength);
             while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1);
             if (struct.bigBuffer.hasRemaining()) {
                 throw new StreamException("Reached end of stream before encountering stream descriptor");
             }
+            struct.byteOffset+= struct.bigBuffer.position();
             struct.bigBuffer.flip();
             Document doc = getXMLDocument(struct.bigBuffer, contentLength);
             Element root = doc.getDocumentElement();
@@ -325,6 +333,7 @@ public class StreamTool {
                 struct.bigBuffer.reset();
                 return false;
             }
+            
             Document doc = getXMLDocument(struct.bigBuffer, contentLength);
             Element root = doc.getDocumentElement();
             if (root.getTagName().equals("packet")) {
@@ -338,6 +347,7 @@ public class StreamTool {
             } else {
                 throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
             }
+            struct.descriptorCount++;
         } else if (isPacketHeader(struct.four)) {
             String key = asciiBytesToString(struct.four, 1, 2);
             PacketDescriptor pd = (PacketDescriptor)struct.descriptors.get(key);
@@ -353,12 +363,14 @@ public class StreamTool {
                 vectors[i] = pd.getYDescriptor(i).read(struct.bigBuffer);
             }
             struct.handler.packet(pd, xTag, vectors);
+            struct.packetCount++;
         } else {
             String msg= "Expected four byte header, found '";
             String s= new String(struct.four);
             s= s.replaceAll( "\n", "\\\\n" ); // TODO: what's the right wat to say this?
             msg+= s;
-            msg+= "' at byteOffset=" + struct.bigBuffer.position();
+            msg+= "' at byteOffset=" + ( struct.byteOffset + struct.bigBuffer.position()-4 );
+            msg+= " after reading "+struct.descriptorCount+" descriptors and " + struct.packetCount + " packets.";
             throw new StreamException( msg );
         }
         return true;
@@ -402,6 +414,14 @@ public class StreamTool {
         ByteBuffer xml = buffer.duplicate();
         xml.limit(xml.position() + contentLength);
         buffer.position(buffer.position() + contentLength);
+        final boolean DEBUG= false;
+        if ( DEBUG ) {
+            int pos= xml.position();
+            byte[] bytes= new byte[ xml.limit() - xml.position() ];
+            xml.get( bytes );
+            xml.position(pos);
+            System.err.println( new String( bytes ) );
+        }
         ByteBufferInputStream bbin = new ByteBufferInputStream(xml);
         InputStreamReader isr = new InputStreamReader(bbin);
         return parseHeader(isr);
