@@ -27,7 +27,6 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.stream.*;
 import java.io.*;
-import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -50,6 +49,7 @@ import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 public class StreamTool {
@@ -289,20 +289,38 @@ public class StreamTool {
             }
             struct.byteOffset+= struct.bigBuffer.position();
             struct.bigBuffer.flip();
-            Document doc = getXMLDocument(struct.bigBuffer, contentLength);
-            Element root = doc.getDocumentElement();
-            if (root.getTagName().equals("stream")) {
-                StreamDescriptor sd = new StreamDescriptor(doc.getDocumentElement());
-                struct.bigBuffer.clear();
-                return sd;
-            } else if (root.getTagName().equals("exception")) {
-                throw exception(root);
-            } else {
-                throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+            
+            try {
+                Document doc = getXMLDocument(struct.bigBuffer, contentLength);
+                Element root = doc.getDocumentElement();
+                if (root.getTagName().equals("stream")) {
+                    StreamDescriptor sd = new StreamDescriptor(doc.getDocumentElement());
+                    struct.bigBuffer.clear();
+                    return sd;
+                } else if (root.getTagName().equals("exception")) {
+                    throw exception(root);
+                } else {
+                    throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+                }
+            } catch ( SAXException ex) {
+                String msg = getSAXParseExceptionMessage(ex, struct);
+                throw new StreamException( msg );
             }
         } else {
             throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(struct.four, 0, 4) + "'");
         }
+    }
+    
+    private static String getSAXParseExceptionMessage(final SAXException ex, final ReadStreamStructure struct) {
+        String loc= null;
+        if ( ex instanceof SAXParseException ) {
+            SAXParseException spe= (SAXParseException)ex;
+            loc= "Relative to packet start, line number is "+spe.getLineNumber()+", column is "+spe.getColumnNumber() ;
+        }
+        String msg= "xml parser fails with the message: \""+ ex.getMessage() +
+                "\" within the packet ending at byte offset " + struct.byteOffset + ".";
+        if ( loc!=null ) msg += "  "+loc;
+        return msg;
     }
     
     private static final StreamException exception(Element exception) {
@@ -334,20 +352,25 @@ public class StreamTool {
                 return false;
             }
             
-            Document doc = getXMLDocument(struct.bigBuffer, contentLength);
-            Element root = doc.getDocumentElement();
-            if (root.getTagName().equals("packet")) {
-                PacketDescriptor pd = new PacketDescriptor( doc.getDocumentElement() );
-                struct.handler.packetDescriptor(pd);
-                struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
-            } else if (root.getTagName().equals("exception")) {
-                throw exception(root);
-            } else if ( root.getTagName().equals("comment")) {
-                struct.handler.streamComment( new StreamComment(doc.getDocumentElement()) );
-            } else {
-                throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+            try {
+                Document doc = getXMLDocument(struct.bigBuffer, contentLength);
+                Element root = doc.getDocumentElement();
+                if (root.getTagName().equals("packet")) {
+                    PacketDescriptor pd = new PacketDescriptor( doc.getDocumentElement() );
+                    struct.handler.packetDescriptor(pd);
+                    struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
+                } else if (root.getTagName().equals("exception")) {
+                    throw exception(root);
+                } else if ( root.getTagName().equals("comment")) {
+                    struct.handler.streamComment( new StreamComment(doc.getDocumentElement()) );
+                } else {
+                    throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+                }
+                struct.descriptorCount++;
+            } catch ( SAXException ex ) {
+                String msg = getSAXParseExceptionMessage(ex, struct);
+                throw new StreamException( msg );
             }
-            struct.descriptorCount++;
         } else if (isPacketHeader(struct.four)) {
             String key = asciiBytesToString(struct.four, 1, 2);
             PacketDescriptor pd = (PacketDescriptor)struct.descriptors.get(key);
@@ -410,7 +433,7 @@ public class StreamTool {
                 && Character.isDigit((char)four[2]);
     }
     
-    private static Document getXMLDocument(ByteBuffer buffer, int contentLength) throws StreamException, IOException {
+    private static Document getXMLDocument(ByteBuffer buffer, int contentLength) throws StreamException, IOException, SAXException {
         ByteBuffer xml = buffer.duplicate();
         xml.limit(xml.position() + contentLength);
         buffer.position(buffer.position() + contentLength);
@@ -424,7 +447,17 @@ public class StreamTool {
         }
         ByteBufferInputStream bbin = new ByteBufferInputStream(xml);
         InputStreamReader isr = new InputStreamReader(bbin);
-        return parseHeader(isr);
+        
+        try {
+            DocumentBuilder builder;
+            builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            InputSource source = new InputSource(isr);
+            Document document= builder.parse(source);
+            return document;
+        } catch (ParserConfigurationException ex) {
+            throw new RuntimeException(ex);
+        }
+        
     }
     
     private static int getContentLength(ByteBuffer buffer) throws StreamException {
@@ -443,38 +476,6 @@ public class StreamTool {
         return contentLength;
     }
     
-    public static Document parseHeader(Reader header) throws StreamException {
-        try {
-            /*
-            header = new FilterReader(header) {
-                public int read() throws IOException {
-                    int result = super.read();
-                    if (result != -1) {
-                        System.out.print((char)result);
-                    }
-                    return result;
-                }
-                public int read(char[] buff, int offset, int length) throws IOException {
-                    int result = super.read(buff, offset, length);
-                    if (result != -1) {
-                        System.out.print(new String(buff, offset, length));
-                    }
-                    return result;
-                }
-            };
-             */
-            DocumentBuilder builder= DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            InputSource source = new InputSource(header);
-            Document document= builder.parse(source);
-            return document;
-        } catch ( ParserConfigurationException ex ) {
-            throw new RuntimeException(ex.getMessage());
-        } catch ( SAXException ex ) {
-            throw new StreamException(ex);
-        } catch ( IOException ex) {
-            throw new StreamException(ex);
-        }
-    }
     
     public static void formatHeader(Document document, Writer writer) throws StreamException {
         try {
@@ -520,7 +521,7 @@ public class StreamTool {
     static {
         typesMap= new HashMap();
         typesMap.put( Datum.class, "Datum" );
-        typesMap.put( Datum.Double.class, "Datum" );                
+        typesMap.put( Datum.Double.class, "Datum" );
         typesMap.put( Integer.class, "int" );
     }
     
