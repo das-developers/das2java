@@ -64,6 +64,9 @@ public class PersistentStateSupport {
     private JLabel currentFileLabel;
     private List recentFiles;
     
+    /** state has been modified and needs to be saved */
+    private boolean dirty;
+            
     public interface SerializationStrategy {
         // give me a document to serialize
         public Element serialize( Document document, DasProgressMonitor monitor ) throws IOException;
@@ -152,7 +155,7 @@ public class PersistentStateSupport {
         final Pattern pattern= Glob.getPattern(glob);
         return new FileFilter() {
             public boolean accept( File pathname ) {
-                return pattern.matcher(pathname.getName()).matches();
+                return pathname.isDirectory() || pattern.matcher(pathname.getName()).matches();
             }
             public String getDescription() { return glob; }
         };
@@ -216,6 +219,8 @@ public class PersistentStateSupport {
                     
                     Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
                     prefs.put( "PersistentStateSupport"+ext, currentFile.getAbsolutePath() );
+                    dirty= false;
+                    update();
                 } catch ( IOException ex ) {
                     throw new RuntimeException(ex);
                 } catch ( ParserConfigurationException ex ) {
@@ -269,7 +274,7 @@ public class PersistentStateSupport {
     }
     
     public JLabel createCurrentFileLabel() {
-        currentFileLabel= new JLabel( String.valueOf(currentFile) );
+        currentFileLabel= new JLabel( "                  " );
         return currentFileLabel;
     }
     
@@ -331,6 +336,8 @@ public class PersistentStateSupport {
             public void run() {
                 try {
                     openImpl(file);
+                    dirty= false;
+                    update();
                 } catch ( IOException e ) {
                     throw new RuntimeException(e);
                 } catch ( ParserConfigurationException e ) {
@@ -348,7 +355,15 @@ public class PersistentStateSupport {
     public void close() {
         currentFile= null;
     }
+
+    public void markDirty() {
+        this.dirty= true;
+        update();
+    }
     
+    private void update() {
+        if ( currentFileLabel!=null ) this.currentFileLabel.setText( currentFile + ( dirty ? " *" : "" ) );
+    }
     /** Creates a new instance of PersistentStateSupport */
     public PersistentStateSupport() {
     }
