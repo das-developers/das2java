@@ -307,8 +307,29 @@ public class StreamTool {
                 throw new StreamException( msg );
             }
         } else {
-            throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(struct.four, 0, 4) + "'");
+            String s= readMore( struct );
+            throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(struct.four, 0, 4) + "' beginning \n'"+s+"'");
         }
+    }
+    
+    /**
+     * call this after error, to get another 100 bytes off the stream
+     */
+    private static String readMore( ReadStreamStructure struct ) throws IOException {
+        struct.bigBuffer.position(0);
+        struct.bigBuffer.limit(10);
+        byte[] bytes10= new byte[10];
+        struct.bigBuffer.get(bytes10);
+        String s= new String( bytes10 );
+        struct.bigBuffer.limit(1000);
+        struct.bigBuffer.position(0);
+        while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1)  ;
+        int p= struct.bigBuffer.position();
+        byte[] bytes= new byte[p];
+        struct.bigBuffer.flip();
+        struct.bigBuffer.get( bytes );
+        s= s + new String( bytes );
+        return s;
     }
     
     private static String getSAXParseExceptionMessage(final SAXException ex, final ReadStreamStructure struct) {
