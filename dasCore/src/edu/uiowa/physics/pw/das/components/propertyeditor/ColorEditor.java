@@ -147,6 +147,11 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         return choice;
     }
     
+    public Component getSmallEditor() {
+        choice.setSelectedItem(getValue());
+        return choice;
+    }
+    
     private class ColorChoiceModel extends AbstractListModel implements ComboBoxModel {
         
         private final String CUSTOM_LABEL = "custom...";
