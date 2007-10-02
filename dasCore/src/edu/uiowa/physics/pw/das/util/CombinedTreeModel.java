@@ -18,13 +18,13 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 /**
- *
+ * Forms a tree by connecting sub-trees.
  * @author Jeremy
  */
 public class CombinedTreeModel implements TreeModel {
     
     List treeModels;
-    Object root= "Select dataset";
+    Object root= null;
     WeakHashMap sourceMap;
     
     List listeners;
