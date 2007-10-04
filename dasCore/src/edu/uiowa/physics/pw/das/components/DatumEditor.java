@@ -70,6 +70,7 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
         
         unitsButton = new JButton();
         unitsButton.setFocusable(false);
+        unitsButton.setToolTipText("units selection");
         add(unitsButton, BorderLayout.EAST);
     }
     
@@ -173,7 +174,7 @@ public class DatumEditor extends JComponent implements PropertyEditor, TableCell
         else {
             unitsButton.setVisible(true);
             unitsButton.setText(units.toString());
-            unitsButton.setToolTipText(units.toString());
+            unitsButton.setToolTipText("units selection");
         }
         this.units = units;
     }
