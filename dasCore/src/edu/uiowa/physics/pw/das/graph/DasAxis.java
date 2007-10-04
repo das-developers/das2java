@@ -1609,6 +1609,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( at==null ) return null;
         if ( memento.log!=isLog() ) return null;
         if ( memento.flipped!=flipped ) return null;
+        if ( ! memento.range.getUnits().isConvertableTo(getUnits() ) ) return null;
         
         double dmin0= transform(memento.range.min());  // old axis in new axis space
         double dmax0= transform(memento.range.max());
