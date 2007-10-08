@@ -44,14 +44,14 @@ import java.util.logging.Logger;
 
 
 /**
- * DasMouseInputAdapter delegates mouse and key events to mouse modules, which 
+ * DasMouseInputAdapter delegates mouse and key events to mouse modules, which
  * do something with the events.  Also, mouse events are promoted to MouseDragEvents
  * which conveniently store information about the entire drag gesture.
  *
- * The base class of MouseModule has do-nothing stubs for KeyListener, MouseListener, 
- * MouseMotionListener, and MouseWheelListener, which can be implemented if the 
+ * The base class of MouseModule has do-nothing stubs for KeyListener, MouseListener,
+ * MouseMotionListener, and MouseWheelListener, which can be implemented if the
  * module wants to do something with these events.  Also MouseDragEvents will be
- * sent to the module as its DragRenderer has requested: after the mouse release, 
+ * sent to the module as its DragRenderer has requested: after the mouse release,
  * during the drag, or when keys are pressed.
  *
  * The module will first receive the low-level events before receiving the MouseDragEvents.
@@ -73,7 +73,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * that a few modules could be used together simultaneously, but this implementation
      * only allows for one to be active at a time.
      */
-    private Vector active=null; 
+    private Vector active=null;
     
     private boolean pinned= false;
     
@@ -192,10 +192,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         modules.addElement(newModule);
     }
     
+    /**
+     * add a mouse module to the list of available modules.  If a module with the same
+     * label exists already, it will be replaced.
+     */
     public void addMouseModule(MouseModule module) {
         
         if ( DasApplication.getDefaultApplication().isHeadless() ) {
             DasLogger.getLogger( DasLogger.GUI_LOG ).info( "not adding module since headless is true" );
+            
         } else {
             MouseModule preExisting= getModuleByLabel(module.getLabel());
             if (preExisting!=null) {
@@ -268,7 +273,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         };
     }
     
+    /**
+     * set the primary module, the module receiving left-button events, to the
+     * module provided.  If the module is not already loaded, implicitly addMouseModule
+     * is called.
+     */
     public void setPrimaryModule(MouseModule module) {
+        
+        JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(module);
+        if ( j==null ) addMouseModule( module );
         
         for ( Iterator i= primaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
             try {
@@ -279,7 +292,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 throw e;
             }
         }
-        JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(module);
+        
+        j= (JCheckBoxMenuItem)primaryActionButtonMap.get(module);
         if (j!=null) {
             j.setSelected(true);
         }
@@ -288,7 +302,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         parent.setCursor(primary.getCursor());
     }
     
+    /**
+     * set the secondary module, the module receiving middle-button events, to the
+     * module provided.  If the module is not already loaded, implicitly addMouseModule
+     * is called.
+     */
     public void setSecondaryModule(MouseModule module) {
+        JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(module);
+        if ( j==null ) addMouseModule( module );
+        
         for ( Iterator i= secondaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
             try {
                 Object ii= ((Map.Entry)i.next()).getValue();
@@ -298,7 +320,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 throw e;
             }
         }
-        JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(module);
+        
+        j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(module);
         if (j!=null) {
             j.setSelected(true);
         }
@@ -1007,7 +1030,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         max= parent.getRow().getDMaximum();
         parent.getRow().setDPosition( min+dy, max+dy );
     }
-
+    
     public void mouseWheelMoved(MouseWheelEvent e) {
         secondary.mouseWheelMoved( e );
     }
