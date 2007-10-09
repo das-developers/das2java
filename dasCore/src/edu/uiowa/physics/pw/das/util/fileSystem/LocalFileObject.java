@@ -86,7 +86,7 @@ public class LocalFileObject extends FileObject {
         return "["+lfs+"]"+getNameExt();
     }
     
-    public java.nio.channels.Channel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException {
+    public java.nio.channels.ReadableByteChannel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException {
         return ((FileInputStream)getInputStream( monitor )).getChannel();
     }
 

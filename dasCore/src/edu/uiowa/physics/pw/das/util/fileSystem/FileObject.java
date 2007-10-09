@@ -64,7 +64,7 @@ public abstract class FileObject {
      * @throws FileNotFoundException if the file doesn't exist.
      * @return a java.nio.channels.Channel for fast IO reads.
      */
-    public abstract Channel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException;
+    public abstract ReadableByteChannel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException;
     
     /**
      * opens a Channel, but without a monitor.  Note this may block at sub-interactive time
@@ -72,7 +72,7 @@ public abstract class FileObject {
      * @throws FileNotFoundException if the file doesn't exist.
      * @return a java.nio.channels.Channel for fast IO reads.
      */
-    public Channel getChannel() throws FileNotFoundException {
+    public ReadableByteChannel getChannel() throws FileNotFoundException {
         return getChannel( DasProgressMonitor.NULL );
     }
     
