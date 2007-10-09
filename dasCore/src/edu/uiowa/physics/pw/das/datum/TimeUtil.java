@@ -276,6 +276,10 @@ public final class TimeUtil {
         return (year % 4)==0;
     }
     
+    /**
+     * Normalize the TimeStruct by incrementing higher digits.  For
+     * example, 2002-01-01T24:00 -->  2002-01-02T00:00.
+     */
     public static TimeStruct carry(TimeStruct t) {
         TimeStruct result= t;
         
@@ -304,6 +308,10 @@ public final class TimeUtil {
         return result;
     }
     
+    /**
+     * Normalize the TimeStruct by decrementing higher digits.
+     * @throws IllegalArgumentException if t.day<0 or t.month<1
+     */
     public static TimeStruct borrow(TimeStruct t) {
         TimeStruct result= t;
         
@@ -325,7 +333,7 @@ public final class TimeUtil {
             // What does MONTH=-1, DAY=31 mean?  The "digits" are not independent as
             // they are in HOURS,MINUTES,SECONDS...  I don't think we are going to
             // run into this case anyway. jbf
-            DasDie.die("Borrow operation not defined for months<1 or days<0");
+            throw new IllegalArgumentException("Borrow operation not defined for months<1 or days<0");
         }
         if (result.day==0) {
             int daysLastMonth;
