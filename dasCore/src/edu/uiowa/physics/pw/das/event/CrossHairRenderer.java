@@ -204,10 +204,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                 report= "x:"+xAsString + nl + "y:"+yAsString + nl + "z:"+zAsString;
             } else {
                 if ( ds==null && dataSetConsumer instanceof DasPlot ) {
-                    ds= ((DasPlot)dataSetConsumer).getRenderer(0).getDataSet();
+                    if (((DasPlot)dataSetConsumer).getRenderers().length>0 ) {
+                        ds= ((DasPlot)dataSetConsumer).getRenderer(0).getDataSet();
+                    }
                 }
-                VectorDataSet vds= (VectorDataSet)ds;
-                if ( vds!=null && snapping ) {
+                if ( ds!=null && snapping ) {
+                    VectorDataSet vds= (VectorDataSet)ds;
                     int i= DataSetUtil.closestColumn( ds, x );
                     x= vds.getXTagDatum(i);
                     y= vds.getDatum(i);
@@ -233,7 +235,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             dirtyBounds.add( p2 );*/
         } else {
             drawCrossHair(g,p2);
-        } 
+        }
         
         return new Rectangle[] { this.hDirtyBounds, this.vDirtyBounds, dirtyBounds };
     }
