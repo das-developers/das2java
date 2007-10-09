@@ -44,18 +44,21 @@ public class DataTransferType {
     
     private static final int I_SUN_REAL4 = 0;
     private static final int I_SUN_REAL8 = 1;
+    private static final int I_LITTLE_ENDIAN_REAL4 = 4;
+    private static final int I_LITTLE_ENDIAN_REAL8 = 5;
     private static final int I_ASCII = 2;
     private static final int I_TIME = 3;
     
     private static final Map map = new HashMap();
     
     public static final DataTransferType SUN_REAL4 = new DataTransferType("sun_real4", I_SUN_REAL4, 4, false);
-    
     public static final DataTransferType SUN_REAL8 = new DataTransferType("sun_real8", I_SUN_REAL8, 8, false);
+
+    public static final DataTransferType LITTLE_ENDIAN_REAL4 = new DataTransferType("little_endian_real4", I_LITTLE_ENDIAN_REAL4, 4, false);
+    public static final DataTransferType LITTLE_ENDIAN_REAL8 = new DataTransferType("little_endian_real8", I_LITTLE_ENDIAN_REAL8, 8, false);
     
     private static final Pattern ASCII_PATTERN = Pattern.compile("ascii([1-9][0-9]?)");
     private static final Pattern TIME_PATTERN = Pattern.compile("time([1-9][0-9]?)");
-    //TODO: handle time([1-9][0-9]?)
     
     private final String name;
     
@@ -174,6 +177,14 @@ public class DataTransferType {
                     buffer.order(BIG_ENDIAN);
                     result = buffer.getDouble();
                 } break;
+                case I_LITTLE_ENDIAN_REAL4: {
+                    buffer.order(LITTLE_ENDIAN);
+                    result = buffer.getFloat();
+                } break;
+                case I_LITTLE_ENDIAN_REAL8: {
+                    buffer.order(LITTLE_ENDIAN);
+                    result = buffer.getDouble();
+                } break;
                 case I_ASCII: {
                     byte[] bytes = new byte[sizeBytes];
                     buffer.get(bytes);
@@ -203,6 +214,14 @@ public class DataTransferType {
                 } break;
                 case I_SUN_REAL8: {
                     buffer.order(BIG_ENDIAN);
+                    buffer.putDouble(d);
+                } break;
+                case I_LITTLE_ENDIAN_REAL4: {
+                    buffer.order(LITTLE_ENDIAN);
+                    buffer.putFloat((float)d);
+                } break;
+                case I_LITTLE_ENDIAN_REAL8: {
+                    buffer.order(LITTLE_ENDIAN);
                     buffer.putDouble(d);
                 } break;
                 case I_ASCII: {
