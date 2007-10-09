@@ -21,6 +21,12 @@ public class LocalFileSystem extends FileSystem {
     
     File localRoot;
     
+    /**
+     * Note the String used to create the URL should have either one or three slashes:
+     *   file:/home/jbf    or   file:///home/jbf   but not
+     *   file://home/jbf
+     * Also, on Windows, /c:/documents and settings/jbf/  is okay.
+     */
     protected LocalFileSystem(URL root) throws FileSystemOfflineException {
         super( root );
         if ( !("file".equals(root.getProtocol()) ) ) {
