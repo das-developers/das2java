@@ -67,7 +67,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         return new MouseAdapter() {
             int selectedTab;
             JPopupMenu tearOffMenu= new JPopupMenu();
-            { tearOffMenu.add( new JMenuItem( new AbstractAction( "tear off" ) {
+            { tearOffMenu.add( new JMenuItem( new AbstractAction( "undock" ) {
                   public void actionPerformed( ActionEvent event ) {
                       TearoffTabbedPane.this.tearOffIntoFrame( selectedTab );
                   }
