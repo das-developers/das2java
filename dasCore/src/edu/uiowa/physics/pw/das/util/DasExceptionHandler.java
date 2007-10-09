@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
-import edu.uiowa.physics.pw.das.*;
+import edu.uiowa.physics.pw.das.DasApplication;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
