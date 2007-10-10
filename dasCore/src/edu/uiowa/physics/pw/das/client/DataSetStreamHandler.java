@@ -88,6 +88,10 @@ public class DataSetStreamHandler implements StreamHandler {
                 e.printStackTrace();
             }
         }
+        if ( ( o=sd.getProperty( DataSet.PROPERTY_X_MONOTONIC ) )!=null ) {
+            extraProperties.put( DataSet.PROPERTY_X_MONOTONIC, Boolean.valueOf((String)o) );
+            
+        }
         if ( ( o=sd.getProperty("pid") )!=null ) {
             logger.fine("stream pid="+o);
         }
