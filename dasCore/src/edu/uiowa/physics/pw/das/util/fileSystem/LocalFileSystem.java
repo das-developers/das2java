@@ -32,7 +32,9 @@ public class LocalFileSystem extends FileSystem {
         if ( !("file".equals(root.getProtocol()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
-        localRoot=new File(root.getFile());
+        String[] split= FileSystem.splitUrl( root.toString() );
+        
+        localRoot=new File( split[2].substring(split[0].length()) );
         if ( !localRoot.exists() ) {
             File[] roots= File.listRoots();
             if ( Arrays.asList(roots).contains(localRoot) ) {
@@ -41,6 +43,8 @@ public class LocalFileSystem extends FileSystem {
                 throw new IllegalArgumentException( "root does not exist: "+root );
             }
         }
+        boolean b= new File("xxx").equals(new File("XXX"));
+        properties.put( PROP_CASE_INSENSITIVE, Boolean.valueOf( b ) );
     }
     
     public boolean isDirectory(String filename) {
