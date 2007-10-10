@@ -536,7 +536,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 
             }
         } // for (int index = ixmin; index <= ixmax; index++)
-        fillPath.lineTo(fx, fyref);
+        
+        //final boolean isValid= yUnits.isValid(y) && xUnits.isValid(x);
+        //if ( isValid ) fillPath.lineTo(fx, fyref);
+        fillPath.lineTo(fx0, fyref);
         
         path = newPath;
         this.fillToRefPath = fillPath;
