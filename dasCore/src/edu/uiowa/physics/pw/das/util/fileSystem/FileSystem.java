@@ -130,7 +130,7 @@ public abstract class FileSystem  {
      */
     public static final String PROP_CASE_INSENSITIVE= "caseInsensitive";
             
-    private static HashMap properties;
+    protected HashMap properties= new HashMap(5);
     
     public Object getProperty( String name ) {
         return properties.get(name);
@@ -160,8 +160,8 @@ public abstract class FileSystem  {
      */
     public static String[] splitUrl( String surl ) {
         
-        if ( !( surl.startsWith("file://") || surl.startsWith("ftp://") || surl.startsWith("http://") || surl.startsWith("https://") ) ) {
-            surl= "file://"+surl;
+        if ( !( surl.startsWith("file:/") || surl.startsWith("ftp://") || surl.startsWith("http://") || surl.startsWith("https://") ) ) {
+            surl= "file://"+ ( ( surl.charAt(0)=='/' ) ? surl : ( '/' + surl ) ); // Windows c:
         }
            
         int i;
@@ -194,10 +194,12 @@ public abstract class FileSystem  {
             ext= "";
         }
         
-        int i2= surl.indexOf("://");
-        
+        // let i2 be the end if the protocol and the beginning of the file.
+        int i2= surl.indexOf("://")+3;
+        if ( surl.indexOf("://")==-1 && surl.startsWith("file:/" ) ) i2=5;
+                
         String[] result= new String[6];
-        result[0]= surl.substring(0,i2+3);
+        result[0]= surl.substring(0,i2);
         result[1]= null;
         result[2]= surlDir+"/";
         result[3]= surl.substring(0,fileEnd);
