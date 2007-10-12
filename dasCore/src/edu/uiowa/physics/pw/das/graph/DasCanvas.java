@@ -26,6 +26,7 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasNameException;
+import edu.uiowa.physics.pw.das.DasProperties;
 import edu.uiowa.physics.pw.das.DasPropertyException;
 import edu.uiowa.physics.pw.das.NameContext;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
@@ -106,7 +107,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
@@ -2105,7 +2105,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /**
      * Holds value of property antiAlias.
      */
-    private boolean antiAlias= false;
+    private boolean antiAlias=  "on".equals(DasProperties.getInstance().get("antiAlias"));
     
     /**
      * Getter for property antiAlias.
