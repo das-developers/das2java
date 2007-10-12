@@ -24,6 +24,8 @@ import javax.swing.tree.TreePath;
 public class CombinedTreeModel implements TreeModel {
     
     List treeModels;
+    List treeModelRoots;
+    
     Object root= null;
     WeakHashMap sourceMap;
     
@@ -32,6 +34,7 @@ public class CombinedTreeModel implements TreeModel {
     public CombinedTreeModel( Object root ) {
         this.root= root;
         treeModels= new ArrayList();
+        treeModelRoots= new ArrayList();
         sourceMap= new WeakHashMap();
         listeners= new ArrayList();
     }
@@ -68,11 +71,26 @@ public class CombinedTreeModel implements TreeModel {
         return root;
     }
     
+    /**
+     * mounts the tree.  Note each treeModel must have a unique root.
+     */
     public void mountTree( TreeModel treeModel ) {
+        if ( treeModelRoots.contains( treeModel.getRoot() ) ) {
+            unmountTree(treeModel);
+        }
         treeModels.add( treeModel );
+        treeModelRoots.add( treeModel.getRoot());
         TreePath path= new TreePath(root);
         treeModel.addTreeModelListener(myListener);
         fireTreeNodesInserted( path, new int[] { treeModels.size()-1 }, new Object[] { treeModel.getRoot() } );
+    }
+    
+    public void unmountTree( TreeModel treeModel ) {
+        int index= treeModelRoots.indexOf(treeModel.getRoot());
+        treeModels.remove(index);
+        treeModelRoots.remove(index);
+        TreePath path= new TreePath(root);
+        fireTreeNodesRemoved( new TreeModelEvent( this, path ) );
     }
     
     public Object getChild(Object parent, int index) {
@@ -81,7 +99,6 @@ public class CombinedTreeModel implements TreeModel {
         if ( parent==root ) {
             mt= (TreeModel)treeModels.get(index);
             result= mt.getRoot();
-            System.err.println("index->"+result);
         } else {
             mt= (TreeModel)sourceMap.get( parent );
             result= mt.getChild( parent, index );
