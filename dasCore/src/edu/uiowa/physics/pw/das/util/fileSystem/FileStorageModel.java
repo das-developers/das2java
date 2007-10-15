@@ -30,7 +30,10 @@ public class FileStorageModel {
     private String regex;
     
     private FieldHandler[] fieldHandlers;
+
     private int timeWidth; /* in TimeUtil enum */
+    private int timeWidthMultiplier;   /* 7 days */
+    
     private boolean[] copyToEndTime; /* indexed by TimeUtil enum */
     private boolean useEndTime;
     FileStorageModel parent;
@@ -233,6 +236,7 @@ public class FileStorageModel {
             }
             if ( i>0 && startDigits[i]==0 && startDigits[i-1]==1 ) {
                 timeWidth= toTimeUtilEnum( startLsd );
+                timeWidthMultiplier= 1;
             }
         }
         
@@ -293,6 +297,11 @@ public class FileStorageModel {
      */
     private DatumRange getDatumRangeFor( String filename ) {
         
+        if ( fieldHandlers.length==0 ) {
+            // e.g. FULL1 doesn't constrain time
+            return DatumRange.newDatumRange( -1e30, 1e30, Units.mj1958 );
+        }
+        
         TimeUtil.TimeStruct ts1= new TimeUtil.TimeStruct();
         ts1.year=0;
         ts1.day=1;
@@ -321,7 +330,10 @@ public class FileStorageModel {
             if ( copyToEndTime[7] ) ts2.seconds= ts1.seconds;
             
             Datum s1= TimeUtil.toDatum(ts1);
-            Datum s2= TimeUtil.next(timeWidth, TimeUtil.toDatum(ts2));
+            Datum s2= TimeUtil.next( timeWidth, TimeUtil.toDatum(ts2) );
+            for ( int ii=1; ii<timeWidthMultiplier; ii++ ) {
+                s2= TimeUtil.next( timeWidth, s2 );
+            }
             
             DatumRange dr= new DatumRange(s1,s2);
             return dr;
@@ -382,6 +394,13 @@ public class FileStorageModel {
                 if ( getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
             }
         }
+        Collections.sort( list, new Comparator() {
+            public int compare( Object o1, Object o2 ) {
+                DatumRange dr1= getRangeFor( (String)o1 );
+                DatumRange dr2= getRangeFor( (String)o2 );
+                return dr1.compareTo( dr2 );
+            }
+        } );
         return (String[])list.toArray(new String[list.size()]);
     }
     
@@ -567,4 +586,25 @@ public class FileStorageModel {
         return this.root;
     }
 
+    /**
+     * specify each files' width when the implicit width is not correct.  For
+     * example, files are stored with a tag for the starting day, but actually
+     * span a week.  The width must be an integer multiple of one year, month,
+     * day, hour, minute, or second.
+     * @param digitCode 'Y', 'm', 'd', 'H', etc.
+     */
+    public void setFileWidth( int multiplier, char digitCode ) {
+        int widthCode= -1;
+        switch ( digitCode ) {
+            case 'Y': widthCode= TimeUtil.YEAR; break;
+            case 'm': widthCode= TimeUtil.MONTH; break;
+            case 'd': widthCode= TimeUtil.DAY; break;
+            case 'H': widthCode= TimeUtil.HOUR; break;
+            case 'M': widthCode= TimeUtil.MINUTE; break;
+            case 'S': widthCode= TimeUtil.SECOND; break;
+            default: throw new IllegalArgumentException("bad digit code: "+digitCode+", must be Y,m,d,H,M,or S");
+        }
+        this.timeWidthMultiplier= multiplier;
+        this.timeWidth= widthCode;
+    }
 }
