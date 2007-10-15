@@ -83,7 +83,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     
     /** Holds value of property color. */
     private Color color = Color.BLACK;
-    
+            
     private long lastUpdateMillis;
     
     /** Holds value of property antiAliased. */
@@ -910,6 +910,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      */
     public void setColorByDataSet(edu.uiowa.physics.pw.das.dataset.VectorDataSet colorByDataSet) {
         this.colorByDataSet = colorByDataSet;
+        refreshImage();
     }
     
     /**
@@ -971,28 +972,17 @@ public class SeriesRenderer extends Renderer implements Displayable {
     
     public boolean acceptContext(int x, int y) {
         boolean accept= false;
-        //AffineTransform at= getMyAffineTransform( parent.getXAxis(), parent.getYAxis() );
-        //Point2D.Double p= new Point2D.Double( x, y );
-        // Point2D.Double dp= new Point2D.Double();
-        // try {
-        //     at.inverseTransform( p, dp );
-        // } catch ( NoninvertibleTransformException e ) {
-        //     throw new RuntimeException(e);
-        // }
         
         Point2D.Double dp= new Point2D.Double( x, y );
         
         if ( fillToReference && fillToRefPath!=null && fillToRefPath.contains( dp ) ) {
             accept= true;
         }
-        //double sx= Math.abs( at.getScaleX() );
-        // double sy= Math.abs( at.getScaleY() );
-        //if ( (!accept) && path.intersects( dp.x-5/sx, dp.y-5/sy, 10/sx, 10/sy ) ) {
-        //    accept= true;
-        //}
+
         if ( (!accept) && path!=null && path.intersects( dp.x-5, dp.y-5, 10, 10 ) ) {
             accept= true;
         }
         return accept;
     }
+
 }
