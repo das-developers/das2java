@@ -82,7 +82,10 @@ public class LocalFileSystem extends FileSystem {
     }
     
     public String toString() {
-        return "lfs "+localRoot;
+        String s= String.valueOf(localRoot);
+        s= s.replaceAll("\\\\","/");
+        if ( !s.endsWith("/" ) ) s= s+"/";
+        return "lfs "+s;
     }
     
     public FileObject getFileObject(String filename) {
