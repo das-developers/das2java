@@ -29,14 +29,11 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
 
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
-import edu.uiowa.physics.pw.das.graph.GraphUtil;
-import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.text.*;
-import java.text.DecimalFormat;
 
 /**
  *
@@ -155,6 +152,41 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         return result;
     }
     
+    private int closestPointVector( VectorDataSet ds, Datum x, Datum y ) {
+        
+        Boolean xmono= (Boolean)ds.getProperty( DataSet.PROPERTY_X_MONOTONIC );
+        
+        DasAxis xa, ya;
+        xa= ( this.XAxis==null ) ? parent.getXAxis() : XAxis;
+        ya= ( this.YAxis==null ) ? parent.getYAxis() : YAxis;
+        
+        int start,end;
+        Point2D.Double me= new Point2D.Double( xa.transform(x),ya.transform(y) );
+        if ( xmono!=null && xmono.equals( Boolean.TRUE ) ) {
+            start= DataSetUtil.getPreviousColumn( ds, xa.getDataMinimum() );
+            end= DataSetUtil.getNextColumn( ds, xa.getDataMaximum() );
+        } else {
+            start= 0;
+            end= ds.getXLength();
+        }
+        
+        int bestIndex=-1;
+        double bestDist= Double.POSITIVE_INFINITY;
+        
+        for ( int i=start; i<end; i++ ) {
+            Point2D them= new Point2D.Double( xa.transform(ds.getXTagDatum(i)),ya.transform(ds.getDatum(i)) );
+            double dist= me.distance(them);
+            if ( dist<bestDist ) {
+                bestIndex= i;
+                bestDist= dist;
+            }
+        }
+        
+        return bestIndex;
+        
+        
+    }
+    
     public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHints((RenderingHints)edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
@@ -210,11 +242,23 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                 }
                 if ( ds!=null && snapping ) {
                     VectorDataSet vds= (VectorDataSet)ds;
-                    int i= DataSetUtil.closestColumn( ds, x );
+                    int i= closestPointVector( vds, x, y );
                     x= vds.getXTagDatum(i);
                     y= vds.getDatum(i);
                     xAsString= nfx.format(x);
                     yAsString= nfy.format(y);
+                    if ( allPlanesReport ) {
+                        String result= yAsString;
+                        String [] planeIds= vds.getPlaneIds();
+                        for ( int iplane=0; iplane<planeIds.length; iplane++ ) {
+                            if ( !planeIds[iplane].equals("") ) {
+                                result= result+"!c";
+                                result+= planeIds[iplane]+":"+nfy.grannyFormat(((VectorDataSet)vds.getPlanarView(planeIds[iplane])).getDatum(i) );
+                                if ( debugging ) result+= " "+((VectorDataSet)vds.getPlanarView(planeIds[iplane])).toString();
+                            }
+                        }
+                        yAsString= result;
+                    }
                 }
                 report= "x:"+xAsString + nl + "y:"+yAsString;
             }
