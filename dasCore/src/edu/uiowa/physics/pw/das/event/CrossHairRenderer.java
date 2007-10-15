@@ -171,14 +171,30 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         }
         
         int bestIndex=-1;
+        double bestXDist= Double.POSITIVE_INFINITY;
         double bestDist= Double.POSITIVE_INFINITY;
+        int comparisons=0;
+        
+        // prime the best dist comparison by scanning decimated dataset
+        for ( int i=start; i<end; i+=100 ) {
+            double x1= xa.transform(ds.getXTagDatum(i));
+            double dist= Math.abs( x1-me.getX() );
+            if ( dist<bestXDist ) {
+                bestXDist= dist;
+            }
+        }
         
         for ( int i=start; i<end; i++ ) {
-            Point2D them= new Point2D.Double( xa.transform(ds.getXTagDatum(i)),ya.transform(ds.getDatum(i)) );
-            double dist= me.distance(them);
-            if ( dist<bestDist ) {
-                bestIndex= i;
-                bestDist= dist;
+            double x1= xa.transform(ds.getXTagDatum(i));
+            if ( Math.abs( x1-me.getX() )<=bestXDist ) {
+                Point2D them= new Point2D.Double( x1, ya.transform(ds.getDatum(i)) );
+                double dist= me.distance(them);
+                comparisons++;
+                if ( dist<bestDist ) {
+                    bestIndex= i;
+                    bestDist= dist;
+                    bestXDist= Math.abs( x1-me.getX() );
+                }
             }
         }
         
