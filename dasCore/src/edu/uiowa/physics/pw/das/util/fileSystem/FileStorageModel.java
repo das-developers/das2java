@@ -11,13 +11,14 @@ import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.SubTaskMonitor;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
 /**
- * Represents a method for storing data sets in a set of files by time.  The 
- * client provides a regex for the files and how each group of the regex is 
+ * Represents a method for storing data sets in a set of files by time.  The
+ * client provides a regex for the files and how each group of the regex is
  * interpreted as a time digit.  The model can then be used to provide the set
  * of files that cover a time range, etc.
  *
@@ -30,7 +31,7 @@ public class FileStorageModel {
     private String regex;
     
     private FieldHandler[] fieldHandlers;
-
+    
     private int timeWidth; /* in TimeUtil enum */
     private int timeWidthMultiplier;   /* 7 days */
     
@@ -73,7 +74,7 @@ public class FileStorageModel {
         return i;
     }
     
-    //TODO: add 
+    //TODO: add
     //  public string format( DatumRange dr );
     //
     private interface FieldHandler {
@@ -91,7 +92,7 @@ public class FileStorageModel {
     static final NumberFormat nf4= new DecimalFormat("0000");
     static final NumberFormat nf3= new DecimalFormat("000");
     static final NumberFormat nf2= new DecimalFormat("00");
-        
+    
     private static final FieldHandler StartMonthNameHandler= new FieldHandler() {
         public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
             try {
@@ -101,7 +102,7 @@ public class FileStorageModel {
             }
         }
     };
-
+    
     private static final FieldHandler EndMonthNameHandler= new FieldHandler() {
         public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
             try {
@@ -111,8 +112,8 @@ public class FileStorageModel {
             }
         }
     };
-
-
+    
+    
     private static final FieldHandler StartYear4Handler= new IntegerFieldHandler() {
         public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.year= i;  }
         public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf4.format(ts1.year); }
@@ -123,7 +124,7 @@ public class FileStorageModel {
         public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.year % 100 ); }
     };
     
-    private static final FieldHandler StartMonthHandler= new IntegerFieldHandler() {        
+    private static final FieldHandler StartMonthHandler= new IntegerFieldHandler() {
         public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.month= i;  }
         public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.month ); }
     };
@@ -225,7 +226,7 @@ public class FileStorageModel {
             startDigits[StartDay-startBase]=1;
         }
         if ( endDigits[EndYear2-endBase]==1 ) endDigits[EndYear4-endBase]=1;
-        if ( startDigits[EndYear4-endBase]==1 ) startDigits[EndYear2-endBase]=1;        
+        if ( startDigits[EndYear4-endBase]==1 ) startDigits[EndYear2-endBase]=1;
         if ( endDigits[EndDoy-endBase]==1 ) {
             endDigits[EndMonth-endBase]=1;
             endDigits[EndDay-endBase]=1;
@@ -259,14 +260,14 @@ public class FileStorageModel {
     private static FieldHandler[] getHandlers( int [] digitList ) {
         FieldHandler[] startHandlers= new FieldHandler[] {
             StartYear4Handler, StartYear2Handler, StartMonthHandler,  StartDayHandler,
-                    StartDoyHandler ,
-                    StartHourHandler,     StartMinuteHandler,  StartSecondHandler, StartMonthNameHandler,
+            StartDoyHandler ,
+            StartHourHandler,     StartMinuteHandler,  StartSecondHandler, StartMonthNameHandler,
         };
         
         FieldHandler[] endHandlers= new FieldHandler[] {
             EndYear4Handler, EndYear2Handler, EndMonthHandler,  EndDayHandler,
-                    EndDoyHandler ,
-                    EndHourHandler,     EndMinuteHandler,  EndSecondHandler, EndMonthNameHandler,
+            EndDoyHandler ,
+            EndHourHandler,     EndMinuteHandler,  EndSecondHandler, EndMonthNameHandler,
         };
         
         ArrayList fieldHandlerList= new ArrayList();
@@ -358,7 +359,7 @@ public class FileStorageModel {
     public String[] getNamesFor( final DatumRange targetRange ) {
         return getNamesFor( targetRange, DasProgressMonitor.NULL );
     }
-
+    
     public String[] getNamesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
         
         String listRegex;
@@ -377,13 +378,13 @@ public class FileStorageModel {
                 }
             }
             String parentRegex= getParentRegex(regex);
-            listRegex= regex.substring( parentRegex.length()+1 );        
+            listRegex= regex.substring( parentRegex.length()+1 );
         } else {
             fileSystems= new FileSystem[] { root };
             names= new String[] {""};
             listRegex= regex;
         }
-
+        
         List list= new ArrayList();
         
         for ( int i=0; i<fileSystems.length; i++ ) {
@@ -413,9 +414,10 @@ public class FileStorageModel {
     }
     
     /**
-     * returns true if the file came (or could come) from this FileStorageModel.  
+     * returns true if the file came (or could come) from this FileStorageModel.
      */
     public boolean containsFile( File file ) {
+        maybeCreateFileNameMap();
         if ( !fileNameMap.containsKey(file) ) {
             return false;
         } else {
@@ -439,21 +441,37 @@ public class FileStorageModel {
         }
     }
     
+    private synchronized void maybeCreateFileNameMap() {
+        if ( fileNameMap==null ) fileNameMap= new HashMap();
+    }
+    
     /**
-     * returns a list of files that can be used 
+     * retrieve the file for the name.
+     */
+    public File getFileFor( String name, DasProgressMonitor monitor ) throws FileNotFoundException {
+        FileObject o= root.getFileObject( name );
+        File file= o.getFile( monitor );
+        
+        maybeCreateFileNameMap();
+        
+        fileNameMap.put( file, name );
+        return file;
+        
+    }
+    
+    /**
+     * returns a list of files that can be used
      */
     public File[] getFilesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
         String[] names= getNamesFor( targetRange );
         File[] files= new File[names.length];
         
-        if ( fileNameMap==null ) fileNameMap= new HashMap();
+        maybeCreateFileNameMap();
         
         if ( names.length>0 ) monitor.setTaskSize( names.length * 10 );
         for ( int i=0; i<names.length; i++ ) {
             try {
-                FileObject o= root.getFileObject( names[i] );
-                files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));                
-                fileNameMap.put( files[i], names[i] );
+                files[i]= getFileFor( names[i], SubTaskMonitor.create( monitor, i*10, (i+1)*10 ) );
             } catch ( Exception e ) {
                 throw new RuntimeException(e);
             }
@@ -529,7 +547,7 @@ public class FileStorageModel {
             
             char fc= s[i].charAt(0);
             
-            int index=-1; 
+            int index=-1;
             for ( int j=0; j<valid_formatCodes.length; j++ ) if ( valid_formatCodes[j] == fc ) index=j;
             
             String cc= s[i].substring(1);
@@ -544,7 +562,7 @@ public class FileStorageModel {
             
             if ( len == -1 && cc.equals("") && i<n-1 ) {
                 throw new IllegalArgumentException( "invalid variable specification, need non-null constant string to delineate" );
-            }                        
+            }
             
             if ( fc == 'v' || fc == 'V' ) versioning= true;
             
@@ -557,18 +575,18 @@ public class FileStorageModel {
             p[i+1]= p[i] + s[i].length() + 1;
             positions[i]= p[i+1] - cc.length();
         }
-                
+        
         return FileStorageModel.create( root, regex.toString(), dateFormat );
     }
     
     public FileStorageModel( FileStorageModel parent, FileSystem root, String regex, FieldHandler[] handlers ) {
         this.root= root;
         this.parent= parent;
-        this.regex= regex;        
-        this.pattern= Pattern.compile(regex);        
+        this.regex= regex;
+        this.pattern= Pattern.compile(regex);
         this.fieldHandlers= handlers;
     }
-        
+    
     /** Creates a new instance of FileStorageModel */
     private static FileStorageModel create( FileStorageModel parent, FileSystem root, String regex, int[] digitList ) {
         FieldHandler[] handlers= getHandlers(digitList);
@@ -585,7 +603,7 @@ public class FileStorageModel {
     public FileSystem getFileSystem() {
         return this.root;
     }
-
+    
     /**
      * specify each files' width when the implicit width is not correct.  For
      * example, files are stored with a tag for the starting day, but actually
