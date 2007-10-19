@@ -107,8 +107,8 @@ public class TableUtil {
                 double zz= tds.getDouble(i,j, tds.getZUnits() );
                 if ( Double.isNaN( zz ) ) {
                     System.out.println("found NaN at "+i+","+j );
-                    if ( tds.getPlanarView("weights")!=null ) {
-                        System.out.println("  weight: "+((TableDataSet)tds.getPlanarView("weights")).getDouble(i, j, Units.dimensionless ) );
+                    if ( tds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS)!=null ) {
+                        System.out.println("  weight: "+((TableDataSet)tds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS)).getDouble(i, j, Units.dimensionless ) );
                     }
                 } else {
                     // System.out.println("zz="+zz );
