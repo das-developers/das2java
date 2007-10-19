@@ -173,7 +173,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private static File currentFile;
     
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
-         
+        
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Write to PNG");
@@ -934,16 +934,20 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             return;
         }
         if (index < 0) index = 0;
-        if (comp instanceof DasPlot) {
-            ((DasPlot)comp).putClientProperty(LAYER_PROPERTY, PLOT_LAYER);
-        } else if (comp instanceof DasAxis) {
-            ((DasAxis)comp).putClientProperty(LAYER_PROPERTY, AXIS_LAYER);
-        } else if (comp instanceof Legend ) {
-            ((Legend)comp).putClientProperty( LAYER_PROPERTY, AXIS_LAYER );
-        } else if (comp instanceof DasAnnotation) {
-            ((DasAnnotation)comp).putClientProperty(LAYER_PROPERTY, ANNOTATION_LAYER);
-        } else if (comp instanceof JComponent) {
-            ((JComponent)comp).putClientProperty(LAYER_PROPERTY, DEFAULT_LAYER);
+        
+        Integer layer= (Integer)((JComponent)comp).getClientProperty( LAYER_PROPERTY );
+        if ( layer==null ) {
+            if (comp instanceof DasPlot) {
+                ((DasPlot)comp).putClientProperty(LAYER_PROPERTY, PLOT_LAYER);
+            } else if (comp instanceof DasAxis) {
+                ((DasAxis)comp).putClientProperty(LAYER_PROPERTY, AXIS_LAYER);
+            } else if (comp instanceof Legend ) {
+                ((Legend)comp).putClientProperty( LAYER_PROPERTY, AXIS_LAYER );
+            } else if (comp instanceof DasAnnotation) {
+                ((DasAnnotation)comp).putClientProperty(LAYER_PROPERTY, ANNOTATION_LAYER);
+            } else if (comp instanceof JComponent) {
+                ((JComponent)comp).putClientProperty(LAYER_PROPERTY, DEFAULT_LAYER);
+            }
         }
         super.addImpl(comp, constraints, index);
         if (comp instanceof DasCanvasComponent) {
