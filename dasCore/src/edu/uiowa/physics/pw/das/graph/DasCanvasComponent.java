@@ -27,7 +27,6 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
-import edu.uiowa.physics.pw.das.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.system.DasLogger;
