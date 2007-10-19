@@ -32,7 +32,7 @@ import java.awt.Rectangle;
 public class EventsRenderer extends Renderer {
     
     int[] eventMap;
-
+    
     private EventsRenderer.ColorSpecifier colorSpecifier=null;
     
     public EventsRenderer( DataSetDescriptor dsd ) {
@@ -45,20 +45,42 @@ public class EventsRenderer extends Renderer {
     
     public interface ColorSpecifier {
         /**
-         * returns a color for the given datum.  null may be returned, indicating the 
+         * returns a color for the given datum.  null may be returned, indicating the
          * default color should be used.
          */
         Color getColor( Datum d );
     }
     
+    public interface TextSpecifier {
+        /**
+         * returns the text for the given datum.  null may be returned, indicating the
+         * default String.valueOf(d) should be used.
+         * @param range the range of the event
+         * @param d the Datum associated with the range
+         */
+        String getText( DatumRange range, Datum d );
+    }
+    
+    public static final TextSpecifier DEFAULT_TEXT_SPECIFIER= new TextSpecifier() {
+        public String getText( DatumRange dr, Datum d ) {
+            Datum sy= DatumUtil.asOrderOneUnits( dr.width() );
+            return ""+dr+" ("+sy+")!c"+d ;
+        }
+    };
+    
     /**
-     * set this to be an object implementing ColorSpecifier interface, if more than 
+     * set this to be an object implementing ColorSpecifier interface, if more than
      * one color is to be used when drawing the bars.  Setting this to null will
      * restore the initial behavior of drawing all bars in one color.
      */
     public void setColorSpecifier( ColorSpecifier spec ) {
         this.colorSpecifier= spec;
     }
+    
+    public ColorSpecifier getColorSpecifier( ) {
+        return this.colorSpecifier;
+    }
+    
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
         return null;
@@ -72,7 +94,7 @@ public class EventsRenderer extends Renderer {
     
     private class DragRenderer extends LabelDragRenderer {
         DasAxis xaxis, yaxis;
-        DasPlot parent;        
+        DasPlot parent;
         DragRenderer( DasPlot parent ) {
             super( parent );
             this.xaxis= parent.getXAxis();
@@ -94,14 +116,13 @@ public class EventsRenderer extends Renderer {
                     Datum sx= vds.getXTagDatum(i);
                     Datum sz= vds.getDatum(i);
                     VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView(widthPlaneId);
-                    Datum sy= DatumUtil.asOrderOneUnits( widthsDs.getDatum(i) );
-                    DatumRange dr= new DatumRange( sx, sx.add(sy) );
+                    DatumRange dr= new DatumRange( sx, sx.add(widthsDs.getDatum(i)) );
                     //setLabel(""+sx+" "+sy+"!c"+sz );
-                    setLabel(""+dr+" ("+sy+")!c"+sz );
+                    setLabel( textSpecifier.getText( dr, sz ) );
                 } else {
                     setLabel(null);
-                }                
-            }            
+                }
+            }
             return super.renderDrag( g, p1, p2 );
         }
         
@@ -194,9 +215,9 @@ public class EventsRenderer extends Renderer {
     
     public Color getColor() {
         return color;
-    } 
+    }
     
-    public void setColor( Color color ) {        
+    public void setColor( Color color ) {
         this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );
         super.invalidateParentCacheImage();
     }
@@ -207,6 +228,29 @@ public class EventsRenderer extends Renderer {
     }
     public String getWidthPlaneId( ) {
         return this.widthPlaneId;
+    }
+    
+    /**
+     * Holds value of property textSpecifier.
+     */
+    private TextSpecifier textSpecifier= DEFAULT_TEXT_SPECIFIER;
+    
+    /**
+     * Getter for property textSpecifier.
+     * @return Value of property textSpecifier.
+     */
+    public TextSpecifier getTextSpecifier() {
+        return this.textSpecifier;
+    }
+    
+    /**
+     * Setter for property textSpecifier.
+     * @param textSpecifier New value of property textSpecifier.
+     */
+    public void setTextSpecifier(TextSpecifier textSpecifier) {
+        TextSpecifier oldTextSpecifier = this.textSpecifier;
+        this.textSpecifier = textSpecifier;
+        propertyChangeSupport.firePropertyChange("textSpecifier", oldTextSpecifier, textSpecifier);
     }
     
 }
