@@ -56,7 +56,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             throw new IllegalArgumentException("Data set must be an instanceof TableDataSet: " + ds.getClass().getName());
         }
         TableDataSet tds = (TableDataSet)ds;
-        TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
+        TableDataSet weights = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         if (ddX != null && tds.getXLength() > 0) {
             double start = tds.getXTagDouble(0, ddX.getUnits());
             double end = tds.getXTagDouble(tds.getXLength() - 1, ddX.getUnits());
@@ -127,7 +127,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         int[] tableOffsets = {0};
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
-        String[] planeIDs = {"", "weights"};
+        String[] planeIDs = {"", DataSet.PROPERTY_PLANE_WEIGHTS};
         
         Map properties= new HashMap(ds.getProperties());
         
