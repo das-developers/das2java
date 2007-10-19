@@ -26,8 +26,8 @@ public class WeightsTableDataSet implements TableDataSet {
     double fill;
     
     public static TableDataSet create( TableDataSet source ) {
-        if ( source.getPlanarView("weights")!=null ) {
-            return (TableDataSet)source.getPlanarView("weights");
+        if ( source.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS)!=null ) {
+            return (TableDataSet)source.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         } else {
             return new WeightsTableDataSet( source );
         }
