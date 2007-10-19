@@ -242,7 +242,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         if ( rebinData.tableCount() > 1 ) throw new IllegalArgumentException("TableDataSet contains more than one table");
         logger.fine( "converting to pixel map" );
-        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         int itable=0;
         int ny= rebinData.getYLength(itable);
         int h= ny;
@@ -253,7 +253,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         Units units= cb.getUnits();
         int ncolor= cb.getType().getColorCount();
         
-        TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+        TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         
         byte[] pix= new byte[ nx * ny ];
         Arrays.fill( pix, (byte)cb.getFillColorIndex() );
