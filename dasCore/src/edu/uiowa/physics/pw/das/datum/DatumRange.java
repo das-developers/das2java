@@ -20,7 +20,9 @@ public class DatumRange implements Comparable {
      * @param s2 the stop or bigger value of the range.
      */
     public DatumRange(Datum s1, Datum s2) {
-        if ( s2.lt(s1) ) throw new IllegalArgumentException( "s2<s1: "+s2+"<"+s1 ) ;
+        if ( s2.lt(s1) ) {
+            throw new IllegalArgumentException( "s2<s1: "+s2+"<"+s1 ) ;
+        }
         this.s1=s1;
         this.s2=s2;
     }
@@ -124,7 +126,8 @@ public class DatumRange implements Comparable {
         if ( this.s1.getUnits() instanceof TimeLocationUnits ) {
             return DatumRangeUtil.formatTimeRange(this);
         } else {
-            return ""+this.s1+" to "+this.s2;
+            Units u= getUnits();
+            return ""+ this.s1.getFormatter().format(this.s1,u) + " to " + this.s1.getFormatter().format(this.s2,u) + " " + u;
         }
     }
     
@@ -252,7 +255,7 @@ public class DatumRange implements Comparable {
     /**
      * return a new DatumRange that includes the given Datum, extending the
      * range if necessary.  For example, 
-     * <pre> [0,1).include(2)->[0,2)
+     * <pre> [0,1).include(2)->[0,2)  (note this is exclusive of 2 since it's the end).
      * [0,1).include(-1)->[-1,1).
      * [0,1).include(0.5)->[0,1]  (and returns the same DatumRange object)
      * </pre>
