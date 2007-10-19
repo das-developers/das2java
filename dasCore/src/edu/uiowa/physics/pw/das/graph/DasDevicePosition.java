@@ -34,6 +34,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.ParseException;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -114,6 +116,39 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( !isNull ) {
             revalidate();
         }
+    }
+    
+    /**
+     * parse position strings like "100%-5em+4pt" into npos, emoffset, pt_offset.
+     * Note px is acceptable, but pt is proper.
+     */
+    public static double[] parseFormatStr( String s ) throws ParseException {
+        double[] result= new double[] { 0, 0, 0 };
+        StringTokenizer tok= new StringTokenizer( s, "%emptx", true );
+        double lastDouble;
+        int pos=0;
+        while ( tok.hasMoreTokens() ) {
+            String ds= tok.nextToken();
+            pos+=ds.length();
+            double d= Double.parseDouble(ds);
+            String u= tok.nextToken();
+            pos+=u.length();
+            u.trim();
+            if ( u.charAt(0)=='%' ) {
+                result[0]= d/100.;
+            } else if ( u.equals("e") ) {
+                String s2= tok.nextToken();
+                if ( !s2.equals("m") ) throw new ParseException( "expected m following e",pos);
+                pos+= s2.length();
+                result[1]= d;
+            } else if ( u.equals("p") ) {
+                String s2= tok.nextToken();
+                if ( !( s2.equals("t") || s2.equals("x") ) ) throw new ParseException( "expected t following p",pos);
+                pos+= s2.length();
+                result[2]= d;
+            }
+        }
+        return result;
     }
     
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum, boolean width) {
