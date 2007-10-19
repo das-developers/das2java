@@ -69,7 +69,7 @@ public class NewAverageTableRebinner implements DataSetRebinner {
         if ( ddX!=this.ddX ) throw new IllegalArgumentException("already set for another X rebin descriptor");        
         if ( ddY!=this.ddY ) throw new IllegalArgumentException("already set for another Y rebin descriptor");
         
-        TableDataSet weights = (TableDataSet)tds.getPlanarView("weights");
+        TableDataSet weights = (TableDataSet)tds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         if (ddX != null && tds.getXLength() > 0) {
             double start = tds.getXTagDouble(0, ddX.getUnits());
             double end = tds.getXTagDouble(tds.getXLength() - 1, ddX.getUnits());
@@ -135,7 +135,7 @@ public class NewAverageTableRebinner implements DataSetRebinner {
         }
         
         TableDataSet weightsTDS= new SimpleTableDataSet( xTags, yTags, rebinWeights, resultXUnits, resultYUnits, Units.dimensionless );
-        TableDataSet result= new SimpleTableDataSet( xTags, yTags, rebinData, resultXUnits, resultYUnits, Units.dimensionless, "weights", weightsTDS );
+        TableDataSet result= new SimpleTableDataSet( xTags, yTags, rebinData, resultXUnits, resultYUnits, Units.dimensionless, DataSet.PROPERTY_PLANE_WEIGHTS, weightsTDS );
         
         return result;
     }
