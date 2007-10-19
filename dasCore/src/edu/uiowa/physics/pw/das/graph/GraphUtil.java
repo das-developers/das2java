@@ -351,8 +351,8 @@ public class GraphUtil {
             //System.err.println( "type: "+types[type]+"   "+String.format( "[ %f %f ] ", p[0], p[1] ) );
             if ( ( type==PathIterator.SEG_MOVETO || type==type0 ) &&  Math.abs(dx)<xres && Math.abs(dy)<yres ) continue;
             if (  Math.abs(dx)>=xres || Math.abs(dy)>=yres ) {
-                x0= p[0];
-                y0= p[1];
+                x0= (int)p[0];
+                y0= (int)p[1];
                 type0= type;
             }
             switch ( type ) {
@@ -392,5 +392,9 @@ public class GraphUtil {
         double slope= ( y1 - y0 ) / ( x1 - x0 );
         double intercept= y0 - slope * x0;
         return new double[] { slope, intercept };
+    }
+
+    public static Color getRicePaperColor() {
+        return new Color( 255, 255, 255, 128 );
     }
 }
