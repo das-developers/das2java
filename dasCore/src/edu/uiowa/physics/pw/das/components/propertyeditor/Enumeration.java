@@ -16,6 +16,7 @@ public interface Enumeration {
      *
      */
     String toString();
+    //TODO: getListLabel() better, because toString should be reserved for programmers.
     
     /** An icon can be provided that will be shown in a list
      * along with the textual description of the element.
