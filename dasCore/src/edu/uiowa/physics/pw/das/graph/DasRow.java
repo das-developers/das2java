@@ -25,6 +25,7 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
+import java.text.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -43,6 +44,33 @@ public class DasRow extends DasDevicePosition {
         super( canvas, false, parent, nMin, nMax, emMin, emMax, ptMin, ptMax );
     }
         
+    /**
+     * makes a new DasRow by parsing a string like "100%-5em+3pt" to get the offsets.
+     * The three qualifiers are "%", "em", and "pt", but "px" is allowed as well 
+     * as surely people will use that by mistake.  If an offset or the normal position
+     * is not specified, then 0 is used.
+     *
+     * @param canvas the canvas for the layout, ignored when a parent DasRow is used.
+     * @param parent if non-null, this DasRow is specified with respect to parent.
+     * @param minStr a string like "0%+5em"
+     * @param maxStr a string like "100%-7em"
+     * @throws IllegalArgumentException if the strings cannot be parsed
+     */
+    public static DasRow create( DasCanvas canvas, DasRow parent, String minStr, String maxStr ) {
+        double[] min, max;
+        try {
+            min= parseFormatStr( minStr );
+        } catch ( ParseException e ) {
+            throw new IllegalArgumentException("unable to parse min: \""+minStr+"\"");
+        }
+        try {
+            max= parseFormatStr( maxStr );
+        } catch ( ParseException e ) {
+            throw new IllegalArgumentException("unable to parse max: \""+maxStr+"\"");
+        }
+        return new DasRow( canvas, parent, min[0], max[0], min[1], max[1], (int)min[2], (int)max[2] );
+    }
+    
     public static final DasRow NULL= new DasRow(null,null,0,0,0,0,0,0);
     
     /**
