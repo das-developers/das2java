@@ -175,7 +175,7 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         DatumRange[] xoutRanges= getBinRanges(ddx);
         
         TableDataSet tds= (TableDataSet)ds;
-        TableDataSet wds = (TableDataSet)ds.getPlanarView("weights");
+        TableDataSet wds = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         
         Units units= tds.getZUnits();
         
@@ -279,7 +279,7 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         
         int[] tableOffsets = {0};
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
-        String[] planeIDs = {"", "weights"};
+        String[] planeIDs = {"", DataSet.PROPERTY_PLANE_WEIGHTS };
         
         Map properties= new HashMap(ds.getProperties());
         
