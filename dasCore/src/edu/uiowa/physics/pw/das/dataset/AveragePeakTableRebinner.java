@@ -51,8 +51,8 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
             throw new IllegalArgumentException( "empty table and null RebinDescriptor for Y, so result YTags are undefined." );
         }
         
-        TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
-        TableDataSet peaks = (TableDataSet)ds.getPlanarView("peaks");
+        TableDataSet weights = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
+        TableDataSet peaks = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_PEAKS);
         
         long timer= System.currentTimeMillis();
         
@@ -109,7 +109,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
           
         int[] tableOffsets = {0};
-        String[] planeIDs =     {"",               "peaks",          "weights"};
+        String[] planeIDs =     {"",               DataSet.PROPERTY_PLANE_PEAKS,          DataSet.PROPERTY_PLANE_WEIGHTS};
         double[][][] zValues =  {averageData,      peakData,         averageWeights};
         Units[] zUnits =        {tds.getZUnits(),  tds.getZUnits(),  Units.dimensionless};
         
