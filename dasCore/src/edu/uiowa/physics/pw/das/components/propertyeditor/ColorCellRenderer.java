@@ -69,7 +69,13 @@ class ColorCellRenderer implements ListCellRenderer, TableCellRenderer, Icon {
 	label.setBorder(hasFocus ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
         if (value instanceof Color) {
             String name = (String)names.get(value);
-            if (name == null) { name = toString((Color)value); }
+            if (name == null) { 
+                if ( ((Color)value).getAlpha()==0 ) {
+                    name="none";
+                } else {
+                    name = toString((Color)value); 
+                }
+            }
             label.setIcon(this);
             label.setText(name);
             iconColor = (Color)value;
@@ -99,6 +105,14 @@ class ColorCellRenderer implements ListCellRenderer, TableCellRenderer, Icon {
 
     public void paintIcon(Component c, Graphics g, int x, int y) {
         Color save = g.getColor();
+        if ( iconColor.getAlpha()!=255 ) {
+            for ( int j=0; j<16/4; j++ ) {
+                for ( int i=0; i<16/4; i++ ) {
+                    g.setColor( (i-j)%2 ==0 ? Color.GRAY : Color.WHITE );
+                    g.fillRect( x+i*4,y+j*4,4,4);
+                }
+            }
+        }
         g.setColor(iconColor);
         g.fillRect(x, y, getIconWidth(), getIconHeight());
         g.setColor(save);
