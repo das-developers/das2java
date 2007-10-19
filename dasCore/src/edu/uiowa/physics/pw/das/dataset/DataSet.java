@@ -101,6 +101,16 @@ public interface DataSet {
      */
     final static String PROPERTY_X_MONOTONIC="xMonotonic";
     
+    /**
+     * dataset containing the peaks when available
+     */
+    final static String PROPERTY_PLANE_PEAKS= "peaks";
+    
+    /**
+     * dataset containing the weights when available
+     */
+    final static String PROPERTY_PLANE_WEIGHTS= "weights";
+    
     /** Returns the property value associated with the string <code>name</code>
      * @param name the name of the property requested
      * @return the property value for <code>name</code> or null
