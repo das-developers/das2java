@@ -317,7 +317,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
         
         //g.drawString( "renderCount="+renderCount+" updateCount="+updateImageCount,xAxis.getColumn().getDMinimum()+5, yAxis.getRow().getDMinimum()+20 );
         long milli = System.currentTimeMillis();
-        logger.finer("render: " + (milli - timer0) + " total:" + (milli - lastUpdateMillis) + " fps:" + (1000. / (milli - lastUpdateMillis)));
+        long renderTime= (milli - timer0 );
+        double dppms= dataSet.getXLength() / (double)renderTime;
+        logger.finer("render: " + renderTime + " total:" + (milli - lastUpdateMillis) + " fps:" + (1000. / (milli - lastUpdateMillis))+" pts/ms:"+dppms);
         lastUpdateMillis = milli;
     }
     
