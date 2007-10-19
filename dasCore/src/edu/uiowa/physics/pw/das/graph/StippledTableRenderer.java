@@ -156,7 +156,7 @@ public class StippledTableRenderer extends Renderer {
                 
                 rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
                 
-                //TableDataSet weights= (TableDataSet)rebinData.getPlanarView("weights");
+                //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
                 int itable=0;
                 int ny= rebinData.getYLength(itable);
                 int nx= rebinData.tableEnd(itable)-rebinData.tableStart(itable);
