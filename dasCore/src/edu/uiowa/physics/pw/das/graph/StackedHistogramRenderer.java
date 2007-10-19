@@ -70,6 +70,8 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     Image plotImage;
     DatumRange imageXRange, imageYRange;
     
+    final static Color GREY_PEAKS_COLOR= Color.lightGray.brighter();
+    
     public static class PeaksIndicator implements Enumeration, Displayable {
         
         String id;
@@ -194,12 +196,15 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         } */
     }
     
+    /**
+     * @throws IllegalArgumentException if the yAxis is not an instanceof DasLabelAxis
+     */
     public void setYAxis(DasAxis yAxis) {
         if (yAxis instanceof DasLabelAxis) {
             this.yAxis= (DasLabelAxis)yAxis;
             yAxis.addPropertyChangeListener(this);
         } else {
-            edu.uiowa.physics.pw.das.util.DasDie.die("You can't call setYAxis for stackedHistogramPlot");
+            throw new IllegalArgumentException("You can't call setYAxis for stackedHistogramPlot");
         }
     }
     
@@ -259,7 +264,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
         
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
-        TableDataSet weights= (TableDataSet)data.getPlanarView("weights");
+        TableDataSet weights= (TableDataSet)data.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         
         DasLabelAxis yAxis= (DasLabelAxis)yAxis_1;
         
@@ -273,7 +278,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
             
             if ( j==(data.getYLength(0)-1) ) {   /* Draw top grey line */
                 yBase= yAxis.getItemMin(data.getYTagDatum(0, j)); 
-                g.setColor(Color.lightGray);
+                g.setColor(GREY_PEAKS_COLOR);
                 g.drawLine(xDMin, yBase, xDMax, yBase );
                 g.setColor(BAR_COLOR);
             }
@@ -321,7 +326,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
                                 if (peaksIndicator==PeaksIndicator.MaxLines) {
                                     g.drawLine(x0,yMax,x0,yMax);
                                 } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                                    g.setColor(Color.lightGray);
+                                    g.setColor(Color.lightGray.brighter());
                                     g.drawLine(x0,yMax,x0,y0);
                                     g.setColor(BAR_COLOR);
                                 } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
