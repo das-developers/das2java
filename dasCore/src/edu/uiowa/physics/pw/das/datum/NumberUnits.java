@@ -238,7 +238,14 @@ public class NumberUnits extends Units {
             if ( this==Units.dimensionless ) {
                 return bUnits.createDatum( multiply( a, b ) );
             } else {
-                throw new IllegalArgumentException("Multiplication of two non-dimensionless numbers is not supported");
+                Units inv= UnitsUtil.getInverseUnit(bUnits);
+                UnitsConverter uc= this.getConverter(inv);
+                if ( uc==null ) {
+                    throw new IllegalArgumentException("Multiplication of two non-dimensionless numbers is not supported");
+                } else {
+                    return Units.dimensionless.createDatum( multiply( uc.convert(a), b ) );
+                }
+                
             }
         }
     }
@@ -246,6 +253,13 @@ public class NumberUnits extends Units {
     public Datum divide( Number a, Number b, Units bUnits ) {
         if ( bUnits==Units.dimensionless ) {
             return createDatum( divide( a, b ) );
+        } else if ( this==Units.dimensionless ) {
+            Units inv= UnitsUtil.getInverseUnit(bUnits);
+            if ( inv!=null ) {
+                return inv.createDatum( divide( a, b ) );
+            } else {
+                throw new IllegalArgumentException("No inversion found for "+bUnits );
+            }
         } else {
             UnitsConverter uc= bUnits.getConverter(this);
             if ( uc==null ) throw new IllegalArgumentException("Only division by dimensionless or convertable Datums is supported");
