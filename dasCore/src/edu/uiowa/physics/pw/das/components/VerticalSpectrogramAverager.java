@@ -84,8 +84,8 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
         DasCanvas canvas = new DasCanvas(width, height);
-        DasRow row = new DasRow(canvas, 0.1, 0.9);
-        DasColumn column = new DasColumn(canvas, 0.1, 0.9);
+        DasRow row = new DasRow(canvas, null, 0, 1.0, 3, -5, 0, 0 );
+        DasColumn column = new DasColumn(canvas, null, 0, 1.0, 7, -3, 0, 0 );
         canvas.add(this, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
