@@ -49,7 +49,7 @@ public class QernalTableRebinner implements DataSetRebinner {
         }
         
         TableDataSet tds = (TableDataSet)ds;
-        TableDataSet weights = (TableDataSet)ds.getPlanarView("weights");
+        TableDataSet weights = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         if (ddX != null && tds.getXLength() > 0) {
             double start = tds.getXTagDouble(0, ddX.getUnits());
             double end = tds.getXTagDouble(tds.getXLength() - 1, ddX.getUnits());
@@ -147,7 +147,7 @@ public class QernalTableRebinner implements DataSetRebinner {
         
         int[] tableOffsets = {0};
         Units[] newZUnits = {tds.getZUnits(), Units.dimensionless};
-        String[] planeIDs = {"", "weights"};
+        String[] planeIDs = {"", DataSet.PROPERTY_PLANE_WEIGHTS};
         
         Map properties= new HashMap(ds.getProperties());
         
