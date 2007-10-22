@@ -194,7 +194,7 @@ public class TimeParser {
      *
      *  %Y   4-digit year
      *  %y    2-digit year
-     *  %j     3-digit julian day
+     *  %j     3-digit day of year
      *  %m   2-digit month
      *  %d    2-digit day
      *  %H    2-digit hour
@@ -311,7 +311,7 @@ public class TimeParser {
                 //logger.fine("timeString="+timeString);
                 //logger.fine(" offs="+offs+" len="+len+" field="+formatName[handlers[idigit]] );
                 //int digit= parsePositiveInt( timeString, offs, len );
-                 int digit= Integer.parseInt( timeString.substring(  offs, offs+len ));
+                 int digit= Integer.parseInt( timeString.substring(  offs, offs+len ).trim() );
                 //logger.fine(" digit="+digit );
                 switch ( handlers[idigit] ) {
                     case 0: time.year= digit; break;
