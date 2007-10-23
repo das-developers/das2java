@@ -16,6 +16,7 @@ import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import java.beans.*;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
@@ -97,6 +98,12 @@ public class DOMBuilder {
                 String propertyName= propertyNameList[i];
                 
                 log.fine( "serializing property "+propertyName + " of "+elementName );
+                System.err.println("@@@: "+"serializing property "+propertyName + " of "+elementName );
+                
+                if ( propertyName.equals("parent" ) ) {
+                    log.fine( "kludge to skip parents thus avoiding cycles." );
+                    continue;
+                }
                 
                 PropertyDescriptor pd= (PropertyDescriptor)nameMap.get(propertyName);
                 
@@ -152,7 +159,7 @@ public class DOMBuilder {
                         continue;
                     } else {
                         Element propertyElement= document.createElement( propertyName );
-                        Element child= getDOMElement( document, value, DasProgressMonitor.NULL );
+                        Element child= getDOMElement( document, value, new NullProgressMonitor() );
                         propertyElement.appendChild(child);
                         element.appendChild(propertyElement);
                         serializedObjects.put( beanName, value );
@@ -162,7 +169,7 @@ public class DOMBuilder {
                     Element propertyElement= document.createElement( propertyName );
                     for ( int j=0; j<Array.getLength(value); j++ ) {
                         Object value1= Array.get( value, j );
-                        Element child= getDOMElement( document, value1, DasProgressMonitor.NULL );
+                        Element child= getDOMElement( document, value1, new NullProgressMonitor() );
                         propertyElement.appendChild(child);
                         if ( value1 instanceof DasCanvasComponent ) {
                             DasCanvasComponent dcc= ( DasCanvasComponent)value1;
@@ -174,7 +181,7 @@ public class DOMBuilder {
                 } else {
                     // catch-all for other beans.
                     Element propertyElement= document.createElement( propertyName );
-                    Element child= getDOMElement( document, value, DasProgressMonitor.NULL );
+                    Element child= getDOMElement( document, value, new NullProgressMonitor() );
                     propertyElement.appendChild(child);
                     element.appendChild(propertyElement);
                 }
