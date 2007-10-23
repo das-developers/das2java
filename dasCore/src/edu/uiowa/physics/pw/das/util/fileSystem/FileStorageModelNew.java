@@ -10,6 +10,7 @@ import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.util.SubTaskMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;
 import java.io.File;
@@ -91,7 +92,7 @@ public class FileStorageModelNew {
     }
 
     public String[] getNamesFor( final DatumRange targetRange ) {
-        return getNamesFor( targetRange, DasProgressMonitor.NULL );
+        return getNamesFor( targetRange, new NullProgressMonitor() );
     }
 
     public String[] getNamesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
@@ -164,7 +165,7 @@ public class FileStorageModelNew {
     }
     
     public File[] getFilesFor( final DatumRange targetRange ) {
-        return getFilesFor( targetRange, DasProgressMonitor.NULL );
+        return getFilesFor( targetRange, new NullProgressMonitor() );
     }
 
     public DatumRange getRangeFor( String name ) {
