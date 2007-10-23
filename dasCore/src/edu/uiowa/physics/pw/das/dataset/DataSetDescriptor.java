@@ -193,8 +193,7 @@ public abstract class DataSetDescriptor implements Displayable {
      * if such a resolution exists.
      */
     public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
-        if ( monitor==null ) monitor=DasProgressMonitor.NULL;
-        monitor.started();
+        if ( monitor==null ) monitor=new NullProgressMonitor();
         
         CacheTag tag=null;
         if ( defaultCaching ) {
@@ -203,7 +202,6 @@ public abstract class DataSetDescriptor implements Displayable {
         }
         
         if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {
-            monitor.finished();
             return dataSetCache.retrieve( this, tag );
         } else {
             try {
@@ -212,7 +210,6 @@ public abstract class DataSetDescriptor implements Displayable {
                     if ( ds.getProperty( "cacheTag" )!=null ) tag= (CacheTag)ds.getProperty( "cacheTag" );
                     if ( defaultCaching ) dataSetCache.store( this, tag, ds );
                 }
-                monitor.finished();
                 return ds;
             } catch ( DasException e ) {
                 throw e;
