@@ -176,7 +176,7 @@ public class DatumRangeUtil {
         
         int state= STATE_OPEN;
         
-        String delimRegEx= "\\s|-|/|\\.|:|to|through|span|T|Z|\u2013";
+        String delimRegEx= "\\s|-|/|\\.|:|to|through|span|T|Z|\u2013|,";
         Pattern delimPattern= Pattern.compile( delimRegEx );
         int[] ts1= new int[] { -1, -1, -1, -1, -1, -1, -1 };
         int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
