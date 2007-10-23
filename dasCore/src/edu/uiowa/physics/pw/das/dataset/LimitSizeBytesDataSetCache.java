@@ -51,8 +51,10 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     }
     
     public void reset() {
-        entries.removeAll(entries);
-        this.totalSize= 0;
+        synchronized(entries) {
+            entries.removeAll(entries);
+            this.totalSize= 0;
+        }
     }
     
     DataSet retrieveImpl(DataSetDescriptor dsd, CacheTag cacheTag) {
@@ -82,15 +84,18 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     public void store(DataSetDescriptor dsd, CacheTag cacheTag, DataSet data) {
         long sizeBytes= DataSetUtil.guessSizeBytes( data );
         if ( sizeBytes > this.totalSizeLimit ) return;
-        while ( sizeBytes + this.totalSize > this.totalSizeLimit ) {
-            Entry e= leastValuableEntry();
-            long s= DataSetUtil.guessSizeBytes( e.data );
-            entries.remove(e);
-            totalSize-= s;
-        }
         
-        entries.add( new Entry( dsd, cacheTag, data ) );
-        totalSize+= sizeBytes;
+        synchronized (entries) {
+            while ( sizeBytes + this.totalSize > this.totalSizeLimit ) {
+                Entry e= leastValuableEntry();
+                long s= DataSetUtil.guessSizeBytes( e.data );
+                entries.remove(e);
+                totalSize-= s;
+            }
+        
+            entries.add( new Entry( dsd, cacheTag, data ) );
+            totalSize+= sizeBytes;
+        }
     }
     
     public Entry[] getEntries() {
