@@ -154,8 +154,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     /**
      * return the index of the renderer at canvas location (x,y), or -1 if
-     * no renderer is found at the position.  RendererMap uses a BufferedImage
-     * where the RGB value is 0x0F000000 | (rendererIndex).
+     * no renderer is found at the position.  
      */
     private int findRendererAt( int x, int y ) {
         for ( int i= renderers.size()-1; i>=0; i-- ) {
@@ -205,11 +204,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         x= new MouseModule( this, new LengthDragRenderer( this, null, null ), "Length" );
         mouseAdapter.addMouseModule(x);
         
+        x= new DisplayDataMouseModule(this);
+        mouseAdapter.addMouseModule(x);
+        
         editRendererMenuItem= new JMenuItem( getEditAction() );
         getMouseAdapter().addMenuItem( editRendererMenuItem );
         
         JMenuItem dumpMenuItem= new JMenuItem( DUMP_TO_FILE_ACTION );
         mouseAdapter.addMenuItem(dumpMenuItem);
+        
+        
     }
     
     private Action DUMP_TO_FILE_ACTION= new AbstractAction( "Dump Data Set to File" ) {
@@ -353,7 +357,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
     
     private void paintInvalidScreen( Graphics atGraphics, AffineTransform at ) {
-        Color c= new Color( 255, 255, 255, 128 );
+        Color c= GraphUtil.getRicePaperColor();
         atGraphics.setColor( c );
         int x= getColumn().getDMinimum();
         int y= getRow().getDMinimum();
@@ -463,7 +467,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     Renderer rend= (Renderer)renderers.get(i);
                     if ( rend.isActive() ) {
                         logger.finest( "rendering #"+i+": "+rend );
-                        rend.render( plotGraphics, xAxis, yAxis, DasProgressMonitor.NULL );
+                        rend.render( plotGraphics, xAxis, yAxis, new NullProgressMonitor() );
                         noneActive= false;
                     }
                 }
