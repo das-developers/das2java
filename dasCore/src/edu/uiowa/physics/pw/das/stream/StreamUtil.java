@@ -13,7 +13,7 @@ import edu.uiowa.physics.pw.das.client.DataSetStreamHandler;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.util.StreamTool;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class StreamUtil {
         FileInputStream in= new FileInputStream( filename );
         ReadableByteChannel channel = in.getChannel();
                 
-        DataSetStreamHandler handler = new DataSetStreamHandler( new HashMap(), DasProgressMonitor.NULL );
+        DataSetStreamHandler handler = new DataSetStreamHandler( new HashMap(), new NullProgressMonitor() );
              
         StreamTool.readStream(channel, handler);
         return handler.getDataSet();
