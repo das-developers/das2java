@@ -8,10 +8,10 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -112,7 +112,7 @@ public class WebFileObject extends FileObject {
                 // TODO: use HTTP HEAD, etc
                 DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).info("This implementation of WebFileObject.exists() is not optimal");
                 File partFile= new File( localFile.toString() + ".part" );
-                wfs.downloadFile( pathname, localFile, partFile, DasProgressMonitor.NULL );
+                wfs.downloadFile( pathname, localFile, partFile, new NullProgressMonitor() );
                 return localFile.exists();
             } catch ( FileNotFoundException e ) {
                 return false;
