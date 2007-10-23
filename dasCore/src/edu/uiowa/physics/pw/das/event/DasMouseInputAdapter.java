@@ -273,6 +273,24 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         };
     }
     
+    public MouseModule getPrimaryModule( ) {
+        ArrayList activ= new ArrayList();
+        for (int i=0; i< modules.size(); i++) {
+            JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(modules.get(i));
+            if (j.isSelected()) activ.add(modules.get(i));
+        }
+        return (MouseModule)activ.get(0); // at one time we allowed multiple modules at once.
+    }
+    
+    public MouseModule getSecondaryModule() {
+        ArrayList activ= new ArrayList();
+        for (int i=0; i< modules.size(); i++) {
+            JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(modules.get(i));
+            if (j.isSelected()) activ.add(modules.get(i));
+        }
+        return (MouseModule)activ.get(0); // at one time we allowed multiple modules at once.
+    }
+    
     /**
      * set the primary module, the module receiving left-button events, to the
      * module provided.  If the module is not already loaded, implicitly addMouseModule
@@ -925,6 +943,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
     
     public String getPrimaryModuleLabel() {
+        MouseModule primary= getPrimaryModule();
         return primary==null ? "" : primary.getLabel();
     }
     
@@ -934,6 +953,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
     
     public String getSecondaryModuleLabel() {
+        MouseModule secondary= getPrimaryModule();
         return secondary==null ? "" : secondary.getLabel();
     }
     
