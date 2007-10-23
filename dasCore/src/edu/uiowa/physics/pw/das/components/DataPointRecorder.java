@@ -326,7 +326,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         if ( lineCount > 500 ) {
             mon= DasProgressPanel.createFramed("reading file");
         } else {
-            mon= DasProgressMonitor.NULL;
+            mon= new NullProgressMonitor();
         }
         
         mon.setTaskSize( lineCount );
