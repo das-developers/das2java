@@ -94,5 +94,19 @@ public class CacheTag {
               || ( tag.resolution!=null && this.resolution.le( tag.resolution ) ) 
              ) );            
     }
+    
+    /**
+     * the range covered by the cache tag.
+     */
+    public DatumRange getRange() {
+        return this.range;
+    }
+    
+    /**
+     * the resolution of the cache tag, which may be null.
+     */
+    public Datum getResolution() {
+        return this.resolution;
+    }
 }
 
