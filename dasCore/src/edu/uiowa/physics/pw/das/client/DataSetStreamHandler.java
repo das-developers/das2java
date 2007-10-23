@@ -61,7 +61,7 @@ public class DataSetStreamHandler implements StreamHandler {
     
     public DataSetStreamHandler( Map extraProperties, DasProgressMonitor monitor ) {
         this.extraProperties = new HashMap(extraProperties);
-        this.monitor= monitor==null ? DasProgressMonitor.NULL : monitor;
+        this.monitor= monitor==null ? new NullProgressMonitor() : monitor;
     }
     
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
