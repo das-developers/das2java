@@ -15,7 +15,7 @@ import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
-import java.awt.Rectangle;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import java.beans.*;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
@@ -45,7 +45,7 @@ public class SerializeUtil {
     }
     
     public static org.w3c.dom.Element getDOMElement( Document document, Object object ) {
-        return getDOMElement( document, object, DasProgressMonitor.NULL );
+        return getDOMElement( document, object, new NullProgressMonitor() );
     }
     
     public static org.w3c.dom.Element getDOMElement( Document document, Object object, DasProgressMonitor monitor ) {
@@ -137,7 +137,7 @@ public class SerializeUtil {
                         continue;
                     } else {
                         Element propertyElement= document.createElement( propertyName );
-                        Element child= getDOMElement( document, value, DasProgressMonitor.NULL );
+                        Element child= getDOMElement( document, value, new NullProgressMonitor() );
                         propertyElement.appendChild(child);
                         element.appendChild(propertyElement);
                         serializedObjects.put( dcc.getDasName(), null );
@@ -147,7 +147,7 @@ public class SerializeUtil {
                     Element propertyElement= document.createElement( propertyName );
                     for ( int j=0; j<Array.getLength(value); j++ ) {
                         Object value1= Array.get( value, j );
-                        Element child= getDOMElement( document, value1, DasProgressMonitor.NULL );
+                        Element child= getDOMElement( document, value1, new NullProgressMonitor() );
                         propertyElement.appendChild(child);
                     }
                     element.appendChild(propertyElement);
@@ -155,7 +155,7 @@ public class SerializeUtil {
                 } else {
                     // catch-all for other beans.
                     Element propertyElement= document.createElement( propertyName );
-                    Element child= getDOMElement( document, value, DasProgressMonitor.NULL );
+                    Element child= getDOMElement( document, value, new NullProgressMonitor() );
                     propertyElement.appendChild(child);
                     element.appendChild(propertyElement);
                 }
