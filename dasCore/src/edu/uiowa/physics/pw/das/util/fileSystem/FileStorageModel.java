@@ -9,6 +9,7 @@ package edu.uiowa.physics.pw.das.util.fileSystem;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.util.SubTaskMonitor;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -357,7 +358,7 @@ public class FileStorageModel {
     }
     
     public String[] getNamesFor( final DatumRange targetRange ) {
-        return getNamesFor( targetRange, DasProgressMonitor.NULL );
+        return getNamesFor( targetRange, new NullProgressMonitor() );
     }
     
     public String[] getNamesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
@@ -406,7 +407,7 @@ public class FileStorageModel {
     }
     
     public File[] getFilesFor( final DatumRange targetRange ) {
-        return getFilesFor( targetRange, DasProgressMonitor.NULL );
+        return getFilesFor( targetRange, new NullProgressMonitor() );
     }
     
     public DatumRange getRangeFor( String name ) {
