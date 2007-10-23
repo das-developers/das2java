@@ -9,6 +9,7 @@
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -96,7 +97,7 @@ public class FTPFileSystem extends WebFileSystem {
             File listing= new File( localRoot, directory + ".listing" );
             if ( !listing.canRead() ) {
                 File partFile= listing;
-                downloadFile( directory, listing, partFile, DasProgressMonitor.NULL );
+                downloadFile( directory, listing, partFile, new NullProgressMonitor() );
             }
             listing.deleteOnExit();
             return parseLsl( directory, listing );
