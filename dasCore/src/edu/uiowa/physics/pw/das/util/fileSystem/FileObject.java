@@ -7,6 +7,7 @@
 package edu.uiowa.physics.pw.das.util.fileSystem;
 
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import java.io.*;
 import java.nio.channels.*;
 
@@ -53,7 +54,7 @@ public abstract class FileObject {
      * @return an InputStream
      */    
     public InputStream getInputStream() throws FileNotFoundException {
-        return getInputStream( DasProgressMonitor.NULL );
+        return getInputStream( new NullProgressMonitor() );
     }
     
     /**
@@ -73,7 +74,7 @@ public abstract class FileObject {
      * @return a java.nio.channels.Channel for fast IO reads.
      */
     public ReadableByteChannel getChannel() throws FileNotFoundException {
-        return getChannel( DasProgressMonitor.NULL );
+        return getChannel( new NullProgressMonitor() );
     }
     
     /**
@@ -93,7 +94,7 @@ public abstract class FileObject {
      * @throws java.io.FileNotFoundException if the file doesn't exist.
      */
     public File getFile() throws FileNotFoundException {
-        return getFile( DasProgressMonitor.NULL );
+        return getFile( new NullProgressMonitor() );
     }
     
     /**
