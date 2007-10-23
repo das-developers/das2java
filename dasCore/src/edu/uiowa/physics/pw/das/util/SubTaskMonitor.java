@@ -9,10 +9,16 @@
 package edu.uiowa.physics.pw.das.util;
 
 /**
+ * creates a ProgressMonitor that maps its progress to a parent's progress.
+ * For example, if a process takes a progress monitor, but is implemented in
+ * two steps that each take a progress monitor, then two subtask monitors can
+ * be created to monitor each step, and the client who passed in the monitor 
+ * will see the whole deal as one process.
  *
  * @author Jeremy
  */
 public class SubTaskMonitor implements DasProgressMonitor {
+    
     DasProgressMonitor parent;
     long min, max, progress, size;
     String label;
@@ -32,10 +38,16 @@ public class SubTaskMonitor implements DasProgressMonitor {
         parent.cancel();
     }
 
+    private boolean finished= false;
+    
     public void finished() {        
-        // ignore
+        this.finished= true; // only to support the bean property
     }
 
+    public boolean isFinished() {
+        return this.finished;
+    }
+    
     public long getTaskProgress() {
         return progress;
     }
@@ -65,10 +77,16 @@ public class SubTaskMonitor implements DasProgressMonitor {
         return this.size;
     }
     
+    boolean started= false;
+    
     public void started() {
-        // ignore
+        this.started= true;
     }
 
+    public boolean isStarted() {
+        return started;
+    }
+    
     public void setLabel(String label) {
         this.label= label;
     }
