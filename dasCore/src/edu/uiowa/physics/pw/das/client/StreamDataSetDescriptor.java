@@ -172,7 +172,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     }
     
     protected DataSet getDataSetFromStream(InputStream in, Datum start, Datum end, DasProgressMonitor monitor ) throws DasException {
-        if ( monitor==null ) monitor= DasProgressMonitor.NULL;
+        if ( monitor==null ) monitor= new NullProgressMonitor();
         
         PushbackInputStream pin = new PushbackInputStream(in, 4096);
         try {
