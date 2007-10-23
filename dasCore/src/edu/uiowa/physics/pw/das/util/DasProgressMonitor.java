@@ -60,6 +60,7 @@ public interface DasProgressMonitor {
     /**
      * Use NULL when you do not need or wish to use a progressMonitor.  It simply
      * ignores the progress messages.
+     * @deprecated this should not be used.  Instead use new NullProgressMonitor();
      */    
     public static final DasProgressMonitor NULL= new DasProgressMonitor() {
         public void setTaskSize(long taskSize) {} ;
@@ -67,8 +68,14 @@ public interface DasProgressMonitor {
         public void setTaskProgress(long position) throws IllegalArgumentException {};
         public void setProgressMessage( String message ) {} ;
         public long getTaskProgress() { return 0; };
-        public void started() {};
+        public void started() {  };
+        public boolean isStarted() {
+            return true;
+        }
         public void finished() {};
+        public boolean isFinished() {
+            return false;
+        }
         public void cancel() {};
         public boolean isCancelled() { return false; };        
         public void setAdditionalInfo(String s) { };
@@ -152,7 +159,19 @@ public interface DasProgressMonitor {
     /** additional information to be displayed alongside the progress.  That
      * might be of interest.
      * "85 of 100 (50KB/s)"
+     * @deprecated setProgressMessage should be used by the service provider 
+     *    to indicate how the process is being implemented.
      */
     public void setAdditionalInfo(String s);
+
+    /** 
+     * true if the process has indicated that it has started.
+     */
+    boolean isStarted();
+    
+    /**
+     * true if the process has indicated that it is finished
+     */
+    boolean isFinished();
     
 }

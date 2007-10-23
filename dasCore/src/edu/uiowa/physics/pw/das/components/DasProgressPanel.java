@@ -518,6 +518,14 @@ public class DasProgressPanel implements DasProgressMonitor {
         this.progressMessageString= message;
         this.progressMessageDirty= true;
     }
+
+    public boolean isStarted() {
+        return running;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
     
     
 }
