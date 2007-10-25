@@ -37,4 +37,12 @@ public class DasException extends java.lang.Exception {
     public DasException(String message) {
         super(message);
     }    
+    
+    public DasException( Throwable ex) {
+        super(ex);
+    }
+    
+    public DasException( String msg, Throwable ex) {
+        super( msg, ex );
+    }
 }
