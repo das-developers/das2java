@@ -32,7 +32,9 @@ public class LocalFileSystem extends FileSystem {
         if ( !("file".equals(root.getProtocol()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
-        String[] split= FileSystem.splitUrl( root.toString() );
+        String surl= root.toString();
+        if ( !surl.endsWith("/") ) surl+="/";
+        String[] split= FileSystem.splitUrl( surl );
         
         localRoot=new File( split[2].substring(split[0].length()) );
         if ( !localRoot.exists() ) {
