@@ -521,6 +521,7 @@ public class FileStorageModel {
     
     
     public static FileStorageModel create( FileSystem root, String template ) {
+        if ( template.startsWith("/") ) template= template.substring(1);
         String[] s= template.split("%");
         char[] valid_formatCodes= new char[] { 'Y', 'y', 'j', 'm', 'd', 'H', 'M', 'S', 'v', 'V', 'x', 'b' };
         String[] formatName= new String[] { "Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "version", "Version", "date", "month-name" };
