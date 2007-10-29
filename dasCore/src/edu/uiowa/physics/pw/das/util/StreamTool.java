@@ -552,6 +552,7 @@ public class StreamTool {
             Map.Entry entry = (Map.Entry)i.next();
             String key = (String)entry.getKey();
             Object value = entry.getValue();
+            if ( value==null ) continue;
             if ( typesMap.containsKey(value.getClass() ) ) {
                 key= (String)typesMap.get( value.getClass() ) + ":" + key;
             }
