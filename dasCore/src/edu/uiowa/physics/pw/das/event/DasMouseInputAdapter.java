@@ -1052,6 +1052,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
     
     public void mouseWheelMoved(MouseWheelEvent e) {
-        secondary.mouseWheelMoved( e );
+        if (secondary!=null ) secondary.mouseWheelMoved( e );
     }
 }
