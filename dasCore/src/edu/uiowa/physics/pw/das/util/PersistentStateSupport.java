@@ -55,7 +55,7 @@ import org.xml.sax.SAXException;
 public class PersistentStateSupport {
     
     String ext;
-    File currentFile;
+    private File currentFile;
     JMenu openRecentMenu;
     SerializationStrategy strategy;
     Component component;
@@ -66,7 +66,12 @@ public class PersistentStateSupport {
     
     /** state has been modified and needs to be saved */
     private boolean dirty;
-            
+    
+    public static final String PROPERTY_OPENING="opening";
+    public static final String PROPERTY_SAVING="saving";
+    public static final String PROPERTY_DIRTY="dirty";
+    public static final String PROPERTY_CURRENT_FILE="currentFile";
+    
     public interface SerializationStrategy {
         // give me a document to serialize
         public Element serialize( Document document, DasProgressMonitor monitor ) throws IOException;
@@ -146,7 +151,7 @@ public class PersistentStateSupport {
         this.ext= "."+extension;
         Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
         String currentFileString= prefs.get( "PersistentStateSupport"+ext, "" );
-        if ( !currentFileString.equals("") ) currentFile= new File( currentFileString );
+        if ( !currentFileString.equals("") ) setCurrentFile(new File(currentFileString));
         String recentFileString= prefs.get( "PersistentStateSupport"+ext+"_recent", "" );
         setRecentFiles( recentFileString );
     }
@@ -171,18 +176,19 @@ public class PersistentStateSupport {
     
     private void saveAs() {
         JFileChooser chooser= new JFileChooser();
-        if ( currentFile!=null ) chooser.setCurrentDirectory(currentFile.getParentFile());
-        if ( currentFile!=null ) chooser.setSelectedFile( currentFile );
+        if ( getCurrentFile()!=null ) chooser.setCurrentDirectory(getCurrentFile().getParentFile());
+        if ( getCurrentFile()!=null ) chooser.setSelectedFile( getCurrentFile());
         chooser.setFileFilter( simpleFilter("*"+ext ) );
         int result= chooser.showSaveDialog(this.component);
         if ( result==JFileChooser.APPROVE_OPTION ) {
             File f= chooser.getSelectedFile();
             if ( !f.getName().endsWith(ext) ) f= new File( f.getPath()+ext );
-            currentFile= f;
+            setCurrentFile(f);
+            setCurrentFileOpened(true);
             if ( saveMenuItem!=null ) saveMenuItem.setText("Save");
-            if ( currentFileLabel!=null ) currentFileLabel.setText( String.valueOf( currentFile ) );
-            addToRecent(currentFile);
-            save(currentFile);
+            if ( currentFileLabel!=null ) currentFileLabel.setText( String.valueOf( getCurrentFile()) );
+            addToRecent(getCurrentFile());
+            save(getCurrentFile());
         }
         
     }
@@ -209,6 +215,7 @@ public class PersistentStateSupport {
     }
     
     private void save( final File file ) {
+        setSaving(true);
         Runnable run= new Runnable() {
             public void run() {
                 try {
@@ -218,8 +225,9 @@ public class PersistentStateSupport {
                     saveImpl(f);
                     
                     Preferences prefs= Preferences.userNodeForPackage(PersistentStateSupport.class);
-                    prefs.put( "PersistentStateSupport"+ext, currentFile.getAbsolutePath() );
-                    dirty= false;
+                    prefs.put( "PersistentStateSupport"+ext, getCurrentFile().getAbsolutePath() );
+                    setSaving( false );
+                    setDirty( false );
                     update();
                 } catch ( IOException ex ) {
                     throw new RuntimeException(ex);
@@ -236,10 +244,10 @@ public class PersistentStateSupport {
     public Action createSaveAction() {
         return new AbstractAction("Save") {
             public void actionPerformed( ActionEvent e ) {
-                if ( currentFile==null ) {
+                if ( getCurrentFile()==null ) {
                     saveAs();
                 } else {
-                    save(currentFile);
+                    save(getCurrentFile());
                 }
             }
         };
@@ -259,7 +267,7 @@ public class PersistentStateSupport {
     
     public JMenuItem createSaveMenuItem() {
         saveMenuItem= new JMenuItem(createSaveAction());
-        if (currentFile!=null ) {
+        if (getCurrentFile()!=null ) {
             saveMenuItem.setText("Save");
         }
         return saveMenuItem;
@@ -267,7 +275,7 @@ public class PersistentStateSupport {
     
     public JMenu createOpenRecentMenu() {
         JMenu menu= new JMenu("Open recent");
-        menu.add( String.valueOf(currentFile) );
+        menu.add( String.valueOf(getCurrentFile()) );
         openRecentMenu= menu;
         refreshRecentFilesMenu();
         return menu;
@@ -307,13 +315,12 @@ public class PersistentStateSupport {
             public void actionPerformed( ActionEvent ev ) {
                 try {
                     JFileChooser chooser = new JFileChooser();
-                    if ( currentFile!=null ) chooser.setCurrentDirectory(currentFile.getParentFile());
+                    if ( getCurrentFile()!=null ) chooser.setCurrentDirectory(getCurrentFile().getParentFile());
                     chooser.setFileFilter( simpleFilter( "*"+ext ) );
                     int result = chooser.showOpenDialog(component);
                     if (result == JFileChooser.APPROVE_OPTION) {
                         open( chooser.getSelectedFile() );
-                        currentFile= chooser.getSelectedFile();
-                        addToRecent(currentFile);
+                        addToRecent(getCurrentFile());
                         if ( saveMenuItem!=null ) saveMenuItem.setText("Save");
                     }
                 } catch ( Exception e ) {
@@ -332,11 +339,15 @@ public class PersistentStateSupport {
     }
     
     private void open( final File file ) {
+        setOpening( true );
         Runnable run = new Runnable() {
             public void run() {
                 try {
                     openImpl(file);
-                    dirty= false;
+                    setOpening( false );
+                    setDirty(false);
+                    setCurrentFile(file);
+                    setCurrentFileOpened(true);
                     update();
                 } catch ( IOException e ) {
                     throw new RuntimeException(e);
@@ -352,20 +363,138 @@ public class PersistentStateSupport {
         new Thread( run, "PersistentStateSupport.open" ).start();
     }
     
+    /**
+     * @deprecated.  What is the purpose of this method?
+     */
     public void close() {
-        currentFile= null;
+        setCurrentFile(null);
     }
 
     public void markDirty() {
-        this.dirty= true;
+        this.setDirty( true );
         update();
     }
     
     private void update() {
-        if ( currentFileLabel!=null ) this.currentFileLabel.setText( currentFile + ( dirty ? " *" : "" ) );
+        if ( currentFileLabel!=null ) this.currentFileLabel.setText( getCurrentFile() + ( dirty ? " *" : "" ) );
     }
     /** Creates a new instance of PersistentStateSupport */
     public PersistentStateSupport() {
     }
-    
+
+    /**
+     * Utility field used by bound properties.
+     */
+    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+
+    /**
+     * Adds a PropertyChangeListener to the listener list.
+     * @param l The listener to add.
+     */
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Removes a PropertyChangeListener from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    /**
+     * Getter for property dirty.
+     * @return Value of property dirty.
+     */
+    public boolean isDirty() {
+        return this.dirty;
+    }
+
+    /**
+     * Setter for property dirty.
+     * @param dirty New value of property dirty.
+     */
+    public void setDirty(boolean dirty) {
+        boolean oldDirty = this.dirty;
+        this.dirty = dirty;
+        propertyChangeSupport.firePropertyChange ( PROPERTY_DIRTY, new Boolean (oldDirty), new Boolean (dirty));
+    }
+
+    public File getCurrentFile() {
+        return currentFile;
+    }
+
+    private void setCurrentFile(File currentFile) {
+        File oldFile = this.currentFile;
+        this.currentFile = currentFile;
+        propertyChangeSupport.firePropertyChange ( PROPERTY_CURRENT_FILE, oldFile, currentFile );
+    }
+
+    /**
+     * Holds value of property loading.
+     */
+    private boolean opening;
+
+    /**
+     * Property loading is true when a load operation is being performed.
+     * @return Value of property loading.
+     */
+    public boolean isOpening() {
+        return this.opening;
+    }
+
+    /**
+     * Holds value of property saving.
+     */
+    private boolean saving;
+
+    /**
+     * Property saving is true when a save operation is being performed.
+     * @return Value of property saving.
+     */
+    public boolean isSaving() {
+        return this.saving;
+    }
+
+    private void setOpening(boolean b) {
+        boolean old= this.opening;
+        this.opening= b;
+        propertyChangeSupport.firePropertyChange( PROPERTY_OPENING, Boolean.valueOf(old), Boolean.valueOf(b) );
+                
+    }
+
+
+    private void setSaving(boolean b) {
+        boolean old= this.saving;
+        this.saving= b;
+        propertyChangeSupport.firePropertyChange( PROPERTY_SAVING, Boolean.valueOf(old), Boolean.valueOf(b) );
+                
+    }
+
+    /**
+     * Holds value of property currentFileOpened.
+     */
+    private boolean currentFileOpened;
+
+    /**
+     * Property currentFileOpened indicates if the current file has ever been opened.  This
+     * is to handle the initial state where the current file is set, but should not be
+     * displayed because it has not been opened.
+     * @return Value of property currentFileOpened.
+     */
+    public boolean isCurrentFileOpened() {
+        return this.currentFileOpened;
+    }
+
+    /**
+     * Setter for property currentFileOpened.
+     * @param currentFileOpened New value of property currentFileOpened.
+     */
+    public void setCurrentFileOpened(boolean currentFileOpened) {
+        boolean oldCurrentFileOpened = this.currentFileOpened;
+        this.currentFileOpened = currentFileOpened;
+        propertyChangeSupport.firePropertyChange ("currentFileOpened", new Boolean (oldCurrentFileOpened), new Boolean (currentFileOpened));
+    }
+
 }
