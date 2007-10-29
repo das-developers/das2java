@@ -34,6 +34,8 @@ public class ZoomPanMouseModule extends MouseModule {
     
     /** Creates a new instance of ZoomPanMouseModule */
     public ZoomPanMouseModule( DasAxis horizontalAxis, DasAxis verticalAxis ) {
+        super();
+        setLabel("Zoom Pan");
         this.xAxis= horizontalAxis;
         this.yAxis= verticalAxis;
     }
