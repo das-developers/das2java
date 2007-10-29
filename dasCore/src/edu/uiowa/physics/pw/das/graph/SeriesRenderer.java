@@ -253,7 +253,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             
             graphics.setStroke(new BasicStroke((float)lineWidth));
             
-            int i = firstIndex;
+            int i = firstIndex+1;
             
             if (colorByDataSet != null) {
                 while (!it.isDone()) {
