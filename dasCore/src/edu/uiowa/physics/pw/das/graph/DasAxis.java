@@ -150,7 +150,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* DEBUGGING INSTANCE MEMBERS */
     private static final boolean DEBUG_GRAPHICS = false;
     private static final Color[] DEBUG_COLORS;
-
+    
     private String PROPERTY_DATUMRANGE="datumRange";
     
     static {
@@ -979,7 +979,35 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         nTicksMax= (nTicksMax<7)?nTicksMax:7;
         
         this.tickV= TickVDescriptor.bestTickVLinear( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
+        
         datumFormatter= tickV.getFormatter();
+        
+        boolean once=true;
+        
+        while( once ) {
+            Rectangle maxBounds= new Rectangle(0,0,0,0);
+            DatumVector majorTicks= tickV.getMajorTicks();
+            for ( int i=0; i<majorTicks.getLength(); i++ ) {
+                GrannyTextRenderer gtr= new GrannyTextRenderer( );
+                gtr.setString(this,datumFormatter.grannyFormat(majorTicks.get(i)));
+                Rectangle r= gtr.getBounds();
+                maxBounds.add(r);
+            }
+            
+            if ( isHorizontal() ) {
+                int tickSizePixels= (int) ( maxBounds.width * 1.5 );
+                nTicksMax= axisSize / tickSizePixels;
+            } else {
+                int tickSizePixels= (int) ( maxBounds.height * 2.0 );
+                nTicksMax= axisSize / tickSizePixels;
+            }
+            
+            this.tickV= TickVDescriptor.bestTickVLinear( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
+            datumFormatter= tickV.getFormatter();
+            
+            once= false;
+        }
+        
         
         return;
         
@@ -2483,7 +2511,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /**
      * Adds a MouseWheelListener to the DasAxis.  Special care must be taken
-     * with the DasAxis, because it is composed of two sub panels, and their 
+     * with the DasAxis, because it is composed of two sub panels, and their
      * parent panel (this), must not recieve the events.  (This is because
      * the DasPlot between them should get the events, and the DasPlot does
      * not have a simple rectangular boundary.
@@ -2500,7 +2528,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         primaryInputPanel.removeMouseWheelListener(l);
         secondaryInputPanel.removeMouseWheelListener(l);
     }
-
+    
     
     /** TODO
      * @param l
@@ -2946,6 +2974,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         at_m= at[0];
         at_b= at[1];
     }
-
+    
     
 }
