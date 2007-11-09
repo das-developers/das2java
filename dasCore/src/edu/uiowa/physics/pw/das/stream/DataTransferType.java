@@ -27,6 +27,7 @@ import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.format.TimeDatumFormatter;
 import edu.uiowa.physics.pw.das.util.FixedWidthFormatter;
+import edu.uiowa.physics.pw.das.util.NumberFormatUtil;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -77,7 +78,7 @@ public class DataTransferType {
         this.ascii = ascii;
         map.put(name, this);
         if (ascii) {
-            doubleFormatter = new DecimalFormat(getFormat(sizeBytes-1));
+            doubleFormatter = NumberFormatUtil.getDecimalFormat(getFormat(sizeBytes-1));
         }
     }
     
@@ -227,7 +228,7 @@ public class DataTransferType {
                 case I_ASCII: {
                     String s = doubleFormatter.format(d);
                     if ( s.length()==sizeBytes-2 ) {
-                        s= " "+s+" "; 
+                        s= " "+s+" ";  // bug 232
                     } else if ( s.length()==sizeBytes-1 ) {
                         s= s+" ";
                     }
