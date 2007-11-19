@@ -46,15 +46,24 @@ public abstract class FileSystem  {
      */
     public static FileSystem create( URL root ) throws FileSystemOfflineException {
         logger.fine("create filesystem "+root);
-        if ( "file".equals(root.getProtocol()) ) {
-            return new LocalFileSystem( root );
-        } else if ( "http".equals( root.getProtocol() ) ) {
-            return HttpFileSystem.createHttpFileSystem( root );
-        } else if ( "ftp".equals( root.getProtocol() ) ) {
-            return new FTPFileSystem(root);
-        } else {
+        FileSystemFactory factory= (FileSystemFactory) registry.get(root.getProtocol());
+        if ( factory==null ) {
             throw new IllegalArgumentException( "unsupported protocol: "+root );
+        } else {
+            return factory.createFileSystem(root);
         }
+    }
+    
+    static HashMap registry;
+    static {
+        registry= new HashMap();
+        registry.put("file",new LocalFileSystemFactory() );
+        registry.put("http",new HttpFileSystemFactory() );
+        registry.put("ftp",new FtpFileSystemFactory() );
+    }
+    
+    public static void registerFileSystemFactory( String proto, FileSystemFactory factory ) {
+        registry.put( proto, factory );
     }
     
     protected FileSystem( URL root ) {
@@ -114,7 +123,8 @@ public abstract class FileSystem  {
     /**
      * returns a list of the names of the files in a directory.  Names ending
      * in "/" are themselves directories, and the "/" is not part of the name.
-     *
+     * This is optional, and a directory may or may not be tagged with the trailing
+     * slash.
      */
     abstract public String[] listDirectory( String directory );
     
@@ -129,7 +139,7 @@ public abstract class FileSystem  {
      * Boolean.TRUE if the filesystem ignores case, such as Windows local filesystem.
      */
     public static final String PROP_CASE_INSENSITIVE= "caseInsensitive";
-            
+    
     protected HashMap properties= new HashMap(5);
     
     public Object getProperty( String name ) {
@@ -163,7 +173,7 @@ public abstract class FileSystem  {
         if ( !( surl.startsWith("file:/") || surl.startsWith("ftp://") || surl.startsWith("http://") || surl.startsWith("https://") ) ) {
             surl= "file://"+ ( ( surl.charAt(0)=='/' ) ? surl : ( '/' + surl ) ); // Windows c:
         }
-           
+        
         int i;
         
         String params=null;
@@ -197,10 +207,10 @@ public abstract class FileSystem  {
         // let i2 be the end if the protocol and the beginning of the file.
         int i2= surl.indexOf("://")+3;
         if ( surl.indexOf("://")==-1 && surl.startsWith("file:/" ) ) i2=5;
-                
+        int i3= surl.indexOf("/",i2+1);
         String[] result= new String[6];
         result[0]= surl.substring(0,i2);
-        result[1]= null;
+        result[1]= surl.substring(0,i3);
         result[2]= surlDir+"/";
         result[3]= surl.substring(0,fileEnd);
         result[4]= ext;
