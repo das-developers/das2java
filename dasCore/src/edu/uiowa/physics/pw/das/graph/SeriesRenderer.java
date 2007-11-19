@@ -83,7 +83,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     
     /** Holds value of property color. */
     private Color color = Color.BLACK;
-            
+    
     private long lastUpdateMillis;
     
     /** Holds value of property antiAliased. */
@@ -168,6 +168,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (dataSet == null || dataSet.getXLength() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
             renderException(g, xAxis, yAxis, new Exception("null data set"));
+            return;
+        }
+        
+        if ( ! ( dataSet.getXUnits().isConvertableTo(xAxis.getUnits() )
+        && dataSet.getYUnits().isConvertableTo(yAxis.getUnits() ) ) ) {
             return;
         }
         
@@ -357,7 +362,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
      */
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
         
-        
         updating = true;
         
         updateImageCount++;
@@ -378,6 +382,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (dataSet == null || dataSet.getXLength() == 0) {
             return;
         }
+        
+        if ( ! ( dataSet.getXUnits().isConvertableTo(xAxis.getUnits() )
+        && dataSet.getYUnits().isConvertableTo(yAxis.getUnits() ) ) ) {
+            return;
+        }
+        
         Dimension d;
         
         double xmin;
@@ -545,7 +555,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         
         path = newPath;
         this.fillToRefPath = fillPath;
-                
+        
         if (this.fillToReference && fillToRefPath != null) {
             GeneralPath pixelFillPath;
             if (simplifyPaths) {
@@ -980,11 +990,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if ( fillToReference && fillToRefPath!=null && fillToRefPath.contains( dp ) ) {
             accept= true;
         }
-
+        
         if ( (!accept) && path!=null && path.intersects( dp.x-5, dp.y-5, 10, 10 ) ) {
             accept= true;
         }
         return accept;
     }
-
+    
 }
