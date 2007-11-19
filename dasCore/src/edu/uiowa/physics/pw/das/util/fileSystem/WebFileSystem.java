@@ -24,7 +24,7 @@ import javax.swing.*;
  */
 public abstract class WebFileSystem extends FileSystem {
     
-    final File localRoot;
+    protected final File localRoot;
     
     /** Creates a new instance of WebFileSystem */
     protected WebFileSystem(URL root, File localRoot) {
@@ -72,7 +72,8 @@ public abstract class WebFileSystem extends FileSystem {
         String[] names= listDirectory( directory );
         Pattern pattern= Pattern.compile(regex);
         ArrayList result= new ArrayList();
-        for ( int i=0; i<names.length; i++ ) {                        
+        for ( int i=0; i<names.length; i++ ) {   
+            if ( names[i].endsWith("/") ) names[i]= names[i].substring(0,names[i].length()-1);
             if ( pattern.matcher(names[i]).matches() ) {
                 result.add(names[i]);
             }
