@@ -63,7 +63,7 @@ public class SubTaskMonitor implements DasProgressMonitor {
     public void setTaskProgress(long position) throws IllegalArgumentException {
         this.progress= position;
         if ( size==-1 ) {
-            parent.setTaskProgress( parent.getTaskProgress() + 1 );
+            parent.setTaskProgress( min );
         } else {
             parent.setTaskProgress( min + ( max - min ) * position / size );
         }
