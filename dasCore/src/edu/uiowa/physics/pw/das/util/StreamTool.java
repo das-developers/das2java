@@ -253,8 +253,15 @@ public class StreamTool {
             }
             handler.streamDescriptor(sd);
             struct.descriptorCount++;
-            while (stream.read(struct.bigBuffer) != -1) {
+            int bytesRead;
+            int totalBytesRead=0;
+            while ( (bytesRead=stream.read(struct.bigBuffer)) != -1) {
                 struct.bigBuffer.flip();
+                totalBytesRead+= bytesRead;
+                //System.err.println("d2s bytesRead="+bytesRead+" total="+totalBytesRead );
+                //if ( totalBytesRead>318260 ) {
+                  //  System.err.println("here");
+                //}
                 while ( getChunk(struct) ) {
                     // this block is empty
                 }
