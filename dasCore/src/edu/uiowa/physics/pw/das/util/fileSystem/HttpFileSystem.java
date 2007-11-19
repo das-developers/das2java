@@ -80,9 +80,13 @@ public class HttpFileSystem extends WebFileSystem {
         synchronized ( downloads ) {
             DasProgressMonitor mon= (DasProgressMonitor) downloads.get( filename );
             if ( mon!=null ) { // the httpFS is already loading this file, so wait.
-                monitor.setLabel( "Waiting for file to download" );
+                monitor.setProgressMessage( "Waiting for file to download" );
                 while ( mon!=null ) {
+                    while ( !mon.isStarted() ) {
+                        try { Thread.sleep(100); } catch ( InterruptedException e) {}
+                    }
                     monitor.setTaskSize(mon.getTaskSize());
+                    monitor.started();
                     if ( monitor.isCancelled() ) mon.cancel();
                     monitor.setTaskProgress( mon.getTaskProgress() );
                     try { downloads.wait(100); } catch ( InterruptedException e ) { throw new RuntimeException(e); }
@@ -90,6 +94,7 @@ public class HttpFileSystem extends WebFileSystem {
                     logger.finest( "waiting for download" );
                     
                 }
+                monitor.finished();
                 if ( f.exists() ) {
                     return;
                 } else {
@@ -241,5 +246,6 @@ public class HttpFileSystem extends WebFileSystem {
         return (String[])result.toArray(new String[result.size()]);
         
     }
+
 
 }
