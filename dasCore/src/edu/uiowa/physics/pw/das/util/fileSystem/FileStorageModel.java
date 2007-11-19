@@ -361,6 +361,10 @@ public class FileStorageModel {
         return getNamesFor( targetRange, new NullProgressMonitor() );
     }
     
+    /**
+     * @param targetRange restrict search to range.  May be null, in which case all
+     *    names are returned.
+     */
     public String[] getNamesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
         
         String listRegex;
@@ -388,12 +392,13 @@ public class FileStorageModel {
         
         List list= new ArrayList();
         
+        //TODO: support monitor by doing progress based on this for loop.
         for ( int i=0; i<fileSystems.length; i++ ) {
             String[] files1= fileSystems[i].listDirectory( "/", listRegex );
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                if ( getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
+                if ( targetRange==null || getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
             }
         }
         Collections.sort( list, new Comparator() {
@@ -404,6 +409,54 @@ public class FileStorageModel {
             }
         } );
         return (String[])list.toArray(new String[list.size()]);
+    }
+    
+    /**
+     * this is introduced to support discovery, where we just need one file to
+     * get started.  Before, there was code that would list all files, then use
+     * just the first one.  This may return a skeleton file, but getFileFor() must
+     * return a result.
+     * This implementation does the same as getNames(), but stops after finding a file.
+     * @return null if no file is found
+     */
+    public String getRepresentativeFile( DasProgressMonitor monitor ) {
+        String listRegex;
+        
+        FileSystem[] fileSystems;
+        String name;
+        String[] names;
+        if ( parent!=null ) {
+            names= parent.getNamesFor(null);
+            fileSystems= new FileSystem[names.length];
+            for ( int i=0; i<names.length; i++ ) {
+                try {
+                    fileSystems[i]= root.createFileSystem( names[i] );
+                } catch ( Exception e ) {
+                    throw new RuntimeException(e);
+                }
+            }
+            String parentRegex= getParentRegex(regex);
+            listRegex= regex.substring( parentRegex.length()+1 );
+        } else {
+            fileSystems= new FileSystem[] { root };
+            names= new String[] {""};
+            listRegex= regex;
+        }
+        
+        List list= new ArrayList();
+        
+        String result= null;
+        
+        for ( int i=0; result==null && i<fileSystems.length; i++ ) {
+            String[] files1= fileSystems[i].listDirectory( "/", listRegex );
+            if ( files1.length>0 ) {
+                String ff= names[i].equals("") ? files1[0] : names[i]+"/"+files1[0];
+                if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
+                result= ff;
+            }
+        }
+        
+        return result;
     }
     
     public File[] getFilesFor( final DatumRange targetRange ) {
