@@ -425,7 +425,7 @@ public class PersistentStateSupport {
         return currentFile;
     }
 
-    private void setCurrentFile(File currentFile) {
+    public void setCurrentFile(File currentFile) {
         File oldFile = this.currentFile;
         this.currentFile = currentFile;
         propertyChangeSupport.firePropertyChange ( PROPERTY_CURRENT_FILE, oldFile, currentFile );
