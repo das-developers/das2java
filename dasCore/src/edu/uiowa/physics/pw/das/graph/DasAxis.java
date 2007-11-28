@@ -776,7 +776,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         final Datum interval = iinterval;
         tcaData = null;
         
-        this.dsd.requestDataSet( data_minimum, data_maximum.add(Datum.create(1.0,Units.seconds)), interval, DasProgressMonitor.NULL, getCanvas(), tcaListener );
+        this.dsd.requestDataSet( data_minimum, data_maximum.add(Datum.create(1.0,Units.seconds)), interval, new NullProgressMonitor(), getCanvas(), tcaListener );
         
 /*        DataRequestor requestor = new DataRequestor() {
  
@@ -1186,10 +1186,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (debugColorIndex >= DEBUG_COLORS.length) { debugColorIndex = 0; };
         }
         /* End debugging code */
-        if (isHorizontal()) {
-            paintHorizontalAxis(g);
-        } else {
-            paintVerticalAxis(g);
+        
+        if ( tickV.tickV.getUnits().isConvertableTo( getUnits() ) ) {
+            if (isHorizontal()) {
+                paintHorizontalAxis(g);
+            } else {
+                paintVerticalAxis(g);
+            }
         }
         
         Rectangle clip = g.getClipBounds();
@@ -1266,6 +1269,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double dataMin= dataRange.getMinimum();
         
         TickVDescriptor ticks= getTickV();
+        
+        if ( !ticks.getMajorTicks().getUnits().isConvertableTo( this.getUnits() ) ) {
+            logger.fine("incompatible units");
+            return;
+        }
         
         if (bottomLine) {
             g.drawLine(DMin,bottomPosition,DMax,bottomPosition);
@@ -1414,6 +1422,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         
+        
         if (!axisLabel.equals("")) {
             Graphics2D g2 = (Graphics2D)g.create();
             int titlePositionOffset = getTitlePositionOffset();
@@ -1488,7 +1497,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         GrannyTextRenderer idlt= new GrannyTextRenderer();
         idlt.setString(this,label);
         
-        int width = (int) idlt.getWidth();
+        int width = (int) idlt.getLineOneWidth();
         int height = (int) idlt.getHeight();
         int ascent = (int) idlt.getAscent();
         
@@ -1740,7 +1749,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         resetTransform();
         setBounds(getAxisBounds());
         invalidate();
-        validate();
+        if ( tickV.tickV.getUnits().isConvertableTo(getUnits()) ) validate();
     }
     
     /** TODO
