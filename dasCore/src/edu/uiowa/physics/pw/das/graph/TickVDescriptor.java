@@ -162,7 +162,7 @@ public class TickVDescriptor {
         } else if ( absissa==2. ) {
             minorPerMajor= 2;
         } else {
-            minorPerMajor= 4;
+            minorPerMajor= 10;
         }
 
         double minorTickSize= absissa * mag / minorPerMajor;
