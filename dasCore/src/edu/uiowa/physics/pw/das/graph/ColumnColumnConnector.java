@@ -3,6 +3,7 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
+import javax.swing.JLayeredPane;
 
 public class ColumnColumnConnector extends DasCanvasComponent implements java.beans.PropertyChangeListener {
 
@@ -18,6 +19,8 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     
     public ColumnColumnConnector( DasCanvas parent, DasPlot topPlot, DasRow topRow, DasPlot bottomPlot ) {
         super( );
+        putClientProperty( JLayeredPane.LAYER_PROPERTY, DasCanvas.AXIS_LAYER );
+        
         setForeground( Color.LIGHT_GRAY );
         setRow( topRow );
         setColumn( topPlot.getColumn() );
@@ -35,7 +38,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
 
     private Rectangle getMyBounds() {
         int ytop= topRow.getDMaximum();
-        int ybottom= bottomPlot.getRow().getDMinimum();
+        int ybottom= this.bottomCurtain ? bottomPlot.getRow().getDMaximum() : bottomPlot.getRow().getDMinimum() ;
         int xhigh= Math.max( topPlot.getColumn().getDMaximum(), bottomPlot.getColumn().getDMaximum() );
         int xlow= Math.min( topPlot.getColumn().getDMinimum(), bottomPlot.getColumn().getDMinimum() );
 
@@ -70,6 +73,9 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
 
         int y1= topRow.getDMaximum()+hlen;
         int y2= bottomPlot.getRow().getDMinimum()-1-hlen;
+        int y3= bottomPlot.getRow().getDMinimum()-1;
+        int y4= bottomPlot.getRow().getDMaximum();
+        
         Datum dlow= max( topPlot.getXAxis().getDataMinimum(), bottomPlot.getXAxis().getDataMinimum() );
         Datum dhigh= min( topPlot.getXAxis().getDataMaximum(), bottomPlot.getXAxis().getDataMaximum() );
         int xhigh1= (int)topPlot.getXAxis().transform(dhigh);
@@ -80,12 +86,18 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         GeneralPath gp= new GeneralPath();
         GeneralPath fillPath= new GeneralPath();
         
-        gp.moveTo( xlow1,y1-hlen );   fillPath.moveTo( xlow1,y1-hlen );  
-        gp.lineTo( xlow1,y1 );        fillPath.lineTo( xlow1,y1 );
-        gp.lineTo( xlow2,y2 );        fillPath.lineTo( xlow2,y2 );
-        gp.lineTo( xlow2,y2+hlen );   fillPath.lineTo( xlow2,y2+hlen );
-        
-        gp.moveTo( xhigh2,y2+hlen );  fillPath.lineTo( xhigh2,y2+hlen );
+        gp.moveTo( xlow1,y1-hlen );                   fillPath.moveTo( xlow1,y1-hlen );  
+        gp.lineTo( xlow1,y1 );                        fillPath.lineTo( xlow1,y1 );
+        gp.lineTo( xlow2,y2 );                        fillPath.lineTo( xlow2,y2 );
+        gp.lineTo( xlow2,y3 );                        fillPath.lineTo( xlow2,y3 );
+        if ( bottomCurtain ) {
+            gp.lineTo( xlow2, y4 );
+            gp.moveTo( xhigh2, y4 );
+            gp.lineTo( xhigh2, y3 );
+        } else {
+            gp.moveTo( xhigh2, y3 );
+        }
+                                      fillPath.lineTo( xhigh2,y3 );
         gp.lineTo( xhigh2,y2 );       fillPath.lineTo( xhigh2,y2 );
         gp.lineTo( xhigh1,y1 );       fillPath.lineTo( xhigh1,y1 ); 
         gp.lineTo( xhigh1,y1-hlen );  fillPath.lineTo( xhigh1,y1-hlen );
@@ -94,7 +106,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
             g.setColor( fillColor );
             g.fill(fillPath);
         }
-
+        
         g.setColor( getForeground() );
                 
         g.draw( gp );
@@ -181,6 +193,29 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         boolean oldFill = this.fill;
         this.fill = fill;
         propertyChangeSupport.firePropertyChange ("fill", new Boolean (oldFill), new Boolean (fill));
+    }
+
+    /**
+     * Holds value of property bottomCurtain.
+     */
+    private boolean bottomCurtain;
+
+    /**
+     * Getter for property bottomCurtain.
+     * @return Value of property bottomCurtain.
+     */
+    public boolean isBottomCurtain() {
+        return this.bottomCurtain;
+    }
+
+    /**
+     * Setter for property bottomCurtain.
+     * @param bottomCurtain New value of property bottomCurtain.
+     */
+    public void setBottomCurtain(boolean bottomCurtain) {
+        boolean oldBottomCurtain = this.bottomCurtain;
+        this.bottomCurtain = bottomCurtain;
+        propertyChangeSupport.firePropertyChange ("bottomCurtain", new Boolean (oldBottomCurtain), new Boolean (bottomCurtain));
     }
 
 }
