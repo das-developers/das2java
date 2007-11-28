@@ -56,6 +56,11 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     }
     
     protected void paintComponent(Graphics g1) {
+        
+        if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) return;
+        
+        bottomPlot.addPropertyChangeListener(this);
+        
         Graphics2D g= (Graphics2D)g1.create();
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
