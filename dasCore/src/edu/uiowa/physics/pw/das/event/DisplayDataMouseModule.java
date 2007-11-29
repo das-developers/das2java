@@ -69,6 +69,10 @@ public class DisplayDataMouseModule extends MouseModule {
         return;
     }
     
+    private String unitsStr( Units u ) {
+        return u==Units.dimensionless ? "" : "("+u.toString()+")";
+    }
+    
     public void mouseRangeSelected(MouseDragEvent e0) {
         
         maybeCreateFrame();
@@ -98,6 +102,10 @@ public class DisplayDataMouseModule extends MouseModule {
                 
                 DataSet ds= rends[irend].getDataSet();
                 
+                if ( ds==null ) {
+                    doc.insertString( doc.getLength(), "(no dataset)\n", attrSet );
+                }
+                
                 DataSet outds;
                 if ( ds instanceof TableDataSet ) {
                     TableDataSet tds= (TableDataSet)ds;
@@ -108,7 +116,7 @@ public class DisplayDataMouseModule extends MouseModule {
                     Units zunits= tds.getZUnits();
                     DatumFormatter df= tds.getDatum(0,0).getFormatter();
                     
-                    buf.append( "TableDataSet "+toutds.getXLength()+"x"+toutds.getYLength(0)+" ("+zunits+")\n" );
+                    buf.append( "TableDataSet "+toutds.getXLength()+"x"+toutds.getYLength(0)+" "+unitsStr(zunits)+"\n" );
                     for ( int i=0; i<toutds.getXLength(); i++ ) {
                         for ( int j=0; j<toutds.getYLength(0); j++ ) {
                             try {
@@ -132,10 +140,29 @@ public class DisplayDataMouseModule extends MouseModule {
                     DatumFormatter df=  vds.getDatum(0).getFormatter();
                     DatumFormatter xdf= vds.getXTagDatum(0).getFormatter();
                     
+                    String[] planes= vds.getPlaneIds();
+                    VectorDataSet[] vdss= new VectorDataSet[planes.length];
+                    for ( int j=0; j<planes.length; j++ ) {
+                        vdss[j]= (VectorDataSet) vds.getPlanarView(planes[j]);
+                    }
+                    
+                    if ( planes.length>1 ) {
+                        buf.append( "X"+unitsStr(xunits)+"\t" );
+                        buf.append( "Y"+unitsStr(units)+"\t");
+                        for ( int j=0; j<vdss.length; j++ ) {
+                            if ( !planes[j].equals("") ) buf.append( ""+ planes[j]+""+unitsStr(vdss[j].getYUnits())+"\t" );
+                        }
+                        buf.append("\n");
+                    }
+                    
                     VectorDataSetBuilder builder= new VectorDataSetBuilder(vds.getXUnits(),vds.getYUnits());
                     for ( int i=0; i<vds.getXLength(); i++ ) {
                         if ( xrange.contains( vds.getXTagDatum(i) ) && ( !yclip || yrange.contains(vds.getDatum(i)) ) ) {
-                            buf.append( xdf.format( vds.getXTagDatum(i), xunits ) + "  " + df.format( vds.getDatum(i), units ) );
+                            buf.append( xdf.format( vds.getXTagDatum(i), xunits ) + "\t" + df.format( vds.getDatum(i), units ) );
+                            for ( int j=0; j<planes.length; j++ ) {
+                                if ( !planes[j].equals("") ) buf.append( "\t" + df.format( vdss[j].getDatum(i), vdss[j].getYUnits() ) );
+                            }
+                            
                             buf.append( "\n" );
                         }
                     }
