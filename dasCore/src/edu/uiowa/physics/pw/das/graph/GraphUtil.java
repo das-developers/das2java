@@ -351,8 +351,8 @@ public class GraphUtil {
             //System.err.println( "type: "+types[type]+"   "+String.format( "[ %f %f ] ", p[0], p[1] ) );
             if ( ( type==PathIterator.SEG_MOVETO || type==type0 ) &&  Math.abs(dx)<xres && Math.abs(dy)<yres ) continue;
             if (  Math.abs(dx)>=xres || Math.abs(dy)>=yres ) {
-                x0= (int)p[0];
-                y0= (int)p[1];
+                x0= 0.5f+(int)Math.floor(p[0]);
+                y0= 0.5f+(int)Math.floor(p[1]);
                 type0= type;
             }
             switch ( type ) {
