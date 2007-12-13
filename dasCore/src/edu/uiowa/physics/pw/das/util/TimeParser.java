@@ -228,24 +228,6 @@ public class TimeParser {
         return new TimeParser( formatString, map );
     }
     
-    private int parsePositiveInt( String s, int offset, int len ) throws ParseException {
-        int result=0;
-        switch (len) {
-            case 1: result=s.charAt(offset) - '0'; break;
-            case 2: result= ( s.charAt(offset) - '0' ) *10 + ( s.charAt(offset+1) - '0' ); break;
-            case 3: result= ( s.charAt(offset) - '0' ) *100 + ( s.charAt(offset+1) - '0' ) * 10 +  ( s.charAt(offset+2) - '0' ) ; break;
-            case 4: result= ( s.charAt(offset) - '0' ) *1000 + ( s.charAt(offset+1) - '0' ) *100 + ( s.charAt(offset+2) - '0' ) * 10 +  ( s.charAt(offset+3) - '0' ) ;  break;
-            default:
-                int radix=1;
-                for ( int j= offset+len-1; j>=offset; j-- ) {
-                    result+= radix * ( s.charAt(j)-'0' );
-                    radix= radix*10;
-                }
-        }
-        if ( result<0 ) throw new ParseException(  s.substring(offset,offset+len), 0 );
-        return result;
-    }
-    
     private double toUs2000( TimeStruct d ) {
         int year = (int)d.year;
         int month = (int)d.month;
@@ -308,11 +290,7 @@ public class TimeParser {
                 }
             }
             if ( handlers[idigit] < 10 ) {
-                //logger.fine("timeString="+timeString);
-                //logger.fine(" offs="+offs+" len="+len+" field="+formatName[handlers[idigit]] );
-                //int digit= parsePositiveInt( timeString, offs, len );
-                 int digit= Integer.parseInt( timeString.substring(  offs, offs+len ).trim() );
-                //logger.fine(" digit="+digit );
+                int digit= Integer.parseInt( timeString.substring(  offs, offs+len ).trim() );
                 switch ( handlers[idigit] ) {
                     case 0: time.year= digit; break;
                     case 1: time.year= digit < 58 ? 2000+digit : 1900 + digit; break;
@@ -339,6 +317,34 @@ public class TimeParser {
                 time.hour-= offset / 100;   // careful!
                 time.minute-=  offset % 100;
             }
+        }
+        return this;
+    }
+    
+    /**
+     * This allows for string split into elements to be interpretted here.  This
+     * is to add flexibility to external parsers that have partially parsed the
+     * number already.
+     * examples:
+     *   TimeParser p= TimeParser.create("%Y %m %d");
+     *   p.setDigit(0,2007).setDigit(1,12).setDigit(2,5).getTime( Units.us2000 );
+     *   p.format();  // maybe in the future
+     * @throws IllegalArgumentException if the digit has a custom field handler
+     * @throws IllegalArgumentException if the digit does not exist.
+     * @param digitNumber, the digit to set (starting with 0).
+     */
+    public TimeParser setDigit( int digitNumber, int digit ) {
+        switch ( handlers[digitNumber+1] ) {
+            case 0: time.year= digit; break;
+            case 1: time.year= digit < 58 ? 2000+digit : 1900 + digit; break;
+            case 2: time.month= 1; time.day= digit; break;
+            case 3: time.month= digit; break;
+            case 4: time.day= digit; break;
+            case 5: time.hour= digit; break;
+            case 6: time.minute= digit; break;
+            case 7: time.seconds= digit; break;
+            case 8: time.millis= digit; break;
+            case 9: time.micros= digit; break;
         }
         return this;
     }
