@@ -179,6 +179,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return dasName;
     }
     
+    /**
+     * returns the em size for the canvas.  We define the em size as the height of the
+     * font.
+     */
     private int getEmSize() {
         return canvas.getFont().getSize();
     }
@@ -216,6 +220,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( dMinimum!=oldmin ) firePropertyChange( "dMinimum", oldmin, dMinimum );
         if ( dMaximum!=oldmax ) firePropertyChange( "dMaximum", oldmax, dMaximum );
         if ( dMinimum!=oldmin || dMaximum!=oldmax ) fireUpdate();
+        canvas.repaint();
     }
     
     /**
