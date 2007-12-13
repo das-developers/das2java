@@ -328,6 +328,15 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         return (getParent() == null ? super.getFont() : getParent().getFont());
     }
     
+    /**
+     * convenient method intended to encourage use of em's.  returns the em size for the canvas.  
+     * We define the em size as the height of the component's font.
+     * @return the height of the component's font.
+     */
+    public double getEmSize() {
+        return getFont().getSize2D();
+    }
+    
     boolean dirty = true;
     
     /**
