@@ -33,7 +33,6 @@ import java.awt.geom.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.w3c.dom.*;
 
@@ -86,6 +85,10 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     protected Exception renderException;
     
     protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );        
+
+    private String PROPERTY_ACTIVE="active";
+
+    private String PROPERTY_DATASET= "dataset";
     
     protected Renderer( DataSetDescriptor dsd ) {
         this.loader= new XAxisDataLoader( this, dsd );
@@ -177,7 +180,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             this.ds= ds;
             refresh();
             invalidateParentCacheImage();
-            propertyChangeSupport.firePropertyChange( "dataSet", oldDs, ds );
+            propertyChangeSupport.firePropertyChange( PROPERTY_DATASET, oldDs, ds );
         }
     }
     
@@ -249,11 +252,6 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     
     protected void renderException( Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e ) {
         
-        ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        int x= xAxis.getColumn().getDMiddle();
-        int y= yAxis.getRow().getDMiddle();
-        
         String s;
         String message;
         FontMetrics fm= g.getFontMetrics();
@@ -273,16 +271,8 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             s+= ":!c"+message;
         }
         
-        GrannyTextRenderer gtr= new GrannyTextRenderer();
-        gtr.setString( parent, s );
-        gtr.setAlignment(GrannyTextRenderer.LEFT_ALIGNMENT);
+        parent.postMessage( this, s, DasPlot.ERROR, null, null );
         
-        int width= (int)gtr.getWidth();
-        
-        Color color0= g.getColor();
-        g.setColor(Color.lightGray);
-        gtr.draw(g,x-width/2,y);
-        g.setColor(color0);
     }
     
     /** updatePlotImage is called once the expensive operation of loading
@@ -467,7 +457,9 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * @param active New value of property active.
      */
     public void setActive(boolean active) {
+        boolean oldValue= this.active;
         this.active = active;
+        propertyChangeSupport.firePropertyChange( PROPERTY_ACTIVE, oldValue, active );
         update();
     }
 
