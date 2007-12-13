@@ -14,6 +14,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -24,7 +25,6 @@ import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -56,6 +56,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
     
     HashMap tabs= new HashMap();
+    int lastSelected; /* keep track of selected index before context menu */
     
     public TearoffTabbedPane() {
         super();
@@ -109,9 +110,10 @@ public class TearoffTabbedPane extends JTabbedPane {
                             }
                         }
                         
-                        if ( desc.babysitter instanceof JFrame ) {
-                            ((JFrame)desc.babysitter).dispose();
+                        if ( desc.babysitter instanceof Window ) {
+                            ((Window)desc.babysitter).dispose();
                         }
+
                         TearoffTabbedPane.this.dock( babyComponent );
                     }
                 }
@@ -141,13 +143,14 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
     
     public void tearOff( int tabIndex, Container newContainer ) {
+        int lastSelected= this.lastSelected;
         Component c= getComponentAt(tabIndex);
         String title= super.getTitleAt(tabIndex);
         super.removeTabAt(tabIndex);
         super.insertTab("("+title+")",null,getTornOffComponent(),null,tabIndex);
         TabDesc td= ((TabDesc)tabs.get(c));
         td.babysitter= newContainer;
-        setSelectedIndex(Math.max(tabIndex-1,0));
+        setSelectedIndex(lastSelected);
     }
     
     private class AbstractWindowListener implements WindowListener {
@@ -175,6 +178,9 @@ public class TearoffTabbedPane extends JTabbedPane {
     
     public void tearOffIntoFrame( int tabIndex ) {
         final Component c= getComponentAt(tabIndex);
+        // TODO: can get IllegalComponentStateException with random clicks. See bug297
+        setSelectedIndex(tabIndex);
+        c.setVisible(true);  // darwin bug297
         Point p= c.getLocationOnScreen();
         TabDesc td= (TabDesc)tabs.get( c );
         //JFrame babySitter= new JFrame(td.title);
@@ -197,11 +203,12 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
     
     public void dock( Component c ) {
+        int selectedIndex= getSelectedIndex();
         TabDesc td= (TabDesc) tabs.get(c);
         int index= td.index;
         super.removeTabAt(index);
         super.insertTab( td.title, td.icon, c, td.tip, index );
-        // setSelectedIndex( index );
+        setSelectedIndex( selectedIndex );
     }
     
     public void addTab(String title, Icon icon, Component component) {
@@ -227,5 +234,12 @@ public class TearoffTabbedPane extends JTabbedPane {
     public void removeTabAt(int index) {
         super.removeTabAt( index );
         tabs.remove( getComponentAt( index ) );
+    }
+
+    public void setSelectedIndex(int index) {
+        if ( index!=getSelectedIndex() )  {
+            lastSelected= getSelectedIndex();
+        }
+        super.setSelectedIndex(index);
     }
 }
