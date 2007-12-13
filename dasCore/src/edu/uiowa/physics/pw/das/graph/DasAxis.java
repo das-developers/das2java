@@ -97,6 +97,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     protected DataRange dataRange;
     
+    private String PROPERTY_TICKS= "ticks";
+    
+    /**
+     * until we switch to java 1.5, use this lock object instead of
+     * java.util.concurrent.lock
+     */
+    public interface Lock {
+        public void lock();
+        public void unlock();
+    }
+    
     /* Affine Transform, dependent on min, max and axis position
      * pixel= at_m * data + at_b
      * where data is data point in linear space (i.e. log property implemented)
@@ -151,7 +162,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final boolean DEBUG_GRAPHICS = false;
     private static final Color[] DEBUG_COLORS;
     
-    private String PROPERTY_DATUMRANGE="datumRange";
+    /* true if a lock is out, and an object is animation-interactively adjusting
+     * me
+     */
+    private boolean valueIsAdjusting= false;
+    
+    public static String PROPERTY_DATUMRANGE="datumRange";
     
     static {
         if (DEBUG_GRAPHICS) {
@@ -189,11 +205,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public DasAxis( Datum min, Datum max, int orientation, boolean log) {
         this(orientation);
         dataRange = new DataRange(this,min,max,log);
-        dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("history", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("favorites", dataRangePropertyListener);
+        addListenersToDataRange( dataRange, dataRangePropertyListener );
         copyFavorites();
         copyHistory();
     }
@@ -205,13 +217,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected DasAxis(DataRange range, int orientation) {
         this(orientation);
         dataRange = range;
-        dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("history", dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("favorites", dataRangePropertyListener);
+        addListenersToDataRange( range, dataRangePropertyListener );
         copyFavorites();
         copyHistory();
+    }
+    
+    private void addListenersToDataRange( DataRange range, PropertyChangeListener listener ) {
+        range.addPropertyChangeListener("log", listener);
+        range.addPropertyChangeListener("minimum", listener);
+        range.addPropertyChangeListener("maximum", listener);
+        range.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE,listener);
+        range.addPropertyChangeListener("history", listener);
+        range.addPropertyChangeListener("favorites", listener);
     }
     
     public DasAxis( DatumRange range, int orientation ) {
@@ -341,8 +358,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     firePropertyChange("dataMaximum", oldValue, newValue);
                 } else if ( propertyName.equals("favorites") ) {
                     copyFavorites();
+                } else if ( propertyName.equals(DataRange.PROPERTY_DATUMRANGE) ) {
+                    update();
+                    firePropertyChange(PROPERTY_DATUMRANGE,oldValue,newValue);
                 } else if ( propertyName.equals("history") ) {
-                    copyHistory();
+                    if ( !dataRange.valueIsAdjusting() ) copyHistory();
                 }
                 markDirty();
             }
@@ -457,10 +477,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             max= maximum.doubleValue( getUnits() );
         }
         
-        animateChange( min0, max0, min, max );
-        
+        if ( !valueIsAdjusting() ) animateChange( min0, max0, min, max );
         DatumRange oldRange= dataRange.getDatumRange();
         dataRange.setRange( newRange );
+        
         update();
         createAndFireRangeSelectionEvent();
         firePropertyChange( PROPERTY_DATUMRANGE, oldRange, newRange );
@@ -866,9 +886,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         oldRange.removePropertyChangeListener("log", dataRangePropertyListener);
         oldRange.removePropertyChangeListener("minimum", dataRangePropertyListener);
         oldRange.removePropertyChangeListener("maximum", dataRangePropertyListener);
+        oldRange.removePropertyChangeListener(DataRange.PROPERTY_DATUMRANGE,dataRangePropertyListener);
         dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
+        dataRange.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE,dataRangePropertyListener);
         if (oldRange.isLog() != dataRange.isLog()) {
             firePropertyChange("log", oldRange.isLog(), dataRange.isLog());
         }
@@ -883,6 +905,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.removePropertyChangeListener("log", dataRangePropertyListener);
         dataRange.removePropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.removePropertyChangeListener("maximum", dataRangePropertyListener);
+        dataRange.removePropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, dataRangePropertyListener);
         DataRange newRange
                 = new DataRange(this,Datum.create(dataRange.getMinimum(), dataRange.getUnits()),
                 Datum.create(dataRange.getMaximum(), dataRange.getUnits()),
@@ -891,6 +914,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
+        dataRange.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, dataRangePropertyListener);
         copyFavorites();
         copyHistory();
     }
@@ -971,7 +995,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             axisSize= getColumn().getWidth();
             nTicksMax= axisSize / tickSizePixels;
         } else {
-            int tickSizePixels= getFontMetrics(getTickLabelFont()).getHeight() * 2;
+            int tickSizePixels= getFontMetrics(getTickLabelFont()).getHeight() + 6;
             axisSize= getRow().getHeight();
             nTicksMax= axisSize / tickSizePixels;
         }
@@ -995,7 +1019,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             
             if ( isHorizontal() ) {
-                int tickSizePixels= (int) ( maxBounds.width * 1.5 );
+                int tickSizePixels= (int) ( maxBounds.width  + getEmSize() * 2 );
                 nTicksMax= axisSize / tickSizePixels;
             } else {
                 int tickSizePixels= (int) ( maxBounds.height * 2.0 );
@@ -1017,9 +1041,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         int nTicksMax;
         TickVDescriptor saveTickV;  // use these if overlap
+        
+        DatumRange dr= getDatumRange();
+        Datum pixel= dr.width().divide( getDLength() );
+        
         if (isHorizontal()) {
             // two passes to avoid clashes -- not guarenteed
-            tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 3, 6 );
+            tickV= TickVDescriptor.bestTickVTime( dr.min().subtract(pixel), dr.max().add(pixel), 3, 8 );
             Datum atick= tickV.getMajorTicks().get(0);
             String granny= tickV.getFormatter().grannyFormat(atick);
             
@@ -1058,13 +1086,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             boolean overlap= true;
             while ( overlap && nTicksMax>2 ) {
                 
-                tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 3, nTicksMax );
+                tickV= TickVDescriptor.bestTickVTime( getDataMinimum(), getDataMaximum(), 2, nTicksMax );
                 atick= tickV.getMajorTicks().get(0);
+                
+                if ( tickV.getMajorTicks().getLength()<= 1 ) {
+                    // we're about to have an assertion error, time to debug;
+                    System.err.println("about to assert error: "+tickV.getMajorTicks());
+                }
+                assert ( tickV.getMajorTicks().getLength()>1 );
                 
                 granny= tickV.getFormatter().grannyFormat(atick);
                 
-                idlt.setString(this, granny );
-                tickSizePixels= (int) idlt.getWidth();
+                idlt.setString(this.getGraphics(), granny );
+                tickSizePixels= (int) ( idlt.getWidth() + getEmSize() * 2 );
                 
                 double x0= transform( tickV.getMajorTicks().get(0) );
                 double x1= transform( tickV.getMajorTicks().get(1) );
@@ -1095,6 +1129,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public void updateTickV() {
         if (autoTickV) {
+            TickVDescriptor oldTicks= this.tickV;
             if (getUnits() instanceof TimeLocationUnits) {
                 updateTickVTime();
             } else if (dataRange.isLog()) {
@@ -1102,12 +1137,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } else {
                 updateTickVLinear();
             }
+            firePropertyChange( PROPERTY_TICKS, oldTicks, this.tickV );
         }
-    }
-    
-    private double pixelSizeData() {
-        Units units= getUnits();
-        return ( getDataMaximum().doubleValue(units) - getDataMinimum().doubleValue(units) ) / getDLength();
+        
     }
     
     private String errorMessage;
@@ -1244,207 +1276,206 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /** Paint the axis if it is horizontal  */
     protected void paintHorizontalAxis(Graphics2D g) {
-        Rectangle clip = g.getClipBounds();
-        if (clip == null) {
-            clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
-        }
-        
-        boolean bottomLine = ((orientation == BOTTOM || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
-        boolean bottomTicks = ((orientation == BOTTOM || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
-        boolean bottomTickLabels = ((orientation == BOTTOM && tickLabelsVisible) && blLabelRect != null && blLabelRect.intersects(clip));
-        boolean bottomLabel = ((orientation == BOTTOM && !axisLabel.equals("")) && blTitleRect != null && blTitleRect.intersects(clip));
-        boolean topLine = ((orientation == TOP || oppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
-        boolean topTicks = ((orientation == TOP || oppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
-        boolean topTickLabels = ((orientation == TOP && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
-        boolean topLabel = ((orientation == TOP && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
-        
-        int topPosition = getRow().getDMinimum() - 1;
-        int bottomPosition = getRow().getDMaximum();
-        int DMax= getColumn().getDMaximum();
-        int DMin= getColumn().getDMinimum();
-        
-        Font labelFont = getTickLabelFont();
-        
-        double dataMax= dataRange.getMaximum();
-        double dataMin= dataRange.getMinimum();
-        
-        TickVDescriptor ticks= getTickV();
-        
-        if ( !ticks.getMajorTicks().getUnits().isConvertableTo( this.getUnits() ) ) {
-            logger.fine("incompatible units");
-            return;
-        }
-        
-        if (bottomLine) {
-            g.drawLine(DMin,bottomPosition,DMax,bottomPosition);
-        }
-        if (topLine) {
-            g.drawLine(DMin,topPosition,DMax,topPosition);
-        }
-        
-        int tickLengthMajor = labelFont.getSize() * 2 / 3;
-        int tickLengthMinor = tickLengthMajor / 2;
-        int tickLength;
-        
-        if ( ticks.getMajorTicks().getUnits() != getUnits() ) {
-            System.err.println("why are the units not the same");
-        }
-        
-        for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
-            double tick1= ticks.tickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
-            if ( DMin <= tickPosition && tickPosition <= DMax ) {
-                tickLength= tickLengthMajor;
-                if (bottomTicks) {
-                    g.drawLine( tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
-                }
-                if (bottomTickLabels) {
-                    drawLabel(g, tick1, i, tickPosition, bottomPosition + tickLength);
-                }
-                if (topTicks) {
-                    g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
-                }
-                if (topTickLabels) {
-                    drawLabel(g, tick1, i, tickPosition, topPosition - tickLength + 1);
+        try {
+            Rectangle clip = g.getClipBounds();
+            if (clip == null) {
+                clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
+            }
+            
+            boolean bottomLine = ((orientation == BOTTOM || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
+            boolean bottomTicks = ((orientation == BOTTOM || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
+            boolean bottomTickLabels = ((orientation == BOTTOM && tickLabelsVisible) && blLabelRect != null && blLabelRect.intersects(clip));
+            boolean bottomLabel = ((orientation == BOTTOM && !axisLabel.equals("")) && blTitleRect != null && blTitleRect.intersects(clip));
+            boolean topLine = ((orientation == TOP || oppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
+            boolean topTicks = ((orientation == TOP || oppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
+            boolean topTickLabels = ((orientation == TOP && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
+            boolean topLabel = ((orientation == TOP && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
+            
+            int topPosition = getRow().getDMinimum() - 1;
+            int bottomPosition = getRow().getDMaximum();
+            int DMax= getColumn().getDMaximum();
+            int DMin= getColumn().getDMinimum();
+            
+            Font labelFont = getTickLabelFont();
+            
+            double dataMax= dataRange.getMaximum();
+            double dataMin= dataRange.getMinimum();
+            
+            TickVDescriptor ticks= getTickV();
+            
+            if (bottomLine) {
+                g.drawLine(DMin,bottomPosition,DMax,bottomPosition);
+            }
+            if (topLine) {
+                g.drawLine(DMin,topPosition,DMax,topPosition);
+            }
+            
+            int tickLengthMajor = labelFont.getSize() * 2 / 3;
+            int tickLengthMinor = tickLengthMajor / 2;
+            int tickLength;
+            
+            for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
+                double tick1= ticks.tickV.doubleValue(i, getUnits());
+                int tickPosition= (int)Math.floor(transform(tick1,getUnits()));
+                if ( DMin <= tickPosition && tickPosition <= DMax ) {
+                    tickLength= tickLengthMajor;
+                    if (bottomTicks) {
+                        g.drawLine( tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+                    }
+                    if (bottomTickLabels) {
+                        drawLabel(g, tick1, i, tickPosition, bottomPosition + tickLength);
+                    }
+                    if (topTicks) {
+                        g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                    }
+                    if (topTickLabels) {
+                        drawLabel(g, tick1, i, tickPosition, topPosition - tickLength + 1);
+                    }
                 }
             }
-        }
-        
-        for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
-            double tick1= ticks.minorTickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
-            if ( DMin <= tickPosition && tickPosition <= DMax ) {
-                tickLength= tickLengthMinor;
-                if (bottomTicks) {
-                    g.drawLine( tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+            
+            for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
+                Datum tick= ticks.minorTickV.get(i);
+                int tickPosition= (int)Math.floor(transform(tick));
+                if ( DMin <= tickPosition && tickPosition <= DMax ) {
+                    tickLength= tickLengthMinor;
+                    if (bottomTicks) {
+                        g.drawLine( tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+                    }
+                    if (topTicks) {
+                        g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                    }
                 }
-                if (topTicks) {
-                    g.drawLine( tickPosition, topPosition, tickPosition, topPosition - tickLength);
+            }
+            
+            if (!axisLabel.equals("")) {
+                Graphics2D g2 = (Graphics2D)g.create();
+                int titlePositionOffset = getTitlePositionOffset();
+                GrannyTextRenderer gtr = new GrannyTextRenderer();
+                gtr.setString(this, axisLabel);
+                int titleWidth = (int)gtr.getWidth();
+                int baseline;
+                int leftEdge;
+                g2.setFont(getLabelFont());
+                if (bottomLabel) {
+                    leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+                    baseline = bottomPosition + titlePositionOffset;
+                    gtr.draw(g2, (float)leftEdge, (float)baseline);
                 }
+                if (topLabel) {
+                    leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+                    baseline = topPosition - titlePositionOffset;
+                    gtr.draw(g2, (float)leftEdge, (float)baseline);
+                }
+                g2.dispose();
             }
-        }
-        
-        if (!axisLabel.equals("")) {
-            Graphics2D g2 = (Graphics2D)g.create();
-            int titlePositionOffset = getTitlePositionOffset();
-            GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(this, axisLabel);
-            int titleWidth = (int)gtr.getWidth();
-            int baseline;
-            int leftEdge;
-            g2.setFont(getLabelFont());
-            if (bottomLabel) {
-                leftEdge = DMin + (DMax-DMin - titleWidth)/2;
-                baseline = bottomPosition + titlePositionOffset;
-                gtr.draw(g2, (float)leftEdge, (float)baseline);
-            }
-            if (topLabel) {
-                leftEdge = DMin + (DMax-DMin - titleWidth)/2;
-                baseline = topPosition - titlePositionOffset;
-                gtr.draw(g2, (float)leftEdge, (float)baseline);
-            }
-            g2.dispose();
+        } catch ( InconvertibleUnitsException ex ) {
+            // do nothing
         }
     }
     
     /** Paint the axis if it is vertical  */
     protected void paintVerticalAxis(Graphics2D g) {
-        Rectangle clip = g.getClipBounds();
-        if (clip == null) {
-            clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
-        }
-        
-        boolean leftLine = ((orientation == LEFT || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
-        boolean leftTicks = ((orientation == LEFT || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
-        boolean leftTickLabels = ((orientation == LEFT && tickLabelsVisible) && blLabelRect != null && blLabelRect.intersects(clip));
-        boolean leftLabel = ((orientation == LEFT && !axisLabel.equals("")) && blTitleRect != null && blTitleRect.intersects(clip));
-        boolean rightLine = ((orientation == RIGHT || oppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
-        boolean rightTicks = ((orientation == RIGHT || oppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
-        boolean rightTickLabels = ((orientation == RIGHT && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
-        boolean rightLabel = ((orientation == RIGHT && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
-        
-        int leftPosition = getColumn().getDMinimum() - 1;
-        int rightPosition = getColumn().getDMaximum();
-        int DMax= getRow().getDMaximum();
-        int DMin= getRow().getDMinimum();
-        
-        Font labelFont = getTickLabelFont();
-        
-        double dataMax= dataRange.getMaximum();
-        double dataMin= dataRange.getMinimum();
-        
-        TickVDescriptor ticks= getTickV();
-        
-        if (leftLine) {
-            g.drawLine(leftPosition,DMin,leftPosition,DMax);
-        }
-        if (rightLine) {
-            g.drawLine(rightPosition,DMin,rightPosition,DMax);
-        }
-        
-        int tickLengthMajor= labelFont.getSize()*2/3;
-        int tickLengthMinor = tickLengthMajor / 2;
-        int tickLength;
-        
-        for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
-            double tick1= ticks.tickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
-            if ( DMin <= tickPosition && tickPosition <= DMax ) {
-                
-                tickLength= tickLengthMajor;
-                if (leftTicks) {
-                    g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition );
-                }
-                if (leftTickLabels) {
-                    drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition);
-                }
-                if (rightTicks) {
-                    g.drawLine( rightPosition, tickPosition, rightPosition + tickLength, tickPosition );
-                }
-                if (rightTickLabels) {
-                    drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition);
+        try {
+            Rectangle clip = g.getClipBounds();
+            if (clip == null) {
+                clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
+            }
+            
+            boolean leftLine = ((orientation == LEFT || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
+            boolean leftTicks = ((orientation == LEFT || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
+            boolean leftTickLabels = ((orientation == LEFT && tickLabelsVisible) && blLabelRect != null && blLabelRect.intersects(clip));
+            boolean leftLabel = ((orientation == LEFT && !axisLabel.equals("")) && blTitleRect != null && blTitleRect.intersects(clip));
+            boolean rightLine = ((orientation == RIGHT || oppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
+            boolean rightTicks = ((orientation == RIGHT || oppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
+            boolean rightTickLabels = ((orientation == RIGHT && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
+            boolean rightLabel = ((orientation == RIGHT && !axisLabel.equals("")) && trTitleRect != null && trTitleRect.intersects(clip));
+            
+            int leftPosition = getColumn().getDMinimum() - 1;
+            int rightPosition = getColumn().getDMaximum();
+            int DMax= getRow().getDMaximum();
+            int DMin= getRow().getDMinimum();
+            
+            Font labelFont = getTickLabelFont();
+            
+            double dataMax= dataRange.getMaximum();
+            double dataMin= dataRange.getMinimum();
+            
+            TickVDescriptor ticks= getTickV();
+            
+            if (leftLine) {
+                g.drawLine(leftPosition,DMin,leftPosition,DMax);
+            }
+            if (rightLine) {
+                g.drawLine(rightPosition,DMin,rightPosition,DMax);
+            }
+            
+            int tickLengthMajor= labelFont.getSize()*2/3;
+            int tickLengthMinor = tickLengthMajor / 2;
+            int tickLength;
+            
+            for ( int i=0; i<ticks.tickV.getLength(); i++ ) {
+                double tick1= ticks.tickV.doubleValue(i, getUnits());
+                int tickPosition= (int)Math.floor(transform(tick1,getUnits()));
+                if ( DMin <= tickPosition && tickPosition <= DMax ) {
+                    
+                    tickLength= tickLengthMajor;
+                    if (leftTicks) {
+                        g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition );
+                    }
+                    if (leftTickLabels) {
+                        drawLabel(g, tick1, i, leftPosition - tickLength, tickPosition);
+                    }
+                    if (rightTicks) {
+                        g.drawLine( rightPosition, tickPosition, rightPosition + tickLength, tickPosition );
+                    }
+                    if (rightTickLabels) {
+                        drawLabel(g, tick1, i, rightPosition + tickLength, tickPosition);
+                    }
                 }
             }
-        }
-        
-        for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
-            tickLength= tickLengthMinor;
-            double tick1= ticks.minorTickV.doubleValue(i, getUnits());
-            int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
-            if ( DMin <= tickPosition && tickPosition <= DMax ) {
+            
+            for ( int i=0; i<ticks.minorTickV.getLength(); i++ ) {
                 tickLength= tickLengthMinor;
-                if (leftTicks) {
-                    g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition  );
+                double tick1= ticks.minorTickV.doubleValue(i, getUnits());
+                int tickPosition= (int)Math.floor(transform(tick1,ticks.units));
+                if ( DMin <= tickPosition && tickPosition <= DMax ) {
+                    tickLength= tickLengthMinor;
+                    if (leftTicks) {
+                        g.drawLine( leftPosition, tickPosition, leftPosition - tickLength, tickPosition  );
+                    }
+                    if (rightTicks) {
+                        g.drawLine( rightPosition, tickPosition, rightPosition + tickLength, tickPosition  );
+                    }
                 }
-                if (rightTicks) {
-                    g.drawLine( rightPosition, tickPosition, rightPosition + tickLength, tickPosition  );
+            }
+            
+            
+            if (!axisLabel.equals("")) {
+                Graphics2D g2 = (Graphics2D)g.create();
+                int titlePositionOffset = getTitlePositionOffset();
+                GrannyTextRenderer gtr = new GrannyTextRenderer();
+                gtr.setString(this.getGraphics(), axisLabel);
+                int titleWidth = (int)gtr.getWidth();
+                int baseline;
+                int leftEdge;
+                g2.setFont(getLabelFont());
+                if (leftLabel) {
+                    g2.rotate(-Math.PI/2.0);
+                    leftEdge = -DMax + (DMax-DMin - titleWidth)/2;
+                    baseline = leftPosition - titlePositionOffset;
+                    gtr.draw(g2, (float)leftEdge, (float)baseline);
                 }
+                if (rightLabel) {
+                    g2.rotate(Math.PI/2.0);
+                    leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+                    baseline = - rightPosition - titlePositionOffset;
+                    gtr.draw(g2, (float)leftEdge, (float)baseline);
+                }
+                g2.dispose();
             }
-        }
-        
-        
-        if (!axisLabel.equals("")) {
-            Graphics2D g2 = (Graphics2D)g.create();
-            int titlePositionOffset = getTitlePositionOffset();
-            GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(this, axisLabel);
-            int titleWidth = (int)gtr.getWidth();
-            int baseline;
-            int leftEdge;
-            g2.setFont(getLabelFont());
-            if (leftLabel) {
-                g2.rotate(-Math.PI/2.0);
-                leftEdge = -DMax + (DMax-DMin - titleWidth)/2;
-                baseline = leftPosition - titlePositionOffset;
-                gtr.draw(g2, (float)leftEdge, (float)baseline);
-            }
-            if (rightLabel) {
-                g2.rotate(Math.PI/2.0);
-                leftEdge = DMin + (DMax-DMin - titleWidth)/2;
-                baseline = - rightPosition - titlePositionOffset;
-                gtr.draw(g2, (float)leftEdge, (float)baseline);
-            }
-            g2.dispose();
+        } catch ( InconvertibleUnitsException e ) {
+            // do nothing
         }
     }
     
@@ -1728,20 +1759,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     /** TODO
      * @param fm
-     * @return
+     * @return the width in pixels of the widest label.
      */
     protected int getMaxLabelWidth(FontMetrics fm) {
-        TickVDescriptor ticks = getTickV();
-        DatumVector tickv = ticks.tickV;
-        int size = Integer.MIN_VALUE;
-        for (int i = 0; i < tickv.getLength(); i++) {
-            String label = tickFormatter(tickv.doubleValue(i, getUnits()));
-            GrannyTextRenderer idlt = new GrannyTextRenderer();
-            idlt.setString(this, label);
-            int labelSize = (int)Math.round(idlt.getWidth());
-            if (labelSize > size) size = labelSize;
+        try {
+            TickVDescriptor ticks = getTickV();
+            DatumVector tickv = ticks.tickV;
+            int size = Integer.MIN_VALUE;
+            Graphics g= this.getGraphics();
+            for (int i = 0; i < tickv.getLength(); i++) {
+                String label = tickFormatter(tickv.doubleValue(i, getUnits()));
+                GrannyTextRenderer idlt = new GrannyTextRenderer();
+                idlt.setString( g, label);
+                int labelSize = (int)Math.round(idlt.getWidth());
+                if (labelSize > size) size = labelSize;
+            }
+            return size;
+        } catch ( InconvertibleUnitsException ex ) {
+            return 10;
         }
-        return size;
     }
     
     /** TODO */
@@ -1749,7 +1785,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         resetTransform();
         setBounds(getAxisBounds());
         invalidate();
-        if ( tickV.tickV.getUnits().isConvertableTo(getUnits()) ) validate();
+        if ( tickV.tickV.getUnits().isConvertableTo(getUnits())) validate();
     }
     
     /** TODO
@@ -2217,7 +2253,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         if ( animated && EventQueue.isDispatchThread() ) {
             
+            
+            
+            
             logger.fine( "animate axis" );
+            
             boolean drawTca0= getDrawTca();
             setDrawTca(false);
             
@@ -2244,6 +2284,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 double a0= 1-a1;
                 
                 tempRange.setRange( min0*a0+min1*a1, max0*a0+max1*a1 );
+                
                 //updateTickV();
                 this.paintImmediately(0,0,this.getWidth(),this.getHeight());
                 
@@ -2984,5 +3025,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         at_b= at[1];
     }
     
+    public Lock mutatorLock() {
+        return dataRange.mutatorLock();
+    }
     
+    /**
+     * true if a lock is out and an object is rapidly mutating the object.
+     * clients listening for property changes can safely ignore property
+     * changes while valueIsAdjusting is true, as they should receive a
+     * final propertyChangeEvent after the lock is released.  (note it's not
+     * clear who is responsible for this.
+     * See http://www.das2.org/wiki/index.php/Das2.valueIsAdjusting)
+     */
+    public boolean valueIsAdjusting() {
+        return dataRange.valueIsAdjusting();
+    }
 }
