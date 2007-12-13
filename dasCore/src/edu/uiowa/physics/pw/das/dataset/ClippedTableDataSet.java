@@ -36,7 +36,7 @@ public class ClippedTableDataSet implements TableDataSet {
     void calculateXOffset( Datum xmin, Datum xmax ) {
         xoffset= DataSetUtil.getPreviousColumn(source, xmin);
         int ix1= DataSetUtil.getNextColumn(source, xmax );
-        xlength= ix1- xoffset;
+        xlength= ix1- xoffset+1;
     }
     
     void calculateTableOffset() {  
@@ -59,7 +59,7 @@ public class ClippedTableDataSet implements TableDataSet {
         for ( int itable=tableOffset; itable<tableOffset+tableCount; itable++ ) {
             yoffsets[itable-tableOffset]= TableUtil.getPreviousRow(source, itable, ymin);
             int ix1= TableUtil.getNextRow(source, itable, ymax );
-            ylengths[itable-tableOffset]= ix1- yoffsets[itable];
+            ylengths[itable-tableOffset]= ix1- yoffsets[itable] + 1;
         }
     }
         
