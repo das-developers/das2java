@@ -20,6 +20,9 @@ import java.io.*;
  */
 public class Contour {
     
+    public static final String PLANE_X="x";
+    public static final String PLANE_Y="y";
+    
     final static public class ContourPlot {
         
         TableDataSet zz;
@@ -45,10 +48,10 @@ public class Contour {
         
         /*
          * returns a VectorDataSet with the contours.  The independent variable is just
-         * 1,2,3..., Y is the Z value, and planes "X" and "Y" are the X and Y values 
+         * 1,2,3..., Y is the Z value, and planes "X" and "Y" are the X and Y values
          */
         
-        public VectorDataSet performContour() {        
+        public VectorDataSet performContour() {
             VectorDataSetBuilder builder= new VectorDataSetBuilder( Units.dimensionless, zz.getZUnits() );
             builder.setProperty( "xTagWidth", Units.dimensionless.createDatum(1) );
             builder.addPlane( "x", zz.getXUnits() );
@@ -73,9 +76,9 @@ public class Contour {
         // Below, constant data members:
         final static boolean	SHOW_NUMBERS	= true;
         final static int	BLANK		= 32,
-        PLOT_MARGIN	= 20,
-        WEE_BIT		=  3,
-        NUMBER_LENGTH	=  3;
+                PLOT_MARGIN	= 20,
+                WEE_BIT		=  3,
+                NUMBER_LENGTH	=  3;
         
         // Below, data members which store the grid steps,
         // the z values, the interpolation flag, the dimensions
@@ -156,8 +159,8 @@ public class Contour {
             
             dsbuilder.insertY(idx,cval);
             
-            dsbuilder.insertY(idx,getXValue(xy[0]),"x");
-            dsbuilder.insertY(idx,getYValue(xy[1]),"y");
+            dsbuilder.insertY(idx,getXValue(xy[0]),PLANE_X);
+            dsbuilder.insertY(idx,getYValue(xy[1]),PLANE_Y);
             
             idx++;
             
@@ -310,7 +313,7 @@ public class Contour {
                 }
                 ContinueContour();
                 if (!workSpace[2*(xSteps*(ySteps*cntrIndex
-                +ij[1]-1)+ij[0]-1)+elle]) return 2;
+                        +ij[1]-1)+ij[0]-1)+elle]) return 2;
                 iflag = 5;		// 5. Finish a closed contour
                 iedge = ks + 2;
                 if (iedge > 4) iedge = iedge - 4;
@@ -356,23 +359,23 @@ public class Contour {
             }
             for (local_k = 1; local_k < 5; local_k++)
                 if (local_k != iedge) {
-                    ii = ij[0] + i3[local_k-1];
-                    jj = ij[1] + i3[local_k];
-                    z1 = zz.getDouble(ii-1,jj-1,zunits);
-                    ii = ij[0] + i3[local_k];
-                    jj = ij[1] + i3[local_k+1];
-                    z2 = zz.getDouble(ii-1,jj-1,zunits);
-                    if ((cval > Math.min(z1,z2) && (cval <= Math.max(z1,z2)))) {
-                        if ((local_k == 1) || (local_k == 4)) {
-                            double	zz = z2;
-                            
-                            z2 = z1;
-                            z1 = zz;
-                        }
-                        intersect[local_k-1] = (cval - z1)/(z2 - z1);
-                        ni++;
-                        ks = local_k;
+                ii = ij[0] + i3[local_k-1];
+                jj = ij[1] + i3[local_k];
+                z1 = zz.getDouble(ii-1,jj-1,zunits);
+                ii = ij[0] + i3[local_k];
+                jj = ij[1] + i3[local_k+1];
+                z2 = zz.getDouble(ii-1,jj-1,zunits);
+                if ((cval > Math.min(z1,z2) && (cval <= Math.max(z1,z2)))) {
+                    if ((local_k == 1) || (local_k == 4)) {
+                        double	zz = z2;
+                        
+                        z2 = z1;
+                        z1 = zz;
                     }
+                    intersect[local_k-1] = (cval - z1)/(z2 - z1);
+                    ni++;
+                    ks = local_k;
+                }
                 }
             if (ni != 2) {
                 //-------------------------------------------------
@@ -430,7 +433,7 @@ public class Contour {
             ij[0] = icur;
             ij[1] = jcur;
             if (Routine_label_020() &&
-            Routine_label_150()) return;
+                    Routine_label_150()) return;
             if (Routine_label_050()) return;
             while (true) {
                 DetectBoundary();
@@ -478,6 +481,11 @@ public class Contour {
         }
     }
     
+    /**
+     * returns a rank 1 dataset, a vector dataset, listing the points
+     * of the contour paths.  The data set will have three planes:
+     * X, Y and the default plane is the Z.
+     */
     public static VectorDataSet contour( TableDataSet tds, DatumVector levels ) {
         if ( tds.tableCount()>1 ) {
             throw new IllegalArgumentException("TableDataSet can only have one table");
