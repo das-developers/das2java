@@ -204,7 +204,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         reportCount();
         synchronized (lockObject ) {
             if ( plotImage==null && lastException!=null ) {
-                renderException(g2,xAxis,yAxis,lastException);
+                if ( lastException instanceof NoDataInIntervalException ) {
+                    parent.postMessage( this, "no data in interval:!c"+lastException.getMessage(), DasPlot.WARNING, null, null );
+                } else {
+                    renderException(g2,xAxis,yAxis,lastException);
+                }
             } else if (plotImage!=null) {
                 Point2D p;
                 p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
@@ -512,7 +516,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
     
     public Icon getListIcon() {
-        return null;
+        return rebinnerEnum.getListIcon();
     }
     
     public DataSet getConsumedDataSet() {
