@@ -26,7 +26,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     JCheckBox autoUpdateCB, constrainProportionsCB;
     BoxZoomDialog bzdialog;
     
-    boolean autoUpdate= false;
+    boolean autoUpdate= true;
     boolean constrainProportions= false;
     
     /** Creates a new instance of BoxZoomMouseModule */
