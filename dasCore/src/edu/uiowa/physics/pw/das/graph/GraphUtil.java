@@ -366,6 +366,86 @@ public class GraphUtil {
     }
     
     /**
+     * return the points along a curve.  Used by ContourRenderer.  The returned
+     * result is the remaining path length.  Elements of pathlen that are beyond
+     * the total path length are not computed, and the result points will be null.
+     * @param pathlen monotonically increasing path lengths at which the position is to be located.  May be null if only the total path length is desired.
+     * @param result the resultant points will be put into this array.  This array should have the same number of elements as pathlen
+     * @param orientation the local orientation, in radians, of the point at will be put into this array.  This array should have the same number of elements as pathlen
+     * @param it PathIterator first point is used to start the length.
+     * @param stopAtMoveTo treat SEG_MOVETO as the end of the path.  The pathIterator will be left at this point.
+     * @return the remaining length.  Note null may be used for pathlen, result, and orientation and this will simply return the total path length.
+     */
+    public static double pointsAlongCurve( PathIterator it, double[] pathlen, Point2D.Double[] result, double[] orientation, boolean stopAtMoveTo ) {
+        
+        float[] point= new float[6];
+        float fx0=Float.NaN, fy0=Float.NaN;
+        
+        double slen=0;
+        int pathlenIndex=0;
+        int type;
+        
+        if ( pathlen==null ) pathlen= new double[0];
+        
+        while ( !it.isDone() ) {
+            type= it.currentSegment(point);
+            it.next();
+            
+            if ( !Float.isNaN(fx0) && type==PathIterator.SEG_MOVETO && stopAtMoveTo ) break;
+            
+            if ( PathIterator.SEG_CUBICTO==type ) {
+                throw new IllegalArgumentException("cubicto not supported");
+            } else if ( PathIterator.SEG_QUADTO==type ) {
+                throw new IllegalArgumentException("quadto not supported");
+            } else if ( PathIterator.SEG_LINETO==type ) {
+
+            }
+            
+            if ( Float.isNaN(fx0) ) {
+                fx0= point[0];
+                fy0= point[1];
+                continue;
+            }
+            
+            double thislen= (float) Point.distance( fx0,fy0,point[0],point[1] );
+            
+            if ( thislen==0 ) {
+                continue;
+            } else {
+                slen+= thislen;
+            }
+            
+            while ( pathlenIndex<pathlen.length && slen>=pathlen[pathlenIndex] ) {
+                double alpha= 1 - ( slen - pathlen[pathlenIndex] ) / thislen;
+                double dx= point[0]-fx0;
+                double dy= point[1]-fy0;
+                if ( result!=null ) result[pathlenIndex]= new Point2D.Double( fx0 + dx * alpha, fy0 + dy * alpha );
+                if ( orientation!=null ) orientation[pathlenIndex]= Math.atan2(dy,dx);
+                pathlenIndex++;
+            }
+            
+            fx0= point[0];
+            fy0= point[1];
+            
+        }
+        
+        double remaining;
+        if ( pathlenIndex>0 ) {
+            remaining= slen - pathlen[pathlenIndex-1];
+        } else {
+            remaining= slen;
+        }
+        
+        if ( result!=null ) {
+            for ( ; pathlenIndex<result.length; pathlenIndex++ ) {
+                result[pathlenIndex]= null;
+            }
+        }
+        
+        return remaining;
+    }
+    
+    /**
      * @return a string representation of the affine transforms used in DasPlot for
      * debugging.
      */
@@ -393,7 +473,7 @@ public class GraphUtil {
         double intercept= y0 - slope * x0;
         return new double[] { slope, intercept };
     }
-
+    
     public static Color getRicePaperColor() {
         return new Color( 255, 255, 255, 128 );
     }
