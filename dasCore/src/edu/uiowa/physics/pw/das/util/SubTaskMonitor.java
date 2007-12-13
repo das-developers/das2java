@@ -100,6 +100,6 @@ public class SubTaskMonitor implements DasProgressMonitor {
     }
 
     public void setProgressMessage(String message) {
-        parent.setProgressMessage(message);
+        //parent.setProgressMessage(message);
     }
 }
