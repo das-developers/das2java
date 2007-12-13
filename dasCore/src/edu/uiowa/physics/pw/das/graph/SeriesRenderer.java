@@ -38,6 +38,7 @@ import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.GrannyTextRenderer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,13 +51,11 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.w3c.dom.Document;
@@ -100,6 +99,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
     private int lastIndex;
     
     private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+
+    /**
+     * indicates the dataset was clipped by dataSetSizeLimit 
+     */
+    private boolean dataSetClipped;
     
     public SeriesRenderer() {
         super();
@@ -165,9 +169,15 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
         
-        if (dataSet == null || dataSet.getXLength() == 0) {
+        if (dataSet == null ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
-            renderException(g, xAxis, yAxis, new Exception("null data set"));
+            parent.postMessage( this, "no data set", DasPlot.INFO, null, null );
+            return;
+        }
+        
+        if ( dataSet.getXLength() == 0 ) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
+            parent.postMessage( this, "empty data set", DasPlot.INFO, null, null );
             return;
         }
         
@@ -315,8 +325,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 }
             }
             
+            if ( dataSetClipped ) {
+                parent.postMessage( this, "rendering stopped!cat "+dataSetSizeLimit+" points", DasPlot.WARNING, null, null );                
+            }
+            
             double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
             
+            if ( i-firstIndex==0 ) parent.postMessage( this, "dataset contains no valid data", DasPlot.INFO, null, null );
             mon.finished();
         }
         
@@ -488,8 +503,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
         fx0= fx;
         fy0= fy;
         
+        int pointsPlotted=1;
+        
         // now loop through all of them. //
-        for (; index < ixmax; index++) {
+        for ( ; index < ixmax && pointsPlotted < dataSetSizeLimit; index++ ) {
             
             x = dataSet.getXTagDouble(index, xUnits) ;
             y = dataSet.getDouble(index, yUnits);
@@ -545,9 +562,15 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 y0 = y;
                 fx0= fx;
                 fy0= fy;
-                
+                pointsPlotted++;
             }
-        } // for (int index = ixmin; index <= ixmax; index++)
+        } // for ( ; index < ixmax && pointsPlotted < dataSetSizeLimit; index++ )
+        
+        if ( index < ixmax ) {
+            dataSetClipped= true;
+        } else {
+            dataSetClipped= false;
+        }
         
         //final boolean isValid= yUnits.isValid(y) && xUnits.isValid(x);
         //if ( isValid ) fillPath.lineTo(fx, fyref);
@@ -995,6 +1018,31 @@ public class SeriesRenderer extends Renderer implements Displayable {
             accept= true;
         }
         return accept;
+    }
+
+    /**
+     * property dataSetSizeLimit is the maximum number of points that will be rendered.
+     * This is introduced because large datasets cause java2D plotting to fail.
+     * When the size limit is reached, the data is clipped and a message is displayed.
+     */
+    private int dataSetSizeLimit=50000;
+
+    /**
+     * Getter for property dataSetSizeLimit.
+     * @return Value of property dataSetSizeLimit.
+     */
+    public int getDataSetSizeLimit() {
+        return this.dataSetSizeLimit;
+    }
+
+    /**
+     * Setter for property dataSetSizeLimit.
+     * @param dataSetSizeLimit New value of property dataSetSizeLimit.
+     */
+    public void setDataSetSizeLimit(int dataSetSizeLimit) {
+        int oldDataSetSizeLimit = this.dataSetSizeLimit;
+        this.dataSetSizeLimit = dataSetSizeLimit;
+        propertyChangeSupport.firePropertyChange ("dataSetSizeLimit", new Integer (oldDataSetSizeLimit), new Integer (dataSetSizeLimit));
     }
     
 }
