@@ -40,6 +40,9 @@ import java.util.logging.Logger;
 
 public class DataRange implements Cloneable {
     
+    /** 
+     * danger!  axes share this object
+     */
     private DasAxis parent;
     
     private Units units;
@@ -64,6 +67,7 @@ public class DataRange implements Cloneable {
      * maximum, which are simply to implement it. 
      */
     private DatumRange range;
+    public static String PROPERTY_DATUMRANGE="datumRange";
     
     private boolean log;
     
@@ -276,9 +280,9 @@ public class DataRange implements Cloneable {
             throw new IllegalArgumentException("units may not be changed");
         }
         
-        if ( pushHistory ) {
+        if ( pushHistory && !valueIsAdjusting ) {
             List oldHistory= new ArrayList( history );
-            history.push(this.range);
+            if ( history.size()==0 || !this.range.equals(history.peek()) ) history.push(this.range);
             DasLogger.getLogger( DasLogger.GUI_LOG ).fine( "push history: "+range );
             forwardHistory.removeAllElements();
             firePropertyChange( "history", new ArrayList(), new ArrayList(history) );
@@ -390,6 +394,41 @@ public class DataRange implements Cloneable {
     public static DataRange getAnimationDataRange( DatumRange range, boolean log ) {
         return new DataRange.Animation( range, log );
     }
+    
+    boolean valueIsAdjusting= false;
+    
+    protected DasAxis.Lock mutatorLock() {
+        return new DasAxis.Lock() {
+            DatumRange orig= DataRange.this.range;
+            public void lock() {
+                if ( valueIsAdjusting ) {
+                    System.err.println("lock is already set!");
+                }
+                valueIsAdjusting= true;
+            }
+            public void unlock() {
+                valueIsAdjusting= false;
+                if ( history.size()==0 || !orig.equals(history.peek()) ) history.push(orig);
+                if ( !DataRange.this.range.equals(orig) ) {
+                    firePropertyChange( PROPERTY_DATUMRANGE, orig, DataRange.this.range );
+                }
+            }
+        };
+    }
+    
+    /**
+     * true if a lock is out and an object is rapidly mutating the object.
+     * clients listening for property changes can safely ignore property
+     * changes while valueIsAdjusting is true, as they should receive a
+     * final propertyChangeEvent after the lock is released.  (note it's not
+     * clear who is responsible for this.
+     * See http://www.das2.org/wiki/index.php/Das2.valueIsAdjusting)
+     */
+    public boolean valueIsAdjusting() {
+        return valueIsAdjusting;
+    }
+
+
     
     
 }
