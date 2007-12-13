@@ -65,7 +65,9 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
             } else {
                 DasAxis xAxis = p.getXAxis();
                 DasAxis yAxis = p.getYAxis();
-                loadDataSet( xAxis, yAxis );
+                if ( xAxis.valueIsAdjusting()==false && yAxis.valueIsAdjusting()==false ) {
+                    loadDataSet( xAxis, yAxis );
+                }
             }
         } else {
             logger.finer("enter XAxisDataLoader.update, ignored not active");
