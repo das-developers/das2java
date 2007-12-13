@@ -40,6 +40,8 @@ public class UnitsUtil {
             return Units.seconds;
         } else if ( unit==Units.dimensionless ) {
             return Units.dimensionless;
+        } else if ( unit==Units.milliseconds ) {
+            return Units.kiloHertz;
         } else if ( unit==Units.microseconds ) {
             return Units.megaHertz;
         } else {
