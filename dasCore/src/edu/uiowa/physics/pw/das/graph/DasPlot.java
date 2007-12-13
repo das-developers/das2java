@@ -38,6 +38,7 @@ import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.logging.Level;
 import javax.swing.event.MouseInputAdapter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -136,6 +137,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 throw new IllegalArgumentException("xAxis is not horizontal");
             xAxis.addPropertyChangeListener("dataMinimum", rebinListener);
             xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             xAxis.addPropertyChangeListener("log", rebinListener);
         }
         this.yAxis = yAxis;
@@ -144,6 +146,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 throw new IllegalArgumentException("yAxis is not vertical");
             yAxis.addPropertyChangeListener("dataMinimum", rebinListener);
             yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             yAxis.addPropertyChangeListener("log", rebinListener);
         }
         
@@ -154,9 +157,17 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     /**
      * return the index of the renderer at canvas location (x,y), or -1 if
-     * no renderer is found at the position.  
+     * no renderer is found at the position.
      */
     private int findRendererAt( int x, int y ) {
+        for ( int i=0; messages!=null && i<messages.size(); i++ ) {
+            MessageDescriptor message= (MessageDescriptor) messages.get(i);
+            if ( message.bounds.contains(x,y) && message.renderer!=null ) {
+                int result= this.renderers.indexOf( message.renderer);
+                if ( result!=-1 ) return result;
+            }
+        }
+        
         for ( int i= renderers.size()-1; i>=0; i-- ) {
             Renderer rend= (Renderer)renderers.get(i);
             if ( rend.isActive() && rend.acceptContext( x, y ) ) return i;
@@ -194,7 +205,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         
         MouseModule x= CrossHairMouseModule.create(this);
         mouseAdapter.addMouseModule(x);
-        mouseAdapter.setSecondaryModule(x);
+        
+        mouseAdapter.setSecondaryModule( new ZoomPanMouseModule( getXAxis(), getYAxis() ) );
         
         mouseAdapter.setPrimaryModule(x);
         
@@ -262,6 +274,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (parent != null) parent.remove(this.xAxis);
             xAxis.removePropertyChangeListener("dataMinimum", rebinListener);
             xAxis.removePropertyChangeListener("dataMaximum", rebinListener);
+            xAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             xAxis.removePropertyChangeListener("log", rebinListener);
         }
         this.xAxis =xAxis;
@@ -275,6 +288,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
             xAxis.addPropertyChangeListener("dataMinimum", rebinListener);
             xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             xAxis.addPropertyChangeListener("log", rebinListener);
         }
         if (xAxis != oldValue) firePropertyChange("xAxis", oldValue, xAxis);
@@ -298,6 +312,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (parent != null) parent.remove(this.yAxis);
             this.yAxis.removePropertyChangeListener("dataMinimum", rebinListener);
             this.yAxis.removePropertyChangeListener("dataMaximum", rebinListener);
+            this.yAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             this.yAxis.removePropertyChangeListener("log", rebinListener);
         }
         this.yAxis = yAxis;
@@ -313,6 +328,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
             yAxis.addPropertyChangeListener("dataMinimum", rebinListener);
             yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             yAxis.addPropertyChangeListener("log", rebinListener);
         }
         if (yAxis != oldValue) firePropertyChange("yAxis", oldValue, yAxis);
@@ -454,6 +470,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     logger.finest( " rebuilding cacheImage" );
                 }
                 
+                /* clear all the messages */
+                messages= new ArrayList();
+                
                 plotGraphics.translate(-x + 1, -y + 1);
                 
                 if ( drawGrid ) {
@@ -473,14 +492,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 }
                 
                 if ( renderers.size()==0 ) {
-                    graphics.setColor(Color.gray);
-                    String s= "(no renderers)";
+                    postMessage( null, "(no renderers)", DasPlot.INFO, null, null );
                     logger.info("dasPlot has no renderers");
-                    graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
                 } else if ( noneActive ) {
-                    graphics.setColor(Color.gray);
-                    String s= "(no active renderers)";
-                    graphics.drawString( s, getColumn().getDMiddle()-graphics.getFontMetrics().stringWidth(s)/2, getRow().getDMiddle() );
+                    postMessage( null, "(no active renderers)", DasPlot.INFO, null, null );
                 }
             }
             
@@ -498,7 +513,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 logger.finest( "recalc cacheImage, xmemento="+xmemento + " dr="+dr );
             }
         }
-                
+        
         graphics.setColor(getForeground());
         graphics.drawRect(x-1, y-1, xSize + 1, ySize + 1);
         
@@ -512,7 +527,44 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             gtr.draw(graphics, (float)titleX, (float)titleY);
         }
         
+        // --- draw messages ---
+        Font font0= graphics.getFont();
+        int msgem= (int)Math.max( 8, font0.getSize2D()/2 );
+        graphics.setFont( font0.deriveFont( (float)msgem ) );
+        int em= (int)getEmSize();
+        
+        int msgx= xAxis.getColumn().getDMinimum() + em;
+        int msgy= yAxis.getRow().getDMinimum() + em;
+        
+        Color warnColor= new Color( 255,255,100,200 );
+        Color errorColor= new Color( 255,140,140,200 );
+        for ( int i=0; i<messages.size(); i++ ) {
+            MessageDescriptor message= (MessageDescriptor)messages.get(i);
+            
+            GrannyTextRenderer gtr= new GrannyTextRenderer();
+            gtr.setString( graphics, message.text );
+            Rectangle mrect= gtr.getBounds();
+            mrect.translate( msgx, msgy );
+            Color backColor= GraphUtil.getRicePaperColor() ;
+            if ( message.messageType==DasPlot.WARNING ) {
+                backColor= warnColor;
+            } else if ( message.messageType==DasPlot.ERROR ) {
+                backColor= errorColor;
+            }
+            graphics.setColor( backColor );
+            graphics.fillRoundRect( mrect.x-em/4, mrect.y, mrect.width+em/2, mrect.height, 5, 5 );
+            graphics.setColor( getForeground() );
+            graphics.drawRoundRect( mrect.x-em/4, mrect.y, mrect.width+em/2, mrect.height, 5, 5 );
+            gtr.draw( graphics, msgx, msgy );
+            message.bounds= mrect;
+            
+            msgy+= gtr.getHeight() + msgem/2;
+            
+        }
+        graphics.setFont( font0 );
+        
         graphics.translate(getX(), getY());
+        
         getMouseAdapter().paint(graphics);
         
         /*if ( saveClip!=null ) {
@@ -520,7 +572,56 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }*/
     }
     
+    private class MessageDescriptor {
+        /**
+         * the renderer posting the text, or null if the plot owns the text
+         */
+        Renderer renderer;
+        String text;
+        int messageType;
+        Datum x;
+        Datum y;
+        Rectangle bounds; // stores the drawn boundaries of the message for context menu.
+        MessageDescriptor( Renderer renderer, String text, int messageType, Datum x, Datum y ) {
+            this.renderer= renderer;
+            this.text= text;
+            this.messageType= messageType;
+            this.x= x;
+            this.y= y;
+        }
+    }
     
+    public static final int INFO=0;
+    public static final int WARNING=1;
+    public static final int ERROR=2;
+    
+    List messages;
+    
+    /**
+     * Notify user of an exception, in the context of the plot.  A position in
+     * the data space may be specified to locate the text within the data context.
+     * Note either or both x or y may be null.  Messages must only be posted while the
+     * Renderer's render method is called.  All messages are cleared before the render
+     * step.
+     * 
+     * 
+     * @param renderer identifies the renderer posting the exception
+     * @param text the text to be displayed, may contain granny text.
+     * @param messageType DasPlot.INFORMATION_MESSAGE, DasPlot.WARNING_MESSAGE, or DasPlot.ERROR_MESSAGE.
+     * @param x if non-null, the location on the x axis giving context for the text.
+     * @param y if non-null, the location on the y axis giving context for the text.
+     */
+    public void postMessage( Renderer renderer, String message, int messageType, Datum x, Datum y ) {
+        messages.add( new MessageDescriptor( renderer, message, messageType, x, y ) );
+    }
+    
+    /**
+     * notify user of an exception, in the context of the plot.
+     */
+    public void postException( Renderer renderer, Exception exception ) {
+        postMessage( renderer, exception.getMessage(), ERROR, null, null );
+    }
+        
     private void drawGrid( Graphics2D g ) {
         g.setColor( Color.lightGray );
         if ( yAxis.isVisible() ) {
@@ -1064,5 +1165,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     
     public boolean isPreviewEnabled() {
         return this.preview;
+    }
+    
+    public void setVisible( boolean visible ) {
+        super.setVisible(visible);
+        xAxis.setVisible(visible);
+        yAxis.setVisible(visible);
     }
 }
