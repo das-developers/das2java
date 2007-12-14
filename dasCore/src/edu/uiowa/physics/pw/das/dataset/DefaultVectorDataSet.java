@@ -224,7 +224,7 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
        // }
 
         public String toString() {
-            return VectorUtil.toString(this);
+            return "DefaultVectorDataSet("+DefaultVectorDataSet.this.planeIDs[index]+") "+VectorUtil.toString(this);
         }
         
     }
