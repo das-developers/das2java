@@ -572,7 +572,16 @@ public class FileStorageModel {
         return FileStorageModel.create( parentModel, root, regex, digitList );
     }
     
-    
+    /**     
+     *    %Y  4-digit year
+     *    %y  2-digit year
+     *    %m  2-digit month
+     *    %d  2-digit day of month
+     *    %j  3-digit day of year
+     *    %H  2-digit hour
+     *    %M  2-digit minute
+     *    %b  month name
+     */
     public static FileStorageModel create( FileSystem root, String template ) {
         if ( template.startsWith("/") ) template= template.substring(1);
         String[] s= template.split("%");
@@ -660,7 +669,7 @@ public class FileStorageModel {
     }
     
     /**
-     * specify each files' width when the implicit width is not correct.  For
+     * specify each file's width when the implicit width is not correct.  For
      * example, files are stored with a tag for the starting day, but actually
      * span a week.  The width must be an integer multiple of one year, month,
      * day, hour, minute, or second.
