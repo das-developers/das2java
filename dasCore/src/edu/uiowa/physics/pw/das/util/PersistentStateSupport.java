@@ -36,6 +36,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -331,7 +332,7 @@ public class PersistentStateSupport {
     }
     
     /**
-     * override me
+     * override me.  If open fails, throw an exception.
      */
     protected void openImpl( File file ) throws Exception {
         Document document= readDocument( file );
@@ -343,6 +344,10 @@ public class PersistentStateSupport {
         Runnable run = new Runnable() {
             public void run() {
                 try {
+                    if ( !file.exists() ) {
+                        JOptionPane.showMessageDialog(component,"File not found: "+file, "File not found", JOptionPane.WARNING_MESSAGE );
+                        return;
+                    }
                     openImpl(file);
                     setOpening( false );
                     setDirty(false);
