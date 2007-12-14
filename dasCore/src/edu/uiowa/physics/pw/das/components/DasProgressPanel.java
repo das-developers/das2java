@@ -32,9 +32,9 @@ import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.*;
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import edu.uiowa.physics.pw.das.util.NumberFormatUtil;
 import java.util.*;
 import java.util.logging.Logger;
-import javax.swing.event.MouseInputAdapter;
 
 /**
  *
@@ -110,7 +110,8 @@ public class DasProgressPanel implements DasProgressMonitor {
         
         componentsInitialized= false;
         this.label = label;
-        transferRateFormat= new DecimalFormat();
+        
+        transferRateFormat= NumberFormatUtil.getDecimalFormat();
         transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
         lastRefreshTime= Integer.MIN_VALUE;
