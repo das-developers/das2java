@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.util;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.Vector;
@@ -142,18 +143,35 @@ public class GrannyTextRenderer {
      * reset the current string for the GTR to draw, calculating the boundaries
      * of the string.  For greek and math symbols, unicode characters should be
      * used.  (See www.unicode.org).
-     *
+     * @deprecated use setString( Graphics g, String str ) instead.
      * @param c the component which will provide the graphics.
      * @param str the granny string, such as "E=mc!e2"
      */
-    public void setString(Component c, String str) {
+    public void setString( Component c, String str ) {
         this.parent= c;
         bounds = null;
         lineBounds = new ArrayList();
         this.str = str;
         this.tokens = buildTokenArray(str);
-        this.draw(null, 0f, 0f, c, false);
+        this.draw( c.getGraphics(), 0f, 0f, false );
     }
+    
+    /**
+     * reset the current string for the GTR to draw, calculating the boundaries
+     * of the string.  For greek and math symbols, unicode characters should be
+     * used.  (See www.unicode.org).
+     *
+     * @param c the component which will provide the graphics.
+     * @param str the granny string, such as "E=mc!e2"
+     */
+    public void setString( Graphics g, String str) {
+        bounds = null;
+        lineBounds = new ArrayList();
+        this.str = str;
+        this.tokens = buildTokenArray(str);
+        this.draw( g, 0f, 0f, false );
+    }
+    
     
     /**
      * returns the current alignment, by default LEFT_ALIGNMENT.
@@ -183,7 +201,7 @@ public class GrannyTextRenderer {
      * @param iy The y position of the baseline of the first line of text.
      */
     public void draw(Graphics ig, float ix, float iy) {
-        this.draw(ig, ix, iy, null, true);
+        this.draw( ig, ix, iy, true);
     }
     
     
@@ -207,7 +225,7 @@ public class GrannyTextRenderer {
      * @throws NullPointerException if ig is <code>null</code> AND draw is <code>true</code>.
      * @throws NullPointerException if c is <code>null</code> AND draw is <code>false</code>.
      */
-    private void draw(Graphics ig, float ix, float iy, Component c,  boolean draw ) {
+    private void draw(Graphics ig, float ix, float iy, boolean draw ) {
         Graphics2D g = null;
         Rectangle bounds = null;
         
@@ -243,14 +261,10 @@ public class GrannyTextRenderer {
             public float y;
         }
         
-        Font baseFont;
-        if (draw) {
-            //    baseFont = g.getFont().deriveFont( fontSize );
-            baseFont= g.getFont();
-        } else {
-            //    baseFont = c.getFont().deriveFont( fontSize );
-            baseFont= c.getFont();
+        if ( ig==null ) {
+            ig= getHeadlessGraphicsContext();
         }
+        Font baseFont= ig==null ? null : ig.getFont();
         
         if ( baseFont==null ) {
             baseFont= Font.decode("sans-10");
@@ -403,10 +417,10 @@ public class GrannyTextRenderer {
                     //g.draw(bounds);  //useful for debugging
                     //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
                 } else {
-                    FontMetrics fm= c.getFontMetrics(font);
+                    FontMetrics fm= ig.getFontMetrics(font);
                     bounds.add(current.x, y+fm.getDescent());
                     bounds.add(current.x+fm.stringWidth(tokens[i]),y-fm.getAscent() ); // removed -5.0 pixels
-                    current.x += c.getFontMetrics(font).stringWidth(tokens[i]);
+                    current.x += ig.getFontMetrics(font).stringWidth(tokens[i]);
                 }
             }
         } // for (int i = 0; i < tokens.length; i++)
@@ -457,6 +471,14 @@ public class GrannyTextRenderer {
             Rectangle rc = (Rectangle)i.next();
             g.drawRect(rc.x + ix, rc.y + iy, rc.width, rc.height);
         }
+    }
+
+    private static Graphics headlessGraphics=null;
+    private static synchronized Graphics getHeadlessGraphicsContext() {
+        if ( headlessGraphics==null ) {
+            headlessGraphics= new BufferedImage(10,10,BufferedImage.TYPE_INT_ARGB).getGraphics();
+        }
+        return headlessGraphics;
     }
     
 }
