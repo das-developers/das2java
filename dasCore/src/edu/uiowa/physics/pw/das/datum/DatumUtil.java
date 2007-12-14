@@ -234,7 +234,7 @@ public final class DatumUtil {
     
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
         double secondsPerStep = maximum.subtract(minimum).doubleValue(Units.seconds) / ( nsteps );
-        
+        double daysPerStep= secondsPerStep/86400;
         if (secondsPerStep < 1.) {
             return TimeDatumFormatter.MILLISECONDS;
         }
