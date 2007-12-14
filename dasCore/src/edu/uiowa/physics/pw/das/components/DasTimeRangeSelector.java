@@ -210,8 +210,10 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
                     rangeString= (String)rangeComboBox.getEditor().getItem();
                 }
                 dr= DatumRangeUtil.parseTimeRange(rangeString);
+                DatumRange oldRange= range;
                 range= dr;
                 updateRangeString= true;
+                firePropertyChange( "range", oldRange, range );
             } catch ( ParseException e ) {
                 DasExceptionHandler.handle(e);
             }
@@ -220,7 +222,9 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
             try {
                 Datum s1= TimeUtil.create(idStart.getText());
                 Datum s2= TimeUtil.create(idStop.getText());
+                DatumRange oldRange= range;
                 range= new DatumRange(s1,s2);
+                firePropertyChange( "range", oldRange, range );
             } catch ( ParseException e ) {
                 DasExceptionHandler.handle(e);
             }
@@ -295,8 +299,10 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
     }
 
     public void setRange( DatumRange range ) {
+        DatumRange oldRange= range;
         this.range= range;
         update();
+        propertyChangeSupport.firePropertyChange ("range", oldRange, range);
     }
 
     private void update() {
@@ -431,5 +437,27 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         }
         Preferences.userNodeForPackage(getClass()).put( "timeRangeSelector."+favoritesGroup, favorites.toString() );
     }
+
+    /**
+     * Utility field used by bound properties.
+     */
+    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+
+    /**
+     * Adds a PropertyChangeListener to the listener list.
+     * @param l The listener to add.
+     */
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Removes a PropertyChangeListener from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
 
 }
