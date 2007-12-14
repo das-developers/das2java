@@ -64,6 +64,8 @@ public class MendelbrotDataLoader extends DataLoader {
             DasAxis xAxis= p.getXAxis();
             DasAxis yAxis= p.getYAxis();
             
+            if ( xAxis.valueIsAdjusting() || yAxis.valueIsAdjusting() ) return;
+            
             final RebinDescriptor xRebinDescriptor = new RebinDescriptor(
                     xAxis.getDataMinimum(), xAxis.getDataMaximum(),
                     xAxis.getColumn().getWidth(),
