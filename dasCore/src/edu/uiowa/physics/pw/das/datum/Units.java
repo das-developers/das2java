@@ -149,9 +149,15 @@ public abstract class Units implements Displayable {
     public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
     
     /**
-     * roughtly days since noon on some day in 1958, Julian - 2436204.5 to be more precise.
+     * roughly days since noon on some day in 1958, Julian - 2436204.5 to be more precise.
      */
     public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
+    
+    /**
+     * The Modified Julian Day (MJD) is the number of days (with decimal fraction of the day) that have elapsed since midnight at the beginning of Wednesday November 17, 1858. 
+     * Julian - 2400000.5
+     */
+    public static final TimeLocationUnits mjd= new TimeLocationUnits("mjd", "days since midnight November 17, 1858.", Units.days );
     
     /**
      * cdf epoch milliseconds since midnight, 01-Jan-0000.  There must be skipped days, because this doesn't yeild 01-Jan-0000 for 0.,
@@ -159,12 +165,14 @@ public abstract class Units implements Displayable {
      */
     public static final TimeLocationUnits cdfEpoch= new TimeLocationUnits("cdfEpoch","milliseconds since 01-Jan-0000", Units.milliseconds);
     
+    
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
         ((Units)us1980).registerConverter(us2000, new UnitsConverter.ScaleOffset(1.0, -631152000000000L ) );
         ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1/1000.,63113904000000L ));
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
-        ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 1.534e4));
+        ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 15340 ));
+        ((Units)t2000).registerConverter(mjd, new UnitsConverter.ScaleOffset(1.0/8.64e4, 51544 ));
     }
     
     public static final Units percent= new NumberUnits("%","");
