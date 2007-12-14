@@ -53,15 +53,19 @@ public class DatumRange implements Comparable {
      * and only if this.contains(d) and dr.contains(d).
      * @return the intersection of the two intersecting ranges.
      * @param dr a valid datum range.
+     * @throws IllegalArgumentException if the two do not overlap.
+     * @see DatumRangeUtil.sloppyIntersection
      */
     public DatumRange intersection( DatumRange dr ) {
         if ( this.intersects(dr) ) {
             Units units= this.getUnits();
             double s11= this.s1.doubleValue(units);
             double s12= dr.s1.doubleValue(units);
+            double s1=  Math.max( s11, s12 );
             double s21= this.s2.doubleValue(units);
             double s22= dr.s2.doubleValue(units);
-            return new DatumRange( Math.max( s11, s12 ), Math.min( s21, s22 ), units );
+            double s2= Math.min( s21, s22 );
+            return new DatumRange( s1, s2, units );
         } else {
             throw new IllegalArgumentException("does not intersect: "+dr);
         }
