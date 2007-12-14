@@ -148,9 +148,12 @@ public final class TimeUtil {
     public static final int HOUR = 4;
     public static final int MINUTE = 5;
     public static final int SECOND = 6;
-    public static final int NANO = 7;
+    public static final int MILLI= 7;
+    public static final int MICRO = 8;
+    public static final int NANO = 9;
     public static final int WEEK = 97;
     public static final int QUARTER = 98;
+    public static final int HALF_YEAR= 99;
     
     
     public static double getSecondsSinceMidnight(Datum datum) {
@@ -359,9 +362,18 @@ public final class TimeUtil {
     }
     
     public static Datum next( int step, Datum datum ) {
-        if ( step >= HOUR && step<WEEK ) throw new IllegalArgumentException("not tested");
+        if ( step==NANO ) throw new IllegalArgumentException("not supported nanos");
         TimeStruct array= toTimeStruct(datum);
         switch (step) {
+            case SECOND: 
+                array.seconds= array.seconds+1;
+                break;
+            case MINUTE: 
+                array.minute= array.minute+1;
+                break;
+            case HOUR:
+                array.hour= array.hour+1;
+                break;
             case DAY:
                 array.day= array.day+1;
                 break;
@@ -373,6 +385,10 @@ public final class TimeUtil {
                 array.month= ((int)(array.month-1)+3)/3*3+1;
                 array.day=1;
                 break;
+            case HALF_YEAR:
+                array.month= ((int)(array.month-1)+6)/6*6+1;
+                array.day=1;
+                break;                
             case YEAR:
                 array.year=array.year+1;
                 array.month=1;
@@ -392,9 +408,13 @@ public final class TimeUtil {
             array.month-=12;
         }
         Datum result= toDatum(array);
+        
         return result;
     }
     
+    /**
+     * @deprecated.  User next(MONTH,datum) instead
+     */
     public static Datum nextMonth(Datum datum) {
         return next(MONTH,datum);
     }
@@ -406,6 +426,8 @@ public final class TimeUtil {
         switch(step) {
             case YEAR:
                 t.month=1;
+            case HALF_YEAR:
+                t.month= ((t.month-1)/6*6)+1;
             case QUARTER:
                 t.month= ((t.month-1)/3*3)+1;
             case MONTH:
@@ -422,7 +444,7 @@ public final class TimeUtil {
         
         Datum result= toDatum(t);
         if ( result.equals(datum) ) {
-            return prev(step, datum.subtract( 500, Units.microseconds ));
+            return prev(step, datum.subtract( 500, Units.microseconds )); //TODO: yuck!
         } else {
             return result;
         }
@@ -842,8 +864,8 @@ public final class TimeUtil {
      * @return a Datum with units Units.us2000.
      */
     public static Datum createTimeDatum( int year, int month, int day, int hour, int minute, int second, int nano ) {
-        if ( year<1960 ) throw new IllegalArgumentException("year must not be < 1960, and no 2 digit years (year="+year+")");
-        
+        //if ( year<1960 ) throw new IllegalArgumentException("year must not be < 1960, and no 2 digit years (year="+year+")");
+        if ( year<100 ) throw new IllegalArgumentException("year must not be < 100, and no 2 digit years (year="+year+")");
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
