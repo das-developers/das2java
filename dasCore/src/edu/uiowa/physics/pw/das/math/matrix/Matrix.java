@@ -49,4 +49,15 @@ public abstract class Matrix {
     
     public abstract void rowTimesAddTo(int srcRow, double s, int dstRow);
     
+    public String toString() {
+        StringBuffer buf= new StringBuffer();
+        buf.append("\n");
+        for ( int i=0; i<rowCount(); i++ ) {
+            for ( int j=0; j<columnCount(); j++ ) {
+                buf.append( "\t" + get(i,j)  );
+            }
+            buf.append( "\n" );
+        }
+        return buf.toString();
+    }
 }
