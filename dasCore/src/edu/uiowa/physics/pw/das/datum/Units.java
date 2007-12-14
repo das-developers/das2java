@@ -269,21 +269,25 @@ public abstract class Units implements Displayable {
         return (Units[])result.toArray( new Units[result.size()] );
     }
     
+    /**
+     * @return true if the unit can be converted to toUnits.
+     */
     public boolean isConvertableTo( Units toUnits ) {
         try {
             this.getConverter(toUnits);
             return true;
-        } catch ( IllegalArgumentException e ) {
+        } catch ( InconvertibleUnitsException e ) {
             return false;
         }
     }
     
     /**
-     *
+     * lookup the UnitsConverter object that takes numbers from fromUnits to toUnits.  
+     * This will chain together UnitsConverters registered via units.registerConverter.
      * @param fromUnits
      * @param toUnits
-     * @return
-     * @throws IllegalArgumentException when the conversion is not possible.
+     * @return UnitsConverter object
+     * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
         if (fromUnits == toUnits) {
@@ -310,9 +314,7 @@ public abstract class Units implements Displayable {
                 }
             }
         }
-        String sfrom= ( fromUnits==Units.dimensionless ) ? "(dimensionless)" : fromUnits.toString();
-        String sto= ( toUnits==Units.dimensionless ) ? "(dimensionless)" : toUnits.toString();
-        throw new IllegalArgumentException("Inconvertible units: " + sfrom + " -> " + sto );
+        throw new InconvertibleUnitsException( fromUnits, toUnits );
     }
     
     private static UnitsConverter buildConversion(Units fromUnits, Units toUnits, Map parentMap) {
@@ -399,6 +401,14 @@ public abstract class Units implements Displayable {
         }
     }
     
+    /**
+     * test if the double represents a valid datum in the context of this unit.
+     * Note slight differences in implementation may cause isFill and isValid 
+     * to produce inconsistent results.  For example, this code checks for NaNs
+     * whereas isFill does not.
+     *
+     * @return true if the data is not fill and not NaN.  
+     */
     public boolean isValid( double value ) {
         return !Double.isNaN(value) && value>FILL_DOUBLE/10 ;
     }
