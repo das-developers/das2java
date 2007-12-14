@@ -44,39 +44,47 @@ public class TimeDatumFormatter extends DatumFormatter {
     private static final int MINUTE_FIELD_INDEX = 5;
     private static final int SECONDS_FIELD_INDEX = 6;
     private static final int TIMESTAMP_FIELD_COUNT = 7;
-
+    
     /**
      * yyyy-MM-dd'T'HH:mm:ss.SSS'Z
-     */    
+     */
     public static final TimeDatumFormatter DEFAULT;
     /**
      * yyyy-MM-dd
-     */    
+     */
     public static final TimeDatumFormatter DAYS;
     /**
      * yyyy
-     */    
+     */
     public static final TimeDatumFormatter YEARS;
     /**
      * yyyy-MM
-     */    
+     */
     public static final TimeDatumFormatter MONTHS;
     /**
      * yyyy-MM-dd HH:'00'
-     */    
+     */
     public static final TimeDatumFormatter HOURS;
     /**
      * HH:mm
-     */    
+     */
     public static final TimeDatumFormatter MINUTES;
     /**
      * HH:mm:ss
-     */    
+     */
     public static final TimeDatumFormatter SECONDS;
     /**
      * HH:mm:ss.SSS
-     */    
-    public static final TimeDatumFormatter MILLISECONDS;      
+     */
+    public static final TimeDatumFormatter MILLISECONDS;
+    /**
+     * HH:mm:ss.SSSSSS
+     */
+    public static final TimeDatumFormatter MICROSECONDS;
+    /**
+     * HH:mm:ss.SSSSSSSSS
+     */
+    public static final TimeDatumFormatter NANOSECONDS;
     
     //Initialize final constants
     static {
@@ -85,12 +93,13 @@ public class TimeDatumFormatter extends DatumFormatter {
             YEARS= new TimeDatumFormatter("yyyy");
             MONTHS= new TimeDatumFormatter("yyyy-MM");
             DAYS = new TimeDatumFormatter("yyyy-MM-dd");
-            HOURS = new TimeDatumFormatter("yyyy-MM-dd HH:'00'"); 
+            HOURS = new TimeDatumFormatter("yyyy-MM-dd HH:'00'");
             MINUTES = new TimeDatumFormatter("HH:mm");
             SECONDS = new TimeDatumFormatter("HH:mm:ss");
             MILLISECONDS = new TimeDatumFormatter("HH:mm:ss.SSS");
-        }
-        catch (ParseException pe) {
+            MICROSECONDS = new TimeDatumFormatter("HH:mm:ss.SSSSSS");
+            NANOSECONDS = new TimeDatumFormatter("HH:mm:ss.SSSSSSSSS");
+        } catch (ParseException pe) {
             throw new RuntimeException(pe);
         }
     }
@@ -105,6 +114,49 @@ public class TimeDatumFormatter extends DatumFormatter {
     public TimeDatumFormatter(String formatString) throws ParseException {
         this.formatString = formatString;
         format = new MessageFormat(parseTimeFormatString(formatString));
+    }
+    
+    /**
+     * returns a TimeDatumFormatter suitable for the specified scale and context.
+     * Context may be null to indicate that the formatted string will be interpretted
+     * outside of any context.
+     * @param scale the length we wish to represent, such as TimeUtil.HOUR
+     * @param context the context for the formatter, or null if the formatted string
+     *   will be interpretted outside of any context.
+     * @throws IllegalArgumentException if the scale is TimeUtil.NANOS or is not found in TimeUtil.
+     */
+    public static TimeDatumFormatter formatterForScale( int scale, DatumRange context ) {
+        try {
+            if ( context!=null ) {
+                switch ( scale ) {
+                    case TimeUtil.YEAR: return YEARS;
+                    case TimeUtil.MONTH: return MONTHS;
+                    case TimeUtil.DAY: return DAYS;
+                    case TimeUtil.HOUR: return MINUTES;
+                    case TimeUtil.MINUTE: return MINUTES;
+                    case TimeUtil.SECOND: return SECONDS;
+                    case TimeUtil.MILLI: return MILLISECONDS;
+                    case TimeUtil.MICRO: return MICROSECONDS;
+                    case TimeUtil.NANO: return NANOSECONDS;
+                    default: throw new IllegalArgumentException("unsupported scale: "+scale);
+                }
+            } else {
+                switch ( scale ) {
+                    case TimeUtil.YEAR: return YEARS;
+                    case TimeUtil.MONTH: return MONTHS;
+                    case TimeUtil.DAY: return DAYS;
+                    case TimeUtil.HOUR: return HOURS;
+                    case TimeUtil.MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
+                    case TimeUtil.SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
+                    case TimeUtil.MILLI: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSS");
+                    case TimeUtil.MICRO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSS");
+                    case TimeUtil.NANO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+                    default: throw new IllegalArgumentException("unsupported scale: "+scale);
+                }                
+            }
+        } catch ( ParseException e ) {
+            throw new RuntimeException(e);
+        }
     }
     
     public String toString() {
@@ -126,8 +178,8 @@ public class TimeDatumFormatter extends DatumFormatter {
         final String delimiterPattern = "([-/:.,_ \t]+)";
         final String literalPattern = "('(?:[^']|'')*')";
         Pattern token = Pattern.compile(
-            formatPattern + "|" + delimiterPattern + "|" + literalPattern
-        );
+                formatPattern + "|" + delimiterPattern + "|" + literalPattern
+                );
         int from = 0;
         StringBuffer formatString = new StringBuffer();
         Matcher matcher = token.matcher(input);
@@ -177,11 +229,9 @@ public class TimeDatumFormatter extends DatumFormatter {
                     break;
                     default: break;
                 }
-            }
-            else if (delimiter != null) {
+            } else if (delimiter != null) {
                 formatString.append(delimiter);
-            }
-            else if (literal != null) {
+            } else if (literal != null) {
                 literal = literal.substring(1, literal.length() - 1);
                 literal = literal.replaceAll("''", "'");
                 formatString.append(literal);
@@ -198,12 +248,11 @@ public class TimeDatumFormatter extends DatumFormatter {
         }
         buffer.append("}");
     }
-
+    
     private int addScaleFactor(int scale) {
         if (scaleSeconds == null) {
             scaleSeconds = new int[1];
-        }
-        else {
+        } else {
             int[] temp = new int[scaleSeconds.length + 1];
             System.arraycopy(scaleSeconds, 0, temp, 0, scaleSeconds.length);
             scaleSeconds = temp;
@@ -213,9 +262,9 @@ public class TimeDatumFormatter extends DatumFormatter {
     }
     
     /**
-     * returns Number[] for formatting, truncating the fractional seconds and putting the 
-     * remainder in lower sig digits.  
-     * 
+     * returns Number[] for formatting, truncating the fractional seconds and putting the
+     * remainder in lower sig digits.
+     *
      * Note: TimeUtil.TimeStruct ts is modified.
      */
     private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
@@ -225,7 +274,7 @@ public class TimeDatumFormatter extends DatumFormatter {
         Number[] array = new Number[fieldCount];
         int seconds = (int)Math.round(ts.seconds * maxScale) / maxScale;
         double fracSeconds = ts.seconds - seconds;
-        ts.seconds= seconds;        
+        ts.seconds= seconds;
         ts.micros= (int)(fracSeconds * 1e6);
         
         TimeUtil.carry(ts);
@@ -251,5 +300,5 @@ public class TimeDatumFormatter extends DatumFormatter {
         }
         return max;
     }
-
+    
 }
