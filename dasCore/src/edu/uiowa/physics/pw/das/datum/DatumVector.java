@@ -178,11 +178,12 @@ public final class DatumVector {
         Units units= this.getUnits();
         StringBuffer result= new StringBuffer();
         result.append("[");
-        for ( int i=0; i<getLength(); i++ ) {
+        for ( int i=0; i< Math.min( 4, getLength() ); i++ ) {
             if ( i>0 ) result.append(", ");
             Datum d= get(i);
             result.append(d.getFormatter().format(d,units));
         }
+        if ( getLength()>4 ) result.append(", ...");
         result.append(" "+units.toString()+" ]");
         return result.toString();
     }
