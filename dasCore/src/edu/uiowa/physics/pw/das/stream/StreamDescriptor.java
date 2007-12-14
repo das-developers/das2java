@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXParseException;
 
 /** Represents the global properties of the stream, that are accessible to
  * datasets within.
@@ -159,7 +160,15 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
             throw new IllegalStateException(ex.getMessage());
         }
         catch ( SAXException ex ) {
-            throw new DasIOException(ex.getMessage());
+            String msg;
+            if ( ex instanceof SAXParseException ) {
+                SAXParseException spe= (SAXParseException) ex;
+                msg= spe.getMessage() + "at line="+spe.getLineNumber()+" col="+spe.getColumnNumber();
+            } else {
+                msg= ex.getMessage();
+            }
+            DasIOException thr= new DasIOException(msg);
+            throw thr;
         }
         catch ( IOException ex) {
             throw new DasIOException(ex.getMessage());
