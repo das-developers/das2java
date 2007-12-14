@@ -244,7 +244,12 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon);
     
     /**
-     * x,y in the canvas coordinate system.
+     * Returns true if the render thinks it can provide the context for a point.  That is,
+     * the renderer affected that point, or nearby points.  For example, this is used currently to provide
+     * a way for the operator to click on a plot and directly edit the renderer who drew the pixel.
+     *
+     * @param x the x coordinate in the canvas coordinate system.  
+     * @param y the y coordinate in the canvas coordinate system.  
      */
     public boolean acceptContext( int x, int y ) {
         return false;
