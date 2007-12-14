@@ -381,9 +381,9 @@ public class DatumRangeUtil {
         }
         
         public DatumRange parse( String stringIn ) throws ParseException {
-
+            
             Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
-
+            
             this.string= stringIn+" ";
             this.ipos= 0;
             
@@ -859,10 +859,10 @@ public class DatumRangeUtil {
     }
     
     /**
-     * return a list of DatumRanges that together cover the space identified 
-     * by bounds.  The list should contain one DatumRange that is equal to 
+     * return a list of DatumRanges that together cover the space identified
+     * by bounds.  The list should contain one DatumRange that is equal to
      * element, which should define the phase and period of the list elements.
-     * For example, 
+     * For example,
      * <pre> DatumRange bounds= DatumRangeUtil.parseTimeRangeValid( '2006' );
      * DatumRange first= DatumRangeUtil.parseTimeRangeValid( 'Jan 2006' );
      * List list= generateList( bounds, first );</pre>
@@ -938,9 +938,9 @@ public class DatumRangeUtil {
      * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum.
      * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
      * @param dr a DatumRange with nonzero width.
-     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
      * min-width.
-     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is
      * min-width.
      * @return new DatumRange.
      */
@@ -953,7 +953,7 @@ public class DatumRangeUtil {
             // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
             throw new RuntimeException("width is zero!");
         }
-        return new DatumRange( dr.min().add( w.multiply(min) ), dr.min().add( w.multiply(max) ) );        
+        return new DatumRange( dr.min().add( w.multiply(min) ), dr.min().add( w.multiply(max) ) );
     }
     
     /**
@@ -961,9 +961,9 @@ public class DatumRangeUtil {
      * scaling is done in the log space.
      * For example, rescaleLog( [0.1,1.0], -1, 2 )-> [ 0.01, 10.0 ]
      * @param dr a DatumRange with nonzero width.
-     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
      * min-width.
-     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is
      * min-width.
      * @return new DatumRange.
      */
@@ -978,9 +978,9 @@ public class DatumRangeUtil {
         }
         s2= DasMath.exp10( s1 + max * w ); // danger
         s1= DasMath.exp10( s1 + min * w );
-        return new DatumRange( s1, s2, u );        
+        return new DatumRange( s1, s2, u );
     }
- 
+    
     /**
      * returns the position within dr, where 0. is the dr.min(), and 1. is dr.max()
      * @param dr a datum range with non-zero width.
@@ -996,12 +996,38 @@ public class DatumRangeUtil {
      * @param dr a datum range with non-zero width.
      * @param d a datum to normalize with respect to the range.
      * @return a double indicating the normalized datum.
-     */    
+     */
     public static double normalizeLog( DatumRange dr, Datum d ) {
         Units u= dr.getUnits();
         double d0= Math.log( dr.min().doubleValue( u ) );
         double d1= Math.log( dr.max().doubleValue( u ) );
         double dd= Math.log( d.doubleValue( u ) );
         return (dd-d0) / ( d1-d0 );
+    }
+    
+    /**
+     * Like DatumRange.intesects, but returns a zero-width range when the two do
+     * not intersect.  When they do not intersect, the min or max of the first range
+     * is returned, depending on whether or not the second range is above or below
+     * the first range.  Often this allows for simpler code.
+     * @see DatumRange.intersection.
+     */
+    public static DatumRange sloppyIntersection( DatumRange range, DatumRange include ) {
+        Units units= range.getUnits();
+        double s11= range.min().doubleValue(units);
+        double s12= include.min().doubleValue(units);
+        double s21= range.max().doubleValue(units);
+        if ( range.intersects(include) ) {
+            double s1=  Math.max( s11, s12 );
+            double s22= include.max().doubleValue(units);
+            double s2= Math.min( s21, s22 );
+            return new DatumRange( s1, s2, units );
+        } else {
+            if ( s11<s12 ) {
+                return new DatumRange(s21,s21,units);
+            } else {
+                return new DatumRange(s11,s11,units);
+            }
+        }
     }
 }
