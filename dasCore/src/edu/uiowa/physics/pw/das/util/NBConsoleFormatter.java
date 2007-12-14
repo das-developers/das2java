@@ -24,7 +24,9 @@ public class NBConsoleFormatter extends Formatter {
             return "";
         } else {
             StackTraceElement[] st= new Throwable().getStackTrace();
-            String result= rec.getLoggerName()+"  ["+Thread.currentThread().getName()+"]\n"+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n\tat "+st[7]+"\n\tat "+st[8]+"\n";
+            String result= rec.getLoggerName()+"  ["+Thread.currentThread().getName()+"]\n"+rec.getLevel().getLocalizedName()+": "+rec.getMessage()
+            +"\n\tat "+st[7]
+            +( st.length>8 ? "\n\tat "+st[8]+"\n" : "\n" );
             if ( coalesceHits>0 ) {
                 result= "(Last message repeats "+(coalesceHits+1)+" times)\n"+result;
             }
