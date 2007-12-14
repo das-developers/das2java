@@ -42,9 +42,9 @@ public class HttpFileSystem extends WebFileSystem {
     }
     
     public static synchronized HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {
-        if ( instances.containsKey( root ) ) {
+        if ( instances.containsKey( root.toString() ) ) {
             logger.finer("reusing "+root);
-            return (HttpFileSystem)instances.get(root);
+            return (HttpFileSystem)instances.get(root.toString());
         } else {
             try {
                 // verify URL is valid and accessible
@@ -62,7 +62,7 @@ public class HttpFileSystem extends WebFileSystem {
                 File local= localRoot( root );
                 logger.finer("initializing httpfs "+root+" at "+local);
                 HttpFileSystem result= new HttpFileSystem( root, local );
-                instances.put(root,result);
+                instances.put(root.toString(),result);
                 return result;
             } catch ( FileSystemOfflineException e ) {
                 throw e;
