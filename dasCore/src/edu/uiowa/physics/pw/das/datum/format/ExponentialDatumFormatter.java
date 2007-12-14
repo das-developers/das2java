@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.*;
 
 import java.text.*;
-import java.util.regex.*;
+import java.util.Locale;
 
 /** Formats Datums forcing a given exponent and number of decimal places.
  * This is useful for axes where each of the labels should have the same
@@ -42,7 +42,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
     
     int digits;
     int exponent;
-    DecimalFormat mantFormat;
+    NumberFormat mantFormat;
     String mantFormatString;
     
     /* print with digits in the mantissa, use exponent for the exponent */
@@ -56,13 +56,13 @@ public class ExponentialDatumFormatter extends DatumFormatter {
             buff.append('0');
         }
         mantFormatString= buff.toString();
-        this.mantFormat= new DecimalFormat(buff.toString());
+        this.mantFormat= NumberFormatUtil.getDecimalFormat( buff.toString() );
     }
     
     public String format(Datum datum) {
         return format( datum, datum.getUnits() ) + " " + datum.getUnits();
     }
-
+    
     public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(datum.getUnits());
         if ( x == 0. ) return "0.";
@@ -86,7 +86,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         return format;
     }
     
-     public String grannyFormat( Datum datum ) {
+    public String grannyFormat( Datum datum ) {
         String format= format(datum,datum.getUnits());
         if ( format.indexOf("E")!=-1 ) {
             int iE= format.indexOf("E");
@@ -98,7 +98,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         }
         return format + " " +datum.getUnits();
     }
-     
+    
     public String toString() {
         return mantFormatString + "E"+exponent;
     }
