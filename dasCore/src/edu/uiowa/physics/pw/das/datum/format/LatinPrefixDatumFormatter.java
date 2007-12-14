@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.*;
 
 import java.text.*;
-import java.util.regex.*;
+import java.util.Locale;
 
 /** Formats Datums using K and M, etc labels and a specified precision.
  *
@@ -84,7 +84,7 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
             buff.append('0');
         }
         String mantFormatString= buff.toString();
-        NumberFormat mantFormat= new DecimalFormat(buff.toString());
+        NumberFormat mantFormat= NumberFormatUtil.getDecimalFormat(buff.toString());
         
         return mantFormat.format(mant) + expString;
     }
