@@ -200,7 +200,7 @@ public class WebFileObject extends FileObject {
             
         } catch ( IOException e ) {
             wfs.handleException( e ) ;
-            throw (FileNotFoundException)new FileNotFoundException( e.getMessage() ).initCause(e);
+            throw (FileNotFoundException)new FileNotFoundException( e.getMessage()+": "+this.wfs.toString()+getNameExt() ).initCause(e);
         }
     }
     
