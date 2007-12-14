@@ -25,10 +25,9 @@ package edu.uiowa.physics.pw.das.datum.format;
 
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.*;
-import java.math.*;
 
 import java.text.*;
-import java.util.regex.*;
+import java.util.Locale;
 
 /** Formats Datum objects for printing and parses strings to Datum objects.
  *
@@ -38,7 +37,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
     
     private String formatString;
     
-    private DecimalFormat format;
+    private NumberFormat format;
     
     /** Available for use by subclasses */
     protected DefaultDatumFormatter() {}
@@ -50,7 +49,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
             format = null;
         } else {
             this.formatString = formatString;
-            format = new DecimalFormat(formatString);
+            format = NumberFormatUtil.getDecimalFormat(formatString);
         }
     }
     
@@ -83,11 +82,11 @@ public class DefaultDatumFormatter extends DatumFormatter {
                 if ( scale>=0 ) {
                     DecimalFormat f;
                     if ( exp<=-5 || exp >=5 ) {
-                        f= new DecimalFormat( "0E0" );
+                        f= NumberFormatUtil.getDecimalFormat( "0E0" );
                         f.setMinimumFractionDigits(scale+exp-1);
                         f.setMaximumFractionDigits(scale+exp-1);
                     } else {
-                        f = new DecimalFormat("0");
+                        f = NumberFormatUtil.getDecimalFormat("0");
                         f.setMinimumFractionDigits(scale);
                         f.setMaximumFractionDigits(scale);
                     }
@@ -97,11 +96,11 @@ public class DefaultDatumFormatter extends DatumFormatter {
                     d= Math.round( d / round ) * round;
                     DecimalFormat f;
                     if ( exp<=-5 || exp >=5 ) {
-                        f= new DecimalFormat( "0E0" );
+                        f= NumberFormatUtil.getDecimalFormat( "0E0" );
                         f.setMinimumFractionDigits(scale+exp+1);
                         f.setMaximumFractionDigits(scale+exp+1);
                     } else {
-                        f = new DecimalFormat("0");
+                        f = NumberFormatUtil.getDecimalFormat("0");
                     }
                     result= f.format(d);
                 }
