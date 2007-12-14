@@ -143,4 +143,12 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     
     public void mouseWheelMoved(MouseWheelEvent e) {
     }
+
+    /**
+     * this should only be called from the mouse module constructor.  (Until 
+     * it is verified that it is okay to call it elsewhere.)
+     */
+    protected void setDragRenderer(DragRenderer dragRenderer) {
+        this.dragRenderer = dragRenderer;
+    }
 }
