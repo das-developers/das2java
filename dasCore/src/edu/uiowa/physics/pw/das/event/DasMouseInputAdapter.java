@@ -138,6 +138,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     
     private Point pressPosition;
     
+    private boolean headless;
+    
     private static class MouseMode {
         String s;
         boolean resizeTop= false;
@@ -167,7 +169,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         
         numInserted= 0;
         
-        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+        this.headless= DasApplication.getDefaultApplication().isHeadless();
+        if ( ! headless ) {
             primaryPopup= createPopup();
             secondaryPopup= createPopup();
         }
@@ -198,7 +201,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      */
     public void addMouseModule(MouseModule module) {
         
-        if ( DasApplication.getDefaultApplication().isHeadless() ) {
+        if ( headless ) {
             DasLogger.getLogger( DasLogger.GUI_LOG ).info( "not adding module since headless is true" );
             
         } else {
@@ -297,7 +300,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * is called.
      */
     public void setPrimaryModule(MouseModule module) {
-        
+        if ( headless ) return;
         JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(module);
         if ( j==null ) addMouseModule( module );
         
@@ -326,6 +329,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * is called.
      */
     public void setSecondaryModule(MouseModule module) {
+        if ( headless ) return;
         JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(module);
         if ( j==null ) addMouseModule( module );
         
@@ -991,6 +995,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     
     
     public void addMenuItem(Component b) {
+        if ( this.headless ) return;
         if (numInserted==0) {
             primaryPopup.insert(new JPopupMenu.Separator(),0);
         }
