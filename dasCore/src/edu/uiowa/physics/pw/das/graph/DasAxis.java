@@ -382,17 +382,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             ((HorizontalRangeSelectorMouseModule)zoom).addDataRangeSelectionListener(this);
             mouseAdapter.addMouseModule(zoom);
             mouseAdapter.setPrimaryModule(zoom);
-            MouseModule zoomOut= new ZoomOutMouseModule( this );
-            mouseAdapter.addMouseModule( zoomOut );
-            mouseAdapter.setSecondaryModule(zoomOut);
+            
+            MouseModule zoomPan= new ZoomPanMouseModule(this,null);
+            mouseAdapter.addMouseModule( zoomPan );
+            mouseAdapter.setSecondaryModule(zoomPan);
         } else {
             zoom= new VerticalRangeSelectorMouseModule(this,this);
             ((VerticalRangeSelectorMouseModule)zoom).addDataRangeSelectionListener(this);
             mouseAdapter.addMouseModule(zoom);
             mouseAdapter.setPrimaryModule(zoom);
-            MouseModule zoomOut=  new ZoomOutMouseModule( this );
-            mouseAdapter.addMouseModule(zoomOut);
-            mouseAdapter.setSecondaryModule(zoomOut);
+            
+            MouseModule zoomPan=  new ZoomPanMouseModule( null, this );
+            mouseAdapter.addMouseModule(zoomPan);
+            mouseAdapter.setSecondaryModule(zoomPan);
         }
     }
     
