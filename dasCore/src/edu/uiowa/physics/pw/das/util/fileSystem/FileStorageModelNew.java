@@ -261,7 +261,7 @@ public class FileStorageModelNew {
      *    %Y  4-digit year
      *    %m  2-digit month
      *    %d  2-digit day of month
-     *    %j  3-digit julian day
+     *    %j  3-digit day of year
      *    %H  2-digit Hour
      *    %M  2-digit Minute
      *    %S  2-digit second
