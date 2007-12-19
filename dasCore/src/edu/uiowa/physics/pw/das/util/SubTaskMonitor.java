@@ -81,6 +81,7 @@ public class SubTaskMonitor implements DasProgressMonitor {
     
     public void started() {
         this.started= true;
+        if ( parent.isStarted()==false ) parent.started();
     }
 
     public boolean isStarted() {
