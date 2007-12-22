@@ -41,7 +41,10 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     long birthTimeMilli;
     long deathTimeMilli;
     DecimalFormat transferRateFormat;
-    boolean enableProgressPosition; 
+    boolean enableProgressPosition= true; 
+
+    private long streamLength= 1000000; // this is usually close because of server side averaging.
+    private long taskSize= streamLength/1000;
     
     /** Creates a new instance of DasProgressMonitorInputStream */
     public DasProgressMonitorInputStream( InputStream in, DasProgressMonitor monitor ) {
@@ -49,16 +52,14 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();
         this.deathTimeMilli= -1;
-        enableProgressPosition= true; // TODO: we don't know the size, but we use 1000 just because it's usually close.
-        if ( monitor!=null ) {
-            transferRateFormat= new DecimalFormat();
-            transferRateFormat.setMaximumFractionDigits(2);
-            transferRateFormat.setMinimumFractionDigits(2);
-            if ( enableProgressPosition ) monitor.setTaskSize(1000);
-        }
     }
     
     private void reportTransmitSpeed() {
+        if (transferRateFormat==null ) {
+            transferRateFormat= new DecimalFormat();
+            transferRateFormat.setMaximumFractionDigits(2);
+            transferRateFormat.setMinimumFractionDigits(2);
+        }
         monitor.setAdditionalInfo("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
         if ( enableProgressPosition ) monitor.setTaskProgress(bytesRead/1000);
     }
@@ -83,6 +84,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         if (monitor != null) {
             if (!started) {
                 started = true;
+                monitor.setTaskSize(taskSize);
                 monitor.started();
             }
             if (bytesRead == -1) {
@@ -103,6 +105,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         if (monitor != null) {
             if (!started) {
                 started = true;
+                monitor.setTaskSize(taskSize);
                 monitor.started();
             }
             if (bytesRead == -1) {
@@ -123,6 +126,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         if (monitor != null) {
             if (!started) {
                 started = true;
+                monitor.setTaskSize( taskSize );
                 monitor.started();
             }
             if (bytesRead == -1) {
@@ -161,6 +165,46 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
      */
     public void setEnableProgressPosition( boolean value ) {
         this.enableProgressPosition= value;
+    }
+
+    /**
+     * Utility field used by bound properties.
+     */
+    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+
+    /**
+     * Adds a PropertyChangeListener to the listener list.
+     * @param l The listener to add.
+     */
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Removes a PropertyChangeListener from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    /**
+     * Getter for property taskSize.
+     * @return Value of property taskSize.
+     */
+    public long getStreamLength() {
+        return this.streamLength;
+    }
+
+    /**
+     * Setter for property taskSize.
+     * @param taskSize New value of property taskSize.
+     */
+    public void setStreamLength(long taskSize) {
+        long oldTaskSize = this.streamLength;
+        this.streamLength = taskSize;
+        this.taskSize= streamLength/1000;
+        propertyChangeSupport.firePropertyChange ("streamLength", new Long (oldTaskSize), new Long (taskSize));
     }
     
 }
