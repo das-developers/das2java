@@ -83,8 +83,18 @@ public class DisplayDataMouseModule extends MouseModule {
         DatumRange xrange;
         DatumRange yrange;
         
-        xrange= new DatumRange( plot.getXAxis().invTransform(e.getXMinimum()), plot.getXAxis().invTransform(e.getXMaximum()) );
-        yrange= new DatumRange( plot.getYAxis().invTransform(e.getYMaximum()), plot.getYAxis().invTransform(e.getYMinimum()) );
+		if (plot.getXAxis().isFlipped()) {
+			xrange= new DatumRange( plot.getXAxis().invTransform(e.getXMaximum()), plot.getXAxis().invTransform(e.getXMinimum()) );
+		}
+		else {
+			xrange= new DatumRange( plot.getXAxis().invTransform(e.getXMinimum()), plot.getXAxis().invTransform(e.getXMaximum()) );
+		}
+		if (plot.getYAxis().isFlipped()) {
+			yrange= new DatumRange( plot.getYAxis().invTransform(e.getYMinimum()), plot.getYAxis().invTransform(e.getYMaximum()) );
+		}
+		else {
+			yrange= new DatumRange( plot.getYAxis().invTransform(e.getYMaximum()), plot.getYAxis().invTransform(e.getYMinimum()) );
+		}
         
         Renderer[] rends= plot.getRenderers();
         
@@ -130,7 +140,7 @@ public class DisplayDataMouseModule extends MouseModule {
                     }
                     doc.insertString( doc.getLength(), buf.toString(), attrSet );
                     
-                } else {
+                } else if (ds instanceof VectorDataSet) {
                     VectorDataSet vds= (VectorDataSet)ds;
                     
                     Units units= vds.getYUnits();
