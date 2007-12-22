@@ -38,7 +38,6 @@ import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.logging.Level;
 import javax.swing.event.MouseInputAdapter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
