@@ -83,6 +83,8 @@ public interface DasProgressMonitor {
         public String getLabel() { return ""; }
     };
     
+    public final static long SIZE_INDETERMINATE= -1;
+    
     /** Sets the maximum value for the task progress of this
      * <code>ProgressMonitor</code>.
      * @param taskSize maximum value for the task progress.  A taskSize of -1 indicates the taskSize is indeterminate.
