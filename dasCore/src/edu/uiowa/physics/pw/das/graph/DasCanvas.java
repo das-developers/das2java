@@ -425,7 +425,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             public void mousePressed(MouseEvent e) {
                 Point primaryPopupLocation= e.getPoint();
                 CanvasAction.currentCanvas = DasCanvas.this;
-                popup.show( DasCanvas.this, e.getX(), e.getY());
+					 if(SwingUtilities.isRightMouseButton(e))
+						popup.show( DasCanvas.this, e.getX(), e.getY());
             }
         };
     }
