@@ -55,7 +55,7 @@ import javax.swing.event.*;
  *<pre>
  *   http     a das2Server provides the specification of the datasetdescriptor.
  *   class    refers to a loadable java class that is an instanceof DataSetDescriptor and
- *            has the method newDataSetDescriptor( Map params )
+ *            has the method newDataSetDescriptor( Map params ) throws DasException
  *</pre>
  * </P>
  * @author jbf
