@@ -362,7 +362,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     for (int i = 0; i < s.length; i++) {
                         Matcher m = p.matcher(s[i]);
                         if (m.matches()) {
-                            System.err.printf("%d %s\n", i, m.group(1) );
+                            //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray[i] = m.group(1);
                             try {
                                 unitsArray[i] = Units.getByName(m.group(2));
