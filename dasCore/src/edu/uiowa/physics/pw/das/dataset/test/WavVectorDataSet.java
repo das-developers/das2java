@@ -14,7 +14,9 @@ import javax.sound.sampled.*;
 
 
 /**
- *
+ * Wraps .wav file as a VectorDataSet.  The dataset will have a set of data planes
+ * for each channel identified channel0, channel1, and so on.  The x values are
+ * elapsed time, and the y units are dimensionless and normalized to 0.0 to +1.0.
  * @author  Jeremy
  */
 public abstract class WavVectorDataSet implements VectorDataSet {
