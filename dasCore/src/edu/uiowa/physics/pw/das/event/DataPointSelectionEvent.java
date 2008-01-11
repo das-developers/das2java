@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.event;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This is the general-purpose "a data point was selected" event.  Note that
@@ -38,7 +38,7 @@ public class DataPointSelectionEvent extends DasEvent {
     
     private Datum x;
     private Datum y;
-    private HashMap planes;
+    private Map planes;
     
     public long birthMilli;
     
@@ -50,7 +50,7 @@ public class DataPointSelectionEvent extends DasEvent {
     public DataPointSelectionEvent(Object source, 
             Datum x, 
             Datum y,
-            HashMap planes ) {
+            Map planes ) {
         super(source);
         this.birthMilli= System.currentTimeMillis();
         this.x= x;
