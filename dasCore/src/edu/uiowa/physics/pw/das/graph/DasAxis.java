@@ -977,7 +977,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( isHorizontal() ) {
             nTicksMax= (int)Math.floor( getColumn().getWidth() / ( idlt.getWidth() ) );
         } else {
-            nTicksMax= (int)Math.floor( getRow().getHeight() / ( idlt.getHeight() * 2 ) );
+            nTicksMax= (int)Math.floor( getRow().getHeight() / ( idlt.getHeight() ) );
         }
         
         nTicksMax= (nTicksMax<7)?nTicksMax:7;
@@ -1024,7 +1024,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int tickSizePixels= (int) ( maxBounds.width  + getEmSize() * 2 );
                 nTicksMax= axisSize / tickSizePixels;
             } else {
-                int tickSizePixels= (int) ( maxBounds.height * 2.0 );
+                int tickSizePixels= (int) ( maxBounds.height );
                 nTicksMax= axisSize / tickSizePixels;
             }
             
@@ -1217,7 +1217,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             g.setStroke(new BasicStroke(1f));
             g.setColor(DEBUG_COLORS[debugColorIndex]);
             debugColorIndex++;
-            if (debugColorIndex >= DEBUG_COLORS.length) { debugColorIndex = 0; };
+            if (debugColorIndex >= DEBUG_COLORS.length) { debugColorIndex = 0; }
         }
         /* End debugging code */
         
@@ -1227,6 +1227,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } else {
                 paintVerticalAxis(g);
             }
+        } else {
+            //System.err.println("inconvertable units");
         }
         
         Rectangle clip = g.getClipBounds();
