@@ -71,9 +71,11 @@ public class DataSetStreamHandler implements StreamHandler {
         if ( ( o= sd.getProperty("taskSize") )!=null ) {
             this.taskSize= ((Integer)o).intValue();
             monitor.setTaskSize( taskSize );
+            monitor.started();
         } else if ( ( o= sd.getProperty("packetCount" ) )!=null ) {
             this.totalPacketCount= ((Integer)o).intValue();
             monitor.setTaskSize( totalPacketCount );
+            monitor.started();
         }
         if ( ( o= sd.getProperty("cacheTagString" ) ) !=null ) {
             // kludge to xmit cacheTags.  "start,resolution,end"
