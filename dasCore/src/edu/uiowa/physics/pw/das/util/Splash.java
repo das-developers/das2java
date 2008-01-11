@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.util;
 
-import java.awt.image.BufferedImage;
 import java.util.logging.*;
 import javax.swing.*;
 import java.awt.*;
