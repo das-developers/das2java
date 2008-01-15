@@ -93,7 +93,8 @@ public class DataRange implements Cloneable {
         if (min.gt(max)) throw new IllegalArgumentException("data min on axis is greater than data max ("+min+">"+max+")");
         if (!min.isFinite()) throw new IllegalArgumentException("data_minimum on axis is not finite");
         if (!max.isFinite()) throw new IllegalArgumentException("data_maximum on axis is not finite");
-        if (min.getUnits()!=max.getUnits())  throw new IllegalArgumentException("units don't match on range");
+        //if (min.getUnits()!=max.getUnits())  throw new IllegalArgumentException("units don't match on range");
+		if (!min.getUnits().isConvertableTo(max.getUnits())) throw new IllegalArgumentException("units are not conversion compatible");
         this.parent= parent;
         units= min.getUnits();
         if ( log ) {
