@@ -759,6 +759,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
         firePropertyChange("dataPath", oldValue, dataset);
     }
+	 
+	 /** Add auxilary data to an axis (usually OA data for a time axis).
+	  * This function does the same thing as setDataPath, but with a different interface.
+	  * @param will be called upon to generate auillary data sets.  To avoid nonsensical
+	  * graphs the X axis for this dataset must be the same as the that handed to the
+	  * renderer.
+	  */
+	 public void setDataSetDescriptor(DataSetDescriptor dsdAux) {
+		if(dsdAux == null) throw new NullPointerException("null DataSetDescriptor not allowed");
+		
+		dsd = dsdAux;
+		markDirty();
+		update();
+		
+		/** TODO: Consider how to firePropertyChange's when a dsd is provided via this
+		 *method */
+	}
     
     private final DataSetUpdateListener tcaListener= new DataSetUpdateListener() {
         public void dataSetUpdated(DataSetUpdateEvent e) {
@@ -3044,4 +3061,5 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public boolean valueIsAdjusting() {
         return dataRange.valueIsAdjusting();
     }
+
 }
