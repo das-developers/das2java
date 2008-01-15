@@ -223,8 +223,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
 
     }
-    private Action DUMP_TO_FILE_ACTION = new AbstractAction("Dump Data Set to File") {
-
+    
+    public Action DUMP_TO_FILE_ACTION= new AbstractAction( "Dump Data Set to File" ) {
         public void actionPerformed(ActionEvent e) {
             if (renderers.isEmpty()) {
                 return;
