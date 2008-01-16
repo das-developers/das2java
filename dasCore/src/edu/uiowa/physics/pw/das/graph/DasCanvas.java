@@ -530,7 +530,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
     
     /** paints the canvas itself.  If printing, stamps the date on it as well.
-     * @param g the Graphics object
+     * @param gl the Graphics object
      */
     protected void paintComponent(Graphics g1) {
         logger.info("entering DasCanvas.paintComponent");
