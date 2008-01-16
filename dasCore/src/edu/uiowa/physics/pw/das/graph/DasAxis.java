@@ -769,12 +769,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 	 public void setDataSetDescriptor(DataSetDescriptor dsdAux) {
 		if(dsdAux == null) throw new NullPointerException("null DataSetDescriptor not allowed");
 		
+		DataSetDescriptor oldVal = dsd;
 		dsd = dsdAux;
 		markDirty();
 		update();
 		
-		/** TODO: Consider how to firePropertyChange's when a dsd is provided via this
-		 *method */
+		String oldDataset = dataset;
+		dataset = dsd.getDataSetID();
+		firePropertyChange("dataSetDescriptor", oldVal, dsd);
+		firePropertyChange("dataPath", oldDataset, dataset);
 	}
     
     private final DataSetUpdateListener tcaListener= new DataSetUpdateListener() {
