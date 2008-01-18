@@ -1600,9 +1600,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (index < 0 || index > tcaData[0].getXLength()) {
             return;
         }
-        pixelSize = getDatumRange().width().divide(getDLength()).doubleValue(getUnits().getOffsetUnits());
+        pixelSize = getDatumRange().width().divide(getDLength()).doubleValue(
+			                                                   getUnits().getOffsetUnits());
         tcaValue = tcaData[0].getXTagDouble(index, getUnits());
-        if (Math.abs(tcaValue - value) > pixelSize) {
+		  
+		  //Added in to say take nearest nieghbor as long as the distance to the nieghbor is
+		  //not more than the xtagwidth.
+		  double xTagWidth = DataSetUtil.guessXTagWidth(tcaData[0]).doubleValue(
+			                  getUnits().getOffsetUnits());
+		  double limit = Math.max(xTagWidth, pixelSize);
+		  
+        if (Math.abs(tcaValue - value) > limit) {
             return;
         }
         
