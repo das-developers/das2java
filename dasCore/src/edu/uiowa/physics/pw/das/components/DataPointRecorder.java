@@ -344,6 +344,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 mon = new NullProgressMonitor();
             }
 
+            // tabs detected in file.
+            boolean hasTabs= false;
+            String delim= "\t";
+            
             mon.setTaskSize(lineCount);
             mon.started();
             int linenum = 0;
@@ -354,8 +358,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
                 mon.setTaskProgress(linenum);
                 if (line.startsWith("## ")) {
+                    if ( unitsArray!=null ) continue;
                     line = line.substring(3);
-                    String[] s = line.trim().split("\\s+");
+                    if ( line.indexOf("\t")==-1 ) delim= "\\s+";
+                    String[] s = line.trim().split(delim);
                     Pattern p = Pattern.compile("(.+)\\((.*)\\)");
                     planesArray = new String[s.length];
                     unitsArray = new Units[s.length];
@@ -376,7 +382,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     }
                     continue;
                 }
-                String[] s = line.trim().split("\\s+");
+                String[] s = line.trim().split(delim);
                 if (unitsArray == null) {
                     // support for legacy files
                     unitsArray = new Units[s.length];
@@ -727,7 +733,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private void updateClients() {
         if (active) {
             myTableModel.fireTableDataChanged();
-            if (selectRow != -1) {
+            if (selectRow != -1 && table.getRowCount()>selectRow ) {
                 table.setRowSelectionInterval(selectRow, selectRow);
                 table.scrollRectToVisible(table.getCellRect(selectRow, 0, true));
                 selectRow =
