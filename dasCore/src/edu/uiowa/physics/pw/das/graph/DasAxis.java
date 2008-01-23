@@ -1241,7 +1241,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         /* End debugging code */
         
-        if ( tickV.tickV.getUnits().isConvertableTo( getUnits() ) ) {
+        if ( tickV==null || tickV.tickV.getUnits().isConvertableTo( getUnits() ) ) {
             if (isHorizontal()) {
                 paintHorizontalAxis(g);
             } else {
@@ -1817,7 +1817,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         resetTransform();
         setBounds(getAxisBounds());
         invalidate();
-        if ( tickV.tickV.getUnits().isConvertableTo(getUnits())) validate();
+        if ( tickV==null || tickV.tickV.getUnits().isConvertableTo(getUnits())) validate();
     }
     
     /** TODO
