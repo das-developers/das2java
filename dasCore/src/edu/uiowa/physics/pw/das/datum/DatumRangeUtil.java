@@ -184,7 +184,7 @@ public class DatumRangeUtil {
         
         boolean beforeTo;
         
-        private Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |to|t|-)");
+        private Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |to|t|-|$)");
         
         /* groups= group numbers: { year, month, day, delim } (0 is all) */
         private boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
