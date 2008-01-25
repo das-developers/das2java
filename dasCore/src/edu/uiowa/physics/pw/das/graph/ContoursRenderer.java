@@ -176,6 +176,7 @@ public class ContoursRenderer extends Renderer implements Displayable {
         
         TableDataSet tds= (TableDataSet) getDataSet();
         
+        if ( tds==null ) return;
         
         tds= new ClippedTableDataSet( tds, xAxis.getDatumRange(), yAxis.getDatumRange() );
         
