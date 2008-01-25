@@ -116,8 +116,12 @@ public class Contour {
             if ( indx==zz.getYLength(0) ) indx--;
             double fp= findex - indx;
             double y0= zz.getYTagDouble(0, indx, zz.getYUnits() );
-            double y1= zz.getYTagDouble(0, indx+1, zz.getYUnits() );
-            return y0 + fp * ( y1 - y0 );
+            if ( fp>0 ) {
+                double y1= zz.getYTagDouble(0, indx+1, zz.getYUnits() );
+                return y0 + fp * ( y1 - y0 );
+            } else {
+                return y0;
+            }
         }
         
         final double getXValue( double findex ) {
@@ -126,8 +130,12 @@ public class Contour {
             if ( indx==zz.getXLength() ) indx--;
             double fp= findex - indx;
             double x0= zz.getXTagDouble( indx, zz.getXUnits() );
-            double x1= zz.getXTagDouble( indx+1, zz.getXUnits() );
-            return x0 + fp * ( x1 - x0 );
+            if ( fp>0 ) {
+                double x1= zz.getXTagDouble( indx+1, zz.getXUnits() );
+                return x0 + fp * ( x1 - x0 );
+            } else {
+                return x0;
+            }
         }
         
         //-------------------------------------------------------
