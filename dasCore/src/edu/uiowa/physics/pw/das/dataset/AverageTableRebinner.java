@@ -193,7 +193,13 @@ public class AverageTableRebinner implements DataSetRebinner {
                 int j1= TableUtil.getNextRow( tds, itable, yy );
                 
                 if ( j1!=j0 ) {
-                    DatumRange dr= new DatumRange( tds.getYTagDatum(itable,j0), tds.getYTagDatum(itable,j1) );
+                    
+                    DatumRange dr;
+                    if ( tds.getYTagDatum(itable,j0).le( tds.getYTagDatum(itable,j1) ) ) {
+                        dr= new DatumRange( tds.getYTagDatum(itable,j0), tds.getYTagDatum(itable,j1) );
+                    } else {
+                        dr= new DatumRange( tds.getYTagDatum(itable,j1), tds.getYTagDatum(itable,j0) );
+                    }
                     Datum dsWidth= TableUtil.guessYTagWidth(tds,itable);
                     if ( ddY.isLog() ) {
                         Units u= dr.getUnits();
