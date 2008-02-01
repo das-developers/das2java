@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*** GENERATED FROM project.xml - DO NOT EDIT  ***
+***         EDIT ../build.xml INSTEAD         ***
+
+For the purpose of easier reading the script
+is divided into following sections:
+
+  - initialization
+  - compilation
+  - jar
+  - execution
+  - cleanup
+
+-->
+<project name="JythonTests-impl" default="build" basedir="..">
+    <target name="default" depends="jar" description="Build the whole project."/>
+    <!-- 
+    ======================
+    INITIALIZATION SECTION 
+    ======================
+    -->
+    <target name="-pre-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-init-private" depends="-pre-init">
+        <property file="nbproject/private/private.properties"/>
+    </target>
+    <target name="-init-user" depends="-pre-init,-init-private">
+        <property file="${user.properties.file}"/>
+        <!-- The two properties below are usually overridden -->
+        <!-- by the active platform. Just a fallback. -->
+        <property name="default.javac.source" value="1.4"/>
+        <property name="default.javac.target" value="1.4"/>
+    </target>
+    <target name="-init-project" depends="-pre-init,-init-private,-init-user">
+        <property file="nbproject/project.properties"/>
+    </target>
+    <target name="-do-init" depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property">
+        <fail unless="jython.home">Property jython.home is not set. If you are running from inside the
+                IDE go to Tools --&gt; Options --&gt; Advanced Options --&gt; Building --&gt; Jython and set the value of the Jython Home.
+                If you are running from command line please specify a property 
+                -Djython.home=...path to your jython installation dir...
+                </fail>
+        <available property="jython.home.exists" type="dir" file="${jython.home}"/>
+        <fail unless="jython.home.exists">Property jython.home points to a non-existent directory.
+                If you are running from inside the
+                IDE select your project, right click, select Properties from the popup and in the dialog
+                type or browse to the path where your Jython installation resides. If you are running from 
+                command line please specify a property -Djython.home=...path to your jythn installation dir...</fail>
+        <available file="${manifest.file}" property="manifest.available"/>
+        <condition property="manifest.available+main.script">
+            <and>
+                <isset property="manifest.available"/>
+                <isset property="main.script"/>
+                <not>
+                    <equals arg1="${main.script}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
+        <condition property="netbeans.home">
+            <and>
+                <isset property="netbeans.home"/>
+            </and>
+        </condition>
+        <property name="run.jvmargs" value=""/>
+        <property name="javac.compilerargs" value=""/>
+        <property name="work.dir" value="${basedir}"/>
+        <condition property="no.deps">
+            <and>
+                <istrue value="${no.dependencies}"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-post-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-init-check" depends="-pre-init,-init-private,-init-user,-init-project,-do-init">
+        <fail unless="src.dir">Must set src.dir</fail>
+        <fail unless="build.dir">Must set build.dir</fail>
+        <fail unless="dist.dir">Must set dist.dir</fail>
+        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
+        <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
+        <fail unless="dist.jar">Must set dist.jar</fail>
+    </target>
+    <target name="-init-macrodef-property">
+        <macrodef name="property" uri="http://www.netbeans.org/ns/jython-project/1">
+            <attribute name="name"/>
+            <attribute name="value"/>
+            <sequential>
+                <property name="@{name}" value="${@{value}}"/>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-init-macrodef-pythonc">
+        <macrodef name="pythonc" uri="http://www.netbeans.org/ns/jython-project/1">
+            <attribute name="srcdir" default="${src.dir}"/>
+            <attribute name="destdir" default="${build.classes.dir}"/>
+            <attribute name="classpath" default="${javac.classpath}"/>
+            <attribute name="debug" default="${javac.debug}"/>
+            <attribute name="deprecation" default="${javac.deprecation}"/>
+            <element name="customize" optional="true"/>
+            <attribute name="includes" default="Nothing to compile"/>
+            <sequential>
+                <condition property="compilerOpt1" value="-g">
+                    <istrue value="${javac.debug}"/>
+                </condition>
+                <condition property="compilerOpt1" value="">
+                    <isfalse value="${javac.debug}"/>
+                </condition>
+                <property name="compilerOpt2" value="-source ${javac.source}"/>
+                <condition property="compilerOpt3" value="-target ${javac.target}">
+                    <isset property="javac.target"/>
+                </condition>
+                <condition property="compilerOpt3" value="">
+                    <not>
+                        <isset property="javac.target"/>
+                    </not>
+                </condition>
+                <condition property="compilerOpt4" value="-deprecation">
+                    <istrue value="${javac.deprecation}"/>
+                </condition>
+                <condition property="compilerOpt4" value="">
+                    <isfalse value="${javac.deprecation}"/>
+                </condition>
+                <condition property="compilerOpt5" value="${javac.compilerargs}">
+                    <isset property="javac.compilerargs"/>
+                </condition>
+                <condition property="compilerOpt5" value="">
+                    <not>
+                        <isset property="javac.compilerargs"/>
+                    </not>
+                </condition>
+                <condition property="jythoncOpt1" value="-j ${dist.jar}">
+                    <istrue value="${jythonc.create.jar}"/>
+                </condition>
+                <condition property="jythoncOpt1" value="">
+                    <isfalse value="${jythonc.create.jar}"/>
+                </condition>
+                <condition property="jythoncOpt2" value="-c">
+                    <istrue value="${jythonc.include.core}"/>
+                </condition>
+                <condition property="jythoncOpt2" value="">
+                    <isfalse value="${jythonc.include.core}"/>
+                </condition>
+                <condition property="jythoncOpt3" value="-a">
+                    <istrue value="${jythonc.include.all}"/>
+                </condition>
+                <condition property="jythoncOpt3" value="">
+                    <isfalse value="${jythonc.include.all}"/>
+                </condition>
+                <condition property="jythoncOpt4" value="-p ${jythonc.create.package}">
+                    <isset property="jythonc.create.package"/>
+                </condition>
+                <condition property="jythoncOpt4" value="">
+                    <not>
+                        <isset property="jythonc.create.package"/>
+                    </not>
+                </condition>
+                <condition property="jythoncOpt5" value="${jythonc.compilerargs}">
+                    <isset property="jythonc.compilerargs"/>
+                </condition>
+                <condition property="jythoncOpt5" value="">
+                    <not>
+                        <isset property="jythonc.compilerargs"/>
+                    </not>
+                </condition>
+                <java fork="true" classname="org.python.util.jython" dir="${work.dir}">
+                    <arg line="${jython.home}/Tools/jythonc/jythonc.py ${jythoncOpt1} ${jythoncOpt2} ${jythoncOpt3} ${jythoncOpt4} ${jythoncOpt5} -w @{destdir} @{includes}"/>
+                    <classpath>
+                        <path path="${classpath}"/>
+                        <path path="${jython.home}/jython.jar"/>
+                    </classpath>
+                    <sysproperty key="python.home" value="${jython.home}"/>
+                    <sysproperty key="python.jythonc.compileropts" value="${compilerOpt1} ${compilerOpt2} ${compilerOpt3} ${compilerOpt4} ${compilerOpt5}"/>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <customize/>
+                </java>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-init-macrodef-python">
+        <macrodef name="python" uri="http://www.netbeans.org/ns/jython-project/1">
+            <attribute name="script" default="${main.script}"/>
+            <element name="customize" optional="true"/>
+            <sequential>
+                <java fork="true" classname="org.python.util.jython" dir="${work.dir}">
+                    <arg line="${run.jvmargs} ${src.dir}/@{script}"/>
+                    <sysproperty key="python.home" value="${jython.home}"/>
+                    <sysproperty key="python.path" value="${run.classpath}"/>
+                    <classpath>
+                        <path path="${run.classpath}"/>
+                        <path path="${jython.home}/jython.jar"/>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <customize/>
+                </java>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-init-presetdef-jar">
+        <presetdef name="jar" uri="http://www.netbeans.org/ns/jython-project/1">
+            <jar jarfile="${dist.jar}" compress="${jar.compress}">
+                <fileset dir="${build.classes.dir}"/>
+            </jar>
+        </presetdef>
+    </target>
+    <target name="init" depends="-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-pythonc,-init-macrodef-python,-init-presetdef-jar"/>
+    <!--
+    ===================
+    COMPILATION SECTION
+    ===================
+    -->
+    <target name="deps-jar" depends="init" unless="no.deps">
+        <ant target="jar" inheritall="false" antfile="${project.QDataSet}/build.xml"/>
+    </target>
+    <target name="-pre-pre-compile" depends="init,deps-jar">
+        <mkdir dir="${build.classes.dir}"/>
+        <dirname property="dist.jar.dir" file="${dist.jar}"/>
+        <mkdir dir="${dist.jar.dir}"/>
+        <delete file="${dist.jar}"/>
+    </target>
+    <target name="-pre-compile">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile">
+        <path id="all-f">
+            <fileset dir="src">
+                <include name="**/*.py"/>
+            </fileset>
+        </path>
+        <pathconvert property="all_files" refid="all-f" pathsep=" "/>
+        <jythonproject:pythonc includes="${all_files}" xmlns:jythonproject="http://www.netbeans.org/ns/jython-project/1"/>
+        <delete>
+            <!-- Delete the generated .java files -->
+            <fileset dir="${build.classes.dir}" includes="**/*.java"/>
+        </delete>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.dir}" excludes="${build.classes.excludes}"/>
+        </copy>
+    </target>
+    <target name="-post-compile">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile" description="Compile project."/>
+    <target name="-pre-compile-single">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-do-compile-single" depends="init,deps-jar,-pre-pre-compile">
+        <fail unless="pythonc.includes">Must select some files in the IDE or set pythonc.includes</fail>
+        <jythonproject:pythonc includes="${src.dir}/${pythonc.includes}" xmlns:jythonproject="http://www.netbeans.org/ns/jython-project/1"/>
+    </target>
+    <target name="-post-compile-single">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="compile-single" depends="init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single"/>
+    <!--
+    ====================
+    JAR BUILDING SECTION
+    ====================
+    -->
+    <target name="-pre-pre-jar">
+        <available property="jar.alredy.built" file="${dist.jar}"/>
+        <dirname property="dist.jar.dir" file="${dist.jar}"/>
+        <mkdir dir="${dist.jar.dir}"/>
+    </target>
+    <target name="-pre-jar">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-do-jar-without-manifest" unless="manifest.available" depends="init,compile,-pre-pre-jar,-pre-jar">
+        <jythonproject:jar xmlns:jythonproject="http://www.netbeans.org/ns/jython-project/1"/>
+    </target>
+    <target name="-do-jar-with-manifest" unless="manifest.available+main.script" depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available">
+        <jythonproject:jar manifest="${manifest.file}" xmlns:jythonproject="http://www.netbeans.org/ns/jython-project/1"/>
+    </target>
+    <target name="-do-jar-with-mainclass" unless="jar.alredy.built" depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available+main.script">
+        <jythonproject:jar manifest="${manifest.file}" xmlns:jythonproject="http://www.netbeans.org/ns/jython-project/1">
+            <manifest>
+                <attribute name="Main-Class" value="${main.script}"/>
+            </manifest>
+        </jythonproject:jar>
+    </target>
+    <target name="-post-jar">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="jar" depends="init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-post-jar" description="Build JAR."/>
+    <!--
+    =================
+    EXECUTION SECTION
+    =================
+    -->
+    <target name="run" depends="init,deps-jar" description="Run a main script.">
+        <jythonproject:python xmlns:jythonproject="http://www.netbeans.org/ns/jython-project/1">
+            <customize>
+                <arg line="${application.args}"/>
+            </customize>
+        </jythonproject:python>
+    </target>
+    <target name="run-single" depends="init,deps-jar">
+        <fail unless="run.script">Must select one file in the IDE or set run.script</fail>
+        <jythonproject:python script="${run.script}" xmlns:jythonproject="http://www.netbeans.org/ns/jython-project/1"/>
+    </target>
+    <!--
+    ===============
+    CLEANUP SECTION
+    ===============
+    -->
+    <target name="deps-clean" depends="init" unless="no.deps">
+        <ant target="clean" inheritall="false" antfile="${project.QDataSet}/build.xml"/>
+    </target>
+    <target name="-do-clean" depends="init">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+        <delete>
+            <fileset dir="${src.dir}" includes="**/*.class"/>
+        </delete>
+    </target>
+    <target name="-post-clean">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="clean" depends="init,deps-clean,-do-clean,-post-clean" description="Clean build products."/>
+</project>
