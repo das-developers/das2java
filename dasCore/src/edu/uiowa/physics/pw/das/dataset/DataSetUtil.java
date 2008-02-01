@@ -116,12 +116,23 @@ public class DataSetUtil {
         }
     }
     
-    /* finds the element closest to x in xx.  xx must be sorted!!! */
+    /**
+     * finds the element closest to x in monotonic array xx. 
+     * @param xx monotonic array of numbers.  When xx is decreasing, a copy
+     *   of the array is made.
+     * @param x
+     * @return index of closest value.
+     */
     protected static int closest( double[] xx, double x ) {
+        if ( xx[xx.length-1]<xx[0] ) {
+            double[] minusxx= new double[xx.length];
+            for ( int i=0; i<xx.length; i++ ) minusxx[i]= -1 * xx[i];
+            xx= minusxx;
+            x= -1*x;
+        }
         if ( xx.length==0 ) {
             throw new IllegalArgumentException("array has no elements");
         }
-        long t0= System.currentTimeMillis();
         int result= Arrays.binarySearch( xx, x );
         if (result == -1) {
             result = 0; //insertion point is 0
@@ -191,15 +202,37 @@ public class DataSetUtil {
         return closestColumn( table, units.createDatum(x) );
     }
     
+    /**
+     * finds the dataset column closest to the value, starting the search at guessIndex.
+     * Handles monotonically increasing or decreasing tags.
+     * @param table
+     * @param xdatum
+     * @param guessIndex
+     * @return
+     */
     public static int closestColumn( DataSet table, Datum xdatum, int guessIndex ) {
+        int monotonicDir= 1;
         int result= guessIndex;
         int len= table.getXLength();
-        if ( result>=len ) result=len-1;
+        if ( len==1 ) return 0;
+        
+        if ( result>=len-1 ) result=len-2;
         if ( result<0 ) result=0;
+        
         Units units= xdatum.getUnits();
+        
+        if ( table.getXTagDouble(result, units) > table.getXTagDouble(result+1, units ) ) {
+            monotonicDir= -1;
+        }
+        
         double x= xdatum.doubleValue(units);
-        while ( result<(len-1) && table.getXTagDouble(result,units)<x ) result++;
-        while ( result>0 && table.getXTagDouble(result,units)>x ) result--;
+        if ( monotonicDir==1 ) {
+            while ( result<(len-1) && table.getXTagDouble(result,units) < x ) result++;
+            while ( result>0 && table.getXTagDouble(result,units) > x ) result--;
+        } else {
+            while ( result<(len-1) && table.getXTagDouble(result,units) > x ) result++;
+            while ( result>0 && table.getXTagDouble(result,units) < x ) result--;            
+        }
         // result should now point to the guy to the left of x, unless x>the last guy or <the first guy
         if ( result<len-1 ) {
             double alpha= ( x - table.getXTagDouble( result, units ) ) /
