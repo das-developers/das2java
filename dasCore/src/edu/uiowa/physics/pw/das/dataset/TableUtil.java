@@ -73,13 +73,26 @@ public class TableUtil {
         return guessYTagWidth( table, 0 );
     }
     
+    /**
+     * guess the y tag cadence by returning the difference of the first two tags.
+     * If the tags appear to be log spaced, then a ratiometric unit (e.g. percentIncrease)
+     * is returned.  monotonically decreasing is handled, in which case a positive tag cadence
+     * is returned.
+     * @param table
+     * @param the table index.
+     * @return the norminal cadence of the tags.
+     */
     public static Datum guessYTagWidth( TableDataSet table, int itable ) {
         // cheat and check for logarithmic scale.  If logarithmic, then return YTagWidth as percent.
         double y0= table.getYTagDouble( itable, 0, table.getYUnits());
         double y1= table.getYTagDouble( itable, 1, table.getYUnits());
         int n= table.getYLength(itable)-1;
         double yn= table.getYTagDouble( itable, n, table.getYUnits() );
-        if ( (yn-y0) / ( (y1-y0 ) * n ) > 10. ) {
+        double cycles= (yn-y0) / ( (y1-y0 ) * n );
+        if ( y1<y0 ) {
+            double t= y0; y0= y1; y1= t;
+        }
+        if (  cycles > 10. ) {
             return Units.log10Ratio.createDatum( DasMath.log10(y1/y0) );
         } else {
             return table.getYUnits().createDatum(y1-y0);
@@ -289,11 +302,15 @@ public class TableUtil {
     }
     
     /**
+     * return the first row before the datum.  Handles mono decreasing.
      * @return the row which is less than or equal to the datum
      */
     public static int getPreviousRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
-        if ( i>0 && ds.getYTagDatum(itable,i).gt(datum) ) {
+        Units units= ds.getYUnits();
+        double dir= ds.getYTagDouble(itable, 1, units ) - ds.getYTagDouble(itable, 0, units );
+        double dd= ds.getYTagDouble(itable,i,units) - datum.doubleValue(units);
+        if ( i>0 && ( dir * dd > 0 ) ) {
             return i-1;
         } else {
             return i;
@@ -301,11 +318,15 @@ public class TableUtil {
     }
     
     /**
+     * return the first row after the datum.  Handles mono decreasing.
      * @return the row which is greater than or equal to the datum
      */
     public static int getNextRow( TableDataSet ds, int itable, Datum datum ) {
         int i= closestRow( ds, itable, datum );
-        if ( i<ds.getYLength(itable)-1 && ds.getYTagDatum(itable,i).lt(datum) ) {
+        Units units= ds.getYUnits();
+        double dir= ds.getYTagDouble(itable, 1, units ) - ds.getYTagDouble(itable, 0, units );
+        double dd= ds.getYTagDouble(itable,i,units) - datum.doubleValue(units);
+        if ( i<ds.getYLength(itable)-1 && ( dir * dd < 0 ) ) {
             return i+1;
         } else {
             return i;
