@@ -15,10 +15,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenuItem;
 
 /**
- * This component-izes a GrannyTextRenderer, composes with an Arrow, and
+ * This component-izes a GrannyTextRenderer, and composes with an Arrow.
  * @author Jeremy
  */
 public class DasAnnotation extends DasCanvasComponent {
@@ -36,14 +37,27 @@ public class DasAnnotation extends DasCanvasComponent {
         super();
         this.gtr= new GrannyTextRenderer();
         this.string= string;
-        this.getMouseAdapter().addMenuItem( new JMenuItem( new AbstractAction( "remove" ) {
+
+        Action removeArrowAction= new AbstractAction( "remove arrow" ) {
+            public void actionPerformed( ActionEvent e ) {
+                pointAt= null;
+                repaint();
+            }
+        };
+        
+        this.getMouseAdapter().addMenuItem( new JMenuItem( removeArrowAction ) );
+        
+        Action removeMeAction= new AbstractAction( "remove" ) {
             public void actionPerformed( ActionEvent e ) {
                 DasCanvas canvas= getCanvas();
                 // TODO: confirm dialog
                 canvas.remove( DasAnnotation.this );
                 canvas.revalidate();
             }
-        } ) );
+        };
+        
+        this.getMouseAdapter().addMenuItem( new JMenuItem( removeMeAction ) );
+        
         MouseModule mm= new MoveComponentMouseModule( this );
         this.getMouseAdapter().addMouseModule( mm );
         this.getMouseAdapter().setPrimaryModule( mm );
@@ -52,6 +66,7 @@ public class DasAnnotation extends DasCanvasComponent {
         this.getMouseAdapter().addMouseModule( mm );
         this.getMouseAdapter().setSecondaryModule( mm );
     }
+    
     
     private MouseModule createArrowToMouseModule( final DasAnnotation anno ) {
         return new MouseModule( DasAnnotation.this, new ArrowDragRenderer(), "Point At" ) {
@@ -87,8 +102,9 @@ public class DasAnnotation extends DasCanvasComponent {
     }
     
     public void setText( String string ) {
-        gtr.setString(this, string);
+        gtr.setString( this.getGraphics(), string );
         this.string= string;
+        calcBounds();
         repaint();
     }
     
@@ -99,18 +115,20 @@ public class DasAnnotation extends DasCanvasComponent {
     
     public void resize() {
         super.resize();
-        this.gtr.setString( this, this.string );
+        this.gtr.setString( this.getGraphics(), this.string );
         setBounds( calcBounds() ) ;
     }
     
     private Rectangle calcBounds() {
-        Rectangle bounds= gtr.getBounds();
-        bounds.translate( getX(), getY() );
+        Rectangle r= gtr.getBounds();
+        int em= (int)getEmSize() / 2;
+        r= new Rectangle( r.x-em-2, r.y-em-2, r.width+2*em+3, r.height+2*em+3 );
+        r.translate( getX(), getY() );
         if ( pointAt!=null ) {
             Point head= pointAt.getPoint();
-            //bounds.add(head);
+            r.add(head);
         }
-        return bounds;
+        return r;
     }
     
     public void paintComponent( Graphics g1 ) {
@@ -118,19 +136,37 @@ public class DasAnnotation extends DasCanvasComponent {
         // TODO: need to draw based on row, col, not on bounds which may move with arrow.
         
         Graphics2D g= (Graphics2D)g1;
+        
+        Color fore= g.getColor();
+        
+        Color canvasColor= getCanvas().getBackground();
+        Color back= new Color( canvasColor.getRed(), canvasColor.getGreen(), canvasColor.getBlue(),
+           80 * 255 / 100 );
+        
+        int em= (int)getEmSize() / 2;
+        
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         Rectangle r= gtr.getBounds();
-        r.translate( 0,(int)gtr.getAscent() );
-        g.setColor( new Color(230,230,230,100) );
-        g.fill(r);
-        g.setColor( Color.black );
-        gtr.draw(g,0,(float)gtr.getAscent());
+        r= new Rectangle( r.x-em+1, r.y-em+1, r.width+2*em-1, r.height+2*em-1 );
+        
+        r.translate( em, em + (int)gtr.getAscent() );
+        g.setColor( back );
+
+       if ( borderType!=BorderType.NONE ) {
+            if ( borderType==BorderType.RECTANGLE ) {
+                g.fill(r);
+            } else if (borderType==BorderType.ROUNDED_RECTANGLE ) {
+                g.fillRoundRect( r.x, r.y, r.width, r.height, em*2, em*2 );
+            }
+        }
+        
+        g.setColor( fore );
+        gtr.draw( g, em, em+(float)gtr.getAscent() );
         
         if ( pointAt!=null ) {
-            double em = getCanvas().getFont().getSize();
-            
-            g.setStroke( new BasicStroke( (float)(em/8) ) );
-            g.drawLine( r.x, r.y+r.height, r.x+r.width, r.y+r.height );
+            double em2 = getCanvas().getFont().getSize();
+            g.setStroke( new BasicStroke( (float)(em2/8) ) );
+            //g.drawLine( r.x, r.y+r.height, r.x+r.width, r.y+r.height );
         
             Point head= pointAt.getPoint();
             head.translate( -getX(), -getY() );
@@ -139,9 +175,19 @@ public class DasAnnotation extends DasCanvasComponent {
             Point tail= new Point( tx, r.y+r.height );
             Graphics2D g2= (Graphics2D)g.create();
             g2.setClip(null);
-            Arrow.paintArrow( g2, head, tail, em );
+            Arrow.paintArrow( g2, head, tail, em2 );
         }
+        
+        if ( borderType!=BorderType.NONE ) {
+            if ( borderType==BorderType.RECTANGLE ) {
+                g.draw( r );
+            } else if (borderType==BorderType.ROUNDED_RECTANGLE ) {
+                g.drawRoundRect( r.x, r.y, r.width, r.height, em*2, em*2 );
+            }
+        }
+        
         getMouseAdapter().paint(g);
+        
     }
     
     public interface PointDescriptor {
@@ -177,4 +223,34 @@ public class DasAnnotation extends DasCanvasComponent {
         setFont( getFont().deriveFont(fontSize) );
         repaint();
     }
+    
+    public enum BorderType { NONE, RECTANGLE, ROUNDED_RECTANGLE }
+    
+    private BorderType borderType = BorderType.NONE;
+
+    public static final String PROP_BORDERTYPE = "borderType";
+
+    public BorderType getBorderType() {
+        return this.borderType;
+    }
+
+    public void setBorderType(BorderType newborderType) {
+        BorderType oldborderType = borderType;
+        this.borderType = newborderType;
+        repaint();
+        propertyChangeSupport.firePropertyChange(PROP_BORDERTYPE, oldborderType, newborderType);
+    }
+
+    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener listener )
+    {
+        propertyChangeSupport.addPropertyChangeListener( listener );
+    }
+
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener listener )
+    {
+        propertyChangeSupport.removePropertyChangeListener( listener );
+    }
+
 }
