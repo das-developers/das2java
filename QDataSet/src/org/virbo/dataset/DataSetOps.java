@@ -11,7 +11,6 @@ package org.virbo.dataset;
 import edu.uiowa.physics.pw.das.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * Useful operations for QDataSets
@@ -22,7 +21,7 @@ public class DataSetOps {
     /**
      *slice on the first dimension
      */
-    public static QDataSet slice0(final QDataSet ds, final int index) {
+    public static MutablePropertyDataSet slice0(final QDataSet ds, final int index) {
         return new Slice0DataSet(ds, index);
     }
 
@@ -32,37 +31,7 @@ public class DataSetOps {
      * regard to tags.
      */
     public static MutablePropertyDataSet slice1(final QDataSet ds, final int index) {
-        if (ds.rank() > 2) {
-            throw new IllegalArgumentException("rank limit > 2");
-        }
-
-        MutablePropertyDataSet result = new AbstractDataSet() {
-
-            public int rank() {
-                return ds.rank() - 1;
-            }
-
-            public double value(int i) {
-                return ds.value(i, index);
-            }
-
-            public double value(int i0, int i1) {
-                return ds.value(i0, index, i1);
-            }
-
-            public Object property(String name) {
-                Object p = properties.get(name);
-                return (p != null) ? p : ds.property(name);
-            }
-
-            public int length() {
-                return ds.length();
-            }
-        };
-
-        result.putProperty(QDataSet.QUBE, null);
-
-        return result;
+        return new Slice1DataSet(ds, index);
     }
 
     /**
@@ -86,8 +55,11 @@ public class DataSetOps {
             }
 
             public Object property(String name) {
-                Object p = properties.get(name);
-                return (p != null) ? p : ds.property(name);
+                if ( properties.containsKey( name ) ) {
+                    return properties.get(name);
+                } else {
+                    return ds.property(name);
+                }
             }
 
             public Object property(String name, int i) {
@@ -110,7 +82,81 @@ public class DataSetOps {
         if ( qube!=null ) {
             result.putProperty(QDataSet.QUBE, removeElement(qube,2) );
         }
+        
+        result.putProperty( QDataSet.DEPEND_2, null );
+        
         return result;
+    }
+
+    public static MutablePropertyDataSet trim( final QDataSet ds, final int offset, final int len ) {
+
+        MutablePropertyDataSet result = new AbstractDataSet() {
+
+            public int rank() {
+                return ds.rank();
+            }
+
+            @Override
+            public Object property(String name, int i0, int i1) {
+                return super.property(name, i0, i1);
+            }
+
+            @Override
+            public double value(int i) {
+                return ds.value(offset+i);
+            }
+
+            @Override
+            public double value(int i0, int i1) {
+                return ds.value(i0+offset, i1 );
+            }
+
+            @Override
+            public double value(int i0, int i1, int i2) {
+                return ds.value(i0+offset, i1, i2);
+            }
+
+            public Object property(String name) {
+                if ( properties.containsKey( name ) ) {
+                    return properties.get(name);
+                } else {
+                    return ds.property(name);
+                }
+            }
+
+            public Object property(String name, int i) {
+                Object p = properties.get(name);
+                return (p != null) ? p : ds.property(name,i);
+            }
+            
+            public int length() {
+                return len;
+            }
+            
+            public int length(int i0) {
+                return ds.length(i0);
+            }
+            
+            public int length(int i0, int i1) {
+                return ds.length(i0,i1);
+            }
+            
+            
+        };
+
+        
+        int[] qube= (int[]) ds.property( QDataSet.QUBE );
+        if ( qube!=null ) {
+            qube[0]= len;
+            result.putProperty(QDataSet.QUBE, qube );
+        }
+        
+        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+        if ( dep0!=null ) {
+            result.putProperty(QDataSet.DEPEND_0, trim(dep0, offset, len) );
+        }
+        return result;
+        
     }
     
     /**
@@ -119,7 +165,7 @@ public class DataSetOps {
      * @param index
      * @return
      */
-    private static int[] removeElement(int[] array, int index) {
+    protected static int[] removeElement(int[] array, int index) {
         int[] result = new int[array.length - 1];
         for (int i = 0; i < index; i++) {
             result[i] = array[i];
@@ -130,6 +176,7 @@ public class DataSetOps {
         return result;
     }
 
+            
     /**
      * pull out a subset of the dataset by reducing the number of columns in the
      * last dimension.  This does not reduce rank.  This assumes the dataset has no

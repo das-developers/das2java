@@ -15,11 +15,10 @@ import java.util.HashMap;
  *
  * @author jbf
  */
-public class SortDataSet implements QDataSet {
+public class SortDataSet extends AbstractDataSet {
     
     QDataSet source;
     QDataSet sort;
-    HashMap properties;
             
     public SortDataSet( QDataSet source, QDataSet sort ) {
         this.source= source;
@@ -49,18 +48,27 @@ public class SortDataSet implements QDataSet {
     }
 
     public Object property(String name) {
-        Object o= properties.get(name);
-        if ( o==null ) return source.property(name); else return o;
+        if ( properties.containsKey(name) ) {
+            return properties.get(name);
+        } else {
+            return source.property(name);
+        }
     }
 
     public Object property(String name, int i) {
-        Object o= properties.get(name);
-        if ( o==null ) return source.property(name,i); else return o;
+        if ( properties.containsKey(name) ) {
+            return properties.get(name);
+        } else {
+            return source.property(name,i);
+        }
     }
 
     public Object property(String name, int i0, int i1) {
-        Object o= properties.get(name);
-        if ( o==null ) return source.property(name,i0,i1); else return o;
+        if ( properties.containsKey(name) ) {
+            return properties.get(name);
+        } else {
+            return source.property(name,i0,i1);
+        }
     }
 
     public int length() {

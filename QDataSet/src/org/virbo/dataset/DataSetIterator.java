@@ -62,7 +62,7 @@ public abstract class DataSetIterator  {
         }
         
         public boolean hasNext() {
-            return index1<len1 || index0<lastIndex0;
+            return index0<=lastIndex0 && ( index1<len1 || index0<lastIndex0 );
         }
         
         private void carry() {
@@ -94,6 +94,7 @@ public abstract class DataSetIterator  {
         }
         
         public boolean hasNext() {
+            // TODO: check rank 3 when first dim has no elements
             return index2<len2 || index1<lastIndex1 || index0<lastIndex0;
         }
         

@@ -10,12 +10,12 @@
 package org.virbo.dsutil;
 
 import edu.uiowa.physics.pw.das.datum.Units;
-import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 
 /**
- *
+ * Form a rank 2 dataset with L and Time for tags by identifying monotonic sweeps
+ * in two rank 1 datasets.
  * @author jbf
  */
 public class LSpec {
@@ -70,7 +70,7 @@ public class LSpec {
      * @param dir 1 if datax is increasing, -1 if decreasing
      * @return index
      */
-    public final static int findIndex( QDataSet datax, int start, int end, double x, int guess, int dir ) {
+    private final static int findIndex( QDataSet datax, int start, int end, double x, int guess, int dir ) {
         int index= Math.max( Math.min( guess, end-1 ), start );
         if ( dir > 0 ) {
             while ( index<end && datax.value(index+1) < x ) index++;

@@ -20,7 +20,9 @@ public class TransposeRank2DataSet extends AbstractDataSet {
     /** Creates a new instance of TransposeRank2DataSet */
     public TransposeRank2DataSet( QDataSet source ) {
         this.source= source;
-        properties.put( QDataSet.DEPEND_0, source.property( QDataSet.DEPEND_1 ) );
+        QDataSet dep1=  (QDataSet) source.property( QDataSet.DEPEND_1 );
+        if ( dep1==null ) dep1= new IndexGenDataSet( source.length(0) ); // This is necessary, because otherwise DEPEND_0 gets plugged in.
+        properties.put( QDataSet.DEPEND_0, dep1 );
         properties.put( QDataSet.DEPEND_1, source.property( QDataSet.DEPEND_0 ) );
     }
 

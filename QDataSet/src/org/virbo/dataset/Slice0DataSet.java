@@ -1,78 +1,91 @@
 /*
- * Slice0DataSet.java
- *
- * Created on February 1, 2007, 10:41 AM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.virbo.dataset;
 
 /**
  * Wraps a rank N dataset, slicing on an index of the first dimension to make a rank N-1 dataset.
  * This is currently used to implement DataSetOps.slice0().
- * 
  * @author jbf
  */
-public class Slice0DataSet implements QDataSet {
-    
-    final QDataSet ds;
-    final int index;
-    
-    /** Creates a new instance of Slice0DataSet */
-    public Slice0DataSet( QDataSet source, int index ) {
-        this.ds= source;
-        this.index= index;
+public class Slice0DataSet extends AbstractDataSet {
+
+    QDataSet ds;
+    int index;
+
+    Slice0DataSet(QDataSet ds, int index) {
+        if ( ds.rank() > 3 ) {
+            throw new IllegalArgumentException("rank limit > 2");
+        }
+        this.ds = ds;
+        this.index = index;
+        putProperty( QDataSet.DEPEND_0, ds.property( QDataSet.DEPEND_1 ) );
+        putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
+        putProperty( QDataSet.DEPEND_2, null );
+        int[] qube= (int[]) ds.property( QDataSet.QUBE );
+        if ( qube!=null ) {
+            qube= DataSetOps.removeElement( qube, 0 );
+            putProperty( QDataSet.QUBE, qube );
+        }
     }
-    
+
     public int rank() {
-        return ds.rank()-1;
+        return ds.rank() - 1;
     }
-    
+
     public double value(int i) {
-        return ds.value( index, i );
+        return ds.value(index,i);
     }
-    
+
     public double value(int i0, int i1) {
-        return ds.value( index, i0, i1 );
+        return ds.value(index, i0, i1);
     }
-    
-    public double value(int i0, int i1, int i2) {
-        throw new IllegalArgumentException("rank limit");
-    }
-    
+
     public Object property(String name) {
-        if ( name.startsWith("DEPEND_") ) {
-            if ( name.equals( DEPEND_1) ) name= DEPEND_2;
-            if ( name.equals( DEPEND_0) ) name= DEPEND_1;
-            return ds.property(name);
+        if (properties.containsKey(name)) {
+            return properties.get(name);
         } else {
             return ds.property(name,index);
         }
     }
-    
-    public Object property(String name, int i) {
-        return ds.property(name, index, i );
-    }
-    
-    public Object property(String name, int i0, int i1) {
-        throw new IllegalArgumentException("rank limit");
+
+    public Object property( String name, int i ) {
+        if (properties.containsKey(name)) {
+            return properties.get(name);
+        } else {
+            return ds.property(name,index,i);
+        }
     }
     
     public int length() {
         return ds.length(index);
     }
     
-    public int length(int i) {
-        return ds.length(index,i);
+    public int length( int i0 ) {
+        return ds.length(index,i0);        
     }
-    
+
+    @Override
     public int length(int i, int j) {
         throw new IllegalArgumentException("rank limit");
     }
     
-    public String toString( ) {
-        return DataSetUtil.toString(this);
+    
+    
+    @Override
+    public boolean equals(Object obj) {
+        if ( obj==null ) return false;
+        if ( obj instanceof Slice0DataSetNew ) {
+            Slice0DataSetNew that= ((Slice0DataSetNew)obj);
+            return that.ds.equals(this.ds) && that.index==this.index;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return ds.hashCode() + index;
     }
 }
