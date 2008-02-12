@@ -113,8 +113,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
     private void updatePsym() {
         int sx = (int) Math.ceil(symSize + 2 * lineWidth);
         int sy = (int) Math.ceil(symSize + 2 * lineWidth);
-        cmx = (int) (lineWidth + symSize / 2);
-        cmy = (int) (lineWidth + symSize / 2);
+        double dcmx = (int) (lineWidth + symSize / 2);
+        double dcmy = (int) (lineWidth + symSize / 2);
 
         BufferedImage image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
@@ -128,7 +128,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         g.setStroke(new BasicStroke((float) lineWidth));
 
-        psym.draw(g, cmx, cmy, (float) symSize, fillStyle);
+        psym.draw(g, dcmx, dcmy, (float) symSize, fillStyle);
         psymImage = image;
 
         if (colorBar != null) {
@@ -145,10 +145,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 g.setColor(c);
                 g.setStroke(new BasicStroke((float) lineWidth));
 
-                psym.draw(g, cmx, cmy, (float) symSize, this.fillStyle);
+                psym.draw(g, dcmx, dcmy, (float) symSize, this.fillStyle);
                 coloredPsyms[i] = image;
             }
         }
+        
+        cmx= (int)dcmx;
+        cmy= (int)dcmy;
+        
         refresh();
     }
 
@@ -186,7 +190,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
                 int type = it.currentSegment(coords);
                 Datum d = vds.getDatum(Math.max(i, 0));
-                System.err.println("i:" + i + "  " + type + " " + coords[0] + "," + coords[1] + "  " + d);
+                //System.err.println("i:" + i + "  " + type + " " + coords[0] + "," + coords[1] + "  " + d);
 
                 boolean drawIt = type == PathIterator.SEG_LINETO;
 
@@ -423,6 +427,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
         long milli = System.currentTimeMillis();
         long renderTime = (milli - timer0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
+        
+        setRenderPointsPerMillisecond( dppms );
+        
         logger.finer("render: " + renderTime + " total:" + (milli - lastUpdateMillis) + " fps:" + (1000. / (milli - lastUpdateMillis)) + " pts/ms:" + dppms);
         lastUpdateMillis = milli;
     }
@@ -684,10 +691,19 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (getParent() != null) {
             getParent().repaint();
         }
+        
+        
         logger.fine("done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
         updating = false;
+                 
+        long milli = System.currentTimeMillis();
+        long renderTime = (milli - t0);
+        double dppms = (lastIndex - firstIndex) / (double) renderTime;
+        
+        setUpdatesPointsPerMillisecond( dppms );
     }
 
+    
     public PsymConnector getPsymConnector() {
         return psymConnector;
     }
@@ -922,7 +938,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param colorByDataSetId New value of property colorByDataSetId.
      */
     public void setColorByDataSetId(String colorByDataSetId) {
+        String oldVal= this.colorByDataSetId;
         this.colorByDataSetId = colorByDataSetId;
+        refresh();
+        propertyChangeSupport.firePropertyChange("colorByDataSetId", oldVal, colorByDataSetId );
     }
     /**
      * Holds value of property colorBar.
@@ -1138,4 +1157,34 @@ public class SeriesRenderer extends Renderer implements Displayable {
         refreshImage();
         propertyChangeSupport.firePropertyChange("dataSetSizeLimit", new Integer(oldDataSetSizeLimit), new Integer(dataSetSizeLimit));
     }
+
+    private double updatesPointsPerMillisecond;
+
+    public static final String PROP_UPDATESPOINTSPERMILLISECOND = "updatesPointsPerMillisecond";
+
+    public double getUpdatesPointsPerMillisecond() {
+        return this.updatesPointsPerMillisecond;
+    }
+
+    public void setUpdatesPointsPerMillisecond(double newupdatesPointsPerMillisecond) {
+        double oldupdatesPointsPerMillisecond = updatesPointsPerMillisecond;
+        this.updatesPointsPerMillisecond = newupdatesPointsPerMillisecond;
+        propertyChangeSupport.firePropertyChange(PROP_UPDATESPOINTSPERMILLISECOND, oldupdatesPointsPerMillisecond, newupdatesPointsPerMillisecond);
+    }
+
+    
+    private double renderPointsPerMillisecond;
+
+    public static final String PROP_RENDERPOINTSPERMILLISECOND = "renderPointsPerMillisecond";
+
+    public double getRenderPointsPerMillisecond() {
+        return this.renderPointsPerMillisecond;
+    }
+
+    public void setRenderPointsPerMillisecond(double newrenderPointsPerMillisecond) {
+        double oldrenderPointsPerMillisecond = renderPointsPerMillisecond;
+        this.renderPointsPerMillisecond = newrenderPointsPerMillisecond;
+        propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
+    }
+
 }
