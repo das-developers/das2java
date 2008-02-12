@@ -393,7 +393,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             for (int i = 0; i < nx; i++) {
                 
                 if (i1[i] != -1) { // needs to be interpolated
-                    if ( (xTags[i2[i]] - xTags[i1[i]]) <= xSampleWidth * 2.0 ) {
+                    if ( (xTags[i2[i]] - xTags[i1[i]]) <= xSampleWidth * 1.5 ) {
                         a2 = (float)((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));
                         a1 = 1.f - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
@@ -425,7 +425,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
         
         double ySampleWidth;
-        double fudge= 2.0;
+        double fudge= 1.5;
         if ( yTagWidth==null ) {
             double d= Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
             ySampleWidth= d;
