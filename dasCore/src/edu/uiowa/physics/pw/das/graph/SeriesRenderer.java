@@ -74,21 +74,17 @@ public class SeriesRenderer extends Renderer implements Displayable {
     private double symSize = 3.0; // radius in pixels
     private double lineWidth = 1.0; // width in pixels
     private boolean histogram = false;
-    //private Stroke stroke;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     private FillStyle fillStyle = FillStyle.STYLE_FILL;
     private int renderCount = 0;
     private int updateImageCount = 0;
-    /** Holds value of property color. */
     private Color color = Color.BLACK;
     private long lastUpdateMillis;
-    /** Holds value of property antiAliased. */
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
 
     /* the cached data to speed up render step */
     private GeneralPath path;
     private GeneralPath fillToRefPath;
-    private GeneralPath psymsPath; // store the location of the psyms here.
     private int firstIndex;/* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
 
     private int lastIndex;/* the non-inclusive index of the last point drawn. */
@@ -106,6 +102,164 @@ public class SeriesRenderer extends Renderer implements Displayable {
     Image psymImage;
     Image[] coloredPsyms;
     int cmx, cmy;
+    RenderElement psymsElement = new PsymRenderElement();
+
+    interface RenderElement {
+
+        int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon);
+
+        void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon);
+
+        boolean acceptContext(Point2D.Double dp);
+    }
+
+    class PsymRenderElement implements RenderElement {
+
+        protected GeneralPath psymsPath; // store the location of the psyms here.
+        int[] colors; // store the color index  of each psym
+        int[] ipsymsPath; // store the location of the psyms here, evens=x, odds=y
+        int count; // the number of points to plot
+
+        /**
+         * render the psyms by stamping an image at the psym location.  The intent is to
+         * provide fast rendering by reducing fidelity.
+         * On 20080206, this was measured to run at 320pts/millisecond for FillStyle.FILL
+         * On 20080206, this was measured to run at 300pts/millisecond in FillStyle.OUTLINE
+         */
+        private int renderStamp(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
+
+            VectorDataSet colorByDataSet = null;
+            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
+                colorByDataSet = (VectorDataSet) vds.getPlanarView(colorByDataSetId);
+            }
+
+            if (colorByDataSet != null) {
+                for (int i = 0; i < count; i++) {
+                        int icolor = colors[i];
+                        g.drawImage(coloredPsyms[icolor], ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                }
+            } else {
+                for (int i = 0; i < count; i++) {
+                        g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                }
+            }
+
+            return count;
+
+        }
+
+        /**
+         * Render the psyms individually.  This is the highest fidelity rendering, and
+         * should be used in printing.
+         * On 20080206, this was measured to run at 45pts/millisecond in FillStyle.FILL
+         * On 20080206, this was measured to run at 9pts/millisecond in FillStyle.OUTLINE
+         */
+        private int renderDraw(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, DasProgressMonitor mon) {
+
+            float fsymSize = (float) symSize;
+
+            if (colorByDataSetId != null) {
+                colorByDataSet = (VectorDataSet) dataSet.getPlanarView(colorByDataSetId);
+            }
+
+            graphics.setStroke(new BasicStroke((float) lineWidth));
+
+
+            IndexColorModel icm = colorBar.getIndexColorModel();
+            Color[] ccolors = new Color[icm.getMapSize()];
+            for (int j = 0; j < icm.getMapSize(); j++) {
+                ccolors[j] = new Color(icm.getRGB(j));
+            }
+
+            if (colorByDataSet != null) {
+                for (int i = 0; i < count; i++) {
+                    graphics.setColor( ccolors[colors[i]] );
+                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                }
+
+            } else {
+                for (int i = 0; i < count; i++) {
+                    psym.draw(graphics, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, fsymSize, fillStyle);
+                }
+            }
+
+            return count;
+
+        }
+
+        public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
+            int i;
+            if (stampPsyms && !parent.getCanvas().isPrintingThread()) {
+                i = renderStamp(graphics, xAxis, yAxis, vds, mon);
+            } else {
+                i = renderDraw(graphics, xAxis, yAxis, vds, mon);
+            }
+            return i;
+        }
+
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, DasProgressMonitor mon) {
+
+            VectorDataSet colorByDataSet = null;
+            Units cunits = null;
+            if (colorByDataSetId != null) {
+                colorByDataSet = (VectorDataSet) dataSet.getPlanarView(colorByDataSetId);
+                cunits = colorByDataSet.getYUnits();
+            }
+
+
+            Units xUnits = xAxis.getUnits();
+            Units yUnits = yAxis.getUnits();
+
+            double x, y;
+            int fx, fy;
+
+            psymsPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
+            ipsymsPath = new int[(lastIndex - firstIndex) * 2];
+            colors = new int[lastIndex - firstIndex + 2];
+
+            int index = firstIndex;
+
+            x = dataSet.getXTagDouble(index, xUnits);
+            y = dataSet.getDouble(index, yUnits);
+            fx = (int) xAxis.transform(x, xUnits);
+            fy = (int) yAxis.transform(y, yUnits);
+
+            int i = 0;
+            for (; index < lastIndex; index++) {
+                x = dataSet.getXTagDouble(index, xUnits);
+                y = dataSet.getDouble(index, yUnits);
+
+                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+                fx = (int) xAxis.transform(x, xUnits);
+                fy = (int) yAxis.transform(y, yUnits);
+
+                if (isValid) {
+                    ipsymsPath[i * 2] = fx;
+                    ipsymsPath[i * 2 + 1] = fy;
+                    if (colorByDataSet != null) {
+                        colors[i] = colorBar.indexColorTransform(colorByDataSet.getDouble(index, cunits), cunits);
+                    }
+                    i++;
+                }
+            }
+
+            count = i;
+
+        }
+
+        public boolean acceptContext(Point2D.Double dp) {
+            double rad = Math.max(symSize, 5);
+
+            for (int index = firstIndex; index < lastIndex; index++) {
+                int i = index - firstIndex;
+                if (dp.distance(ipsymsPath[i * 2], ipsymsPath[i * 2 + 1]) < rad) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
     /**
      * updates the image of a psym that is stamped
@@ -129,18 +283,24 @@ public class SeriesRenderer extends Renderer implements Displayable {
         g.setStroke(new BasicStroke((float) lineWidth));
 
         psym.draw(g, dcmx, dcmy, (float) symSize, fillStyle);
-        psymImage = image;
+        psymImage =
+                image;
 
         if (colorBar != null) {
             IndexColorModel model = colorBar.getIndexColorModel();
-            coloredPsyms = new Image[model.getMapSize()];
-            for (int i = 0; i < model.getMapSize(); i++) {
+            coloredPsyms =
+                    new Image[model.getMapSize()];
+            for (int i = 0; i <
+                    model.getMapSize(); i++) {
                 Color c = new Color(model.getRGB(i));
-                image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
-                g = (Graphics2D) image.getGraphics();
+                image =
+                        new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
+                g =
+                        (Graphics2D) image.getGraphics();
                 if (parent != null) {
                     g.setBackground(parent.getBackground());
                 }
+
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
                 g.setColor(c);
                 g.setStroke(new BasicStroke((float) lineWidth));
@@ -148,171 +308,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 psym.draw(g, dcmx, dcmy, (float) symSize, this.fillStyle);
                 coloredPsyms[i] = image;
             }
+
         }
-        
-        cmx= (int)dcmx;
-        cmy= (int)dcmy;
-        
+
+        cmx = (int) dcmx;
+        cmy =
+                (int) dcmy;
+
         refresh();
-    }
-
-    /**
-     * render the psyms by stamping an image at the psym location.  The intent is to
-     * provide fast rendering by reducing fidelity.
-     * On 20080206, this was measured to run at 320pts/millisecond for FillStyle.FILL
-     * On 20080206, this was measured to run at 300pts/millisecond in FillStyle.OUTLINE
-     * @param g
-     * @param xAxis
-     * @param yAxis
-     * @param vds
-     * @param mon
-     * @return
-     */
-    private int renderPsymsStamp(Graphics g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
-
-        Units yunits = vds.getYUnits();
-        Units xunits = vds.getXUnits();
-
-        VectorDataSet colorByDataSet = null;
-        if (colorByDataSetId != null) {
-            colorByDataSet = (VectorDataSet) vds.getPlanarView(colorByDataSetId);
-        }
-
-        //System.err.println("psymsPath= " + GraphUtil.describe(psymsPath, false));
-        double[] coords = new double[6];
-        PathIterator it = psymsPath.getPathIterator(null);
-
-        int i = firstIndex - 1; // first point is always a SEG_MOVETO
-
-        if (colorByDataSet != null) {
-            Units cunits = colorBar.getUnits();
-            while (!it.isDone()) {
-
-                int type = it.currentSegment(coords);
-                Datum d = vds.getDatum(Math.max(i, 0));
-                //System.err.println("i:" + i + "  " + type + " " + coords[0] + "," + coords[1] + "  " + d);
-
-                boolean drawIt = type == PathIterator.SEG_LINETO;
-
-                if (drawIt) {
-                    int icolor = colorBar.indexColorTransform(colorByDataSet.getDouble(i, cunits), cunits);
-                    g.drawImage(coloredPsyms[icolor], (int) coords[0] - cmx, (int) coords[1] - cmy, parent);
-                }
-
-                i++;
-                it.next();
-
-                if (mon.isCancelled()) {
-                    break;
-                }
-                mon.setTaskProgress(Math.min(i - firstIndex, lastIndex - firstIndex));
-            }
-        } else {
-            while (!it.isDone()) {
-
-                boolean drawIt = it.currentSegment(coords) == PathIterator.SEG_LINETO;
-
-                if (drawIt) {
-                    g.drawImage(psymImage, (int) coords[0] - cmx, (int) coords[1] - cmy, parent);
-                    i++;
-                }
-
-                it.next();
-                if (mon.isCancelled()) {
-                    break;
-                }
-                mon.setTaskProgress(Math.min(i - firstIndex, lastIndex - firstIndex));
-            }
-        }
-
-        if (dataSetClipped) {
-            parent.postMessage(this, "rendering stopped!cat " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
-        }
-
-        return vds.getXLength();
-
-    }
-
-    /**
-     * Render the psyms individually.  This is the highest fidelity rendering, and
-     * should be used in printing.
-     * On 20080206, this was measured to run at 45pts/millisecond in FillStyle.FILL
-     * On 20080206, this was measured to run at 9pts/millisecond in FillStyle.OUTLINE
-     * @param graphics
-     * @param xAxis
-     * @param yAxis
-     * @param dataSet
-     * @param mon
-     * @return
-     */
-    private int renderPsyms(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, DasProgressMonitor mon) {
-
-        Units zunits = null;
-
-        float fsymSize = (float) symSize;
-        mon.setTaskSize(lastIndex - firstIndex);
-        mon.started();
-
-        if (colorByDataSetId != null) {
-            colorByDataSet = (VectorDataSet) dataSet.getPlanarView(colorByDataSetId);
-            zunits = colorBar.getUnits();
-        }
-
-        //System.err.println("psymsPath= " + GraphUtil.describe(psymsPath, false));
-
-        PathIterator it = psymsPath.getPathIterator(null);
-        //PathIterator it = path.getPathIterator(null);
-
-        double[] coords = new double[6];
-
-        double lastX = Double.NaN;
-
-        graphics.setStroke(new BasicStroke((float) lineWidth));
-
-        int i = firstIndex - 1;
-
-        if (colorByDataSet != null) {
-            while (!it.isDone()) {
-
-                boolean drawIt = it.currentSegment(coords) == PathIterator.SEG_LINETO;
-
-                if (drawIt) {
-                    graphics.setColor(new Color(colorBar.rgbTransform(colorByDataSet.getDouble(i, zunits), zunits)));
-                    psym.draw(graphics, coords[0], coords[1], fsymSize, fillStyle);
-                }
-
-                i++;
-                it.next();
-
-                if (mon.isCancelled()) {
-                    break;
-                }
-                mon.setTaskProgress(Math.min(i - firstIndex, lastIndex - firstIndex));
-            }
-        } else {
-            while (!it.isDone()) {
-                int type = it.currentSegment(coords);
-                boolean drawIt = it.currentSegment(coords) == PathIterator.SEG_LINETO;
-
-                if (drawIt) {
-                    psym.draw(graphics, coords[0], coords[1], fsymSize, fillStyle);
-                }
-
-                i++;
-                it.next();
-
-                if (mon.isCancelled()) {
-                    break;
-                }
-                mon.setTaskProgress(Math.min(i - firstIndex, lastIndex - firstIndex));
-            }
-        }
-
-        if (dataSetClipped) {
-            parent.postMessage(this, "rendering stopped!cat " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
-        }
-
-        return i;
     }
 
     private void reportCount() {
@@ -352,11 +355,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
-        // sometimes this happens, TODO: investigate
+// sometimes this happens, TODO: investigate
         if (path == null) {
             return;
         }
-
 
         DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set " + dataSet);
 
@@ -394,44 +396,46 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         if (r == null) {
             xmax = xAxis.getDataMaximum().doubleValue(xUnits);
-            xmin = xAxis.getDataMinimum().doubleValue(xUnits);
-            ymax = yAxis.getDataMaximum().doubleValue(yUnits);
-            ymin = yAxis.getDataMinimum().doubleValue(yUnits);
+            xmin =
+                    xAxis.getDataMinimum().doubleValue(xUnits);
+            ymax =
+                    yAxis.getDataMaximum().doubleValue(yUnits);
+            ymin =
+                    yAxis.getDataMinimum().doubleValue(yUnits);
         } else {
             xmin = xAxis.invTransform((int) r.getX()).doubleValue(xUnits);
-            xmax = xAxis.invTransform((int) (r.getX() + r.getWidth())).doubleValue(xUnits);
-            ymin = yAxis.invTransform((int) r.getY()).doubleValue(yUnits);
-            ymax = yAxis.invTransform((int) (r.getY() + r.getHeight())).doubleValue(yUnits);
+            xmax =
+                    xAxis.invTransform((int) (r.getX() + r.getWidth())).doubleValue(xUnits);
+            ymin =
+                    yAxis.invTransform((int) r.getY()).doubleValue(yUnits);
+            ymax =
+                    yAxis.invTransform((int) (r.getY() + r.getHeight())).doubleValue(yUnits);
         }
 
         graphics.setColor(color);
 
         if (psym != DefaultPlotSymbol.NONE) {
-            int i;
 
-            if ( stampPsyms && ! parent.getCanvas().isPrintingThread() ) {
-                i = renderPsymsStamp(graphics, xAxis, yAxis, dataSet, mon);
-            } else {
-                i = renderPsyms(graphics, xAxis, yAxis, dataSet, mon);
-            }
+            int i = psymsElement.render(graphics, xAxis, yAxis, dataSet, mon);
 
-            //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
-
+//double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
             if (i - firstIndex == 0) {
                 parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null);
             }
+
             mon.finished();
         }
 
-        //g.drawString( "renderCount="+renderCount+" updateCount="+updateImageCount,xAxis.getColumn().getDMinimum()+5, yAxis.getRow().getDMinimum()+20 );
+//g.drawString( "renderCount="+renderCount+" updateCount="+updateImageCount,xAxis.getColumn().getDMinimum()+5, yAxis.getRow().getDMinimum()+20 );
         long milli = System.currentTimeMillis();
         long renderTime = (milli - timer0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
-        
-        setRenderPointsPerMillisecond( dppms );
-        
+
+        setRenderPointsPerMillisecond(dppms);
+
         logger.finer("render: " + renderTime + " total:" + (milli - lastUpdateMillis) + " fps:" + (1000. / (milli - lastUpdateMillis)) + " pts/ms:" + dppms);
-        lastUpdateMillis = milli;
+        lastUpdateMillis =
+                milli;
     }
     boolean updating = false;
 
@@ -444,6 +448,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         updating = true;
 
         updateImageCount++;
+
         reportCount();
 
         try {
@@ -488,7 +493,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
         Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
         if (xMono != null && xMono.booleanValue()) {
             ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-            ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1;
+            ixmax =
+                    DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1;
         } else {
             ixmin = 0;
             ixmax = dataSet.getXLength();
@@ -502,7 +508,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
         double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
 
         /* fuzz the xSampleWidth */
-        xSampleWidth = xSampleWidth * 1.10;
+        xSampleWidth =
+                xSampleWidth * 1.10;
 
         if (reference != null && reference.getUnits() != yAxis.getUnits()) {
             // switch the units to the axis units.
@@ -540,14 +547,34 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 y0 = y;
                 firstIndex = index;  // TODO: what if no valid points?
                 index++;
+
                 break;
+
             }
+
         }
+
+        // find the last valid point, minding the dataSetSizeLimit
+        int pointsPlotted = 0;
+        for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
+            y = dataSet.getDouble(index, yUnits);
+
+            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+            if (isValid) {
+                pointsPlotted++;
+            }
+
+        }
+        lastIndex = index;
+
+        index = firstIndex;
+        x = (double) dataSet.getXTagDouble(index, xUnits);
+        y = (double) dataSet.getDouble(index, yUnits);
 
         // first point //
         fx = (float) xAxis.transform(x, xUnits);
         fy = (float) yAxis.transform(y, yUnits);
-
         if (histogram) {
             float fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
             newPath.moveTo(fx1, fy);
@@ -563,14 +590,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
             fillPath.lineTo(fx, fy);
             newPymsPath.moveTo(fx, fy); // lineTo will be done later
         }
+
         fx0 = fx;
         fy0 = fy;
 
-        int pointsPlotted = 1;
-
         if (psymConnector != PsymConnector.NONE || fillToReference) {
             // now loop through all of them. //
-            for (; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
+
+            for (; index < lastIndex; index++) {
 
                 x = dataSet.getXTagDouble(index, xUnits);
                 y = dataSet.getDouble(index, yUnits);
@@ -599,6 +626,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                             newPath.lineTo(fx, fy); // this is the typical path
                             fillPath.lineTo(fx, fy);
                         }
+
                     } else {
                         // introduce break in line
                         if (histogram) {
@@ -607,7 +635,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
                             fillPath.lineTo(fx1, fy0);
                             fillPath.lineTo(fx1, fyref);
 
-                            fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                            fx1 =
+                                    (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
                             newPath.moveTo(fx1, fy);
                             newPath.lineTo(fx, fy);
                             fillPath.moveTo(fx1, fyref);
@@ -621,41 +650,22 @@ public class SeriesRenderer extends Renderer implements Displayable {
                             fillPath.moveTo(fx, fyref);
                             fillPath.lineTo(fx, fy);
                         }
+
                     } // else introduce break in line
                     x0 = x;
                     y0 = y;
                     fx0 = fx;
                     fy0 = fy;
                     pointsPlotted++;
+
                 } else {
                     newPath.moveTo(fx0, fy0); // place holder
                 }
 
-            } // for ( ; index < ixmax && pointsPlotted < dataSetSizeLimit; index++ )
+            } // for ( ; index < ixmax && lastIndex; index++ )
         }
 
-        lastIndex = index;
-
-        if (psym != DefaultPlotSymbol.NONE) {
-            pointsPlotted = 0;
-            for ( index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-                x = dataSet.getXTagDouble(index, xUnits);
-                y = dataSet.getDouble(index, yUnits);
-
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-
-                fx = (float) xAxis.transform(x, xUnits);
-                fy = (float) yAxis.transform(y, yUnits);
-
-                if (isValid) {
-                    newPymsPath.lineTo(fx, fy);
-                    pointsPlotted++;
-                } else {
-                    newPymsPath.moveTo(fx, fy);
-                }
-            }
-            lastIndex = index;
-        }
+        psymsElement.update(xAxis, yAxis, dataSet, monitor);
 
         if (index < ixmax) {
             dataSetClipped = true;
@@ -664,46 +674,95 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         fillPath.lineTo(fx0, fyref);
-
         this.fillToRefPath = fillPath;
+
 
         if (this.fillToReference && fillToRefPath != null) {
             if (simplifyPaths) {
                 fillToRefPath = GraphUtil.reducePath(fillToRefPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
             }
+
         }
 
         //System.err.println(GraphUtil.describe(newPath, true));
         this.path = newPath;
-        this.psymsPath = newPymsPath;
 
-        // draw the stored path that we calculated in updatePlotImage
+
         if (simplifyPaths && colorByDataSet == null) {
             if (histogram) {
                 this.path = newPath;
-                this.psymsPath = GraphUtil.reducePath(newPymsPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
             } else {
                 this.path = GraphUtil.reducePath(newPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
-                this.psymsPath = GraphUtil.reducePath( newPymsPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex) );
             }
-        }
 
+        }
         if (getParent() != null) {
             getParent().repaint();
         }
-        
-        
-        logger.fine("done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
-        updating = false;
-                 
+
+        logger.fine(
+                "done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
+        updating =
+                false;
         long milli = System.currentTimeMillis();
         long renderTime = (milli - t0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
-        
-        setUpdatesPointsPerMillisecond( dppms );
+
+        setUpdatesPointsPerMillisecond(dppms);
     }
 
-    
+    protected void installRenderer() {
+        if (!DasApplication.getDefaultApplication().isHeadless()) {
+            DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
+            DasPlot p = parent;
+            mouseAdapter.addMouseModule(new MouseModule(p, new LengthDragRenderer(p, p.getXAxis(), p.getYAxis()), "Length"));
+        }
+
+        updatePsym();
+    }
+
+    protected void uninstallRenderer() {
+    }
+
+    public Element getDOMElement(
+            Document document) {
+        return null;
+    }
+
+    public javax.swing.Icon getListIcon() {
+        Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) i.getGraphics();
+        g.setRenderingHints(DasProperties.getRenderingHints());
+        g.setBackground(parent.getBackground());
+
+        // leave transparent if not white
+        if (color.equals(Color.white)) {
+            g.setColor(Color.GRAY);
+        } else {
+            g.setColor(new Color(0, 0, 0, 0));
+        }
+
+        g.fillRect(0, 0, 15, 10);
+
+        if (fillToReference) {
+            g.setColor(fillColor);
+            Polygon p = new Polygon(new int[]{2, 13, 13, 2}, new int[]{3, 7, 10, 10}, 4);
+            g.fillPolygon(p);
+        }
+
+        g.setColor(color);
+        Stroke stroke0 = g.getStroke();
+        getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
+        g.setStroke(stroke0);
+        psym.draw(g, 7, 5, 3.f, fillStyle);
+        return new ImageIcon(i);
+    }
+
+    public String getListLabel() {
+        return String.valueOf(this.getDataSetDescriptor());
+    }
+
+// ------- Begin Properties ---------------------------------------------  //
     public PsymConnector getPsymConnector() {
         return psymConnector;
     }
@@ -715,6 +774,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refreshImage();
             propertyChangeSupport.firePropertyChange("psymConnector", old, p);
         }
+
     }
 
     /** Getter for property psym.
@@ -731,6 +791,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (psym == null) {
             throw new NullPointerException("psym cannot be null");
         }
+
         if (psym != this.psym) {
             Object oldValue = this.psym;
             this.psym = (DefaultPlotSymbol) psym;
@@ -738,6 +799,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refreshImage();
             propertyChangeSupport.firePropertyChange("psym", oldValue, psym);
         }
+
     }
 
     /** Getter for property symsize.
@@ -759,6 +821,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refreshImage();
             propertyChangeSupport.firePropertyChange("symSize", new Double(old), new Double(symSize));
         }
+
     }
 
     /** Getter for property color.
@@ -780,6 +843,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             propertyChangeSupport.firePropertyChange("color", old, color);
             updatePsym();
         }
+
     }
 
     public double getLineWidth() {
@@ -794,22 +858,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refreshImage();
             propertyChangeSupport.firePropertyChange("lineWidth", new Double(old), new Double(f));
         }
-    }
 
-    protected void installRenderer() {
-        if (!DasApplication.getDefaultApplication().isHeadless()) {
-            DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
-            DasPlot p = parent;
-            mouseAdapter.addMouseModule(new MouseModule(p, new LengthDragRenderer(p, p.getXAxis(), p.getYAxis()), "Length"));
-        }
-        updatePsym();
-    }
-
-    protected void uninstallRenderer() {
-    }
-
-    public Element getDOMElement(Document document) {
-        return null;
     }
 
     /** Getter for property antiAliased.
@@ -842,38 +891,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refreshImage();
             propertyChangeSupport.firePropertyChange("histogram", old, antiAliased);
         }
-    }
 
-    public String getListLabel() {
-        return String.valueOf(this.getDataSetDescriptor());
-    }
-
-    public javax.swing.Icon getListIcon() {
-        Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = (Graphics2D) i.getGraphics();
-        g.setRenderingHints(DasProperties.getRenderingHints());
-        g.setBackground(parent.getBackground());
-
-        // leave transparent if not white
-        if (color.equals(Color.white)) {
-            g.setColor(Color.GRAY);
-        } else {
-            g.setColor(new Color(0, 0, 0, 0));
-        }
-        g.fillRect(0, 0, 15, 10);
-
-        if (fillToReference) {
-            g.setColor(fillColor);
-            Polygon p = new Polygon(new int[]{2, 13, 13, 2}, new int[]{3, 7, 10, 10}, 4);
-            g.fillPolygon(p);
-        }
-
-        g.setColor(color);
-        Stroke stroke0 = g.getStroke();
-        getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
-        g.setStroke(stroke0);
-        psym.draw(g, 7, 5, 3.f, fillStyle);
-        return new ImageIcon(i);
     }
     /**
      * Holds value of property selected.
@@ -919,6 +937,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refresh();
             propertyChangeSupport.firePropertyChange("fillColor", old, color);
         }
+
     }
     /**
      * Holds value of property colorByDataSetId.
@@ -938,10 +957,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param colorByDataSetId New value of property colorByDataSetId.
      */
     public void setColorByDataSetId(String colorByDataSetId) {
-        String oldVal= this.colorByDataSetId;
+        String oldVal = this.colorByDataSetId;
         this.colorByDataSetId = colorByDataSetId;
         refresh();
-        propertyChangeSupport.firePropertyChange("colorByDataSetId", oldVal, colorByDataSetId );
+        propertyChangeSupport.firePropertyChange("colorByDataSetId", oldVal, colorByDataSetId);
     }
     /**
      * Holds value of property colorBar.
@@ -968,6 +987,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 if (colorByDataSetId != null) {
                     refresh();
                 }
+
             }
         });
         refreshImage();
@@ -997,6 +1017,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refresh();
             propertyChangeSupport.firePropertyChange("fillToReference", old, fillToReference);
         }
+
     }
     /**
      * Holds value of property reference.
@@ -1022,6 +1043,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             refreshImage();
             propertyChangeSupport.firePropertyChange("reference", old, reference);
         }
+
     }
     /**
      * Holds value of property colorByDataSet.
@@ -1064,9 +1086,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void setResetDebugCounters(boolean resetDebugCounters) {
         if (resetDebugCounters) {
             renderCount = 0;
-            updateImageCount = 0;
+            updateImageCount =
+                    0;
             refresh();
         }
+
     }
     /**
      * Holds value of property simplifyPaths.
@@ -1125,11 +1149,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if ((!accept) && path != null && path.intersects(dp.x - 5, dp.y - 5, 10, 10)) {
             accept = true;
         }
-        
-        if ((!accept) && psymsPath != null && psymsPath.intersects(dp.x - 5, dp.y - 5, 10, 10)) {
-            accept= true;
+
+        if ((!accept) && psymsElement.acceptContext(dp)) {
+            accept = true;
         }
-        
+
         return accept;
     }
     /**
@@ -1157,9 +1181,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         refreshImage();
         propertyChangeSupport.firePropertyChange("dataSetSizeLimit", new Integer(oldDataSetSizeLimit), new Integer(dataSetSizeLimit));
     }
-
     private double updatesPointsPerMillisecond;
-
     public static final String PROP_UPDATESPOINTSPERMILLISECOND = "updatesPointsPerMillisecond";
 
     public double getUpdatesPointsPerMillisecond() {
@@ -1171,10 +1193,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         this.updatesPointsPerMillisecond = newupdatesPointsPerMillisecond;
         propertyChangeSupport.firePropertyChange(PROP_UPDATESPOINTSPERMILLISECOND, oldupdatesPointsPerMillisecond, newupdatesPointsPerMillisecond);
     }
-
-    
     private double renderPointsPerMillisecond;
-
     public static final String PROP_RENDERPOINTSPERMILLISECOND = "renderPointsPerMillisecond";
 
     public double getRenderPointsPerMillisecond() {
@@ -1186,5 +1205,4 @@ public class SeriesRenderer extends Renderer implements Displayable {
         this.renderPointsPerMillisecond = newrenderPointsPerMillisecond;
         propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
     }
-
 }
