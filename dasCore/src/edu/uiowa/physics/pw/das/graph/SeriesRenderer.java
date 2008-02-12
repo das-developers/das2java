@@ -174,7 +174,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             colorByDataSet = (VectorDataSet) vds.getPlanarView(colorByDataSetId);
         }
 
-        System.err.println("psymsPath= " + GraphUtil.describe(psymsPath, false));
+        //System.err.println("psymsPath= " + GraphUtil.describe(psymsPath, false));
         double[] coords = new double[6];
         PathIterator it = psymsPath.getPathIterator(null);
 
@@ -254,7 +254,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             zunits = colorBar.getUnits();
         }
 
-        System.err.println("psymsPath= " + GraphUtil.describe(psymsPath, false));
+        //System.err.println("psymsPath= " + GraphUtil.describe(psymsPath, false));
 
         PathIterator it = psymsPath.getPathIterator(null);
         //PathIterator it = path.getPathIterator(null);
@@ -375,9 +375,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
 
-        String s = GraphUtil.describe(path, false);
-        s = GraphUtil.describe(path, false);
-        System.err.println(s);
+        //String s = GraphUtil.describe(path, false);
+        //s = GraphUtil.describe(path, false);
+        //System.err.println(s);
 
         psymConnector.draw(graphics, path, (float) lineWidth);
 
