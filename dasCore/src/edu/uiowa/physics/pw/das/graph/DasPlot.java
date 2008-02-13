@@ -202,8 +202,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         MouseModule x = CrossHairMouseModule.create(this);
         mouseAdapter.addMouseModule(x);
 
-        mouseAdapter.setSecondaryModule( new ZoomPanMouseModule( getXAxis(), getYAxis() ) );
-        
+        mouseAdapter.setSecondaryModule(new ZoomPanMouseModule(getXAxis(), getYAxis()));
+
         mouseAdapter.setPrimaryModule(x);
 
         mouseAdapter.addMouseModule(new BoxZoomMouseModule(this, null, getXAxis(), getYAxis()));
@@ -223,8 +223,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
 
     }
-    
-    public Action DUMP_TO_FILE_ACTION= new AbstractAction( "Dump Data Set to File" ) {
+    public Action DUMP_TO_FILE_ACTION = new AbstractAction("Dump Data Set to File") {
+
         public void actionPerformed(ActionEvent e) {
             if (renderers.isEmpty()) {
                 return;
@@ -473,29 +473,37 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 }
 
                 /* clear all the messages */
-                messages= new ArrayList();
-                
+                messages = new ArrayList();
+
                 plotGraphics.translate(-x + 1, -y + 1);
 
-                Color gridColor= new Color( 128,128,128,70 );
-                Color minorGridColor= new Color( 128,128,128,40 );
-                
+                Color gridColor = new Color(128, 128, 128, 70);
+                Color minorGridColor = new Color(128, 128, 128, 40);
+
                 if (drawMinorGrid) {
-                    DatumVector xticks=null;
-                    DatumVector yticks=null;
-                    if ( getXAxis().isVisible() ) xticks= getXAxis().getTickV().getMinorTicks();
-                    if ( getYAxis().isVisible() ) yticks= getYAxis().getTickV().getMinorTicks();
-                    plotGraphics.setColor( minorGridColor );
-                    drawGrid(plotGraphics, xticks, yticks );
+                    DatumVector xticks = null;
+                    DatumVector yticks = null;
+                    if (getXAxis().isVisible()) {
+                        xticks = getXAxis().getTickV().getMinorTicks();
+                    }
+                    if (getYAxis().isVisible()) {
+                        yticks = getYAxis().getTickV().getMinorTicks();
+                    }
+                    plotGraphics.setColor(minorGridColor);
+                    drawGrid(plotGraphics, xticks, yticks);
                 }
-                
+
                 if (drawGrid) {
-                    DatumVector xticks=null;
-                    DatumVector yticks=null;
-                    if ( getXAxis().isVisible() ) xticks= getXAxis().getTickV().getMajorTicks();
-                    if ( getYAxis().isVisible() ) yticks= getYAxis().getTickV().getMajorTicks();
-                    plotGraphics.setColor( gridColor );
-                    drawGrid(plotGraphics, xticks, yticks );
+                    DatumVector xticks = null;
+                    DatumVector yticks = null;
+                    if (getXAxis().isVisible()) {
+                        xticks = getXAxis().getTickV().getMajorTicks();
+                    }
+                    if (getYAxis().isVisible()) {
+                        yticks = getYAxis().getTickV().getMajorTicks();
+                    }
+                    plotGraphics.setColor(gridColor);
+                    drawGrid(plotGraphics, xticks, yticks);
                 }
 
                 drawContent(plotGraphics);
@@ -513,8 +521,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 if (renderers.size() == 0) {
                     postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
                     logger.info("dasPlot has no renderers");
-                } else if ( noneActive ) {
-                    postMessage( null, "(no active renderers)", DasPlot.INFO, null, null );
+                } else if (noneActive) {
+                    postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
                 }
             }
 
@@ -532,7 +540,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 logger.finest("recalc cacheImage, xmemento=" + xmemento + " dr=" + dr);
             }
         }
-        
+
         graphics.setColor(getForeground());
         graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
 
@@ -547,51 +555,52 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
 
         // --- draw messages ---
-        Font font0= graphics.getFont();
-        int msgem= (int)Math.max( 8, font0.getSize2D()/2 );
-        graphics.setFont( font0.deriveFont( (float)msgem ) );
-        int em= (int)getEmSize();
-        
-        int msgx= xAxis.getColumn().getDMinimum() + em;
-        int msgy= yAxis.getRow().getDMinimum() + em;
-        
-        Color warnColor= new Color( 255,255,100,200 );
-        Color errorColor= new Color( 255,140,140,200 );
-        for ( int i=0; i<messages.size(); i++ ) {
-            MessageDescriptor message= (MessageDescriptor)messages.get(i);
-            
-            GrannyTextRenderer gtr= new GrannyTextRenderer();
-            gtr.setString( graphics, message.text );
-            Rectangle mrect= gtr.getBounds();
-            mrect.translate( msgx, msgy );
-            Color backColor= GraphUtil.getRicePaperColor() ;
-            if ( message.messageType==DasPlot.WARNING ) {
-                backColor= warnColor;
-            } else if ( message.messageType==DasPlot.ERROR ) {
-                backColor= errorColor;
+        Font font0 = graphics.getFont();
+        int msgem = (int) Math.max(8, font0.getSize2D() / 2);
+        graphics.setFont(font0.deriveFont((float) msgem));
+        int em = (int) getEmSize();
+
+        int msgx = xAxis.getColumn().getDMinimum() + em;
+        int msgy = yAxis.getRow().getDMinimum() + em;
+
+        Color warnColor = new Color(255, 255, 100, 200);
+        Color errorColor = new Color(255, 140, 140, 200);
+        for (int i = 0; i < messages.size(); i++) {
+            MessageDescriptor message = (MessageDescriptor) messages.get(i);
+
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(graphics, message.text);
+            Rectangle mrect = gtr.getBounds();
+            mrect.translate(msgx, msgy);
+            Color backColor = GraphUtil.getRicePaperColor();
+            if (message.messageType == DasPlot.WARNING) {
+                backColor = warnColor;
+            } else if (message.messageType == DasPlot.ERROR) {
+                backColor = errorColor;
             }
-            graphics.setColor( backColor );
-            graphics.fillRoundRect( mrect.x-em/4, mrect.y, mrect.width+em/2, mrect.height, 5, 5 );
-            graphics.setColor( getForeground() );
-            graphics.drawRoundRect( mrect.x-em/4, mrect.y, mrect.width+em/2, mrect.height, 5, 5 );
-            gtr.draw( graphics, msgx, msgy );
-            message.bounds= mrect;
-            
-            msgy+= gtr.getHeight() + msgem/2;
-            
+            graphics.setColor(backColor);
+            graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+            graphics.setColor(getForeground());
+            graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+            gtr.draw(graphics, msgx, msgy);
+            message.bounds = mrect;
+
+            msgy += gtr.getHeight() + msgem / 2;
+
         }
-        graphics.setFont( font0 );
-        
+        graphics.setFont(font0);
+
         graphics.translate(getX(), getY());
-        
+
         getMouseAdapter().paint(graphics);
 
     /*if ( saveClip!=null ) {
     graphics1.setClip( saveClip );
     }*/
     }
-    
+
     private class MessageDescriptor {
+
         /**
          * the renderer posting the text, or null if the plot owns the text
          */
@@ -601,21 +610,20 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         Datum x;
         Datum y;
         Rectangle bounds; // stores the drawn boundaries of the message for context menu.
-        MessageDescriptor( Renderer renderer, String text, int messageType, Datum x, Datum y ) {
-            this.renderer= renderer;
-            this.text= text;
-            this.messageType= messageType;
-            this.x= x;
-            this.y= y;
+
+        MessageDescriptor(Renderer renderer, String text, int messageType, Datum x, Datum y) {
+            this.renderer = renderer;
+            this.text = text;
+            this.messageType = messageType;
+            this.x = x;
+            this.y = y;
         }
     }
-    
-    public static final int INFO=0;
-    public static final int WARNING=1;
-    public static final int ERROR=2;
-    
+    public static final int INFO = 0;
+    public static final int WARNING = 1;
+    public static final int ERROR = 2;
     List messages;
-    
+
     /**
      * Notify user of an exception, in the context of the plot.  A position in
      * the data space may be specified to locate the text within the data context.
@@ -630,25 +638,25 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @param x if non-null, the location on the x axis giving context for the text.
      * @param y if non-null, the location on the y axis giving context for the text.
      */
-    public void postMessage( Renderer renderer, String message, int messageType, Datum x, Datum y ) {
-        messages.add( new MessageDescriptor( renderer, message, messageType, x, y ) );
+    public void postMessage(Renderer renderer, String message, int messageType, Datum x, Datum y) {
+        messages.add(new MessageDescriptor(renderer, message, messageType, x, y));
     }
-    
+
     /**
      * notify user of an exception, in the context of the plot.
      */
-    public void postException( Renderer renderer, Exception exception ) {
-        postMessage( renderer, exception.getMessage(), ERROR, null, null );
+    public void postException(Renderer renderer, Exception exception) {
+        postMessage(renderer, exception.getMessage(), ERROR, null, null);
     }
-        
+
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
-        if (yticks!=null) {
+        if (yticks != null && yticks.getUnits().isConvertableTo(yAxis.getUnits())) {
             for (int i = 0; i < yticks.getLength(); i++) {
                 int y = (int) yAxis.transform(yticks.get(i));
                 g.drawLine(getX(), y, getX() + getWidth(), y);
             }
         }
-        if (xticks!=null) {
+        if (xticks != null && xticks.getUnits().isConvertableTo(xAxis.getUnits())) {
             for (int i = 0; i < xticks.getLength(); i++) {
                 int x = (int) xAxis.transform(xticks.get(i));
                 g.drawLine(x, getY(), x, getY() + getHeight());
@@ -1212,8 +1220,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public boolean isPreviewEnabled() {
         return this.preview;
     }
-    
-    public void setVisible( boolean visible ) {
+
+    public void setVisible(boolean visible) {
         super.setVisible(visible);
         xAxis.setVisible(visible);
         yAxis.setVisible(visible);
