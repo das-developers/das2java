@@ -267,9 +267,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
     private void updatePsym() {
         int sx = (int) Math.ceil(symSize + 2 * lineWidth);
         int sy = (int) Math.ceil(symSize + 2 * lineWidth);
-        double dcmx = (int) (lineWidth + symSize / 2);
-        double dcmy = (int) (lineWidth + symSize / 2);
-
+        double dcmx, dcmy;
+        dcmx =  (lineWidth + ( int ) ( symSize / 2) ) + 0.5;
+        dcmy =  (lineWidth + ( int ) ( symSize / 2) ) + 0.5;
         BufferedImage image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -876,6 +876,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void setAntiAliased(boolean antiAliased) {
         boolean old = this.antiAliased;
         this.antiAliased = antiAliased;
+        updatePsym();
         refreshImage();
         propertyChangeSupport.firePropertyChange("antiAliased", old, antiAliased);
     }
