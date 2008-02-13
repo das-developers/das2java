@@ -257,11 +257,12 @@ public class GraphUtil {
     
     public static Renderer guessRenderer( DataSet ds ) {
         Renderer rend=null;
-        if ( ds instanceof VectorDataSet ) {
+        if ( ds instanceof VectorDataSet ) {// TODO use SeriesRenderer
             if ( ds.getXLength() > 10000 ) {
                 rend= new ImageVectorDataSetRenderer(new ConstantDataSetDescriptor(ds));
             } else {
-                rend= new SymbolLineRenderer( ds );
+                rend= new SymbolLineRenderer( );
+                rend.setDataSet( ds ); 
                 ((SymbolLineRenderer)rend).setPsym( Psym.DOTS );
                 ((SymbolLineRenderer)rend).setSymSize( 2.0 );
             }
@@ -477,4 +478,23 @@ public class GraphUtil {
     public static Color getRicePaperColor() {
         return new Color( 255, 255, 255, 128 );
     }
+
+    public static String describe(GeneralPath path,boolean enumeratePoints) {
+        PathIterator it= path.getPathIterator(null);
+        int count=0;
+        int lineToCount=0;
+        double[] coords= new double[6];
+        while ( ! it.isDone() ) {
+            int type= it.currentSegment(coords);
+            if ( type==PathIterator.SEG_LINETO ) lineToCount++;
+            if ( enumeratePoints ) System.err.println( " "+coords[0]+" "+coords[1] );
+            count++;
+            it.next();
+        }
+        return "count: "+count + "  lineToCount: "+lineToCount;
+    }
+    
+    //TODO:  sun.awt.geom.Curve and sun.awt.geom.Crossings are GPL open-source, so
+    // these methods will provide reliable methods for getting rectangle, line 
+    // intersections.
 }
