@@ -95,13 +95,18 @@ public class PsymConnector implements Enumeration, Displayable {
             g.setStroke(s);
         }
     }
-    
+
+    /**
+     * See draw( Graphics2D, GeneralPath, float ) for drawing traces.  This method
+     * is still supported for drawing icons, etc.
+     * @param g
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @param width
+     */
     public void drawLine(Graphics2D g, double x1, double y1, double x2, double y2, float width ) {
-        // jbf: this thing really wants a state, especially if it is going to
-        // keep track of the dash phase between calls.  Perhaps this needs a
-        // state object to go with it.
-        // eew: Creating a GeneralPath object for the line removes the need to
-        // keep track of the dash phase.
         if ( stroke==null ) {
             return;
         } else {
