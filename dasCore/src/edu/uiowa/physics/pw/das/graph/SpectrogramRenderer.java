@@ -195,11 +195,19 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         renderCount++;
         reportCount();
         synchronized (lockObject) {
-            if (plotImage == null && lastException != null) {
-                if (lastException instanceof NoDataInIntervalException) {
-                    parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
+            if (plotImage == null) {
+                if (lastException != null) {
+                    if (lastException instanceof NoDataInIntervalException) {
+                        parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
+                    } else {
+                        parent.postException(this, lastException);
+                    }
                 } else {
-                    renderException(g2, xAxis, yAxis, lastException);
+                    if (getDataSet() == null) {
+                        parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+                    } else if (getDataSet().getXLength() == 0) {
+                        parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
+                    }
                 }
             } else if (plotImage != null) {
                 Point2D p;
@@ -282,7 +290,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
 
             BufferedImage plotImage2;  // index color model
-            
+
             synchronized (this) {
                 if (raster != null && xmemento != null && ymemento != null && xAxis.getMemento().equals(xmemento) && yAxis.getMemento().equals(ymemento) && colorBar.getMemento().equals(cmemento)) {
                     logger.fine("same xaxis, yaxis, reusing raster");
@@ -303,39 +311,48 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         getParent().repaint();
                         return;
 
-                    } else {
-
-                        RebinDescriptor xRebinDescriptor;
-                        xRebinDescriptor = new RebinDescriptor(
-                                xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-                                w,
-                                xAxis.isLog());
-
-                        RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                                yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-                                h,
-                                yAxis.isLog());
-
-                        imageXRange = xAxis.getDatumRange();
-                        imageYRange = yAxis.getDatumRange();
-
-                        logger.fine("rebinning to pixel resolution");
-
-                        DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
-
-                        long t0;
-
-                        t0 = System.currentTimeMillis();
-
-                        rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
-
-                        xmemento = xAxis.getMemento();
-                        ymemento = yAxis.getMemento();
-                        cmemento = colorBar.getMemento();
-
-                        raster = transformSimpleTableDataSet(rebinDataSet, colorBar);
-
                     }
+
+                    if (this.ds.getXLength() == 0) {
+                        logger.fine("got empty dataset, setting image to null");
+                        plotImage = null;
+                        rebinDataSet = null;
+                        imageXRange = null;
+                        imageYRange = null;
+                        getParent().repaint();
+                        return;
+                    }
+
+                    RebinDescriptor xRebinDescriptor;
+                    xRebinDescriptor = new RebinDescriptor(
+                            xAxis.getDataMinimum(), xAxis.getDataMaximum(),
+                            w,
+                            xAxis.isLog());
+
+                    RebinDescriptor yRebinDescriptor = new RebinDescriptor(
+                            yAxis.getDataMinimum(), yAxis.getDataMaximum(),
+                            h,
+                            yAxis.isLog());
+
+                    imageXRange = xAxis.getDatumRange();
+                    imageYRange = yAxis.getDatumRange();
+
+                    logger.fine("rebinning to pixel resolution");
+
+                    DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
+
+                    long t0;
+
+                    t0 = System.currentTimeMillis();
+
+                    rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
+
+                    xmemento = xAxis.getMemento();
+                    ymemento = yAxis.getMemento();
+                    cmemento = colorBar.getMemento();
+
+                    raster = transformSimpleTableDataSet(rebinDataSet, colorBar);
+
                 }
 
                 IndexColorModel model = colorBar.getIndexColorModel();
@@ -345,7 +362,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 r.setDataElements(0, 0, w, h, raster);
                 plotImage = plotImage2;
-                
+
             }
             synchronized (lockObject) {
                 plotImage = plotImage2;
@@ -404,7 +421,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
-    public static SpectrogramRenderer processSpectrogramElement(Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
+    public static SpectrogramRenderer processSpectrogramElement(
+            Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
         String dataSetID = element.getAttribute("dataSetID");
         DasColorBar colorbar = null;
 
