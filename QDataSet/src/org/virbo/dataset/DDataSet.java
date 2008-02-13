@@ -29,6 +29,8 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
     int len1;
     int len2;
     
+    private static final boolean RANGE_CHECK= false;
+    
     public static final String version="20070529";
     
     public static DDataSet createRank1( int len0 ) {
@@ -41,6 +43,24 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
     
     public static DDataSet createRank3( int len0, int len1, int len2 ) {
         return new DDataSet( 3, len0, len1, len2 );
+    }
+    
+    /**
+     * Makes an array from array of dimension sizes.  The result will have
+     * rank qube.length(). 
+     * @param qube array specifying the rank and size of each dimension
+     * @return DDataSet
+     */
+    public static DDataSet create( int[] qube ) {
+        if (qube.length == 1) {
+            return DDataSet.createRank1(qube[0]);
+        } else if (qube.length == 2) {
+            return DDataSet.createRank2(qube[0], qube[1]);
+        } else if (qube.length == 3) {
+            return DDataSet.createRank3(qube[0], qube[1], qube[2]);
+        } else {
+            throw new IllegalArgumentException("bad qube");
+        }
     }
     
     /** Creates a new instance of DDataSet */
@@ -74,26 +94,50 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
     }
 
     public double value(int i0) {
+        if ( RANGE_CHECK ) {
+            if ( i0<0 || i0>=len0 ) throw new IndexOutOfBoundsException("i0="+i0+" "+this);
+        }
         return back[ i0 ];
     }    
 
     public double value(int i0, int i1) {
+        if ( RANGE_CHECK ) {
+            if ( i0<0 || i0>=len0 ) throw new IndexOutOfBoundsException("i0="+i0+" "+this);
+            if ( i1<0 || i1>=len1 ) throw new IndexOutOfBoundsException("i1="+i1+" "+this);
+        }
         return back[ i0 * len1 + i1 ];
     }    
     
     public double value(int i0, int i1, int i2 ) {
+        if ( RANGE_CHECK ) {
+            if ( i0<0 || i0>=len0 ) throw new IndexOutOfBoundsException("i0="+i0+" "+this);
+            if ( i1<0 || i1>=len1 ) throw new IndexOutOfBoundsException("i1="+i1+" "+this);
+            if ( i2<0 || i2>=len2 ) throw new IndexOutOfBoundsException("i2="+i2+" "+this);
+        }
         return back[ i0 * len1 * len2 + i1 *len2 + i2 ];
     }    
 
     public void putValue( int i0, double value ) {
+        if ( RANGE_CHECK ) {
+            if ( i0<0 || i0>=len0 ) throw new IndexOutOfBoundsException("i0="+i0+" "+this);
+        }
         back[ i0 ]= value;
     }
 
     public void putValue( int i0, int i1, double value ) {
+        if ( RANGE_CHECK ) {
+            if ( i0<0 || i0>=len0 ) throw new IndexOutOfBoundsException("i0="+i0+" "+this);
+            if ( i1<0 || i1>=len1 ) throw new IndexOutOfBoundsException("i1="+i1+" "+this);
+        }        
         back[  i0 * len1 + i1 ]= value;
     }
 
     public void putValue( int i0, int i1, int i2, double value ) {
+        if ( RANGE_CHECK ) {
+            if ( i0<0 || i0>=len0 ) throw new IndexOutOfBoundsException("i0="+i0+" "+this);
+            if ( i1<0 || i1>=len1 ) throw new IndexOutOfBoundsException("i1="+i1+" "+this);
+            if ( i2<0 || i2>=len2 ) throw new IndexOutOfBoundsException("i2="+i2+" "+this);
+        }
         back[ i0 * len1 * len2 + i1 *len2 + i2  ]= value;
     }
 
@@ -122,10 +166,10 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
             QDataSet.TYPICAL_RANGE, QDataSet.UNITS, QDataSet.VALID_RANGE,
             QDataSet.CACHE_TAG, };
         
-        for ( int i=0; i<names.length; i++ ) {
-            if ( ds.property(names[i])!=null ) result.put( names[i], ds.property(names[i]) );
-        }
+        Map srcProps= DataSetUtil.getProperties(ds);
         
+        result.putAll(srcProps);
+                
         for ( int i=0; i<ds.rank(); i++ ) {
             QDataSet dep= (QDataSet) ds.property( "DEPEND_"+i );
             if ( dep==ds ) throw new IllegalArgumentException("dataset is dependent on itsself!");
@@ -169,7 +213,6 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
                 }
                 break;
             case 2: 
-                System.err.println(ds.toString());
                 result= createRank2( ds.length(), ds.length(0) ); 
                 for ( int i=0; i<ds.length(); i++ ) {
                     for ( int j=0; j<ds.length(i); j++ ) {

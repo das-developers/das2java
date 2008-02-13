@@ -111,13 +111,13 @@ public class VectorDataSetAdapter implements VectorDataSet {
     
     public edu.uiowa.physics.pw.das.dataset.DataSet getPlanarView(String planeID) {
         if ( planeID.equals("") ) return this;
-        if ( planeID.equals("plane0") && plane0!=null ) return new VectorDataSetAdapter( plane0, x );
+        if ( planeID.equals( QDataSet.PLANE_0 ) && plane0!=null ) return new VectorDataSetAdapter( plane0, x );
         return null;
     }
     
     public String[] getPlaneIds() {
         if ( plane0!=null ) {
-            return new String[] { "plane0" };
+            return new String[] { QDataSet.PLANE_0 };
         } else {
             return new String[0];
         }

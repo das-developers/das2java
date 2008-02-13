@@ -35,8 +35,18 @@ public class TableDataSetAdapter implements TableDataSet {
         if (yds == null) {
             yds = new IndexGenDataSet(z.length(0));
         }
+        if ( !DataSetUtil.isMonotonic(xds) ) {
+            QDataSet sort= DataSetOps.sort(xds);
+            z= DataSetOps.applyIndex( z, 0, sort, false );
+            xds= DataSetOps.applyIndex( xds, 0, sort, false );
+        }
+        if ( !DataSetUtil.isMonotonic(yds) ) {
+            QDataSet sort= DataSetOps.sort(yds);
+            z= DataSetOps.applyIndex( z, 1, sort, false );    
+            yds= DataSetOps.applyIndex( yds, 0, sort, false );
+        }
         return new TableDataSetAdapter(z, xds, yds);
-
+        
     }
 
     /** Creates a new instance of TableDataSetAdapter */

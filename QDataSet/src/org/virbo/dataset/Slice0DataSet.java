@@ -23,10 +23,9 @@ public class Slice0DataSet extends AbstractDataSet {
         putProperty( QDataSet.DEPEND_0, ds.property( QDataSet.DEPEND_1 ) );
         putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
         putProperty( QDataSet.DEPEND_2, null );
-        int[] qube= (int[]) ds.property( QDataSet.QUBE );
-        if ( qube!=null ) {
-            qube= DataSetOps.removeElement( qube, 0 );
-            putProperty( QDataSet.QUBE, qube );
+        QDataSet plane0= (QDataSet) ds.property( QDataSet.PLANE_0 );
+        if ( plane0!=null ) {
+            putProperty( QDataSet.PLANE_0, new Slice0DataSet( plane0, index ) );
         }
     }
 
@@ -76,8 +75,8 @@ public class Slice0DataSet extends AbstractDataSet {
     @Override
     public boolean equals(Object obj) {
         if ( obj==null ) return false;
-        if ( obj instanceof Slice0DataSetNew ) {
-            Slice0DataSetNew that= ((Slice0DataSetNew)obj);
+        if ( obj instanceof Slice0DataSet ) {
+            Slice0DataSet that= ((Slice0DataSet)obj);
             return that.ds.equals(this.ds) && that.index==this.index;
         } else {
             return false;

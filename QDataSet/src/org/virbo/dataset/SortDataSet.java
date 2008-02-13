@@ -12,7 +12,9 @@ package org.virbo.dataset;
 import java.util.HashMap;
 
 /**
- *
+ * wraps QDataSet, rearranging the elements of the first index as specified
+ * by a rank 1 data set of indeces
+ * 
  * @author jbf
  */
 public class SortDataSet extends AbstractDataSet {
@@ -20,15 +22,19 @@ public class SortDataSet extends AbstractDataSet {
     QDataSet source;
     QDataSet sort;
             
+    /**
+     * creates the SortDataSet
+     * @param source rank N dataset.  Supports plane_0.
+     * @param sort the indeces of the sort. 
+     */
     public SortDataSet( QDataSet source, QDataSet sort ) {
         this.source= source;
         this.sort= sort;
         properties= new HashMap();
         Object o= source.property( QDataSet.DEPEND_0 );
         if ( o!=null ) properties.put( QDataSet.DEPEND_0, new SortDataSet( (QDataSet)o, sort ) );
-        o= source.property( "plane0" );
-        if ( o!=null ) properties.put( "plane0", new SortDataSet( (QDataSet)o, sort ) );
-        if ( source.rank() > 1 ) throw new IllegalArgumentException("rank not supported");
+        o= source.property( QDataSet.PLANE_0 );
+        if ( o!=null ) properties.put( QDataSet.PLANE_0, new SortDataSet( (QDataSet)o, sort ) );
     }
 
     public int rank() {
@@ -40,11 +46,11 @@ public class SortDataSet extends AbstractDataSet {
     }
 
     public double value(int i0, int i1) {
-        throw new IllegalArgumentException("rank limit");
+        return source.value( (int)sort.value(i0), i1 );
     }
 
     public double value(int i0, int i1, int i2) {
-        throw new IllegalArgumentException("rank limit");
+        return source.value( (int)sort.value(i0), i1, i2 );
     }
 
     public Object property(String name) {
@@ -59,7 +65,7 @@ public class SortDataSet extends AbstractDataSet {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
         } else {
-            return source.property(name,i);
+            return source.property(name,(int)sort.value(i));
         }
     }
 
@@ -67,7 +73,7 @@ public class SortDataSet extends AbstractDataSet {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
         } else {
-            return source.property(name,i0,i1);
+            return source.property(name,(int)sort.value(i0),i1);
         }
     }
 
@@ -76,11 +82,11 @@ public class SortDataSet extends AbstractDataSet {
     }
 
     public int length(int i) {
-        return sort.length(i);
+        return source.length( (int)sort.value(i) );
     }
 
     public int length(int i, int j) {
-        return sort.length(i,j);
+        return source.length( (int)sort.value(i), j );
     }
     
 }

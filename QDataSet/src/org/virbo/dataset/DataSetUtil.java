@@ -224,14 +224,30 @@ public class DataSetUtil {
             name = "dataSet";
         }
 
-        String qubeStr = ds.property(QDataSet.QUBE) == null ? "*" : "";
+        String qubeStr = Boolean.TRUE.equals(ds.property(QDataSet.QUBE)) ? "" : "*";
 
-        StringBuffer dimStr = new StringBuffer("" + ds.length());
+        String[] depNames = new String[4];
+
+        for (int i = 0; i < 4; i++) {
+            depNames[i] = "";
+            QDataSet dep0 = (QDataSet) ds.property("DEPEND_" + i);
+            if (dep0 != null) {
+                String dname = (String) dep0.property(QDataSet.NAME);
+                if (dname != null) {
+                    if (dname.length() > 6) {
+                        dname = dname.substring(0, 6) + "*";
+                    }
+                    depNames[i] = dname + "=";
+                }
+            }
+        }
+
+        StringBuffer dimStr = new StringBuffer("" + depNames[0] + ds.length());
         if (ds.rank() > 1) {
-            dimStr.append("," + ds.length(0) + qubeStr);
+            dimStr.append("," + depNames[1] + ds.length(0) + qubeStr);
         }
         if (ds.rank() > 2) {
-            dimStr.append("," + ds.length(0, 0) + qubeStr);
+            dimStr.append("," + depNames[2] + ds.length(0, 0) + qubeStr);
         }
 
         String u = String.valueOf(ds.property(QDataSet.UNITS));
@@ -269,6 +285,36 @@ public class DataSetUtil {
             x0 = xds.value(i);
         }
         return cadenceS / cadenceN;
+    }
+
+    /**
+     * provides a convenient way of indexing qubes, returning an int[] of 
+     * length ds.rank() containing each dimension's length,
+     * or null if the dataset is not a qube.
+     * @param ds
+     * @return int[] of length ds.rank() containing each dimension's length, pr null.
+     */
+    public static int[] qubeDims(QDataSet ds) {
+        if ( ds.rank() > 4 ) throw new IllegalArgumentException("rank limit");
+        if (ds.rank() == 1) {
+            return new int[ds.length()];  // rank 1 datasets are trivially qubes
+        }
+        Boolean q = (Boolean) ds.property(QDataSet.QUBE);
+        if (q == null || q.equals(Boolean.FALSE)) {
+            return null;
+        }
+        int[] qube = new int[ds.rank()];
+        qube[0] = ds.length();
+        if (ds.rank() > 1) {
+            qube[1] = ds.length(0);
+            if (ds.rank() > 2) {
+                qube[2] = ds.length(0, 0);
+                if ( ds.rank() > 3 ) { // TODO: generalize to rank N
+                    qube[3]= ((HighRankDataSet)ds).slice(0).length(0,0);
+                }
+            }
+        }
+        return qube;
     }
 
     /**
@@ -312,8 +358,41 @@ public class DataSetUtil {
                 throw new IllegalArgumentException("rank not supported");
         }
         if (qube != null) {
-            ds.putProperty(QDataSet.QUBE, qube);
+            ds.putProperty(QDataSet.QUBE, Boolean.TRUE);
         }
+    }
+
+    public static String format(QDataSet ds) {
+        StringBuffer buf = new StringBuffer(ds.toString() + ":\n");
+        if (ds.rank() == 1) {
+            for (int i = 0; i < Math.min(40, ds.length()); i++) {
+                buf.append(" " + ds.value(i));
+            }
+            if (ds.length() >= 40) {
+                buf.append(" ...");
+            }
+        }
+        if (ds.rank() == 2) {
+            for (int i = 0; i < Math.min(10, ds.length()); i++) {
+                for (int j = 0; j < Math.min(20, ds.length(i)); j++) {
+                    buf.append(" " + ds.value(i));
+                }
+                if (ds.length() >= 40) {
+                    buf.append(" ...");
+                }
+                buf.append("\n");
+            }
+            if (ds.length() >= 10) {
+                buf.append(" ... ... ... \n");
+            }
+        }
+        return buf.toString();
+
+    }
+
+    public static String statsString(QDataSet ds) {
+        QDataSet stats = DataSetOps.moment(ds);
+        return "" + stats.value(0) + "+/-" + stats.property("stddev") + " N=" + stats.property("validCount");
     }
 }
 

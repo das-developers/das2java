@@ -143,10 +143,8 @@ public interface QDataSet {
     public final static String NAME="NAME";
     
     /**
-     * int[] an array of integers that when present hints that the dataset is a "qube," meaning 
+     * Boolean.TRUE indicates that the dataset is a "qube," meaning 
      * that all dimensions have fixed length and certain optimizations and operators are allowed. 
-     * The number of elements of the array must equal the rank of the dataset, and the value of 
-     * each element must equal the length() of that dimension.
      */
     public final static String QUBE="QUBE";
     
