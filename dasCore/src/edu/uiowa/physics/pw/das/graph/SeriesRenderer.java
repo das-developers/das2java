@@ -135,12 +135,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
-                        int icolor = colors[i];
-                        g.drawImage(coloredPsyms[icolor], ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                    int icolor = colors[i];
+                    g.drawImage(coloredPsyms[icolor], ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
                 }
             } else {
                 for (int i = 0; i < count; i++) {
-                        g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                    g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
                 }
             }
 
@@ -158,7 +158,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             float fsymSize = (float) symSize;
 
-            if (colorByDataSetId != null) {
+            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
                 colorByDataSet = (VectorDataSet) dataSet.getPlanarView(colorByDataSetId);
             }
 
@@ -173,13 +173,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
-                    graphics.setColor( ccolors[colors[i]] );
+                    graphics.setColor(ccolors[colors[i]]);
                     psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
                 }
 
             } else {
                 for (int i = 0; i < count; i++) {
-                    psym.draw(graphics, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, fsymSize, fillStyle);
+                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
                 }
             }
 
@@ -201,9 +201,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             VectorDataSet colorByDataSet = null;
             Units cunits = null;
-            if (colorByDataSetId != null) {
+            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
                 colorByDataSet = (VectorDataSet) dataSet.getPlanarView(colorByDataSetId);
-                cunits = colorByDataSet.getYUnits();
+                if (colorByDataSet != null) {
+                    cunits = colorByDataSet.getYUnits();
+                }
             }
 
 
@@ -268,8 +270,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
         int sx = (int) Math.ceil(symSize + 2 * lineWidth);
         int sy = (int) Math.ceil(symSize + 2 * lineWidth);
         double dcmx, dcmy;
-        dcmx =  (lineWidth + ( int ) ( symSize / 2) ) + 0.5;
-        dcmy =  (lineWidth + ( int ) ( symSize / 2) ) + 0.5;
+        dcmx = (lineWidth + (int) (symSize / 2)) + 0.5;
+        dcmy = (lineWidth + (int) (symSize / 2)) + 0.5;
         BufferedImage image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -283,20 +285,15 @@ public class SeriesRenderer extends Renderer implements Displayable {
         g.setStroke(new BasicStroke((float) lineWidth));
 
         psym.draw(g, dcmx, dcmy, (float) symSize, fillStyle);
-        psymImage =
-                image;
+        psymImage = image;
 
         if (colorBar != null) {
             IndexColorModel model = colorBar.getIndexColorModel();
-            coloredPsyms =
-                    new Image[model.getMapSize()];
-            for (int i = 0; i <
-                    model.getMapSize(); i++) {
+            coloredPsyms = new Image[model.getMapSize()];
+            for (int i = 0; i < model.getMapSize(); i++) {
                 Color c = new Color(model.getRGB(i));
-                image =
-                        new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
-                g =
-                        (Graphics2D) image.getGraphics();
+                image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
+                g = (Graphics2D) image.getGraphics();
                 if (parent != null) {
                     g.setBackground(parent.getBackground());
                 }
@@ -381,36 +378,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
 
-        //String s = GraphUtil.describe(path, false);
-        //s = GraphUtil.describe(path, false);
-        //System.err.println(s);
-
-        psymConnector.draw(graphics, path, (float) lineWidth);
-
-        double xmin;
-        double xmax;
-        double ymin;
-        double ymax;
-
-        Rectangle r = graphics.getClipBounds();
-
-        if (r == null) {
-            xmax = xAxis.getDataMaximum().doubleValue(xUnits);
-            xmin =
-                    xAxis.getDataMinimum().doubleValue(xUnits);
-            ymax =
-                    yAxis.getDataMaximum().doubleValue(yUnits);
-            ymin =
-                    yAxis.getDataMinimum().doubleValue(yUnits);
-        } else {
-            xmin = xAxis.invTransform((int) r.getX()).doubleValue(xUnits);
-            xmax =
-                    xAxis.invTransform((int) (r.getX() + r.getWidth())).doubleValue(xUnits);
-            ymin =
-                    yAxis.invTransform((int) r.getY()).doubleValue(yUnits);
-            ymax =
-                    yAxis.invTransform((int) (r.getY() + r.getHeight())).doubleValue(yUnits);
+        if ( lastIndex==firstIndex ) {
+            parent.postMessage( SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null );
         }
+        
+        psymConnector.draw(graphics, path, (float) lineWidth);
 
         graphics.setColor(color);
 
@@ -419,9 +391,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             int i = psymsElement.render(graphics, xAxis, yAxis, dataSet, mon);
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
-            if (i - firstIndex == 0) {
-                parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null);
-            }
 
             mon.finished();
         }
@@ -954,7 +923,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
 
     /**
-     * Setter for property colorByDataSetId.
+     * The dataset plane to use to get colors.  If this is null or "", then
+     * no coloring is done. (Note the default plane cannot be used to color.)
      * @param colorByDataSetId New value of property colorByDataSetId.
      */
     public void setColorByDataSetId(String colorByDataSetId) {
@@ -985,10 +955,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
         colorBar.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (colorByDataSetId != null) {
+                if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
                     refresh();
                 }
-
             }
         });
         refreshImage();
