@@ -1,0 +1,3 @@
+build.tag: $Name$
+build.timestamp: 
+build.user.name: 
