@@ -389,7 +389,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             String atstr = GraphUtil.getATScaleTranslateString(at);
 
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(this, atstr);
+            gtr.setString(atGraphics, atstr);
             gtr.draw(atGraphics, x + 10, y + 10 + atGraphics.getFontMetrics().getHeight());
         }
 
@@ -547,7 +547,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (plotTitle != null && plotTitle.length() != 0) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
-            gtr.setString(this, plotTitle);
+            gtr.setString(graphics, plotTitle);
             int titleWidth = (int) gtr.getWidth();
             int titleX = x + (xSize - titleWidth) / 2;
             int titleY = y - (int) gtr.getDescent() - (int) gtr.getAscent() / 2;
@@ -569,7 +569,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             MessageDescriptor message = (MessageDescriptor) messages.get(i);
 
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(graphics, message.text);
+            gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
             Rectangle mrect = gtr.getBounds();
             mrect.translate(msgx, msgy);
             Color backColor = GraphUtil.getRicePaperColor();
@@ -672,7 +672,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         logger.fine("resize");
         if (isDisplayable()) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(this, getTitle());
+            gtr.setString(this.getGraphics(), getTitle());
 
             int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
 
