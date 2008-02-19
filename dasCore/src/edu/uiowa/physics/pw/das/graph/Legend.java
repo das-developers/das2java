@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.ObjectLocator;
@@ -28,24 +29,36 @@ public class Legend extends DasCanvasComponent {
         Icon icon;
         Psym psym;
         PsymConnector psymConnector;
-        SymbolLineRenderer rend;
+        Displayable rend;
         Color color;
         String label;
         Legend parent;
         
         Icon getIcon() {
-            if ( rend!=null ) return rend.getListIcon(); else return icon;
+            if ( rend!=null ) {
+                if ( rend instanceof Displayable ) {
+                    return ((Displayable)rend).getListIcon();
+                } else {
+                    return null;
+                }
+            } else {
+                return icon;
+            }
         }
         
         void update() {
-            if ( rend!=null ) this.icon= rend.getListIcon();
+            if ( rend!=null ) {
+                if ( rend instanceof Displayable ) {
+                    this.icon= ((Displayable)rend).getListIcon();
+                }
+            }
         }
         
         /**
-         * return the Renderer or null if no renderer is associated with the
+         * return the Displayable or null if no Displayable is associated with the
          * legendElement.
          */
-        Renderer getRenderer() {
+        Displayable getDisplayable() {
             return rend;
         }
         
@@ -54,10 +67,11 @@ public class Legend extends DasCanvasComponent {
         }
         
         private boolean isVisible() {
-            return ( rend==null || rend.isActive() );
+            return ( rend==null || ! ( rend instanceof Renderer ) || ((Renderer)rend).isActive() );
         }
         
-        LegendElement( SymbolLineRenderer rend, String label ) {
+        LegendElement( Displayable rend, String label ) {
+            
             this.icon= rend.getListIcon();
             this.label= label;
             this.rend= rend;
@@ -85,7 +99,7 @@ public class Legend extends DasCanvasComponent {
                 Point p= getMouseAdapter().getMousePressPosition();
                 LegendElement item= (LegendElement)locator.closestObject(p);
                 if ( item==null ) return;
-                Renderer rend= item.getRenderer();
+                Displayable rend= item.getDisplayable();
                 PropertyEditor editor= new PropertyEditor( rend );
                 editor.showDialog(Legend.this);
             }
@@ -100,12 +114,12 @@ public class Legend extends DasCanvasComponent {
         return new ImageIcon( image );
     }
     
-    public void add( SymbolLineRenderer rend, String label ) {
+    public void add( Displayable rend, String label ) {
         LegendElement e= new LegendElement( rend, label );
         elements.add(e);
     }
     
-    public void remove( SymbolLineRenderer rend ) {
+    public void remove( Displayable rend ) {
         for ( int i=0; i<elements.size(); i++ ) {
             LegendElement ele= (LegendElement) elements.get(i);
             if ( ele.rend != null && rend==ele.rend ) {
