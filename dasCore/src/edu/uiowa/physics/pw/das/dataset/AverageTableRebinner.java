@@ -195,11 +195,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 if ( j1!=j0 ) {
                     
                     DatumRange dr;
-                    if ( tds.getYTagDatum(itable,j0).le( tds.getYTagDatum(itable,j1) ) ) {
-                        dr= new DatumRange( tds.getYTagDatum(itable,j0), tds.getYTagDatum(itable,j1) );
-                    } else {
-                        dr= new DatumRange( tds.getYTagDatum(itable,j1), tds.getYTagDatum(itable,j0) );
-                    }
+                    dr= new DatumRange( tds.getYTagDatum(itable,j0), tds.getYTagDatum(itable,j1) );
                     Datum dsWidth= TableUtil.guessYTagWidth(tds,itable);
                     if ( ddY.isLog() ) {
                         Units u= dr.getUnits();
@@ -398,6 +394,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                         a1 = 1.f - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                         weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
+                    } else {
+                        //System.err.println("here15");
                     }
                 }
             }
