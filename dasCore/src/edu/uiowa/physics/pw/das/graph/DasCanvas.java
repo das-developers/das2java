@@ -37,10 +37,10 @@ import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
+import edu.uiowa.physics.pw.das.util.AboutUtil;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.util.DasPNGConstants;
 import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
-import edu.uiowa.physics.pw.das.util.Splash;
 import edu.uiowa.physics.pw.das.util.awt.EventQueueBlocker_1;
 import edu.uiowa.physics.pw.das.util.awt.GraphicsOutput;
 import java.awt.BasicStroke;
@@ -77,14 +77,11 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -309,31 +306,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     public static final Action ABOUT_ACTION = new CanvasAction("About") {
         public void actionPerformed(ActionEvent e) {
-            String dasVersion= Splash.getVersion();
-            String javaVersion= System.getProperty("java.version");
-            
-            String buildTime= "???";
-            java.net.URL buildURL= this.getClass().getResource("/buildTime.txt");
-            if ( buildURL!=null ) {
-                try {
-                    BufferedReader reader= new BufferedReader( new InputStreamReader( buildURL.openStream() ) );
-                    buildTime= reader.readLine();
-                    reader.close();
-                } catch ( IOException ex ) {
-                    ex.printStackTrace();
-                }
-            }
-            String arch= System.getProperty("sun.arch.data.model");
-            DecimalFormat nf= new DecimalFormat("0.0");
-            String mem= nf.format( Runtime.getRuntime().maxMemory()/(1024*1024) );
-            String aboutContent= "<html>" +
-                    //"<img src='images/dasSplash.gif'><br>" +
-                    "release version: "+dasVersion+
-                    "<br>build time: "+buildTime+
-                    "<br>java version: "+javaVersion+
-                    "<br>max memory (Mb): "+mem+
-                    "<br>arch (bits): "+arch+
-                    "<br></html>";
+            String aboutContent= AboutUtil.getAboutHtml();
             
             JOptionPane.showConfirmDialog( currentCanvas, aboutContent, "about das2", JOptionPane.PLAIN_MESSAGE );
             currentCanvas.setSize(currentCanvas.getWidth()+1, currentCanvas.getHeight()+1);
