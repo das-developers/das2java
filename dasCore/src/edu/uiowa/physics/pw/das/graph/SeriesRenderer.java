@@ -164,11 +164,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             graphics.setStroke(new BasicStroke((float) lineWidth));
 
-
-            IndexColorModel icm = colorBar.getIndexColorModel();
-            Color[] ccolors = new Color[icm.getMapSize()];
-            for (int j = 0; j < icm.getMapSize(); j++) {
-                ccolors[j] = new Color(icm.getRGB(j));
+            Color[] ccolors=null;
+            if (colorByDataSet != null) {
+                IndexColorModel icm = colorBar.getIndexColorModel();
+                ccolors = new Color[icm.getMapSize()];
+                for (int j = 0; j < icm.getMapSize(); j++) {
+                    ccolors[j] = new Color(icm.getRGB(j));
+                }
             }
 
             if (colorByDataSet != null) {
@@ -378,10 +380,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
 
-        if ( lastIndex==firstIndex ) {
-            parent.postMessage( SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null );
+        if (lastIndex == firstIndex) {
+            parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
-        
+
         psymConnector.draw(graphics, path, (float) lineWidth);
 
         graphics.setColor(color);
