@@ -288,6 +288,9 @@ public class StreamTool {
         struct.bigBuffer.get(struct.four);
         if (isStreamDescriptorHeader(struct.four)) {
             int contentLength = getContentLength(struct.bigBuffer);
+            if ( contentLength==0 ) {
+                throw new StreamException("streamDescriptor content length is 0.");
+            }
             struct.byteOffset+= struct.bigBuffer.position();
             struct.bigBuffer.clear().limit(contentLength);
             while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1);
@@ -368,6 +371,9 @@ public class StreamTool {
                 return false;
             }
             int contentLength = getContentLength(struct.bigBuffer);
+            if ( contentLength==0 ) {
+                throw new StreamException("packetDescriptor content length is 0.");
+            }            
             if (struct.bigBuffer.capacity() < contentLength) {
                 struct.bigBuffer.reset();
                 ByteBuffer temp = ByteBuffer.allocate(8 + contentLength + contentLength / 10);
