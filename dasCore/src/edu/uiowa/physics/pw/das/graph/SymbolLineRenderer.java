@@ -113,7 +113,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         
         if (dataSet == null || dataSet.getXLength() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
-            renderException( g, xAxis, yAxis, new Exception("null data set") );
+            parent.postMessage(this, "null data set", DasPlot.INFO, null, null );
             return;
         }
         
