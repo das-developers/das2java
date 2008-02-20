@@ -30,6 +30,7 @@ public class PlotSymbolRenderer extends Renderer {
     }
     Image psymImage;
     Image[] coloredPsyms;
+    int cmx, cmy;  // center of psym image
 
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
         VectorDataSet vds = (VectorDataSet) getDataSet();
@@ -40,7 +41,7 @@ public class PlotSymbolRenderer extends Renderer {
 
         Units yunits = vds.getYUnits();
         Units xunits = vds.getXUnits();
-
+        
         VectorDataSet colorByDataSet=null;
         if (colorByDataSetId != null) {
             colorByDataSet = (VectorDataSet) vds.getPlanarView(colorByDataSetId);
@@ -54,7 +55,7 @@ public class PlotSymbolRenderer extends Renderer {
                     double xx = xAxis.transform(vds.getXTagDouble(i, xunits), xunits);
                     yy = yAxis.transform(yy, yunits);
                     int icolor = colorBar.indexColorTransform(colorByDataSet.getDouble(i, cunits), cunits);
-                    g.drawImage(coloredPsyms[icolor], (int) xx, (int) yy, parent);
+                    g.drawImage(coloredPsyms[icolor], (int) xx-cmx, (int) yy-cmy, parent);
                 }
             }
         } else {
@@ -63,7 +64,7 @@ public class PlotSymbolRenderer extends Renderer {
                 if (yunits.isValid(yy)) {
                     double xx = xAxis.transform(vds.getXTagDouble(i, xunits), xunits);
                     yy = yAxis.transform(yy, yunits);
-                    g.drawImage(psymImage, (int) xx, (int) yy, parent);
+                    g.drawImage(psymImage, (int) xx-cmx, (int) yy-cmy, parent);
                 }
             }
         }
@@ -74,6 +75,8 @@ public class PlotSymbolRenderer extends Renderer {
         Graphics2D g = (Graphics2D) image.getGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setColor(color);
+        cmx= (int)( symsize / 2 );
+        cmy= (int)( symsize / 2 );
         psym.draw(g, symsize / 2, symsize / 2, (float) symsize, FillStyle.STYLE_FILL);
         psymImage = image;
 
@@ -91,8 +94,8 @@ public class PlotSymbolRenderer extends Renderer {
             }
         }
         refresh();
-
     }
+    
     private PlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     public static final String PROP_PSYM = "psym";
 
@@ -206,7 +209,6 @@ public class PlotSymbolRenderer extends Renderer {
         DasColorBar oldcolorBar= this.colorBar;
         this.colorBar = colorBar;
         colorBar.addPropertyChangeListener(new PropertyChangeListener() {
-
             public void propertyChange(PropertyChangeEvent evt) {
                 if (colorByDataSetId != null) {
                     refresh();
