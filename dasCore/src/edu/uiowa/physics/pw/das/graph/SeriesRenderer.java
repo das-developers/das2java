@@ -51,6 +51,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
@@ -72,7 +73,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     private double symSize = 3.0; // radius in pixels
+
     private double lineWidth = 1.0; // width in pixels
+
     private boolean histogram = false;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     private FillStyle fillStyle = FillStyle.STYLE_FILL;
@@ -103,6 +106,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
     Image[] coloredPsyms;
     int cmx, cmy;
     RenderElement psymsElement = new PsymRenderElement();
+    ErrorBarRenderElement errorElement= new ErrorBarRenderElement();
+    
+    static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
+    static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
+    static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
+    static final String PROPERTY_Y_DELTA_MINUS = "Y_DELTA_MINUS";
 
     interface RenderElement {
 
@@ -116,9 +125,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
     class PsymRenderElement implements RenderElement {
 
         protected GeneralPath psymsPath; // store the location of the psyms here.
+
         int[] colors; // store the color index  of each psym
+
         int[] ipsymsPath; // store the location of the psyms here, evens=x, odds=y
+
         int count; // the number of points to plot
+
 
         /**
          * render the psyms by stamping an image at the psym location.  The intent is to
@@ -164,7 +177,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             graphics.setStroke(new BasicStroke((float) lineWidth));
 
-            Color[] ccolors=null;
+            Color[] ccolors = null;
             if (colorByDataSet != null) {
                 IndexColorModel icm = colorBar.getIndexColorModel();
                 ccolors = new Color[icm.getMapSize()];
@@ -265,13 +278,54 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
     }
 
+    class ErrorBarRenderElement implements RenderElement {
+
+        GeneralPath p;
+
+        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
+            if ( p==null ) return 0;
+            g.draw( p );
+            return lastIndex - firstIndex;
+        }
+
+        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
+            VectorDataSet deltaPlusY = (VectorDataSet) vds.getPlanarView( PROPERTY_Y_DELTA_PLUS );
+            VectorDataSet deltaMinusY = (VectorDataSet) vds.getPlanarView( PROPERTY_Y_DELTA_MINUS );
+
+            p= null;
+            
+            if ( deltaMinusY==null ) return;
+            if ( deltaMinusY==null ) return;
+            
+            Units xunits= vds.getXUnits();
+            Units yunits= vds.getYUnits();
+            Units yoffsetUnits= yunits.getOffsetUnits();
+            
+            p= new GeneralPath();
+            for (int i = firstIndex; i < lastIndex; i++) {
+                float ix= (float)xAxis.transform( vds.getXTagDouble(i, xunits), xunits );
+                float iym= (float)yAxis.transform( vds.getDouble(i,yunits)-deltaMinusY.getDouble(i,yoffsetUnits ), yunits ); 
+                float iyp= (float)yAxis.transform( vds.getDouble(i,yunits)+deltaPlusY.getDouble(i,yoffsetUnits ), yunits ); 
+                p.moveTo( ix, iym );
+                p.lineTo( ix, iyp );
+            }
+
+        }
+
+        public boolean acceptContext( Point2D.Double dp ) {
+            return  p.contains( dp.x-2, dp.y-2, 5, 5 );
+
+        }
+
+    }
+
     /**
      * updates the image of a psym that is stamped
      */
     private void updatePsym() {
         int sx = (int) Math.ceil(symSize + 2 * lineWidth);
         int sy = (int) Math.ceil(symSize + 2 * lineWidth);
-        double dcmx, dcmy;
+        double dcmx,  dcmy;
         dcmx = (lineWidth + (int) (symSize / 2)) + 0.5;
         dcmy = (lineWidth + (int) (symSize / 2)) + 0.5;
         BufferedImage image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
@@ -318,10 +372,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
 
     private void reportCount() {
-    //if ( renderCount % 100 ==0 ) {
-    //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
-    //new Throwable("").printStackTrace();
-    //}
+        //if ( renderCount % 100 ==0 ) {
+        //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+        //new Throwable("").printStackTrace();
+        //}
     }
 
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
@@ -388,6 +442,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         graphics.setColor(color);
 
+        errorElement.render(graphics, xAxis, yAxis, dataSet, mon);
+        
         if (psym != DefaultPlotSymbol.NONE) {
 
             int i = psymsElement.render(graphics, xAxis, yAxis, dataSet, mon);
@@ -517,6 +573,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 x0 = x;
                 y0 = y;
                 firstIndex = index;  // TODO: what if no valid points?
+
                 index++;
 
                 break;
@@ -554,12 +611,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
             fillPath.lineTo(fx1, fy);
             fillPath.lineTo(fx, fy);
             newPymsPath.moveTo(fx, fy);// lineTo will be done later
+
         } else {
             newPath.moveTo(fx, fy);
             newPath.lineTo(fx, fy);
             fillPath.moveTo(fx, fyref);
             fillPath.lineTo(fx, fy);
             newPymsPath.moveTo(fx, fy); // lineTo will be done later
+
         }
 
         fx0 = fx;
@@ -595,6 +654,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                             fillPath.lineTo(fx, fy);
                         } else {
                             newPath.lineTo(fx, fy); // this is the typical path
+
                             fillPath.lineTo(fx, fy);
                         }
 
@@ -623,6 +683,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                         }
 
                     } // else introduce break in line
+
                     x0 = x;
                     y0 = y;
                     fx0 = fx;
@@ -631,11 +692,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
                 } else {
                     newPath.moveTo(fx0, fy0); // place holder
+
                 }
 
             } // for ( ; index < ixmax && lastIndex; index++ )
+
         }
 
+        errorElement.update(xAxis, yAxis, dataSet, monitor);
         psymsElement.update(xAxis, yAxis, dataSet, monitor);
 
         if (index < ixmax) {
@@ -1126,6 +1190,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
             accept = true;
         }
 
+        if ((!accept) && errorElement.acceptContext(dp)) {
+            accept = true;
+        }
+        
         return accept;
     }
     /**
