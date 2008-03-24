@@ -4,7 +4,7 @@
  * Created on May 14, 2004, 12:43 PM
  */
 
-package edu.uiowa.physics.pw.das.util.fileSystem;
+package org.das2.util.filesystem;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;

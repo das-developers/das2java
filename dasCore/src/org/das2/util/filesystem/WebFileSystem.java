@@ -8,7 +8,7 @@
  * file system.
  */
 
-package edu.uiowa.physics.pw.das.util.fileSystem;
+package org.das2.util.filesystem;
 
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.util.*;

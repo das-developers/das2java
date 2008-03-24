@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package edu.uiowa.physics.pw.das.util.fileSystem;
+package org.das2.util.filesystem;
 
 import java.net.URL;
 

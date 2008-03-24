@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.util.fileSystem;
+package org.das2.util.filesystem;
 
 import java.io.File;
 import java.util.ArrayList;

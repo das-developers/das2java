@@ -4,7 +4,7 @@
  * Created on May 14, 2004, 10:06 AM
  */
 
-package edu.uiowa.physics.pw.das.util.fileSystem;
+package org.das2.util.filesystem;
 
 import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.NullProgressMonitor;

@@ -8,10 +8,10 @@
  * file system.
  */
 
-package edu.uiowa.physics.pw.das.util.fileSystem;
+package org.das2.util.filesystem;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.util.*;
-import edu.uiowa.physics.pw.das.util.fileSystem.FileSystem.FileSystemOfflineException;
+import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.io.*;
 import java.net.*;
 import java.util.*;
