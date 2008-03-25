@@ -9,7 +9,7 @@ package org.das2.util.filesystem;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.util.SubTaskMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;

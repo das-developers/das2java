@@ -6,7 +6,7 @@
 
 package org.das2.util.filesystem;
 
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.io.*;
 import java.net.*;

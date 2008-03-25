@@ -25,7 +25,7 @@ import edu.uiowa.physics.pw.das.datum.DatumUtil;
 import edu.uiowa.physics.pw.das.stream.StreamException;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;

@@ -10,7 +10,7 @@
 package edu.uiowa.physics.pw.das.system;
 
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
 
 /**

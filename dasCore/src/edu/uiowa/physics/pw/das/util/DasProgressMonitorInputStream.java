@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import org.das2.util.monitor.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.client.*;
 import java.io.*;
 import java.nio.*;

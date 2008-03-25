@@ -8,6 +8,8 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import org.das2.util.monitor.DasProgressMonitor;
+
 /**
  * creates a ProgressMonitor that maps its progress to a parent's progress.
  * For example, if a process takes a progress monitor, but is implemented in

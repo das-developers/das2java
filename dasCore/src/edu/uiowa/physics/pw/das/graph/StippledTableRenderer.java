@@ -38,7 +38,7 @@ import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.DasDie;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import java.awt.*;
 import java.awt.Graphics;
 import java.awt.Image;

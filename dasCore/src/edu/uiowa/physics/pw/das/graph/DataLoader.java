@@ -11,7 +11,7 @@
 package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 
 /**
  *

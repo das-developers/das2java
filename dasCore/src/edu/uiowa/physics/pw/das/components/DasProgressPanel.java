@@ -31,7 +31,7 @@ import java.text.DecimalFormat;
 import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.*;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.util.NumberFormatUtil;
 import java.util.*;
 import java.util.logging.Logger;

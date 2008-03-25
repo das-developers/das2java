@@ -10,6 +10,7 @@
 
 package org.das2.util.filesystem;
 
+import org.das2.util.monitor.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;

@@ -9,6 +9,8 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import org.das2.util.monitor.DasProgressMonitor;
+
 /**
  * This is a progress monitor to use when we don't care about the progress.
  * This replaces DasProgressMonitor.NULL, which has the problem that it was

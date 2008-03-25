@@ -6,7 +6,7 @@
 
 package org.das2.util.filesystem;
 
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import java.io.*;
 
 /**
@@ -94,7 +94,7 @@ public class LocalFileObject extends FileObject {
         return getFile( DasProgressMonitor.NULL );
     }
 
-    public File getFile(edu.uiowa.physics.pw.das.util.DasProgressMonitor monitor) throws FileNotFoundException {
+    public File getFile(org.das2.util.monitor.DasProgressMonitor monitor) throws FileNotFoundException {
         if ( !localFile.exists() ) throw new FileNotFoundException("file not found: "+localFile);
         return localFile;
     }

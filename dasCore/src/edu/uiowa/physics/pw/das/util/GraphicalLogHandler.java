@@ -7,6 +7,7 @@
  */
 
 package edu.uiowa.physics.pw.das.util;
+import org.das2.util.monitor.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;

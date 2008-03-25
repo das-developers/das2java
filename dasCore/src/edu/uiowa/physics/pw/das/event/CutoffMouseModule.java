@@ -33,7 +33,7 @@ import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
