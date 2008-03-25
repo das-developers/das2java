@@ -13,7 +13,7 @@ import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
 import edu.uiowa.physics.pw.das.dasml.DOMBuilder;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
-import edu.uiowa.physics.pw.das.util.fileSystem.Glob;
+import org.das2.util.filesystem.Glob;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
