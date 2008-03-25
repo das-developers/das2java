@@ -313,7 +313,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         public boolean acceptContext( Point2D.Double dp ) {
-            return  p.contains( dp.x-2, dp.y-2, 5, 5 );
+            return p!=null && p.contains( dp.x-2, dp.y-2, 5, 5 );
 
         }
 
