@@ -1,3 +1,4 @@
-build.tag: $Name$
 build.timestamp: 
 build.user.name: 
+build.svnurl: $URL: https://saturn.physics.uiowa.edu/svn/das2/cluster/trunk/src/META-INF/build.txt $
+build.svnrevision: $Revision: 3802 $
