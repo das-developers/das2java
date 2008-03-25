@@ -13,7 +13,7 @@ import edu.uiowa.physics.pw.das.client.DataSetStreamHandler;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
+import org.das2.util.monitor.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.util.StreamTool;
 import java.io.FileInputStream;
 import java.io.IOException;

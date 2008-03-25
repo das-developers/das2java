@@ -5,8 +5,8 @@
 <project name="dasCore" default="default" basedir=".">
     <description>Builds, tests, and runs the project dasCore.</description>
     <import file="nbproject/build-impl.xml"/>
+    <!--
 
-    <import file="nbproject/profiler-build-impl.xml"/>    <!--
     There exist several targets which are by default empty and which can be 
     used for execution of your tasks. These targets are usually executed 
     before and after some main targets. They are: 
@@ -66,23 +66,11 @@
     nbproject/build-impl.xml file. 
 
     -->
-    <target name="-post-compile" >
-        <propertyfile comment="Build Information"
-              file="${build.classes.dir}/META-INF/build.txt">
-           <entry key="build.timestamp"
-           type="date"
-           pattern="yyyyMMdd_HHmmss"
-           value="now"/>
-    <entry key="build.user.name" value="${user.name}"/>
-        </propertyfile>
-    </target>
-        
     <target name="no-pass" unless="keystore.pass">
         <echo>
 The property keystore.pass is not set.  No signed jar file will be created.
         </echo>
     </target>
-    
     <target name="signjar" if="keystore.pass">
         <basename property="signed.jar.name" file="${dist.jar}"/>
         <property name="signed.jar.dir" location="${dist.dir}/signed"/>

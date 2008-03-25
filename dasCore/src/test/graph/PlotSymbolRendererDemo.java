@@ -17,7 +17,7 @@ import edu.uiowa.physics.pw.das.graph.DefaultPlotSymbol;
 import edu.uiowa.physics.pw.das.graph.GraphUtil;
 import edu.uiowa.physics.pw.das.graph.PsymConnector;
 import edu.uiowa.physics.pw.das.graph.SeriesRenderer;
-import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
+import org.das2.util.monitor.NullProgressMonitor;
 import java.util.Random;
 
 /**

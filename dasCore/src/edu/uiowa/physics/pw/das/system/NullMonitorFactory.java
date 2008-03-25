@@ -11,7 +11,7 @@ package edu.uiowa.physics.pw.das.system;
 
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import org.das2.util.monitor.DasProgressMonitor;
-import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
+import org.das2.util.monitor.NullProgressMonitor;
 
 /**
  * MonitorFactory implementation that always returns a null monitor.

@@ -15,7 +15,7 @@ import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import org.das2.util.monitor.DasProgressMonitor;
-import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
+import org.das2.util.monitor.NullProgressMonitor;
 import java.beans.*;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;

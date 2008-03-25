@@ -6,7 +6,7 @@
  *
  */
 
-package edu.uiowa.physics.pw.das.util;
+package org.das2.util.monitor;
 
 import org.das2.util.monitor.DasProgressMonitor;
 

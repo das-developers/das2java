@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
+import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.DasProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.*;

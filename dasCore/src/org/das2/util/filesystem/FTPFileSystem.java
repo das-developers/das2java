@@ -9,7 +9,7 @@
 package org.das2.util.filesystem;
 
 import org.das2.util.monitor.DasProgressMonitor;
-import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
+import org.das2.util.monitor.NullProgressMonitor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
