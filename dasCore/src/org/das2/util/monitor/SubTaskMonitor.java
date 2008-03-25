@@ -8,7 +8,6 @@
 
 package org.das2.util.monitor;
 
-import org.das2.util.monitor.DasProgressMonitor;
 
 /**
  * creates a ProgressMonitor that maps its progress to a parent's progress.
