@@ -78,7 +78,7 @@ public class FileStorageModel {
     //TODO: add
     //  public string format( DatumRange dr );
     //
-    private interface FieldHandler {
+    public interface FieldHandler {
         public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
     }
     
@@ -660,6 +660,7 @@ public class FileStorageModel {
         return result;
     }
     
+    @Override
     public String toString() {
         return String.valueOf(root) + regex;
     }
