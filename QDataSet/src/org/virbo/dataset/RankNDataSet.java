@@ -6,10 +6,10 @@
 package org.virbo.dataset;
 
 /**
- * HighRankDataSet is a dataset that can only be accessed by slicing to
+ * RankNDataSet is a dataset that can only be accessed by slicing to
  * lower dimensionality.
  * @author jbf
  */
-public interface HighRankDataSet {
+public interface RankNDataSet {
     QDataSet slice( int dim );
 }

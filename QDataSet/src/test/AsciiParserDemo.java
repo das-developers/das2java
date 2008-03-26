@@ -10,7 +10,7 @@
 package test;
 
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
+import org.das2.util.monitor.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;
 import java.io.IOException;
 import java.io.InputStreamReader;

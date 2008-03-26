@@ -288,7 +288,7 @@ public class DataSetOps {
      * @return new dataset that is a copy of the first, resorted.
      * @see  org.virbo.dataset.SortDataSet for similar functionality
      */
-    public static MutablePropertyDataSet applyIndex(QDataSet ds, int idim, QDataSet sort, boolean deps) {
+    public static MutablePropertyDataSet applyIndex( QDataSet ds, int idim, QDataSet sort, boolean deps ) {
 
         if (idim > 2) {
             throw new IllegalArgumentException("idim must be <=2 ");
@@ -369,9 +369,9 @@ public class DataSetOps {
     /**
      * returns a rank 1 dataset that is a histogram of the data.
      * @param ds rank N dataset
-     * @min the min of the first bin.
-     * @max the max of the last bin.
-     * @binsize the size of each bin.
+     * @param min the min of the first bin.
+     * @param max the max of the last bin.
+     * @param binsize the size of each bin.
      * @return a rank 1 dataset with each bin's count.  DEPEND_0 indicates the bin locations.
      */
     public static QDataSet histogram(QDataSet ds, final double min, final double max, final double binsize) {
@@ -400,7 +400,7 @@ public class DataSetOps {
 
     /**
      * performs the moment (mean,variance,etc) on the dataset.
-     * @returns QDataSet rank 1 dataset with one tag, the mean.  Properties 
+     * @return QDataSet rank 1 dataset with one tag, the mean.  Properties 
      *   contain other stats.
      */
     public static QDataSet moment(QDataSet ds) {

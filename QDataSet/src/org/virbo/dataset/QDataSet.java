@@ -9,30 +9,27 @@
 
 package org.virbo.dataset;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
-
 /**
- * QDataSets are less abstract and more flexible data model for das2.  das2's 
+ * <p>QDataSets are less abstract and more flexible data model for das2.  das2's 
  * current data model was developed to deliver spectrogram time series data sets
  * where the dataset structure would change over time, and the interface is highly
  * optimized for that environment.  It's difficult to express many datasets in these
- * terms, so the simpler "quick" QDataSet was introduced.  
+ * terms, so the simpler "quick" QDataSet was introduced.  </p>
  *
- * The QDataSet can be thought of as a fast java array that has name-value metadata
+ * <p>The QDataSet can be thought of as a fast java array that has name-value metadata
  * attached to it.  These arrays of data can have arbitrary rank, although currently
  * the interface limits rank to 1,2, and 3.  (Rank 0 and Rank N are proposed but not
  * developed.)  Each dimension's length can vary, like java arrays, and datasets 
- * were the dimensions do not vary in length are colloquially called "Qubes."
+ * where the dimensions do not vary in length are colloquially called "Qubes."</p>
  *
- * QDataSets can have other QDataSets as property values, for example the property
+ * <p>QDataSets can have other QDataSets as property values, for example the property
  * QDataSet.DEPEND_0 indicates that the values are dependend parameters of the "tags"
  * QDataSet found there.  This how how we get to the same abstraction level of 
- * the legacy das2 dataset.  
+ * the legacy das2 dataset.  </p>
  * 
- * This is inspired by the CDF data model and PaPCo's dataset model.
+ * <p>This is inspired by the CDF data model and PaPCo's dataset model.</p>
  *
- * See http://www.das2.org/wiki/index.php/Das2_DataSet_Abstraction_3.0
+ * <p>See http://www.das2.org/wiki/index.php/Das2_DataSet_Abstraction_3.0</p>
  *
  * @author jbf
  */
@@ -63,10 +60,15 @@ public interface QDataSet {
     /**
      * type QDataSet. Correllated plane of data.  An additional dependent DataSet that is correllated by the first index.  
      * Note "0" is just a count, and does not refer to the 0th index.  All correllated datasets must be 
-     * correllated by the first index.
+     * correllated by the first index.  TODO: what about two rank 2 datasets?
      */
     public final static String PLANE_0= "PLANE_0";
-    
+
+    /**
+     * this is the maximum number of allowed planes.  This should be used to enumerates all the planes.
+     */
+    public final static int MAX_PLANE_COUNT=50;
+        
     /**
      * type Units.  The dataset units, found in edu.uiowa.physics.pw.das2.units.Units.
      */
@@ -75,7 +77,7 @@ public interface QDataSet {
     /**
      * type DatumRange.  Range bounding measurements to be considered valid.  The DatumRange.contains
      * method defines the min and max inclusiveness, so min is included but max is not.  
-     * TODO: perhaps FILL should be used to make 0 invalid on a log plot.
+     * TODO: perhaps FILL_VALUE should be used to make 0 invalid on a log plot.
      */
     public final static String VALID_RANGE="VALID_RANGE";
     
@@ -103,7 +105,7 @@ public interface QDataSet {
     /**
      * Double, Double value to be considered fill (invalid) data.
      */
-    public final static String FILL="FILL";
+    public final static String FILL_VALUE="FILL_VALUE";
     
     /**
      * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Also, the data must not contain 
@@ -113,16 +115,31 @@ public interface QDataSet {
             
     /**
      * QDataSet, dataset of same geometry that indicates the weights for each point.  Often weights are computed
-     * in processing, and this is where they should be stored for other routines.  Furthermore, averages of averages
-     * will compute accurately.
+     * in processing, and this is where they should be stored for other routines.  When the weights plane is 
+     * present, routines can safely ignore the FILL_VALUE and VALID_RANGE properties, and use non-zero weight to 
+     * indicate valid data.  Further, averages of averages will compute accurately.  TODO: create a utility method
+     * that will create this plane from FILL_VALUE and VALID_RANGE.
      */
     public final static String WEIGHTS_PLANE="WEIGHTS";
     
     /**
      * Double, the expected distance between successive measurements where it is valid to make inferences about the data.
+     * For example, interpolation is disallowed for points 1.5*CADENCE apart.
      * This property only makes sense with a tags dataset.
      */
     public final static String CADENCE="CADENCE";
+    
+    /**
+     * QDataSet of rank 0 or correlated plane that limits accuracy.  Integration
+     * intervals should be indicated here, as well as measurement uncertainty.
+     */
+    public final static String DELTA_PLUS="DELTA_PLUS";
+    
+    /**
+     * QDataSet of rank 0 or correlated plane limits limits accuracy.  Integration
+     * intervals should be indicated here, as well as measurement uncertainty.
+     */
+    public final static String DELTA_MINUS="DELTA_MINUS";
     
     /**
      * CacheTag, to be attached to tags datasets.
@@ -148,16 +165,12 @@ public interface QDataSet {
      */
     public final static String QUBE="QUBE";
     
-    
-    /**
-     * this is the maximum number of allowed planes.  This is a good way to see who enumerates all
-     * the planes.
-     */
-    public final static int MAX_PLANE_COUNT=50;
-    
     /**
      * returns the rank of the dataset, which is the number of indeces used to access data.  Only rank 1, 2, and 3 datasets
-     * are supported, but future versions of this API may include rank 0 and arbitary rank.
+     * are supported in the interface.   When a dataset's rank is 4 or greater, it should implement the HighRankDataSet interface
+     * which affords a slice operation to reduce rank.  When a dataset's rank is 0, it should implement the RankZeroDataSet interface,
+     * which has a no-argument accessor.  (TODO: Note that rank 0 and rank N have very limited use, so many routines aren't 
+     * coded to handle them.)
      */
     int rank();
     

@@ -10,8 +10,8 @@ package org.virbo.dsutil;
 
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.UnitsUtil;
-import edu.uiowa.physics.pw.das.util.DasProgressMonitor;
-import edu.uiowa.physics.pw.das.util.NullProgressMonitor;
+import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
 import java.util.regex.*;

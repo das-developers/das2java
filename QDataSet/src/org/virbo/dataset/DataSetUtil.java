@@ -158,7 +158,7 @@ public class DataSetUtil {
         String[] names = new String[]{QDataSet.UNITS, QDataSet.CADENCE,
             QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
             QDataSet.TYPICAL_RANGE, QDataSet.VALID_RANGE,
-            QDataSet.QUBE, QDataSet.FILL,
+            QDataSet.QUBE, QDataSet.FILL_VALUE,
             QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
             QDataSet.CACHE_TAG
         ,
@@ -310,7 +310,7 @@ public class DataSetUtil {
             if (ds.rank() > 2) {
                 qube[2] = ds.length(0, 0);
                 if ( ds.rank() > 3 ) { // TODO: generalize to rank N
-                    qube[3]= ((HighRankDataSet)ds).slice(0).length(0,0);
+                    qube[3]= ((RankNDataSet)ds).slice(0).length(0,0);
                 }
             }
         }
