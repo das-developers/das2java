@@ -6,7 +6,7 @@
 
 package org.das2.util.filesystem;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
+import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;

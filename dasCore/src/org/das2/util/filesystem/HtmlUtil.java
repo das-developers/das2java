@@ -6,7 +6,7 @@
 
 package org.das2.util.filesystem;
 
-import edu.uiowa.physics.pw.das.util.Base64;
+import org.das2.util.Base64;
 import java.io.*;
 import java.net.*;
 import java.util.*;

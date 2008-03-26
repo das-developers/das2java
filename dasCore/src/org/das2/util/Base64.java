@@ -64,7 +64,7 @@
  * @author rob@iharder.net
  * @version 2.2.1
  */
-package edu.uiowa.physics.pw.das.util;
+package org.das2.util;
 
 public class Base64
 {

@@ -6,7 +6,10 @@
 
 package org.das2.util.filesystem;
 
-import edu.uiowa.physics.pw.das.datum.*;
+import edu.uiowa.physics.pw.das.datum.Datum;
+import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.TimeUtil;
+import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import org.das2.util.monitor.DasProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;

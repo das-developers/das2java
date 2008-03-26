@@ -19,8 +19,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-
 package edu.uiowa.physics.pw.das.dataset;
 
 import org.das2.util.monitor.NullProgressMonitor;
@@ -29,11 +27,11 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
 
+import edu.uiowa.physics.pw.das.util.URLBuddy;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
@@ -65,26 +63,21 @@ import javax.swing.event.*;
 public abstract class DataSetDescriptor implements Displayable {
 
     protected Map properties = new HashMap();
-
-    private boolean defaultCaching= true;
-    
+    private boolean defaultCaching = true;
     private DataSetCache dataSetCache;
-    
     private String dataSetID;
-    
     private EventListenerList listenerList;
-    
+
     protected DataSetDescriptor(final String dataSetID) {
-        dataSetCache= DasApplication.getDefaultApplication().getDataSetCache();
-        this.dataSetID= dataSetID;
+        dataSetCache = DasApplication.getDefaultApplication().getDataSetCache();
+        this.dataSetID = dataSetID;
     }
-           
+
     protected DataSetDescriptor() {
         this("");
     }
-    
-    private static final Logger logger= DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
-    
+    private static final Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+
     /**
      * getDataSetImpl implements the getDataSet for this DataSetDescriptor implementation.  The
      * getDataSet call of the abstract DataSetDescriptor uses this routine to satisfy requests and
@@ -96,13 +89,13 @@ public abstract class DataSetDescriptor implements Displayable {
      * @param end end of the range for the request.
      * @param resolution the resolution requirement for the reqeust.  <code>null</code> may be used to request the finest resolution available or intrinic resolution.
      */
-    protected abstract DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException ;
-    
+    protected abstract DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException;
+
     /**
      * @return the x units of the DataSetDescriptor that parameterize the data.  This is used to identify dataSet requests.
      */
     public abstract Units getXUnits();
-    
+
     /**
      * Requests that a dataSet be loaded, and that the dataSet be returned via a DataSetUpdate event.
      * The @param lockObject is an object that is dependent on the load, for example, the DasCanvas,
@@ -110,82 +103,90 @@ public abstract class DataSetDescriptor implements Displayable {
      * then the dataSetUpdate may be fired on the same thread as the request is made.
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
-            final DasProgressMonitor monitor, Object lockObject ) {
-        
+            final DasProgressMonitor monitor, Object lockObject) {
+
         Runnable request = new Runnable() {
+
             public void run() {
-                logger.info("requestDataSet: "+start+" "+end+" "+resolution);
+                logger.info("requestDataSet: " + start + " " + end + " " + resolution);
                 try {
-                    DataSet ds= getDataSet( start, end, resolution, monitor );
-                    if ( ds==null ) throw new NoDataInIntervalException( new DatumRange(start,end).toString() );
-                    DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
-                    dsue.setMonitor( monitor );
+                    DataSet ds = getDataSet(start, end, resolution, monitor);
+                    if (ds == null) {
+                        throw new NoDataInIntervalException(new DatumRange(start, end).toString());
+                    }
+                    DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
+                    dsue.setMonitor(monitor);
                     fireDataSetUpdateEvent(dsue);
-                } catch ( DasException e ) {
-                    DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
-                    dsue.setMonitor( monitor );
+                } catch (DasException e) {
+                    DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, e);
+                    dsue.setMonitor(monitor);
                     fireDataSetUpdateEvent(dsue);
                 }
             }
+
             public String toString() {
-                return "loadDataSet "+ new DatumRange( start, end );
+                return "loadDataSet " + new DatumRange(start, end);
             }
         };
         logger.info("submit data request");
-        
-        CacheTag tag= new CacheTag( start, end, resolution );
-        if ( dataSetCache.haveStored( this, tag ) ) {
+
+        CacheTag tag = new CacheTag(start, end, resolution);
+        if (dataSetCache.haveStored(this, tag)) {
             request.run();
         } else {
-            RequestProcessor.invokeLater( request, lockObject );
+            RequestProcessor.invokeLater(request, lockObject);
         }
-        
+
     }
-    
+
     /**
      * Request the dataset, and the dataset is returned only to the listener.
      *
      * @param lockObject object that is waiting for the result of this load, used to block other tasks which use that object.
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
-            final DasProgressMonitor monitor, Object lockObject, final DataSetUpdateListener listener ) {
-        
-        if ( lockObject==null ) lockObject= listener;
-        
-        if ( this instanceof ConstantDataSetDescriptor ) {
+            final DasProgressMonitor monitor, Object lockObject, final DataSetUpdateListener listener) {
+
+        if (lockObject == null) {
+            lockObject = listener;
+        }
+
+        if (this instanceof ConstantDataSetDescriptor) {
             try {
-                DataSet ds= getDataSet(null,null,null,null);
-                DataSetUpdateEvent dsue= new DataSetUpdateEvent( this, ds );
+                DataSet ds = getDataSet(null, null, null, null);
+                DataSetUpdateEvent dsue = new DataSetUpdateEvent(this, ds);
                 dsue.setMonitor(monitor);
-            } catch ( DasException e ) {
-                DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+            } catch (DasException e) {
+                DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, e);
                 dsue.setMonitor(monitor);
                 listener.dataSetUpdated(dsue);
             }
         } else {
             Runnable request = new Runnable() {
+
                 public void run() {
-                    logger.info("request data from dsd: "+start+" "+end+" "+resolution);
+                    logger.info("request data from dsd: " + start + " " + end + " " + resolution);
                     try {
-                        DataSet ds= getDataSet( start, end, resolution, monitor );
-                        DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,ds);
+                        DataSet ds = getDataSet(start, end, resolution, monitor);
+                        DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
                         dsue.setMonitor(monitor);
                         listener.dataSetUpdated(dsue);
-                    } catch ( DasException e ) {
-                        DataSetUpdateEvent dsue= new DataSetUpdateEvent(DataSetDescriptor.this,e);
+                    } catch (DasException e) {
+                        DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, e);
                         dsue.setMonitor(monitor);
                         listener.dataSetUpdated(dsue);
                     }
                 }
+
                 public String toString() {
-                    return "loadDataSet "+ new DatumRange( start, end );
+                    return "loadDataSet " + new DatumRange(start, end);
                 }
             };
-            RequestProcessor.invokeLater( request, lockObject );
+            RequestProcessor.invokeLater(request, lockObject);
         }
-        
+
     }
-    
+
     /**
      * Retrieve the dataset for this interval and resolution.  The contract for this function is that
      * identical start,end,resolution parameters will yield an identical dataSet, except for when an
@@ -194,33 +195,39 @@ public abstract class DataSetDescriptor implements Displayable {
      * null for the data resolution indicates that the data should be returned at its "intrinsic resolution"
      * if such a resolution exists.
      */
-    public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
-        if ( monitor==null ) monitor=new NullProgressMonitor();
-        
-        CacheTag tag=null;
-        if ( defaultCaching ) {
-            tag= new CacheTag( start, end, resolution );
-            DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).info("getDataSet " + this +" " + tag);
+    public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
         }
-        
-        if ( defaultCaching && dataSetCache.haveStored( this, tag ) ) {
-            return dataSetCache.retrieve( this, tag );
+
+        CacheTag tag = null;
+        if (defaultCaching) {
+            tag = new CacheTag(start, end, resolution);
+            DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).info("getDataSet " + this + " " + tag);
+        }
+
+        if (defaultCaching && dataSetCache.haveStored(this, tag)) {
+            return dataSetCache.retrieve(this, tag);
         } else {
             try {
-                DataSet ds = getDataSetImpl( start, end, resolution, monitor );
+                DataSet ds = getDataSetImpl(start, end, resolution, monitor);
                 if (ds != null) {
-                    if ( ds.getProperty( "cacheTag" )!=null ) tag= (CacheTag)ds.getProperty( "cacheTag" );
-                    if ( defaultCaching ) dataSetCache.store( this, tag, ds );
+                    if (ds.getProperty("cacheTag") != null) {
+                        tag = (CacheTag) ds.getProperty("cacheTag");
+                    }
+                    if (defaultCaching) {
+                        dataSetCache.store(this, tag, ds);
+                    }
                 }
                 return ds;
-            } catch ( DasException e ) {
+            } catch (DasException e) {
                 throw e;
             } finally {
                 monitor.finished();
             }
         }
     }
-    
+
     /**
      * clear any state that's developed, in particular any data caches.  Note
      * this currently deletes all cached datasets, regardless of the DataSetDescriptor
@@ -229,7 +236,7 @@ public abstract class DataSetDescriptor implements Displayable {
     public void reset() {
         dataSetCache.reset();
     }
-    
+
     /**
      * defaultCaching means that the abstract DataSetDescriptor is allowed to handle
      * repeat getDataSet calls by returning a cached dataset.  If a dataSetUpdate event
@@ -238,44 +245,47 @@ public abstract class DataSetDescriptor implements Displayable {
      * Use caution when using this.  Note that caching may only be turned off
      * with this call.
      */
-    public void setDefaultCaching( boolean value ) {
-        if ( value==false ) defaultCaching= value;
+    public void setDefaultCaching(boolean value) {
+        if (value == false) {
+            defaultCaching = value;
+        }
     }
-    
-    public void addDataSetUpdateListener( DataSetUpdateListener listener ) {
-        if (listenerList == null ) {
+
+    public void addDataSetUpdateListener(DataSetUpdateListener listener) {
+        if (listenerList == null) {
             listenerList = new EventListenerList();
         }
-        listenerList.add( DataSetUpdateListener.class, listener);
+        listenerList.add(DataSetUpdateListener.class, listener);
     }
-    
-    public void removeDataSetUpdateListener( DataSetUpdateListener listener ) {
-        if (listenerList == null ) {
+
+    public void removeDataSetUpdateListener(DataSetUpdateListener listener) {
+        if (listenerList == null) {
             listenerList = new EventListenerList();
         }
-        listenerList.remove( DataSetUpdateListener.class, listener );
+        listenerList.remove(DataSetUpdateListener.class, listener);
     }
-    
-    protected void fireDataSetUpdateEvent( DataSetUpdateEvent event ) {
-        if (listenerList == null) return;
+
+    protected void fireDataSetUpdateEvent(DataSetUpdateEvent event) {
+        if (listenerList == null) {
+            return;
+        }
         Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length-2; i>=0; i-=2) {
-            if (listeners[i]==DataSetUpdateListener.class) {
-                ((DataSetUpdateListener)listeners[i+1]).dataSetUpdated(event);
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == DataSetUpdateListener.class) {
+                ((DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
             }
         }
     }
-    
+
     /**
      * @return the string that uniquely identifies this dataset.
      */
     public String getDataSetID() {
         return this.dataSetID;
     }
-    
     private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z0-9_\\.]+)(?:\\?(.*))?");
     private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.-]+)=([_0-9a-zA-Z%+.-]+)");
-    
+
     /**
      * creates a DataSetDescriptor for the given identification string.  The identification
      * string is a URL-like string, for example <code>http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy</code>
@@ -290,7 +300,7 @@ public abstract class DataSetDescriptor implements Displayable {
      * Note that DataSetDescriptors are stateless, the same DataSetDescriptor object
      * may be returned to multiple clients.
      */
-    public static DataSetDescriptor create( final String dataSetID ) throws DasException {
+    public static DataSetDescriptor create(final String dataSetID) throws DasException {
         java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);
         DataSetDescriptor result;
         if (classMatcher.matches()) {
@@ -298,7 +308,7 @@ public abstract class DataSetDescriptor implements Displayable {
         } else {
             try {
                 result = createFromServerAddress(new URL(dataSetID));
-                //result = DasServer.createDataSetDescriptor(new URL(dataSetID));
+            //result = DasServer.createDataSetDescriptor(new URL(dataSetID));
             } catch (MalformedURLException mue) {
                 throw new DasIOException(mue.getMessage());
             }
@@ -306,14 +316,14 @@ public abstract class DataSetDescriptor implements Displayable {
         result.dataSetID = dataSetID;
         return result;
     }
-    
+
     private static DataSetDescriptor createFromServerAddress(final URL url) throws DasException {
         DasServer server = DasServer.create(url);
         StreamDescriptor sd = server.getStreamDescriptor(url);
         return new StreamDataSetDescriptor(sd, server.getStandardDataStreamSource(url));
     }
-    
-    private static DataSetDescriptor createFromClassName( final String dataSetID, final Matcher matcher) throws DasException {
+
+    private static DataSetDescriptor createFromClassName(final String dataSetID, final Matcher matcher) throws DasException {
         try {
             String className = matcher.group(1);
             String argString = matcher.group(2);
@@ -323,7 +333,7 @@ public abstract class DataSetDescriptor implements Displayable {
             if (!Modifier.isStatic(method.getModifiers())) {
                 throw new NoSuchDataSetException("newDataSetDescriptor must be static");
             }
-            return (DataSetDescriptor)method.invoke(null, new Object[]{argMap});
+            return (DataSetDescriptor) method.invoke(null, new Object[]{argMap});
         } catch (ClassNotFoundException cnfe) {
             DataSetDescriptorNotAvailableException dsdnae =
                     new DataSetDescriptorNotAvailableException(cnfe.getMessage());
@@ -346,11 +356,11 @@ public abstract class DataSetDescriptor implements Displayable {
             throw dsdnae;
         }
     }
-    
-    protected void setProperties( Map properties ) {
+
+    protected void setProperties(Map properties) {
         this.properties.putAll(properties);
     }
-    
+
     /**
      * Returns the value of the property with the specified name
      *
@@ -360,15 +370,15 @@ public abstract class DataSetDescriptor implements Displayable {
     public Object getProperty(String name) {
         return properties.get(name);
     }
-    
+
     public javax.swing.Icon getListIcon() {
         return null;
     }
-    
+
     public String getListLabel() {
         return this.dataSetID;
     }
-    
+
     /**
      * @return the DataSetCache object used to store cached copies of the
      * DataSets created by this object.
@@ -376,5 +386,4 @@ public abstract class DataSetDescriptor implements Displayable {
     public DataSetCache getDataSetCache() {
         return this.dataSetCache;
     }
-    
 }
