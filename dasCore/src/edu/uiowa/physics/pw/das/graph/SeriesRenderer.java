@@ -36,7 +36,6 @@ import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import org.das2.util.monitor.DasProgressMonitor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -44,12 +43,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 
 import java.awt.image.BufferedImage;
@@ -58,6 +54,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.das2.util.monitor.ProgressMonitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -105,9 +102,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
     Image psymImage;
     Image[] coloredPsyms;
     int cmx, cmy;
-    RenderElement psymsElement = new PsymRenderElement();
-    ErrorBarRenderElement errorElement= new ErrorBarRenderElement();
-    
+    FillRenderElement fillElement = new FillRenderElement();
+    ErrorBarRenderElement errorElement = new ErrorBarRenderElement();
+    PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
+    PsymRenderElement psymsElement = new PsymRenderElement();
     static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
     static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
     static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
@@ -115,9 +113,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     interface RenderElement {
 
-        int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon);
+        int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon);
 
-        void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon);
+        void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon);
 
         boolean acceptContext(Point2D.Double dp);
     }
@@ -139,7 +137,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
          * On 20080206, this was measured to run at 320pts/millisecond for FillStyle.FILL
          * On 20080206, this was measured to run at 300pts/millisecond in FillStyle.OUTLINE
          */
-        private int renderStamp(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
+        private int renderStamp(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
 
             VectorDataSet colorByDataSet = null;
             if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
@@ -167,7 +165,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
          * On 20080206, this was measured to run at 45pts/millisecond in FillStyle.FILL
          * On 20080206, this was measured to run at 9pts/millisecond in FillStyle.OUTLINE
          */
-        private int renderDraw(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, DasProgressMonitor mon) {
+        private int renderDraw(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
 
             float fsymSize = (float) symSize;
 
@@ -202,7 +200,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         }
 
-        public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
+        public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             int i;
             if (stampPsyms && !parent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
@@ -212,7 +210,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return i;
         }
 
-        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, DasProgressMonitor mon) {
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
 
             VectorDataSet colorByDataSet = null;
             Units cunits = null;
@@ -282,41 +280,414 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         GeneralPath p;
 
-        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
-            if ( p==null ) return 0;
-            g.draw( p );
+        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+            if (p == null) {
+                return 0;
+            }
+            g.draw(p);
             return lastIndex - firstIndex;
         }
 
-        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, DasProgressMonitor mon) {
-            VectorDataSet deltaPlusY = (VectorDataSet) vds.getPlanarView( PROPERTY_Y_DELTA_PLUS );
-            VectorDataSet deltaMinusY = (VectorDataSet) vds.getPlanarView( PROPERTY_Y_DELTA_MINUS );
+        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+            VectorDataSet deltaPlusY = (VectorDataSet) vds.getPlanarView(PROPERTY_Y_DELTA_PLUS);
+            VectorDataSet deltaMinusY = (VectorDataSet) vds.getPlanarView(PROPERTY_Y_DELTA_MINUS);
 
-            p= null;
-            
-            if ( deltaMinusY==null ) return;
-            if ( deltaMinusY==null ) return;
-            
-            Units xunits= vds.getXUnits();
-            Units yunits= vds.getYUnits();
-            Units yoffsetUnits= yunits.getOffsetUnits();
-            
-            p= new GeneralPath();
+            p = null;
+
+            if (deltaMinusY == null) {
+                return;
+            }
+            if (deltaMinusY == null) {
+                return;
+            }
+            Units xunits = vds.getXUnits();
+            Units yunits = vds.getYUnits();
+            Units yoffsetUnits = yunits.getOffsetUnits();
+
+            p = new GeneralPath();
             for (int i = firstIndex; i < lastIndex; i++) {
-                float ix= (float)xAxis.transform( vds.getXTagDouble(i, xunits), xunits );
-                float iym= (float)yAxis.transform( vds.getDouble(i,yunits)-deltaMinusY.getDouble(i,yoffsetUnits ), yunits ); 
-                float iyp= (float)yAxis.transform( vds.getDouble(i,yunits)+deltaPlusY.getDouble(i,yoffsetUnits ), yunits ); 
-                p.moveTo( ix, iym );
-                p.lineTo( ix, iyp );
+                float ix = (float) xAxis.transform(vds.getXTagDouble(i, xunits), xunits);
+                float iym = (float) yAxis.transform(vds.getDouble(i, yunits) - deltaMinusY.getDouble(i, yoffsetUnits), yunits);
+                float iyp = (float) yAxis.transform(vds.getDouble(i, yunits) + deltaPlusY.getDouble(i, yoffsetUnits), yunits);
+                p.moveTo(ix, iym);
+                p.lineTo(ix, iyp);
             }
 
         }
 
-        public boolean acceptContext( Point2D.Double dp ) {
-            return p!=null && p.contains( dp.x-2, dp.y-2, 5, 5 );
+        public boolean acceptContext(Point2D.Double dp) {
+            return p != null && p.contains(dp.x - 2, dp.y - 2, 5, 5);
+
+        }
+    }
+
+    class PsymConnectorRenderElement implements RenderElement {
+
+        private GeneralPath path1;
+
+        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+            if ( path1==null ) return 0;
+            psymConnector.draw(g, path1, (float) lineWidth);
+            return 0;
+        }
+
+        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
+            Units xUnits = xAxis.getUnits();
+            Units yUnits = yAxis.getUnits();
+
+            DatumRange visibleRange = xAxis.getDatumRange();
+
+            int ixmax;
+            int ixmin;
+
+            Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+            if (xMono != null && xMono.booleanValue()) {
+                ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
+                ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1;
+            } else {
+                ixmin = 0;
+                ixmax = dataSet.getXLength();
+            }
+
+            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (ixmax - ixmin) / 100);
+
+            Datum sw = DataSetUtil.guessXTagWidth(dataSet);
+            double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+
+            /* fuzz the xSampleWidth */
+            xSampleWidth = xSampleWidth * 1.10;
+
+            double x = Double.NaN;
+            double y = Double.NaN;
+
+            double x0 = Double.NaN; /* the last plottable point */
+            double y0 = Double.NaN; /* the last plottable point */
+
+            float fx = Float.NaN;
+            float fy = Float.NaN;
+            float fx0 = Float.NaN;
+            float fy0 = Float.NaN;
+
+            int index;
+
+            // find the first valid point, set x0, y0 //
+            for (index = ixmin; index < ixmax; index++) {
+                x = (double) dataSet.getXTagDouble(index, xUnits);
+                y = (double) dataSet.getDouble(index, yUnits);
+
+                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+                if (isValid) {
+                    x0 = x;
+                    y0 = y;
+                    firstIndex = index;  // TODO: what if no valid points?
+
+                    index++;
+                    break;
+                }
+            }
+
+            // find the last valid point, minding the dataSetSizeLimit
+            int pointsPlotted = 0;
+            for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
+                y = dataSet.getDouble(index, yUnits);
+
+                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+                if (isValid) {
+                    pointsPlotted++;
+                }
+            }
+            
+            if ( index<ixmax && pointsPlotted==dataSetSizeLimit ) {
+                dataSetClipped= true;
+            }
+            
+            lastIndex = index;
+
+            index = firstIndex;
+            x = (double) dataSet.getXTagDouble(index, xUnits);
+            y = (double) dataSet.getDouble(index, yUnits);
+
+            // first point //
+            fx = (float) xAxis.transform(x, xUnits);
+            fy = (float) yAxis.transform(y, yUnits);
+            if (histogram) {
+                float fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                newPath.moveTo(fx1, fy);
+                newPath.lineTo(fx, fy);
+            } else {
+                newPath.moveTo(fx, fy);
+                newPath.lineTo(fx, fy);
+            }
+
+            fx0 = fx;
+            fy0 = fy;
+
+            if (psymConnector != PsymConnector.NONE || fillToReference) {
+                // now loop through all of them. //
+
+                for (; index < lastIndex ; index++) {
+
+                    x = dataSet.getXTagDouble(index, xUnits);
+                    y = dataSet.getDouble(index, yUnits);
+
+                    final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+                    fx = (float) xAxis.transform(x, xUnits);
+                    fy = (float) yAxis.transform(y, yUnits);
+
+                    //double tx= xAxis.transformFast( x, xUnits );
+
+                    //System.err.println( ""+(float)tx+ "   " + fx );
+
+                    if (isValid) {
+                        if ((x - x0) < xSampleWidth) {
+                            // draw connect-a-dot between last valid and here
+                            if (histogram) {
+                                float fx1 = (fx0 + fx) / 2;
+                                newPath.lineTo(fx1, fy0);
+                                newPath.lineTo(fx1, fy);
+                                newPath.lineTo(fx, fy);
+                            } else {
+                                newPath.lineTo(fx, fy); // this is the typical path
+
+                            }
+
+                        } else {
+                            // introduce break in line
+                            if (histogram) {
+                                float fx1 = (float) xAxis.transform(x0 + xSampleWidth / 2, xUnits);
+                                newPath.lineTo(fx1, fy0);
+
+                                fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                                newPath.moveTo(fx1, fy);
+                                newPath.lineTo(fx, fy);
+
+                            } else {
+                                newPath.moveTo(fx, fy);
+                                newPath.lineTo(fx, fy);
+                            }
+
+                        } // else introduce break in line
+
+                        x0 = x;
+                        y0 = y;
+                        fx0 = fx;
+                        fy0 = fy;
+                        pointsPlotted++;
+
+                    } else {
+                        newPath.moveTo(fx0, fy0); // place holder
+
+                    }
+
+                } // for ( ; index < ixmax && lastIndex; index++ )
+
+
+
+                if (!histogram && simplifyPaths && colorByDataSet == null) {
+                    this.path1 = GraphUtil.reducePath(newPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+                } else {
+                    this.path1 = newPath;
+                }
+
+            }
+        }
+
+        public boolean acceptContext(Point2D.Double dp) {
+            return this.path1!=null && path1.intersects(dp.x - 5, dp.y - 5, 10, 10);
+        }
+    }
+
+    class FillRenderElement implements RenderElement {
+
+        private GeneralPath fillToRefPath1;
+
+        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+            g.setColor(fillColor);
+            g.fill(fillToRefPath1);
+            return 0;
+        }
+
+        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
+            Units xUnits = xAxis.getUnits();
+            Units yUnits = yAxis.getUnits();
+
+            DatumRange visibleRange = xAxis.getDatumRange();
+
+            int ixmax;
+            int ixmin;
+
+            Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+            if (xMono != null && xMono.booleanValue()) {
+                ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
+                ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1;
+            } else {
+                ixmin = 0;
+                ixmax = dataSet.getXLength();
+            }
+
+            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (ixmax - ixmin) / 100);
+
+            Datum sw = DataSetUtil.guessXTagWidth(dataSet);
+            double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+
+            /* fuzz the xSampleWidth */
+            xSampleWidth = xSampleWidth * 1.10;
+
+            if (reference != null && reference.getUnits() != yAxis.getUnits()) {
+                // switch the units to the axis units.
+                reference = yAxis.getUnits().createDatum(reference.doubleValue(reference.getUnits()));
+            }
+
+            if (reference == null) {
+                reference = yUnits.createDatum(yAxis.isLog() ? 1.0 : 0.0);
+            }
+
+            double yref = (double) reference.doubleValue(yUnits);
+
+            double x = Double.NaN;
+            double y = Double.NaN;
+
+            double x0 = Double.NaN; /* the last plottable point */
+            double y0 = Double.NaN; /* the last plottable point */
+
+            float fyref = (float) yAxis.transform(yref, yUnits);
+            float fx = Float.NaN;
+            float fy = Float.NaN;
+            float fx0 = Float.NaN;
+            float fy0 = Float.NaN;
+
+            int index;
+
+            // find the first valid point, set x0, y0 //
+            for (index = ixmin; index < ixmax; index++) {
+                x = (double) dataSet.getXTagDouble(index, xUnits);
+                y = (double) dataSet.getDouble(index, yUnits);
+
+                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+                if (isValid) {
+                    x0 = x;
+                    y0 = y;
+                    firstIndex = index;  // TODO: what if no valid points?
+
+                    index++;
+
+                    break;
+
+                }
+
+            }
+
+            // find the last valid point, minding the dataSetSizeLimit
+            int pointsPlotted = 0;
+            for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
+                y = dataSet.getDouble(index, yUnits);
+
+                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+                if (isValid) {
+                    pointsPlotted++;
+                }
+
+            }
+            if ( index<ixmax && pointsPlotted==dataSetSizeLimit ) {
+                dataSetClipped= true;
+            }
+            
+            lastIndex = index;
+
+            index = firstIndex;
+            x = (double) dataSet.getXTagDouble(index, xUnits);
+            y = (double) dataSet.getDouble(index, yUnits);
+
+            // first point //
+            fx = (float) xAxis.transform(x, xUnits);
+            fy = (float) yAxis.transform(y, yUnits);
+            if (histogram) {
+                float fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                fillPath.moveTo(fx1, fyref);
+                fillPath.lineTo(fx1, fy);
+                fillPath.lineTo(fx, fy);
+
+            } else {
+                fillPath.moveTo(fx, fyref);
+                fillPath.lineTo(fx, fy);
+
+            }
+
+            fx0 = fx;
+            fy0 = fy;
+
+            if (psymConnector != PsymConnector.NONE || fillToReference) {
+                // now loop through all of them. //
+
+                for (; index < lastIndex; index++) {
+
+                    x = dataSet.getXTagDouble(index, xUnits);
+                    y = dataSet.getDouble(index, yUnits);
+
+                    final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+                    fx = (float) xAxis.transform(x, xUnits);
+                    fy = (float) yAxis.transform(y, yUnits);
+
+                    if (isValid) {
+                        if ((x - x0) < xSampleWidth) {
+                            // draw connect-a-dot between last valid and here
+                            if (histogram) {
+                                float fx1 = (fx0 + fx) / 2;
+                                fillPath.lineTo(fx1, fy0);
+                                fillPath.lineTo(fx1, fy);
+                                fillPath.lineTo(fx, fy);
+                            } else {
+                                fillPath.lineTo(fx, fy);
+                            }
+
+                        } else {
+                            // introduce break in line
+                            if (histogram) {
+                                float fx1 = (float) xAxis.transform(x0 + xSampleWidth / 2, xUnits);
+                                fillPath.lineTo(fx1, fy0);
+                                fillPath.lineTo(fx1, fyref);
+                                fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                                fillPath.moveTo(fx1, fyref);
+                                fillPath.lineTo(fx1, fy);
+                                fillPath.lineTo(fx, fy);
+
+                            } else {
+                                fillPath.lineTo(fx0, fyref);
+                                fillPath.moveTo(fx, fyref);
+                                fillPath.lineTo(fx, fy);
+                            }
+
+                        } // else introduce break in line
+
+                        x0 = x;
+                        y0 = y;
+                        fx0 = fx;
+                        fy0 = fy;
+                        pointsPlotted++;
+
+                    }
+
+                } // for ( ; index < ixmax && lastIndex; index++ )
+
+            }
+
+            fillPath.lineTo(fx0, fyref);
+            this.fillToRefPath1 = fillPath;
+
+            if (simplifyPaths) {
+                fillToRefPath1 = GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+            }
+
 
         }
 
+        public boolean acceptContext(Point2D.Double dp) {
+           return fillToRefPath1 != null && fillToRefPath1.contains(dp);
+        }
     }
 
     /**
@@ -325,7 +696,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     private void updatePsym() {
         int sx = (int) Math.ceil(symSize + 2 * lineWidth);
         int sy = (int) Math.ceil(symSize + 2 * lineWidth);
-        double dcmx,  dcmy;
+        double dcmx, dcmy;
         dcmx = (lineWidth + (int) (symSize / 2)) + 0.5;
         dcmy = (lineWidth + (int) (symSize / 2)) + 0.5;
         BufferedImage image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
@@ -378,7 +749,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         //}
     }
 
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         renderCount++;
         reportCount();
@@ -408,11 +779,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
-// sometimes this happens, TODO: investigate
-        if (path == null) {
-            return;
-        }
-
         DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set " + dataSet);
 
         Graphics2D graphics = (Graphics2D) g.create();
@@ -423,12 +789,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
 
-        edu.uiowa.physics.pw.das.datum.Units xUnits = xAxis.getUnits();
-        edu.uiowa.physics.pw.das.datum.Units yUnits = yAxis.getUnits();
-
-        if (this.fillToReference && fillToRefPath != null) {
-            graphics.setColor(fillColor);
-            graphics.fill(fillToRefPath);
+        if (this.fillToReference) {
+            fillElement.render(graphics, xAxis, yAxis, dataSet, mon);
         }
 
         graphics.setColor(color);
@@ -438,15 +800,17 @@ public class SeriesRenderer extends Renderer implements Displayable {
             parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
 
-        psymConnector.draw(graphics, path, (float) lineWidth);
-
         graphics.setColor(color);
+        
+        //psymConnector.draw(graphics, path, (float) lineWidth);
+        psymConnectorElement.render(graphics, xAxis, yAxis, dataSet, mon);
+
 
         errorElement.render(graphics, xAxis, yAxis, dataSet, mon);
-        
+
         if (psym != DefaultPlotSymbol.NONE) {
 
-            int i = psymsElement.render(graphics, xAxis, yAxis, dataSet, mon);
+            psymsElement.render(graphics, xAxis, yAxis, dataSet, mon);
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
 
@@ -461,8 +825,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         setRenderPointsPerMillisecond(dppms);
 
         logger.finer("render: " + renderTime + " total:" + (milli - lastUpdateMillis) + " fps:" + (1000. / (milli - lastUpdateMillis)) + " pts/ms:" + dppms);
-        lastUpdateMillis =
-                milli;
+        lastUpdateMillis = milli;
+        
+        if ( dataSetClipped ) {
+            parent.postMessage(this, "dataset clipped at "+dataSetSizeLimit+" points", DasPlot.WARNING, null, null);
+        }
     }
     boolean updating = false;
 
@@ -470,7 +837,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
      */
     @Override
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
 
         updating = true;
 
@@ -485,10 +852,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             throw new RuntimeException(e);
         }
 
-        logger.fine("entering updatePlotImage");
-        long t0 = System.currentTimeMillis();
-
-        boolean histogram = this.histogram;
         VectorDataSet dataSet = (VectorDataSet) getDataSet();
         if (dataSet == null || dataSet.getXLength() == 0) {
             return;
@@ -498,239 +861,18 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
-        Dimension d;
+        logger.fine("entering updatePlotImage");
+        long t0 = System.currentTimeMillis();
 
-        double xmin;
-        double xmax;
-        double ymin;
-        double ymax;
-        int ixmax;
-        int ixmin;
+        boolean histogram = this.histogram;
 
-        Units xUnits = xAxis.getUnits();
-        Units yUnits = yAxis.getUnits();
-
-        DatumRange visibleRange = xAxis.getDatumRange();
-
-        xmax = visibleRange.min().doubleValue(xUnits);
-        xmin = visibleRange.max().doubleValue(xUnits);
-        ymax = yAxis.getDataMaximum().doubleValue(yUnits);
-        ymin = yAxis.getDataMinimum().doubleValue(yUnits);
-
-        Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
-        if (xMono != null && xMono.booleanValue()) {
-            ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-            ixmax =
-                    DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1;
-        } else {
-            ixmin = 0;
-            ixmax = dataSet.getXLength();
-        }
-
-        GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (ixmax - ixmin) / 100);
-        GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (ixmax - ixmin) / 100);
-        GeneralPath newPymsPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (ixmax - ixmin) / 100);
-
-        Datum sw = DataSetUtil.guessXTagWidth(dataSet);
-        double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
-
-        /* fuzz the xSampleWidth */
-        xSampleWidth =
-                xSampleWidth * 1.10;
-
-        if (reference != null && reference.getUnits() != yAxis.getUnits()) {
-            // switch the units to the axis units.
-            reference = yAxis.getUnits().createDatum(reference.doubleValue(reference.getUnits()));
-        }
-
-        if (reference == null) {
-            reference = yUnits.createDatum(yAxis.isLog() ? 1.0 : 0.0);
-        }
-
-        double yref = (double) reference.doubleValue(yUnits);
-
-        double x = Double.NaN;
-        double y = Double.NaN;
-
-        double x0 = Double.NaN; /* the last plottable point */
-        double y0 = Double.NaN; /* the last plottable point */
-
-        float fyref = (float) yAxis.transform(yref, yUnits);
-        float fx = Float.NaN;
-        float fy = Float.NaN;
-        float fx0 = Float.NaN;
-        float fy0 = Float.NaN;
-
-        int index;
-
-        // find the first valid point, set x0, y0 //
-        for (index = ixmin; index < ixmax; index++) {
-            x = (double) dataSet.getXTagDouble(index, xUnits);
-            y = (double) dataSet.getDouble(index, yUnits);
-
-            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-            if (isValid) {
-                x0 = x;
-                y0 = y;
-                firstIndex = index;  // TODO: what if no valid points?
-
-                index++;
-
-                break;
-
-            }
-
-        }
-
-        // find the last valid point, minding the dataSetSizeLimit
-        int pointsPlotted = 0;
-        for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-            y = dataSet.getDouble(index, yUnits);
-
-            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-
-            if (isValid) {
-                pointsPlotted++;
-            }
-
-        }
-        lastIndex = index;
-
-        index = firstIndex;
-        x = (double) dataSet.getXTagDouble(index, xUnits);
-        y = (double) dataSet.getDouble(index, yUnits);
-
-        // first point //
-        fx = (float) xAxis.transform(x, xUnits);
-        fy = (float) yAxis.transform(y, yUnits);
-        if (histogram) {
-            float fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
-            newPath.moveTo(fx1, fy);
-            newPath.lineTo(fx, fy);
-            fillPath.moveTo(fx1, fyref);
-            fillPath.lineTo(fx1, fy);
-            fillPath.lineTo(fx, fy);
-            newPymsPath.moveTo(fx, fy);// lineTo will be done later
-
-        } else {
-            newPath.moveTo(fx, fy);
-            newPath.lineTo(fx, fy);
-            fillPath.moveTo(fx, fyref);
-            fillPath.lineTo(fx, fy);
-            newPymsPath.moveTo(fx, fy); // lineTo will be done later
-
-        }
-
-        fx0 = fx;
-        fy0 = fy;
-
-        if (psymConnector != PsymConnector.NONE || fillToReference) {
-            // now loop through all of them. //
-
-            for (; index < lastIndex; index++) {
-
-                x = dataSet.getXTagDouble(index, xUnits);
-                y = dataSet.getDouble(index, yUnits);
-
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-
-                fx = (float) xAxis.transform(x, xUnits);
-                fy = (float) yAxis.transform(y, yUnits);
-
-                //double tx= xAxis.transformFast( x, xUnits );
-
-                //System.err.println( ""+(float)tx+ "   " + fx );
-
-                if (isValid) {
-                    if ((x - x0) < xSampleWidth) {
-                        // draw connect-a-dot between last valid and here
-                        if (histogram) {
-                            float fx1 = (fx0 + fx) / 2;
-                            newPath.lineTo(fx1, fy0);
-                            newPath.lineTo(fx1, fy);
-                            newPath.lineTo(fx, fy);
-                            fillPath.lineTo(fx1, fy0);
-                            fillPath.lineTo(fx1, fy);
-                            fillPath.lineTo(fx, fy);
-                        } else {
-                            newPath.lineTo(fx, fy); // this is the typical path
-
-                            fillPath.lineTo(fx, fy);
-                        }
-
-                    } else {
-                        // introduce break in line
-                        if (histogram) {
-                            float fx1 = (float) xAxis.transform(x0 + xSampleWidth / 2, xUnits);
-                            newPath.lineTo(fx1, fy0);
-                            fillPath.lineTo(fx1, fy0);
-                            fillPath.lineTo(fx1, fyref);
-
-                            fx1 =
-                                    (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
-                            newPath.moveTo(fx1, fy);
-                            newPath.lineTo(fx, fy);
-                            fillPath.moveTo(fx1, fyref);
-                            fillPath.lineTo(fx1, fy);
-                            fillPath.lineTo(fx, fy);
-
-                        } else {
-                            newPath.moveTo(fx, fy);
-                            newPath.lineTo(fx, fy);
-                            fillPath.lineTo(fx0, fyref);
-                            fillPath.moveTo(fx, fyref);
-                            fillPath.lineTo(fx, fy);
-                        }
-
-                    } // else introduce break in line
-
-                    x0 = x;
-                    y0 = y;
-                    fx0 = fx;
-                    fy0 = fy;
-                    pointsPlotted++;
-
-                } else {
-                    newPath.moveTo(fx0, fy0); // place holder
-
-                }
-
-            } // for ( ; index < ixmax && lastIndex; index++ )
-
-        }
+        dataSetClipped= false;
+        fillElement.update(xAxis, yAxis, dataSet, monitor);
+        psymConnectorElement.update(xAxis, yAxis, dataSet, monitor);
 
         errorElement.update(xAxis, yAxis, dataSet, monitor);
         psymsElement.update(xAxis, yAxis, dataSet, monitor);
 
-        if (index < ixmax) {
-            dataSetClipped = true;
-        } else {
-            dataSetClipped = false;
-        }
-
-        fillPath.lineTo(fx0, fyref);
-        this.fillToRefPath = fillPath;
-
-
-        if (this.fillToReference && fillToRefPath != null) {
-            if (simplifyPaths) {
-                fillToRefPath = GraphUtil.reducePath(fillToRefPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
-            }
-
-        }
-
-        //System.err.println(GraphUtil.describe(newPath, true));
-        this.path = newPath;
-
-
-        if (simplifyPaths && colorByDataSet == null) {
-            if (histogram) {
-                this.path = newPath;
-            } else {
-                this.path = GraphUtil.reducePath(newPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
-            }
-
-        }
         if (getParent() != null) {
             getParent().repaint();
         }
@@ -1178,11 +1320,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         Point2D.Double dp = new Point2D.Double(x, y);
 
-        if (fillToReference && fillToRefPath != null && fillToRefPath.contains(dp)) {
+        if ( fillElement.acceptContext(dp) ) {
             accept = true;
         }
 
-        if ((!accept) && path != null && path.intersects(dp.x - 5, dp.y - 5, 10, 10)) {
+        if ((!accept) && psymConnectorElement.acceptContext(dp) ) {
             accept = true;
         }
 
@@ -1193,7 +1335,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if ((!accept) && errorElement.acceptContext(dp)) {
             accept = true;
         }
-        
+
         return accept;
     }
     /**
