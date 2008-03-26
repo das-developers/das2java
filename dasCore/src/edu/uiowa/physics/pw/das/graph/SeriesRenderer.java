@@ -278,7 +278,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     class ErrorBarRenderElement implements RenderElement {
 
-        GeneralPath p;
+        GeneralPath p; 
 
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             if (p == null) {

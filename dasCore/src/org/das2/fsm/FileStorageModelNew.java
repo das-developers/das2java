@@ -4,8 +4,10 @@
  * Created on March 31, 2004, 9:52 AM
  */
 
-package org.das2.util.filesystem;
+package org.das2.fsm.filesystem;
 
+import org.das2.util.filesystem.FileObject;
+import org.das2.util.filesystem.FileSystem;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;

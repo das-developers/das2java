@@ -7,8 +7,9 @@
  * and open the template in the editor.
  */
 
-package org.das2.util.filesystem;
+package org.das2.fsm.filesystem;
 
+import org.das2.util.filesystem.FileSystem;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
