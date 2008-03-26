@@ -10,7 +10,7 @@ package org.virbo.dsutil;
 
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.UnitsUtil;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
@@ -347,7 +347,7 @@ public class AsciiParser {
     /**
      * Parse the stream using the current settings.
      */
-    public WritableDataSet readStream( Reader in, DasProgressMonitor mon ) throws IOException {
+    public WritableDataSet readStream( Reader in, ProgressMonitor mon ) throws IOException {
         BufferedReader reader= new BufferedReader( in );
         String line;
         int iline=0;
@@ -599,7 +599,7 @@ public class AsciiParser {
      * Parse the file using the current settings.
      * @return a rank 2 dataset.
      */
-    public WritableDataSet readFile( String filename, DasProgressMonitor mon ) throws IOException {
+    public WritableDataSet readFile( String filename, ProgressMonitor mon ) throws IOException {
         long size= new File(filename).length();
         mon.setTaskSize(size);
         return readStream( new FileReader(filename ), mon ) ;
