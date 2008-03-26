@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.fsm.filesystem;
+package org.das2.fsm;
 
 import org.das2.util.filesystem.FileSystem;
 import edu.uiowa.physics.pw.das.DasException;

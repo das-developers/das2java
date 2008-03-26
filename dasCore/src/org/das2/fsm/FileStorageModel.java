@@ -4,7 +4,7 @@
  * Created on March 31, 2004, 9:52 AM
  */
 
-package org.das2.fsm.filesystem;
+package org.das2.fsm;
 
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
