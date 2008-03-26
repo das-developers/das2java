@@ -297,7 +297,7 @@ public class DataSetUtil {
     public static int[] qubeDims(QDataSet ds) {
         if ( ds.rank() > 4 ) throw new IllegalArgumentException("rank limit");
         if (ds.rank() == 1) {
-            return new int[ds.length()];  // rank 1 datasets are trivially qubes
+            return new int[] { ds.length() };  // rank 1 datasets are trivially qubes
         }
         Boolean q = (Boolean) ds.property(QDataSet.QUBE);
         if (q == null || q.equals(Boolean.FALSE)) {
