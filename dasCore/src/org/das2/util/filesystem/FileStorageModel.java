@@ -11,7 +11,7 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 import java.io.File;
@@ -368,7 +368,7 @@ public class FileStorageModel {
      * @param targetRange restrict search to range.  May be null, in which case all
      *    names are returned.
      */
-    public String[] getNamesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
+    public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
         
         String listRegex;
         
@@ -422,7 +422,7 @@ public class FileStorageModel {
      * This implementation does the same as getNames(), but stops after finding a file.
      * @return null if no file is found
      */
-    public String getRepresentativeFile( DasProgressMonitor monitor ) {
+    public String getRepresentativeFile( ProgressMonitor monitor ) {
         String listRegex;
         
         FileSystem[] fileSystems;
@@ -505,7 +505,7 @@ public class FileStorageModel {
     /**
      * retrieve the file for the name.
      */
-    public File getFileFor( String name, DasProgressMonitor monitor ) throws FileNotFoundException {
+    public File getFileFor( String name, ProgressMonitor monitor ) throws FileNotFoundException {
         FileObject o= root.getFileObject( name );
         File file= o.getFile( monitor );
         
@@ -519,7 +519,7 @@ public class FileStorageModel {
     /**
      * returns a list of files that can be used
      */
-    public File[] getFilesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
+    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
         String[] names= getNamesFor( targetRange );
         File[] files= new File[names.length];
         

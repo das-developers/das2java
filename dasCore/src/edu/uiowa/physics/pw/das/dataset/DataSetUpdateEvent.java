@@ -7,7 +7,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.event.*;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  *
@@ -17,7 +17,7 @@ public class DataSetUpdateEvent extends DasEvent {
     
     private DataSet dataSet;
     private Exception exception;
-    private DasProgressMonitor monitor;
+    private ProgressMonitor monitor;
     
     /**
      * @deprecated use {link
@@ -70,11 +70,11 @@ public class DataSetUpdateEvent extends DasEvent {
     /**
      * temporary kludge that allows for identification of event to request
      */
-    public void setMonitor( DasProgressMonitor monitor ) {
+    public void setMonitor( ProgressMonitor monitor ) {
         this.monitor= monitor;
     }
     
-    public DasProgressMonitor getMonitor() {
+    public ProgressMonitor getMonitor() {
         return monitor;
     }
 }

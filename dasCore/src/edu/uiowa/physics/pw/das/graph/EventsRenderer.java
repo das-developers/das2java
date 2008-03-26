@@ -17,7 +17,7 @@ import edu.uiowa.physics.pw.das.datum.UnitsConverter;
 import edu.uiowa.physics.pw.das.event.LabelDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -132,7 +132,7 @@ public class EventsRenderer extends Renderer {
         return new MouseModule( parent, new DragRenderer(parent), "event lookup" );
     }
     
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         VectorDataSet vds= (VectorDataSet)getDataSet();
         if (vds == null || vds.getXLength() == 0) {

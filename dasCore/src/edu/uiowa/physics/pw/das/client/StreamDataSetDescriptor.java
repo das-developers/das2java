@@ -23,7 +23,7 @@
 package edu.uiowa.physics.pw.das.client;
 
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -157,7 +157,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return "dsd "+getDataSetID();
     }
     
-    protected DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor ) throws DasException {
+    protected DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, ProgressMonitor monitor ) throws DasException {
         if ( resolution != null && !resolution.isFinite() ) throw new IllegalArgumentException( "resolution is not finite" );
         InputStream in;
         DataSet result;
@@ -173,7 +173,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return result;
     }
     
-    protected DataSet getDataSetFromStream(InputStream in, Datum start, Datum end, DasProgressMonitor monitor ) throws DasException {
+    protected DataSet getDataSetFromStream(InputStream in, Datum start, Datum end, ProgressMonitor monitor ) throws DasException {
         if ( monitor==null ) monitor= new NullProgressMonitor();
         
         PushbackInputStream pin = new PushbackInputStream(in, 4096);

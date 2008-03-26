@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
@@ -99,7 +99,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         renderCount++;
        // reportCount();
         
@@ -202,7 +202,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     
     boolean updating=false;
     
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         /*
          *This was an experiment to see if updates were being performed on multiple threads.
             if ( updating ) {

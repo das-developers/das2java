@@ -6,7 +6,7 @@
 
 package org.das2.util.filesystem;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.nio.channels.*;
@@ -43,7 +43,7 @@ public abstract class FileObject {
      * @return an InputStream
      * @throws FileNotFoundException if the file doesn't exist.
      */
-    public abstract InputStream getInputStream( DasProgressMonitor monitor ) throws FileNotFoundException;
+    public abstract InputStream getInputStream( ProgressMonitor monitor ) throws FileNotFoundException;
     
     /**
      * opens an inputStream, perhaps transferring the file to a
@@ -65,7 +65,7 @@ public abstract class FileObject {
      * @throws FileNotFoundException if the file doesn't exist.
      * @return a java.nio.channels.Channel for fast IO reads.
      */
-    public abstract ReadableByteChannel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException;
+    public abstract ReadableByteChannel getChannel( ProgressMonitor monitor ) throws FileNotFoundException;
     
     /**
      * opens a Channel, but without a monitor.  Note this may block at sub-interactive time
@@ -85,7 +85,7 @@ public abstract class FileObject {
      *   is immediate, for example with local FileObjects.
      * @throws java.io.FileNotFoundException if the file doesn't exist.
      */
-    public abstract File getFile( DasProgressMonitor monitor ) throws FileNotFoundException ;
+    public abstract File getFile( ProgressMonitor monitor ) throws FileNotFoundException ;
     
     /**
      * gets a File object that can be opened by the client.  Note this may block at sub-interactive time

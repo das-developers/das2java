@@ -16,7 +16,7 @@ import edu.uiowa.physics.pw.das.graph.DataLoader;
 import edu.uiowa.physics.pw.das.graph.Renderer;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.util.logging.Logger;
 
 
@@ -117,7 +117,7 @@ public class MendelbrotDataLoader extends DataLoader {
         }
     }
     
-    private DataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, DasProgressMonitor monitor, String desc) throws DasException {
+    private DataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, ProgressMonitor monitor, String desc) throws DasException {
         
         double xstart, xend, xresolution;
         xstart= ddx.binCenter(0, Units.dimensionless );

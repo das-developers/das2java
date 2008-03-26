@@ -6,7 +6,7 @@
 
 package org.das2.util.filesystem;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 
 /**
@@ -38,7 +38,7 @@ public class LocalFileObject extends FileObject {
         return result;
     }
     
-    public java.io.InputStream getInputStream( DasProgressMonitor monitor ) throws java.io.FileNotFoundException {
+    public java.io.InputStream getInputStream( ProgressMonitor monitor ) throws java.io.FileNotFoundException {
         return new FileInputStream( localFile );
     }
     
@@ -86,15 +86,15 @@ public class LocalFileObject extends FileObject {
         return "["+lfs+"]"+getNameExt();
     }
     
-    public java.nio.channels.ReadableByteChannel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException {
+    public java.nio.channels.ReadableByteChannel getChannel( ProgressMonitor monitor ) throws FileNotFoundException {
         return ((FileInputStream)getInputStream( monitor )).getChannel();
     }
 
     public File getFile() throws FileNotFoundException {
-        return getFile( DasProgressMonitor.NULL );
+        return getFile( ProgressMonitor.NULL );
     }
 
-    public File getFile(org.das2.util.monitor.DasProgressMonitor monitor) throws FileNotFoundException {
+    public File getFile(org.das2.util.monitor.ProgressMonitor monitor) throws FileNotFoundException {
         if ( !localFile.exists() ) throw new FileNotFoundException("file not found: "+localFile);
         return localFile;
     }

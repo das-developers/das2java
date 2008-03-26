@@ -22,7 +22,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
@@ -72,7 +72,7 @@ public class CurveRenderer extends Renderer {
     protected void installRenderer() {
     }
     
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         long timer0= System.currentTimeMillis();
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
@@ -136,7 +136,7 @@ public class CurveRenderer extends Renderer {
         graphics.setRenderingHints(hints0);
     }
     
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
         
         VectorDataSet dataSet= (VectorDataSet)getDataSet();

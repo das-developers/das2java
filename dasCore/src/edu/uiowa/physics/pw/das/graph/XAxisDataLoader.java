@@ -25,7 +25,7 @@ import edu.uiowa.physics.pw.das.datum.DatumUtil;
 import edu.uiowa.physics.pw.das.stream.StreamException;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     
     DasAxis xaxis;
     DataSetDescriptor dsd;
-    DasProgressMonitor progressMonitor;
+    ProgressMonitor progressMonitor;
     Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG, "XAxisDataLoader" );
     
     Request currentRequest;
@@ -98,7 +98,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                 synchronized (currentRequest) {
                     if ( ! xAxis.getMemento().equals( currentRequest.xmem ) ) {
                         logger.fine( "cancel old request: "+currentRequest );
-                        DasProgressMonitor monitor= currentRequest.monitor;
+                        ProgressMonitor monitor= currentRequest.monitor;
                         currentRequest= null;
                         monitor.cancel();
                     } else {
@@ -183,7 +183,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                     DasExceptionHandler.handle(exception);
                 }
                 
-                DasProgressMonitor mon= e.getMonitor();
+                ProgressMonitor mon= e.getMonitor();
                 if ( currentRequest!=null ) {
                     if ( mon==null || mon==currentRequest.monitor ) {
                         renderer.setException( exception );
@@ -216,7 +216,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                     // cancelled it? --jbf
                 } else {
                     DataSet ds= e.getDataSet();
-                    DasProgressMonitor mon= e.getMonitor();
+                    ProgressMonitor mon= e.getMonitor();
                     if ( mon==null || currentRequest.monitor==mon ) {
                         logger.fine("got dataset update w/dataset: "+ds);
                         if ( ds!=null ) {

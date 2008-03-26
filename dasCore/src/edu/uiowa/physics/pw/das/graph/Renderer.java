@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.util.*;
@@ -242,7 +242,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * time scale, and an image should be cached when this is not possible.  The graphics
      * object will have its origin at the upper-left corner of the screen.
      */
-    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon);
+    public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon);
     
     /**
      * Returns true if the render thinks it can provide the context for a point.  That is,
@@ -290,7 +290,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * the same state as it was when updatePlotImage was called, so use
      * the getAffineTransform method.  Only Renderer should call this method!
      */
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
     }
     
     protected void refreshImage() {
@@ -355,7 +355,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             public void run() {
                 logger.fine("update plot image");
                 try {
-                    final DasProgressMonitor progressPanel= DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage" );
+                    final ProgressMonitor progressPanel= DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage" );
                     updatePlotImage( parent.getXAxis(), parent.getYAxis(), progressPanel );
                     xmemento= parent.getXAxis().getMemento();
                     ymemento= parent.getYAxis().getMemento();

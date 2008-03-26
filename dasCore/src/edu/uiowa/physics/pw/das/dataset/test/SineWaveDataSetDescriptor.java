@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.util.*;
 
 /**
@@ -68,7 +68,7 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
         this.phase= phase;
     }
     
-    public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {        
+    public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {        
         if ( resolution==null ) resolution= end.subtract( start ).divide(1000);
         int nstep= 2 + (int)(end.subtract(start).doubleValue(resolution.getUnits()) / resolution.doubleValue(resolution.getUnits()));        
         int stepSize= 1; /* not sure what this is useful for jbf */

@@ -18,7 +18,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;
 import java.net.URL;
 
@@ -35,7 +35,7 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
         this.fsm= fsm;
     }
     
-    protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {
         String[] names= fsm.getNamesFor( new DatumRange( start, end ), monitor );
         
         String planeId= "xTagWidth";

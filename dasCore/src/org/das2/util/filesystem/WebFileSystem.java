@@ -10,7 +10,7 @@
 
 package org.das2.util.filesystem;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
@@ -59,7 +59,7 @@ public abstract class WebFileSystem extends FileSystem {
      *
      * @param partfile the temporary file during download.
      */
-    protected abstract void downloadFile( String filename, File f, File partfile, DasProgressMonitor monitor ) throws IOException;
+    protected abstract void downloadFile( String filename, File f, File partfile, ProgressMonitor monitor ) throws IOException;
     
     protected File getLocalRoot() {
         return this.localRoot;
@@ -121,7 +121,7 @@ public abstract class WebFileSystem extends FileSystem {
     /**
      * copies data from in to out, sending the number of bytesTransferred to the monitor.
      */
-    protected void copyStream( InputStream is, OutputStream out, DasProgressMonitor monitor ) throws IOException {        
+    protected void copyStream( InputStream is, OutputStream out, ProgressMonitor monitor ) throws IOException {        
         byte[] buffer= new byte[2048];
         int bytesRead= is.read( buffer, 0, 2048 );
         long totalBytesRead= bytesRead;

@@ -33,7 +33,7 @@ import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
@@ -101,14 +101,14 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     private void recalculateSoon(  ) {
         Runnable run= new Runnable() {
             public void run() {
-                DasProgressMonitor mon= application.getMonitorFactory().getMonitor( parent, "calculating cutoffs", "calculating cutoffs" );
+                ProgressMonitor mon= application.getMonitorFactory().getMonitor( parent, "calculating cutoffs", "calculating cutoffs" );
                 recalculate( mon );
             }
         };
         new Thread( run, "digitizer recalculate" ).start();
     }
     
-    private synchronized void recalculate( DasProgressMonitor mon) {
+    private synchronized void recalculate( ProgressMonitor mon) {
         TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
         if ( tds==null ) return;
         if ( xrange==null ) return;

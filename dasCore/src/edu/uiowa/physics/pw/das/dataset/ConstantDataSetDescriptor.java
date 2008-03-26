@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * This class wraps a DataSet to use where DataSetDescriptors are required.  This 
@@ -49,11 +49,11 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
     }
     
     // this is never called because we override getDataSet
-    public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {
         return ds;
     }    
     
-    public DataSet getDataSet( Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    public DataSet getDataSet( Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {
         return ds;
     }    
     
@@ -61,7 +61,7 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
         return ds.getXUnits();
     }
     
-    public void requestDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor, Object lockObject) {
+    public void requestDataSet(Datum start, Datum end, Datum resolution, ProgressMonitor monitor, Object lockObject) {
         DataSetUpdateEvent dsue= null;
         try {
             DataSet ds= getDataSet(start, end, resolution, monitor);

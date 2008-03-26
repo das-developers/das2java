@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dataset.test;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
@@ -78,7 +78,7 @@ public class RipplesDataSetDescriptor extends DataSetDescriptor {
         return Units.dimensionless;
     }
     
-    public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    public DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {
         
         double[] x= new double[nx];
         double[] y= new double[ny];

@@ -11,7 +11,7 @@
 package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  *
@@ -21,7 +21,7 @@ public abstract class DataLoader {
     
     Renderer renderer;
     
-    protected DasProgressMonitor getMonitor( String description ) {
+    protected ProgressMonitor getMonitor( String description ) {
         return DasApplication.getDefaultApplication().getMonitorFactory()
           .getMonitor( renderer.getParent(), "Loading data set", description );        
     }
@@ -72,10 +72,10 @@ public abstract class DataLoader {
     }
     
     public class Request {
-        public DasProgressMonitor monitor;
+        public ProgressMonitor monitor;
         public DasAxis.Memento xmem;
         public DasAxis.Memento ymem;
-        public Request( DasProgressMonitor mon, DasAxis.Memento xmem, DasAxis.Memento ymem ) {
+        public Request( ProgressMonitor mon, DasAxis.Memento xmem, DasAxis.Memento ymem ) {
             this.monitor= mon;
             this.xmem= xmem;
             this.ymem= ymem;

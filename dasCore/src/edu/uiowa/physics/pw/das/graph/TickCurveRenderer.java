@@ -22,7 +22,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
@@ -208,7 +208,7 @@ public class TickCurveRenderer extends Renderer {
         
     }
 
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         if ( ds==null ) {
             return;

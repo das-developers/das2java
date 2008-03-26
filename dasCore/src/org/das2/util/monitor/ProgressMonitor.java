@@ -55,14 +55,14 @@ package org.das2.util.monitor;
  *
  * @author  jbf
  */
-public interface DasProgressMonitor {
+public interface ProgressMonitor {
     
     /**
      * Use NULL when you do not need or wish to use a progressMonitor.  It simply
      * ignores the progress messages.
      * @deprecated this should not be used.  Instead use new NullProgressMonitor();
      */    
-    public static final DasProgressMonitor NULL= new DasProgressMonitor() {
+    public static final ProgressMonitor NULL= new ProgressMonitor() {
         public void setTaskSize(long taskSize) {} ;
         public long getTaskSize( ) { return 1; }
         public void setTaskProgress(long position) throws IllegalArgumentException {};

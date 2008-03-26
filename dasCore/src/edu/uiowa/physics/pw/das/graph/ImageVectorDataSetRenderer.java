@@ -15,7 +15,7 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
@@ -63,7 +63,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
     
     
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         renderGhostly( g1, xAxis, yAxis );
     }
     
@@ -211,7 +211,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         imageYRange= yrange;
     }
     
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.DasProgressMonitor monitor) throws DasException {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
         
         long t0= System.currentTimeMillis();

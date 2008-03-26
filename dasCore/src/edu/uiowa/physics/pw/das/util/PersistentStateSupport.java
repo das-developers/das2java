@@ -9,7 +9,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
 import edu.uiowa.physics.pw.das.dasml.DOMBuilder;
@@ -76,21 +76,21 @@ public class PersistentStateSupport {
     
     public interface SerializationStrategy {
         // give me a document to serialize
-        public Element serialize( Document document, DasProgressMonitor monitor ) throws IOException;
+        public Element serialize( Document document, ProgressMonitor monitor ) throws IOException;
         
         // here's a document you gave me
-        public void deserialize( Document doc, DasProgressMonitor monitor );
+        public void deserialize( Document doc, ProgressMonitor monitor );
     }
     
     private static SerializationStrategy getCanvasStrategy( final DasCanvas canvas ) {
         return new SerializationStrategy() {
-            public Element serialize(Document document, DasProgressMonitor monitor) {
+            public Element serialize(Document document, ProgressMonitor monitor) {
                 DOMBuilder builder= new DOMBuilder( canvas );
                 Element element= builder.serialize( document, DasProgressPanel.createFramed("Serializing Canvas") );
                 return element;
             }
             
-            public void deserialize(Document document, DasProgressMonitor monitor) {
+            public void deserialize(Document document, ProgressMonitor monitor) {
                 Element element= document.getDocumentElement();
                 SerializeUtil.processElement(element,canvas );
             }

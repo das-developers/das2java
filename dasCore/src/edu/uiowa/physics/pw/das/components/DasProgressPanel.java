@@ -31,7 +31,7 @@ import java.text.DecimalFormat;
 import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.*;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.util.NumberFormatUtil;
 import java.util.*;
 import java.util.logging.Logger;
@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  *
  * @author  eew
  */
-public class DasProgressPanel implements DasProgressMonitor {
+public class DasProgressPanel implements ProgressMonitor {
     
     private long taskStartedTime;
     private long currentTaskPosition;

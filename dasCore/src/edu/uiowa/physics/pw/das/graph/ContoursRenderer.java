@@ -17,7 +17,7 @@ import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.math.Contour;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -51,7 +51,7 @@ public class ContoursRenderer extends Renderer implements Displayable {
     GeneralPath[] paths;
     String[] pathLabels;
     
-    public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         Graphics2D g= (Graphics2D)g1;
         //g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -171,7 +171,7 @@ public class ContoursRenderer extends Renderer implements Displayable {
         return new ImageIcon( SpectrogramRenderer.class.getResource("/images/icons/contoursRenderer.png" ) );
     }
         
-    public synchronized  void updatePlotImage(DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor) throws DasException {
+    public synchronized  void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage(xAxis, yAxis, monitor);
         
         TableDataSet tds= (TableDataSet) getDataSet();

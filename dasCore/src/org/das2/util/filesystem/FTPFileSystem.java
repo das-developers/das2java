@@ -8,7 +8,7 @@
 
 package org.das2.util.filesystem;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.BufferedReader;
 import java.io.File;
@@ -106,7 +106,7 @@ public class FTPFileSystem extends WebFileSystem {
         }
     }
     
-    protected void downloadFile(String filename, java.io.File targetFile, File partFile, DasProgressMonitor monitor ) throws java.io.IOException {
+    protected void downloadFile(String filename, java.io.File targetFile, File partFile, ProgressMonitor monitor ) throws java.io.IOException {
         FileOutputStream out=null;
         InputStream is= null;
         try {

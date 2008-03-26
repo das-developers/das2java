@@ -14,7 +14,7 @@ import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo;
 import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.beans.*;
 import java.beans.PropertyDescriptor;
@@ -48,7 +48,7 @@ public class SerializeUtil {
         return getDOMElement( document, object, new NullProgressMonitor() );
     }
     
-    public static org.w3c.dom.Element getDOMElement( Document document, Object object, DasProgressMonitor monitor ) {
+    public static org.w3c.dom.Element getDOMElement( Document document, Object object, ProgressMonitor monitor ) {
         Logger log= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
         
         try {

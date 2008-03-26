@@ -7,7 +7,7 @@
  */
 
 package edu.uiowa.physics.pw.das.util;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
@@ -280,7 +280,7 @@ public class GraphicalLogHandler extends Handler {
             update();
         }
         
-        public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+        public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
             
             Graphics2D g= (Graphics2D)g1;
             g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );

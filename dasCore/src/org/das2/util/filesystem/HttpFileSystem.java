@@ -10,7 +10,7 @@
 
 package org.das2.util.filesystem;
 import org.das2.util.Base64;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.util.*;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
@@ -74,13 +74,13 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
     
-    protected void downloadFile( String filename, File f, File partFile, DasProgressMonitor monitor ) throws IOException {
+    protected void downloadFile( String filename, File f, File partFile, ProgressMonitor monitor ) throws IOException {
         
         logger.fine("downloadFile("+filename+")");
         
         boolean waitForAnother;
         synchronized ( downloads ) {
-            DasProgressMonitor mon= (DasProgressMonitor) downloads.get( filename );
+            ProgressMonitor mon= (ProgressMonitor) downloads.get( filename );
             if ( mon!=null ) { // the httpFS is already loading this file, so wait.
                 monitor.setProgressMessage( "Waiting for file to download" );
                 while ( mon!=null ) {
@@ -92,7 +92,7 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( monitor.isCancelled() ) mon.cancel();
                     monitor.setTaskProgress( mon.getTaskProgress() );
                     try { downloads.wait(100); } catch ( InterruptedException e ) { throw new RuntimeException(e); }
-                    mon= (DasProgressMonitor) downloads.get( filename );
+                    mon= (ProgressMonitor) downloads.get( filename );
                     logger.finest( "waiting for download" );
                     
                 }

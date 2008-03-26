@@ -18,20 +18,20 @@ package org.das2.util.monitor;
  *
  * @author Jeremy
  */
-public class SubTaskMonitor implements DasProgressMonitor {
+public class SubTaskMonitor implements ProgressMonitor {
     
-    DasProgressMonitor parent;
+    ProgressMonitor parent;
     long min, max, progress, size;
     String label;
     
-    private SubTaskMonitor( DasProgressMonitor parent, long min, long max ) {
+    private SubTaskMonitor( ProgressMonitor parent, long min, long max ) {
         this.parent= parent;
         this.min= min;
         this.max= max;
         this.size= -1;
     }
     
-    public static SubTaskMonitor create( DasProgressMonitor parent, long min, long max ) {
+    public static SubTaskMonitor create( ProgressMonitor parent, long min, long max ) {
         return new SubTaskMonitor( parent, min, max );
     }
         

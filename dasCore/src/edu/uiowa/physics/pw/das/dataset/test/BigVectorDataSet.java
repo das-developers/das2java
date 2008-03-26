@@ -8,7 +8,7 @@ import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
 import edu.uiowa.physics.pw.das.datum.Units;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.util.Random;
 
 /**
@@ -17,7 +17,7 @@ import java.util.Random;
  */
 public class BigVectorDataSet {
 
-    public static VectorDataSet getDataSet( int size, DasProgressMonitor mon ) {
+    public static VectorDataSet getDataSet( int size, ProgressMonitor mon ) {
         double dsize= (double)size;
         
         System.err.println("enter getDataSet");

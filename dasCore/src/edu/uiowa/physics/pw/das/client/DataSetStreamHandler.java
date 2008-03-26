@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.client;
 
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
@@ -54,14 +54,14 @@ public class DataSetStreamHandler implements StreamHandler {
     StreamHandlerDelegate delegate;
     StreamDescriptor sd;
     Map extraProperties;
-    DasProgressMonitor monitor;
+    ProgressMonitor monitor;
     int totalPacketCount= -1;
     int taskSize= -1;
     int packetCount= 0;
     
     private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     
-    public DataSetStreamHandler( Map extraProperties, DasProgressMonitor monitor ) {
+    public DataSetStreamHandler( Map extraProperties, ProgressMonitor monitor ) {
         this.extraProperties = new HashMap(extraProperties);
         this.monitor= monitor==null ? new NullProgressMonitor() : monitor;
     }

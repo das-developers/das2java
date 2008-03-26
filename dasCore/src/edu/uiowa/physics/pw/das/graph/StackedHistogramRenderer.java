@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
@@ -120,7 +120,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     }
     
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         Graphics2D g2= (Graphics2D)g.create();
         
@@ -210,7 +210,7 @@ public class StackedHistogramRenderer extends edu.uiowa.physics.pw.das.graph.Ren
     }
     
     
-    synchronized public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, DasProgressMonitor monitor ) throws DasException {
+    synchronized public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, ProgressMonitor monitor ) throws DasException {
         super.updatePlotImage( xAxis, yAxis_1, monitor );
         final Color BAR_COLOR= Color.BLACK;
         

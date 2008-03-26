@@ -6,7 +6,7 @@ package edu.uiowa.physics.pw.das.graph;
 
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.Units;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -32,7 +32,7 @@ public class PlotSymbolRenderer extends Renderer {
     Image[] coloredPsyms;
     int cmx, cmy;  // center of psym image
 
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         VectorDataSet vds = (VectorDataSet) getDataSet();
 
         if (vds == null) {

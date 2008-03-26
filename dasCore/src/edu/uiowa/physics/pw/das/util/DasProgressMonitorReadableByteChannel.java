@@ -22,7 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.util;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.client.*;
 import java.io.*;
 import java.nio.*;
@@ -35,7 +35,7 @@ import java.text.*;
  */
 public class DasProgressMonitorReadableByteChannel implements ReadableByteChannel {
 
-    private DasProgressMonitor monitor;
+    private ProgressMonitor monitor;
     private boolean started = false;
     private int bytesRead = 0;
     long birthTimeMilli;
@@ -48,7 +48,7 @@ public class DasProgressMonitorReadableByteChannel implements ReadableByteChanne
     ReadableByteChannel in;
 
     /** Creates a new instance of DasProgressMonitorInputStream */
-    public DasProgressMonitorReadableByteChannel(ReadableByteChannel in, DasProgressMonitor monitor) {
+    public DasProgressMonitorReadableByteChannel(ReadableByteChannel in, ProgressMonitor monitor) {
         this.monitor = monitor;
         this.birthTimeMilli = System.currentTimeMillis();
         this.deathTimeMilli = -1;

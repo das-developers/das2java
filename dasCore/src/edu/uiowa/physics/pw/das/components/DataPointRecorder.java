@@ -6,7 +6,7 @@
 package edu.uiowa.physics.pw.das.components;
 
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.dataset.*;
@@ -165,7 +165,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             fireDataSetUpdateEvent(new DataSetUpdateEvent((Object) this));
         }
 
-        protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, DasProgressMonitor monitor) throws DasException {
+        protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
             if (dataPoints.size() == 0) {
                 return null;
             } else {
@@ -315,7 +315,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     public void loadFromFile(File file) throws IOException {
 
-        DasProgressMonitor mon= null;
+        ProgressMonitor mon= null;
 
         try {
             active = false;

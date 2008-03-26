@@ -9,7 +9,7 @@ package org.das2.util.filesystem;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;
@@ -95,7 +95,7 @@ public class FileStorageModelNew {
         return getNamesFor( targetRange, new NullProgressMonitor() );
     }
 
-    public String[] getNamesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
+    public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
 
         String listRegex;
 
@@ -207,7 +207,7 @@ public class FileStorageModelNew {
     /**
      * @return a list of files that can be used
      */
-    public File[] getFilesFor( final DatumRange targetRange, DasProgressMonitor monitor ) {
+    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
         String[] names= getNamesFor( targetRange );
         File[] files= new File[names.length];
 

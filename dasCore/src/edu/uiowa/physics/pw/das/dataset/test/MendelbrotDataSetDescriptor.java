@@ -13,7 +13,7 @@ import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.graph.*;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.beans.*;
 
 /**
@@ -59,7 +59,7 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
     }
     
     
-    protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {
         
         double xstart, xend, xresolution;
         xstart= start.doubleValue(Units.dimensionless);

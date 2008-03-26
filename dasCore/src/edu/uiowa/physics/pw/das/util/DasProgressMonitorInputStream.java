@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.client.*;
 import java.io.*;
 import java.nio.*;
@@ -36,7 +36,7 @@ import java.text.*;
  */
 public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     
-    private DasProgressMonitor monitor;
+    private ProgressMonitor monitor;
     private boolean started = false;
     private int bytesRead = 0;
     long birthTimeMilli;
@@ -48,7 +48,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
     private long taskSize= streamLength/1000;
     
     /** Creates a new instance of DasProgressMonitorInputStream */
-    public DasProgressMonitorInputStream( InputStream in, DasProgressMonitor monitor ) {
+    public DasProgressMonitorInputStream( InputStream in, ProgressMonitor monitor ) {
         super(in);
         this.monitor = monitor;
         this.birthTimeMilli= System.currentTimeMillis();

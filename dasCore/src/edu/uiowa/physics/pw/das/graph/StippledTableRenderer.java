@@ -38,7 +38,7 @@ import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.DasDie;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -86,7 +86,7 @@ public class StippledTableRenderer extends Renderer {
         this.parent = parent;
     }
     
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, DasProgressMonitor mon) {
+    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         Graphics2D g2= (Graphics2D)g.create();
         
         if (getDataSet()==null && lastException!=null ) {
@@ -106,7 +106,7 @@ public class StippledTableRenderer extends Renderer {
     
     private boolean sliceRebinnedData= true;
     
-    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, DasProgressMonitor monitor ) throws DasException {
+    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
         try {
             TableDataSet rebinData;

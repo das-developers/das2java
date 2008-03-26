@@ -9,18 +9,18 @@
 
 package org.das2.util.monitor;
 
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * This is a progress monitor to use when we don't care about the progress.
- * This replaces DasProgressMonitor.NULL, which has the problem that it was
+ * This replaces ProgressMonitor.NULL, which has the problem that it was
  * stateless and there assume that progress monitors have state.
  *
  * Further, this can act as a base class for other monitor types.
  *
  * @author jbf
  */
-public class NullProgressMonitor implements DasProgressMonitor {
+public class NullProgressMonitor implements ProgressMonitor {
     
     public NullProgressMonitor() {
     }

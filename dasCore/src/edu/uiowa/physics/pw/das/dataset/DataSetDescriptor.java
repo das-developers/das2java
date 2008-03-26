@@ -22,7 +22,7 @@
 package edu.uiowa.physics.pw.das.dataset;
 
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
@@ -89,7 +89,7 @@ public abstract class DataSetDescriptor implements Displayable {
      * @param end end of the range for the request.
      * @param resolution the resolution requirement for the reqeust.  <code>null</code> may be used to request the finest resolution available or intrinic resolution.
      */
-    protected abstract DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException;
+    protected abstract DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException;
 
     /**
      * @return the x units of the DataSetDescriptor that parameterize the data.  This is used to identify dataSet requests.
@@ -103,7 +103,7 @@ public abstract class DataSetDescriptor implements Displayable {
      * then the dataSetUpdate may be fired on the same thread as the request is made.
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
-            final DasProgressMonitor monitor, Object lockObject) {
+            final ProgressMonitor monitor, Object lockObject) {
 
         Runnable request = new Runnable() {
 
@@ -145,7 +145,7 @@ public abstract class DataSetDescriptor implements Displayable {
      * @param lockObject object that is waiting for the result of this load, used to block other tasks which use that object.
      */
     public void requestDataSet(final Datum start, final Datum end, final Datum resolution,
-            final DasProgressMonitor monitor, Object lockObject, final DataSetUpdateListener listener) {
+            final ProgressMonitor monitor, Object lockObject, final DataSetUpdateListener listener) {
 
         if (lockObject == null) {
             lockObject = listener;
@@ -195,7 +195,7 @@ public abstract class DataSetDescriptor implements Displayable {
      * null for the data resolution indicates that the data should be returned at its "intrinsic resolution"
      * if such a resolution exists.
      */
-    public DataSet getDataSet(Datum start, Datum end, Datum resolution, DasProgressMonitor monitor) throws DasException {
+    public DataSet getDataSet(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {
         if (monitor == null) {
             monitor = new NullProgressMonitor();
         }

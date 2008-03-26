@@ -19,7 +19,7 @@ import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import javax.swing.JFrame;
 
 /**
@@ -56,7 +56,7 @@ public class PolynomialDataSetDescriptor extends DataSetDescriptor {
         this.ymin= ymin.doubleValue(yUnits);
     }
 
-    protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, DasProgressMonitor dasProgressMonitor) throws DasException {
+    protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor dasProgressMonitor) throws DasException {
         double x0 = start.doubleValue(xUnits) - xOffset;
         double x1 = end.doubleValue(xUnits) - xOffset;
         double dx = resolution == null ? minDx : Math.max(minDx, resolution.doubleValue(xUnits.getOffsetUnits()));

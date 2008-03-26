@@ -10,7 +10,7 @@
 package edu.uiowa.physics.pw.das.system;
 
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
@@ -22,15 +22,15 @@ public class NullMonitorFactory implements MonitorFactory {
     public NullMonitorFactory() {
     }
     
-    private DasProgressMonitor createNullMonitor() {
+    private ProgressMonitor createNullMonitor() {
         return new NullProgressMonitor();
     }
     
-    public DasProgressMonitor getMonitor(DasCanvasComponent context, String label, String description) {
+    public ProgressMonitor getMonitor(DasCanvasComponent context, String label, String description) {
         return createNullMonitor();
     }
     
-    public DasProgressMonitor getMonitor(String label, String description) {
+    public ProgressMonitor getMonitor(String label, String description) {
         return createNullMonitor();
     }
     

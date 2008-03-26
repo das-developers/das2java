@@ -7,7 +7,7 @@
 package org.das2.util.filesystem;
 
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import org.das2.util.monitor.DasProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -48,7 +48,7 @@ public class WebFileObject extends FileObject {
         return result;
     }
     
-    public InputStream getInputStream( DasProgressMonitor monitor ) throws FileNotFoundException {
+    public InputStream getInputStream( ProgressMonitor monitor ) throws FileNotFoundException {
         if ( isFolder ) {
             throw new IllegalArgumentException( "is a folder" );
         }
@@ -155,11 +155,11 @@ public class WebFileObject extends FileObject {
         return pathname;
     }
     
-    public java.nio.channels.ReadableByteChannel getChannel( DasProgressMonitor monitor ) throws FileNotFoundException {
+    public java.nio.channels.ReadableByteChannel getChannel( ProgressMonitor monitor ) throws FileNotFoundException {
         return ((FileInputStream)getInputStream( monitor )).getChannel();
     }
     
-    public File getFile( DasProgressMonitor monitor ) throws FileNotFoundException {
+    public File getFile( ProgressMonitor monitor ) throws FileNotFoundException {
         try {
             boolean download= false;
             
