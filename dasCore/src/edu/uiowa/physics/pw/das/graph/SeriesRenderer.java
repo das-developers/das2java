@@ -28,6 +28,7 @@ import edu.uiowa.physics.pw.das.DasProperties;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetUtil;
+import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
@@ -38,7 +39,6 @@ import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -82,13 +82,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
     private long lastUpdateMillis;
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
 
-    /* the cached data to speed up render step */
-    private GeneralPath path;
-    private GeneralPath fillToRefPath;
     private int firstIndex;/* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
-
     private int lastIndex;/* the non-inclusive index of the last point drawn. */
 
+    boolean updating = false;
+    
     private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     /**
      * indicates the dataset was clipped by dataSetSizeLimit 
@@ -99,13 +97,17 @@ public class SeriesRenderer extends Renderer implements Displayable {
         super();
         updatePsym();
     }
+    
     Image psymImage;
     Image[] coloredPsyms;
     int cmx, cmy;
     FillRenderElement fillElement = new FillRenderElement();
     ErrorBarRenderElement errorElement = new ErrorBarRenderElement();
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
+    PsymConnectorRenderElement[] extraConnectorElements;
+    
     PsymRenderElement psymsElement = new PsymRenderElement();
+    
     static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
     static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
     static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
@@ -264,6 +266,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         public boolean acceptContext(Point2D.Double dp) {
+            if ( ipsymsPath==null ) return false;
             double rad = Math.max(symSize, 5);
 
             for (int index = firstIndex; index < lastIndex; index++) {
@@ -751,17 +754,17 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
+        if (this.ds == null && lastException != null) {
+            parent.postException( this, lastException );
+            return;
+        }
+
         renderCount++;
         reportCount();
 
         long timer0 = System.currentTimeMillis();
 
-        VectorDataSet dataSet = (VectorDataSet) getDataSet();
-
-        if (this.ds == null && lastException != null) {
-            renderException(g, xAxis, yAxis, lastException);
-            return;
-        }
+        DataSet dataSet = getDataSet();
 
         if (dataSet == null) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
@@ -778,7 +781,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (!(dataSet.getXUnits().isConvertableTo(xAxis.getUnits()) && dataSet.getYUnits().isConvertableTo(yAxis.getUnits()))) {
             return;
         }
-
+        
+        if (lastIndex == firstIndex) {
+            parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+        }
+        
         DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set " + dataSet);
 
         Graphics2D graphics = (Graphics2D) g.create();
@@ -789,28 +796,45 @@ public class SeriesRenderer extends Renderer implements Displayable {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
 
+        TableDataSet tds=null;
+        VectorDataSet vds=null;
+        
+        if ( dataSet instanceof VectorDataSet ) {
+            vds= ( VectorDataSet ) dataSet;
+        } else if ( dataSet instanceof TableDataSet ) {
+            tds= (TableDataSet) dataSet;
+        }
+        
+        if ( tds!=null ) {
+            if ( extraConnectorElements==null ) return;
+            if ( tds.getYLength(0)!=extraConnectorElements.length ) {
+                return;
+            } else {
+                for ( int j=0; j<tds.getYLength(0); j++ ) {
+                    vds= tds.getYSlice(j,0);
+                    graphics.setColor( color );
+                    extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
+                }
+            }
+            return;
+        }
+        
         if (this.fillToReference) {
-            fillElement.render(graphics, xAxis, yAxis, dataSet, mon);
+            fillElement.render(graphics, xAxis, yAxis, vds, mon);
         }
 
+        
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
-
-        if (lastIndex == firstIndex) {
-            parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
-        }
-
-        graphics.setColor(color);
         
-        //psymConnector.draw(graphics, path, (float) lineWidth);
-        psymConnectorElement.render(graphics, xAxis, yAxis, dataSet, mon);
+        psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon);
 
 
-        errorElement.render(graphics, xAxis, yAxis, dataSet, mon);
+        errorElement.render(graphics, xAxis, yAxis, vds, mon);
 
         if (psym != DefaultPlotSymbol.NONE) {
 
-            psymsElement.render(graphics, xAxis, yAxis, dataSet, mon);
+            psymsElement.render(graphics, xAxis, yAxis, vds, mon);
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
 
@@ -831,8 +855,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             parent.postMessage(this, "dataset clipped at "+dataSetSizeLimit+" points", DasPlot.WARNING, null, null);
         }
     }
-    boolean updating = false;
-
+    
     /**
      * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
      */
@@ -852,7 +875,18 @@ public class SeriesRenderer extends Renderer implements Displayable {
             throw new RuntimeException(e);
         }
 
-        VectorDataSet dataSet = (VectorDataSet) getDataSet();
+        
+        DataSet dataSet = getDataSet();
+        
+        VectorDataSet vds= null;
+        TableDataSet tds= null;
+        
+        if ( dataSet instanceof VectorDataSet ) {
+            vds= (VectorDataSet) dataSet;
+        } else {
+            tds= (TableDataSet) dataSet;
+        }
+            
         if (dataSet == null || dataSet.getXLength() == 0) {
             return;
         }
@@ -864,23 +898,29 @@ public class SeriesRenderer extends Renderer implements Displayable {
         logger.fine("entering updatePlotImage");
         long t0 = System.currentTimeMillis();
 
-        boolean histogram = this.histogram;
-
         dataSetClipped= false;
-        fillElement.update(xAxis, yAxis, dataSet, monitor);
-        psymConnectorElement.update(xAxis, yAxis, dataSet, monitor);
+        
+        if ( vds!=null ) {
+            fillElement.update(xAxis, yAxis, vds, monitor);
+            psymConnectorElement.update(xAxis, yAxis, vds, monitor);
 
-        errorElement.update(xAxis, yAxis, dataSet, monitor);
-        psymsElement.update(xAxis, yAxis, dataSet, monitor);
+            errorElement.update(xAxis, yAxis, vds, monitor);
+            psymsElement.update(xAxis, yAxis, vds, monitor);
+        } else if ( tds!=null ) {
+            extraConnectorElements= new PsymConnectorRenderElement[tds.getYLength(0)];
+            for ( int i=0; i<tds.getYLength(0); i++ ) {
+                extraConnectorElements[i]= new PsymConnectorRenderElement();
+                vds= tds.getYSlice(i, 0);
+                extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
+            }
+        }
 
         if (getParent() != null) {
             getParent().repaint();
         }
 
-        logger.fine(
-                "done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
-        updating =
-                false;
+        logger.fine( "done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
+        updating = false;
         long milli = System.currentTimeMillis();
         long renderTime = (milli - t0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
@@ -901,8 +941,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     protected void uninstallRenderer() {
     }
 
-    public Element getDOMElement(
-            Document document) {
+    public Element getDOMElement( Document document ) {
         return null;
     }
 
@@ -1315,6 +1354,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         refreshImage();
     }
 
+    @Override
     public boolean acceptContext(int x, int y) {
         boolean accept = false;
 
@@ -1328,6 +1368,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
             accept = true;
         }
 
+        if ((!accept) && extraConnectorElements!=null ) {
+            for ( int j=0; j<extraConnectorElements.length; j++ ) {
+                if ( !accept && extraConnectorElements[j].acceptContext(dp) ) accept=true;
+            }
+        }
+        
         if ((!accept) && psymsElement.acceptContext(dp)) {
             accept = true;
         }
