@@ -5,8 +5,6 @@
  */
 
 package org.das2.util.filesystem;
-import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
@@ -25,7 +23,7 @@ import java.util.logging.Logger;
 public abstract class FileSystem  {
     
     URL root;
-    protected static Logger logger= DasLogger.getLogger( DasLogger.FILESYSTEM_LOG );
+    protected static Logger logger= Logger.getLogger(  "das2.filesystem" );
     
     public static class FileSystemOfflineException extends IOException {
         FileSystemOfflineException() {
@@ -87,9 +85,6 @@ public abstract class FileSystem  {
         return regex;
     }
     
-    protected void handleException( Exception e ) {
-        DasExceptionHandler.handle(e);
-    }
     
     /**
      * returns the canonical name /a/b/c.dat of a string that
@@ -118,7 +113,7 @@ public abstract class FileSystem  {
      */
     abstract public FileObject getFileObject( String filename );
     
-    abstract public boolean isDirectory( String filename );
+    abstract public boolean isDirectory( String filename ) throws IOException;
     
     /**
      * returns a list of the names of the files in a directory.  Names ending
@@ -126,14 +121,14 @@ public abstract class FileSystem  {
      * This is optional, and a directory may or may not be tagged with the trailing
      * slash.
      */
-    abstract public String[] listDirectory( String directory );
+    abstract public String[] listDirectory( String directory ) throws IOException;
     
     /**
      * returns a list of the names of the files in a directory that match regex.
      * Trailing slashes on directory names are not part of the name and need
      * not be part of the regex.
      */
-    abstract public String[] listDirectory( String directory, String regex );
+    abstract public String[] listDirectory( String directory, String regex ) throws IOException;
     
     /**
      * Boolean.TRUE if the filesystem ignores case, such as Windows local filesystem.

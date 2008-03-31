@@ -9,6 +9,9 @@
 
 package org.das2.fsm;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.filesystem.FileSystem;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
@@ -37,24 +40,25 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
     }
     
     protected DataSet getDataSetImpl(Datum start, Datum end, Datum resolution, ProgressMonitor monitor) throws DasException {
-        String[] names= fsm.getNamesFor( new DatumRange( start, end ), monitor );
-        
-        String planeId= "xTagWidth";
-        Units xUnits= getXUnits();
-        Units offsetUnits= xUnits.getOffsetUnits();
-        
-        VectorDataSetBuilder builder= new VectorDataSetBuilder( xUnits, offsetUnits );
-        builder.addPlane( planeId, offsetUnits );
-        builder.setProperty( DataSet.PROPERTY_CACHE_TAG, new CacheTag( start, end, null )  );
-        for ( int i=0; i<names.length; i++ ) {
-            DatumRange range= fsm.getRangeFor(names[i]);
-            builder.insertY( range.min().doubleValue(xUnits),
-                    range.width().doubleValue(offsetUnits),
-                    planeId,
-                    range.width().doubleValue(offsetUnits) );
+        try {
+            String[] names = fsm.getNamesFor(new DatumRange(start, end), monitor);
+
+            String planeId = "xTagWidth";
+            Units xUnits = getXUnits();
+            Units offsetUnits = xUnits.getOffsetUnits();
+
+            VectorDataSetBuilder builder = new VectorDataSetBuilder(xUnits, offsetUnits);
+            builder.addPlane(planeId, offsetUnits);
+            builder.setProperty(DataSet.PROPERTY_CACHE_TAG, new CacheTag(start, end, null));
+            for (int i = 0; i < names.length; i++) {
+                DatumRange range = fsm.getRangeFor(names[i]);
+                builder.insertY(range.min().doubleValue(xUnits), range.width().doubleValue(offsetUnits), planeId, range.width().doubleValue(offsetUnits));
+            }
+
+            return builder.toVectorDataSet();
+        } catch (IOException ex) {
+            throw new DasException(ex);
         }
-        
-        return builder.toVectorDataSet();
     }
     
     public Units getXUnits() {

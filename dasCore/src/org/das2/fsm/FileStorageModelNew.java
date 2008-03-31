@@ -16,6 +16,7 @@ import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 import edu.uiowa.physics.pw.das.util.TimeParser;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.*;
@@ -93,11 +94,11 @@ public class FileStorageModelNew {
         return timeParser.format( start, end );
     }
 
-    public String[] getNamesFor( final DatumRange targetRange ) {
+    public String[] getNamesFor( final DatumRange targetRange ) throws IOException {
         return getNamesFor( targetRange, new NullProgressMonitor() );
     }
 
-    public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
+    public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
 
         String listRegex;
 
@@ -166,7 +167,7 @@ public class FileStorageModelNew {
         return getCacheTagFor( fsm, range, names );
     }
     
-    public File[] getFilesFor( final DatumRange targetRange ) {
+    public File[] getFilesFor( final DatumRange targetRange ) throws IOException {
         return getFilesFor( targetRange, new NullProgressMonitor() );
     }
 
@@ -209,7 +210,7 @@ public class FileStorageModelNew {
     /**
      * @return a list of files that can be used
      */
-    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
+    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
         String[] names= getNamesFor( targetRange );
         File[] files= new File[names.length];
 

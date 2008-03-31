@@ -8,6 +8,7 @@ package org.das2.util.filesystem;
 
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
+import org.das2.util.monitor.NullProgressMonitor;
 
 /**
  *
@@ -91,7 +92,7 @@ public class LocalFileObject extends FileObject {
     }
 
     public File getFile() throws FileNotFoundException {
-        return getFile( ProgressMonitor.NULL );
+        return getFile( new NullProgressMonitor() );
     }
 
     public File getFile(org.das2.util.monitor.ProgressMonitor monitor) throws FileNotFoundException {

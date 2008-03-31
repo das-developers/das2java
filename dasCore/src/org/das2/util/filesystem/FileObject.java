@@ -33,17 +33,18 @@ public abstract class FileObject {
      * returns objects within a folder.
      * @return an array of all FileObjects with the folder.
      */
-    public abstract FileObject[] getChildren();
+    public abstract FileObject[] getChildren() throws IOException;
     
     /**
      * opens an inputStream, perhaps transferring the file to a
      *  cache first.
      * @param monitor for monitoring the download.  The monitor won't be used when the access
      *   is immediate, for example with local FileObjects.
-     * @return an InputStream
      * @throws FileNotFoundException if the file doesn't exist.
+     * @throws IOException
+     * @return an InputStream
      */
-    public abstract InputStream getInputStream( ProgressMonitor monitor ) throws FileNotFoundException;
+    public abstract InputStream getInputStream( ProgressMonitor monitor ) throws FileNotFoundException, IOException;
     
     /**
      * opens an inputStream, perhaps transferring the file to a
@@ -51,9 +52,10 @@ public abstract class FileObject {
      *  time until the file is downloaded.
      *
      * @throws FileNotFoundException if the file doesn't exist.
+     * @throws IOException
      * @return an InputStream
      */    
-    public InputStream getInputStream() throws FileNotFoundException {
+    public InputStream getInputStream() throws FileNotFoundException, IOException {
         return getInputStream( new NullProgressMonitor() );
     }
     
@@ -63,17 +65,19 @@ public abstract class FileObject {
      * @param monitor for monitoring the download.  The monitor won't be used when the access
      *   is immediate, for example with local FileObjects.
      * @throws FileNotFoundException if the file doesn't exist.
+     * @throws IOException
      * @return a java.nio.channels.Channel for fast IO reads.
      */
-    public abstract ReadableByteChannel getChannel( ProgressMonitor monitor ) throws FileNotFoundException;
+    public abstract ReadableByteChannel getChannel( ProgressMonitor monitor ) throws FileNotFoundException, IOException;
     
     /**
      * opens a Channel, but without a monitor.  Note this may block at sub-interactive time
      * if the FileObject needs to be downloaded before access.
      * @throws FileNotFoundException if the file doesn't exist.
+     * @throws IOException
      * @return a java.nio.channels.Channel for fast IO reads.
      */
-    public ReadableByteChannel getChannel() throws FileNotFoundException {
+    public ReadableByteChannel getChannel() throws FileNotFoundException, IOException {
         return getChannel( new NullProgressMonitor() );
     }
     
@@ -84,8 +88,9 @@ public abstract class FileObject {
      * @param monitor for monitoring the download.  The monitor won't be used when the access
      *   is immediate, for example with local FileObjects.
      * @throws java.io.FileNotFoundException if the file doesn't exist.
+     * @throws IOException if the file cannot be made local
      */
-    public abstract File getFile( ProgressMonitor monitor ) throws FileNotFoundException ;
+    public abstract File getFile( ProgressMonitor monitor ) throws FileNotFoundException, IOException;
     
     /**
      * gets a File object that can be opened by the client.  Note this may block at sub-interactive time
@@ -93,7 +98,7 @@ public abstract class FileObject {
      * @return a reference to a File that can be opened.
      * @throws java.io.FileNotFoundException if the file doesn't exist.
      */
-    public File getFile() throws FileNotFoundException {
+    public File getFile() throws FileNotFoundException, IOException {
         return getFile( new NullProgressMonitor() );
     }
     
@@ -135,7 +140,7 @@ public abstract class FileObject {
     public abstract boolean isRoot();
     
     /**
-     * returns true is the file is locally available, meaning clients can 
+     * returns true if the file is locally available, meaning clients can 
      * call getFile() and the readble File reference will be available in
      * interactive time.  Note that isLocal does not imply exists().  Also,
      * This may result in side effects such as a website hit.

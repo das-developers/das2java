@@ -18,6 +18,7 @@ import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.*;
 import java.util.*;
 import java.util.regex.*;
@@ -362,15 +363,16 @@ public class FileStorageModel {
         return null;
     }
     
-    public String[] getNamesFor( final DatumRange targetRange ) {
+    public String[] getNamesFor( final DatumRange targetRange ) throws IOException {
         return getNamesFor( targetRange, new NullProgressMonitor() );
     }
     
     /**
      * @param targetRange restrict search to range.  May be null, in which case all
      *    names are returned.
+     * @throws IOException if the filesystem cannot be listed.
      */
-    public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
+    public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
         
         String listRegex;
         
@@ -424,7 +426,7 @@ public class FileStorageModel {
      * This implementation does the same as getNames(), but stops after finding a file.
      * @return null if no file is found
      */
-    public String getRepresentativeFile( ProgressMonitor monitor ) {
+    public String getRepresentativeFile( ProgressMonitor monitor ) throws IOException {
         String listRegex;
         
         FileSystem[] fileSystems;
@@ -464,7 +466,7 @@ public class FileStorageModel {
         return result;
     }
     
-    public File[] getFilesFor( final DatumRange targetRange ) {
+    public File[] getFilesFor( final DatumRange targetRange ) throws IOException {
         return getFilesFor( targetRange, new NullProgressMonitor() );
     }
     
@@ -506,13 +508,14 @@ public class FileStorageModel {
     
     /**
      * retrieve the file for the name.
+     * @throws IOException if the file cannot be transferred.
      */
-    public File getFileFor( String name, ProgressMonitor monitor ) throws FileNotFoundException {
+    public File getFileFor( String name, ProgressMonitor monitor ) throws FileNotFoundException, IOException {
         FileObject o= root.getFileObject( name );
         File file= o.getFile( monitor );
         
         maybeCreateFileNameMap();
-        
+
         fileNameMap.put( file, name );
         return file;
         
@@ -521,7 +524,7 @@ public class FileStorageModel {
     /**
      * returns a list of files that can be used
      */
-    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) {
+    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
         String[] names= getNamesFor( targetRange );
         File[] files= new File[names.length];
         

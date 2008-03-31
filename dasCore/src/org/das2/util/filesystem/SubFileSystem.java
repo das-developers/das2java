@@ -8,6 +8,7 @@
 
 package org.das2.util.filesystem;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -30,15 +31,15 @@ public class SubFileSystem extends FileSystem {
         return parent.getFileObject( dir + filename );
     }
     
-    public boolean isDirectory(String filename) {
+    public boolean isDirectory(String filename) throws IOException {
         return parent.isDirectory( dir + filename );
     }
     
-    public String[] listDirectory(String directory) {
+    public String[] listDirectory(String directory) throws IOException {
         return parent.listDirectory( dir + directory );
     }
     
-    public String[] listDirectory(String directory, String regex) {
+    public String[] listDirectory(String directory, String regex) throws IOException {
         return parent.listDirectory( dir + directory, regex );
     }
     

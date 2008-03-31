@@ -11,13 +11,10 @@
 package org.das2.util.filesystem;
 
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
-import javax.swing.*;
 
 /**
  *
@@ -65,11 +62,11 @@ public abstract class WebFileSystem extends FileSystem {
         return this.localRoot;
     }
     
-    abstract public boolean isDirectory( String filename );
+    abstract public boolean isDirectory( String filename ) throws IOException;
     
-    abstract public String[] listDirectory( String directory );
+    abstract public String[] listDirectory( String directory ) throws IOException;
     
-    public String[] listDirectory( String directory, String regex ) {
+    public String[] listDirectory( String directory, String regex ) throws IOException {
         String[] names= listDirectory( directory );
         Pattern pattern= Pattern.compile(regex);
         ArrayList result= new ArrayList();
@@ -113,7 +110,7 @@ public abstract class WebFileSystem extends FileSystem {
     }
     
     
-    public FileObject getFileObject( String filename ) {        
+    public FileObject getFileObject( String filename ) {
         WebFileObject f= new WebFileObject( this, filename, new Date(System.currentTimeMillis()) );
         return f;
     }

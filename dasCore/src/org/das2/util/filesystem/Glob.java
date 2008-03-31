@@ -24,6 +24,7 @@
 package org.das2.util.filesystem;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -93,11 +94,11 @@ public class Glob {
      * @param glob
      * @return an array of FileObjects that match the glob.
      */
-    public static FileObject[] unGlob( FileSystem fs, String glob ) {
+    public static FileObject[] unGlob( FileSystem fs, String glob ) throws IOException {
         return unGlob( fs, glob, false );
     }
     
-    private static FileObject[] unGlob( FileSystem fs, String glob, final boolean directoriesOnly ) {
+    private static FileObject[] unGlob( FileSystem fs, String glob, final boolean directoriesOnly ) throws IOException {
         if ( File.separatorChar=='\\' ) glob= glob.replaceAll( "\\\\", "/" );
         String parentGlob= getParentDirectory( glob );
         FileObject[] files;
