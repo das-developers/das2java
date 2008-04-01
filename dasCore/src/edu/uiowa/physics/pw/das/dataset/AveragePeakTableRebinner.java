@@ -66,6 +66,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         AverageTableRebinner.average(tds, weights, averageData, averageWeights, ddX, ddY);
         
         double[] xTags;
+        double[] xTagMin, xTagMax;
         if (ddX != null) {
             xTags = ddX.binCenters();
         }
@@ -75,6 +76,9 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
                 xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
             }
         }
+        xTagMin= xTags;
+        xTagMax= xTags;  
+        
         double[][] yTags;
         if (ddY != null) {
             yTags = new double[][]{ddY.binCenters()};
@@ -88,8 +92,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         
         Datum xTagWidth= DataSetUtil.guessXTagWidth(ds);
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagWidthDouble  );
-        
+        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble );
         
         if ( ddY!=null ) {
             Datum yTagWidth= (Datum)ds.getProperty( DataSet.PROPERTY_Y_TAG_WIDTH );

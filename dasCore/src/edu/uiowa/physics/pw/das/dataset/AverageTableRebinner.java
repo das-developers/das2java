@@ -86,14 +86,22 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         double[] xTags;
+        double[] xTagMin;
+        double[] xTagMax;
+        
         if (ddX != null) {
             xTags = ddX.binCenters();
+            // TODO: set xTagMin, xTagMax by scanning through tags.
         } else {
             xTags = new double[nx];
             for (int i = 0; i < nx; i++) {
                 xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
             }
         }
+        
+        xTagMin= xTags;
+        xTagMax= xTags;        
+        
         double[][] yTags;
         if (ddY != null) {
             yTags = new double[][]{ddY.binCenters()};
@@ -113,11 +121,10 @@ public class AverageTableRebinner implements DataSetRebinner {
                 xTagWidth = DataSetUtil.guessXTagWidth(tds);
             }
             double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-
             Datum yTagWidth = (Datum) ds.getProperty("yTagWidth");
 
             if (ddX != null) {
-                fillInterpolateX(rebinData, rebinWeights, xTags, xTagWidthDouble);
+                fillInterpolateX(rebinData, rebinWeights, xTags, xTagMin, xTagMax, xTagWidthDouble);
             }
             if (ddY != null) {
                 fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth);
@@ -370,7 +377,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-    static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, final double xSampleWidth) {
+    static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, double[] xTagMin, double[] xTagMax, final double xSampleWidth) {
 
         final int nx = xTags.length;
         final int ny = data[0].length;
@@ -411,13 +418,13 @@ public class AverageTableRebinner implements DataSetRebinner {
             for (int i = 0; i < nx; i++) {
 
                 if (i1[i] != -1) { // needs to be interpolated
-                    if ((xTags[i2[i]] - xTags[i1[i]]) <= xSampleWidth * 1.5) {
-                        a2 = (float) ((xTags[i] - xTags[i1[i]]) / (xTags[i2[i]] - xTags[i1[i]]));
+                    if ((xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5) {
+                        a2 = (float) ((xTags[i] - xTagMax[i1[i]]) / (xTagMin[i2[i]] - xTags[i1[i]]));
                         a1 = 1.f - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                         weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
                     } else {
-                    //System.err.println("here15");
+                        System.err.println("here15");
                     }
                 }
             }
