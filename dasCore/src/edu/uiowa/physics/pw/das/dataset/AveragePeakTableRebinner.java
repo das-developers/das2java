@@ -69,15 +69,25 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         double[] xTagMin, xTagMax;
         if (ddX != null) {
             xTags = ddX.binCenters();
+            xTagMin = ddX.binStops();
+            xTagMax = ddX.binStarts();
+            for ( int i=0; i<tds.getXLength(); i++ ) {
+                double xt= tds.getXTagDouble(i, tds.getXUnits() );
+                int ibin= ddX.whichBin( xt, tds.getXUnits() );
+                if ( ibin>-1 && ibin<nx ) {
+                    xTagMin[ibin]= Math.min( xTagMin[ibin], xt );
+                    xTagMax[ibin]= Math.max( xTagMax[ibin], xt );
+                }
+            }            
         }
         else {
             xTags = new double[nx];
             for (int i = 0; i < nx; i++) {
                 xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
             }
+            xTagMin= xTags;
+            xTagMax= xTags;      
         }
-        xTagMin= xTags;
-        xTagMax= xTags;  
         
         double[][] yTags;
         if (ddY != null) {
