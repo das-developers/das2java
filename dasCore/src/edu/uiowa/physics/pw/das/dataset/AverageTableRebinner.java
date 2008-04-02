@@ -91,20 +91,29 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         if (ddX != null) {
             xTags = ddX.binCenters();
-            // TODO: set xTagMin, xTagMax by scanning through tags.
+            xTagMin = ddX.binStops();
+            xTagMax = ddX.binStarts();
+            for ( int i=0; i<tds.getXLength(); i++ ) {
+                double xt= tds.getXTagDouble(i, xunits );
+                int ibin= ddX.whichBin( xt, xunits );
+                if ( ibin>-1 && ibin<nx ) {
+                    xTagMin[ibin]= Math.min( xTagMin[ibin], xt );
+                    xTagMax[ibin]= Math.max( xTagMax[ibin], xt );
+                }
+            }
         } else {
             xTags = new double[nx];
             for (int i = 0; i < nx; i++) {
                 xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
             }
+            xTagMin= xTags;
+            xTagMax= xTags;        
         }
         
-        xTagMin= xTags;
-        xTagMax= xTags;        
         
         double[][] yTags;
         if (ddY != null) {
-            yTags = new double[][]{ddY.binCenters()};
+            yTags = new double[][]{ ddY.binCenters() };
         } else {
             yTags = new double[1][ny];
             for (int j = 0; j < ny; j++) {
@@ -127,6 +136,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                 fillInterpolateX(rebinData, rebinWeights, xTags, xTagMin, xTagMax, xTagWidthDouble);
             }
             if (ddY != null) {
+               /* Note the yTagMin,yTagMax code doesn't work here, because of the 
+                * multiple tables.  So here, we'll just up yTagWidth to be twice
+                * the pixel cadence.  When a new data model is introduced,
+                * this should be revisited.
+                */
                 fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth);
             }
         } else if (enlargePixels) {
@@ -423,8 +437,6 @@ public class AverageTableRebinner implements DataSetRebinner {
                         a1 = 1.f - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                         weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
-                    } else {
-                        System.err.println("here15");
                     }
                 }
             }
@@ -501,12 +513,12 @@ public class AverageTableRebinner implements DataSetRebinner {
 
 
             for (int j = 0; j < ny; j++) {
-                if ((i1[j] != -1) && ((yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidth)) {
+                if ((i1[j] != -1) && ( (yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidth || i2[j]-i1[j]==2 ) ) { //kludge for bug 000321
                     a2 = (float) ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
                     a1 = 1.f - a2;
                     data[i][j] = data[i][i1[j]] * a1 + data[i][i2[j]] * a2;
                     weights[i][j] = weights[i][i1[j]] * a1 + weights[i][i2[j]] * a2; //approximate
-                }
+                } 
             }
         }
     }
