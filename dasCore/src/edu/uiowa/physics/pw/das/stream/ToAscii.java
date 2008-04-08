@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
-import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.Map;
 

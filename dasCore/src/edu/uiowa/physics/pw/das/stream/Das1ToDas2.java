@@ -7,8 +7,6 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.client.*;
-import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;

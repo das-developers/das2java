@@ -24,7 +24,6 @@
 package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.DasIOException;
-import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.util.IDLParser;

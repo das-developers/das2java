@@ -6,8 +6,6 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.*;
-import org.w3c.dom.*;
 
 import java.io.*;
 
