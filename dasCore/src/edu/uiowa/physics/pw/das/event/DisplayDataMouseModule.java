@@ -10,10 +10,12 @@ package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.dataset.ClippedTableDataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
+import edu.uiowa.physics.pw.das.dataset.DataSetUtil;
 import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
@@ -111,10 +113,20 @@ public class DisplayDataMouseModule extends MouseModule {
                     doc.insertString(doc.getLength(), "(no dataset)\n", attrSet);
                 }
 
+                // copy for this renderer.
+                DatumRange rx1= DatumRangeUtil.rescale( xrange, 0, 1 );
+                DatumRange ry1= DatumRangeUtil.rescale( yrange, 0, 1 );  
+                
+                if ( ds!=null ) {
+                    if ( ! rx1.getUnits().isConvertableTo( ds.getXUnits()) ) rx1= DataSetUtil.xRange(ds);
+                    if ( ! ry1.getUnits().isConvertableTo( ds.getYUnits() )) ry1= DataSetUtil.yRange(ds);
+                }
+                    
                 DataSet outds;
                 if (ds instanceof TableDataSet) {
                     TableDataSet tds = (TableDataSet) ds;
-                    TableDataSet toutds = new ClippedTableDataSet(tds, xrange, yrange);
+                    
+                    TableDataSet toutds = new ClippedTableDataSet( tds, rx1, ry1 );
 
                     StringBuffer buf = new StringBuffer();
 
