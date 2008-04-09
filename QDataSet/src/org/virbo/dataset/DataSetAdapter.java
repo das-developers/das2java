@@ -30,6 +30,16 @@ public class DataSetAdapter {
         }
     }
     
+    public static edu.uiowa.physics.pw.das.dataset.DataSet createLegacyDataSet( org.virbo.dataset.QDataSet ds ) {
+        if ( ds.rank()==1 ) {
+            return VectorDataSetAdapter.create(ds);
+        } else if ( ds.rank()==2 ) {
+            return TableDataSetAdapter.create(ds);
+        } else {
+            throw new IllegalArgumentException("unsupported rank: "+ds.rank() );
+        }        
+    }
+    
     static class XTagsDataSet extends AbstractDataSet {
         edu.uiowa.physics.pw.das.dataset.DataSet source;
         XTagsDataSet( edu.uiowa.physics.pw.das.dataset.DataSet source ) {
