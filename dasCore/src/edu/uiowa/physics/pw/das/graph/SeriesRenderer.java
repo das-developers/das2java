@@ -778,7 +778,20 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
-        if (!(dataSet.getXUnits().isConvertableTo(xAxis.getUnits()) && dataSet.getYUnits().isConvertableTo(yAxis.getUnits()))) {
+        TableDataSet tds=null;
+        VectorDataSet vds=null;
+        boolean plottable= false;
+        
+        if ( dataSet instanceof VectorDataSet ) {
+            vds= ( VectorDataSet ) dataSet;
+            plottable= dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
+        } else if ( dataSet instanceof TableDataSet ) {
+            tds= (TableDataSet) dataSet;
+            plottable= tds.getZUnits().isConvertableTo(yAxis.getUnits());
+        }
+        plottable= plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
+        
+        if (! plottable ) {
             return;
         }
         
@@ -794,15 +807,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         } else {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        }
-
-        TableDataSet tds=null;
-        VectorDataSet vds=null;
-        
-        if ( dataSet instanceof VectorDataSet ) {
-            vds= ( VectorDataSet ) dataSet;
-        } else if ( dataSet instanceof TableDataSet ) {
-            tds= (TableDataSet) dataSet;
         }
         
         if ( tds!=null ) {
@@ -878,22 +882,27 @@ public class SeriesRenderer extends Renderer implements Displayable {
         
         DataSet dataSet = getDataSet();
         
-        VectorDataSet vds= null;
-        TableDataSet tds= null;
-        
-        if ( dataSet instanceof VectorDataSet ) {
-            vds= (VectorDataSet) dataSet;
-        } else {
-            tds= (TableDataSet) dataSet;
-        }
-            
         if (dataSet == null || dataSet.getXLength() == 0) {
             return;
         }
-
-        if (!(dataSet.getXUnits().isConvertableTo(xAxis.getUnits()) && dataSet.getYUnits().isConvertableTo(yAxis.getUnits()))) {
+        
+        TableDataSet tds=null;
+        VectorDataSet vds=null;
+        boolean plottable= false;
+        
+        if ( dataSet instanceof VectorDataSet ) {
+            vds= ( VectorDataSet ) dataSet;
+            plottable= dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
+        } else if ( dataSet instanceof TableDataSet ) {
+            tds= (TableDataSet) dataSet;
+            plottable= tds.getZUnits().isConvertableTo(yAxis.getUnits());
+        }
+        plottable= plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
+        
+        if (! plottable ) {
             return;
         }
+
 
         logger.fine("entering updatePlotImage");
         long t0 = System.currentTimeMillis();
