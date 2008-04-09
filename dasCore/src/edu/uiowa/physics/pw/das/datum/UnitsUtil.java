@@ -30,6 +30,58 @@ public class UnitsUtil {
     }
     
     /**
+     * returns true if the unit is a ratio measurement, meaning there is a physical zero
+     * and you can make meaningful ratios between arbitary numbers.  All operations 
+     * like add, multiply and divide are allowed.  (What about negative numbers?  We
+     * need a statistician!)
+     * Examples include "5 km" or "0.2/cc" and "15 counts"
+     * See http://en.wikipedia.org/wiki/Level_of_measurement
+     * @param unit
+     * @return
+     */
+    public static final boolean isRatioMeasurement( Units unit ) {
+        return !(unit instanceof EnumerationUnits) && unit.getOffsetUnits()==unit;
+    }
+    
+    /**
+     * returns true if the unit is a interval measurement, meaning the choice of
+     * zero is arbitrary.  Subtraction and comparison are allowed, but addition, 
+     * multiplication and division are invalid operators.  
+     * Examples include "2008-04-09T14:27:00Z" and 15 deg W Longitude.
+     * See http://en.wikipedia.org/wiki/Level_of_measurement
+     * @param unit
+     * @return
+     */
+    public static final boolean isIntervalMeasurement( Units unit ) {
+        return !(unit instanceof EnumerationUnits) && unit.getOffsetUnits()!=unit;
+    }
+    /**
+     * returns true if the unit is nominal, meaning that Datums with this unit
+     * can only be equal or not equal.  Currently all nominal data is stored
+     * as ordinal data, so this always returns false.  
+     * Examples include "Iowa City", and "Voyager 1".
+     * See http://en.wikipedia.org/wiki/Level_of_measurement
+     * @param unit
+     * @return true if the unit is nominal.
+     */
+    public static final boolean isNominalMeasurement( Units unit ) {
+        return false;
+    }
+    
+    /**
+     * returns true if the unit is ordinal, meaning that Datums with this unit
+     * can only be equal or not equal, or compared.  subtract, add, multiply,
+     * divide are invalid.
+     * Examples include energy bin labels and quality measures.
+     * See http://en.wikipedia.org/wiki/Level_of_measurement
+     * @param unit
+     * @return true if the unit is ordinal.
+     */
+    public static final boolean isOrdinalMeasurement( Units unit ) {
+        return unit instanceof EnumerationUnits;
+    }
+    
+    /**
      * returns the unit whose product with the parameter unit is
      * unity.
      */
