@@ -95,14 +95,11 @@ public class TableDataSetAdapter implements TableDataSet {
         return zunits.convertDoubleTo(units, z.value(i, j));
     }
 
-    private void notImplemented() {
-        throw new IllegalArgumentException("not implemented");
-    }
 
     public double[] getDoubleScan(int i, Units units) {
         double[] zz = new double[getYLength(tableOfIndex(i))];
         for (int j = 0; j < zz.length; j++) {
-            zz[j] = getDouble(i, j, getYUnits());
+            zz[j] = getDouble(i, j, getZUnits());
         }
         return zz;
     }
