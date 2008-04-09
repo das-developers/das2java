@@ -327,9 +327,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
     class PsymConnectorRenderElement implements RenderElement {
 
         private GeneralPath path1;
+        private Color color;  // override default color
 
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             if ( path1==null ) return 0;
+            if ( color!=null ) g.setColor(color);
             psymConnector.draw(g, path1, (float) lineWidth);
             return 0;
         }
@@ -814,10 +816,26 @@ public class SeriesRenderer extends Renderer implements Displayable {
             if ( tds.getYLength(0)!=extraConnectorElements.length ) {
                 return;
             } else {
+                int maxWidth=0;
+                for ( int j=0; j<tds.getYLength(0); j++ ) {
+                    String label= String.valueOf( tds.getYTagDatum(0, j) );
+                    maxWidth= Math.max( maxWidth, g.getFontMetrics().stringWidth(label) );
+                }
                 for ( int j=0; j<tds.getYLength(0); j++ ) {
                     vds= tds.getYSlice(j,0);
+                    
                     graphics.setColor( color );
                     extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
+                    
+                    int myIndex=j;
+
+                    int ix= (int)(xAxis.getColumn().getDMaximum() - maxWidth - parent.getEmSize() );
+                    int iy= (int)(yAxis.getRow().getDMinimum() + parent.getEmSize()*(0.5+myIndex) );
+                    g.setColor(extraConnectorElements[j].color);
+                    g.fillRect( ix, iy, 5, 5 );
+                    String label= String.valueOf( tds.getYTagDatum(0, j) );
+                    g.setColor( color );
+                    g.drawString(label, ix+(int)(parent.getEmSize()/2), iy+(int)(parent.getEmSize()/2) );    
                 }
             }
             return;
@@ -919,6 +937,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
             extraConnectorElements= new PsymConnectorRenderElement[tds.getYLength(0)];
             for ( int i=0; i<tds.getYLength(0); i++ ) {
                 extraConnectorElements[i]= new PsymConnectorRenderElement();
+                
+                float[] colorHSV= Color.RGBtoHSB( color.getRed(), color.getGreen(), color.getBlue(), null );
+                if ( colorHSV[2]<0.5f ) colorHSV[2]= 0.5f;
+                if ( colorHSV[1]<0.5f ) colorHSV[1]= 0.5f;
+                extraConnectorElements[i].color= Color.getHSBColor( i/6.f, colorHSV[1], colorHSV[2] );
                 vds= tds.getYSlice(i, 0);
                 extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
             }
