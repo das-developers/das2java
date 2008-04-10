@@ -81,12 +81,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
     private Color color = Color.BLACK;
     private long lastUpdateMillis;
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
-
     private int firstIndex;/* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
+
     private int lastIndex;/* the non-inclusive index of the last point drawn. */
 
     boolean updating = false;
-    
     private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     /**
      * indicates the dataset was clipped by dataSetSizeLimit 
@@ -97,7 +96,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
         super();
         updatePsym();
     }
-    
     Image psymImage;
     Image[] coloredPsyms;
     int cmx, cmy;
@@ -105,9 +103,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     ErrorBarRenderElement errorElement = new ErrorBarRenderElement();
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
     PsymConnectorRenderElement[] extraConnectorElements;
-    
     PsymRenderElement psymsElement = new PsymRenderElement();
-    
     static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
     static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
     static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
@@ -266,7 +262,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         public boolean acceptContext(Point2D.Double dp) {
-            if ( ipsymsPath==null ) return false;
+            if (ipsymsPath == null) {
+                return false;
+            }
             double rad = Math.max(symSize, 5);
 
             for (int index = firstIndex; index < lastIndex; index++) {
@@ -281,7 +279,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     class ErrorBarRenderElement implements RenderElement {
 
-        GeneralPath p; 
+        GeneralPath p;
 
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             if (p == null) {
@@ -329,9 +327,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
         private GeneralPath path1;
         private Color color;  // override default color
 
+
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
-            if ( path1==null ) return 0;
-            if ( color!=null ) g.setColor(color);
+            if (path1 == null) {
+                return 0;
+            }
+            if (color != null) {
+                g.setColor(color);
+            }
             psymConnector.draw(g, path1, (float) lineWidth);
             return 0;
         }
@@ -402,11 +405,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
                     pointsPlotted++;
                 }
             }
-            
-            if ( index<ixmax && pointsPlotted==dataSetSizeLimit ) {
-                dataSetClipped= true;
+
+            if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
+                dataSetClipped = true;
             }
-            
+
             lastIndex = index;
 
             index = firstIndex;
@@ -431,7 +434,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             if (psymConnector != PsymConnector.NONE || fillToReference) {
                 // now loop through all of them. //
 
-                for (; index < lastIndex ; index++) {
+                for (; index < lastIndex; index++) {
 
                     x = dataSet.getXTagDouble(index, xUnits);
                     y = dataSet.getDouble(index, yUnits);
@@ -500,7 +503,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         public boolean acceptContext(Point2D.Double dp) {
-            return this.path1!=null && path1.intersects(dp.x - 5, dp.y - 5, 10, 10);
+            return this.path1 != null && path1.intersects(dp.x - 5, dp.y - 5, 10, 10);
         }
     }
 
@@ -596,10 +599,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 }
 
             }
-            if ( index<ixmax && pointsPlotted==dataSetSizeLimit ) {
-                dataSetClipped= true;
+            if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
+                dataSetClipped = true;
             }
-            
+
             lastIndex = index;
 
             index = firstIndex;
@@ -691,7 +694,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         public boolean acceptContext(Point2D.Double dp) {
-           return fillToRefPath1 != null && fillToRefPath1.contains(dp);
+            return fillToRefPath1 != null && fillToRefPath1.contains(dp);
         }
     }
 
@@ -757,7 +760,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         if (this.ds == null && lastException != null) {
-            parent.postException( this, lastException );
+            parent.postException(this, lastException);
             return;
         }
 
@@ -780,27 +783,27 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
-        TableDataSet tds=null;
-        VectorDataSet vds=null;
-        boolean plottable= false;
-        
-        if ( dataSet instanceof VectorDataSet ) {
-            vds= ( VectorDataSet ) dataSet;
-            plottable= dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
-        } else if ( dataSet instanceof TableDataSet ) {
-            tds= (TableDataSet) dataSet;
-            plottable= tds.getZUnits().isConvertableTo(yAxis.getUnits());
+        TableDataSet tds = null;
+        VectorDataSet vds = null;
+        boolean plottable = false;
+
+        if (dataSet instanceof VectorDataSet) {
+            vds = (VectorDataSet) dataSet;
+            plottable = dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
+        } else if (dataSet instanceof TableDataSet) {
+            tds = (TableDataSet) dataSet;
+            plottable = tds.getZUnits().isConvertableTo(yAxis.getUnits());
         }
-        plottable= plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
-        
-        if (! plottable ) {
+        plottable = plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
+
+        if (!plottable) {
             return;
         }
-        
+
         if (lastIndex == firstIndex) {
             parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
-        
+
         DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set " + dataSet);
 
         Graphics2D graphics = (Graphics2D) g.create();
@@ -810,45 +813,49 @@ public class SeriesRenderer extends Renderer implements Displayable {
         } else {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
-        
-        if ( tds!=null ) {
-            if ( extraConnectorElements==null ) return;
-            if ( tds.getYLength(0)!=extraConnectorElements.length ) {
+
+        if (tds != null) {
+            if (extraConnectorElements == null) {
+                return;
+            }
+            if (tds.getYLength(0) != extraConnectorElements.length) {
                 return;
             } else {
-                int maxWidth=0;
-                for ( int j=0; j<tds.getYLength(0); j++ ) {
-                    String label= String.valueOf( tds.getYTagDatum(0, j) );
-                    maxWidth= Math.max( maxWidth, g.getFontMetrics().stringWidth(label) );
+                int maxWidth = 0;
+                for (int j = 0; j < tds.getYLength(0); j++) {
+                    String label = String.valueOf(tds.getYTagDatum(0, j));
+                    maxWidth = Math.max(maxWidth, g.getFontMetrics().stringWidth(label));
                 }
-                for ( int j=0; j<tds.getYLength(0); j++ ) {
-                    vds= tds.getYSlice(j,0);
-                    
-                    graphics.setColor( color );
-                    extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
-                    
-                    int myIndex=j;
+                for (int j = 0; j < tds.getYLength(0); j++) {
+                    vds = tds.getYSlice(j, 0);
 
-                    int ix= (int)(xAxis.getColumn().getDMaximum() - maxWidth - parent.getEmSize() );
-                    int iy= (int)(yAxis.getRow().getDMinimum() + parent.getEmSize()*(0.5+myIndex) );
-                    g.setColor(extraConnectorElements[j].color);
-                    g.fillRect( ix, iy, 5, 5 );
-                    String label= String.valueOf( tds.getYTagDatum(0, j) );
-                    g.setColor( color );
-                    g.drawString(label, ix+(int)(parent.getEmSize()/2), iy+(int)(parent.getEmSize()/2) );    
+                    graphics.setColor(color);
+                    if (extraConnectorElements[j] != null) {  // thread race
+                        extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
+
+                        int myIndex = j;
+
+                        int ix = (int) (xAxis.getColumn().getDMaximum() - maxWidth - parent.getEmSize());
+                        int iy = (int) (yAxis.getRow().getDMinimum() + parent.getEmSize() * (0.5 + myIndex));
+                        g.setColor(extraConnectorElements[j].color);
+                        g.fillRect(ix, iy, 5, 5);
+                        String label = String.valueOf(tds.getYTagDatum(0, j));
+                        g.setColor(color);
+                        g.drawString(label, ix + (int) (parent.getEmSize() / 2), iy + (int) (parent.getEmSize() / 2));
+                    }
                 }
             }
             return;
         }
-        
+
         if (this.fillToReference) {
             fillElement.render(graphics, xAxis, yAxis, vds, mon);
         }
 
-        
+
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
-        
+
         psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon);
 
 
@@ -872,12 +879,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         logger.finer("render: " + renderTime + " total:" + (milli - lastUpdateMillis) + " fps:" + (1000. / (milli - lastUpdateMillis)) + " pts/ms:" + dppms);
         lastUpdateMillis = milli;
-        
-        if ( dataSetClipped ) {
-            parent.postMessage(this, "dataset clipped at "+dataSetSizeLimit+" points", DasPlot.WARNING, null, null);
+
+        if (dataSetClipped) {
+            parent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
     }
-    
+
     /**
      * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
      */
@@ -897,27 +904,27 @@ public class SeriesRenderer extends Renderer implements Displayable {
             throw new RuntimeException(e);
         }
 
-        
+
         DataSet dataSet = getDataSet();
-        
+
         if (dataSet == null || dataSet.getXLength() == 0) {
             return;
         }
-        
-        TableDataSet tds=null;
-        VectorDataSet vds=null;
-        boolean plottable= false;
-        
-        if ( dataSet instanceof VectorDataSet ) {
-            vds= ( VectorDataSet ) dataSet;
-            plottable= dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
-        } else if ( dataSet instanceof TableDataSet ) {
-            tds= (TableDataSet) dataSet;
-            plottable= tds.getZUnits().isConvertableTo(yAxis.getUnits());
+
+        TableDataSet tds = null;
+        VectorDataSet vds = null;
+        boolean plottable = false;
+
+        if (dataSet instanceof VectorDataSet) {
+            vds = (VectorDataSet) dataSet;
+            plottable = dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
+        } else if (dataSet instanceof TableDataSet) {
+            tds = (TableDataSet) dataSet;
+            plottable = tds.getZUnits().isConvertableTo(yAxis.getUnits());
         }
-        plottable= plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
-        
-        if (! plottable ) {
+        plottable = plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
+
+        if (!plottable) {
             return;
         }
 
@@ -925,24 +932,28 @@ public class SeriesRenderer extends Renderer implements Displayable {
         logger.fine("entering updatePlotImage");
         long t0 = System.currentTimeMillis();
 
-        dataSetClipped= false;
-        
-        if ( vds!=null ) {
+        dataSetClipped = false;
+
+        if (vds != null) {
             fillElement.update(xAxis, yAxis, vds, monitor);
             psymConnectorElement.update(xAxis, yAxis, vds, monitor);
 
             errorElement.update(xAxis, yAxis, vds, monitor);
             psymsElement.update(xAxis, yAxis, vds, monitor);
-        } else if ( tds!=null ) {
-            extraConnectorElements= new PsymConnectorRenderElement[tds.getYLength(0)];
-            for ( int i=0; i<tds.getYLength(0); i++ ) {
-                extraConnectorElements[i]= new PsymConnectorRenderElement();
-                
-                float[] colorHSV= Color.RGBtoHSB( color.getRed(), color.getGreen(), color.getBlue(), null );
-                if ( colorHSV[2]<0.5f ) colorHSV[2]= 0.5f;
-                if ( colorHSV[1]<0.5f ) colorHSV[1]= 0.5f;
-                extraConnectorElements[i].color= Color.getHSBColor( i/6.f, colorHSV[1], colorHSV[2] );
-                vds= tds.getYSlice(i, 0);
+        } else if (tds != null) {
+            extraConnectorElements = new PsymConnectorRenderElement[tds.getYLength(0)];
+            for (int i = 0; i < tds.getYLength(0); i++) {
+                extraConnectorElements[i] = new PsymConnectorRenderElement();
+
+                float[] colorHSV = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+                if (colorHSV[2] < 0.5f) {
+                    colorHSV[2] = 0.5f;
+                }
+                if (colorHSV[1] < 0.5f) {
+                    colorHSV[1] = 0.5f;
+                }
+                extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
+                vds = tds.getYSlice(i, 0);
                 extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
             }
         }
@@ -951,7 +962,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             getParent().repaint();
         }
 
-        logger.fine( "done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
+        logger.fine("done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
         updating = false;
         long milli = System.currentTimeMillis();
         long renderTime = (milli - t0);
@@ -973,7 +984,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     protected void uninstallRenderer() {
     }
 
-    public Element getDOMElement( Document document ) {
+    public Element getDOMElement(Document document) {
         return null;
     }
 
@@ -1392,20 +1403,22 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         Point2D.Double dp = new Point2D.Double(x, y);
 
-        if ( fillElement.acceptContext(dp) ) {
+        if (fillElement.acceptContext(dp)) {
             accept = true;
         }
 
-        if ((!accept) && psymConnectorElement.acceptContext(dp) ) {
+        if ((!accept) && psymConnectorElement.acceptContext(dp)) {
             accept = true;
         }
 
-        if ((!accept) && extraConnectorElements!=null ) {
-            for ( int j=0; j<extraConnectorElements.length; j++ ) {
-                if ( !accept && extraConnectorElements[j].acceptContext(dp) ) accept=true;
+        if ((!accept) && extraConnectorElements != null) {
+            for (int j = 0; j < extraConnectorElements.length; j++) {
+                if (!accept && extraConnectorElements[j].acceptContext(dp)) {
+                    accept = true;
+                }
             }
         }
-        
+
         if ((!accept) && psymsElement.acceptContext(dp)) {
             accept = true;
         }
