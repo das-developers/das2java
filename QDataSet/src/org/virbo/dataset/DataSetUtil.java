@@ -157,11 +157,12 @@ public class DataSetUtil {
 
         String[] names = new String[]{QDataSet.UNITS, QDataSet.CADENCE,
             QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
-            QDataSet.TYPICAL_RANGE, QDataSet.VALID_RANGE,
-            QDataSet.QUBE, QDataSet.FILL_VALUE,
+            QDataSet.TYPICAL_RANGE, QDataSet.VALID_RANGE, QDataSet.FILL_VALUE,
+            QDataSet.QUBE, 
             QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
-            QDataSet.CACHE_TAG
-        ,
+            QDataSet.CACHE_TAG, 
+            QDataSet.COORDINATE_FRAME, 
+            QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
             };
         
         for ( int i=0; i < names.length; i++) {
@@ -292,7 +293,7 @@ public class DataSetUtil {
      * length ds.rank() containing each dimension's length,
      * or null if the dataset is not a qube.
      * @param ds
-     * @return int[] of length ds.rank() containing each dimension's length, pr null.
+     * @return int[] of length ds.rank() containing each dimension's length, or null if the dataset is not a qube.
      */
     public static int[] qubeDims(QDataSet ds) {
         if ( ds.rank() > 4 ) throw new IllegalArgumentException("rank limit");
