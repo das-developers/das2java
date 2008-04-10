@@ -79,6 +79,11 @@ public class DataSetBuilder {
         current.putValue( this.index, index1, index2, d );
     }
     
+    /**
+     * This must be called each time a record is complete.  
+     * TODO:  I always forget to call this, find another way to do this.  Check
+     * for unspecified entries.
+     */
     public void nextRecord() {
         index++;
         if ( index == current.length() ) {
