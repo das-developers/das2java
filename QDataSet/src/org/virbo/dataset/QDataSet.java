@@ -77,7 +77,8 @@ public interface QDataSet {
     /**
      * type DatumRange.  Range bounding measurements to be considered valid.  The DatumRange.contains
      * method defines the min and max inclusiveness, so min is included but max is not.  
-     * TODO: perhaps FILL_VALUE should be used to make 0 invalid on a log plot.
+     * FILL_VALUE should be used to make the lower bound exclusive, and a small amount (conventionally
+     * 0.1%) must be added to the upper bound to make it inclusive.
      */
     public final static String VALID_RANGE="VALID_RANGE";
     
