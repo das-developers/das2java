@@ -232,7 +232,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                         double d0 = Math.log(dr.min().doubleValue(u) / d);
                         double d1 = Math.log(dr.max().doubleValue(u) / d);
                         dr = new DatumRange(d0, d1, Units.logERatio);
-                        yy = Units.logERatio.createDatum(Math.log(tds.getYTagDouble(itable, j0, u) / d0));
+                        yy = Units.logERatio.createDatum( Math.log(yy.doubleValue(u) / d ));
                     // TODO: infinity
                     }
                     DatumRange xdr = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
