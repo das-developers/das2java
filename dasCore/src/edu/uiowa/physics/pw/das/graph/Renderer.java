@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
@@ -89,7 +90,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
 
     private String PROPERTY_ACTIVE="active";
 
-    private String PROPERTY_DATASET= "dataset";
+    private String PROPERTY_DATASET= "dataSet";
     
     protected Renderer( DataSetDescriptor dsd ) {
         this.loader= new XAxisDataLoader( this, dsd );
@@ -113,7 +114,9 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     /**
      * returns the current dataset being displayed.
      */
-    public DataSet getDataSet() { return this.ds; }
+    public DataSet getDataSet() { 
+        return this.ds; 
+    }
     
     /**
      * return the data for DataSetConsumer, which might be rebinned.
@@ -490,4 +493,13 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    
 }
