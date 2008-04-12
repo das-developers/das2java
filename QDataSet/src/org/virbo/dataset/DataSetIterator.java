@@ -32,6 +32,14 @@ public abstract class DataSetIterator  {
      */
     public abstract double next();
     
+    /**
+     * returns the idimth index that the cursor is pointing at, that
+     * the next() call will return.
+     * @param idim
+     * @return
+     */
+    public abstract int getIndex( int idim );
+   
     static class Rank1 extends DataSetIterator {
         int len;
         int index;
@@ -45,6 +53,11 @@ public abstract class DataSetIterator  {
         }
         public double next() {
             return ds.value(index++);
+        }
+
+        @Override
+        public int getIndex(int idim) {
+            return index;
         }
     }
     
@@ -74,6 +87,15 @@ public abstract class DataSetIterator  {
         public double next() {
             if ( index1==len1 ) carry();
             return ds.value(index0,index1++);
+        }
+
+        @Override
+        public int getIndex(int idim) {
+            switch (idim) {
+                case 0: return index0; 
+                case 1: return index1; 
+                default: throw new IllegalArgumentException("rank limit");
+            }
         }
     }
 
@@ -114,6 +136,17 @@ public abstract class DataSetIterator  {
             if ( index2==len2 ) carry();
             return ds.value(index0,index1,index2++);
         }
+        
+        @Override
+        public int getIndex(int idim) {
+            switch (idim) {
+                case 0: return index0;
+                case 1: return index1;
+                case 2: return index2;
+                default: throw new IllegalArgumentException("rank limit");
+            }
+        }
+        
     }
 
     public static DataSetIterator create( QDataSet ds ) {
