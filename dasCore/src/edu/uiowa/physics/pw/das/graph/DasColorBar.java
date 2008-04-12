@@ -53,11 +53,12 @@ public class DasColorBar extends DasAxis {
     
     private BufferedImage image;
     private DasColorBar.Type type;
-    private int fillColor;
+    private static int fillColor= Color.LIGHT_GRAY.getRGB();
     private int fillColorIndex;
     private int ncolor;
     
     private static final int COLORTABLE_SIZE=240;
+    private static final String PROP_FILL_COLOR= "fillColor";
     
     public DasColorBar( Datum min, Datum max, boolean isLog) {
         this(min, max, RIGHT, isLog);
@@ -381,7 +382,7 @@ public class DasColorBar extends DasAxis {
                 double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
                 colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
             }
-            colorTable[ncolor-1]= Color.LIGHT_GRAY.getRGB();
+            colorTable[ncolor-1]= fillColor;
             return colorTable;
         }
         
@@ -612,8 +613,12 @@ public class DasColorBar extends DasAxis {
      * @param fillColor New value of property fillColor.
      */
     public void setFillColor(Color fillColor) {
+        Color oldColor= new Color( this.fillColor );
         this.fillColor = fillColor.getRGB();
         this.type.initializeColorTable( COLORTABLE_SIZE, 0, this.type.getColorCount() );
+        markDirty();
+        update();
+        firePropertyChange( PROP_FILL_COLOR, oldColor,fillColor );
     }
     
 }
