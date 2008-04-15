@@ -75,10 +75,10 @@ public interface QDataSet {
     public final static String UNITS="UNITS";
     
     /**
-     * type DatumRange.  Range bounding measurements to be considered valid.  The DatumRange.contains
-     * method defines the min and max inclusiveness, so min is included but max is not.  
-     * FILL_VALUE should be used to make the lower bound exclusive, and a small amount (conventionally
-     * 0.1%) must be added to the upper bound to make it inclusive.
+     * type DatumRange.  Range bounding measurements to be considered valid.  Lower
+     * and Upper bounds are inclusive.  FILL_VALUE should be used to make the 
+     * lower bound or upper bound exclusive.  Note DatumRange contains logic is
+     * exclusive on the upper bound.
      */
     public final static String VALID_RANGE="VALID_RANGE";
     
