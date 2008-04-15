@@ -26,7 +26,7 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
     int len0;
     int len1;
     int len2;
-    private static final boolean RANGE_CHECK = false;
+    private static final boolean RANGE_CHECK = true;
     public static final String version = "20070529";
 
     public static DDataSet createRank1(int len0) {
@@ -305,6 +305,10 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
         return new DDataSet(1, nx, ny, 1, back);
     }
 
+    public static DDataSet wrap( double[] back, int rank, int len0, int len1, int len2 ) {
+        return new DDataSet( rank, len0, len1, len2, back );
+    }
+    
     /**
      * join dep0 if found, join auxillary planes if found.
      */
