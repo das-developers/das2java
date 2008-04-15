@@ -45,14 +45,13 @@ public class DataSetUtil {
      */
     public static MutablePropertyDataSet replicateDataSet(int n, final double value) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
-
             public double value(int i) {
                 return value;
             }
         };
         return result;
     }
-
+            
     /**
      * returns true if the dataset is monotonically increasing, and contains no fill.
      * An empty dataset is monotonic.
@@ -394,6 +393,14 @@ public class DataSetUtil {
     public static String statsString(QDataSet ds) {
         QDataSet stats = DataSetOps.moment(ds);
         return "" + stats.value(0) + "+/-" + stats.property("stddev") + " N=" + stats.property("validCount");
+    }
+    
+    public static QDataSet weightsDataSet( final QDataSet ds ) {
+        QDataSet result= (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
+        if ( result==null ) {
+            result= new WeightsDataSet(ds);
+        } 
+        return result;
     }
 }
 
