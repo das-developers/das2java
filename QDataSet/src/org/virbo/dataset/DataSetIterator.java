@@ -12,6 +12,8 @@ package org.virbo.dataset;
 /**
  * Iterator that provides access to each dataset point, hiding rank when
  * when it is not needed.
+ * 
+ * TODO: Rank2 and Rank3 have problems with zero length indeces.
  *
  * @author jbf
  */
@@ -33,68 +35,65 @@ public abstract class DataSetIterator  {
     public abstract double next();
     
     /**
-     * returns the idimth index that the cursor is pointing at, that
-     * the next() call will return.
+     * returns the idimth index0 that the cursor is pointing at, after 
+     * the next() was called.
      * @param idim
      * @return
      */
     public abstract int getIndex( int idim );
    
     static class Rank1 extends DataSetIterator {
-        int len;
-        int index;
+        int len0;
+        int index0;
         Rank1( QDataSet ds ) {
             this.ds= ds;
-            len= ds.length();
-            index= 0;
+            len0= ds.length();
+            index0= -1;
         }
         public boolean hasNext() {
-            return index<len;
+            return ! ( index0==len0-1 );
         }
         public double next() {
-            return ds.value(index++);
+            return ds.value(++index0);
         }
 
         @Override
         public int getIndex(int idim) {
-            return index;
+            return idim==0 ? index0 : 0;
         }
     }
     
     static class Rank2 extends DataSetIterator {
         int len0,len1;
         int index0,index1;
-        int lastIndex0;
         Rank2( QDataSet ds ) {
             this.ds= ds;
             len0= ds.length();
-            lastIndex0= len0-1;
             index0= 0;
             len1= ds.length(index0);
-            index1= 0;
+            index1= -1;
         }
         
         public boolean hasNext() {
-            return index0<=lastIndex0 && ( index1<len1 || index0<lastIndex0 );
+            return index0<len0 && ! ( index0==len0-1 && index1==len1-1 );
         }
         
         private void carry() {
             index1=0;
-            index0++;
-            len1= ds.length(index0);
+            len1= ds.length(++index0);
         }
         
         public double next() {
-            if ( index1==len1 ) carry();
-            return ds.value(index0,index1++);
+            if ( ++index1==len1 ) carry();
+            return ds.value(index0,index1);
         }
 
         @Override
         public int getIndex(int idim) {
             switch (idim) {
-                case 0: return index0; 
+                case 0: return index0;
                 case 1: return index1; 
-                default: throw new IllegalArgumentException("rank limit");
+                default: return 0;
             }
         }
     }
@@ -102,39 +101,35 @@ public abstract class DataSetIterator  {
     static class Rank3 extends DataSetIterator {
         int len0,len1,len2;
         int index0,index1,index2;
-        int lastIndex0, lastIndex1;
         
         Rank3( QDataSet ds ) {
             this.ds= ds;
             len0= ds.length();
-            lastIndex0= len0-1;
+            len1= ds.length(0);
+            len2= ds.length(1);
             index0= 0;
-            len1= ds.length(index0);
             index1= 0;
-            len2= ds.length(index0,index1);
-            index2= 0;
+            index2= -1;
         }
         
         public boolean hasNext() {
-            // TODO: check rank 3 when first dim has no elements
-            return index2<len2 || index1<lastIndex1 || index0<lastIndex0;
+            boolean lastIndex= index0==len0-1 && index1==len1-1 && index2==len2-1;
+            return index0<len0 && !lastIndex;
         }
         
+
         private void carry() {
             index2=0;
-            index1++;
-            if ( index1==len1 ) {
+            if ( ++index1==len1 ) {
                 index1=0;
-                index0++;
-                len1= ds.length(index0);
-                lastIndex1= len1-1;
+                len1= ds.length(++index0);
             } 
             len2= ds.length(index0,index1);
         }
         
         public double next() {
-            if ( index2==len2 ) carry();
-            return ds.value(index0,index1,index2++);
+            if ( ++index2==len2 ) carry();
+            return ds.value(index0,index1,index2);
         }
         
         @Override
@@ -143,12 +138,63 @@ public abstract class DataSetIterator  {
                 case 0: return index0;
                 case 1: return index1;
                 case 2: return index2;
-                default: throw new IllegalArgumentException("rank limit");
+                default: return 0;
             }
         }
         
     }
 
+    /**
+     * untested, unused code with optimizations for Qubes.
+     * TODO: break into separate classes for each rank.
+     * TODO: DDataSet should have a protected accessor.
+     */
+    static class Qube extends DataSetIterator {
+        int len0,len1,len2;
+        int n;
+        int i;
+        
+        Qube( QDataSet ds ) {
+            int[] dims= DataSetUtil.qubeDims(ds);
+            n= ds.length();
+            for ( int idim=1; idim<dims.length; idim++ ) {
+                n*= dims[idim];
+            }
+            i=0;
+        }
+        
+        @Override
+        public boolean hasNext() {
+            return i<n;
+        }
+
+        @Override
+        public double next() {
+            i++;
+            switch ( ds.rank() ) {
+                case 1: return ds.value(i);
+                case 2: return ds.value(i/len0,i%len0);
+                case 3: return ds.value(i/(len0*len1),i%(len0*len1)/len1,i%len2);
+                default: throw new IllegalArgumentException("rank limit");
+            }
+        }
+
+        @Override
+        public int getIndex(int idim) {
+            switch ( ds.rank() ) {
+                case 1: return i;
+                case 2: return idim==0 ? i/len0 : i%len0;
+                case 3: switch ( idim ) {
+                    case 0: return i/(len0*len1);
+                    case 1: return i%(len0*len1)/len1;
+                    case 2: return i%len2;
+                }
+                default: throw new IllegalArgumentException("rank limit");
+            }            
+        }
+        
+    }
+    
     public static DataSetIterator create( QDataSet ds ) {
         switch (ds.rank()) {
             case 1: return new Rank1(ds); 
@@ -158,6 +204,15 @@ public abstract class DataSetIterator  {
         }
     }
     
+    public static final void putValue( WritableDataSet ds, DataSetIterator it, double v ) {
+        switch ( ds.rank() ) {
+            case 1: ds.putValue( it.getIndex(0), v ); return;
+            case 2: ds.putValue( it.getIndex(0), it.getIndex(1), v ); return;
+            case 3: ds.putValue( it.getIndex(0), it.getIndex(1), it.getIndex(2), v ); return;
+            default: throw new IllegalArgumentException("rank limit");
+        }
+    }
+            
     public static void main(String[] args ) {
         double[] back= new double[20];
         for ( int i=0; i<back.length; i++ ) back[i]=i;
