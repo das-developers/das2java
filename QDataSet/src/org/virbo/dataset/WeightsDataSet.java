@@ -12,6 +12,13 @@ import edu.uiowa.physics.pw.das.datum.Units;
  * Provide consistent valid logic to operators by providing a QDataSet
  * with 1.0 where the data is valid, and 0.0 where the data is invalid.
  * VALID_RANGE and FILL_VALUE properties are used.
+ * 
+ * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
+ * support legacy logic.
+ * 
+ * For convenience, the property FILL_VALUE is set to the fill value used.
+ * 
+ * 
  * @author jbf
  */
 public class WeightsDataSet implements QDataSet {
@@ -47,7 +54,7 @@ public class WeightsDataSet implements QDataSet {
     }
 
     public double value(int i0, int i1) {
-        return weight(ds.value(i0,i0));
+        return weight(ds.value(i0,i1));
     }
 
     public double value(int i0, int i1, int i2) {
@@ -55,15 +62,15 @@ public class WeightsDataSet implements QDataSet {
     }
 
     public Object property(String name) {
-        return null;
+        return name.equals(QDataSet.FILL_VALUE) ? fill : null;
     }
 
     public Object property(String name, int i) {
-        return null;
+        return name.equals(QDataSet.FILL_VALUE) ? fill : null;
     }
 
     public Object property(String name, int i0, int i1) {
-        return null;
+        return name.equals(QDataSet.FILL_VALUE) ? fill : null;
     }
 
     public int length() {

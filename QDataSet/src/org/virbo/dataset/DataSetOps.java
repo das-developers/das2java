@@ -377,14 +377,15 @@ public class DataSetOps {
     public static QDataSet histogram(QDataSet ds, final double min, final double max, final double binsize) {
         int n = (int) Math.ceil((max - min) / binsize);
         QDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize);
-        final Units u = (Units) ds.property(QDataSet.UNITS);
         final int[] hits = new int[n];
 
         DataSetIterator iter = DataSetIterator.create(ds);
+        DataSetIterator witer= DataSetIterator.create( DataSetUtil.weightsDataSet(ds) );
 
         for (; iter.hasNext();) {
             double d = iter.next();
-            if (!Double.isNaN(d) && (u == null || u.isValid(d))) {
+            double w = witer.next();
+            if ( w>0. ) {
                 int ibin = (int) ((d - min) / binsize);
                 if (ibin >= 0 && ibin < n) {
                     hits[ibin]++;
@@ -416,10 +417,14 @@ public class DataSetOps {
 
         double approxMean = 0.;
 
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
         DataSetIterator iter = DataSetIterator.create(ds);
+        DataSetIterator witer = DataSetIterator.create( wds );
+        
         while (iter.hasNext()) {
             double d = iter.next();
-            if (!u.isValid(d)) {
+            double w = witer.next();
+            if ( w==0.0 ) {
                 invalidCount++;
             } else {
                 validCount++;
@@ -436,9 +441,11 @@ public class DataSetOps {
 
         if (validCount > 0) {
             iter = DataSetIterator.create(ds);
+            witer = DataSetIterator.create( wds );
             while (iter.hasNext()) {
                 double d = iter.next();
-                if (u.isValid(d)) {
+                double w = witer.next();
+                if ( w>0.0 ) {
                     mean += (d - approxMean);
                     stddev += Math.pow(d - approxMean, 2);
                 }
