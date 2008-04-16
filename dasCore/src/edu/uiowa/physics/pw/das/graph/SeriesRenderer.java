@@ -757,7 +757,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         //}
     }
 
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         if (this.ds == null && lastException != null) {
             parent.postException(this, lastException);
@@ -889,7 +889,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
      */
     @Override
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
+    public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
 
         updating = true;
 
