@@ -412,18 +412,18 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         int xSize = getColumn().getDMaximum() - x;
         int ySize = getRow().getDMaximum() - y;
 
-        /*Shape saveClip;
+        Shape saveClip;
         if (getCanvas().isPrintingThread()) {
-        saveClip = graphics1.getClip();
-        graphics1.setClip( new Rectangle( 0, 0, getWidth(),  getHeight() ) );
+            saveClip = graphics1.getClip();
+            graphics1.setClip( null );
         } else {
-        saveClip=null;
-        }*/
+            saveClip=null;
+        }
 
         logger.info("DasPlot clip=" + graphics1.getClip());
 
         Rectangle clip = graphics1.getClipBounds();
-        if ((clip.y + getY()) >= (y + ySize)) {
+        if ( clip!=null && (clip.y + getY()) >= (y + ySize) ) {
             return;
         }
 
@@ -595,9 +595,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         getMouseAdapter().paint(graphics);
 
-    /*if ( saveClip!=null ) {
-    graphics1.setClip( saveClip );
-    }*/
+        if ( saveClip!=null ) {
+           graphics1.setClip( saveClip );
+        }
     }
 
     private class MessageDescriptor {
@@ -669,11 +669,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     // override me to add to the axes.
     }
 
+    
     public void resize() {
+        resize( this.getGraphics() );
+    } 
+    
+    private void resize( Graphics g ) {
         logger.fine("resize");
         if (isDisplayable()) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(this.getGraphics(), getTitle());
+            gtr.setString( this.getGraphics(), getTitle() );
 
             int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
 
