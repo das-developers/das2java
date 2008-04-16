@@ -5,7 +5,6 @@
  *
  *
  */
-
 package edu.uiowa.physics.pw.das.util;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
@@ -13,6 +12,8 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.TimeUtil.TimeStruct;
 import edu.uiowa.physics.pw.das.datum.Units;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,33 +26,26 @@ import java.util.logging.Logger;
  * @author Jeremy
  */
 public class TimeParser {
-    
-    final static Logger logger= Logger.getLogger("TimeParser");
-    
+
+    final static Logger logger = Logger.getLogger("TimeParser");
     /**
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */
-    public static final String TIMEFORMAT_Z= "%Y-%m-%dT%H:%M:%S.%{milli}Z";
-    
+    public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
     TimeStruct time;
     TimeStruct timeWidth;
-    
     int ndigits;
-    
-    String[] valid_formatCodes= new String[] { "Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore" };
-    String[] formatName= new String[] { "Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
-    "am/pm", "RFC-822 numeric time zone", "ignore" };
-    int[] formatCode_lengths= new int[] { 4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1 };
-    int [] precision= new int[] { 0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1 };
-    
+    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore"};
+    String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
+        "am/pm", "RFC-822 numeric time zone", "ignore"
+    };
+    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1};
+    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1};
     int[] handlers;
-    
     /**
      * set of custom handlers to allow for extension
      */
     Map/*<String,FieldHandler>*/ fieldHandlers;
-    
-    
     /**
      * positions of each digit, within the string to be parsed.  If position is -1, then we need to
      * compute it along the way.
@@ -60,131 +54,156 @@ public class TimeParser {
     int[] lengths;
     String[] delims;
     String[] fc;
-    
     String regex;
-    
     /**
      * Least significant digit in format.
      *0=year, 1=month, 2=day, 3=hour, 4=min, 5=sec, 6=milli, 7=micro
      */
     int lsd;
-    
+
     public interface FieldHandler {
-        public void handleValue( String fieldContent, TimeStruct startTime, TimeStruct timeWidth );
+
+        public void handleValue(String fieldContent, TimeStruct startTime, TimeStruct timeWidth);
     }
-    
-    private TimeParser( String formatString, Map/*<String,FieldHandler>*/ fieldHandlers ) {
-        time= new TimeUtil.TimeStruct();
-        
-        String[] ss= formatString.split("%");
-        fc= new String[ss.length];
-        String[] delim= new String[ss.length+1];
-        
-        ndigits= ss.length;
-        
-        StringBuffer regex= new StringBuffer(100);
-        regex.append( ss[0] );
-        
-        this.fieldHandlers= fieldHandlers;
-        
-        lengths= new int[ndigits];
-        for ( int i=0; i<lengths.length; i++ ) {
-            lengths[i]= -1; // -1 indicates not known, but we'll figure out as many as we can.
+
+    private TimeParser(String formatString, Map/*<String,FieldHandler>*/ fieldHandlers) {
+        time = new TimeUtil.TimeStruct();
+
+        String[] ss = formatString.split("%");
+        fc = new String[ss.length];
+        String[] delim = new String[ss.length + 1];
+
+        ndigits = ss.length;
+
+        StringBuffer regex = new StringBuffer(100);
+        regex.append(ss[0]);
+
+        this.fieldHandlers = fieldHandlers;
+
+        lengths = new int[ndigits];
+        for (int i = 0; i < lengths.length; i++) {
+            lengths[i] = -1; // -1 indicates not known, but we'll figure out as many as we can.
+
         }
-        
-        delim[0]= ss[0];
-        for ( int i=1; i<ndigits; i++ ) {
-            int pp=0;
-            while ( Character.isDigit( ss[i].charAt(pp) ) ) pp++;
-            
-            if ( pp>0 ) {
-                lengths[i]= Integer.parseInt( ss[i].substring(0,pp) );
+
+        delim[0] = ss[0];
+        for (int i = 1; i < ndigits; i++) {
+            int pp = 0;
+            while (Character.isDigit(ss[i].charAt(pp))) {
+                pp++;
             }
-            
-            if ( ss[i].charAt(pp)!='{' ) {
-                fc[i]= ss[i].substring(pp,pp+1);
-                delim[i]= ss[i].substring(pp+1);
+            if (pp > 0) {
+                lengths[i] = Integer.parseInt(ss[i].substring(0, pp));
+            }
+
+            if (ss[i].charAt(pp) != '{') {
+                fc[i] = ss[i].substring(pp, pp + 1);
+                delim[i] = ss[i].substring(pp + 1);
             } else {
-                int endIndex= ss[i].indexOf( '}', pp );
-                fc[i]= ss[i].substring(pp+1,endIndex);
-                delim[i]= ss[i].substring(endIndex+1);
+                int endIndex = ss[i].indexOf('}', pp);
+                fc[i] = ss[i].substring(pp + 1, endIndex);
+                delim[i] = ss[i].substring(endIndex + 1);
             }
         }
-        
-        handlers= new int[ndigits];
-        offsets= new int[ndigits];
-        
-        int pos= 0;
-        offsets[0]= pos;
-        
-        lsd= -1;
-        for ( int i=1; i<ndigits; i++ ) {
-            if ( pos != -1 ) pos+= delim[i-1].length();
-            int handler= 9999;
-            
-            for ( int j=0; j<valid_formatCodes.length; j++ ) {
-                if ( valid_formatCodes[j].equals( fc[i] ) ) {
-                    handler= j;
+
+        handlers = new int[ndigits];
+        offsets = new int[ndigits];
+
+        int pos = 0;
+        offsets[0] = pos;
+
+        lsd = -1;
+        for (int i = 1; i < ndigits; i++) {
+            if (pos != -1) {
+                pos += delim[i - 1].length();
+            }
+            int handler = 9999;
+
+            for (int j = 0; j < valid_formatCodes.length; j++) {
+                if (valid_formatCodes[j].equals(fc[i])) {
+                    handler = j;
                     break;
                 }
             }
-            
-            if ( handler==9999 ) {
-                if ( fieldHandlers==null || !fieldHandlers.containsKey(fc[i]) ) {
-                    throw new IllegalArgumentException( "bad format code: \""+fc[i]+"\"" );
+
+            if (handler == 9999) {
+                if (fieldHandlers == null || !fieldHandlers.containsKey(fc[i])) {
+                    throw new IllegalArgumentException("bad format code: \"" + fc[i] + "\"");
                 } else {
-                    lsd= 100;
-                    handler=100;
-                    handlers[i]=100;
-                    offsets[i]= pos;
-                    if ( lengths[i]<1 || pos== -1 ) { // 0->indetermined as well, allows user to force indeterminate
-                        pos= -1;
-                        lengths[i]=-1;
+                    lsd = 100;
+                    handler = 100;
+                    handlers[i] = 100;
+                    offsets[i] = pos;
+                    if (lengths[i] < 1 || pos == -1) { // 0->indetermined as well, allows user to force indeterminate
+
+                        pos = -1;
+                        lengths[i] = -1;
                     } else {
-                        pos+= lengths[i];
+                        pos += lengths[i];
                     }
                 }
             } else {
-                handlers[i]= handler;
-                if ( lengths[i]==-1 ) lengths[i]= formatCode_lengths[handler] ;
-                offsets[i]= pos;
-                if ( lengths[i]<1 || pos== -1 ) {
-                    pos= -1;
-                    lengths[i]= -1;
+                handlers[i] = handler;
+                if (lengths[i] == -1) {
+                    lengths[i] = formatCode_lengths[handler];
+                }
+                offsets[i] = pos;
+                if (lengths[i] < 1 || pos == -1) {
+                    pos = -1;
+                    lengths[i] = -1;
                 } else {
-                    pos+= lengths[i];
+                    pos += lengths[i];
                 }
             }
-            
-            if ( handler<100 )  if ( precision[handler] > lsd ) lsd= precision[ handler ];
-            
-            String dots=".........";
-            if ( lengths[i]==-1 ) {
-                regex.append( "(.*)" );
-            } else {
-                regex.append( "("+dots.substring(0,lengths[i])+")" );
+
+            if (handler < 100) {
+                if (precision[handler] > lsd) {
+                    lsd = precision[handler];
+                }
             }
-            regex.append( delim[i] );
-            
+            String dots = ".........";
+            if (lengths[i] == -1) {
+                regex.append("(.*)");
+            } else {
+                regex.append("(" + dots.substring(0, lengths[i]) + ")");
+            }
+            regex.append(delim[i]);
+
         }
-        
-        timeWidth= new TimeStruct();
-        switch ( lsd ) {
-            case 0: timeWidth.year= 1; break;
-            case 1: timeWidth.month= 1; break;
-            case 2: timeWidth.day=1; break;
-            case 3: timeWidth.hour= 1; break;
-            case 4: timeWidth.minute= 1; break;
-            case 5: timeWidth.seconds= 1; break;
-            case 6: timeWidth.millis=  1; break;
-            case 7: timeWidth.micros=1; break;
+
+        timeWidth = new TimeStruct();
+        switch (lsd) {
+            case 0:
+                timeWidth.year = 1;
+                break;
+            case 1:
+                timeWidth.month = 1;
+                break;
+            case 2:
+                timeWidth.day = 1;
+                break;
+            case 3:
+                timeWidth.hour = 1;
+                break;
+            case 4:
+                timeWidth.minute = 1;
+                break;
+            case 5:
+                timeWidth.seconds = 1;
+                break;
+            case 6:
+                timeWidth.millis = 1;
+                break;
+            case 7:
+                timeWidth.micros = 1;
+                break;
             case 100: /* do nothing */ break;
         }
-        
-        this.delims= delim;
-        this.regex= regex.toString();
+
+        this.delims = delim;
+        this.regex = regex.toString();
     }
-    
+
     /**
      * <pre>
      *  %[fieldLength]<1-char code>  or
@@ -204,10 +223,10 @@ public class TimeParser {
      *  </pre>
      *
      */
-    public static TimeParser create( String formatString ) {
-        return new TimeParser( formatString, null );
+    public static TimeParser create(String formatString) {
+        return new TimeParser(formatString, null);
     }
-    
+
     /**
      *  This version allows for extension by specifying an external handler.
      *
@@ -222,105 +241,127 @@ public class TimeParser {
      *  %S     2-digit second
      *  %{milli}  3-digit milliseconds
      */
-    public static TimeParser create( String formatString, String fieldName, FieldHandler handler ) {
-        HashMap map= new HashMap();
-        map.put( fieldName, handler );
-        return new TimeParser( formatString, map );
+    public static TimeParser create(String formatString, String fieldName, FieldHandler handler) {
+        HashMap map = new HashMap();
+        map.put(fieldName, handler);
+        return new TimeParser(formatString, map);
     }
-    
-    private double toUs2000( TimeStruct d ) {
-        int year = (int)d.year;
-        int month = (int)d.month;
-        int day = (int)d.day;
+
+    private double toUs2000(TimeStruct d) {
+        int year = (int) d.year;
+        int month = (int) d.month;
+        int day = (int) d.day;
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour = (int)d.hour;
-        int minute = (int)d.minute;
-        double seconds = d.seconds + hour*(float)3600.0 + minute*(float)60.0;
-        double mjd1958= ( jd - 2436205 ) + seconds / 86400. ;
-        double us2000= ( mjd1958 - 15340 ) * 86400000000. + seconds + d.millis * 1000 + d.micros;
+        int hour = (int) d.hour;
+        int minute = (int) d.minute;
+        double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
+        double mjd1958 = (jd - 2436205) + seconds / 86400.;
+        double us2000 = (mjd1958 - 15340) * 86400000000. + seconds + d.millis * 1000 + d.micros;
         return us2000;
     }
-    
-    
-    private double toUs1980( TimeStruct d ) {
-        int year = (int)d.year;
-        int month = (int)d.month;
-        int day = (int)d.day;
+
+    private double toUs1980(TimeStruct d) {
+        int year = (int) d.year;
+        int month = (int) d.month;
+        int day = (int) d.day;
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour = (int)d.hour;
-        int minute = (int)d.minute;
-        double seconds = d.seconds + hour*(float)3600.0 + minute*(float)60.0;
-        double us1980= ( jd - 2436205 - 8035 ) * 86400000000. + seconds * 1e6 + d.millis * 1e3 + d.micros;
+        int hour = (int) d.hour;
+        int minute = (int) d.minute;
+        double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
+        double us1980 = (jd - 2436205 - 8035) * 86400000000. + seconds * 1e6 + d.millis * 1e3 + d.micros;
         return us1980;
     }
-    
-    public TimeParser parse( String timeString ) throws ParseException {
-        int offs= 0;
-        int len= 0;
-        
-        time.month= 1;
-        time.day= 1;
-        time.hour= 0;
-        time.minute= 0;
-        time.seconds= 0;
-        time.micros= 0;
-        
-        for ( int idigit=1; idigit<ndigits; idigit++ ) {
-            if ( offsets[idigit] != -1 ) {  // note offsets[0] is always known
-                offs= offsets[idigit];
+
+    public TimeParser parse(String timeString) throws ParseException {
+        int offs = 0;
+        int len = 0;
+
+        time.month = 1;
+        time.day = 1;
+        time.hour = 0;
+        time.minute = 0;
+        time.seconds = 0;
+        time.micros = 0;
+
+        for (int idigit = 1; idigit < ndigits; idigit++) {
+            if (offsets[idigit] != -1) {  // note offsets[0] is always known
+
+                offs = offsets[idigit];
             } else {
-                offs+= len + this.delims[idigit-1].length();
+                offs += len + this.delims[idigit - 1].length();
             }
-            if ( lengths[idigit]!= -1 ) {
-                len= lengths[idigit];
+            if (lengths[idigit] != -1) {
+                len = lengths[idigit];
             } else {
-                if ( this.delims[idigit] .equals("") ) {
-                    if ( idigit==ndigits-1 ) {
-                        len= timeString.length() - offs ;
+                if (this.delims[idigit].equals("")) {
+                    if (idigit == ndigits - 1) {
+                        len = timeString.length() - offs;
                     } else {
-                        throw new IllegalArgumentException("No delimer specified after unknown length field, \""+formatName[handlers[idigit]] + "\", field number="+(1+idigit)+"" );
+                        throw new IllegalArgumentException("No delimer specified after unknown length field, \"" + formatName[handlers[idigit]] + "\", field number=" + (1 + idigit) + "");
                     }
                 } else {
-                    int i= timeString.indexOf( this.delims[idigit], offs );
-                    len= i-offs;
+                    int i = timeString.indexOf(this.delims[idigit], offs);
+                    len = i - offs;
                 }
             }
-            if ( handlers[idigit] < 10 ) {
-                int digit= Integer.parseInt( timeString.substring(  offs, offs+len ).trim() );
-                switch ( handlers[idigit] ) {
-                    case 0: time.year= digit; break;
-                    case 1: time.year= digit < 58 ? 2000+digit : 1900 + digit; break;
-                    case 2: time.month= 1; time.day= digit; break;
-                    case 3: time.month= digit; break;
-                    case 4: time.day= digit; break;
-                    case 5: time.hour= digit; break;
-                    case 6: time.minute= digit; break;
-                    case 7: time.seconds= digit; break;
-                    case 8: time.millis= digit; break;
-                    case 9: time.micros= digit; break;
+            if (handlers[idigit] < 10) {
+                int digit = Integer.parseInt(timeString.substring(offs, offs + len).trim());
+                switch (handlers[idigit]) {
+                    case 0:
+                        time.year = digit;
+                        break;
+                    case 1:
+                        time.year = digit < 58 ? 2000 + digit : 1900 + digit;
+                        break;
+                    case 2:
+                        time.month = 1;
+                        time.day = digit;
+                        break;
+                    case 3:
+                        time.month = digit;
+                        break;
+                    case 4:
+                        time.day = digit;
+                        break;
+                    case 5:
+                        time.hour = digit;
+                        break;
+                    case 6:
+                        time.minute = digit;
+                        break;
+                    case 7:
+                        time.seconds = digit;
+                        break;
+                    case 8:
+                        time.millis = digit;
+                        break;
+                    case 9:
+                        time.micros = digit;
+                        break;
                 }
-            } else if ( handlers[idigit]==100 ) {
-                FieldHandler handler= (FieldHandler) fieldHandlers.get(fc[idigit]);
-                handler.handleValue( timeString.substring(offs,offs+len), time, timeWidth );
-            } else  if ( handlers[idigit]==10 ) {
-                char ch= timeString.charAt(offs );
-                if ( ch=='P' || ch=='p' ) {
-                    time.hour+=12;
+            } else if (handlers[idigit] == 100) {
+                FieldHandler handler = (FieldHandler) fieldHandlers.get(fc[idigit]);
+                handler.handleValue(timeString.substring(offs, offs + len), time, timeWidth);
+            } else if (handlers[idigit] == 10) {
+                char ch = timeString.charAt(offs);
+                if (ch == 'P' || ch == 'p') {
+                    time.hour += 12;
                 }
-            } else if ( handlers[idigit]==11 ) {
-                int offset= Integer.parseInt( timeString.substring( offs, offs+len ) );
-                DasMath.modp(0,0);
-                time.hour-= offset / 100;   // careful!
-                time.minute-=  offset % 100;
+            } else if (handlers[idigit] == 11) {
+                int offset = Integer.parseInt(timeString.substring(offs, offs + len));
+                DasMath.modp(0, 0);
+                time.hour -= offset / 100;   // careful!
+
+                time.minute -= offset % 100;
             }
         }
         return this;
     }
-    
+
     /**
      * This allows for string split into elements to be interpretted here.  This
      * is to add flexibility to external parsers that have partially parsed the
@@ -333,58 +374,151 @@ public class TimeParser {
      * @throws IllegalArgumentException if the digit does not exist.
      * @param digitNumber, the digit to set (starting with 0).
      */
-    public TimeParser setDigit( int digitNumber, int digit ) {
-        switch ( handlers[digitNumber+1] ) {
-            case 0: time.year= digit; break;
-            case 1: time.year= digit < 58 ? 2000+digit : 1900 + digit; break;
-            case 2: time.month= 1; time.day= digit; break;
-            case 3: time.month= digit; break;
-            case 4: time.day= digit; break;
-            case 5: time.hour= digit; break;
-            case 6: time.minute= digit; break;
-            case 7: time.seconds= digit; break;
-            case 8: time.millis= digit; break;
-            case 9: time.micros= digit; break;
+    public TimeParser setDigit(int digitNumber, int digit) {
+        switch (handlers[digitNumber + 1]) {
+            case 0:
+                time.year = digit;
+                break;
+            case 1:
+                time.year = digit < 58 ? 2000 + digit : 1900 + digit;
+                break;
+            case 2:
+                time.month = 1;
+                time.day = digit;
+                break;
+            case 3:
+                time.month = digit;
+                break;
+            case 4:
+                time.day = digit;
+                break;
+            case 5:
+                time.hour = digit;
+                break;
+            case 6:
+                time.minute = digit;
+                break;
+            case 7:
+                time.seconds = digit;
+                break;
+            case 8:
+                time.millis = digit;
+                break;
+            case 9:
+                time.micros = digit;
+                break;
         }
         return this;
     }
-    
-    public double getTime( Units units ) {
-        return Units.us2000.convertDoubleTo( units, toUs2000( time ) );
+
+    public double getTime(Units units) {
+        return Units.us2000.convertDoubleTo(units, toUs2000(time));
     }
-    
+
     public Datum getTimeDatum() {
-        if ( time.year < 1990 ) {
-            return Units.us1980.createDatum( toUs1980( time ) );
+        if (time.year < 1990) {
+            return Units.us1980.createDatum(toUs1980(time));
         } else {
-            return Units.us2000.createDatum( toUs2000( time ) );
+            return Units.us2000.createDatum(toUs2000(time));
         }
     }
-    
+
     /**
      * Returns the implicit interval as a DatumRange.
      * For example, "Jan 1, 2003" would have a getTimeDatum of "Jan 1, 2003 00:00:00",
      * and getDatumRange() would go from midnight to mignight.
      */
     public DatumRange getTimeRange() {
-        TimeStruct time2= time.add(timeWidth);
-        double t1= toUs2000( time );
-        double t2= toUs2000( time2 );
-        return new DatumRange( t1, t2, Units.us2000 );
+        TimeStruct time2 = time.add(timeWidth);
+        double t1 = toUs2000(time);
+        double t2 = toUs2000(time2);
+        return new DatumRange(t1, t2, Units.us2000);
     }
-    
-    public double getEndTime( Units units ) {
-        throw new IllegalArgumentException("not implemented for DatumRanges as of yet" );
+
+    public double getEndTime(Units units) {
+        throw new IllegalArgumentException("not implemented for DatumRanges as of yet");
     }
-    
-    
+
     public String getRegex() {
         return this.regex;
     }
-    
+
     public String format(Datum start, Datum end) {
-        if ( true ) throw new IllegalArgumentException("not implemented");
-        return null;
+
+        StringBuffer result = new StringBuffer(100);
+
+        int offs = 0;
+        int len = 0;
+
+        TimeUtil.TimeStruct timel= TimeUtil.toTimeStruct(start);
+
+        NumberFormat[] nf = new NumberFormat[5];
+        nf[2] = new DecimalFormat("00");
+        nf[3] = new DecimalFormat("000");
+        nf[4] = new DecimalFormat("0000");
+
+
+        for (int idigit = 1; idigit < ndigits; idigit++) {
+            result.insert( offs,  this.delims[idigit - 1]);
+            if (offsets[idigit] != -1) {  // note offsets[0] is always known
+                offs = offsets[idigit];
+            } else {
+                offs += this.delims[idigit - 1].length();
+            }
+            if (lengths[idigit] != -1) {
+                len = lengths[idigit];
+            } else {
+                len = -9999;  // the field handler will tell us.
+
+            }
+            if (handlers[idigit] < 10) {
+                int digit;
+                switch (handlers[idigit]) {
+                    case 0:
+                        digit = timel.year;
+                        break;
+                    case 1:
+                        digit = (timel.year < 2000) ? timel.year - 1900 : timel.year - 2000;
+                        break;
+                    case 2:
+                        digit = TimeUtil.dayOfYear(timel.month, timel.day, timel.year);
+                        break;
+                    case 3:
+                        digit = timel.month;
+                        break;
+                    case 4:
+                        digit = timel.day;
+                        break;
+                    case 5:
+                        digit = timel.hour;
+                        break;
+                    case 6:
+                        digit = timel.minute;
+                        break;
+                    case 7:
+                        digit = (int) timel.seconds;
+                        break;
+                    case 8:
+                        digit = timel.millis;
+                        break;
+                    case 9:
+                        digit = timel.micros;
+                        break;
+                    default: throw new RuntimeException("shouldn't get here");
+                }
+                result.insert( offs, nf[len].format(digit) );
+                offs+= len;
+
+            } else if (handlers[idigit] == 100) {
+                throw new RuntimeException("Handlers not supported");
+
+            } else if (handlers[idigit] == 10) {
+               throw new RuntimeException("AM/PM supported");
+
+            } else if (handlers[idigit] == 11) {
+                throw new RuntimeException("Time Zones not supported");
+            }
+        }
+        return result.toString().trim();
     }
-    
 }
