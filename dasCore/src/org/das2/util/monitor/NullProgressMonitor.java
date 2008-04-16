@@ -9,8 +9,6 @@
 
 package org.das2.util.monitor;
 
-import org.das2.util.monitor.ProgressMonitor;
-
 /**
  * This is a progress monitor to use when we don't care about the progress.
  * This replaces ProgressMonitor.NULL, which has the problem that it was
