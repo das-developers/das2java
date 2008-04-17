@@ -140,7 +140,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("dataMinimum", rebinListener);
             colorBar.addPropertyChangeListener("dataMaximum", rebinListener);
             colorBar.addPropertyChangeListener("log", rebinListener);
-            colorBar.addPropertyChangeListener("type", rebinListener);
+            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_TYPE, rebinListener);
+            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
         }
         setRebinner(SpectrogramRenderer.RebinnerEnum.binAverage);
     }
@@ -171,7 +172,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.removePropertyChangeListener("dataMinimum", rebinListener);
             colorBar.removePropertyChangeListener("dataMaximum", rebinListener);
             colorBar.removePropertyChangeListener("log", rebinListener);
-            colorBar.removePropertyChangeListener("type", rebinListener);
+            colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
+            colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
             if (parent != null && parent.getCanvas() != null) {
                 parent.getCanvas().remove(colorBar);
             }
@@ -181,7 +183,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("dataMinimum", rebinListener);
             colorBar.addPropertyChangeListener("dataMaximum", rebinListener);
             colorBar.addPropertyChangeListener("log", rebinListener);
-            colorBar.addPropertyChangeListener("type", rebinListener);
+            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_TYPE, rebinListener);
+            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
             if (parent != null && parent.getCanvas() != null) {
                 parent.getCanvas().add(colorBar);
             }
