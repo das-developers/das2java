@@ -32,7 +32,6 @@ import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.HorizontalSliceSelectionRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.event.MousePointSelectionEvent;
-import edu.uiowa.physics.pw.das.event.VerticalRangeSelectorMouseModule;
 import java.awt.image.IndexColorModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,6 +49,8 @@ import javax.swing.event.EventListenerList;
  * @author  jbf
  */
 public class DasColorBar extends DasAxis {
+    public static final String PROPERTY_TYPE = "type";
+    public static final String PROPERTY_FILL_COLOR= "fillColor";
     
     private BufferedImage image;
     private DasColorBar.Type type;
@@ -58,7 +59,7 @@ public class DasColorBar extends DasAxis {
     private int ncolor;
     
     private static final int COLORTABLE_SIZE=240;
-    private static final String PROP_FILL_COLOR= "fillColor";
+    
     
     public DasColorBar( Datum min, Datum max, boolean isLog) {
         this(min, max, RIGHT, isLog);
@@ -106,6 +107,7 @@ public class DasColorBar extends DasAxis {
         return type;
     }
     
+    
     public void setType(DasColorBar.Type type) {
         if (this.type == type) {
             return;
@@ -118,7 +120,7 @@ public class DasColorBar extends DasAxis {
         fillColor= getType().getRGB(fillColorIndex);
         markDirty();
         update();
-        firePropertyChange("type", oldValue, type);
+        firePropertyChange( PROPERTY_TYPE, oldValue,type);
     }
     
     protected void paintComponent(Graphics g) {
@@ -200,7 +202,7 @@ public class DasColorBar extends DasAxis {
         cb.setLabel(element.getAttribute("label"));
         cb.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
         cb.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
-        cb.setType(DasColorBar.Type.parse(element.getAttribute("type")));
+        cb.setType(DasColorBar.Type.parse(element.getAttribute(PROPERTY_TYPE)));
         
         cb.setDasName(name);
         DasApplication app = form.getDasApplication();
@@ -227,7 +229,7 @@ public class DasColorBar extends DasAxis {
         element.setAttribute("oppositeAxisVisible", Boolean.toString(isOppositeAxisVisible()));
         element.setAttribute("animated", Boolean.toString(isAnimated()));
         element.setAttribute("orientation", orientationToString(getOrientation()));
-        element.setAttribute("type", getType().toString());
+        element.setAttribute(PROPERTY_TYPE, getType().toString());
         
         return element;
     }
@@ -618,7 +620,7 @@ public class DasColorBar extends DasAxis {
         this.type.initializeColorTable( COLORTABLE_SIZE, 0, this.type.getColorCount() );
         markDirty();
         update();
-        firePropertyChange( PROP_FILL_COLOR, oldColor,fillColor );
+        firePropertyChange( PROPERTY_FILL_COLOR, oldColor,fillColor );
     }
     
 }
