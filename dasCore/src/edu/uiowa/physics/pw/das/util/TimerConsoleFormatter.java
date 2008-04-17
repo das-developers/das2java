@@ -23,8 +23,9 @@ public class TimerConsoleFormatter extends Formatter {
     public String format( LogRecord rec ) {
         String resetMessage= "firing data point selection event";
         StackTraceElement[] st= new Throwable().getStackTrace();
+        final String message = rec.getMessage();
         //if ( lastLoggerName==null || lastLoggerName!=rec.getLoggerName() ) {
-        if ( rec.getMessage().contains(resetMessage)) {
+        if ( message!=null && message.contains(resetMessage)) {
             lastLoggerName= rec.getLoggerName();
             t0=System.currentTimeMillis();
         }
@@ -39,7 +40,7 @@ public class TimerConsoleFormatter extends Formatter {
         }
 
         long t= System.currentTimeMillis() - t0;
-        return nf.format(t) + ":" + rec.getLoggerName()+": "+ source + ": " + rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n";
+        return nf.format(t) + ":" + rec.getLoggerName()+": "+ source + ": " + rec.getLevel().getLocalizedName()+": "+ String.valueOf(message)+"\n";
     }
         
     public TimerConsoleFormatter() {
