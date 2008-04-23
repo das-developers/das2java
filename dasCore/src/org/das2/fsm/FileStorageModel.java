@@ -6,6 +6,7 @@
 
 package org.das2.fsm;
 
+import edu.uiowa.physics.pw.das.datum.TimeUtil.TimeStruct;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
 import edu.uiowa.physics.pw.das.datum.Datum;
@@ -41,6 +42,7 @@ public class FileStorageModel {
     
     private int timeWidth; /* in TimeUtil enum */
     private int timeWidthMultiplier;   /* 7 days */
+    private Datum timePhase= null; /* a file boundary */
     
     private boolean[] copyToEndTime; /* indexed by TimeUtil enum */
     private boolean useEndTime;
@@ -86,6 +88,7 @@ public class FileStorageModel {
     //
     public interface FieldHandler {
         public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
+        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
     }
     
     public static abstract class IntegerFieldHandler implements FieldHandler {
@@ -93,13 +96,16 @@ public class FileStorageModel {
             handleInt( Integer.parseInt(s), ts1, ts2 );
         }
         abstract void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
-        abstract String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
+        public abstract String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
     }
     
     static final NumberFormat nf4= new DecimalFormat("0000");
     static final NumberFormat nf3= new DecimalFormat("000");
     static final NumberFormat nf2= new DecimalFormat("00");
     
+    private final static String[] mons=  new String [] { 
+            "", "jan", "feb", "mar", "apr", "may", "jun",
+            "jul", "aug", "sep", "oct", "nov", "dec" } ;
     private static final FieldHandler StartMonthNameHandler= new FieldHandler() {
         public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
             try {
@@ -107,6 +113,9 @@ public class FileStorageModel {
             } catch ( ParseException e ) {
                 DasExceptionHandler.handle(e);
             }
+        }
+        public String format(TimeStruct ts1, TimeStruct ts2) {
+            return mons[ ts1.month ];
         }
     };
     
@@ -118,6 +127,10 @@ public class FileStorageModel {
                 DasExceptionHandler.handle(e);
             }
         }
+        public String format(TimeStruct ts1, TimeStruct ts2) {
+            return mons[ ts2.month ];
+        }
+        
     };
     
     
@@ -365,6 +378,50 @@ public class FileStorageModel {
     
     public String[] getNamesFor( final DatumRange targetRange ) throws IOException {
         return getNamesFor( targetRange, new NullProgressMonitor() );
+    }
+    
+    
+    /**
+     * return the time range that this time will fall into.
+     * @param start
+     * @return the time range.
+     */
+    private DatumRange calculateRangeFor( Datum t ) {
+        Datum start= TimeUtil.prev( this.timeWidth, t);
+        if ( TimeUtil.next( this.timeWidth, start ).equals(t) ) {
+            start= t;
+        }
+        if ( this.timePhase!=null && 3==this.timeWidth ) {
+            Datum widthDatum= Units.days.createDatum(timeWidthMultiplier);
+            Datum dd= start.subtract( this.timePhase ).divide( widthDatum );
+            double d= dd.doubleValue( Units.days );
+            d= Math.floor(d);
+            start= this.timePhase.add( Units.days.createDatum(d) );
+        }
+        Datum end= start;
+        for ( int i=0; i<timeWidthMultiplier; i++ ) {
+            TimeUtil.next( this.timeWidth, end );
+        }
+        return new DatumRange( start, end );
+    }
+    
+    /**
+     * return the name that this time will fall into.
+     * @throws IllegalArgumentException if this cannot be done.
+     * @param start
+     * @return the internal name of the file.
+     */
+    public String calculateNameFor( Datum start ) {
+        String name;
+        if ( parent!=null ) {
+            name= parent.calculateNameFor(start);
+        } else {
+            name= "";
+        }
+        
+        DatumRange dr= calculateRangeFor(start);
+        return null;
+        
     }
     
     /**
