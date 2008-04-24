@@ -37,8 +37,8 @@ public class WeightsDataSet implements QDataSet {
         }
         Double ofill = (Double) ds.property(QDataSet.FILL_VALUE);
         fill = ( ofill == null ? u.getFillDouble() : ofill.doubleValue() );
-        vmin = ( valid == null ? Double.NEGATIVE_INFINITY : valid.min().doubleValue(u) );
-        vmax = ( valid == null ? Double.POSITIVE_INFINITY : valid.max().doubleValue(u) );
+        vmin = ( valid == null ? Double.NEGATIVE_INFINITY : valid.min().doubleValue(valid.getUnits()) );
+        vmax = ( valid == null ? Double.POSITIVE_INFINITY : valid.max().doubleValue(valid.getUnits()) );
     }
 
     public int rank() {
