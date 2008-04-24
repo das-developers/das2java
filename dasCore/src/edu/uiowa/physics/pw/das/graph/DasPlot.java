@@ -707,7 +707,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             FontMetrics fm = getFontMetrics(getCanvas().getFont());
             int titleHeight = fm.getHeight() + fm.getHeight() / 2;
             resize();
-            repaint(0, 0, getWidth(), titleHeight);
+            invalidateCacheImage();
         }
         if (t != oldValue) {
             firePropertyChange("title", oldValue, t);
