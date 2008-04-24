@@ -85,7 +85,7 @@ public class Glob {
     /**
      * converts a glob into a regex.
      */
-    private static String getRegex( String glob ) {
+    public static String getRegex( String glob ) {
         return glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
     }
     
