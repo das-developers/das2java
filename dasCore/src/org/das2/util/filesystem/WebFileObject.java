@@ -80,7 +80,7 @@ public class WebFileObject extends FileObject {
 
     /**
      * 
-     * @return
+     * @return a WebFileObject referencing the parent directory.
      */
     public FileObject getParent() {
         return new WebFileObject(wfs, wfs.getLocalName(localFile.getParentFile()), new Date(System.currentTimeMillis()));

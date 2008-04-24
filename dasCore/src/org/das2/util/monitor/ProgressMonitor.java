@@ -32,7 +32,7 @@ package org.das2.util.monitor;
  * <code>IllegalArgumentException</code> when <code>setTaskProgress(int)</code>
  * is called after the operation has been cancelled.
  * <p>
- * Code using the <code>ProgressMonitor</code> should call {@link started()}
+ * Code using the <code>ProgressMonitor</code> should call {@link #started()}
  * before <code>setTaskProgress(long)</code> is called for the first time.
  * <code>setTaskProgress()</code> should not be called after
  * <code>cancel()</code> or <code>finished()</code> has been called.  Therefore,
@@ -94,7 +94,7 @@ public interface ProgressMonitor {
     /** Notifies the ProgressMonitor of a change in the progress
      * of the task.
      * @param position the current task position
-     * @throws IllegalArgumentException if {@link isCancelled()} returns true or,
+     * @throws IllegalArgumentException if {@link #isCancelled()} returns true or,
      * possibly if started() has not been called or
      * finished() has been called.
      */
