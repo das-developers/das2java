@@ -33,6 +33,10 @@ public class TableDataSetWrapper implements TableDataSet {
         return source.getProperty(name);
     }
     
+    public Object getProperty( int table, String name ) {
+        return source.getProperty(table, name);
+    }
+    
     public String[] getPlaneIds() {
         return source.getPlaneIds();
     }

@@ -107,6 +107,11 @@ public abstract class FunctionTableDataSet implements TableDataSet {
     public Object getProperty(String name) {        
         return properties.get(name);
     }
+
+    public Object getProperty(int table, String name) {
+        return getProperty(name);
+    }
+    
     
     public Map getProperties() {
         return properties;

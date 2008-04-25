@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.io.PrintStream;
@@ -152,6 +151,21 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         this.zUnits = zUnits;
         this.planeIDs = planeIDs;
         this.tableOffsets = tableOffsets;
+    }
+    
+    DefaultTableDataSet(double[] xTags, Units xUnits,
+            double[][] yTags, Units yUnits,
+            double[][][] zValues, Units[] zUnits,
+            String[] planeIDs, int[] tableOffsets,
+            Map properties, List<Map> tableProperties ) {
+        super(xTags, xUnits, yUnits, zUnits[0], properties);
+        this.yTags = yTags;
+        this.tableCount= yTags.length;
+        this.tableData = zValues;
+        this.zUnits = zUnits;
+        this.planeIDs = planeIDs;
+        this.tableOffsets = tableOffsets;
+        this.tableProperties= tableProperties;
     }
     
     private static double[][][] copy(double[][][] d) {
@@ -527,6 +541,12 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         public Object getProperty(String name) {
             Object result= DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
             if ( result==null ) result= DefaultTableDataSet.this.getProperty(name);
+            return result;
+        }
+
+        public Object getProperty(int table, String name) {
+            Object result= DefaultTableDataSet.this.getProperty(table,planeIDs[index] + "." + name);
+            if ( result==null ) result= DefaultTableDataSet.this.getProperty(table,name);
             return result;
         }
         

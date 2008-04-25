@@ -230,5 +230,10 @@ public class AppendTableDataSet implements TableDataSet {
         int itds= tdsTable(table);
         return firstIndexs[itds+1];
     }
+
+    public Object getProperty(int table, String name) {
+        int itds= tdsTable(table);
+        return tableDataSets[itds].getProperty( table-firstTables[itds], name );
+    }
     
 }

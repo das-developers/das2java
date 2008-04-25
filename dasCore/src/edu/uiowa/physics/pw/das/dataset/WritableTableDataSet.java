@@ -132,6 +132,14 @@ public class WritableTableDataSet implements TableDataSet {
     public void setProperty( String name, Object value ) {
         properties.put( name, value );
     }
+
+    public Object getProperty( int table, String name) {
+        return properties.get( name );
+    }
+        
+    public void setProperty( int table, String name, Object value ) {
+        properties.put( name, value );
+    }
     
     public DatumVector getScan(int i) {
         throw new UnsupportedOperationException();

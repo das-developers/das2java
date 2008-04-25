@@ -85,6 +85,10 @@ public class SimpleTableDataSet implements TableDataSet {
         return properties.get(name);
     }
             
+    public Object getProperty( int table, String name) {
+        return getProperty(name);
+    }
+    
     public DatumVector getScan(int i) {
         throw new UnsupportedOperationException();
     }

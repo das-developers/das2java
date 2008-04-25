@@ -144,4 +144,13 @@ public interface TableDataSet extends DataSet {
      */
     VectorDataSet getYSlice(int j, int table);
 
+    /**
+     * Return the property value attached to the table.  This should 
+     * simply return DataSet.getProperty() if the table has no special
+     * value for the table.
+     * @param table
+     * @param name
+     * @return
+     */
+    Object getProperty( int table, String name );
 }

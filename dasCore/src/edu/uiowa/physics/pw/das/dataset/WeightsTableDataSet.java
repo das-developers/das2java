@@ -146,5 +146,9 @@ public class WeightsTableDataSet implements TableDataSet {
     public int tableStart(int table) {
         return source.tableStart(table);
     }
+
+    public Object getProperty(int table, String name) {
+        return source.getProperty(table,name);
+    }
     
 }

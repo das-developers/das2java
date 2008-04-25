@@ -192,6 +192,10 @@ public class TagMapTableDataSet implements TableDataSet {
         }
         return DatumVector.newDatumVector(tags, yUnits);
     }
+
+    public Object getProperty(int table, String name) {
+        return getProperty(name);
+    }
     
 }
 

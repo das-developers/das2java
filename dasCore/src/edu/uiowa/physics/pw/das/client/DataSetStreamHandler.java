@@ -58,8 +58,10 @@ public class DataSetStreamHandler implements StreamHandler {
     int totalPacketCount= -1;
     int taskSize= -1;
     int packetCount= 0;
+    Datum xTagMax= null;
     
     private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
+    private boolean monotonic= true; // generally streams are monotonic, so check for monotonicity.
     
     public DataSetStreamHandler( Map extraProperties, ProgressMonitor monitor ) {
         this.extraProperties = new HashMap(extraProperties);
@@ -120,6 +122,11 @@ public class DataSetStreamHandler implements StreamHandler {
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
         logger.finest("got packet");
         ensureNotNullDelegate();
+        if ( xTagMax==null || xTag.ge( this.xTagMax ) ) {
+            xTagMax= xTag;
+        } else {
+            monotonic= false;
+        }
         delegate.packet(pd, xTag, vectors);
         packetCount++;
         if ( totalPacketCount!=-1 ) {
@@ -244,6 +251,9 @@ public class DataSetStreamHandler implements StreamHandler {
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
             builder.addProperties(extraProperties);
+            if ( monotonic&& builder.getProperty(DataSet.PROPERTY_X_MONOTONIC)==null ) {
+                builder.setProperty( DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
+            }
             return builder.toVectorDataSet();
         }
         
@@ -299,6 +309,9 @@ public class DataSetStreamHandler implements StreamHandler {
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
             builder.addProperties(extraProperties);
+            if ( monotonic&& builder.getProperty(DataSet.PROPERTY_X_MONOTONIC)==null ) {
+                builder.setProperty( DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
+            }
             return builder.toTableDataSet();
         }
         

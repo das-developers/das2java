@@ -251,6 +251,10 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
         return DatumVector.newDatumVector(tags, yUnits);
     }
+
+    public Object getProperty(int table, String name) {
+        return getProperty(name);
+    }
     
 }
 

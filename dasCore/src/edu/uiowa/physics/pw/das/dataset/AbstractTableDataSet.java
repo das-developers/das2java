@@ -35,10 +35,13 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
     
     private Units zUnits;
     
+    protected List<Map> tableProperties;
+    
     /** Creates a new instance of AbstractTableDataSet */
     public AbstractTableDataSet(double[] xTags, Units xUnits, Units yUnits, Units zUnits, Map properties) {
         super(xTags, xUnits, yUnits, properties);
         this.zUnits = zUnits;
+        this.tableProperties= null;
     }
     
     public Units getZUnits() {
@@ -55,6 +58,14 @@ public abstract class AbstractTableDataSet extends AbstractDataSet implements Da
     
     public String toString() {
         return TableUtil.toString(this);
+    }
+    
+    public Object getProperty(int table, String name) {
+        if ( tableProperties!=null ) {
+            return tableProperties.get(table).get(name);
+        } else {
+            return null;
+        }
     }
     
     protected static class XSliceDataSet extends AbstractDataSet.ViewDataSet implements VectorDataSet{

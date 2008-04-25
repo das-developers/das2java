@@ -73,7 +73,11 @@ public class WindowTableDataSet implements TableDataSet {
     public Object getProperty(String name) {
         return this.source.getProperty(name);
     }
-        
+    
+    public Object getProperty( int table, String name) {
+        return getProperty(name);
+    }
+    
     public int getXLength() {
         return this.source.getXLength()/this.windowSize;
     }
