@@ -45,13 +45,14 @@ public class DataSetUtil {
      */
     public static MutablePropertyDataSet replicateDataSet(int n, final double value) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
+
             public double value(int i) {
                 return value;
             }
         };
         return result;
     }
-            
+
     /**
      * returns true if the dataset is monotonically increasing, and contains no fill.
      * An empty dataset is monotonic.
@@ -99,14 +100,17 @@ public class DataSetUtil {
             int cmp;
             if (midVal < key) {
                 cmp = -1;   // Neither val is NaN, thisVal is smaller
+
             } else if (midVal > key) {
                 cmp = 1;    // Neither val is NaN, thisVal is larger
+
             } else {
                 long midBits = Double.doubleToLongBits(midVal);
                 long keyBits = Double.doubleToLongBits(key);
                 cmp = (midBits == keyBits ? 0 : // Values are equal
                         (midBits < keyBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
                         1));                     // (0.0, -0.0) or (NaN, !NaN)
+
             }
 
             if (cmp < 0) {
@@ -116,8 +120,10 @@ public class DataSetUtil {
             } else {
                 return mid;
             } // key found
+
         }
         return -(low + 1);  // key not found.
+
     }
 
     /**
@@ -132,8 +138,10 @@ public class DataSetUtil {
         int result = binarySearch(ds, d, 0, ds.length() - 1);
         if (result == -1) {
             result = 0; //insertion point is 0
+
         } else if (result < 0) {
             result = ~result; // usually this is the case
+
             if (result >= ds.length() - 1) {
                 result = ds.length() - 1;
             } else {
@@ -157,14 +165,14 @@ public class DataSetUtil {
         String[] names = new String[]{QDataSet.UNITS, QDataSet.CADENCE,
             QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
             QDataSet.TYPICAL_RANGE, QDataSet.VALID_RANGE, QDataSet.FILL_VALUE,
-            QDataSet.QUBE, 
+            QDataSet.QUBE,
             QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
-            QDataSet.CACHE_TAG, 
-            QDataSet.COORDINATE_FRAME, 
+            QDataSet.CACHE_TAG,
+            QDataSet.COORDINATE_FRAME,
             QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
-            };
-        
-        for ( int i=0; i < names.length; i++) {
+        };
+
+        for (int i = 0; i < names.length; i++) {
             if (ds.property(names[i]) != null) {
                 result.put(names[i], ds.property(names[i]));
             }
@@ -295,9 +303,12 @@ public class DataSetUtil {
      * @return int[] of length ds.rank() containing each dimension's length, or null if the dataset is not a qube.
      */
     public static int[] qubeDims(QDataSet ds) {
-        if ( ds.rank() > 4 ) throw new IllegalArgumentException("rank limit");
-        if (ds.rank() == 1) { 
-            return new int[] { ds.length() };  // rank 1 datasets are trivially qubes
+        if (ds.rank() > 4) {
+            throw new IllegalArgumentException("rank limit");
+        }
+        if (ds.rank() == 1) {
+            return new int[]{ds.length()};  // rank 1 datasets are trivially qubes
+
         }
         Boolean q = (Boolean) ds.property(QDataSet.QUBE);
         if (q == null || q.equals(Boolean.FALSE)) {
@@ -309,8 +320,9 @@ public class DataSetUtil {
             qube[1] = ds.length(0);
             if (ds.rank() > 2) {
                 qube[2] = ds.length(0, 0);
-                if ( ds.rank() > 3 ) { // TODO: generalize to rank N
-                    qube[3]= ((RankNDataSet)ds).slice(0).length(0,0);
+                if (ds.rank() > 3) { // TODO: generalize to rank N
+
+                    qube[3] = ((RankNDataSet) ds).slice(0).length(0, 0);
                 }
             }
         }
@@ -329,6 +341,7 @@ public class DataSetUtil {
         switch (ds.rank()) {
             case 1:
                 break; // don't bother adding this property to rank 1 datasets.
+
             case 2:
                 qube = new int[]{ds.length(), ds.length(0)};
                 if (ds.length() > 0) {
@@ -390,16 +403,33 @@ public class DataSetUtil {
 
     }
 
+    /**
+     * return a human readable statistical representation of the dataset.  Currently
+     * this is the mean, stddev ad number of points.
+     * @param ds
+     * @return
+     */
     public static String statsString(QDataSet ds) {
         QDataSet stats = DataSetOps.moment(ds);
         return "" + stats.value(0) + "+/-" + stats.property("stddev") + " N=" + stats.property("validCount");
     }
-    
-    public static QDataSet weightsDataSet( final QDataSet ds ) {
-        QDataSet result= (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
-        if ( result==null ) {
-            result= new WeightsDataSet(ds);
-        } 
+
+    /**
+     * Provide consistent valid logic to operators by providing a QDataSet
+     * with 1.0 where the data is valid, and 0.0 where the data is invalid.
+     * VALID_RANGE and FILL_VALUE properties are used.
+     * 
+     * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
+     * support legacy logic.
+     * 
+     * For convenience, the property FILL_VALUE is set to the fill value used.
+     * 
+     */
+    public static QDataSet weightsDataSet(final QDataSet ds) {
+        QDataSet result = (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
+        if (result == null) {
+            result = new WeightsDataSet(ds);
+        }
         return result;
     }
 }
