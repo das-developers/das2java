@@ -12,6 +12,7 @@ package org.virbo.dataset;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
+import edu.uiowa.physics.pw.das.graph.SeriesRenderer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
         if ( cadence!=null ) {
             properties.put( edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_X_TAG_WIDTH, xunits.getOffsetUnits().createDatum( cadence.doubleValue() ) );
         }
+                
     }
     
     public Datum getDatum(int i) {
@@ -112,6 +114,8 @@ public class VectorDataSetAdapter implements VectorDataSet {
     public edu.uiowa.physics.pw.das.dataset.DataSet getPlanarView(String planeID) {
         if ( planeID.equals("") ) return this;
         if ( planeID.equals( QDataSet.PLANE_0 ) && plane0!=null ) return new VectorDataSetAdapter( plane0, x );
+        if ( planeID.equals( "Y_DELTA_PLUS" ) ) return VectorDataSetAdapter.create((QDataSet) y.property( QDataSet.DELTA_PLUS ));
+        if ( planeID.equals( "Y_DELTA_MINUS" ) ) return VectorDataSetAdapter.create((QDataSet) y.property( QDataSet.DELTA_MINUS ));
         return null;
     }
     
