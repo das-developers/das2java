@@ -219,7 +219,9 @@ public class DasAnnotation extends DasCanvasComponent {
      * @param fontSize New value of property fontSize.
      */
     public void setFontSize(float fontSize) {
-        setFont(getFont().deriveFont(fontSize));
+        Font f= getFont();
+        if ( f==null ) f= getCanvas().getBaseFont();
+        setFont(f.deriveFont(fontSize));
         repaint();
     }
 
