@@ -114,8 +114,14 @@ public class VectorDataSetAdapter implements VectorDataSet {
     public edu.uiowa.physics.pw.das.dataset.DataSet getPlanarView(String planeID) {
         if ( planeID.equals("") ) return this;
         if ( planeID.equals( QDataSet.PLANE_0 ) && plane0!=null ) return new VectorDataSetAdapter( plane0, x );
-        if ( planeID.equals( "Y_DELTA_PLUS" ) ) return VectorDataSetAdapter.create((QDataSet) y.property( QDataSet.DELTA_PLUS ));
-        if ( planeID.equals( "Y_DELTA_MINUS" ) ) return VectorDataSetAdapter.create((QDataSet) y.property( QDataSet.DELTA_MINUS ));
+        if ( planeID.equals( "Y_DELTA_PLUS" ) ) {
+            QDataSet d= (QDataSet) y.property( QDataSet.DELTA_PLUS );
+            return d==null ? null : VectorDataSetAdapter.create(d);
+        }
+        if ( planeID.equals( "Y_DELTA_MINUS" ) ) {
+            QDataSet d= (QDataSet) y.property( QDataSet.DELTA_MINUS );
+            return d==null ? null : VectorDataSetAdapter.create(d);
+        }
         return null;
     }
     
