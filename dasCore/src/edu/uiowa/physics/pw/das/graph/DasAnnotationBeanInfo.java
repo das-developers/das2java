@@ -43,7 +43,8 @@ public class DasAnnotationBeanInfo extends SimpleBeanInfo {
         try {
             properties = new PropertyDescriptor[] {
                 new PropertyDescriptor("text", DasAnnotation.class),
-                new PropertyDescriptor("borderType", DasAnnotation.class)
+                new PropertyDescriptor("borderType", DasAnnotation.class),
+                new PropertyDescriptor("fontSize", DasAnnotation.class ),
             };
             properties[1].setPropertyEditorClass( EnumerationEditor.class );
         } catch ( IntrospectionException e) {
