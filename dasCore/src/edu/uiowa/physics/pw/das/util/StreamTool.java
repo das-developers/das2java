@@ -43,10 +43,13 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.xml.serialize.Method;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+//import org.apache.xml.serialize.Method;
+//import org.apache.xml.serialize.OutputFormat;
+//import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.*;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -554,6 +557,13 @@ public class StreamTool {
     }
 
     public static void formatHeader(Document document, Writer writer) throws StreamException {
+		DOMImplementationLS ls = (DOMImplementationLS)
+				document.getImplementation().getFeature("LS", "3.0");
+		LSOutput output = ls.createLSOutput();
+		output.setCharacterStream(writer);
+		LSSerializer serializer = ls.createLSSerializer();
+		serializer.write(document, output);
+		/*
         try {
             OutputFormat format = new OutputFormat(Method.XML, "US-ASCII", true);
             XMLSerializer serializer = new XMLSerializer(writer, format);
@@ -561,6 +571,7 @@ public class StreamTool {
         } catch (IOException ioe) {
             throw new StreamException(ioe);
         }
+		 */
     }
 
     public static Map processPropertiesElement(Element element) throws StreamException {

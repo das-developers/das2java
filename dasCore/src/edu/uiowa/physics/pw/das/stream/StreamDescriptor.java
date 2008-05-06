@@ -31,8 +31,8 @@ import java.io.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+//import org.apache.xml.serialize.OutputFormat;
+//import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.*;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -41,6 +41,9 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXParseException;
 
 /** Represents the global properties of the stream, that are accessible to
@@ -333,6 +336,15 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
     
     public static String createHeader(Document document) throws DasIOException {
         StringWriter writer= new StringWriter();
+
+		DOMImplementationLS ls = (DOMImplementationLS)
+				document.getImplementation().getFeature("LS", "3.0");
+		LSOutput output = ls.createLSOutput();
+		output.setCharacterStream(writer);
+		LSSerializer serializer = ls.createLSSerializer();
+		serializer.write(document, output);
+
+		/*
         OutputFormat format= new OutputFormat();
         format.setOmitXMLDeclaration(true);
         format.setEncoding("UTF-8");
@@ -342,6 +354,8 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         } catch ( IOException ex) {
             throw new DasIOException(ex.getMessage());
         }
+		 */
+
         String result= writer.toString();
         return result;
     }

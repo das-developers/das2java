@@ -15,8 +15,11 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import javax.swing.*;
 import javax.xml.parsers.*;
-import org.apache.xml.serialize.*;
+//import org.apache.xml.serialize.*;
 import org.w3c.dom.*;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  *
@@ -39,9 +42,21 @@ public class GraphUtil {
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             document.appendChild(canvas.getDOMElement(document));
             StringWriter writer = new StringWriter();
+
+			DOMImplementationLS ls = (DOMImplementationLS)
+					document.getImplementation().getFeature("LS", "3.0");
+			LSOutput output = ls.createLSOutput();
+			output.setEncoding("UTF-8");
+			output.setByteStream(out);
+			LSSerializer serializer = ls.createLSSerializer();
+			serializer.write(document, output);
+
+			/*
             OutputFormat format = new OutputFormat(Method.XML, "UTF-8", true);
             XMLSerializer serializer = new XMLSerializer(new OutputStreamWriter(out), format);
             serializer.serialize(document);
+			 */
+
             out.close();
         } catch (Exception e) {
             throw new RuntimeException(e);

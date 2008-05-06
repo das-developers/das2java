@@ -24,9 +24,9 @@
 package edu.uiowa.physics.pw.das.graph.dnd;
 
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
-import org.apache.xml.serialize.Method;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+//import org.apache.xml.serialize.Method;
+//import org.apache.xml.serialize.OutputFormat;
+//import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -37,6 +37,10 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.io.StringWriter;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  *
@@ -84,11 +88,23 @@ public class TransferableCanvas implements Transferable {
                 Document document = builder.newDocument();
                 document.appendChild(canvas.getDOMElement(document));
                 StringWriter writer = new StringWriter();
+
+				DOMImplementationLS ls = (DOMImplementationLS)
+						document.getImplementation().getFeature("LS", "3.0");
+				LSOutput output = ls.createLSOutput();
+				output.setEncoding("UTF-8");
+				output.setCharacterStream(writer);
+				LSSerializer serializer = ls.createLSSerializer();
+				serializer.write(document, output);
+
+				/*
                 OutputFormat format = new OutputFormat(Method.XML, "UTF-8", true);
                 format.setOmitXMLDeclaration(true);
                 format.setOmitDocumentType(true);
                 XMLSerializer serializer = new XMLSerializer(writer, format);
                 serializer.serialize(document);
+				 */
+
                 return writer.toString();
             }
             catch (ParserConfigurationException pce) {

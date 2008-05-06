@@ -61,10 +61,14 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+//import org.apache.xml.serialize.OutputFormat;
+//import org.apache.xml.serialize.XMLSerializer;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -226,9 +230,17 @@ public class PropertyEditor extends JComponent {
                         OutputStream out= new FileOutputStream( chooser.getSelectedFile() );
                         
                         StringWriter writer = new StringWriter();
-                        OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
-                        XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
-                        serializer.serialize(document);
+						DOMImplementation impl = document.getImplementation();
+						DOMImplementationLS ls = (DOMImplementationLS)impl.getFeature("LS", "3.0");
+						LSSerializer serializer = ls.createLSSerializer();
+						LSOutput output = ls.createLSOutput();
+						output.setEncoding("UTF-8");
+						output.setByteStream(out);
+						serializer.write(document, output);
+
+                        //OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
+                        //XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
+                        //serializer.serialize(document);
                         out.close();
                     }
                 } catch ( Exception e ) {

@@ -23,11 +23,12 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import com.sun.org.apache.xerces.internal.dom.DOMImplementationImpl;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import org.apache.xml.serialize.*;
+//import org.apache.xml.serialize.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,6 +55,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
 
 /** This class displays a Java form that is generated from an XML Document that is provided as input.
  *
@@ -277,11 +280,22 @@ public class FormBase extends JTabbedPane implements FormComponent {
             DocumentBuilder builder = domFactory.newDocumentBuilder();
             Document document = builder.newDocument();
             document.appendChild(getDOMElement(document));
+
+			DOMImplementationLS ls = (DOMImplementationLS)
+					document.getImplementation().getFeature("LS", "3.0");
+			LSOutput output = ls.createLSOutput();
+			output.setEncoding("UTF-8");
+			output.setByteStream(out);
+			ls.createLSSerializer().write(document, output);
+			out.close();
+
+			/*
             String method = org.apache.xml.serialize.Method.XML;
             OutputFormat format = new OutputFormat(method, "UTF-8", true);
             format.setLineWidth(0);
             XMLSerializer serializer = new XMLSerializer(out, format);
             serializer.serialize(document);
+			 */
         }
         catch (ParserConfigurationException pce) {
             IOException ioe = new IOException(pce.getMessage());

@@ -42,10 +42,13 @@ import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+//import org.apache.xml.serialize.OutputFormat;
+//import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -208,10 +211,21 @@ public class PersistentStateSupport {
         document.appendChild( element );
         
         StringWriter writer = new StringWriter();
+
+		DOMImplementationLS ls = (DOMImplementationLS)
+				document.getImplementation().getFeature("LS", "3.0");
+		LSOutput output = ls.createLSOutput();
+		output.setEncoding("UTF-8");
+		output.setByteStream(out);
+		LSSerializer serializer = ls.createLSSerializer();
+		serializer.write(document, output);
+
+		/*
         OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
         XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
         
         serializer.serialize(document);
+		 */
         out.close();
         
     }
