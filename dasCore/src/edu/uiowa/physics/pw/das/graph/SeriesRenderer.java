@@ -104,10 +104,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
     PsymConnectorRenderElement[] extraConnectorElements;
     PsymRenderElement psymsElement = new PsymRenderElement();
-    static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
-    static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
-    static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
-    static final String PROPERTY_Y_DELTA_MINUS = "Y_DELTA_MINUS";
+    public static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
+    public static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
+    public static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
+    public static final String PROPERTY_Y_DELTA_MINUS = "Y_DELTA_MINUS";
 
     interface RenderElement {
 
@@ -1094,6 +1094,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param color New value of property color.
      */
     public void setColor(Color color) {
+        if ( color==null ) {
+            throw new IllegalArgumentException("null color");
+        }
         Color old = this.color;
         if (!this.color.equals(color)) {
             this.color = color;
