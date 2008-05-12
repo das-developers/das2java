@@ -168,6 +168,11 @@ public class TableDataSetAdapter implements TableDataSet {
         return (result != null) ? result : z.property(name);
     }
 
+    public Object getProperty( int table, String name ) {
+        return getProperty(name);
+    }
+
+    
     public Map getProperties() {
         Map result = new HashMap();
         result.put(QDataSet.VALID_RANGE, null );
