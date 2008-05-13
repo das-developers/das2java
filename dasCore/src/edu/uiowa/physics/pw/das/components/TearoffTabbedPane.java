@@ -12,6 +12,7 @@ package edu.uiowa.physics.pw.das.components;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Window;
@@ -20,16 +21,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
+import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 
 
@@ -60,13 +65,16 @@ public class TearoffTabbedPane extends JTabbedPane {
     
     public TearoffTabbedPane() {
         super();
-        addMouseListener( getMouseAdapter() );
+        MouseAdapter ma= getMouseAdapter();
+        addMouseListener( ma );
+        addMouseMotionListener(ma);
     }
     
     private MouseAdapter getMouseAdapter() {
-        
         return new MouseAdapter() {
             int selectedTab;
+            Point dragStart;
+            JFrame draggingFrame;
             JPopupMenu tearOffMenu= new JPopupMenu();
             { tearOffMenu.add( new JMenuItem( new AbstractAction( "undock" ) {
                   public void actionPerformed( ActionEvent event ) {
@@ -91,7 +99,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                                 break;
                             }
                         }
-                        desc.babysitter.setVisible(true);
+                        JFrame babySitter=  (JFrame)desc.babysitter;
+                        babySitter.setVisible(true);
+                        babySitter.toFront();  // no effect on Linux/Gnome
                     }
                 }
                 ) );
@@ -120,6 +130,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 ) );
             }
             public void mousePressed( MouseEvent event ) {
+                selectedTab= TearoffTabbedPane.this.indexAtLocation( event.getX(), event.getY() );
                 if ( event.getButton()==MouseEvent.BUTTON3 ) {
                     selectedTab= TearoffTabbedPane.this.indexAtLocation( event.getX(), event.getY() );
                     if ( selectedTab!=-1 ) {
@@ -132,6 +143,37 @@ public class TearoffTabbedPane extends JTabbedPane {
                     }
                 }
             }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if ( dragStart==null ) {
+                    dragStart= e.getPoint();
+                } else {
+                    if ( dragStart.distance(e.getPoint()) > 10 ) {
+                        if ( draggingFrame==null ) {
+                            setCursor( new Cursor( Cursor.MOVE_CURSOR ) );
+                            draggingFrame= TearoffTabbedPane.this.tearOffIntoFrame( selectedTab );
+                        }
+                        Point p= e.getPoint();
+                        SwingUtilities.convertPointToScreen( p ,(Component) e.getSource() );
+                        draggingFrame.setLocation( p );
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if ( dragStart!=null && selectedTab!=-1 ) {
+                    //JFrame f= TearoffTabbedPane.this.tearOffIntoFrame( selectedTab );
+                    //Point p= e.getPoint();
+                    //SwingUtilities.convertPointToScreen( p ,(Component) e.getSource() );
+                    //f.setLocation( p );
+                    setCursor( null );
+                    draggingFrame= null;
+                }
+                dragStart= null;
+            }
+            
         };
     }
     
@@ -176,19 +218,28 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
     }
     
-    public void tearOffIntoFrame( int tabIndex ) {
+    protected JFrame tearOffIntoFrame( int tabIndex ) {
         final Component c= getComponentAt(tabIndex);
         // TODO: can get IllegalComponentStateException with random clicks. See bug297
         setSelectedIndex(tabIndex);
         c.setVisible(true);  // darwin bug297
         Point p= c.getLocationOnScreen();
         TabDesc td= (TabDesc)tabs.get( c );
-        //JFrame babySitter= new JFrame(td.title);
-        JDialog babySitter= new JDialog( (Frame) SwingUtilities.getWindowAncestor(this), td.title  );
+        
+        final JFrame parent= (JFrame) SwingUtilities.getWindowAncestor(this);
+        final JFrame babySitter= new JFrame( td.title  );
+        final WindowStateListener listener= new WindowStateListener() {
+            public void windowStateChanged(WindowEvent e) {
+                babySitter.setExtendedState( parent.getExtendedState() );
+            }
+        } ;
+        parent.addWindowStateListener( listener );
+        
         p.translate( 20, 20 );
         babySitter.setLocation(p);
         babySitter.addWindowListener( new AbstractWindowListener() {
             public void windowClosing(WindowEvent e) {
+                parent.removeWindowStateListener(listener);
                 dock( c );
             }
         } );
@@ -200,6 +251,8 @@ public class TearoffTabbedPane extends JTabbedPane {
         
         babySitter.pack();
         babySitter.setVisible(true);
+        
+        return babySitter;
     }
     
     public void dock( Component c ) {
