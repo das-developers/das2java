@@ -190,6 +190,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         String title= super.getTitleAt(tabIndex);
         super.removeTabAt(tabIndex);
         super.insertTab("("+title+")",null,getTornOffComponent(),null,tabIndex);
+        super.setEnabledAt( tabIndex, false );
         TabDesc td= ((TabDesc)tabs.get(c));
         td.babysitter= newContainer;
         setSelectedIndex(lastSelected);
@@ -261,6 +262,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         int index= td.index;
         super.removeTabAt(index);
         super.insertTab( td.title, td.icon, c, td.tip, index );
+        super.setEnabledAt( index, true );
         setSelectedIndex( selectedIndex );
     }
     
