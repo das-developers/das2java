@@ -70,9 +70,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     private double symSize = 3.0; // radius in pixels
-
     private double lineWidth = 1.0; // width in pixels
-
     private boolean histogram = false;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     private FillStyle fillStyle = FillStyle.STYLE_FILL;
@@ -121,13 +119,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
     class PsymRenderElement implements RenderElement {
 
         protected GeneralPath psymsPath; // store the location of the psyms here.
-
         int[] colors; // store the color index  of each psym
-
         int[] ipsymsPath; // store the location of the psyms here, evens=x, odds=y
-
         int count; // the number of points to plot
-
 
         /**
          * render the psyms by stamping an image at the psym location.  The intent is to
@@ -327,7 +321,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
         private GeneralPath path1;
         private Color color;  // override default color
 
-
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             if (path1 == null) {
                 return 0;
@@ -431,75 +424,76 @@ public class SeriesRenderer extends Renderer implements Displayable {
             fx0 = fx;
             fy0 = fy;
 
-            if (psymConnector != PsymConnector.NONE || fillToReference) {
-                // now loop through all of them. //
+            index++;
+            
+            // now loop through all of them. //
+            
+            for ( ; index < lastIndex; index++ ) {
 
-                for (; index < lastIndex; index++) {
+                x = dataSet.getXTagDouble(index, xUnits);
+                y = dataSet.getDouble(index, yUnits);
 
-                    x = dataSet.getXTagDouble(index, xUnits);
-                    y = dataSet.getDouble(index, yUnits);
+                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
 
-                    final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+                fx = (float) xAxis.transform(x, xUnits);
+                fy = (float) yAxis.transform(y, yUnits);
 
-                    fx = (float) xAxis.transform(x, xUnits);
-                    fy = (float) yAxis.transform(y, yUnits);
+                //double tx= xAxis.transformFast( x, xUnits );
 
-                    //double tx= xAxis.transformFast( x, xUnits );
+                //System.err.println( ""+(float)tx+ "   " + fx );
 
-                    //System.err.println( ""+(float)tx+ "   " + fx );
-
-                    if (isValid) {
-                        if ((x - x0) < xSampleWidth) {
-                            // draw connect-a-dot between last valid and here
-                            if (histogram) {
-                                float fx1 = (fx0 + fx) / 2;
-                                newPath.lineTo(fx1, fy0);
-                                newPath.lineTo(fx1, fy);
-                                newPath.lineTo(fx, fy);
-                            } else {
-                                newPath.lineTo(fx, fy); // this is the typical path
-
-                            }
-
+                if (isValid) {
+                    if ((x - x0) < xSampleWidth) {
+                        // draw connect-a-dot between last valid and here
+                        if (histogram) {
+                            float fx1 = (fx0 + fx) / 2;
+                            newPath.lineTo(fx1, fy0);
+                            newPath.lineTo(fx1, fy);
+                            newPath.lineTo(fx, fy);
                         } else {
-                            // introduce break in line
-                            if (histogram) {
-                                float fx1 = (float) xAxis.transform(x0 + xSampleWidth / 2, xUnits);
-                                newPath.lineTo(fx1, fy0);
+                            newPath.lineTo(fx, fy); // this is the typical path
 
-                                fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
-                                newPath.moveTo(fx1, fy);
-                                newPath.lineTo(fx, fy);
-
-                            } else {
-                                newPath.moveTo(fx, fy);
-                                newPath.lineTo(fx, fy);
-                            }
-
-                        } // else introduce break in line
-
-                        x0 = x;
-                        y0 = y;
-                        fx0 = fx;
-                        fy0 = fy;
-                        pointsPlotted++;
+                        }
 
                     } else {
-                        newPath.moveTo(fx0, fy0); // place holder
+                        // introduce break in line
+                        if (histogram) {
+                            float fx1 = (float) xAxis.transform(x0 + xSampleWidth / 2, xUnits);
+                            newPath.lineTo(fx1, fy0);
 
-                    }
+                            fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                            newPath.moveTo(fx1, fy);
+                            newPath.lineTo(fx, fy);
 
-                } // for ( ; index < ixmax && lastIndex; index++ )
+                        } else {
+                            newPath.moveTo(fx, fy);
+                            newPath.lineTo(fx, fy);
+                        }
 
+                    } // else introduce break in line
 
+                    x0 = x;
+                    y0 = y;
+                    fx0 = fx;
+                    fy0 = fy;
+                    pointsPlotted++;
 
-                if (!histogram && simplifyPaths && colorByDataSet == null) {
-                    this.path1 = GraphUtil.reducePath(newPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
                 } else {
-                    this.path1 = newPath;
+                    newPath.moveTo(fx0, fy0); // place holder
+
                 }
 
+            } // for ( ; index < ixmax && lastIndex; index++ )
+
+
+            if (!histogram && simplifyPaths && colorByDataSet == null) {
+                //j   System.err.println( "input: " );
+                //j   System.err.println( GraphUtil.describe( newPath, true) );
+                this.path1 = GraphUtil.reducePath(newPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+            } else {
+                this.path1 = newPath;
             }
+
         }
 
         public boolean acceptContext(Point2D.Double dp) {
@@ -751,10 +745,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
 
     private void reportCount() {
-        //if ( renderCount % 100 ==0 ) {
-        //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
-        //new Throwable("").printStackTrace();
-        //}
+    //if ( renderCount % 100 ==0 ) {
+    //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+    //new Throwable("").printStackTrace();
+    //}
     }
 
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
@@ -935,8 +929,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
         dataSetClipped = false;
 
         if (vds != null) {
-            fillElement.update(xAxis, yAxis, vds, monitor);
-            psymConnectorElement.update(xAxis, yAxis, vds, monitor);
+            if (fillToReference) {
+                fillElement.update(xAxis, yAxis, vds, monitor);
+            }
+            if (psymConnector != PsymConnector.NONE) {
+                psymConnectorElement.update(xAxis, yAxis, vds, monitor);
+            }
 
             errorElement.update(xAxis, yAxis, vds, monitor);
             psymsElement.update(xAxis, yAxis, vds, monitor);
@@ -1094,7 +1092,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * @param color New value of property color.
      */
     public void setColor(Color color) {
-        if ( color==null ) {
+        if (color == null) {
             throw new IllegalArgumentException("null color");
         }
         Color old = this.color;
