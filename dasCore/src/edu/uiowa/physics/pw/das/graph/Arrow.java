@@ -60,7 +60,7 @@ public class Arrow extends DasCanvasComponent {
         g.fill( p );
         
         g.draw( p );
-        g.dispose();
+        
         
     }
     
