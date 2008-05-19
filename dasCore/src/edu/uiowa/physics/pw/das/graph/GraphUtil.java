@@ -43,19 +43,18 @@ public class GraphUtil {
             document.appendChild(canvas.getDOMElement(document));
             StringWriter writer = new StringWriter();
 
-			DOMImplementationLS ls = (DOMImplementationLS)
-					document.getImplementation().getFeature("LS", "3.0");
-			LSOutput output = ls.createLSOutput();
-			output.setEncoding("UTF-8");
-			output.setByteStream(out);
-			LSSerializer serializer = ls.createLSSerializer();
-			serializer.write(document, output);
+            DOMImplementationLS ls = (DOMImplementationLS) document.getImplementation().getFeature("LS", "3.0");
+            LSOutput output = ls.createLSOutput();
+            output.setEncoding("UTF-8");
+            output.setByteStream(out);
+            LSSerializer serializer = ls.createLSSerializer();
+            serializer.write(document, output);
 
-			/*
+            /*
             OutputFormat format = new OutputFormat(Method.XML, "UTF-8", true);
             XMLSerializer serializer = new XMLSerializer(new OutputStreamWriter(out), format);
             serializer.serialize(document);
-			 */
+             */
 
             out.close();
         } catch (Exception e) {
@@ -362,55 +361,90 @@ public class GraphUtil {
         float sy0 = 0;
         int nx0 = 0;
         int ny0 = 0;
-        float ax0= Float.NaN;
-        float ay0= Float.NaN;  // last averaged location
+        float ax0 = Float.NaN;
+        float ay0 = Float.NaN;  // last averaged location
 
         int type0 = -999;
 
         float xres = 1;
         float yres = 1;
 
-        //String[] types = new String[]{"M", "L", "QUAD", "CUBIC", "CLOSE"        };
+        String[] types = new String[]{"M", "L", "QUAD", "CUBIC", "CLOSE"};
+
+        int points = 0;
+        int inCount = 0;
 
         while (!it.isDone()) {
+            inCount++;
+
             int type = it.currentSegment(p);
             it.next();
             float dx = p[0] - x0;
             float dy = p[1] - y0;
 
-            //System.err.println( "type: "+types[type]+"   "+String.format( "[ %f %f ] ", p[0], p[1] ) );
+            //System.err.print("" + inCount + ": type: " + types[type] + "   " + String.format("[ %f %f ] ", p[0], p[1]));
             if ((type == PathIterator.SEG_MOVETO || type == type0) && Math.abs(dx) < xres && Math.abs(dy) < yres) {
-                sx0+= p[0];
-                sy0+= p[1];
-                nx0+= 1;
-                ny0+= 1;
+                sx0 += p[0];
+                sy0 += p[1];
+                nx0 += 1;
+                ny0 += 1;
+                //System.err.println(" accum");
                 continue;
-            }
-
-            if (Math.abs(dx) >= xres || Math.abs(dy) >= yres) {
+            } else {
                 x0 = 0.5f + (int) Math.floor(p[0]);
                 y0 = 0.5f + (int) Math.floor(p[1]);
-                ax0= nx0>0 ? sx0 / nx0 : p[0];
-                ay0= ny0>0 ? sy0 / ny0 : p[1];
-                sx0= p[0];
-                sy0= p[1];
+                ax0 = nx0 > 0 ? sx0 / nx0 : p[0];
+                ay0 = ny0 > 0 ? sy0 / ny0 : p[1];
+                sx0 = p[0];
+                sy0 = p[1];
                 nx0 = 1;
                 ny0 = 1;
-                type0 = type;
+                //System.err.print(" avg " + nx0 + " points (" + String.format("[ %f %f ]", ax0, ay0));
             }
 
-            switch (type) {
+            switch (type0) {
                 case PathIterator.SEG_LINETO:
                     result.lineTo(ax0, ay0);
+                    points++;
+                    //j        System.err.println( ""+points+": " + GraphUtil.describe(result, false) );
+                    //System.err.println(" lineTo"+ String.format("[ %f %f ]", ax0, ay0));
                     break;
                 case PathIterator.SEG_MOVETO:
                     result.moveTo(ax0, ay0);
+                    //System.err.println(" moveTo"+ String.format("[ %f %f ]", ax0, ay0));
+                    break;
+                case -999:
+                    //System.err.println(" ignore"+ String.format("[ %f %f ]", ax0, ay0));
                     break;
                 default:
                     throw new IllegalArgumentException("not supported");
             }
 
+            type0 = type;
         }
+
+        ax0 = nx0 > 0 ? sx0 / nx0 : p[0];
+        ay0 = ny0 > 0 ? sy0 / ny0 : p[1];
+        //System.err.print(" avg " + nx0 + " points " );
+
+        switch (type0) {
+            case PathIterator.SEG_LINETO:
+                result.lineTo(ax0, ay0);
+                points++;
+                //j        System.err.println( ""+points+": " + GraphUtil.describe(result, false) );
+                //System.err.println(" lineTo"+ String.format("[ %f %f ]", ax0, ay0) );
+                break;
+            case PathIterator.SEG_MOVETO:
+                result.moveTo(ax0, ay0);
+                //System.err.println(" moveTo "+ String.format("[ %f %f ]", ax0, ay0) );
+                break;
+            case -999:
+                //System.err.println(" ignore");
+                break;
+            default:
+                throw new IllegalArgumentException("not supported");
+            }
+
         return result;
     }
 
@@ -525,7 +559,7 @@ public class GraphUtil {
     public static double[] getSlopeIntercept(double x0, double y0, double x1, double y1) {
         double slope = (y1 - y0) / (x1 - x0);
         double intercept = y0 - slope * x0;
-        return new double[]{slope, intercept                };
+        return new double[]{slope, intercept};
     }
 
     public static Color getRicePaperColor() {
@@ -543,7 +577,7 @@ public class GraphUtil {
                 lineToCount++;
             }
             if (enumeratePoints) {
-                System.err.println(" " + coords[0] + " " + coords[1]);
+            //j   System.err.println(" " + coords[0] + " " + coords[1]);
             }
             count++;
             it.next();
