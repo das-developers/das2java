@@ -47,6 +47,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         colors.add(Color.PINK);
         colors.add(Color.RED);
         colors.add(Color.YELLOW);
+        colors.add( new Color(0,true) );
     }
 
     private JColorChooser custom;
