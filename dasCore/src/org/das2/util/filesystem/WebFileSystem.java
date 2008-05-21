@@ -38,6 +38,18 @@ import java.util.regex.*;
  * @author  Jeremy
  */
 public abstract class WebFileSystem extends FileSystem {
+
+    public static File getDownloadDirectory() {
+        File local;
+        if (System.getProperty("user.name").equals("Web")) {
+            local = new File("/tmp");
+        } else {
+            local = new File(System.getProperty("user.home"));
+        }
+        local = new File(local, ".das2/fsCache/wfs/");
+
+        return local;
+    }
     
     protected final File localRoot;
     
@@ -48,14 +60,8 @@ public abstract class WebFileSystem extends FileSystem {
     }
     
     static protected File localRoot( URL root ) {
-        File local;
-        
-        if ( System.getProperty("user.name").equals("Web") ) {
-            local= new File("/tmp");
-        } else {
-            local= new File( System.getProperty("user.home") );
-        }
-        local= new File( local, ".das2/fsCache/wfs/" );
+
+        File local= getDownloadDirectory();
        
         String s= root.getProtocol() + "/"+ root.getHost() + "/" + root.getFile();
         
