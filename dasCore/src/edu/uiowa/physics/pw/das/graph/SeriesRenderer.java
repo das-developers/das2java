@@ -336,21 +336,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
 
-            DatumRange visibleRange = xAxis.getDatumRange();
-
-            int ixmax;
-            int ixmin;
-
-            Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
-            if (xMono != null && xMono.booleanValue()) {
-                ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-                ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1;
-            } else {
-                ixmin = 0;
-                ixmax = dataSet.getXLength();
-            }
-
-            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (ixmax - ixmin) / 100);
+            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * ( lastIndex - firstIndex ) / 100);
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
@@ -371,45 +357,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             int index;
 
-            // find the first valid point, set x0, y0 //
-            for (index = ixmin; index < ixmax; index++) {
-                x = (double) dataSet.getXTagDouble(index, xUnits);
-                y = (double) dataSet.getDouble(index, yUnits);
-
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-                if (isValid) {
-                    x0 = x;
-                    y0 = y;
-                    firstIndex = index;  // TODO: what if no valid points?
-
-                    index++;
-                    break;
-                }
-            }
-
-            // find the last valid point, minding the dataSetSizeLimit
-            int pointsPlotted = 0;
-            for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-                y = dataSet.getDouble(index, yUnits);
-
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-
-                if (isValid) {
-                    pointsPlotted++;
-                }
-            }
-
-            if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
-                dataSetClipped = true;
-            }
-
-            lastIndex = index;
-
             index = firstIndex;
             x = (double) dataSet.getXTagDouble(index, xUnits);
             y = (double) dataSet.getDouble(index, yUnits);
 
             // first point //
+            System.err.println("firstPoint moveTo,LineTo= "+x+","+y);
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
             if (histogram) {
@@ -421,14 +374,16 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 newPath.lineTo(fx, fy);
             }
 
+            x0= x;
+            y0= y;
             fx0 = fx;
             fy0 = fy;
 
             index++;
-            
+
             // now loop through all of them. //
-            
-            for ( ; index < lastIndex; index++ ) {
+
+            for (; index < lastIndex; index++) {
 
                 x = dataSet.getXTagDouble(index, xUnits);
                 y = dataSet.getDouble(index, yUnits);
@@ -476,7 +431,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
                     y0 = y;
                     fx0 = fx;
                     fy0 = fy;
-                    pointsPlotted++;
 
                 } else {
                     newPath.moveTo(fx0, fy0); // place holder
@@ -515,21 +469,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
 
-            DatumRange visibleRange = xAxis.getDatumRange();
-
-            int ixmax;
-            int ixmin;
-
-            Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
-            if (xMono != null && xMono.booleanValue()) {
-                ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-                ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1;
-            } else {
-                ixmin = 0;
-                ixmax = dataSet.getXLength();
-            }
-
-            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (ixmax - ixmin) / 100);
+            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * ( lastIndex - firstIndex ) / 100);
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
@@ -561,44 +501,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             float fy0 = Float.NaN;
 
             int index;
-
-            // find the first valid point, set x0, y0 //
-            for (index = ixmin; index < ixmax; index++) {
-                x = (double) dataSet.getXTagDouble(index, xUnits);
-                y = (double) dataSet.getDouble(index, yUnits);
-
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-                if (isValid) {
-                    x0 = x;
-                    y0 = y;
-                    firstIndex = index;  // TODO: what if no valid points?
-
-                    index++;
-
-                    break;
-
-                }
-
-            }
-
-            // find the last valid point, minding the dataSetSizeLimit
-            int pointsPlotted = 0;
-            for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-                y = dataSet.getDouble(index, yUnits);
-
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-
-                if (isValid) {
-                    pointsPlotted++;
-                }
-
-            }
-            if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
-                dataSetClipped = true;
-            }
-
-            lastIndex = index;
-
+            
             index = firstIndex;
             x = (double) dataSet.getXTagDouble(index, xUnits);
             y = (double) dataSet.getDouble(index, yUnits);
@@ -618,6 +521,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             }
 
+            x0= x;
+            y0= y;
             fx0 = fx;
             fy0 = fy;
 
@@ -669,7 +574,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
                         y0 = y;
                         fx0 = fx;
                         fy0 = fy;
-                        pointsPlotted++;
 
                     }
 
@@ -683,7 +587,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             if (simplifyPaths) {
                 fillToRefPath1 = GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
             }
-
 
         }
 
@@ -794,6 +697,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
+        System.err.println("rendering points: " + lastIndex + "  " + firstIndex);
         if (lastIndex == firstIndex) {
             parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
@@ -880,6 +784,74 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
 
     /**
+     * updates firstIndex and lastIndex that point to the part of
+     * the data that is plottable.  The plottable part is the part that 
+     * might be visible while limiting the number of plotted points.
+     */
+    private void updateFirstLast( DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet ) {
+
+        Units xUnits = xAxis.getUnits();
+        Units yUnits = yAxis.getUnits();
+
+        DatumRange visibleRange = xAxis.getDatumRange();
+
+        int ixmax;
+        int ixmin;
+
+        Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        if (xMono != null && xMono.booleanValue()) {
+            ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
+            ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
+        } else {
+            ixmin = 0;
+            ixmax = dataSet.getXLength();
+        }
+
+        Datum sw = DataSetUtil.guessXTagWidth(dataSet);
+        double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+
+        /* fuzz the xSampleWidth */
+        xSampleWidth = xSampleWidth * 1.10;
+
+        double x = Double.NaN;
+        double y = Double.NaN;
+
+        int index;
+
+        // find the first valid point, set x0, y0 //
+        for (index = ixmin; index < ixmax; index++) {
+            x = (double) dataSet.getXTagDouble(index, xUnits);
+            y = (double) dataSet.getDouble(index, yUnits);
+
+            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+            if (isValid) {
+                firstIndex = index;  // TODO: what if no valid points?
+                index++;
+                break;
+            }
+        }
+
+        // find the last valid point, minding the dataSetSizeLimit
+        int pointsPlotted = 0;
+        for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
+            y = dataSet.getDouble(index, yUnits);
+
+            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+            if (isValid) {
+                pointsPlotted++;
+            }
+        }
+
+        if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
+            dataSetClipped = true;
+        }
+
+        lastIndex = index;
+
+    }
+
+    /**
      * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
      */
     @Override
@@ -928,7 +900,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         dataSetClipped = false;
 
+        
         if (vds != null) {
+            updateFirstLast( xAxis, yAxis, vds );
+            
             if (fillToReference) {
                 fillElement.update(xAxis, yAxis, vds, monitor);
             }
@@ -938,6 +913,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             errorElement.update(xAxis, yAxis, vds, monitor);
             psymsElement.update(xAxis, yAxis, vds, monitor);
+            
         } else if (tds != null) {
             extraConnectorElements = new PsymConnectorRenderElement[tds.getYLength(0)];
             for (int i = 0; i < tds.getYLength(0); i++) {
@@ -952,6 +928,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 }
                 extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
                 vds = tds.getYSlice(i, 0);
+
+                if ( i==0 ) updateFirstLast( xAxis, yAxis, vds ); // minimal support assumes vert slice data is all valid or all invalid.
+
                 extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
             }
         }
@@ -1347,8 +1326,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void setResetDebugCounters(boolean resetDebugCounters) {
         if (resetDebugCounters) {
             renderCount = 0;
-            updateImageCount =
-                    0;
+            updateImageCount = 0;
             refresh();
         }
 
@@ -1478,5 +1456,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
         double oldrenderPointsPerMillisecond = renderPointsPerMillisecond;
         this.renderPointsPerMillisecond = newrenderPointsPerMillisecond;
         propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
+    }
+    
+    public int getFirstIndex() {
+        return this.firstIndex;
+    }
+    
+    public int getLastIndex() {
+        return this.lastIndex;
     }
 }
