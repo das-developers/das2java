@@ -179,9 +179,9 @@ public class VectorUtil {
                 if ( UnitsUtil.isTimeLocation(vds.getXUnits()) ) {
                     xTransferType= DataTransferType.getByName("time24");
                 } else {
-                    xTransferType= DataTransferType.getByName("ascii10");
+                    xTransferType= DataTransferType.getByName("ascii14");
                 }
-                yTransferType= DataTransferType.getByName("ascii10");
+                yTransferType= DataTransferType.getByName("ascii14");
             } else {
                 xTransferType= DataTransferType.getByName("sun_real8");
                 yTransferType= DataTransferType.getByName("sun_real4");
