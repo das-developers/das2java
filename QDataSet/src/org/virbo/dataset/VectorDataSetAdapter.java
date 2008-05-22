@@ -12,7 +12,6 @@ package org.virbo.dataset;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.graph.SeriesRenderer;
 import java.util.HashMap;
 import java.util.Map;
 
