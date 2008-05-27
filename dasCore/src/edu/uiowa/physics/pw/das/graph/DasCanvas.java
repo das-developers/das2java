@@ -104,7 +104,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.LookAndFeel;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
@@ -118,7 +121,7 @@ import org.w3c.dom.NodeList;
 /** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
  * @author eew
  */
-public class DasCanvas extends JLayeredPane implements Printable, Editable, FormComponent {
+public class DasCanvas extends JLayeredPane implements Printable, Editable, FormComponent, Scrollable {
     
     /** Default drawing layer of the JLayeredPane */
     public static final Integer DEFAULT_LAYER = JLayeredPane.DEFAULT_LAYER;
@@ -2102,5 +2105,56 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         this.antiAlias = antiAlias;
         firePropertyChange( "antiAlias", old, antiAlias );
     }
+
+	private boolean fitted;
+
+	/**
+	 * If true, and the canvas was added to a scrollpane, the canvas
+	 * will size itself to fit within the scrollpane.
+	 * 
+	 * @return value of fitted property
+	 */
+	public boolean isFitted() {
+		return fitted;
+	}
+
+	public void setFitted(boolean fitted) {
+		boolean oldValue = this.fitted;
+		this.fitted = fitted;
+		firePropertyChange("fitted", oldValue, fitted);
+		revalidate();
+	}
+
+	public Dimension getPreferredScrollableViewportSize() {
+		return getPreferredSize();
+	}
+
+	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+		switch (orientation) {
+			case SwingConstants.HORIZONTAL:
+				return visibleRect.width / 10;
+			case SwingConstants.VERTICAL:
+				return visibleRect.height / 10;
+			default: return 10;
+		}
+	}
+
+	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+		switch (orientation) {
+			case SwingConstants.HORIZONTAL:
+				return visibleRect.width;
+			case SwingConstants.VERTICAL:
+				return visibleRect.height;
+			default: return 10;
+		}
+	}
+
+	public boolean getScrollableTracksViewportWidth() {
+		return fitted;
+	}
+
+	public boolean getScrollableTracksViewportHeight() {
+		return fitted;
+	}
     
 }
