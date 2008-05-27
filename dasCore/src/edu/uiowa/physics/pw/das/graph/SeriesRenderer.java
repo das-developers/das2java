@@ -362,7 +362,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             y = (double) dataSet.getDouble(index, yUnits);
 
             // first point //
-            System.err.println("firstPoint moveTo,LineTo= "+x+","+y);
+            logger.fine("firstPoint moveTo,LineTo= "+x+","+y);
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
             if (histogram) {
@@ -697,12 +697,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
-        System.err.println("rendering points: " + lastIndex + "  " + firstIndex);
+        logger.fine("rendering points: " + lastIndex + "  " + firstIndex);
         if (lastIndex == firstIndex) {
             parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
 
-        DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("render data set " + dataSet);
+        logger.fine("render data set " + dataSet);
 
         Graphics2D graphics = (Graphics2D) g.create();
 
