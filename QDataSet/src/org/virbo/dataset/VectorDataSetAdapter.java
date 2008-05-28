@@ -13,6 +13,7 @@ import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -23,7 +24,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
     
     Units xunits, yunits, zunits;
     QDataSet x, y;
-    QDataSet plane0;
+    HashMap<String,QDataSet> planes;
     
     HashMap properties= new HashMap();
     
@@ -46,7 +47,18 @@ public class VectorDataSetAdapter implements VectorDataSet {
         if ( yunits==null ) yunits= Units.dimensionless;
         this.x= x;
         this.y= y;
-        plane0= (QDataSet) y.property( QDataSet.PLANE_0);
+        
+        planes= new LinkedHashMap<String,QDataSet>();
+        planes.put( "", y );
+        
+        for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
+            QDataSet pds= (QDataSet) y.property( "PLANE_"+i);
+            if ( pds!=null ) {
+                String name= "PLANE_"+i;
+                if ( pds.property(QDataSet.NAME )!=null ) name= (String)pds.property(QDataSet.NAME );
+                planes.put( name, pds );
+            }
+        }
         
         Boolean xMono=  (Boolean) x.property( QDataSet.MONOTONIC );
         if ( xMono!=null && xMono.booleanValue() ) {
@@ -112,7 +124,9 @@ public class VectorDataSetAdapter implements VectorDataSet {
     
     public edu.uiowa.physics.pw.das.dataset.DataSet getPlanarView(String planeID) {
         if ( planeID.equals("") ) return this;
-        if ( planeID.equals( QDataSet.PLANE_0 ) && plane0!=null ) return new VectorDataSetAdapter( plane0, x );
+        if ( planes.containsKey(planeID) ) {
+            return new VectorDataSetAdapter( (QDataSet)planes.get(planeID), x );
+        }
         if ( planeID.equals( "Y_DELTA_PLUS" ) ) {
             QDataSet d= (QDataSet) y.property( QDataSet.DELTA_PLUS );
             return d==null ? null : VectorDataSetAdapter.create(d);
@@ -125,11 +139,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
     }
     
     public String[] getPlaneIds() {
-        if ( plane0!=null ) {
-            return new String[] { QDataSet.PLANE_0 };
-        } else {
-            return new String[0];
-        }
+        return planes.keySet().toArray(new String[planes.keySet().size()] );
     }
     
     public String toString() {
