@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.InconvertibleUnitsException;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
@@ -347,7 +348,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                     t0 = System.currentTimeMillis();
 
-                    rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
+                    try {
+                        rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
+                    } catch ( InconvertibleUnitsException ex ) {
+                        logger.fine("inconvertable units, setting image to null");
+                        plotImage = null;
+                        rebinDataSet = null;
+                        imageXRange = null;
+                        imageYRange = null;
+                        getParent().repaint();
+                        return;
+                    }
 
                     xmemento = xAxis.getMemento();
                     ymemento = yAxis.getMemento();
