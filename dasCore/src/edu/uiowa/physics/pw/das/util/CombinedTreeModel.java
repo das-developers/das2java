@@ -8,6 +8,7 @@
 
 package edu.uiowa.physics.pw.das.util;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -75,6 +76,8 @@ public class CombinedTreeModel implements TreeModel {
      * mounts the tree.  Note each treeModel must have a unique root.
      */
     public void mountTree( TreeModel treeModel ) {
+        //if ( !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
+        
         if ( treeModelRoots.contains( treeModel.getRoot() ) ) {
             unmountTree(treeModel);
         }
@@ -86,6 +89,8 @@ public class CombinedTreeModel implements TreeModel {
     }
     
     public void unmountTree( TreeModel treeModel ) {
+        //if ( !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
+        
         int index= treeModelRoots.indexOf(treeModel.getRoot());
         treeModels.remove(index);
         treeModelRoots.remove(index);
