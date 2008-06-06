@@ -19,6 +19,10 @@ public class Arrow extends DasCanvasComponent {
     Stroke stroke;
     double em=24; //pixels;
     
+    public enum HeadStyle {
+        DRAFTING, FAT_TRIANGLE, THIN_TRIANGLE,
+    }
+    
     public Arrow( DasCanvas c, Point head, Point tail ) {
         this.head= head;
         this.tail= tail;
@@ -33,7 +37,7 @@ public class Arrow extends DasCanvasComponent {
         setBounds(bounds);
     }
     
-    public static void paintArrow( Graphics2D g, Point head, Point tail, double em ) {
+    public static void paintArrow( Graphics2D g, Point head, Point tail, double em, HeadStyle style ) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
         Line2D line= new Line2D.Double( head, tail );
@@ -52,22 +56,33 @@ public class Arrow extends DasCanvasComponent {
         
         GeneralPath p= new GeneralPath();
         p.moveTo( (float)hx, (float)hy );
-        p.lineTo( (float)(hx+2*dx+0.5*dy), (float)(hy+2*dy-0.5*dx) );
-        p.lineTo( (float)(hx+3*dx+dy), (float)(hy+3*dy-dx) );
-        p.lineTo( (float)(hx+3*dx-dy), (float)(hy+3*dy+dx) );
-        p.lineTo( (float)(hx+2*dx-0.5*dy), (float)(hy+2*dy+0.5*dx) );
-        p.lineTo( (float)hx, (float)hy );
+        
+        if ( style==HeadStyle.DRAFTING ) {
+            p.lineTo( (float)(hx+2*dx+0.5*dy), (float)(hy+2*dy-0.5*dx) );
+            p.lineTo( (float)(hx+3*dx+dy), (float)(hy+3*dy-dx) );
+            p.lineTo( (float)(hx+3*dx-dy), (float)(hy+3*dy+dx) );
+            p.lineTo( (float)(hx+2*dx-0.5*dy), (float)(hy+2*dy+0.5*dx) );
+            p.lineTo( (float)hx, (float)hy );
+        } else if ( style==HeadStyle.FAT_TRIANGLE ) {
+            p.lineTo( (float)(hx+3*dx+1.5*dy), (float)(hy+3*dy-1.5*dx) );
+            p.lineTo( (float)(hx+3*dx-1.5*dy), (float)(hy+3*dy+1.5*dx) );
+            p.lineTo( (float)hx, (float)hy );            
+        } else if ( style==HeadStyle.THIN_TRIANGLE ) {
+            p.lineTo( (float)(hx+3*dx+dy), (float)(hy+3*dy-dx) );
+            p.lineTo( (float)(hx+3*dx-dy), (float)(hy+3*dy+dx) );
+            p.lineTo( (float)hx, (float)hy );            
+        }
+        
         g.fill( p );
         
         g.draw( p );
-        
         
     }
     
     protected void paintComponent(Graphics g1) {
         Graphics2D g= (Graphics2D) g1.create();
         g.translate(-getX(),-getY());
-        paintArrow( g, head, tail, em );
+        paintArrow( g, head, tail, em , HeadStyle.DRAFTING );
         getMouseAdapter().paint(g1);
     }
     
