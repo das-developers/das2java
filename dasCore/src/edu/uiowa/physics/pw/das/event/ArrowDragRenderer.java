@@ -21,9 +21,14 @@ import java.awt.Rectangle;
 public class ArrowDragRenderer implements DragRenderer {
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         g.setClip( null );
-        Arrow.paintArrow( (Graphics2D)g, p2, p1, 12 );
+        Arrow.paintArrow( (Graphics2D)g, p2, p1, 12 , Arrow.HeadStyle.DRAFTING );
         Rectangle result= new Rectangle(p1);
         result.add(p2);
+        result.x-= 6;
+        result.y-= 6;
+        result.width+= 12;
+        result.height+= 12;
+        
         return new Rectangle[] { result };
     }
     
