@@ -267,32 +267,55 @@ public class DataSetUtil {
 
     /**
      * calculate cadence by averaging the smallest set of consistent inter-point
-     * distance.  Assumes all points are valid
+     * distance, taking invalid measurements into account.
      */
-    public static double guessCadence(QDataSet xds) {
-
+    public static double guessCadence( QDataSet xds, QDataSet yds ) {
+        if (yds == null) {
+            yds = DataSetUtil.replicateDataSet( xds.length(), 1.0 );
+        }
+        assert (xds.length() == yds.length());
+        Units u = (Units) yds.property(QDataSet.UNITS);
+        if (u == null) {
+            u = Units.dimensionless;
+        }
         double cadence = Double.MAX_VALUE;
 
         // calculate average cadence for consistent points.  Preload to avoid extra branch.
         double cadenceS = Double.MAX_VALUE;
         int cadenceN = 1;
 
-        double x0 = xds.value(0);
-
-        for (int i = 1; i < xds.length(); i++) {
-            double cadenceAvg;
-            cadenceAvg = cadenceS / cadenceN;
-            cadence = xds.value(i) - x0;
-            if (cadence < 0.5 * cadenceAvg) {
-                cadenceS = cadence;
-                cadenceN = 1;
-            } else if (cadence < 1.5 * cadenceAvg) {
-                cadenceS += cadence;
-                cadenceN += 1;
-            }
+        int i = 0;
+        double x0 = 0;
+        while (i < xds.length() && !u.isValid(yds.value(i))) {
+            i++;
+        }
+        if (i < yds.length()) {
             x0 = xds.value(i);
         }
+        for (i++; i < xds.length(); i++) {
+            if (u.isValid(yds.value(i))) {
+                double cadenceAvg;
+                cadenceAvg = cadenceS / cadenceN;
+                cadence = Math.abs(xds.value(i) - x0);
+                if ((xds.value(i) - x0) < 0.5 * cadenceAvg) {
+                    cadenceS = cadence;
+                    cadenceN = 1;
+                } else if ((xds.value(i) - x0) < 1.5 * cadenceAvg) {
+                    cadenceS += cadence;
+                    cadenceN += 1;
+                }
+                x0 = xds.value(i);
+            }
+        }
         return cadenceS / cadenceN;
+    }
+    
+    /**
+     * calculate cadence by averaging the smallest set of consistent inter-point
+     * distance.  Assumes all points are valid
+     */
+    public static double guessCadence(QDataSet xds) {
+        return guessCadence( xds, null );
     }
 
     /**
