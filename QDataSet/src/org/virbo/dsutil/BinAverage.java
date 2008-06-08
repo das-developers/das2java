@@ -150,6 +150,7 @@ public class BinAverage {
     public static DDataSet boxcar(QDataSet ds, int size) {
         int nn = ds.length();
         int s2 = size / 2;
+        int s3 = s2 + size % 2;   // one greater than s2 if s2 is odd.
 
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
@@ -170,14 +171,14 @@ public class BinAverage {
             runningWeight += w;
         }
 
-        for (int i = s2; i < nn - s2; i++) {
+        for (int i = s2; i < nn - s3; i++) {
             sums.putValue(i, runningSum);
             weights.putValue(i, runningWeight);
 
             double d0 = ds.value(i - s2);
             double w0 = wds.value( i - s2 );
 
-            double d = ds.value(i - s2 + size);
+            double d = ds.value( i - s2 + size );
             double w = wds.value( i - s2 + size );
 
             runningSum += d * w - d0 * w0;
@@ -186,7 +187,7 @@ public class BinAverage {
         }
 
         // handle the end of the dataset by copying
-        for (int i = nn - s2; i < size; i++) {
+        for (int i = nn - s3; i < nn; i++) {
             double d = ds.value(i);
             double w = wds.value(i);
             sums.putValue(i, d);
