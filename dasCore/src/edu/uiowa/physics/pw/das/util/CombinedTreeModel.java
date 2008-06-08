@@ -32,6 +32,10 @@ public class CombinedTreeModel implements TreeModel {
     
     List listeners;
     
+    // generally, the model should only be modified on the event thread.
+    // this is useful for debugging.
+    final private boolean checkEvent= false;
+    
     public CombinedTreeModel( Object root ) {
         this.root= root;
         treeModels= new ArrayList();
@@ -76,7 +80,7 @@ public class CombinedTreeModel implements TreeModel {
      * mounts the tree.  Note each treeModel must have a unique root.
      */
     public void mountTree( TreeModel treeModel ) {
-        //if ( !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
+        if ( checkEvent && !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
         
         if ( treeModelRoots.contains( treeModel.getRoot() ) ) {
             unmountTree(treeModel);
@@ -89,7 +93,7 @@ public class CombinedTreeModel implements TreeModel {
     }
     
     public void unmountTree( TreeModel treeModel ) {
-        //if ( !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
+        if ( checkEvent && !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
         
         int index= treeModelRoots.indexOf(treeModel.getRoot());
         treeModels.remove(index);
@@ -99,6 +103,7 @@ public class CombinedTreeModel implements TreeModel {
     }
     
     public Object getChild(Object parent, int index) {
+        if ( checkEvent && !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
         Object result;
         TreeModel mt;
         if ( parent==root ) {
@@ -113,6 +118,7 @@ public class CombinedTreeModel implements TreeModel {
     }
     
     public int getChildCount(Object parent) {
+        if ( checkEvent && !EventQueue.isDispatchThread() ) throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
         if ( parent==root ) {
             return this.treeModels.size();
         } else {
