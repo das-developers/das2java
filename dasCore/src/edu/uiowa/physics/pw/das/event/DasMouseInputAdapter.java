@@ -63,11 +63,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     private MouseModule primary=null;
     private MouseModule secondary=null;
     
-    /**
-     * this will be removed, as the right mouse button is reserved for context menus.
-     */
-    private MouseModule tertiary=null;
-    
     /*
      * array of active modules.  This will be removed, as the idea was
      * that a few modules could be used together simultaneously, but this implementation
@@ -349,10 +344,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
         secondarySelectedItem= j;
         secondary= module;
-    }
-    
-    public void setTertiaryModule(MouseModule module) {
-        tertiary= module;
     }
     
     /**
