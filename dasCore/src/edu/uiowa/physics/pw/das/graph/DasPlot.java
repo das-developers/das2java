@@ -469,6 +469,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     cacheImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
                     plotGraphics = (Graphics2D) cacheImage.getGraphics();
                     plotGraphics.setBackground(getBackground());
+		    plotGraphics.setColor(getForeground());
                     plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
                     logger.finest(" rebuilding cacheImage");
                 }
@@ -647,7 +648,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * notify user of an exception, in the context of the plot.
      */
     public void postException(Renderer renderer, Exception exception) {
-        postMessage(renderer, exception.getMessage(), ERROR, null, null);
+        String message= exception.getMessage();
+        if ( message==null ) message= String.valueOf(exception);
+        postMessage(renderer, message, ERROR, null, null);
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
