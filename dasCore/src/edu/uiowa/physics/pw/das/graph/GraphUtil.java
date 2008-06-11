@@ -399,7 +399,7 @@ public class GraphUtil {
                 sy0 = p[1];
                 nx0 = 1;
                 ny0 = 1;
-                //System.err.print(" avg " + nx0 + " points (" + String.format("[ %f %f ]", ax0, ay0));
+            //System.err.print(" avg " + nx0 + " points (" + String.format("[ %f %f ]", ax0, ay0));
             }
 
             switch (type0) {
@@ -443,7 +443,7 @@ public class GraphUtil {
                 break;
             default:
                 throw new IllegalArgumentException("not supported");
-            }
+        }
 
         return result;
     }
@@ -577,14 +577,83 @@ public class GraphUtil {
                 lineToCount++;
             }
             if (enumeratePoints) {
-            //j   System.err.println(" " + coords[0] + " " + coords[1]);
+                //j   System.err.println(" " + coords[0] + " " + coords[1]);
             }
             count++;
             it.next();
         }
         return "count: " + count + "  lineToCount: " + lineToCount;
     }
+
+    static String toString(Line2D line) {
+        return ""+line.getX1()+","+line.getY1()+" "+line.getX2()+","+line.getY2();
+    }
+    
     //TODO:  sun.awt.geom.Curve and sun.awt.geom.Crossings are GPL open-source, so
     // these methods will provide reliable methods for getting rectangle, line 
     // intersections.
+
+    /**
+     * returns the point where the two line segments intersect, or null.
+     * @param line1
+     * @param line2
+     * @param noBoundsCheck if true, then do not check the segment bounds.
+     * @return
+     */
+    public static Point2D lineIntersection(Line2D line1, Line2D line2, boolean noBoundsCheck) {
+        Point2D result = null;
+        double a1, b1, c1, a2, b2, c2, denom;
+        a1 = line1.getY2() - line1.getY1();
+        b1 = line1.getX1() - line1.getX2();
+        c1 = line1.getX2() * line1.getY1() - line1.getX1() * line1.getY2();
+
+        a2 = line2.getY2() - line2.getY1();
+        b2 = line2.getX1() - line2.getX2();
+        c2 = line2.getX2() * line2.getY1() - line2.getX1() * line2.getY2();
+
+        denom = a1 * b2 - a2 * b1;
+        if (denom != 0) {
+            result = new Point2D.Double((b1 * c2 - b2 * c1) / denom, (a2 * c1 -
+                    a1 * c2) / denom);
+            if (noBoundsCheck 
+                    ||(((result.getX() - line1.getX1()) * (line1.getX2() - result.getX()) >= 0) 
+                    && ((result.getY() - line1.getY1()) * (line1.getY2() - result.getY()) >= 0) 
+                    && ((result.getX() - line2.getX1()) * (line2.getX2() - result.getX()) >= 0) 
+                    && ((result.getY() - line2.getY1()) * (line2.getY2() - result.getY()) >= 0) ) ) {
+                return result;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public static Point2D lineRectangleIntersection( Point2D p0, Point2D p1, Rectangle2D r0) {
+
+        PathIterator it = r0.getPathIterator(null);
+
+        Line2D line = new Line2D.Double( p0, p1 );
+
+        float[] c0 = new float[6];
+        float[] c1 = new float[6];
+        it.currentSegment(c0);
+        it.next();
+        while ( !it.isDone() ) {
+            int type= it.currentSegment(c1);
+            if ( type==PathIterator.SEG_LINETO ) {
+                Line2D seg = new Line2D.Double(c0[0], c0[1], c1[0], c1[1]);
+                Point2D result = lineIntersection(line, seg, false);
+                if (result != null) {
+                    return result;
+                }
+            }
+            it.next();
+            c0[0]= c1[0];
+            c0[1]= c1[1];
+        }
+        return null;
+    }
+    
+    
 }
