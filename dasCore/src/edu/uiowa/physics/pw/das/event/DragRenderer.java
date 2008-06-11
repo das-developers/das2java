@@ -41,7 +41,7 @@ public interface DragRenderer
     /* draws the drag for mousing from p1 to p2, and returns an array of
      * Rectangles covering the rendering.  If nothing is drawn, then an 
      * array of length zero should be returned, and nulls are allowed in the
-     * array.
+     * array. p1 and p2, and g are in the canvas frame of reference.
      */
     public abstract Rectangle[] renderDrag(Graphics g, Point p1, Point p2);
     
