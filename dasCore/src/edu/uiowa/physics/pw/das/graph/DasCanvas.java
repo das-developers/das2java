@@ -34,6 +34,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dasml.FormComponent;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
+import edu.uiowa.physics.pw.das.event.DragRenderer;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
@@ -70,6 +71,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -1379,11 +1381,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * JPanel that lives above all other components, and is capable of blocking keyboard and mouse input from
      * all components underneath.
      */
-    private static class GlassPane extends JPanel implements MouseInputListener, KeyListener {
+    public static class GlassPane extends JPanel implements MouseInputListener, KeyListener {
         
         boolean blocking = false;
         boolean accepting = false;
         Rectangle target;
+        
+        DragRenderer dragRenderer= null;
+        Point p1=null,p2=null;
         
         public GlassPane() {
             setOpaque(false);
@@ -1415,6 +1420,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
         
+        public void setDragRenderer( DragRenderer r, Point p1, Point p2 ) {
+            this.dragRenderer= r;
+            this.p1= p1;
+            this.p2= p2;
+        }
+        
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D)g.create();
             if (blocking) {
@@ -1425,6 +1436,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
             if (accepting && target != null) {
                 paintDnDTarget(g2);
+            }
+            if ( dragRenderer!=null ) {
+                dragRenderer.renderDrag(g2, p1, p2);
             }
         }
         
