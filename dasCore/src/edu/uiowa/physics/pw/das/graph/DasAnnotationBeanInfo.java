@@ -27,7 +27,6 @@ import edu.uiowa.physics.pw.das.beans.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 
@@ -44,10 +43,14 @@ public class DasAnnotationBeanInfo extends SimpleBeanInfo {
             properties = new PropertyDescriptor[] {
                 new PropertyDescriptor("text", DasAnnotation.class),
                 new PropertyDescriptor("borderType", DasAnnotation.class),
+                new PropertyDescriptor("arrowStyle", DasAnnotation.class ),
                 new PropertyDescriptor("fontSize", DasAnnotation.class ),
             };
             properties[1].setPropertyEditorClass( EnumerationEditor.class );
+            properties[2].setPropertyEditorClass( EnumerationEditor.class );
+            System.err.println("yeah!!!");
         } catch ( IntrospectionException e) {
+            e.printStackTrace();
             properties= null;
         }
 
