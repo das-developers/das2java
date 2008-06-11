@@ -114,7 +114,7 @@ public class LabelDragRenderer implements DragRenderer {
         void setText( String text, Point p ) {
             if ( window==null ) init();
             if ( text!=null ) {
-                gtr.setString( containedPanel, text );
+                gtr.setString( containedPanel.getGraphics(), text );
                 Rectangle rect= gtr.getBounds();
 
                 int posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * rect.width;
@@ -139,7 +139,7 @@ public class LabelDragRenderer implements DragRenderer {
                     
                 } else {
                     
-                    gtr.setString(label,text);
+                    gtr.setString(label.getGraphics(),text);
                     rect= gtr.getBounds();
                     window.setSize( new Dimension( rect.width, rect.height ) );
                     
@@ -172,13 +172,14 @@ public class LabelDragRenderer implements DragRenderer {
         if ( label==null ) return null;
         
         Graphics2D g= (Graphics2D)g1;
+        g.setClip(null);
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
         FontMetrics fm= g.getFontMetrics();
         
-        Dimension d= parent.getSize();
+        Dimension d= parent.getCanvas().getSize();
         
-        gtr.setString(parent, label);
+        gtr.setString( g1, label);
         
         int dx= (int)gtr.getWidth()+6;
         

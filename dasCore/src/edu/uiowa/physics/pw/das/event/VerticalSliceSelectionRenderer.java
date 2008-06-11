@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import edu.uiowa.physics.pw.das.graph.DasRow;
 
 import java.awt.*;
 /**
@@ -48,9 +49,9 @@ public class VerticalSliceSelectionRenderer implements DragRenderer {
         g.setColor(new Color(0,0,0));
         g.setXORMode(Color.white);        
         
-        Dimension d= parent.getSize();
-        //g.drawLine((int)0, (int)p.y, (int)d.getWidth(), (int)p.y);
-        g.drawLine( p.x, 0, p.x, d.height );
+        DasRow row= parent.getRow();
+        
+        g.drawLine( p.x, row.getDMinimum(), p.x, row.getDMaximum() );
         
         g.dispose();
         

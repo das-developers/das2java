@@ -43,8 +43,8 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         myDirtyBounds.add(p2.x-2,p2.y-2);
         myDirtyBounds.add(p2.x+2,p2.y+2);
         
-        Datum run= xaxis.invTransform(p2.x+parent.getX()).subtract(xaxis.invTransform(p1.x+parent.getX()));        
-        Datum rise= yaxis.invTransform(p2.y+parent.getY()).subtract(yaxis.invTransform(p1.y+parent.getY()));
+        Datum run= xaxis.invTransform(p2.x).subtract(xaxis.invTransform(p1.x));        
+        Datum rise= yaxis.invTransform(p2.y).subtract(yaxis.invTransform(p1.y));
             
         if ( !p1.equals(p2) ) {
             Datum slope= rise.divide(run);            

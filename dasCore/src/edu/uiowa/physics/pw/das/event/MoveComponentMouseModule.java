@@ -69,15 +69,15 @@ public class MoveComponentMouseModule extends MouseModule {
         }
 
         private Shape enlarge(Shape s, double scale) {
-            Point c = center(s);
+            Point center = center(s);
             AffineTransform at = new AffineTransform();
-            System.err.println("enlarge:" + c);
-            at.translate( +c.x, +c.y);
+            
+            at.translate( +center.x, +center.y);
             at.scale(scale, scale);
             GeneralPath gp = new GeneralPath(s);
             gp.transform(at);
             at = new AffineTransform();
-            at.translate(-c.x*scale, -c.y*scale);
+            at.translate(-center.x*scale, -center.y*scale);
             gp.transform(at);
 
             return gp;
@@ -85,7 +85,6 @@ public class MoveComponentMouseModule extends MouseModule {
 
         public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
             Rectangle bounds = c.getActiveRegion().getBounds();
-            bounds.translate(-c.getX(), -c.getY());
             bounds.translate(p2.x - p1.x, p2.y - p1.y);
             Graphics2D g = (Graphics2D) g1;
             
@@ -122,6 +121,7 @@ public class MoveComponentMouseModule extends MouseModule {
         super(parent, new MoveRenderer(parent), "Move Component");
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         super.mouseReleased(e);
         Point p = e.getPoint();
@@ -137,13 +137,11 @@ public class MoveComponentMouseModule extends MouseModule {
         p0 = null;
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
         ((MoveRenderer)this.dragRenderer).refreshImage();
         p0 = e.getPoint();
     }
 
-    public void mouseDragged(MouseEvent e) {
-        super.mouseDragged(e);
-    }
 }

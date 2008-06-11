@@ -60,8 +60,8 @@ public class LengthDragRenderer extends LabelDragRenderer {
         DasAxis ya= yaxis == null ? plot.getYAxis() : yaxis;
         
         if ( !p1.equals(p2) ) {
-            Datum x0= xa.invTransform(p2.x+parent.getX());
-            Datum run= x0.subtract(xa.invTransform(p1.x+parent.getX()));
+            Datum x0= xa.invTransform(p2.x);
+            Datum run= x0.subtract(xa.invTransform(p1.x));
             run= DatumUtil.asOrderOneUnits(run);
             String runString;
             if ( x0.getUnits()==run.getUnits() ) {
@@ -70,8 +70,8 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 runString= datumString(run);
             }
             
-            Datum y0= ya.invTransform(p2.y+parent.getY());
-            Datum rise= y0.subtract(ya.invTransform(p1.y+parent.getY()));
+            Datum y0= ya.invTransform(p2.y);
+            Datum rise= y0.subtract(ya.invTransform(p1.y));
 
             String riseString;
             riseString= datumString(rise);

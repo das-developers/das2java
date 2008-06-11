@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import edu.uiowa.physics.pw.das.graph.DasColumn;
 
 import java.awt.*;
 
@@ -50,8 +51,8 @@ public class HorizontalSliceSelectionRenderer implements DragRenderer {
         g.setColor(new Color(0,0,0));
         g.setXORMode(Color.white);
         
-        Dimension d= parent.getSize();
-        g.drawLine((int)0, (int)p.y, (int)d.getWidth(), (int)p.y);        
+        DasColumn col= parent.getColumn();
+        g.drawLine( col.getDMinimum(), (int)p.y, col.getDMaximum(), (int)p.y);        
                 
         g.dispose();
         
@@ -59,7 +60,9 @@ public class HorizontalSliceSelectionRenderer implements DragRenderer {
     
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         //g.drawLine(0, p2.y, parent.getWidth(), p2.y);
-        dirtyBounds.setRect(0,p2.y,parent.getWidth(),1);
+        DasColumn col= parent.getColumn();
+        
+        dirtyBounds.setRect(col.getDMinimum(),p2.y,col.getDMaximum(),1);
         drawCrossHair(g,p2);
         return new Rectangle[] { dirtyBounds };
     }

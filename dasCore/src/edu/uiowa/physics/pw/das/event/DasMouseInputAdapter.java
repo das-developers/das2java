@@ -20,7 +20,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.*;
@@ -42,7 +41,6 @@ import java.awt.print.PrinterJob;
 import java.util.*;
 import java.util.logging.Logger;
 
-
 /**
  * DasMouseInputAdapter delegates mouse and key events to mouse modules, which
  * do something with the events.  Also, mouse events are promoted to MouseDragEvents
@@ -59,293 +57,292 @@ import java.util.logging.Logger;
  * @author  jbf
  */
 public class DasMouseInputAdapter extends MouseInputAdapter implements Editable, MouseWheelListener {
-    
-    private MouseModule primary=null;
-    private MouseModule secondary=null;
-    
+
+    private MouseModule primary = null;
+    private MouseModule secondary = null;
     /*
      * array of active modules.  This will be removed, as the idea was
      * that a few modules could be used together simultaneously, but this implementation
      * only allows for one to be active at a time.
      */
-    private Vector active=null;
-    
-    private boolean pinned= false;
-    
+    private Vector active = null;
+    private boolean pinned = false;
     private Vector modules;
-    
     private HashMap primaryActionButtonMap;
     private HashMap secondaryActionButtonMap;
-    
     protected JPopupMenu primaryPopup;
     protected JPopupMenu secondaryPopup;
-    
     private Point primaryPopupLocation;
     private Point secondaryPopupLocation;
-    
     private JPanel pngFileNamePanel;
     private JTextField pngFileTextField;
     private JFileChooser pngFileChooser;
-    
     JCheckBoxMenuItem primarySelectedItem;
-    JCheckBoxMenuItem secondarySelectedItem;
-    
-    // must be non-null, but may contain null elements
+    JCheckBoxMenuItem secondarySelectedItem;    // must be non-null, but may contain null elements
     Rectangle[] dirtyBoundsList;
-    
-    Logger log= DasLogger.getLogger(DasLogger.GUI_LOG);
-    
+    Logger log = DasLogger.getLogger(DasLogger.GUI_LOG);
     /**
      * number of additional inserted popup menu items.
      */
     int numInserted;
-    
     protected ActionListener popupListener;
-    
-    protected DasCanvasComponent parent=null;
-    
+    protected DasCanvasComponent parent = null;
     private Point selectionStart;   // in component frame
     private Point selectionEnd;     // in component frame
     private Point dSelectionStart;  // in DasCanvas device frame
     private Point dSelectionEnd; // in DasCanvas device frame
     private Graphics2D graphics;
-    
     private MousePointSelectionEvent mousePointSelection;
     private int xOffset;
     private int yOffset;
-    
-    private int button=0; // current depressed button
-    
-    private MouseMode mouseMode= MouseMode.idle;
-    private boolean drawControlPoints= false;
-    
-    private DragRenderer resizeRenderer= null;
-    private Point resizeStart= null;
-    
+    private int button = 0; // current depressed button
+    private MouseMode mouseMode = MouseMode.idle;
+    private boolean drawControlPoints = false;
+    private DragRenderer resizeRenderer = null;
+    private Point resizeStart = null;
     /*
      *this will be removed, and the component can add its own popup buttons.
      */
     Vector hotSpots = null;
-    
-    Rectangle dirtyBounds= null;
-    
-    private boolean hasFocus=false;
-    
+    Rectangle dirtyBounds = null;
+    private boolean hasFocus = false;
     private Point pressPosition;
-    
     private boolean headless;
-    
+
     private static class MouseMode {
+
         String s;
-        boolean resizeTop= false;
-        boolean resizeBottom= false;
-        boolean resizeRight= false;
-        boolean resizeLeft= false;
-        Point moveStart= null;
-        static MouseMode idle= new MouseMode("idle");
-        static MouseMode resize= new MouseMode("resize");
-        static MouseMode move= new MouseMode("move");
-        static MouseMode moduleDrag= new MouseMode("moduleDrag");
-        static MouseMode hotSpot = new MouseMode("hotSpot");
-        
-        MouseMode(String s) { this.s= s; }
-        public String toString() { return s; }
+        boolean resizeTop = false;
+        boolean resizeBottom = false;
+        boolean resizeRight = false;
+        boolean resizeLeft = false;
+        Point moveStart = null;
+        static MouseMode idle = new MouseMode("idle");
+        static MouseMode resize = new MouseMode("resize");
+        static MouseMode move = new MouseMode("move");
+        static MouseMode moduleDrag = new MouseMode("moduleDrag");
+
+        MouseMode(String s) {
+            this.s = s;
+        }
+
+        public String toString() {
+            return s;
+        }
     }
-    
+
     /** Creates a new instance of dasMouseInputAdapter */
     public DasMouseInputAdapter(DasCanvasComponent parent) {
-        
-        this.parent= parent;
-        
-        modules= new Vector();
-        
-        primaryActionButtonMap= new HashMap();
-        secondaryActionButtonMap= new HashMap();
-        
-        numInserted= 0;
-        
-        this.headless= DasApplication.getDefaultApplication().isHeadless();
-        if ( ! headless ) {
-            primaryPopup= createPopup();
-            secondaryPopup= createPopup();
+
+        this.parent = parent;
+
+        modules = new Vector();
+
+        primaryActionButtonMap = new HashMap();
+        secondaryActionButtonMap = new HashMap();
+
+        numInserted = 0;
+
+        this.headless = DasApplication.getDefaultApplication().isHeadless();
+        if (!headless) {
+            primaryPopup = createPopup();
+            secondaryPopup = createPopup();
         }
-        
-        active= null;
-        
-        mousePointSelection= new MousePointSelectionEvent(this,0,0);
-        
-        resizeRenderer= new BoxRenderer(parent);
-        
-        
-        dirtyBoundsList= new Rectangle[0];
+
+        active = null;
+
+        mousePointSelection = new MousePointSelectionEvent(this, 0, 0);
+
+        resizeRenderer = new BoxRenderer(parent);
+
+
+        dirtyBoundsList = new Rectangle[0];
     }
-    
-    public void replaceMouseModule( MouseModule oldModule, MouseModule newModule ) {
-        JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(oldModule);
-        primaryActionButtonMap.put(newModule,j);
+
+    public void replaceMouseModule(MouseModule oldModule, MouseModule newModule) {
+        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(oldModule);
+        primaryActionButtonMap.put(newModule, j);
         primaryActionButtonMap.remove(oldModule);
-        secondaryActionButtonMap.put(newModule,secondaryActionButtonMap.get(oldModule));
+        secondaryActionButtonMap.put(newModule, secondaryActionButtonMap.get(oldModule));
         secondaryActionButtonMap.remove(oldModule);
         modules.removeElement(oldModule);
         modules.addElement(newModule);
     }
-    
+
     /**
      * add a mouse module to the list of available modules.  If a module with the same
      * label exists already, it will be replaced.
      */
     public void addMouseModule(MouseModule module) {
-        
-        if ( headless ) {
-            DasLogger.getLogger( DasLogger.GUI_LOG ).info( "not adding module since headless is true" );
-            
+
+        if (headless) {
+            DasLogger.getLogger(DasLogger.GUI_LOG).info("not adding module since headless is true");
+
         } else {
-            MouseModule preExisting= getModuleByLabel(module.getLabel());
-            if (preExisting!=null) {
-                DasLogger.getLogger( DasLogger.GUI_LOG ).info( "Replacing mouse module "+module.getLabel()+"." );
-                replaceMouseModule(preExisting,module);
-                
+            MouseModule preExisting = getModuleByLabel(module.getLabel());
+            if (preExisting != null) {
+                DasLogger.getLogger(DasLogger.GUI_LOG).info("Replacing mouse module " + module.getLabel() + ".");
+                replaceMouseModule(preExisting, module);
+
             } else {
-                
+
                 modules.add(module);
-                
-                String name= module.getLabel();
-                
+
+                String name = module.getLabel();
+
                 JCheckBoxMenuItem primaryNewItem = new JCheckBoxMenuItem(name);
                 JCheckBoxMenuItem secondaryNewItem = new JCheckBoxMenuItem(name);
-                
+
                 primaryNewItem.addActionListener(popupListener);
                 primaryNewItem.setActionCommand("primary");
                 secondaryNewItem.addActionListener(popupListener);
                 secondaryNewItem.setActionCommand("secondary");
-                
-                primaryActionButtonMap.put(module,primaryNewItem);
-                secondaryActionButtonMap.put(module,secondaryNewItem);
-                
+
+                primaryActionButtonMap.put(module, primaryNewItem);
+                secondaryActionButtonMap.put(module, secondaryNewItem);
+
                 // insert the check box after the separator, and at the end of the actions list.
-                primaryPopup.add( primaryNewItem, numInserted + 1 + primaryActionButtonMap.size()-1 );
-                secondaryPopup.add( secondaryNewItem, numInserted + 1 + secondaryActionButtonMap.size()-1 );
-                
+                primaryPopup.add(primaryNewItem, numInserted + 1 + primaryActionButtonMap.size() - 1);
+                secondaryPopup.add(secondaryNewItem, numInserted + 1 + secondaryActionButtonMap.size() - 1);
+
             }
         }
     }
-    
+
     public KeyAdapter getKeyAdapter() {
         return new KeyAdapter() {
-            public void keyPressed( KeyEvent ev ) {
-                log.finest( "keyPressed " );
-                if ( ev.getKeyCode()==27 & active!=null ) {
-                    active=null;
+
+            public void keyPressed(KeyEvent ev) {
+                log.finest("keyPressed ");
+                if (ev.getKeyCode() == 27 & active != null) {
+                    active = null;
                     refresh();
                     ev.consume();
-                } else if ( ev.getKeyCode()==KeyEvent.VK_SHIFT ) {
-                    drawControlPoints= true;
+                } else if (ev.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    drawControlPoints = true;
                     parent.repaint();
-                } else if ( ev.getKeyChar()=='p' ) {
-                    pinned= true;
+                } else if (ev.getKeyChar() == 'p') {
+                    pinned = true;
                     ev.consume();
                 } else {
-                    if ( active==null ) return;
-                    for ( int i=0; i<active.size(); i++ ) {
-                        ((MouseModule)active.get(i)).keyPressed(ev);
+                    if (active == null) {
+                        return;
+                    }
+                    for (int i = 0; i < active.size(); i++) {
+                        ((MouseModule) active.get(i)).keyPressed(ev);
                     }
                 }
             }
-            public void keyReleased( KeyEvent ev ) {
-                if ( ev.getKeyCode()==KeyEvent.VK_SHIFT ) {
-                    drawControlPoints= false;
+
+            public void keyReleased(KeyEvent ev) {
+                if (ev.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    drawControlPoints = false;
                     parent.repaint();
                 }
-                if ( active==null ) return;
-                for ( int i=0; i<active.size(); i++ ) {
-                    ((MouseModule)active.get(i)).keyReleased(ev);
+                if (active == null) {
+                    return;
+                }
+                for (int i = 0; i < active.size(); i++) {
+                    ((MouseModule) active.get(i)).keyReleased(ev);
                 }
             }
-            public void keyTyped( KeyEvent ev ) {
-                if ( active==null ) return;
-                for ( int i=0; i<active.size(); i++ ) {
-                    ((MouseModule)active.get(i)).keyTyped(ev);
+
+            public void keyTyped(KeyEvent ev) {
+                if (active == null) {
+                    return;
+                }
+                for (int i = 0; i < active.size(); i++) {
+                    ((MouseModule) active.get(i)).keyTyped(ev);
                 }
             }
-            
         };
     }
-    
-    public MouseModule getPrimaryModule( ) {
-        ArrayList activ= new ArrayList();
-        for (int i=0; i< modules.size(); i++) {
-            JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(modules.get(i));
-            if (j.isSelected()) activ.add(modules.get(i));
+
+    public MouseModule getPrimaryModule() {
+        ArrayList activ = new ArrayList();
+        for (int i = 0; i < modules.size(); i++) {
+            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(modules.get(i));
+            if (j.isSelected()) {
+                activ.add(modules.get(i));
+            }
         }
-        return (MouseModule)activ.get(0); // at one time we allowed multiple modules at once.
+        return (MouseModule) activ.get(0); // at one time we allowed multiple modules at once.
     }
-    
+
     public MouseModule getSecondaryModule() {
-        ArrayList activ= new ArrayList();
-        for (int i=0; i< modules.size(); i++) {
-            JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(modules.get(i));
-            if (j.isSelected()) activ.add(modules.get(i));
+        ArrayList activ = new ArrayList();
+        for (int i = 0; i < modules.size(); i++) {
+            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(modules.get(i));
+            if (j.isSelected()) {
+                activ.add(modules.get(i));
+            }
         }
-        return (MouseModule)activ.get(0); // at one time we allowed multiple modules at once.
+        return (MouseModule) activ.get(0); // at one time we allowed multiple modules at once.
     }
-    
+
     /**
      * set the primary module, the module receiving left-button events, to the
      * module provided.  If the module is not already loaded, implicitly addMouseModule
      * is called.
      */
     public void setPrimaryModule(MouseModule module) {
-        if ( headless ) return;
-        JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(module);
-        if ( j==null ) addMouseModule( module );
-        
-        for ( Iterator i= primaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
+        if (headless) {
+            return;
+        }
+        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
+        if (j == null) {
+            addMouseModule(module);
+        }
+        for (Iterator i = primaryActionButtonMap.entrySet().iterator(); i.hasNext();) {
             try {
-                Object ii= ((Map.Entry)i.next()).getValue();
-                ((JCheckBoxMenuItem)ii).setSelected(false);
-            } catch ( RuntimeException e ) {
+                Object ii = ((Map.Entry) i.next()).getValue();
+                ((JCheckBoxMenuItem) ii).setSelected(false);
+            } catch (RuntimeException e) {
                 e.printStackTrace();
                 throw e;
             }
         }
-        
-        j= (JCheckBoxMenuItem)primaryActionButtonMap.get(module);
-        if (j!=null) {
+
+        j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
+        if (j != null) {
             j.setSelected(true);
         }
-        primarySelectedItem= j;
-        primary= module;
+        primarySelectedItem = j;
+        primary = module;
         parent.setCursor(primary.getCursor());
     }
-    
+
     /**
      * set the secondary module, the module receiving middle-button events, to the
      * module provided.  If the module is not already loaded, implicitly addMouseModule
      * is called.
      */
     public void setSecondaryModule(MouseModule module) {
-        if ( headless ) return;
-        JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(module);
-        if ( j==null ) addMouseModule( module );
-        
-        for ( Iterator i= secondaryActionButtonMap.entrySet().iterator(); i.hasNext(); ) {
+        if (headless) {
+            return;
+        }
+        JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
+        if (j == null) {
+            addMouseModule(module);
+        }
+        for (Iterator i = secondaryActionButtonMap.entrySet().iterator(); i.hasNext();) {
             try {
-                Object ii= ((Map.Entry)i.next()).getValue();
-                ((JCheckBoxMenuItem)ii).setSelected(false);
-            } catch ( RuntimeException e ) {
+                Object ii = ((Map.Entry) i.next()).getValue();
+                ((JCheckBoxMenuItem) ii).setSelected(false);
+            } catch (RuntimeException e) {
                 e.printStackTrace();
                 throw e;
             }
         }
-        
-        j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(module);
-        if (j!=null) {
+
+        j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
+        if (j != null) {
             j.setSelected(true);
         }
-        secondarySelectedItem= j;
-        secondary= module;
+        secondarySelectedItem = j;
+        secondary = module;
     }
-    
+
     /**
      * create the popup for the component.  This popup has three
      * sections:
@@ -358,45 +355,46 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
         popupListener = createPopupMenuListener();
-        
+
         Action[] componentActions = parent.getActions();
         for (int iaction = 0; iaction < componentActions.length; iaction++) {
             JMenuItem item = new JMenuItem();
             item.setAction(componentActions[iaction]);
             popup.add(item);
         }
-        numInserted= componentActions.length;
-        
+        numInserted = componentActions.length;
+
         popup.addSeparator();
         // mouse modules go here
         popup.addSeparator();
-        
+
         Action[] canvasActions = DasCanvas.getActions();
         for (int iaction = 0; iaction < canvasActions.length; iaction++) {
             JMenuItem item = new JMenuItem();
             item.setAction(canvasActions[iaction]);
             popup.add(item);
         }
-        
+
         return popup;
     }
-    
+
     private ActionListener createPopupMenuListener() {
         return new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                DasMouseInputAdapter outer= DasMouseInputAdapter.this; // useful for debugging
+                DasMouseInputAdapter outer = DasMouseInputAdapter.this; // useful for debugging
                 String command = e.getActionCommand();
                 if (command.equals("properties")) {
                     parent.showProperties();
                 } else if (command.equals("print")) {
-                    Printable p = ((DasCanvas)parent.getParent()).getPrintable();
+                    Printable p = ((DasCanvas) parent.getParent()).getPrintable();
                     PrinterJob pj = PrinterJob.getPrinterJob();
                     pj.setPrintable(p);
                     if (pj.printDialog()) {
                         try {
                             pj.print();
                         } catch (PrinterException pe) {
-                            Object[] message = {"Error printing", pe.getMessage() };
+                            Object[] message = {"Error printing", pe.getMessage()};
                             JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
                         }
                     }
@@ -426,7 +424,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                             options,
                             "Ok");
                     if (choice == 0) {
-                        DasCanvas canvas = (DasCanvas)parent.getParent();
+                        DasCanvas canvas = (DasCanvas) parent.getParent();
                         try {
                             canvas.writeToPng(pngFileTextField.getText());
                         } catch (java.io.IOException ioe) {
@@ -440,356 +438,353 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     }
                 } else if (command.equals("close")) {
                 } else if (command.equals("primary")) {
-                    if (primarySelectedItem!=null) primarySelectedItem.setSelected(false);
-                    for (int i=0; i<modules.size(); i++) {
-                        JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(modules.get(i));
+                    if (primarySelectedItem != null) {
+                        primarySelectedItem.setSelected(false);
+                    }
+                    for (int i = 0; i < modules.size(); i++) {
+                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(modules.get(i));
                         if (j.isSelected()) {
-                            primarySelectedItem=j;
+                            primarySelectedItem = j;
                             break;
                         }
                     }
                     primarySelectedItem.setSelected(true); // for case when selection wasn't changed.
-                    //primaryPopup.show( parent, l.x, l.y );
+                //primaryPopup.show( parent, l.x, l.y );
                 } else if (command.equals("secondary")) {
-                    if (secondarySelectedItem!=null) secondarySelectedItem.setSelected(false);
-                    Point l= secondaryPopupLocation;
-                    for (int i=0; i<modules.size(); i++) {
-                        JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(modules.get(i));
+                    if (secondarySelectedItem != null) {
+                        secondarySelectedItem.setSelected(false);
+                    }
+                    Point l = secondaryPopupLocation;
+                    for (int i = 0; i < modules.size(); i++) {
+                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(modules.get(i));
                         if (j.isSelected()) {
-                            secondarySelectedItem=j;
+                            secondarySelectedItem = j;
                             break;
                         }
                     }
-                    //secondaryPopup.show( parent, l.x, l.y );
+                //secondaryPopup.show( parent, l.x, l.y );
                 } else {
-                    edu.uiowa.physics.pw.das.util.DasDie.println(""+command);
+                    edu.uiowa.physics.pw.das.util.DasDie.println("" + command);
                 }
             }
         };
     }
-    
+
     /**
      * call the renderDrag method of the active module's dragRenderer.  This method
      * returns an array of Rectangles, or null, indicating the affected regions.
      * It's also permisable for a array element to be null.
      */
-    private void renderSelection(Graphics2D g) {
+    private void renderSelection(Graphics2D g2d) {
         try {
-            for (int i=0; i<active.size(); i++) {
-                DasCanvas canvas = parent.getCanvas();
-                selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
-                selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
-                DragRenderer dr= ((MouseModule)active.get(i)).getDragRenderer();
-                Rectangle[] dd= dr.renderDrag(g,selectionStart,selectionEnd);
-                dirtyBoundsList= new Rectangle[dd.length];
-                for ( i=0; i<dd.length; i++ ) {
-                    dirtyBoundsList[i]= new Rectangle( dd[i] );
-                }
+            DasCanvas canvas = parent.getCanvas();
+            selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
+            selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
+            g2d.translate( -parent.getX(), -parent.getY() );
+            
+            
+            for (int i = 0; i < active.size(); i++) {
+                DragRenderer dr = ((MouseModule) active.get(i)).getDragRenderer();
+                
+                //Rectangle[] dd = dr.renderDrag( getGlassPane().getGraphics(), dSelectionStart, dSelectionEnd);
+                //dirtyBoundsList = new Rectangle[dd.length];
+                //for (i = 0; i < dd.length; i++) {
+                //    dirtyBoundsList[i] = new Rectangle(dd[i]);
+                //}
+                getGlassPane().setDragRenderer( dr, dSelectionStart, dSelectionEnd );
             }
-        } catch ( RuntimeException e ) {
+        } catch (RuntimeException e) {
             DasExceptionHandler.handle(e);
         }
     }
-    
+
     /* This attempts to redraw just the affected portions of parent.  Presently it
      * needs to call the parent's paintImmediately twice, because we don't know what
      * the dragRenderer's dirty bounds will be.
      */
     private synchronized void refresh() {
-        if ( dirtyBoundsList.length>0 ) {
-            Rectangle[] dd= new Rectangle[dirtyBoundsList.length];
-            for ( int i=0; i<dd.length; i++ ) {
-                if ( dirtyBoundsList[i]!=null ) dd[i]= new Rectangle( dirtyBoundsList[i] );
+        if (dirtyBoundsList.length > 0) {
+            Rectangle[] dd = new Rectangle[dirtyBoundsList.length];
+            for (int i = 0; i < dd.length; i++) {
+                if (dirtyBoundsList[i] != null) {
+                    dd[i] = new Rectangle(dirtyBoundsList[i]);
+                }
             }
-            for ( int i=0; i<dd.length; i++ ) {
-                if ( dd[i]!=null ) parent.paintImmediately( dd[i] );
+            for (int i = 0; i < dd.length; i++) {
+                if (dd[i] != null) {
+                    parent.getCanvas().paintImmediately(dd[i]);
+                }
             }
-            for ( int i=0; i<dirtyBoundsList.length; i++ ) {
-                if ( dirtyBoundsList[i]!=null ) parent.paintImmediately( dirtyBoundsList[i] );
+            for (int i = 0; i < dirtyBoundsList.length; i++) {
+                if (dirtyBoundsList[i] != null) {
+                    parent.getCanvas().paintImmediately(dirtyBoundsList[i]);
+                }
             }
         } else {
-            if ( active!=null ) {
-                parent.paintImmediately( 0, 0, parent.getWidth(), parent.getHeight() );
+            if (active != null) {
+                parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
             }
         }
-        if ( active==null ) {
-            dirtyBoundsList= new Rectangle[0];
+        if (active == null) {
+            dirtyBoundsList = new Rectangle[0];
         }
     }
-    
+
     /*
      * Paint the drag renderer on top of parent.
      */
-    public void paint( Graphics g1 ) {
-        Graphics2D g= (Graphics2D)g1;
-        if ( active!=null ) renderSelection( g );
-        if ( hasFocus && hoverHighlite ) {
-            g.translate(-parent.getX(),-parent.getY());
-            g.setColor( new Color(255,0,0,10) );
-            g.setStroke( new BasicStroke(10));
-            g.draw( parent.getBounds() );
+    public void paint(Graphics g1) {
+        Graphics2D g = (Graphics2D) g1;
+        //g= (Graphics2D)getGlassPane().getGraphics();
+        //g.translate(parent.getX(),parent.getY());
+
+        if (active != null) {
+            renderSelection(g);
+        }
+        if (hasFocus && hoverHighlite) {
+            g.translate(-parent.getX(), -parent.getY());
+            g.setColor(new Color(255, 0, 0, 10));
+            g.setStroke(new BasicStroke(10));
+            g.draw(parent.getBounds());
             return;
         }
-        if ( hasFocus && drawControlPoints ) {
-            drawControlPoints( g );
+        if (hasFocus && drawControlPoints) {
+            drawControlPoints(g);
         }
     }
-    
-    private void drawControlPoints( Graphics g ) {
-        if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL ) {
-            int xLeft= parent.getColumn().getDMinimum()-xOffset;
-            int xRight= parent.getColumn().getDMaximum()-xOffset;
-            int yTop= parent.getRow().getDMinimum()-yOffset;
-            int yBottom= parent.getRow().getDMaximum()-yOffset;
-            
-            Graphics2D gg= (Graphics2D)g.create();
+
+    private void drawControlPoints(Graphics2D g) {
+        if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
+            int xLeft = parent.getColumn().getDMinimum() - xOffset;
+            int xRight = parent.getColumn().getDMaximum() - xOffset;
+            int yTop = parent.getRow().getDMinimum() - yOffset;
+            int yBottom = parent.getRow().getDMaximum() - yOffset;
+
+            Graphics2D gg = (Graphics2D) g.create();
+
             //gg.translate(-parent.getX(),-parent.getY());
-            gg.setColor( new Color(0,0,0,255) );
-            
-            int ss= 9;
-            gg.fillRect( xLeft+1, yTop+1, ss-2, ss-2 );
-            gg.fillRect( xRight-ss+1, yTop+1, ss-2, ss-2 );
-            gg.fillRect( xLeft+1, yBottom-ss+1, ss-2, ss-2 );
-            gg.fillRect( xRight-ss+1, yBottom-ss+1, ss-2, ss-2 );
-            
-            gg.setColor( new Color(255,255,255,100) );
-            gg.drawRect( xLeft, yTop, ss, ss );
-            gg.drawRect( xRight-ss, yTop, ss, ss );
-            gg.drawRect( xLeft, yBottom-ss, ss, ss );
-            gg.drawRect( xRight-ss, yBottom-ss, ss, ss );
-            
-            int xmid= ( xLeft + xRight ) / 2;
-            int ymid= ( yTop + yBottom ) / 2;
-            
-            int rr= 4;
-            g.setColor( new Color(255,255,255,100) );
-            gg.fillOval( xmid - rr - 1, ymid - rr - 1, rr*2+3, rr*2+3 );
-            
-            gg.setColor( new Color(0,0,0,255) );
-            
-            gg.drawOval( xmid - rr, ymid - rr, rr*2, rr*2 );
-            gg.fillOval( xmid - 1, ymid - 1, 3, 3 );
-            
+            gg.setColor(new Color(0, 0, 0, 255));
+
+            int ss = 9;
+            gg.fillRect(xLeft + 1, yTop + 1, ss - 2, ss - 2);
+            gg.fillRect(xRight - ss + 1, yTop + 1, ss - 2, ss - 2);
+            gg.fillRect(xLeft + 1, yBottom - ss + 1, ss - 2, ss - 2);
+            gg.fillRect(xRight - ss + 1, yBottom - ss + 1, ss - 2, ss - 2);
+
+            gg.setColor(new Color(255, 255, 255, 100));
+            gg.drawRect(xLeft, yTop, ss, ss);
+            gg.drawRect(xRight - ss, yTop, ss, ss);
+            gg.drawRect(xLeft, yBottom - ss, ss, ss);
+            gg.drawRect(xRight - ss, yBottom - ss, ss, ss);
+
+            int xmid = (xLeft + xRight) / 2;
+            int ymid = (yTop + yBottom) / 2;
+
+            int rr = 4;
+            g.setColor(new Color(255, 255, 255, 100));
+            gg.fillOval(xmid - rr - 1, ymid - rr - 1, rr * 2 + 3, rr * 2 + 3);
+
+            gg.setColor(new Color(0, 0, 0, 255));
+
+            gg.drawOval(xmid - rr, ymid - rr, rr * 2, rr * 2);
+            gg.fillOval(xmid - 1, ymid - 1, 3, 3);
+
             gg.dispose();
         }
     }
-    
+
     private MouseMode activateMouseMode(MouseEvent e) {
-        
+
         boolean xLeftSide = false;
         boolean xRightSide = false;
-        boolean xMiddle= false;
+        boolean xMiddle = false;
         boolean yTopSide = false;
         boolean yBottomSide = false;
-        boolean yMiddle= false;
-        
-        if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL ) {
-            int xLeft= parent.getColumn().getDMinimum()-xOffset;
-            int xRight= parent.getColumn().getDMaximum()-xOffset;
-            int yTop= parent.getRow().getDMinimum()-yOffset;
-            int yBottom= parent.getRow().getDMaximum()-yOffset;
-            int xmid= ( xLeft + xRight ) / 2;
-            int ymid= ( yTop + yBottom ) / 2;
-            
-            xLeftSide= e.getX()<xLeft+10;
-            xRightSide= e.getX()>xRight-10;
-            xMiddle= Math.abs( e.getX()-xmid ) < 4;
-            yTopSide= (e.getY()<yTop+10) && (e.getY()>=yTop);
-            yBottomSide= e.getY()>(yBottom-10);
-            yMiddle= Math.abs( e.getY()-ymid ) < 4;
-            
+        boolean yMiddle = false;
+
+        if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
+            int xLeft = parent.getColumn().getDMinimum() - xOffset;
+            int xRight = parent.getColumn().getDMaximum() - xOffset;
+            int yTop = parent.getRow().getDMinimum() - yOffset;
+            int yBottom = parent.getRow().getDMaximum() - yOffset;
+            int xmid = (xLeft + xRight) / 2;
+            int ymid = (yTop + yBottom) / 2;
+
+            xLeftSide = e.getX() < xLeft + 10;
+            xRightSide = e.getX() > xRight - 10;
+            xMiddle = Math.abs(e.getX() - xmid) < 4;
+            yTopSide = (e.getY() < yTop + 10) && (e.getY() >= yTop);
+            yBottomSide = e.getY() > (yBottom - 10);
+            yMiddle = Math.abs(e.getY() - ymid) < 4;
+
         }
-        
-        MouseMode result= MouseMode.idle;
-        Cursor cursor= new Cursor(Cursor.DEFAULT_CURSOR);
-        
-        if ( !(parent instanceof DasAxis) ) {
-            if ( ( e.getModifiersEx()&MouseEvent.SHIFT_DOWN_MASK ) == MouseEvent.SHIFT_DOWN_MASK ) {
-                if ( xLeftSide ) {
-                    if ( yTopSide ) {
-                        result= MouseMode.resize;
-                        cursor= new Cursor(Cursor.NW_RESIZE_CURSOR);
-                    } else if ( yBottomSide ) {
-                        result= MouseMode.resize;
-                        cursor= new Cursor(Cursor.SW_RESIZE_CURSOR);
+
+        MouseMode result = MouseMode.idle;
+        Cursor cursor = new Cursor(Cursor.DEFAULT_CURSOR);
+
+        if (!(parent instanceof DasAxis)) {
+            if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK) {
+                if (xLeftSide) {
+                    if (yTopSide) {
+                        result = MouseMode.resize;
+                        cursor = new Cursor(Cursor.NW_RESIZE_CURSOR);
+                    } else if (yBottomSide) {
+                        result = MouseMode.resize;
+                        cursor = new Cursor(Cursor.SW_RESIZE_CURSOR);
                     }
-                } else if ( xRightSide ) {
-                    if ( yTopSide ) {
-                        result= MouseMode.resize;
-                        cursor= new Cursor(Cursor.NE_RESIZE_CURSOR);
-                    } else if  ( yBottomSide ) {
-                        result= MouseMode.resize;
-                        cursor= new Cursor(Cursor.SE_RESIZE_CURSOR);
+                } else if (xRightSide) {
+                    if (yTopSide) {
+                        result = MouseMode.resize;
+                        cursor = new Cursor(Cursor.NE_RESIZE_CURSOR);
+                    } else if (yBottomSide) {
+                        result = MouseMode.resize;
+                        cursor = new Cursor(Cursor.SE_RESIZE_CURSOR);
                     }
-                } else if ( xMiddle && yMiddle ) {
-                    result= MouseMode.move;
-                    cursor= new Cursor(Cursor.MOVE_CURSOR);
+                } else if (xMiddle && yMiddle) {
+                    result = MouseMode.move;
+                    cursor = new Cursor(Cursor.MOVE_CURSOR);
                 }
             }
-            
+
         }
-        
-        Shape hotSpotShape=null;
-        if ( hotSpots!=null ) {
-            Vector v= hotSpots;
-            for (int i=0; i<v.size(); i++) {
-                Shape s= (Shape) v.get(i);
-                if (s.contains(e.getX(),e.getY())){
-                    cursor= new Cursor(Cursor.HAND_CURSOR);
-                    result= MouseMode.hotSpot;
-                    hotSpotShape= s;
-                };
-            }
+
+        if (result == MouseMode.resize) {
+            result.resizeBottom = yBottomSide;
+            result.resizeTop = yTopSide;
+            result.resizeRight = xRightSide;
+            result.resizeLeft = xLeftSide;
+        } else if (result == MouseMode.move) {
+            result.moveStart = e.getPoint();
         }
-        
-        if (result==MouseMode.resize) {
-            result.resizeBottom= yBottomSide;
-            result.resizeTop= yTopSide;
-            result.resizeRight= xRightSide;
-            result.resizeLeft= xLeftSide;
-        } else if ( result==MouseMode.move ) {
-            result.moveStart= e.getPoint();
-        }
-        
-        if (result!=mouseMode) {
+
+        if (result != mouseMode) {
             getGlassPane().setCursor(cursor);
-            if (mouseMode==MouseMode.hotSpot && result!=MouseMode.hotSpot) {
-                parent.repaint(dirtyBounds);
-                dirtyBounds= null;
-            } else if ( result==MouseMode.hotSpot && mouseMode!=MouseMode.hotSpot) {
-                Graphics2D g= (Graphics2D)parent.getGraphics();
-                g.setColor( new Color(0,200,255,50) );
-                g.fill(hotSpotShape);
-                dirtyBounds= hotSpotShape.getBounds();
-            }
         }
         return result;
     }
-    
+
     public void mouseMoved(MouseEvent e) {
         log.finest("mouseMoved");
-        Point l= parent.getLocation();
-        xOffset= l.x;
-        yOffset= l.y;
-        
-        boolean drawControlPoints0= this.drawControlPoints;
-        if ( (e.getModifiersEx()&MouseEvent.SHIFT_DOWN_MASK) ==  MouseEvent.SHIFT_DOWN_MASK ) {
-            drawControlPoints= true;
+        Point l = parent.getLocation();
+        xOffset = l.x;
+        yOffset = l.y;
+
+        boolean drawControlPoints0 = this.drawControlPoints;
+        if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK) {
+            drawControlPoints = true;
         } else {
-            drawControlPoints= false;
+            drawControlPoints = false;
         }
-        
-        if ( drawControlPoints0 != drawControlPoints ) {
+
+        if (drawControlPoints0 != drawControlPoints) {
             parent.repaint();
         }
-        
+
         MouseMode m;
-        if ((m=activateMouseMode(e))!=null) {
-            mouseMode= m;
+        if ((m = activateMouseMode(e)) != null) {
+            mouseMode = m;
         } else {
-            mouseMode= MouseMode.idle;
+            mouseMode = MouseMode.idle;
         }
     }
-    
-    private void showPopup( JPopupMenu menu, MouseEvent ev ) {
+
+    private void showPopup(JPopupMenu menu, MouseEvent ev) {
         log.finest("showPopup");
-        HashMap map=null;
-        if ( menu==primaryPopup ) {
-            map= primaryActionButtonMap;
-        } else if ( menu==secondaryPopup ) {
-            map= secondaryActionButtonMap;
+        HashMap map = null;
+        if (menu == primaryPopup) {
+            map = primaryActionButtonMap;
+        } else if (menu == secondaryPopup) {
+            map = secondaryActionButtonMap;
         } else {
-            throw new IllegalArgumentException( "menu must be primary or secondary popup menu" );
+            throw new IllegalArgumentException("menu must be primary or secondary popup menu");
         }
-        for ( Iterator i= modules.iterator(); i.hasNext(); ) {
-            MouseModule mm= (MouseModule)i.next();
-            JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(mm);
+        for (Iterator i = modules.iterator(); i.hasNext();) {
+            MouseModule mm = (MouseModule) i.next();
+            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(mm);
             j.setText(mm.getLabel());
         }
-        menu.show( ev.getComponent(), ev.getX(), ev.getY());
+        menu.show(ev.getComponent(), ev.getX(), ev.getY());
     }
-    
+
     public void setPinned(boolean b) {
         pinned = b;
     }
-    
+
+    @Override
     public void mousePressed(MouseEvent e) {
-        log.finer("mousePressed "+mouseMode);
-        if ( pinned ) {
-            active=null;
+        log.finer("mousePressed " + mouseMode);
+        if (pinned) {
+            active = null;
             refresh();
         }
-        pinned= false;
-        Point l= parent.getLocation();
+        pinned = false;
+        Point l = parent.getLocation();
         parent.requestFocus();
-        xOffset= l.x;
-        yOffset= l.y;
-        pressPosition= e.getPoint();
-        
-        if ( mouseMode==MouseMode.resize ) {
-            resizeStart= new Point(0,0);
-            graphics= (Graphics2D) getGlassPane().getGraphics();
-            graphics.translate(parent.getX(),parent.getY());
+        xOffset = l.x;
+        yOffset = l.y;
+        pressPosition = e.getPoint();
+
+        if (mouseMode == MouseMode.resize) {
+            resizeStart = new Point(0, 0);
+            graphics = (Graphics2D) getGlassPane().getGraphics();
+            graphics.translate(parent.getX(), parent.getY());
             if (mouseMode.resizeRight) {
-                resizeStart.x=  0;
+                resizeStart.x = 0;
             } else if (mouseMode.resizeLeft) {
-                resizeStart.x=  parent.getWidth();
+                resizeStart.x = parent.getWidth();
             }
             if (mouseMode.resizeTop) {
-                resizeStart.y=  parent.getHeight();
+                resizeStart.y = parent.getHeight();
             } else if (mouseMode.resizeBottom) {
-                resizeStart.y=  0;
+                resizeStart.y = 0;
             }
-            
-        } else if ( mouseMode==MouseMode.move ) {
-            mouseMode.moveStart= e.getPoint();
-            
-            graphics= (Graphics2D) getGlassPane().getGraphics();
-            graphics.translate(parent.getX(),parent.getY());
-            
-        } else if ( mouseMode==MouseMode.hotSpot ) {
-            Vector v= hotSpots;
-            for (int i=0; i<v.size(); i++) {
-                if (((Shape) v.get(i)).contains(e.getX(),e.getY())) {
-                    primary.hotSpotPressed((Shape)v.get(i));
-                }
-            }
+
+        } else if (mouseMode == MouseMode.move) {
+            mouseMode.moveStart = e.getPoint();
+
+            graphics = (Graphics2D) getGlassPane().getGraphics();
+            graphics.translate(parent.getX(), parent.getY());
+
         } else {
-            if (active==null) {
+            if (active == null) {
                 button = e.getButton();
-                selectionStart= e.getPoint();
-                dSelectionStart= SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                selectionEnd= e.getPoint();
-                dSelectionEnd= SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                graphics= (Graphics2D) parent.getGraphics();
-                
-                if ( e.isControlDown() || button==MouseEvent.BUTTON3 ) {
-                    if (button==MouseEvent.BUTTON1 || button==MouseEvent.BUTTON3 ) {
-                        showPopup( primaryPopup, e );
+                selectionStart = e.getPoint();
+                dSelectionStart = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
+                selectionEnd = e.getPoint();
+                dSelectionEnd = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
+                graphics = (Graphics2D) parent.getGraphics();
+
+                if (e.isControlDown() || button == MouseEvent.BUTTON3) {
+                    if (button == MouseEvent.BUTTON1 || button == MouseEvent.BUTTON3) {
+                        showPopup(primaryPopup, e);
                     } else {
-                        showPopup( secondaryPopup, e );
+                        showPopup(secondaryPopup, e);
                     }
                 } else {
-                    
-                    active= new Vector();
-                    
-                    if ( button==MouseEvent.BUTTON1 || button==MouseEvent.BUTTON3 ) {
-                        for (int i=0; i< modules.size(); i++) {
-                            JCheckBoxMenuItem j= (JCheckBoxMenuItem)primaryActionButtonMap.get(modules.get(i));
-                            if (j.isSelected()) active.add(modules.get(i));
+
+                    active = new Vector();
+
+                    if (button == MouseEvent.BUTTON1 || button == MouseEvent.BUTTON3) {
+                        for (int i = 0; i < modules.size(); i++) {
+                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(modules.get(i));
+                            if (j.isSelected()) {
+                                active.add(modules.get(i));
+                            }
                         }
                     } else {
-                        for (int i=0; i< modules.size(); i++) {
-                            JCheckBoxMenuItem j= (JCheckBoxMenuItem)secondaryActionButtonMap.get(modules.get(i));
-                            if (j.isSelected()) active.add(modules.get(i));
+                        for (int i = 0; i < modules.size(); i++) {
+                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(modules.get(i));
+                            if (j.isSelected()) {
+                                active.add(modules.get(i));
+                            }
                         }
                     }
-                    
-                    mouseMode= MouseMode.moduleDrag;
-                    
-                    mousePointSelection.set(e.getX()+xOffset,e.getY()+yOffset);
-                    for (int i=0; i<active.size(); i++) {
-                        MouseModule j= (MouseModule)active.get(i);
+
+                    mouseMode = MouseMode.moduleDrag;
+
+                    mousePointSelection.set(e.getX() + xOffset, e.getY() + yOffset);
+                    for (int i = 0; i < active.size(); i++) {
+                        MouseModule j = (MouseModule) active.get(i);
                         j.mousePressed(e);
                         if (j.dragRenderer.isPointSelection()) {
                             mouseDragged(e);
@@ -799,49 +794,50 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             }
         }
     }
-    
+
+    @Override
     public void mouseDragged(MouseEvent e) {
-        log.finest("mouseDragged in "+mouseMode);
-        if (mouseMode==MouseMode.resize) {
+        log.finest("mouseDragged in " + mouseMode);
+        if (mouseMode == MouseMode.resize) {
             resizeRenderer.clear(graphics);
-            resizeRenderer.renderDrag(graphics,resizeStart,e.getPoint());
-        } else if ( mouseMode==MouseMode.move) {
-            Point moveEnd= e.getPoint();
-            int dx= moveEnd.x - mouseMode.moveStart.x;
-            int dy= moveEnd.y - mouseMode.moveStart.y;
-            
-            int xmin= parent.getColumn().getDMinimum();
-            int xmax= parent.getColumn().getDMaximum();
-            
-            int ymin= parent.getRow().getDMinimum();
-            int ymax= parent.getRow().getDMaximum();
-            Point p1= new Point( xmin+dx-parent.getX(), ymin+dy-parent.getY() );
-            Point p2= new Point( xmax+dx-parent.getX(), ymax+dy-parent.getY() );
-            
+            resizeRenderer.renderDrag(graphics, resizeStart, e.getPoint());
+        } else if (mouseMode == MouseMode.move) {
+            Point moveEnd = e.getPoint();
+            int dx = moveEnd.x - mouseMode.moveStart.x;
+            int dy = moveEnd.y - mouseMode.moveStart.y;
+
+            int xmin = parent.getColumn().getDMinimum();
+            int xmax = parent.getColumn().getDMaximum();
+
+            int ymin = parent.getRow().getDMinimum();
+            int ymax = parent.getRow().getDMaximum();
+            Point p1 = new Point(xmin + dx - parent.getX(), ymin + dy - parent.getY());
+            Point p2 = new Point(xmax + dx - parent.getX(), ymax + dy - parent.getY());
+
             resizeRenderer.clear(graphics);
-            resizeRenderer.renderDrag(graphics,p1,p2);
+            resizeRenderer.renderDrag(graphics, p1, p2);
         } else {
-            if (active!=null) {
+            if (active != null) {
                 //clearSelection(graphics);
-                selectionEnd= e.getPoint();
-                dSelectionEnd= SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                
-                mousePointSelection.set((int)dSelectionEnd.getX(),(int)dSelectionEnd.getY());
-                for (int i=0; i<active.size(); i++) {
+                selectionEnd = e.getPoint();
+                dSelectionEnd = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
+
+                mousePointSelection.set((int) dSelectionEnd.getX(), (int) dSelectionEnd.getY());
+                for (int i = 0; i < active.size(); i++) {
                     try {
-                        MouseModule j= (MouseModule)active.get(i);
+                        MouseModule j = (MouseModule) active.get(i);
                         if (j.dragRenderer.isPointSelection()) {
                             log.finest("mousePointSelected");
                             j.mousePointSelected(mousePointSelection);
                         }
                         if (j.dragRenderer.isUpdatingDragSelection()) {
                             // Really it should be the DMM that indicates it wants updates...whoops...
-                            MouseDragEvent de= j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
+                            MouseDragEvent de = j.dragRenderer.getMouseDragEvent(parent, dSelectionStart, dSelectionEnd, e.isShiftDown());
                             log.finest("mouseRangeSelected");
                             j.mouseRangeSelected(de);
                         }
                         j.mouseDragged(e);
-                    } catch ( RuntimeException except ) {
+                    } catch (RuntimeException except) {
                         DasExceptionHandler.handle(except);
                     }
                 }
@@ -849,179 +845,184 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             }
         }
     }
-    
+
     private void performResize(MouseEvent e) {
-        DasCanvas canvas= (DasCanvas)parent.getParent();
-        int dxLeft= parent.getColumn().getDMinimum();
-        int dxRight= parent.getColumn().getDMaximum();
-        int dyTop= parent.getRow().getDMinimum();
-        int dyBottom= parent.getRow().getDMaximum();
-        
-        int dx= e.getX()+xOffset;
-        int dy= e.getY()+yOffset;
+        int dxLeft = parent.getColumn().getDMinimum();
+        int dxRight = parent.getColumn().getDMaximum();
+        int dyTop = parent.getRow().getDMinimum();
+        int dyBottom = parent.getRow().getDMaximum();
+
+        int dx = e.getX() + xOffset;
+        int dy = e.getY() + yOffset;
         if (mouseMode.resizeRight) {
-            dxRight= dx;
+            dxRight = dx;
         } else if (mouseMode.resizeLeft) {
-            dxLeft= dx;
+            dxLeft = dx;
         }
         if (mouseMode.resizeTop) {
-            dyTop= dy;
+            dyTop = dy;
         } else if (mouseMode.resizeBottom) {
-            dyBottom= dy;
+            dyBottom = dy;
         }
-        
-        parent.getColumn().setDPosition(dxLeft,dxRight);
-        parent.getRow().setDPosition(dyTop,dyBottom);
-        
-        xOffset+= dx;
-        yOffset+= dy;
-        
+
+        parent.getColumn().setDPosition(dxLeft, dxRight);
+        parent.getRow().setDPosition(dyTop, dyBottom);
+
+        xOffset += dx;
+        yOffset += dy;
+
         parent.resize();
         getGlassPane().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
-    
+
     public void mouseReleased(MouseEvent e) {
         log.finest("mouseReleased");
-        if (mouseMode==MouseMode.resize) {
+        if (mouseMode == MouseMode.resize) {
             performResize(e);
-        } else if ( mouseMode==MouseMode.move ) {
+        } else if (mouseMode == MouseMode.move) {
             performMove(e);
         } else {
-            if (e.getButton()==button) {
-                if ( active!=null ) {
+            if (e.getButton() == button) {
+                if (active != null) {
                     //clearSelection(graphics);
-                    int x= e.getX();
-                    int y= e.getY();
-                    for (int i=0; i<active.size(); i++) {
-                        MouseModule j= (MouseModule)active.get(i);
+                    int x = e.getX();
+                    int y = e.getY();
+                    for (int i = 0; i < active.size(); i++) {
+                        MouseModule j = (MouseModule) active.get(i);
                         try {
-                            MouseDragEvent de=
-                                    j.dragRenderer.getMouseDragEvent(parent,dSelectionStart,dSelectionEnd,e.isShiftDown());
+                            MouseDragEvent de =
+                                    j.dragRenderer.getMouseDragEvent(parent, dSelectionStart, dSelectionEnd, e.isShiftDown());
                             j.mouseRangeSelected(de);
-                        } catch ( RuntimeException ex ) {
+                        } catch (RuntimeException ex) {
                             DasExceptionHandler.handle(ex);
                         } finally {
-                            button=0;
+                            button = 0;
                             try {
                                 j.mouseReleased(e);
-                            } catch ( RuntimeException ex2 ) {
+                            } catch (RuntimeException ex2) {
                                 DasExceptionHandler.handle(ex2);
                             }
                         }
                     }
-                    if ( !pinned ) {
-                        active= null;
+                    if (!pinned) {
+                        active = null;
+                        getGlassPane().setDragRenderer( null, null, null );
+                        parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
                         refresh();
                     }
                 }
             }
         }
-        
+
     }
-    
+
     public void removeMouseModule(MouseModule module) {
         // not implemented yet
     }
-    
+
     /**
      * Getter for property mouseModules.
      * @return Value of property mouseModules.
      */
     public MouseModule getMouseModule(int i) {
-        return (MouseModule)modules.get(i);
+        return (MouseModule) modules.get(i);
     }
-    
+
     public MouseModule[] getMouseModules() {
-        MouseModule[] result= new MouseModule[modules.size()];
+        MouseModule[] result = new MouseModule[modules.size()];
         modules.copyInto(result);
         return result;
     }
-    
+
     public String getPrimaryModuleLabel() {
-        MouseModule primary= getPrimaryModule();
-        return primary==null ? "" : primary.getLabel();
+        MouseModule primary = getPrimaryModule();
+        return primary == null ? "" : primary.getLabel();
     }
-    
-    public void setPrimaryModuleByLabel( String label ) {
-        MouseModule mm= getModuleByLabel( label ) ;
-        if ( mm!=null ) setPrimaryModule( mm );
+
+    public void setPrimaryModuleByLabel(String label) {
+        MouseModule mm = getModuleByLabel(label);
+        if (mm != null) {
+            setPrimaryModule(mm);
+        }
     }
-    
+
     public String getSecondaryModuleLabel() {
-        MouseModule secondary= getPrimaryModule();
-        return secondary==null ? "" : secondary.getLabel();
+        MouseModule secondary = getPrimaryModule();
+        return secondary == null ? "" : secondary.getLabel();
     }
-    
-    public void setSecondaryModuleByLabel( String label ) {
-        MouseModule mm= getModuleByLabel( label ) ;
-        if ( mm!=null ) setSecondaryModule( mm );
+
+    public void setSecondaryModuleByLabel(String label) {
+        MouseModule mm = getModuleByLabel(label);
+        if (mm != null) {
+            setSecondaryModule(mm);
+        }
     }
+
     /**
      * //TODO: check this
      * Setter for property mouseModules.
      * @param mouseModule the new mouseModule to use.
      */
-    public void setMouseModule( int i, MouseModule mouseModule ) {
-        this.modules.set(i,mouseModule);
+    public void setMouseModule(int i, MouseModule mouseModule) {
+        this.modules.set(i, mouseModule);
     }
-    
+
     public void mouseEntered(MouseEvent e) {
-        hasFocus= true;
-        if ( e.isShiftDown() ) parent.repaint();
-        if (primary!=null) {
-            hotSpots= primary.getHotSpots();
+        hasFocus = true;
+        if (e.isShiftDown()) {
+            parent.repaint();
+        }
+        if (primary != null) {
             getGlassPane().setCursor(primary.getCursor());
         }
     }
-    
+
     public void mouseExited(MouseEvent e) {
-        hasFocus= false;
-        if ( e.isShiftDown() ) parent.repaint();
-        if (mouseMode==MouseMode.hotSpot) {
-            parent.repaint(dirtyBounds);
-            mouseMode= MouseMode.idle;
+        hasFocus = false;
+        if (e.isShiftDown()) {
+            parent.repaint();
         }
         getGlassPane().setCursor(Cursor.getDefaultCursor());
     }
-    
-    
+
     public void addMenuItem(Component b) {
-        if ( this.headless ) return;
-        if (numInserted==0) {
-            primaryPopup.insert(new JPopupMenu.Separator(),0);
+        if (this.headless) {
+            return;
         }
-        primaryPopup.insert(b,numInserted);
+        if (numInserted == 0) {
+            primaryPopup.insert(new JPopupMenu.Separator(), 0);
+        }
+        primaryPopup.insert(b, numInserted);
         numInserted++;
     }
-    
-    private Component getGlassPane() {
-        return ((DasCanvas)parent.getParent()).getGlassPane();
+
+    private DasCanvas.GlassPane getGlassPane() {
+        return (DasCanvas.GlassPane) ((DasCanvas) parent.getParent()).getGlassPane();
     }
-    
+
     public MouseModule getModuleByLabel(java.lang.String label) {
-        MouseModule result=null;
-        for (int i=0; i<modules.size(); i++) {
-            if (label.equals(((MouseModule)modules.get(i)).getLabel())) {
-                result= (MouseModule)modules.get(i);
+        MouseModule result = null;
+        for (int i = 0; i < modules.size(); i++) {
+            if (label.equals(((MouseModule) modules.get(i)).getLabel())) {
+                result = (MouseModule) modules.get(i);
             }
         }
         return result;
     }
-    
     /**
      * Draws a faint box around the border when the mouse enters the component,
      * to help indicate what's going on.
      */
-    private boolean hoverHighlite=false;
-    
+    private boolean hoverHighlite = false;
+
     public boolean isHoverHighlite() {
         return this.hoverHighlite;
     }
-    
-    public void setHoverHighlite( boolean value ) {
-        this.hoverHighlite= value;
+
+    public void setHoverHighlite(boolean value) {
+        this.hoverHighlite = value;
     }
-    
+
     /**
      * returns the position of the last mouse press.  This is a hack so that
      * the mouse position can be obtained to get the context of the press.
@@ -1029,25 +1030,27 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public Point getMousePressPosition() {
         return this.pressPosition;
     }
-    
+
     private void performMove(MouseEvent e) {
-        Point moveEnd= e.getPoint();
-        int dx= moveEnd.x - mouseMode.moveStart.x;
-        int dy= moveEnd.y - mouseMode.moveStart.y;
-        
-        this.xOffset+= dx;
-        this.yOffset+= dy;
-        
-        int min= parent.getColumn().getDMinimum();
-        int max= parent.getColumn().getDMaximum();
-        parent.getColumn().setDPosition( min+dx, max+dx );
-        
-        min= parent.getRow().getDMinimum();
-        max= parent.getRow().getDMaximum();
-        parent.getRow().setDPosition( min+dy, max+dy );
+        Point moveEnd = e.getPoint();
+        int dx = moveEnd.x - mouseMode.moveStart.x;
+        int dy = moveEnd.y - mouseMode.moveStart.y;
+
+        this.xOffset += dx;
+        this.yOffset += dy;
+
+        int min = parent.getColumn().getDMinimum();
+        int max = parent.getColumn().getDMaximum();
+        parent.getColumn().setDPosition(min + dx, max + dx);
+
+        min = parent.getRow().getDMinimum();
+        max = parent.getRow().getDMaximum();
+        parent.getRow().setDPosition(min + dy, max + dy);
     }
-    
+
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (secondary!=null ) secondary.mouseWheelMoved( e );
+        if (secondary != null) {
+            secondary.mouseWheelMoved(e);
+        }
     }
 }
