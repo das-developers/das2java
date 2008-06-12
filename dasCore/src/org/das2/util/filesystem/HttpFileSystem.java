@@ -72,7 +72,7 @@ public class HttpFileSystem extends WebFileSystem {
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
                 urlc.connect();
-                if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                if ( urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode()!=HttpURLConnection.HTTP_FORBIDDEN ) {
                     throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
                 }
                 File local = localRoot(root);
