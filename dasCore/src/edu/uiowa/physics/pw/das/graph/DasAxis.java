@@ -98,7 +98,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     protected DataRange dataRange;
     
-    private String PROPERTY_TICKS= "ticks";
+    public static String PROPERTY_TICKS= "ticks";
     
     /**
      * until we switch to java 1.5, use this lock object instead of
