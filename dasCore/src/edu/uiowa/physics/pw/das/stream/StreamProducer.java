@@ -148,6 +148,7 @@ public class StreamProducer implements StreamHandler {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             OutputStreamWriter writer = new OutputStreamWriter(out, "US-ASCII");
             StreamTool.formatHeader(document, writer);
+            writer.append("\n");
             writer.flush();
             byte[] header = out.toByteArray();
             int length = header.length;
@@ -204,6 +205,7 @@ public class StreamProducer implements StreamHandler {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             OutputStreamWriter writer = new OutputStreamWriter(out, "US-ASCII");
             StreamTool.formatHeader(document, writer);
+            writer.append("\n");
             writer.flush();
             byte[] header = out.toByteArray();
             int length = header.length;
