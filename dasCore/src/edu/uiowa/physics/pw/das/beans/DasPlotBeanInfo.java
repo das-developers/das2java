@@ -32,6 +32,7 @@ public class DasPlotBeanInfo extends AccessLevelBeanInfo {
         new Property("drawGrid", AccessLevel.DASML, "isDrawGrid", "setDrawGrid", null),
         new Property("drawMinorGrid", AccessLevel.DASML, "isDrawMinorGrid", "setDrawMinorGrid", null),
         new Property("preview", AccessLevel.DASML, "isPreviewEnabled", "setPreviewEnabled", null ),
+        new Property("oversize", AccessLevel.DASML, "isOverSize", "setOverSize", null ),
         new Property("renderers", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getRenderers", null, "getRenderer", null, null),        
         new Property("xAxis", AccessLevel.DASML,  PersistenceLevel.PERSISTENT, "getXAxis", "setXAxis", null),
         new Property("yAxis", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getYAxis", "setYAxis", null),
