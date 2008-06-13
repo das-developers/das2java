@@ -33,8 +33,9 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
     
     private static Property[] properties = {
         new Property("name", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
-        new Property("width", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getWidth", "setPreferredWidth", null),
-        new Property("height", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getHeight", "setPreferredHeight", null),
+        new Property("fitted", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "isFitted", "setFitted", null),
+        new Property("width", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getPreferredWidth", "setPreferredWidth", null),
+        new Property("height", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getPreferredHeight", "setPreferredHeight", null),
         new Property("backgroundColor", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getBackground", "setBackground", null), 
         new Property("foregroundColor", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getForeground", "setForeground", null), 
         new Property("baseFont", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getBaseFont", "setBaseFont", null),
