@@ -220,6 +220,7 @@ public abstract class FileSystem  {
         int i2= surl.indexOf("://")+3;
         if ( surl.indexOf("://")==-1 && surl.startsWith("file:/" ) ) i2=5;
         int i3= surl.indexOf("/",i2+1);
+        if ( i3==-1 ) i3= i2;
         String[] result= new String[6];
         result[0]= surl.substring(0,i2);
         result[1]= surl.substring(0,i3);
