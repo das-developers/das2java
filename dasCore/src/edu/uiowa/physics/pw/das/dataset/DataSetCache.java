@@ -22,9 +22,6 @@
  */
 
 package edu.uiowa.physics.pw.das.dataset;
-
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
 /**
  *
  * @author  jbf
