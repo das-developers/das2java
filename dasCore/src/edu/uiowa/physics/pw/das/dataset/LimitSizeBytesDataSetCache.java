@@ -119,15 +119,16 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     }
     
     public Datum getHitRate() {
+        //return ( this.hits + this.misses == 0 ) ? Units.percent.getFillDatum() : Units.percent.createDatum( this.hits * 100. / ( this.hits + this.misses ), 0.1 );
         return Units.percent.createDatum( this.hits * 100. / ( this.hits + this.misses ), 0.1 );
     }
     
     public String getDisplayString() {
-        StringBuffer result= new StringBuffer( "<html>LimitSizeBytesDataSetCache with "+entries.size()+" datasets<br><br>" );
+        StringBuffer result= new StringBuffer( "LimitSizeBytesDataSetCache with "+entries.size()+" datasets" );
         for ( int i=0; i<entries.size(); i++ ) {
-            result.append( ""+entries.get(i)+"<br>" );
+            result.append( "\n"+entries.get(i) );
         }
-        result.append("</html>");
+        result.append("\n");
         return result.toString();
     }
 }
