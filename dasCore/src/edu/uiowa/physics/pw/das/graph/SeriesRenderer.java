@@ -32,6 +32,7 @@ import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
@@ -43,6 +44,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.GeneralPath;
@@ -336,7 +338,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
 
-            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * ( lastIndex - firstIndex ) / 100);
+            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
@@ -362,7 +364,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             y = (double) dataSet.getDouble(index, yUnits);
 
             // first point //
-            logger.fine("firstPoint moveTo,LineTo= "+x+","+y);
+            logger.fine("firstPoint moveTo,LineTo= " + x + "," + y);
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
             if (histogram) {
@@ -374,8 +376,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 newPath.lineTo(fx, fy);
             }
 
-            x0= x;
-            y0= y;
+            x0 = x;
+            y0 = y;
             fx0 = fx;
             fy0 = fy;
 
@@ -469,7 +471,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
 
-            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * ( lastIndex - firstIndex ) / 100);
+            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
@@ -501,7 +503,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             float fy0 = Float.NaN;
 
             int index;
-            
+
             index = firstIndex;
             x = (double) dataSet.getXTagDouble(index, xUnits);
             y = (double) dataSet.getDouble(index, yUnits);
@@ -521,8 +523,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             }
 
-            x0= x;
-            y0= y;
+            x0 = x;
+            y0 = y;
             fx0 = fx;
             fy0 = fy;
 
@@ -648,10 +650,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
 
     private void reportCount() {
-    //if ( renderCount % 100 ==0 ) {
-    //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
-    //new Throwable("").printStackTrace();
-    //}
+        //if ( renderCount % 100 ==0 ) {
+        //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
+        //new Throwable("").printStackTrace();
+        //}
     }
 
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
@@ -793,13 +795,17 @@ public class SeriesRenderer extends Renderer implements Displayable {
         Units xUnits = xAxis.getUnits();
         Units yUnits = yAxis.getUnits();
 
-        DatumRange visibleRange = xAxis.getDatumRange();
-
         int ixmax;
         int ixmin;
 
         Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
         if (xMono != null && xMono.booleanValue()) {
+            DatumRange visibleRange = xAxis.getDatumRange();
+            if (parent.isOverSize()) {
+                Rectangle plotBounds= parent.getCacheImageBounds();
+                visibleRange= new DatumRange( xAxis.invTransform( plotBounds.x ), xAxis.invTransform( plotBounds.x+plotBounds.width ) );
+            
+            }
             ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
             ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
         } else {
@@ -900,10 +906,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         dataSetClipped = false;
 
-        
+
         if (vds != null) {
-            updateFirstLast( xAxis, yAxis, vds );
-            
+            updateFirstLast(xAxis, yAxis, vds);
+
             if (fillToReference) {
                 fillElement.update(xAxis, yAxis, vds, monitor);
             }
@@ -913,7 +919,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             errorElement.update(xAxis, yAxis, vds, monitor);
             psymsElement.update(xAxis, yAxis, vds, monitor);
-            
+
         } else if (tds != null) {
             extraConnectorElements = new PsymConnectorRenderElement[tds.getYLength(0)];
             for (int i = 0; i < tds.getYLength(0); i++) {
@@ -929,8 +935,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
                 vds = tds.getYSlice(i, 0);
 
-                if ( i==0 ) updateFirstLast( xAxis, yAxis, vds ); // minimal support assumes vert slice data is all valid or all invalid.
-
+                if (i == 0) {
+                    updateFirstLast(xAxis, yAxis, vds); // minimal support assumes vert slice data is all valid or all invalid.
+                }
                 extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
             }
         }
@@ -1457,11 +1464,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         this.renderPointsPerMillisecond = newrenderPointsPerMillisecond;
         propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
     }
-    
+
     public int getFirstIndex() {
         return this.firstIndex;
     }
-    
+
     public int getLastIndex() {
         return this.lastIndex;
     }
