@@ -87,14 +87,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     int numInserted;
     protected ActionListener popupListener;
     protected DasCanvasComponent parent = null;
-    private Point selectionStart;   // in component frame
-    private Point selectionEnd;     // in component frame
+    //private Point selectionStart;   // in component frame
+    //private Point selectionEnd;     // in component frame
     private Point dSelectionStart;  // in DasCanvas device frame
     private Point dSelectionEnd; // in DasCanvas device frame
-    private Graphics2D graphics;
+    
     private MousePointSelectionEvent mousePointSelection;
-    private int xOffset;
-    private int yOffset;
+    private int xOffset; // parent to canvas offset
+    private int yOffset; // parent to canvas offset
     private int button = 0; // current depressed button
     private MouseMode mouseMode = MouseMode.idle;
     private boolean drawControlPoints = false;
@@ -106,7 +106,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     Vector hotSpots = null;
     Rectangle dirtyBounds = null;
     private boolean hasFocus = false;
-    private Point pressPosition;
+    private Point pressPosition;  // in the component frame
     private boolean headless;
 
     private static class MouseMode {
@@ -116,7 +116,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         boolean resizeBottom = false;
         boolean resizeRight = false;
         boolean resizeLeft = false;
-        Point moveStart = null;
+        Point moveStart = null; // in the DasCanvas frame
         static MouseMode idle = new MouseMode("idle");
         static MouseMode resize = new MouseMode("resize");
         static MouseMode move = new MouseMode("move");
@@ -214,8 +214,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
             public void keyPressed(KeyEvent ev) {
                 log.finest("keyPressed ");
-                if (ev.getKeyCode() == 27 & active != null) {
+                if (ev.getKeyCode() == KeyEvent.VK_ESCAPE & active != null) {
                     active = null;
+                    getGlassPane().setDragRenderer( null, null, null );
+                    parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
                     refresh();
                     ev.consume();
                 } else if (ev.getKeyCode() == KeyEvent.VK_SHIFT) {
@@ -477,11 +479,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      */
     private void renderSelection(Graphics2D g2d) {
         try {
-            DasCanvas canvas = parent.getCanvas();
-            selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
-            selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
-            g2d.translate( -parent.getX(), -parent.getY() );
-            
+            //DasCanvas canvas = parent.getCanvas();
+            //selectionStart = SwingUtilities.convertPoint(canvas, dSelectionStart, parent);
+            //selectionEnd = SwingUtilities.convertPoint(canvas, dSelectionEnd, parent);
             
             for (int i = 0; i < active.size(); i++) {
                 DragRenderer dr = ((MouseModule) active.get(i)).getDragRenderer();
@@ -531,18 +531,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
 
     /*
-     * Paint the drag renderer on top of parent.
+     * Paint the drag renderer on top of parent.  Graphics g1 should be in
+     * the parent's coordinate frame.
      */
     public void paint(Graphics g1) {
         Graphics2D g = (Graphics2D) g1;
         //g= (Graphics2D)getGlassPane().getGraphics();
         //g.translate(parent.getX(),parent.getY());
 
+        g.translate( -parent.getX(), -parent.getY() );
+            
         if (active != null) {
             renderSelection(g);
         }
         if (hasFocus && hoverHighlite) {
-            g.translate(-parent.getX(), -parent.getY());
             g.setColor(new Color(255, 0, 0, 10));
             g.setStroke(new BasicStroke(10));
             g.draw(parent.getBounds());
@@ -555,10 +557,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     private void drawControlPoints(Graphics2D g) {
         if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
-            int xLeft = parent.getColumn().getDMinimum() - xOffset;
-            int xRight = parent.getColumn().getDMaximum() - xOffset;
-            int yTop = parent.getRow().getDMinimum() - yOffset;
-            int yBottom = parent.getRow().getDMaximum() - yOffset;
+            int xLeft = parent.getColumn().getDMinimum() ;
+            int xRight = parent.getColumn().getDMaximum() ;
+            int yTop = parent.getRow().getDMinimum() ;
+            int yBottom = parent.getRow().getDMaximum() ;
 
             Graphics2D gg = (Graphics2D) g.create();
 
@@ -602,20 +604,23 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         boolean yBottomSide = false;
         boolean yMiddle = false;
 
+        Point mousePoint= e.getPoint(); 
+        mousePoint.translate( parent.getX(), parent.getY() );// canvas coordinate system
+        
         if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
-            int xLeft = parent.getColumn().getDMinimum() - xOffset;
-            int xRight = parent.getColumn().getDMaximum() - xOffset;
-            int yTop = parent.getRow().getDMinimum() - yOffset;
-            int yBottom = parent.getRow().getDMaximum() - yOffset;
+            int xLeft = parent.getColumn().getDMinimum();
+            int xRight = parent.getColumn().getDMaximum();
+            int yTop = parent.getRow().getDMinimum();
+            int yBottom = parent.getRow().getDMaximum();
             int xmid = (xLeft + xRight) / 2;
             int ymid = (yTop + yBottom) / 2;
 
-            xLeftSide = e.getX() < xLeft + 10;
-            xRightSide = e.getX() > xRight - 10;
-            xMiddle = Math.abs(e.getX() - xmid) < 4;
-            yTopSide = (e.getY() < yTop + 10) && (e.getY() >= yTop);
-            yBottomSide = e.getY() > (yBottom - 10);
-            yMiddle = Math.abs(e.getY() - ymid) < 4;
+            xLeftSide = mousePoint.getX() < xLeft + 10;
+            xRightSide = mousePoint.getX() > xRight - 10;
+            xMiddle = Math.abs(mousePoint.getX() - xmid) < 4;
+            yTopSide = (mousePoint.getY() < yTop + 10) && (mousePoint.getY() >= yTop);
+            yBottomSide = mousePoint.getY() > (yBottom - 10);
+            yMiddle = Math.abs(mousePoint.getY() - ymid) < 4;
 
         }
 
@@ -655,6 +660,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             result.resizeLeft = xLeftSide;
         } else if (result == MouseMode.move) {
             result.moveStart = e.getPoint();
+            result.moveStart.translate( -parent.getX(), -parent.getY() );
         }
 
         if (result != mouseMode) {
@@ -663,6 +669,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         return result;
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         log.finest("mouseMoved");
         Point l = parent.getLocation();
@@ -726,33 +733,29 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
         if (mouseMode == MouseMode.resize) {
             resizeStart = new Point(0, 0);
-            graphics = (Graphics2D) getGlassPane().getGraphics();
-            graphics.translate(parent.getX(), parent.getY());
             if (mouseMode.resizeRight) {
-                resizeStart.x = 0;
+                resizeStart.x = 0 + xOffset;
             } else if (mouseMode.resizeLeft) {
-                resizeStart.x = parent.getWidth();
+                resizeStart.x = parent.getWidth() + xOffset;
             }
             if (mouseMode.resizeTop) {
-                resizeStart.y = parent.getHeight();
+                resizeStart.y = parent.getHeight() + yOffset;
             } else if (mouseMode.resizeBottom) {
-                resizeStart.y = 0;
+                resizeStart.y = 0 + yOffset;
             }
 
         } else if (mouseMode == MouseMode.move) {
             mouseMode.moveStart = e.getPoint();
-
-            graphics = (Graphics2D) getGlassPane().getGraphics();
-            graphics.translate(parent.getX(), parent.getY());
+            mouseMode.moveStart.translate( xOffset, yOffset );
 
         } else {
             if (active == null) {
                 button = e.getButton();
-                selectionStart = e.getPoint();
+                //selectionStart = e.getPoint();
                 dSelectionStart = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                selectionEnd = e.getPoint();
+                //selectionEnd = e.getPoint();
                 dSelectionEnd = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
-                graphics = (Graphics2D) parent.getGraphics();
+                //graphics = (Graphics2D) parent.getGraphics();
 
                 if (e.isControlDown() || button == MouseEvent.BUTTON3) {
                     if (button == MouseEvent.BUTTON1 || button == MouseEvent.BUTTON3) {
@@ -799,10 +802,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public void mouseDragged(MouseEvent e) {
         log.finest("mouseDragged in " + mouseMode);
         if (mouseMode == MouseMode.resize) {
-            resizeRenderer.clear(graphics);
-            resizeRenderer.renderDrag(graphics, resizeStart, e.getPoint());
+            Point p = e.getPoint();
+            p.translate( parent.getX(), parent.getY() );
+            getGlassPane().setDragRenderer(resizeRenderer, resizeStart, p );
+            getGlassPane().repaint();
+            
         } else if (mouseMode == MouseMode.move) {
             Point moveEnd = e.getPoint();
+            moveEnd.translate( xOffset, yOffset );
             int dx = moveEnd.x - mouseMode.moveStart.x;
             int dy = moveEnd.y - mouseMode.moveStart.y;
 
@@ -811,15 +818,17 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
             int ymin = parent.getRow().getDMinimum();
             int ymax = parent.getRow().getDMaximum();
-            Point p1 = new Point(xmin + dx - parent.getX(), ymin + dy - parent.getY());
-            Point p2 = new Point(xmax + dx - parent.getX(), ymax + dy - parent.getY());
+            Point p1 = new Point(xmin + dx, ymin + dy);
+            Point p2 = new Point(xmax + dx, ymax + dy);
 
-            resizeRenderer.clear(graphics);
-            resizeRenderer.renderDrag(graphics, p1, p2);
+            getGlassPane().setDragRenderer(resizeRenderer, p1, p2);
+            getGlassPane().repaint();
+            //resizeRenderer.clear(graphics);
+            //resizeRenderer.renderDrag(graphics, p1, p2);
         } else {
             if (active != null) {
                 //clearSelection(graphics);
-                selectionEnd = e.getPoint();
+                //selectionEnd = e.getPoint();
                 dSelectionEnd = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
 
                 mousePointSelection.set((int) dSelectionEnd.getX(), (int) dSelectionEnd.getY());
@@ -872,6 +881,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         yOffset += dy;
 
         parent.resize();
+        getGlassPane().setDragRenderer(null, null,null);
         getGlassPane().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
@@ -879,8 +889,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         log.finest("mouseReleased");
         if (mouseMode == MouseMode.resize) {
             performResize(e);
+            getGlassPane().setDragRenderer( null, null, null );
+            parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
+            refresh();
         } else if (mouseMode == MouseMode.move) {
             performMove(e);
+            getGlassPane().setDragRenderer( null, null, null );
+            parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
+            refresh();
+            
         } else {
             if (e.getButton() == button) {
                 if (active != null) {
@@ -996,6 +1013,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         numInserted++;
     }
 
+    /**
+     * return a menu with font to match LAF.
+     * @param label
+     * @return
+     */
+    public JMenu addMenu( String label ) {
+        JMenu result= new JMenu(label);
+        //result.setFont(primaryPopup.getFont());
+        addMenuItem(result);
+        return result;
+    }
+    
     private DasCanvas.GlassPane getGlassPane() {
         return (DasCanvas.GlassPane) ((DasCanvas) parent.getParent()).getGlassPane();
     }
@@ -1026,6 +1055,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     /**
      * returns the position of the last mouse press.  This is a hack so that
      * the mouse position can be obtained to get the context of the press.
+     * The result point is in the parent's coordinate system.
      */
     public Point getMousePressPosition() {
         return this.pressPosition;
@@ -1033,6 +1063,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     private void performMove(MouseEvent e) {
         Point moveEnd = e.getPoint();
+        moveEnd.translate( xOffset, yOffset );
         int dx = moveEnd.x - mouseMode.moveStart.x;
         int dy = moveEnd.y - mouseMode.moveStart.y;
 
