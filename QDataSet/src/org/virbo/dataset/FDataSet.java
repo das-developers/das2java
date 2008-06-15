@@ -42,6 +42,43 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
     public static FDataSet createRank3( int len0, int len1, int len2 ) {
         return new FDataSet( 3, len0, len1, len2 );
     }
+
+    /**
+     * Makes an array from array of dimension sizes.  The result will have
+     * rank qube.length(). 
+     * @param qube array specifying the rank and size of each dimension
+     * @return FDataSet
+     */
+    public static FDataSet create(int[] qube) {
+        if (qube.length == 1) {
+            return FDataSet.createRank1(qube[0]);
+        } else if (qube.length == 2) {
+            return FDataSet.createRank2(qube[0], qube[1]);
+        } else if (qube.length == 3) {
+            return FDataSet.createRank3(qube[0], qube[1], qube[2]);
+        } else {
+            throw new IllegalArgumentException("bad qube");
+        }
+    }
+    
+    /**
+     * Wraps an array from array of dimension sizes.  The result will have
+     * rank qube.length(). 
+     * @param data array containing the data, with the last dimension contiguous in memory.
+     * @param qube array specifying the rank and size of each dimension
+     * @return FDataSet
+     */
+    public static FDataSet wrap( float[] data, int[] qube ) {
+        if (qube.length == 1) {
+            return new FDataSet( 1, qube[0], 1, 1, data );
+        } else if (qube.length == 2) {
+            return new FDataSet( 2, qube[0], qube[1], 1, data );
+        } else if (qube.length == 3) {
+            return new FDataSet( 3, qube[0], qube[1], qube[2], data );
+        } else {
+            throw new IllegalArgumentException("bad qube");
+        }
+    }
     
     /** Creates a new instance of DDataSet */
     private FDataSet( int rank, int len0, int len1, int len2 ) {
