@@ -52,13 +52,6 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     public Object property(String name, int i0, int i1) {
         return properties.get(name);
     }
-
-    /**
-     * get a map of all properties.  
-     */
-    public Map getProperties() {
-        return Collections.unmodifiableMap(properties);
-    }
     
     public void putProperty( String name, Object value ) {
         properties.put( name, value );
