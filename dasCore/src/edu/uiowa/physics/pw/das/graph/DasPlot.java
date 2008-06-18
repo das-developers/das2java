@@ -271,7 +271,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 	MouseModule x = CrossHairMouseModule.create(this);
 	mouseAdapter.addMouseModule(x);
 
-	mouseAdapter.setSecondaryModule(new ZoomPanMouseModule(getXAxis(), getYAxis()));
+	mouseAdapter.setSecondaryModule(new ZoomPanMouseModule(this,getXAxis(), getYAxis()));
 
 	mouseAdapter.setPrimaryModule(x);
 
@@ -540,11 +540,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 		} else {
                     if ( overSize ) {
                         cacheImageBounds= new Rectangle();
-                        cacheImageBounds.width= 3*getWidth();
-                        cacheImageBounds.height= 3*getHeight();
+                        cacheImageBounds.width= 14*getWidth()/10;
+                        cacheImageBounds.height= getHeight();
                         cacheImage = new BufferedImage( cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-                        cacheImageBounds.x= x-getWidth();
-                        cacheImageBounds.y= y-getHeight();
+                        cacheImageBounds.x= x-2*getWidth()/10;
+                        cacheImageBounds.y= y-1;
                         
                     } else {
                         cacheImageBounds= new Rectangle();
@@ -703,16 +703,21 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
-	if (yticks != null && yticks.getUnits().isConvertableTo(yAxis.getUnits())) {
+        int xmin= this.cacheImageBounds.x;
+        int xmax= this.cacheImageBounds.x + this.cacheImageBounds.width;
+        int ymin= this.cacheImageBounds.y;
+        int ymax= this.cacheImageBounds.y + this.cacheImageBounds.height;
+        
+        if (yticks != null && yticks.getUnits().isConvertableTo(yAxis.getUnits())) {
 	    for (int i = 0; i < yticks.getLength(); i++) {
 		int y = (int) yAxis.transform(yticks.get(i));
-		g.drawLine(getX(), y, getX() + getWidth(), y);
+		g.drawLine( xmin, y, xmax, y);
 	    }
 	}
 	if (xticks != null && xticks.getUnits().isConvertableTo(xAxis.getUnits())) {
 	    for (int i = 0; i < xticks.getLength(); i++) {
 		int x = (int) xAxis.transform(xticks.get(i));
-		g.drawLine(x, getY(), x, getY() + getHeight());
+		g.drawLine(x, ymin, x, ymax );
 	    }
 	}
     }
