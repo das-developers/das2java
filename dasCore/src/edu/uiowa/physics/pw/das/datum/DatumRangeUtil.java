@@ -25,6 +25,7 @@ public class DatumRangeUtil {
     private static final int DATEFORMAT_YYYY_DDD= 2;
     
     private static final boolean DEBUG=false;
+
     // this pattern is always a year
     private static boolean isYear( String string ) {
         return string.length()==4 && Pattern.matches("\\d{4}",string);
@@ -1030,4 +1031,12 @@ public class DatumRangeUtil {
             }
         }
     }
+    
+    /**
+     * Like DatumRange.contains, but includes the end point.  Often this allows for simpler code.
+     * @see DatumRange.contains.
+     */
+    public static boolean sloppyContains(DatumRange context, Datum datum) {
+        return context.contains(datum) || context.max().equals(datum);
+    }    
 }
