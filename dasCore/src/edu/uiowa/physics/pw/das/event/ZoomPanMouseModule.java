@@ -14,7 +14,9 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
+import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.TickVDescriptor;
+import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -36,8 +38,8 @@ public class ZoomPanMouseModule extends MouseModule {
     DatumRange yAxisRange0;
     
     /** Creates a new instance of ZoomPanMouseModule */
-    public ZoomPanMouseModule( DasAxis horizontalAxis, DasAxis verticalAxis ) {
-        super();
+    public ZoomPanMouseModule( DasCanvasComponent parent,DasAxis horizontalAxis, DasAxis verticalAxis  ) {
+        super(parent);
         setLabel("Zoom Pan");
         this.xAxis= horizontalAxis;
         this.yAxis= verticalAxis;
@@ -92,6 +94,7 @@ public class ZoomPanMouseModule extends MouseModule {
             yAxisLock=null;
         }
         doPan(e, false );
+	parent.getCanvas().getGlassPane().setCursor( null );
     }
     
     /**
@@ -159,6 +162,7 @@ public class ZoomPanMouseModule extends MouseModule {
             yAxisLock= yAxis.mutatorLock();
             yAxisLock.lock();
         }
+	parent.getCanvas().getGlassPane().setCursor( new Cursor( Cursor.HAND_CURSOR ) );
     }
     
     
