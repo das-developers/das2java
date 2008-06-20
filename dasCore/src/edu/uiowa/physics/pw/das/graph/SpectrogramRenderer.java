@@ -373,7 +373,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 WritableRaster r = plotImage2.getRaster();
 
-                r.setDataElements(0, 0, w, h, raster);
+                try {
+                    r.setDataElements(0, 0, w, h, raster);
+                } catch ( ArrayIndexOutOfBoundsException ex ) {
+                    throw ex;
+                }
                 plotImage = plotImage2;
 
             }
@@ -418,9 +422,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     mouseAdapter.addMouseModule(vrl);
 
                     MouseModule ch = new CrossHairMouseModule(parent, this, parent.getXAxis(), parent.getYAxis());
-                    mouseAdapter.addMouseModule(ch);
-
-                    ch = new DumpToFileMouseModule(parent, this, parent.getXAxis(), parent.getYAxis());
                     mouseAdapter.addMouseModule(ch);
 
                 }
