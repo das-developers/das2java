@@ -26,7 +26,6 @@ package edu.uiowa.physics.pw.das.datum.format;
 import edu.uiowa.physics.pw.das.datum.*;
 
 import java.text.*;
-import java.util.*;
 import java.util.regex.*;
 
 /**
@@ -113,7 +112,11 @@ public class TimeDatumFormatter extends DatumFormatter {
     /** Creates a new instance of TimeDatumFormatter */
     public TimeDatumFormatter(String formatString) throws ParseException {
         this.formatString = formatString;
-        format = new MessageFormat(parseTimeFormatString(formatString));
+        if ( formatString.contains( "%" ) ) {
+            format = new MessageFormat(parseTimeFormatStringPercent(formatString));
+        } else {
+            format = new MessageFormat(parseTimeFormatString(formatString));
+        }
     }
     
     /**
@@ -237,6 +240,38 @@ public class TimeDatumFormatter extends DatumFormatter {
                 formatString.append(literal);
             }
             from = matcher.end();
+        }
+        return formatString.toString();
+    }
+    
+    /**
+     * create the message format, based on %Y, %m, %d format specification.
+     * @param input
+     * @return
+     * @throws java.text.ParseException
+     */
+    protected String parseTimeFormatStringPercent(String format) throws ParseException {
+        StringBuffer formatString= new StringBuffer();
+        String[] ss= format.split("%");
+        formatString.append(ss[0]);
+        int offset= ss[0].length();
+        
+        for ( int i=1; i<ss.length; i++ ) {
+            offset+= 1;
+            char c= ss[i].charAt(0);
+            switch (c) {
+                case 'Y': appendSubFormat(formatString, YEAR_FIELD_INDEX, 4 ); break;
+                case 'y': appendSubFormat(formatString, YEAR_FIELD_INDEX, 2 ); break;
+                case 'j': appendSubFormat(formatString, DOY_FIELD_INDEX, 3 ); break;
+                case 'm': appendSubFormat(formatString, MONTH_FIELD_INDEX, 2 ); break;
+                case 'd': appendSubFormat(formatString, DAY_FIELD_INDEX, 2 ); break;
+                case 'H': appendSubFormat(formatString, HOUR_FIELD_INDEX, 2 ); break;
+                case 'M': appendSubFormat(formatString, MINUTE_FIELD_INDEX, 2 ); break;
+                case 'S': appendSubFormat(formatString, SECONDS_FIELD_INDEX, 2 ); break;
+                default: throw new ParseException("bad format code: "+c,offset);
+            }
+            formatString.append(ss[i].substring(1));
+            offset+= ss[i].length();
         }
         return formatString.toString();
     }
