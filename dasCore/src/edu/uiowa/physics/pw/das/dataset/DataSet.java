@@ -111,6 +111,11 @@ public interface DataSet {
      */
     final static String PROPERTY_PLANE_WEIGHTS= "weights";
     
+    /**
+     * DatumFormatter for formatting data in the dataset.
+     */
+    public static String PROPERTY_FORMATTER= "formatter";
+    
     /** Returns the property value associated with the string <code>name</code>
      * @param name the name of the property requested
      * @return the property value for <code>name</code> or null
