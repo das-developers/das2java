@@ -175,6 +175,13 @@ public interface QDataSet {
     public final static String COORDINATE_FRAME="COORDINATE_FRAME";
     
     /**
+     * Map<String,Object> representing additional properties used by client codes.  No
+     * interpretation is done of these properties, but they are passed around as much
+     * as possible.
+     */
+    public final static String USER_PROPERTIES="USER_PROPERTIES";
+    
+    /**
      * returns the rank of the dataset, which is the number of indeces used to access data.  Only rank 1, 2, and 3 datasets
      * are supported in the interface.   When a dataset's rank is 4 or greater, it should implement the HighRankDataSet interface
      * which affords a slice operation to reduce rank.  When a dataset's rank is 0, it should implement the RankZeroDataSet interface,
