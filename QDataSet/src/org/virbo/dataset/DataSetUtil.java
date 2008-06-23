@@ -170,6 +170,7 @@ public class DataSetUtil {
             QDataSet.CACHE_TAG,
             QDataSet.COORDINATE_FRAME,
             QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
+            QDataSet.USER_PROPERTIES,
         };
 
         for (int i = 0; i < names.length; i++) {
