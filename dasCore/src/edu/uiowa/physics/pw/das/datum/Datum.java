@@ -249,6 +249,10 @@ public class Datum implements Comparable {
      */
     public Datum subtract( double d, Units units ) {  return subtract( new java.lang.Double(d), units ); }    
     
+    private static double relativeErrorMult( double x, double dx, double y, double dy ) {
+        return Math.sqrt( dx/x * dx/x + dy/y * dy/y );
+    }
+    
     /**
      * divide this by the datum <tt>a</tt>.  Currently, only division is only supported:<pre>
      *   between convertable units, resulting in a Units.dimensionless quantity, or
@@ -258,7 +262,11 @@ public class Datum implements Comparable {
      * @param a the datum divisor.
      * @return the quotient.
      */
-    public Datum divide( Datum a ) { return getUnits().divide( getValue(), a.getValue(), a.getUnits() ); }
+    public Datum divide( Datum a ) { 
+        Datum result= divide( a.getValue(), a.getUnits() );         
+        result.resolution= Math.abs( result.doubleValue() ) * relativeErrorMult( doubleValue(), resolution, a.doubleValue(), a.resolution );
+        return result;
+    }
     
     /**
      * divide this by the Number provided in the context of units.  Currently, only division is only supported:<pre>
@@ -289,7 +297,11 @@ public class Datum implements Comparable {
      * @param a the datum to multiply
      * @return the product.
      */
-    public Datum multiply( Datum a ) { return getUnits().multiply( getValue(), a.getValue(), a.getUnits() ); }
+    public Datum multiply( Datum a ) { 
+        Datum result= multiply( a.getValue(), a.getUnits() );         
+        result.resolution= result.doubleValue() * relativeErrorMult( doubleValue(), resolution, a.doubleValue(), a.resolution );
+        return result;
+    }
     
     /**
      * multiply this by the Number provided in the context of units.  Currently, only multiplication is only supported:<pre>
@@ -363,7 +375,7 @@ public class Datum implements Comparable {
      * @return true if the datums are equal.
      */
     public boolean equals( Datum a ) throws IllegalArgumentException {
-        return ( a.units==this.units && a.value.equals(this.value) );
+        return ( this.compareTo(a)==0 );
     }
     
     /**
