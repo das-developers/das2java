@@ -24,7 +24,6 @@ package edu.uiowa.physics.pw.das.datum;
 
 import java.util.*;
 
-import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import java.text.ParseException;
 
@@ -155,6 +154,42 @@ public final class TimeUtil {
     public static final int QUARTER = 98;
     public static final int HALF_YEAR= 99;
     
+    // introduced to aid in debugging.
+    public static class TimeDigit {
+        int ordinal; // YEAR, MONTH, etc.
+        String label;
+        int divisions; // approximate
+        private static TimeDigit[] digits= new TimeDigit[10];
+        @Override
+        public String toString(){
+            return label;
+        }
+        private TimeDigit( int ordinal, String label, int divisions ) {
+            this.ordinal= ordinal;
+            this.label= label;
+            this.divisions= divisions;
+            digits[ordinal]= this;
+        }
+        public int getOrdinal() {
+            return ordinal;
+        }
+        public int divisions() {
+            return divisions;
+        }
+        public static TimeDigit fromOrdinal( int ordinal ) {
+            return digits[ordinal];
+        }
+    }
+    
+    public static final TimeDigit TD_YEAR = new TimeDigit( 1, "YEAR", 12 );
+    public static final TimeDigit TD_MONTH = new TimeDigit( 2, "MONTH", 30 );
+    public static final TimeDigit TD_DAY = new TimeDigit( 3, "DAY", 24 );
+    public static final TimeDigit TD_HOUR = new TimeDigit( 4, "HOUR", 60 );
+    public static final TimeDigit TD_MINUTE = new TimeDigit( 5, "MINUTE", 60 );
+    public static final TimeDigit TD_SECOND = new TimeDigit( 6, "SECOND", 1000 );
+    public static final TimeDigit TD_MILLI= new TimeDigit( 7, "MILLISECONDS", 1000 );
+    public static final TimeDigit TD_MICRO = new TimeDigit( 8, "MICROSECONDS", 1000 );
+    public static final TimeDigit TD_NANO = new TimeDigit( 9, "NANOSECONDS", 1000 );
     
     public static double getSecondsSinceMidnight(Datum datum) {
         double xx= datum.doubleValue(Units.t2000);
@@ -359,6 +394,53 @@ public final class TimeUtil {
     
     public static TimeStruct normalize( TimeStruct t ) {
         return carry(borrow(t));
+    }
+    
+    public static Datum next( TimeDigit td, int count, Datum datum ) {
+        if ( td==TD_NANO ) throw new IllegalArgumentException("not supported nanos");
+        TimeStruct array= toTimeStruct(datum);
+        int step= td.getOrdinal();
+        switch (td.getOrdinal()) {
+            case MILLI:
+                array.millis+= count;
+                break;
+            case SECOND: 
+                array.seconds+= count;
+                break;
+            case MINUTE: 
+                array.minute+= count;
+                break;
+            case HOUR:
+                array.hour+= count;
+                break;
+            case DAY:
+                array.day+= count;
+                break;
+            case MONTH:
+                array.month+=count;
+                array.day=1;
+                break;
+            case YEAR:
+                array.year+= count;
+                array.month= 1;
+                array.day= 1;
+                break;
+            default:
+                break;
+        }
+        
+        if ( step < MILLI ) array.millis= 0;
+        if ( step < SECOND ) array.seconds=0;
+        if ( step < MINUTE ) array.minute=0;
+        if ( step < HOUR ) array.hour=0;
+            
+        if (array.month>12) {
+            array.year++;
+            array.month-=12;
+        }
+        Datum result= toDatum(array);
+        
+        return result;
     }
     
     public static Datum next( int step, Datum datum ) {
