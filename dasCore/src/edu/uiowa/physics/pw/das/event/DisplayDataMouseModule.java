@@ -72,6 +72,7 @@ public class DisplayDataMouseModule extends MouseModule {
         return u == Units.dimensionless ? "" : "(" + u.toString() + ")";
     }
 
+    @Override
     public void mouseRangeSelected(MouseDragEvent e0) {
 
         maybeCreateFrame();
@@ -114,25 +115,32 @@ public class DisplayDataMouseModule extends MouseModule {
                 }
 
                 // copy for this renderer.
-                DatumRange rx1= DatumRangeUtil.rescale( xrange, 0, 1 );
-                DatumRange ry1= DatumRangeUtil.rescale( yrange, 0, 1 );  
-                
-                if ( ds!=null ) {
-                    if ( ! rx1.getUnits().isConvertableTo( ds.getXUnits()) ) rx1= DataSetUtil.xRange(ds);
-                    if ( ! ry1.getUnits().isConvertableTo( ds.getYUnits() )) ry1= DataSetUtil.yRange(ds);
+                DatumRange rx1 = xrange;
+                DatumRange ry1 = yrange;
+
+                if (ds != null) {
+                    if (!rx1.getUnits().isConvertableTo(ds.getXUnits())) {
+                        rx1 = DataSetUtil.xRange(ds);
+                    }
+                    if (!ry1.getUnits().isConvertableTo(ds.getYUnits())) {
+                        ry1 = DataSetUtil.yRange(ds);
+                    }
                 }
-                    
+
                 DataSet outds;
                 if (ds instanceof TableDataSet) {
                     TableDataSet tds = (TableDataSet) ds;
-                    
-                    TableDataSet toutds = new ClippedTableDataSet( tds, rx1, ry1 );
+
+                    TableDataSet toutds = new ClippedTableDataSet(tds, rx1, ry1);
 
                     StringBuffer buf = new StringBuffer();
 
                     Units zunits = tds.getZUnits();
-                    DatumFormatter df = tds.getDatum(0, 0).getFormatter();
-
+                    DatumFormatter df;
+                    df = (DatumFormatter) tds.getProperty(DataSet.PROPERTY_FORMATTER);
+                    if (df == null) {
+                        df = tds.getDatum(0, 0).getFormatter();
+                    }
                     buf.append("TableDataSet " + toutds.getXLength() + "x" + toutds.getYLength(0) + " " + unitsStr(zunits) + "\n");
                     for (int i = 0; i < toutds.getXLength(); i++) {
                         for (int j = 0; j < toutds.getYLength(0); j++) {
