@@ -44,11 +44,12 @@ public class LengthDragRenderer extends LabelDragRenderer {
     
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         Graphics2D g= ( Graphics2D ) g1;
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         double atan= Math.atan2( p2.y-p1.y, p2.x-p1.x );
         
-        Line2D line= new Line2D.Double( p1.x + (int)(3.0 * Math.cos(atan)), (int)(p1.y + 3.0*Math.sin(atan)), p2.x, p2.y );
+        Line2D line= new Line2D.Double( p1.x + (int)(4.0 * Math.cos(atan)), (int)(p1.y + 4.0*Math.sin(atan)), p2.x, p2.y );
         g.draw( line );
-        g.draw( new Ellipse2D.Double( p1.x-3, p1.y-3, 6, 6 ) );
+        g.draw( new Ellipse2D.Double( p1.x-4, p1.y-4, 8, 8 ) );
         
         Rectangle myDirtyBounds= new Rectangle();
         
@@ -88,7 +89,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
                         Math.pow( srund / Math.max( Math.abs( rund ), srund ), 2 ) );
                 Datum radDatum= Datum.create( rad, u, res );
                 
-                radString= " R:" + radDatum;
+                radString= "!cR:" + radDatum;
             } else {
                 radString= "";
             }
