@@ -122,6 +122,8 @@ public abstract class Units implements Displayable {
      */
     public static final Units wpm2= new NumberUnits("W/m!a-2!n");
     
+    public static final Units inches = new NumberUnits("inch");
+    
     public static final Units meters = new NumberUnits("m");
     public static final Units kiloMeters = new NumberUnits("km");
     static {
@@ -273,12 +275,8 @@ public abstract class Units implements Displayable {
      * @return true if the unit can be converted to toUnits.
      */
     public boolean isConvertableTo( Units toUnits ) {
-        try {
-            this.getConverter(toUnits);
-            return true;
-        } catch ( InconvertibleUnitsException e ) {
-            return false;
-        }
+        UnitsConverter result= getConverterInternal(this, toUnits);
+        return result!=null;
     }
     
     /**
@@ -290,6 +288,22 @@ public abstract class Units implements Displayable {
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
+        UnitsConverter result= getConverterInternal(fromUnits, toUnits);
+        if ( result==null ) {
+            throw new InconvertibleUnitsException( fromUnits, toUnits );
+        }
+        return result;
+    }
+    
+    /**
+     * lookup the UnitsConverter object that takes numbers from fromUnits to toUnits.  
+     * This will chain together UnitsConverters registered via units.registerConverter.
+     * @param fromUnits
+     * @param toUnits
+     * @return UnitsConverter object
+     * @throws InconvertibleUnitsException when the conversion is not possible.
+     */
+    private static UnitsConverter getConverterInternal( final Units fromUnits, final Units toUnits ) {
         if (fromUnits == toUnits) {
             return UnitsConverter.IDENTITY;
         }
@@ -314,7 +328,7 @@ public abstract class Units implements Displayable {
                 }
             }
         }
-        throw new InconvertibleUnitsException( fromUnits, toUnits );
+        return null;
     }
     
     private static UnitsConverter buildConversion(Units fromUnits, Units toUnits, Map parentMap) {
@@ -383,8 +397,8 @@ public abstract class Units implements Displayable {
     public long getFillLong() { return FILL_LONG; }
     public Datum getFillDatum() { return this.createDatum(FILL_DOUBLE); }
     
-    public boolean isFill( double value ) {  return value<FILL_DOUBLE/10; }
-    public boolean isFill( float value ) { return value<FILL_FLOAT/10; }
+    public boolean isFill( double value ) {  return value<FILL_DOUBLE/10 || Double.isNaN(value); }
+    public boolean isFill( float value ) { return value<FILL_FLOAT/10 || Float.isNaN(value); }
     public boolean isFill( long value ) { return value==FILL_LONG; }
     public boolean isFill( int value ) { return value==FILL_INT; }
     public boolean isFill( Number value ) {
