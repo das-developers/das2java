@@ -33,7 +33,6 @@ package edu.uiowa.physics.pw.das.math;
 
 import java.applet.*;
 import java.awt.*;
-import java.lang.Math;
 import java.io.PrintStream;
 
 /* 
