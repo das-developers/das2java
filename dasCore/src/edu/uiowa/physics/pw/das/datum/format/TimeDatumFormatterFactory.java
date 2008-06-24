@@ -23,8 +23,6 @@
 
 package edu.uiowa.physics.pw.das.datum.format;
 
-import edu.uiowa.physics.pw.das.datum.*;
-
 /**
  *
  * @author  Edward West
