@@ -103,11 +103,11 @@ public class ZoomPanMouseModule extends MouseModule {
     private static DatumRange doRound( DatumRange dr, DasAxis axis ) {
         TickVDescriptor ticks;
         if ( dr.getUnits() instanceof TimeLocationUnits) {
-            ticks= TickVDescriptor.bestTickVTime( dr.min(), dr.max(), axis.getDLength()/2, axis.getDLength() );
+            ticks= TickVDescriptor.bestTickVTime( dr.min(), dr.max(), axis.getDLength()/2, axis.getDLength(), true );
         } else if ( axis.isLog() ) {
-            ticks= TickVDescriptor.bestTickVLogNew( dr.min(), dr.max(), axis.getDLength()/2, axis.getDLength() );
+            ticks= TickVDescriptor.bestTickVLogNew( dr.min(), dr.max(), axis.getDLength()/2, axis.getDLength(), true );
         } else {
-            ticks= TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), axis.getDLength()/2, axis.getDLength() );
+            ticks= TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), axis.getDLength()/2, axis.getDLength(), true );
         }
         return ticks.enclosingRange( dr, true );
     }
