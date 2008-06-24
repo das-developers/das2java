@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.client;
 
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetBuilder;
@@ -39,7 +38,6 @@ import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Level;
@@ -294,7 +292,16 @@ public class DataSetStreamHandler implements StreamHandler {
             Map p= pd.getProperties();
             for ( Iterator i=p.keySet().iterator(); i.hasNext(); ) {
                 String key= (String)i.next();
-                builder.setProperty( key, p.get(key) );
+                Object p0= builder.getProperty(key);
+                if ( p0==null ) {
+                    builder.setProperty( key, p.get(key) );
+                } else {
+                    if ( ! p0.equals(p.get(key) ) ) {
+                        int i2;
+                        for ( i2=1; builder.getProperty(""+key+"."+i2)!=null; i2++ ) { /* nothing */ }
+                        builder.setProperty( ""+key+"."+i2, p.get(key) );
+                    }
+                }
             }
         }
         
