@@ -13,6 +13,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
+import edu.uiowa.physics.pw.das.datum.UnitsUtil;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.TickVDescriptor;
@@ -45,6 +46,10 @@ public class ZoomPanMouseModule extends MouseModule {
         this.yAxis= verticalAxis;
     }
     
+    private boolean axisIsAdjustable( DasAxis axis ) {
+	return axis!=null && ( UnitsUtil.isIntervalMeasurement(axis.getUnits()) || UnitsUtil.isRatioMeasurement(axis.getUnits()) );
+    }
+    
     public void mouseWheelMoved(MouseWheelEvent e) {
         double nmin, nmax;
         if ( e.getWheelRotation()<0 ) {
@@ -56,7 +61,7 @@ public class ZoomPanMouseModule extends MouseModule {
         }
         //int clickMag= Math.abs(e.getWheelRotation());
         int clickMag= 1;
-        if ( xAxis!=null ) {
+        if ( axisIsAdjustable(xAxis) ) {
             DatumRange dr= xAxis.getDatumRange();
             for ( int i=0; i<clickMag; i++ ) {
                 if ( xAxis.isLog() ) {
@@ -67,7 +72,7 @@ public class ZoomPanMouseModule extends MouseModule {
             }
             xAxis.setDatumRange( dr );
         }
-        if ( yAxis!=null ) {
+        if ( axisIsAdjustable(yAxis) ) {
             DatumRange dr= yAxis.getDatumRange();
             for ( int i=0; i<clickMag; i++ ) {
                 
@@ -114,7 +119,7 @@ public class ZoomPanMouseModule extends MouseModule {
     
     private void doPan(final MouseEvent e, boolean round) {
         Point p2= e.getPoint();
-        if ( xAxis!=null ) {
+        if ( axisIsAdjustable(xAxis) ) {
             DatumRange dr;
             if ( xAxis.isLog() ) {
                 Datum delta= xAxis.invTransform( p0.getX() ).divide( xAxis.invTransform( p2.getX() ) );
@@ -128,7 +133,7 @@ public class ZoomPanMouseModule extends MouseModule {
             }
             xAxis.setDatumRange( dr );
         }
-        if ( yAxis!=null ) {
+        if ( axisIsAdjustable(yAxis) ) {
             DatumRange dr;
             if ( yAxis.isLog() ) {
                 Datum ydelta= yAxis.invTransform( p0.getY() ).divide( yAxis.invTransform( p2.getY() ) );
