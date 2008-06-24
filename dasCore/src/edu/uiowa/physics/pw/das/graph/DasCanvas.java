@@ -314,8 +314,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             String aboutContent= AboutUtil.getAboutHtml();
             
             JOptionPane.showConfirmDialog( currentCanvas, aboutContent, "about das2", JOptionPane.PLAIN_MESSAGE );
-            currentCanvas.setSize(currentCanvas.getWidth()+1, currentCanvas.getHeight()+1);
-            currentCanvas.setSize(currentCanvas.getWidth(), currentCanvas.getHeight());
         }
     };
     
