@@ -85,7 +85,6 @@ public class DasAnnotation extends DasCanvasComponent {
             return new Point(ix, iy);
         }
 
-        @Override
         public String getLabel() {
             return "" + x + "," + y;
         }
