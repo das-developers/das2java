@@ -423,6 +423,21 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     /**
+     * returns true if the component is suitable context for the point.  For example,
+     * the operator right-clicks at the point, is this point a transparent region of
+     * the component, and accepting context would be confusing to the operator?  This
+     * was first introduced to support the annotation component, which draws a compact
+     * background bubble around a message, which is typically smaller than its bounds,
+     * plus an arrow.
+     * @param x
+     * @param y
+     * @return true if the component accepts the context at this point.
+     */
+    public boolean acceptContext( int x, int y ) {
+	return true;
+    }
+    
+    /**
      * accessor to the DasMouseInputAdapter handling mouse input for the component.
      * Note there is also getDasMouseInputAdapter.
      * @return DasMouseInputAdaptor handling mouse input for the component.
