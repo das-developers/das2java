@@ -23,11 +23,8 @@
 
 package edu.uiowa.physics.pw.das.dataset;
 
-import edu.uiowa.physics.pw.das.DasApplication;
 import java.util.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -56,6 +53,7 @@ public class TableDataSetBuilder {
     private SortedSet yTagSet = new TreeSet(new DoubleArrayComparator());
     
     private Map properties = new HashMap();
+    private List<Map> tableProperties= new ArrayList<Map>();
     
     /** Creates a new instance of TableDataSetBuilder */
     public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits ) {
@@ -66,6 +64,13 @@ public class TableDataSetBuilder {
     
     public void setProperty(String name, Object value) {
         properties.put(name, value);
+    }
+    
+    public void setProperty( int table, String name, Object value ) {
+        if ( tableProperties.size()<table ) {
+            tableProperties.add( new HashMap() );
+        }
+        tableProperties.get(table).put( name, value );
     }
     
     public Object getProperty(String name) {
@@ -228,7 +233,11 @@ public class TableDataSetBuilder {
         double[][] collapsedYTags = collapseYTags(zValues, count);
         double[][][] collapsedZValues = collapseZValues(zValues, planeIDs, zUnitsMap);
         Units[] zUnitsArray = getUnitsArray(planeIDs, zUnitsMap);
-        return new DefaultTableDataSet(xTags.toArray(), xUnits, collapsedYTags, yUnits, collapsedZValues, zUnitsArray, (String[])planeIDs.toArray(new String[planeIDs.size()]), tableOffsets, properties);
+        return new DefaultTableDataSet(xTags.toArray(), xUnits, 
+                collapsedYTags, yUnits, 
+                collapsedZValues, zUnitsArray, 
+                (String[])planeIDs.toArray(new String[planeIDs.size()]), tableOffsets, 
+                properties, tableProperties );
     }
     
     public int getXLength() {
