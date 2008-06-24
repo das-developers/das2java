@@ -61,7 +61,7 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
             case -15: expString="f"; break;
             case -12: expString="p"; break;
             case -9: expString="n";break;
-            case -6: expString="\u03BC";break;
+            case -6: expString="\u03BC";break;  // micro
             case -3: expString="m";break;
             case 0: expString="";break;
             case 3: expString="k";break;
