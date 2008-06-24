@@ -290,7 +290,7 @@ public class PersistentStateSupport {
     }
     
     public JMenu createOpenRecentMenu() {
-        JMenu menu= new JMenu("Open recent");
+        JMenu menu= new JMenu("Open Recent");
         menu.add( String.valueOf(getCurrentFile()) );
         openRecentMenu= menu;
         refreshRecentFilesMenu();
