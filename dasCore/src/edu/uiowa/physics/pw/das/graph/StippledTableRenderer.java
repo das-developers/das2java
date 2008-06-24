@@ -170,7 +170,7 @@ public class StippledTableRenderer extends Renderer {
                 
                 double maxn=0;
                 for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
-                    for (int j=0; j<rebinData.getYLength(0); j++) {
+                    for (int j=0; j<ny; j++) {
                         
                         double z= rebinData.getDouble(i,j,zUnits);
                         if ( zunits.isFill(z) ) continue;
@@ -179,11 +179,10 @@ public class StippledTableRenderer extends Renderer {
                         double n= DasMath.log10(Math.max(z,0.000001));
                         if ( n>maxn ) maxn=n;
                         if ( Math.random() < n ) {
-                            g.fillOval(i,j,2,2);
+                            g.fillRect( i,ny-j,1,1);
                         }
                     }
                 }
-                System.out.println("maxn="+maxn);
                 plotImage= image;
             }
             
