@@ -1399,7 +1399,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         if ((!accept) && extraConnectorElements != null) {
             for (int j = 0; j < extraConnectorElements.length; j++) {
-                if (!accept && extraConnectorElements[j].acceptContext(dp)) {
+                if (!accept && extraConnectorElements[j]!=null && extraConnectorElements[j].acceptContext(dp)) {
                     accept = true;
                 }
             }
