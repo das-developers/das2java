@@ -25,9 +25,6 @@ package edu.uiowa.physics.pw.das.datum.format;
 
 import edu.uiowa.physics.pw.das.datum.*;
 
-import java.text.*;
-import java.util.regex.*;
-
 /** Formats Datum objects for printing and parses strings to Datum objects.
  *
  * @author  Edward West
@@ -59,7 +56,9 @@ public abstract class DatumFormatter {
     public String format( Datum datum, Units units ) {
         return format( datum );
     }
-        
+    
+
+    
     /** Returns the datum formatted as a String with special formatting
      * characters.  As with format, this should be out-of-context and should
      * be tagged with the Units. 
@@ -71,10 +70,27 @@ public abstract class DatumFormatter {
         return format(datum);
     }
     
+    
     /** formats the Datum in the context of the units. 
      */
     public String grannyFormat( Datum datum, Units units ) {
         return format( datum, units );
+    }
+        
+    /**
+     * format the set of Datums using a consistent and optimized format.
+     * First introduced to support DasAxis, where tighter coupling between
+     * the two is required to efficiently provide context.
+     * @param datums
+     * @param context visible range, context should be provided.
+     * @return
+     */
+    public String[] axisFormat( DatumVector datums, DatumRange context ) {
+        String [] result= new String[datums.getLength()];
+        for ( int i=0; i<result.length; i++ ) {
+            result[i]= grannyFormat( datums.get(i), context.getUnits() );
+        }
+        return result;        
     }
     
 }
