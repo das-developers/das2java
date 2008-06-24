@@ -211,7 +211,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * This was originally introduced with the thought that this would only be
      * called when the properties
      */
-    protected void revalidate() {
+    private void revalidate() {
         int oldmin= dMinimum;
         int oldmax= dMaximum;
         dMinimum= (int)( getParentMin() + minimum*getDeviceSize() + getEmSize() * emMinimum + ptMinimum );
@@ -247,6 +247,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return dMaximum;
     }
     
+    /**
+     * return the normal position control of the top/left.
+     * @return
+     */
     public double getMinimum() {
         return minimum;
     }
@@ -255,7 +259,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return maximum;
     }
     
-    public void setPosition(double minimum, double maximum) {
+    private void setPosition(double minimum, double maximum) {
         double oldMin = this.minimum;
         double oldMax = this.maximum;
         double doldMin = this.minimum;
@@ -295,6 +299,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     }
     
+    /**
+     * set the new pixel position of the bottom/right boundry.  em and pt offsets
+     * are not modified, and the normal position is recalculated.
+     * @param maximum
+     */
     public void setDMaximum( int maximum) {
         int pmin= getParentMin();
         int pmax= getParentMax();
@@ -318,6 +327,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     }
     
+    /**
+     * set the new pixel position of the top/left boundry.  em and pt offsets
+     * are not modified, and the normal position is recalculated.
+     * @param minimum
+     */    
     public void setDMinimum( int minimum) {
         int pmin= getParentMin();
         int pmax= getParentMax();
@@ -408,10 +422,19 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return getClass().getName() + "[minimum=" + getDMinimum() + " maximum=" + getDMaximum() + "]";
     }
     
+    /**
+     * returns true if ( getDMinimum() <= x ) && ( x <= getDMaximum() );
+     * @param x the pixel position
+     * @return 
+     */
     public boolean contains( int x ) {
         return ( getDMinimum() <= x ) && ( x <= getDMaximum() );
     }
     
+    /**
+     * returns pixel position (device position) of the the middle of the row or column 
+     * @return
+     */
     public int getDMiddle() {
         return (getDMinimum()+getDMaximum())/2;
     }
@@ -421,6 +444,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      */
     private double emMinimum;
     
+    /**
+     * return the em offset that controls the position of the top/left boundry.
+     * @return
+     */
     public double getEmMinimum() {
         return this.emMinimum;
     }
@@ -448,11 +475,12 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         revalidate();
     }
     
-    /**
-     * property ptMinimum, the pixel offset from the minimum
-     */
     private int ptMinimum;
     
+    /**
+     * return the points offset that controls the position of the top/left boundry.
+     * @return
+     */
     public int getPtMinimum() {
         return this.ptMinimum;
     }
@@ -469,6 +497,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      */
     private int ptMaximum=0;
     
+    /**
+     * return the points offset that controls the position of the bottom/right boundry.
+     * @return
+     */
     public int getPtMaximum() {
         return this.ptMaximum;
     }
