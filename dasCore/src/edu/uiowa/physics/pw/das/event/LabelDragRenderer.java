@@ -53,8 +53,10 @@ public class LabelDragRenderer implements DragRenderer {
     /**
      * This method is called by the DMIA on mouse release.  We use this to infer the mouse release
      * and hide the Window.  Note this assumes isUpdatingDragSelection is false!
+     * TODO: DMIA should call clear so this is more explicit.
      */
     public MouseDragEvent getMouseDragEvent(Object source, java.awt.Point p1, java.awt.Point p2, boolean isModified) {
+        maxLabelWidth= 0;
         if ( tooltip ) {
             if ( infoLabel!=null ) infoLabel.hide();
         }
@@ -175,8 +177,6 @@ public class LabelDragRenderer implements DragRenderer {
         g.setClip(null);
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
-        FontMetrics fm= g.getFontMetrics();
-        
         Dimension d= parent.getCanvas().getSize();
         
         gtr.setString( g1, label);
@@ -185,7 +185,9 @@ public class LabelDragRenderer implements DragRenderer {
         
         int dy= (int)gtr.getHeight();
         
-        if (maxLabelWidth<dx) maxLabelWidth=dx;
+        if (maxLabelWidth<dx) {
+            maxLabelWidth=dx;
+        }
         
         if ( ( p2.x + maxLabelWidth > d.width ) && (p2.x-3-dx>0) ) {
             labelPositionX= -1;
