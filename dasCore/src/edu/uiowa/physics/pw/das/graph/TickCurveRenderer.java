@@ -261,7 +261,7 @@ public class TickCurveRenderer extends Renderer {
     }
     
     private static String lineToString( Line2D line ) {
-        return ""+line.getX1()+" "+line.getY1()+" "+line.getX2()+" "+line.getY2();
+        return GraphUtil.toString( line );
     }
     
     /** Getter for property tickStyle.
