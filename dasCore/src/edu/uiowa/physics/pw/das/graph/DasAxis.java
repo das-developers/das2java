@@ -1349,7 +1349,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
 
-            String[] labels = datumFormatter.axisFormat(ticks.tickV, getDatumRange());
+            String[] labels = tickFormatter( ticks.tickV, getDatumRange() );
+		   
 
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
@@ -1451,7 +1452,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
 
-            String[] labels = datumFormatter.axisFormat(ticks.tickV, getDatumRange());
+            String[] labels = tickFormatter( ticks.tickV, getDatumRange() );
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
                 int tickPosition = (int) Math.floor(transform(tick1));
@@ -2257,7 +2258,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (flipped) {
             alpha = 1.0 - alpha;
         }
-        DatumFormatter formatter;
+        
         double minimum = dataRange.getMinimum();
         double maximum = dataRange.getMaximum();
         double data_range = maximum - minimum;
@@ -2274,14 +2275,29 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
 
-    /** TODO
+    /**
+     * return a label for this datum and visible range. This is intended
+     * to be overriden to change behavior.  Note that both tickFormatter methods
+     * should be overridden.
      * @param tickv
-     * @return
+     * @return string, possibly with Granny control characters.
      */
     protected String tickFormatter(Datum d) {
         // TODO: label the axis with the Unit!
         return datumFormatter.grannyFormat(d, d.getUnits());
 
+    }
+    
+    /**
+     * return the tick labels for these datums and visible range.  This is intended
+     * to be overriden to change behavior.  Note that both tickFormatter methods
+     * should be overridden.
+     * @param tickV
+     * @param datumRange
+     * @return Strings, possibly with Granny control characters.
+     */
+    protected String[] tickFormatter(DatumVector tickV, DatumRange datumRange) {
+	 return datumFormatter.axisFormat( tickV, datumRange );
     }
 
     /** TODO
