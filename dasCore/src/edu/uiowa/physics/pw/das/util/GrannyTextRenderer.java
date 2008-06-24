@@ -456,7 +456,7 @@ public class GrannyTextRenderer {
         maybeInitBounds();
         StringBuffer buffer = new StringBuffer(getClass().getName());
         buffer.append(": ").append(str).append(", ");
-        buffer.append(bounds).append(", ").append(lineBounds).append(", ");
+        buffer.append("bounds: "+bounds).append(", ").append("lineBounds:"+lineBounds).append(", ");
         return buffer.toString();
     }
     
