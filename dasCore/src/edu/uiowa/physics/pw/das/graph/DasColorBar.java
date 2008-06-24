@@ -49,6 +49,7 @@ import javax.swing.event.EventListenerList;
  * @author  jbf
  */
 public class DasColorBar extends DasAxis {
+    
     public static final String PROPERTY_TYPE = "type";
     public static final String PROPERTY_FILL_COLOR= "fillColor";
     
@@ -59,7 +60,6 @@ public class DasColorBar extends DasAxis {
     private int ncolor;
     
     private static final int COLORTABLE_SIZE=240;
-    
     
     public DasColorBar( Datum min, Datum max, boolean isLog) {
         this(min, max, RIGHT, isLog);
@@ -85,10 +85,10 @@ public class DasColorBar extends DasAxis {
     }
     
     public int indexColorTransform( double x, Units units ) {
-        int icolor= (int)transform(x,units,0,ncolor);
         if ( units.isFill(x) ) {
             return fillColorIndex;
         } else {
+            int icolor= (int)transform(x,units,0,ncolor);
             icolor= (icolor<0)?0:icolor;
             icolor= (icolor>=ncolor)?(ncolor-1):icolor;
             return icolor;
@@ -96,7 +96,7 @@ public class DasColorBar extends DasAxis {
     }
     
     public IndexColorModel getIndexColorModel() {
-        return new IndexColorModel( 8, type.getColorCount()+1, type.colorTable, 0, true, -1, DataBuffer.TYPE_BYTE ); 
+        return new IndexColorModel( 8, type.getColorCount()+1, type.colorTable, 0, true, -1, DataBuffer.TYPE_BYTE );
     }
     
     public int getFillColorIndex() {
@@ -283,6 +283,7 @@ public class DasColorBar extends DasAxis {
     public static final class Type implements Enumeration, Displayable {
         
         public static final Type COLOR_WEDGE = new Type("color_wedge");
+        //public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
         public static final Type GRAYSCALE = new Type("grayscale");
         public static final Type INVERSE_GRAYSCALE = new Type("inverse_grayscale");
         public static final Type WRAPPED_COLOR_WEDGE = new Type("wrapped_color_wedge");
@@ -384,6 +385,7 @@ public class DasColorBar extends DasAxis {
                 double bb= (blue[ii]*(1-a) + blue[ii+1]*a)/(double)255.;
                 colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
             }
+
             colorTable[ncolor-1]= fillColor;
             return colorTable;
         }
@@ -403,6 +405,8 @@ public class DasColorBar extends DasAxis {
                 initializeInverseGrayScale(size, bottom, top);
             } else if (this == WRAPPED_COLOR_WEDGE) {
                 initializeWrappedColorWedge(size, bottom, top);
+            //} else if (this == BLUE_TO_ORANGE ) {
+            //    initializeBlueToOrange(size, bottom, top);
             }
         }
         
@@ -411,6 +415,16 @@ public class DasColorBar extends DasAxis {
             int[] red =   {   0,    0,    0,   0, 255, 255, 255, 255 };
             int[] green = {   0,    0,  255, 255, 255, 185,  84, 0 };
             int[] blue =  { 137,  255,  255,   0,   0,   0,   0, 0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+            colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
+        }
+        
+        private void initializeBlueToOrange( int size, int bottom, int top ) {
+            // cat | awk '{ print $3 "," }'  | xargs
+            int[] index = {   0, 23, 46, 69, 92, 115, 139, 162, 185, 208, 231, 255 };
+            int[] red =   {   0, 25, 50, 101, 153, 204, 255, 255, 255, 255, 255, 255 };
+            int[] green = {   42, 101, 153, 204, 237, 255, 255, 238, 204, 153, 102, 42 };
+            int[] blue =  { 255, 255, 255, 255, 255, 255, 204, 153, 101, 50, 25, 0 };
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
             colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
         }
@@ -446,6 +460,8 @@ public class DasColorBar extends DasAxis {
                 return GRAYSCALE;
             } else if (s.equals("inverse_grayscale")) {
                 return INVERSE_GRAYSCALE;
+            //} else if (s.equals("blue_to_orange")) {
+            //    return BLUE_TO_ORANGE;                
             } else {
                 throw new IllegalArgumentException("invalid DasColorBar.Type string: " + s);
             }
