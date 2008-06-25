@@ -205,6 +205,20 @@ public final class TimeUtil {
         }
     }
     
+    public static double getMicroSecondsSinceMidnight(Datum datum) {
+        double xx= datum.doubleValue( Units.us2000 );
+        if (xx<0) {
+            xx= xx % 86400e6;
+            if (xx==0) {
+                return 0;
+            } else {
+                return 86400e6+xx;
+            }
+        } else {
+            return xx % 86400e6;
+        }
+    }
+    
     public static int getJulianDay( Datum datum ) {
         double xx= datum.doubleValue(Units.mj1958);
         return (int)Math.floor( xx ) + 2436205;
@@ -220,8 +234,8 @@ public final class TimeUtil {
         int hour = (int)d.hour;
         int minute = (int)d.minute;
         double seconds = d.seconds + hour*(float)3600.0 + minute*(float)60.0;
-        double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 ) + seconds / 86400. );
-        return Datum.create( us2000 + d.millis * 1000 + d.micros, Units.us2000 );
+        double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
+        return Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
     }
     
     /**
@@ -262,21 +276,21 @@ public final class TimeUtil {
     public static TimeStruct toTimeStruct(Datum datum) {
         int jalpha, j1, j2, j3, j4, j5;
         int year, month, day, hour, minute;
-        double justSeconds;
+        double justMicroSeconds;
         
         int jd= getJulianDay(datum);
-        double seconds= getSecondsSinceMidnight(datum);
+        double microseconds= getMicroSecondsSinceMidnight(datum);
         
         TimeStruct result= julianToGregorian( jd );
         
-        hour = (int)(seconds/3600.0);
-        minute = (int)((seconds - hour*3600.0)/60.0);
-        justSeconds = seconds - hour*(double)3600.0 - minute*(double)60.0;
+        hour = (int)(microseconds/3600.0e6);
+        minute = (int)((microseconds - hour*3600.0e6)/60.0e6);
+        justMicroSeconds = microseconds - hour*(double)3600.0e6 - minute*(double)60.0e6;
         
         result.doy = dayOfYear(result.month, result.day, result.year);
         result.hour= hour;
         result.minute= minute;
-        result.seconds= justSeconds;
+        result.seconds= justMicroSeconds / 1e6;
         
         return result;
     }
