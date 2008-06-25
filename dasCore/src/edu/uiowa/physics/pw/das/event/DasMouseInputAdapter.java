@@ -730,6 +730,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         yOffset = l.y;
         pressPosition = e.getPoint();
 
+	Point cp= new Point( e.getPoint() );
+	cp.translate(xOffset, yOffset );
+	if ( !parent.acceptContext(cp.x, cp.y ) ) {
+	    return;
+	}
         if (mouseMode == MouseMode.resize) {
             resizeStart = new Point(0, 0);
             if (mouseMode.resizeRight) {
