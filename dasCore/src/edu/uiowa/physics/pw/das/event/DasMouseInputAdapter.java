@@ -1057,7 +1057,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
 
     private DasCanvas.GlassPane getGlassPane() {
-        return (DasCanvas.GlassPane) ((DasCanvas) parent.getParent()).getGlassPane();
+        DasCanvas.GlassPane r= (DasCanvas.GlassPane) ((DasCanvas) parent.getParent()).getGlassPane();
+        if ( r.isVisible()==false ) r.setVisible(true);
+        return r;
     }
 
     public MouseModule getModuleByLabel(java.lang.String label) {
