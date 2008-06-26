@@ -146,7 +146,8 @@ public class DasAnnotation extends DasCanvasComponent {
     public void resize() {
         super.resize();
         this.gtr.setString(this.getGraphics(), getString() );
-        setBounds(calcBounds());
+        Rectangle r= calcBounds();
+        setBounds(r);
     }
 
     @Override
@@ -182,6 +183,7 @@ public class DasAnnotation extends DasCanvasComponent {
         r.y-= em;
         r.width+= em*2;
         r.height+= em*2;
+        
         return r;
     }
 
@@ -204,13 +206,17 @@ public class DasAnnotation extends DasCanvasComponent {
         int em = (int) getEmSize() / 2;
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        gtr.setString( g, getString() );
         Rectangle r = gtr.getBounds();
         
         r.x = em;
         r.y = em;
 
         r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
-
+        if ( this.getDasName().equals("annotation_0") ) {
+            System.err.println("DasAnnotation:paintComponent "+r);
+        }
         
         //r.translate( em, em + (int) gtr.getAscent());
         g.setColor(back);
@@ -222,7 +228,7 @@ public class DasAnnotation extends DasCanvasComponent {
         }
 
         g.setColor(fore);
-        gtr.setString( g, getString() );
+        
         gtr.draw(g, em, em + (float) gtr.getAscent());
 
         if (pointAt != null) {
