@@ -114,7 +114,7 @@ public class AsciiParser {
      * @return RecordParser object that can be queried.  (Strange interface.)
      * @throws java.io.IOException
      */
-    public RecordParser guessDelimParser( String line ) throws IOException {
+    public DelimParser guessDelimParser( String line ) throws IOException {
 
         String fieldSep = null;
 
@@ -126,13 +126,14 @@ public class AsciiParser {
             fieldSep = "\\s+";
         }
 
-        this.recordParser = createDelimParser(line, fieldSep);
+        DelimParser result = createDelimParser(line, fieldSep);
+        this.recordParser = result;
 
-        return recordParser;
+        return result;
 
     }
 
-    public RecordParser setDelimParser(Reader in, String delimRegex) throws IOException {
+    public DelimParser setDelimParser(Reader in, String delimRegex) throws IOException {
 
         BufferedReader reader = new LineNumberReader(in);
 
@@ -144,9 +145,10 @@ public class AsciiParser {
         }
         reader.close();
 
-        this.recordParser = createDelimParser(line, delimRegex);
+        DelimParser result = createDelimParser(line, delimRegex);
+        this.recordParser = result;
 
-        return recordParser;
+        return result;
 
     }
 
@@ -472,7 +474,7 @@ public class AsciiParser {
      * @param fieldSep
      * @return
      */
-    private RecordParser createDelimParser(String line, String fieldSep) {
+    private DelimParser createDelimParser(String line, String fieldSep) {
 
         String[] ss = line.split(fieldSep);
 
@@ -516,7 +518,7 @@ public class AsciiParser {
             skipColumnHeader= true;
         }
         
-        RecordParser recordParser1 = new DelimParser(fieldParsers.length, fieldSep);
+        DelimParser recordParser1 = new DelimParser(fieldParsers.length, fieldSep);
 
         this.propertyPattern = null;
 
@@ -534,6 +536,14 @@ public class AsciiParser {
             this.fieldCount = fieldCount;
             this.delimRegex = delim;
             delimPattern = Pattern.compile(delim);
+        }
+
+        /**
+         * returns the delimiter, which is a regex.  Examples include "," "\t", and "\s+"
+         * @return
+         */
+        public String getDelim() {
+            return delimRegex;
         }
 
         public boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
