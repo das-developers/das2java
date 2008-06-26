@@ -15,7 +15,6 @@ import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
@@ -209,12 +208,14 @@ public class DisplayDataMouseModule extends MouseModule {
         return getLabel();
     }
 
+    @Override
     public Icon getListIcon() {
         ImageIcon icon;
         icon = new ImageIcon(this.getClass().getResource("/images/icons/showDataMouseModule.png"));
         return icon;
     }
 
+    @Override
     public String getLabel() {
         return LABEL;
     }

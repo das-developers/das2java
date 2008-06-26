@@ -31,6 +31,7 @@ public class DasAnnotation extends DasCanvasComponent {
      * point at this thing
      */
     private DasAnnotation.PointDescriptor pointAt;
+    private MouseModule arrowToMouseModule;
 
     /** Creates a new instance of DasAnnotation */
     public DasAnnotation(String string) {
@@ -63,8 +64,8 @@ public class DasAnnotation extends DasCanvasComponent {
         MouseModule mm = new MoveComponentMouseModule(this);
         this.getMouseAdapter().setPrimaryModule(mm);
 
-        mm = createArrowToMouseModule(this);
-        this.getMouseAdapter().setSecondaryModule(mm);
+        arrowToMouseModule = createArrowToMouseModule(this);
+        this.getMouseAdapter().setSecondaryModule(arrowToMouseModule);
     }
 
     public static class DatumPairPointDescriptor implements PointDescriptor {
@@ -155,6 +156,18 @@ public class DasAnnotation extends DasCanvasComponent {
         r = new Rectangle(r.x, r.y + (int) gtr.getAscent(), r.width + 2 * em + 3, r.height + 2 * em + 3);
         r.translate(getColumn().getDMinimum(), getRow().getDMinimum());
         return r;
+    }
+
+    @Override
+    public boolean acceptContext(int x, int y) {
+	if ( getActiveRegion().contains( x, y ) ) {
+	    return true;
+	} else if ( pointAt!=null ) {
+	    if ( pointAt.getPoint().distance(x,y) < 5 ) {
+		return true;
+	    }
+	}
+	return false;
     }
 
     
@@ -284,7 +297,7 @@ public class DasAnnotation extends DasCanvasComponent {
     @Override
     protected void installComponent() {
         super.installComponent();
-        this.gtr.setString( this, getString() );
+        this.gtr.setString( this.getGraphics(), getString() );
     }
 
     float fontSize= 0;
