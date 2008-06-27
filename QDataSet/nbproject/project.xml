@@ -13,5 +13,8 @@
             </test-roots>
         </data>
         <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
+        <libraries xmlns="http://www.netbeans.org/ns/ant-project-libraries/1">
+            <definitions>../APLibs/lib/nblibraries.properties</definitions>
+        </libraries>
     </configuration>
 </project>
