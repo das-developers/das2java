@@ -392,11 +392,12 @@ public class AsciiParser {
             }
             try {
                 if (iline <= skipInt) {
-                    if (keepFileHeader) {
-                        headerBuffer.append(line);
-                    }
                     if (propertyPattern != null && (m = propertyPattern.matcher(line)).matches()) {
                         builder.putProperty(m.group(1).trim(), m.group(2).trim());
+                    } else {
+                        if (keepFileHeader) {
+                            headerBuffer.append(line);
+                        }            
                     }
                     continue;
                 } else if ( iline==skipInt+1) {
