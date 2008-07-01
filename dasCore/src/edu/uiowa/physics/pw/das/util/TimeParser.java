@@ -32,6 +32,7 @@ public class TimeParser {
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */
     public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
+    
     TimeStruct time;
     TimeStruct timeWidth;
     int ndigits;
@@ -55,6 +56,8 @@ public class TimeParser {
     String[] delims;
     String[] fc;
     String regex;
+    String formatString;
+    
     /**
      * Least significant digit in format.
      *0=year, 1=month, 2=day, 3=hour, 4=min, 5=sec, 6=milli, 7=micro
@@ -62,13 +65,60 @@ public class TimeParser {
     int lsd;
 
     public interface FieldHandler {
-
         public void handleValue(String fieldContent, TimeStruct startTime, TimeStruct timeWidth);
     }
 
-    private TimeParser(String formatString, Map/*<String,FieldHandler>*/ fieldHandlers) {
+    /**
+     * must contain T or space to delimit date and time.
+     * @param exampleTime
+     * @return "%Y-jT%H%M" etc.
+     */
+    public static String iso8601String( String exampleTime ) {
+        int i= exampleTime.indexOf("T");
+        if ( i==-1 ) i= exampleTime.indexOf(" ");
+        char dateTimeDelim= exampleTime.charAt(i);
+        
+        String date=null, time=null;
+        if ( i!=-1 ) {
+            String datePart= exampleTime.substring(0,i);
+            boolean hasDelim= !datePart.matches("\\d+");
+            char delim=0;
+            if ( hasDelim ) delim= datePart.charAt(4);
+            switch ( datePart.length() ) {
+                case 10: date= "%Y" + delim + "%m" + delim + "%d"; break;
+                case 9: date= "%Y" + delim + "%j"; break;
+                case 8: date= hasDelim ? "%Y"+delim+"%j" : "%Y%m%d"; break;
+                case 7: date= "%Y%j"; break;
+                default: throw new IllegalArgumentException("unable to identify date format for "+exampleTime );
+            }
+            
+            String timePart= exampleTime.substring(i+1);
+            hasDelim= !timePart.matches("\\d+");
+            delim=0;
+            if ( hasDelim ) delim= timePart.charAt(2);
+            
+            switch ( timePart.length() ) {
+                case 4: time= "%H%M"; break;
+                case 5: time= "%H"+delim+"%M"; break;                
+                case 6: time= "%H%M%S"; break;
+                case 8: time= "%H"+delim+"%M"+delim+"%S"; break;
+                case 12: time= "%H"+delim+"%M"+delim+"%S.%{milli}"; break;
+                case 15: time= "%H"+delim+"%M"+delim+"%S.%{milli}%{micro}"; break;
+                default: throw new IllegalArgumentException("unable to identify time format for "+exampleTime );
+            }
+            
+            return date + dateTimeDelim + time;
+            
+        } else {
+            throw new IllegalArgumentException("example time must contain T or space.");
+        }
+    }
+    
+    private TimeParser( String formatString, Map/*<String,FieldHandler>*/ fieldHandlers ) {
         time = new TimeUtil.TimeStruct();
-
+        this.fieldHandlers = fieldHandlers;
+        this.formatString= formatString;
+        
         String[] ss = formatString.split("%");
         fc = new String[ss.length];
         String[] delim = new String[ss.length + 1];
@@ -77,13 +127,10 @@ public class TimeParser {
 
         StringBuffer regex = new StringBuffer(100);
         regex.append(ss[0]);
-
-        this.fieldHandlers = fieldHandlers;
-
+        
         lengths = new int[ndigits];
         for (int i = 0; i < lengths.length; i++) {
             lengths[i] = -1; // -1 indicates not known, but we'll figure out as many as we can.
-
         }
 
         delim[0] = ss[0];
