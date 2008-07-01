@@ -62,7 +62,7 @@ public class AboutUtil {
     }
 
     /**
-     * searches class path for META-INF/version.txt, returns nice strings
+     * searches class path for META-INF/build.txt, returns nice strings
      * @return one line per jar
      */
     public static List<String> getBuildInfos() throws IOException {
