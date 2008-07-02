@@ -24,7 +24,10 @@ import java.awt.event.WindowStateListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -38,6 +41,30 @@ import javax.swing.SwingUtilities;
  * @author Jeremy
  */
 public class TearoffTabbedPane extends JTabbedPane {
+
+    private void copyInputMap(JFrame parent, JFrame babySitter) {
+        Component c;
+        JComponent parentc, babySitterC;
+        
+        c= parent.getContentPane();
+        if ( ! ( c instanceof JComponent ) ) {
+            return;
+        }
+        parentc= (JComponent)c;
+        
+        c= babySitter.getContentPane();
+        if ( ! (c instanceof JComponent ) ) {
+            return;
+        }
+        babySitterC= (JComponent)c;
+        
+        InputMap m= parentc.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        if (m==null ) return;
+        babySitterC.setInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW, m );
+        ActionMap am= parentc.getActionMap();
+        if ( am==null ) return;
+        babySitterC.setActionMap( am );
+    }
 
     class TabDesc {
 
@@ -249,7 +276,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         final JFrame babySitter = new JFrame(td.title);
         final WindowStateListener listener = new WindowStateListener() {
-
             public void windowStateChanged(WindowEvent e) {
                 babySitter.setExtendedState(parent.getExtendedState());
             }
@@ -259,12 +285,14 @@ public class TearoffTabbedPane extends JTabbedPane {
         p.translate(20, 20);
         babySitter.setLocation(p);
         babySitter.addWindowListener(new AbstractWindowListener() {
-
             public void windowClosing(WindowEvent e) {
                 parent.removeWindowStateListener(listener);
                 dock(c);
             }
         });
+        
+        copyInputMap( parent, babySitter );
+        
         JTabbedPane pane = new JTabbedPane();
         babySitter.getContentPane().add(pane);
 
