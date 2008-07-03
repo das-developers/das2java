@@ -68,25 +68,51 @@ public interface QDataSet {
      * this is the maximum number of allowed planes.  This should be used to enumerates all the planes.
      */
     public final static int MAX_PLANE_COUNT=50;
-        
+
+    /**
+     * this is the highest rank supported by the library.  Rank 0 is supported though Rank0DataSet.  High rank datasets are supported through
+     * RankNDataSet.
+     * 
+     */
+    public static int MAX_RANK=3;
+    
     /**
      * type Units.  The dataset units, found in edu.uiowa.physics.pw.das2.units.Units.
      */
     public final static String UNITS="UNITS";
-    
+
     /**
-     * type DatumRange.  Range bounding measurements to be considered valid.  Lower
+     * Double, Double value to be considered fill (invalid) data.
+     */
+    public final static String FILL_VALUE="FILL_VALUE";
+        
+    /**
+     * type double.  Range bounding measurements to be considered valid.  Lower
      * and Upper bounds are inclusive.  FILL_VALUE should be used to make the 
      * lower bound or upper bound exclusive.  Note DatumRange contains logic is
      * exclusive on the upper bound.
      */
-    public final static String VALID_RANGE="VALID_RANGE";
+    public final static String VALID_MIN="VALID_MIN";
     
     /**
-     * type DatumRange.  Range used to discover datasets.  This should be a reasonable representation
+     * type double.  Range bounding measurements to be considered valid.  Lower
+     * and Upper bounds are inclusive.  FILL_VALUE should be used to make the 
+     * lower bound or upper bound exclusive.  Note DatumRange contains logic is
+     * exclusive on the upper bound.
+     */
+    public final static String VALID_MAX="VALID_MAX";
+        
+    /**
+     * type double.  Range used to discover datasets.  This should be a reasonable representation
      * of the expected dynamic range of the dataset.
      */    
-    public final static String TYPICAL_RANGE="TYPICAL_RANGE";
+    public final static String TYPICAL_MIN="TYPICAL_MIN";
+
+    /**
+     * type double.  Range used to discover datasets.  This should be a reasonable representation
+     * of the expected dynamic range of the dataset.
+     */    
+    public final static String TYPICAL_MAX="TYPICAL_MAX";
     
     /**
      * String "linear" or "log"
@@ -104,11 +130,6 @@ public interface QDataSet {
     public final static String TITLE="TITLE";
     
     /**
-     * Double, Double value to be considered fill (invalid) data.
-     */
-    public final static String FILL_VALUE="FILL_VALUE";
-    
-    /**
      * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Also, the data must not contain 
      * invalid values.  Generally this will be used with tags datasets.
      */
@@ -117,9 +138,8 @@ public interface QDataSet {
     /**
      * QDataSet, dataset of same geometry that indicates the weights for each point.  Often weights are computed
      * in processing, and this is where they should be stored for other routines.  When the weights plane is 
-     * present, routines can safely ignore the FILL_VALUE and VALID_RANGE properties, and use non-zero weight to 
-     * indicate valid data.  Further, averages of averages will compute accurately.  TODO: create a utility method
-     * that will create this plane from FILL_VALUE and VALID_RANGE.
+     * present, routines can safely ignore the FILL_VALUE, VALID_MIN, and VALID_MAX properties, and use non-zero weight to 
+     * indicate valid data.  Further, averages of averages will compute accurately.
      */
     public final static String WEIGHTS_PLANE="WEIGHTS";
     
