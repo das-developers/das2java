@@ -17,11 +17,11 @@ package org.virbo.dataset;
  *
  * @author jbf
  */
-public abstract class DataSetIterator  {
+public abstract class OldDataSetIterator  {
     
     QDataSet ds;
     
-    private DataSetIterator() {
+    private OldDataSetIterator() {
     }
     
     /**
@@ -42,7 +42,7 @@ public abstract class DataSetIterator  {
      */
     public abstract int getIndex( int idim );
    
-    static class Rank1 extends DataSetIterator {
+    static class Rank1 extends OldDataSetIterator {
         int len0;
         int index0;
         Rank1( QDataSet ds ) {
@@ -63,7 +63,7 @@ public abstract class DataSetIterator  {
         }
     }
     
-    static class Rank2 extends DataSetIterator {
+    static class Rank2 extends OldDataSetIterator {
         int len0,len1;
         int index0,index1;
         Rank2( QDataSet ds ) {
@@ -98,7 +98,7 @@ public abstract class DataSetIterator  {
         }
     }
 
-    static class Rank3 extends DataSetIterator {
+    static class Rank3 extends OldDataSetIterator {
         int len0,len1,len2;
         int index0,index1,index2;
         
@@ -106,7 +106,7 @@ public abstract class DataSetIterator  {
             this.ds= ds;
             len0= ds.length();
             len1= ds.length(0);
-            len2= ds.length(1);
+            len2= ds.length(0,0);
             index0= 0;
             index1= 0;
             index2= -1;
@@ -149,7 +149,7 @@ public abstract class DataSetIterator  {
      * TODO: break into separate classes for each rank.
      * TODO: DDataSet should have a protected accessor.
      */
-    static class Qube extends DataSetIterator {
+    static class Qube extends OldDataSetIterator {
         int len0,len1,len2;
         int n;
         int i;
@@ -195,7 +195,7 @@ public abstract class DataSetIterator  {
         
     }
     
-    public static DataSetIterator create( QDataSet ds ) {
+    public static OldDataSetIterator create( QDataSet ds ) {
         switch (ds.rank()) {
             case 1: return new Rank1(ds); 
             case 2: return new Rank2(ds);
@@ -204,7 +204,7 @@ public abstract class DataSetIterator  {
         }
     }
     
-    public static final void putValue( WritableDataSet ds, DataSetIterator it, double v ) {
+    public static final void putValue( WritableDataSet ds, OldDataSetIterator it, double v  ) {
         switch ( ds.rank() ) {
             case 1: ds.putValue( it.getIndex(0), v ); return;
             case 2: ds.putValue( it.getIndex(0), it.getIndex(1), v ); return;
@@ -219,7 +219,7 @@ public abstract class DataSetIterator  {
         //QDataSet ds= new IndexGenDataSet(20);
         QDataSet ds= DDataSet.wrapRank2(back,4);
         //QDataSet ds= DDataSet.wrapRank3(back,2,2);
-        for ( DataSetIterator it= DataSetIterator.create(ds); it.hasNext(); ) {
+        for ( OldDataSetIterator it= OldDataSetIterator.create(ds); it.hasNext(); ) {
             System.err.println(it.next());
         }
         

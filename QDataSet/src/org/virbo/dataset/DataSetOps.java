@@ -164,6 +164,8 @@ public class DataSetOps {
      * pull out a subset of the dataset by reducing the number of columns in the
      * last dimension.  This does not reduce rank.  This assumes the dataset has no
      * row with length>end.
+     * @param start first index to include.
+     * @param end last index, exclusive
      */
     public static MutablePropertyDataSet leafTrim(final QDataSet ds, final int start, final int end) {
 
@@ -379,9 +381,9 @@ public class DataSetOps {
         QDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize);
         final int[] hits = new int[n];
 
-        DataSetIterator iter = DataSetIterator.create(ds);
-        DataSetIterator witer= DataSetIterator.create( DataSetUtil.weightsDataSet(ds) );
-
+        OldDataSetIterator iter = OldDataSetIterator.create(ds);
+        OldDataSetIterator witer= OldDataSetIterator.create( DataSetUtil.weightsDataSet(ds) );
+        
         for (; iter.hasNext();) {
             double d = iter.next();
             double w = witer.next();
@@ -418,8 +420,8 @@ public class DataSetOps {
         double approxMean = 0.;
 
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
-        DataSetIterator iter = DataSetIterator.create(ds);
-        DataSetIterator witer = DataSetIterator.create( wds );
+        OldDataSetIterator iter = OldDataSetIterator.create(ds);
+        OldDataSetIterator witer = OldDataSetIterator.create( wds );
         
         while (iter.hasNext()) {
             double d = iter.next();
@@ -440,8 +442,8 @@ public class DataSetOps {
         double stddev = 0;
 
         if (validCount > 0) {
-            iter = DataSetIterator.create(ds);
-            witer = DataSetIterator.create( wds );
+            iter = OldDataSetIterator.create(ds);
+            witer = OldDataSetIterator.create( wds );
             while (iter.hasNext()) {
                 double d = iter.next();
                 double w = witer.next();
