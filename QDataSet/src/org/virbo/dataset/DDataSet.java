@@ -202,15 +202,8 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
      * copies the properties, copying depend datasets as well.  
      * @see DataSetUtil.copyProperties, which is a shallow copy.
      */
-    private static Map copyProperties(QDataSet ds) {
-        Map result = new HashMap();
-        String[] names = new String[]{QDataSet.VALID_RANGE, QDataSet.CADENCE, QDataSet.FILL_VALUE, QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
-            QDataSet.TYPICAL_RANGE, QDataSet.UNITS, QDataSet.VALID_RANGE,
-            QDataSet.CACHE_TAG
-        ,    
-        
-            };
-        
+    protected static Map copyProperties(QDataSet ds) {
+        Map result = new HashMap();        
         Map srcProps= DataSetUtil.getProperties(ds);
         
         result.putAll(srcProps);

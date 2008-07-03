@@ -116,18 +116,28 @@ public final class BDataSet extends AbstractDataSet implements WritableDataSet {
      * copies the properties, copying depend datasets as well.
      */
     private static Map copyProperties( QDataSet ds ) {
-        Map result= new HashMap();
-        result.put( QDataSet.VALID_RANGE, ds.property(QDataSet.VALID_RANGE) );
-        result.put( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
-        for ( int i=0; i<ds.rank(); i++ ) {
-            QDataSet dep= (QDataSet) ds.property( "DEPEND_"+i );
-            if ( dep!=null ) {
-                result.put( "DEPEND_"+i, copy( dep ) );
+        Map result = new HashMap();        
+        Map srcProps= DataSetUtil.getProperties(ds);
+        
+        result.putAll(srcProps);
+                
+        for ( int i=0; i < ds.rank(); i++) {
+            QDataSet dep = (QDataSet) ds.property("DEPEND_" + i);
+            if (dep == ds) {
+                throw new IllegalArgumentException("dataset is dependent on itsself!");
+            }
+            if (dep != null) {
+                result.put("DEPEND_" + i, copy(dep));
             }
         }
-        QDataSet plane0= (QDataSet) ds.property( QDataSet.PLANE_0 );
-        if ( plane0!=null ) result.put( QDataSet.PLANE_0, copy( plane0 ) );
-        //TODO: correlated PLANEs
+
+        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
+            QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
+            if (plane0 != null) {
+                result.put("PLANE_" + i, copy(plane0));
+            }
+        }
+
         return result;
     }
      
