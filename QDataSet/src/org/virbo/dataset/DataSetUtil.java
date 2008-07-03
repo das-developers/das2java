@@ -153,18 +153,13 @@ public class DataSetUtil {
         }
         return result;
     }
-    public static String version = "2007-12-19";
 
-    /**
-     * gets all the properties of the dataset.  This is a shallow
-     * copy of properties.
-     */
-    public static Map<String, Object> getProperties(QDataSet ds, Map def) {
-        Map result = def;
-
-        String[] names = new String[]{QDataSet.UNITS, QDataSet.CADENCE,
+    public static String[] propertyNames() {
+        return new String[]{QDataSet.UNITS, QDataSet.CADENCE,
             QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
-            QDataSet.TYPICAL_RANGE, QDataSet.VALID_RANGE, QDataSet.FILL_VALUE,
+            QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX, 
+            QDataSet.VALID_MIN, QDataSet.VALID_MAX, 
+            QDataSet.FILL_VALUE,
             QDataSet.QUBE,
             QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
             QDataSet.CACHE_TAG,
@@ -172,6 +167,15 @@ public class DataSetUtil {
             QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
             QDataSet.USER_PROPERTIES,
         };
+    }
+    /**
+     * gets all the properties of the dataset.  This is a shallow
+     * copy of properties.
+     */
+    public static Map<String, Object> getProperties(QDataSet ds, Map def) {
+        Map result = def;
+
+        String[] names = propertyNames();
 
         for (int i = 0; i < names.length; i++) {
             if (ds.property(names[i]) != null) {
@@ -441,7 +445,7 @@ public class DataSetUtil {
     /**
      * Provide consistent valid logic to operators by providing a QDataSet
      * with 1.0 where the data is valid, and 0.0 where the data is invalid.
-     * VALID_RANGE and FILL_VALUE properties are used.
+     * VALID_MIN, VALID_MAX and FILL_VALUE properties are used.
      * 
      * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
      * support legacy logic.
@@ -455,6 +459,15 @@ public class DataSetUtil {
             result = new WeightsDataSet(ds);
         }
         return result;
+    }
+    
+    /** 
+     * iterate through the dataset, changing all points outside of validmin,
+     * validmax and with zero weight to fill=-1e31.
+     * @param ds
+     */
+    public static void canonizeFill( WritableDataSet ds ) {
+        
     }
 }
 
