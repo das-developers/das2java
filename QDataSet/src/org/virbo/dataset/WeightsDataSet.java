@@ -11,7 +11,7 @@ import edu.uiowa.physics.pw.das.datum.Units;
 /**
  * Provide consistent valid logic to operators by providing a QDataSet
  * with 1.0 where the data is valid, and 0.0 where the data is invalid.
- * VALID_RANGE and FILL_VALUE properties are used.
+ * VALID_MIN, VALID_MAX and FILL_VALUE properties are used.
  * 
  * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
  * support legacy logic.
@@ -30,15 +30,18 @@ public class WeightsDataSet implements QDataSet {
 
     protected WeightsDataSet(QDataSet ds) {
         this.ds = ds;
-        DatumRange valid = (DatumRange) ds.property(QDataSet.VALID_RANGE);
+        Double validMin = (Double) ds.property(QDataSet.VALID_MIN);
+        if ( validMin==null ) validMin= Double.NEGATIVE_INFINITY;
+        Double validMax = (Double) ds.property(QDataSet.VALID_MAX);
+        if ( validMax==null ) validMax= Double.POSITIVE_INFINITY;
         Units u = (Units) ds.property(QDataSet.UNITS);
         if (u == null) {
             u = Units.dimensionless;
         }
         Double ofill = (Double) ds.property(QDataSet.FILL_VALUE);
         fill = ( ofill == null ? u.getFillDouble() : ofill.doubleValue() );
-        vmin = ( valid == null ? Double.NEGATIVE_INFINITY : valid.min().doubleValue(valid.getUnits()) );
-        vmax = ( valid == null ? Double.POSITIVE_INFINITY : valid.max().doubleValue(valid.getUnits()) );
+        vmin = validMin;
+        vmax = validMax;
     }
 
     public int rank() {
