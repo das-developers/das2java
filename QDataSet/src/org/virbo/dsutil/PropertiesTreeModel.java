@@ -64,6 +64,10 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             }
             mroot.insert( nextChild, mroot.getChildCount() ); 
         }
+        
+        MutableTreeNode values= new DefaultMutableTreeNode("values");        
+        ValuesTreeModel.valuesTreeNode( "value(", values, ds );
+        mroot.insert( values, mroot.getChildCount() );
     }
     
     
