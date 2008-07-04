@@ -6,8 +6,10 @@
 package org.virbo.demos;
 
 import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetIterator;
+import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.OldDataSetIterator;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.QubeDataSetIterator;
 
 /**
  *
@@ -16,7 +18,9 @@ import org.virbo.dataset.QDataSet;
 public class DemoDataSetIterator {
     
     public static void main( String[] args ) {
-        DataSetIterator it;
+        OldDataSetIterator it;
+        QubeDataSetIterator it2; // replaces OldDataSetIterator
+        
         QDataSet ds;
         
        /* QDataSet rank2= DDataSet.createRank2(3,4);
@@ -43,10 +47,38 @@ public class DemoDataSetIterator {
         */
         System.err.println( "zero length second index:");
         ds= DDataSet.createRank3(3,0,5);
-        it= DataSetIterator.create(ds);
-        while ( it.hasNext() ) {
-            double d= it.next();
-            System.err.println( ""+d+ " "+it.getIndex(0)+" "+it.getIndex(1)+" "+it.getIndex(2) );
+        it= OldDataSetIterator.create(ds);
+        it2= new QubeDataSetIterator( ds );
+        
+        while ( it2.hasNext() ) {
+            //double d= it.next();
+            it2.next();
+            //System.err.print( ""+d+ " "+it.getIndex(0)+" "+it.getIndex(1)+" "+it.getIndex(2) + "   " );
+            System.err.println( " "+it2.index(0)+" "+it2.index(1)+" "+it2.index(2) );
         }        
+
+        System.err.println( "zero length second index, better example:");
+        // this dataset has eleven elements in three inner datasets.  The
+        // second inner dataset is empty.
+        JoinDataSet join= new JoinDataSet(1);
+        join.join( DDataSet.createRank1(5) );
+        join.join( DDataSet.createRank1(0) );
+        join.join( DDataSet.createRank1(6) );
+        
+        it2= new QubeDataSetIterator( join );
+        
+        int count= 0;
+        while ( it2.hasNext() ) {
+            //double d= it.next();
+            it2.next();
+            count++;
+            if ( count==5 ) {
+                System.err.println("bug in carry");
+            }
+            System.err.println( " "+ count+": "+it2.index(0)+" "+it2.index(1) );
+        }        
+        System.err.println( "count="+count );
+                
+        
     }
 }
