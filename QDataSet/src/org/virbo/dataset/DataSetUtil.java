@@ -462,12 +462,29 @@ public class DataSetUtil {
     }
     
     /** 
-     * iterate through the dataset, changing all points outside of validmin,
-     * validmax and with zero weight to fill=-1e31.
-     * @param ds
+     * Iterate through the dataset, changing all points outside of validmin,
+     * validmax and with zero weight to fill=-1e31.  VALID_MIN and VALID_MAX 
+     * properties are cleared, and FILL_VALUE is set to -1e31.
+     * 
+     * @param ds rank N QUBE dataset.
+     * @return ds with same geometry as ds.
      */
-    public static void canonizeFill( WritableDataSet ds ) {
-        
+    public static WritableDataSet canonizeFill( QDataSet ds ) {
+        if ( !( ds instanceof WritableDataSet ) ) {
+            ds= DDataSet.copy(ds);  // assumes ds is QUBE right now...
+        }
+        WritableDataSet wrds= (WritableDataSet)ds;
+        QubeDataSetIterator it= new QubeDataSetIterator(ds);
+        QDataSet wds= weightsDataSet(ds);
+        double fill= -1e31;
+        while ( it.hasNext() ) {
+            it.next();
+            if ( it.getValue(wds)==0 ) it.putValue(wrds,fill);
+        }
+        wrds.putProperty( QDataSet.FILL_VALUE, fill );
+        wrds.putProperty( QDataSet.VALID_MIN, null );
+        wrds.putProperty( QDataSet.VALID_MAX, null );
+        return wrds;
     }
 }
 
