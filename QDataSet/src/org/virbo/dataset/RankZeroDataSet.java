@@ -15,7 +15,9 @@ package org.virbo.dataset;
 public interface RankZeroDataSet {
     /**
      * rank 0 accessor.
+     * @return the scalar value stored in this dataset.
      * @throws IllegalArgumentException if the dataset is not rank 0.
      */
     double value();
+    Object property( String name );
 }
