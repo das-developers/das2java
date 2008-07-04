@@ -186,12 +186,13 @@ public class QubeDataSetIterator implements DataSetIterator {
             return new SingletonIterator(index);
         }
     }
-    DimensionIterator[] it = new DimensionIterator[3];
-    DimensionIteratorFactory[] fit = new DimensionIteratorFactory[3];
-    int rank;
-    int[] qube;
-    QDataSet ds;
-    boolean allnext= true;  // we'll have to do a borrow to get started.
+    
+    private DimensionIterator[] it = new DimensionIterator[3];
+    private DimensionIteratorFactory[] fit = new DimensionIteratorFactory[3];
+    private int rank;
+    private int[] qube;
+    private QDataSet ds;
+    private boolean allnext= true;  // we'll have to do a borrow to get started.
     
     /**
      * dataset iterator to help in implementing the complex indexing
