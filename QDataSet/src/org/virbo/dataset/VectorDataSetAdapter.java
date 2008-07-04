@@ -27,7 +27,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
     HashMap<String,QDataSet> planes;
     
     HashMap properties= new HashMap();
-    
+
     public static VectorDataSet create( QDataSet y ) {
         QDataSet xds= (QDataSet)y.property( QDataSet.DEPEND_0 );
         if ( xds==null ) {
@@ -70,6 +70,11 @@ public class VectorDataSetAdapter implements VectorDataSet {
             properties.put( edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_X_TAG_WIDTH, xunits.getOffsetUnits().createDatum( cadence.doubleValue() ) );
         }
                 
+        if ( y.property(QDataSet.FILL_VALUE) !=null 
+                || y.property(QDataSet.VALID_MIN) !=null  
+                || y.property(QDataSet.VALID_MAX) !=null ) {
+            y= DataSetUtil.canonizeFill(y);
+        }
     }
     
     public Datum getDatum(int i) {
@@ -91,7 +96,6 @@ public class VectorDataSetAdapter implements VectorDataSet {
     
     public Map getProperties() {
         Map result= new HashMap();
-        result.put( QDataSet.VALID_RANGE, null );
         result.put( QDataSet.UNITS, null );
         Map m= new HashMap( DataSetUtil.getProperties(y, result ) );
         m.putAll( properties );
@@ -142,6 +146,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
         return planes.keySet().toArray(new String[planes.keySet().size()] );
     }
     
+    @Override
     public String toString() {
         return DataSetUtil.toString(y);
     }

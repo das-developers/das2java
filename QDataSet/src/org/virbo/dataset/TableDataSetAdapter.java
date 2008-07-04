@@ -81,6 +81,11 @@ public class TableDataSetAdapter implements TableDataSet {
             properties.put(edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, xunits.getOffsetUnits().createDatum(cadence.doubleValue()));
         }
 
+        if ( z.property(QDataSet.FILL_VALUE) !=null 
+                || z.property(QDataSet.VALID_MIN) !=null  
+                || z.property(QDataSet.VALID_MAX) !=null )      {
+            z= DataSetUtil.canonizeFill(z);
+        } 
     }
 
     public Units getZUnits() {
@@ -175,7 +180,6 @@ public class TableDataSetAdapter implements TableDataSet {
     
     public Map getProperties() {
         Map result = new HashMap();
-        result.put(QDataSet.VALID_RANGE, null );
         result.put(QDataSet.UNITS, null );
         Map m = new HashMap(DataSetUtil.getProperties(z,result));
         m.putAll(properties);
