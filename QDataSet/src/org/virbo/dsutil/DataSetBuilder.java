@@ -32,7 +32,24 @@ public class DataSetBuilder {
     HashMap<String,Object> properties;
     
     /**
-     * recCount is the guess of dim0 size.  Bad guesses will result in extra copies or size.
+     * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
+     * @param recCount initial allocation for the first dimension.
+     */
+    public DataSetBuilder( int rank, int recCount ) {
+        this( rank, recCount, 1, 1 );
+    }
+    
+    /**
+     * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
+     * @param recCount initial allocation for the first dimension.
+     * @param dim1 when rank 2 or greater is used.
+     */
+    public DataSetBuilder( int rank, int recCount, int dim1 ) {
+        this( rank, recCount, dim1, 1 );
+    }
+    
+    /**
+     * recCount is the guess of dim0 size.  Bad guesses may result in an extra copy.
      * @param recCount initial allocation for the first dimension.
      * @param dim1 when rank 2 or greater is used.
      * @param dim2 when rank 3 or greater is used.
@@ -49,9 +66,9 @@ public class DataSetBuilder {
     
     private void newCurrent() {
         if ( rank==1 ) {
-            current= DDataSet.createRank1(recCount);
+            current= DDataSet.createRank1( recCount );
         } else if ( rank==2 ) {
-            current= DDataSet.createRank2(recCount,dim1);
+            current= DDataSet.createRank2( recCount, dim1 );
         } else if ( rank==3 ) {
             current= DDataSet.createRank3( recCount, dim1, dim2 );
         }
@@ -94,6 +111,10 @@ public class DataSetBuilder {
         }
     }
     
+    private final boolean isFill( double d ) {
+        return fillValue==d || validMin>d || validMax<d;
+    }
+    
     /**
      * returns the result dataset, concatenating all the datasets it's built
      * thus far.
@@ -122,17 +143,17 @@ public class DataSetBuilder {
         }
         result.putLength( index+offset );
         
-        if ( fillValue!=-1e31 ) {
+        if ( fillValue!=-1e31 || validMax<Double.POSITIVE_INFINITY || validMin>Double.NEGATIVE_INFINITY ) {
             switch ( rank ) {
                 case 1: {
                     for ( int i=0; i<result.length(); i++ ) {
-                        if ( result.value(i)==fillValue ) result.putValue(i,-1e31);
+                        if ( isFill( result.value(i) ) ) result.putValue(i,-1e31);
                     }
                 } break;
                 case 2: {
                     for ( int i=0; i<result.length(); i++ ) {
                         for ( int j=0; j<result.length(i); j++ ) {
-                            if ( result.value(i,j)==fillValue ) result.putValue(i,j,-1e31);
+                            if ( isFill( result.value(i,j) ) ) result.putValue(i,j,-1e31);
                         }
                     }
                 } break;
@@ -140,7 +161,7 @@ public class DataSetBuilder {
                     for ( int i=0; i<result.length(); i++ ) {
                         for ( int j=0; j<result.length(i); j++ ) {
                             for ( int k=0; k<result.length(i,j); k++ ) {
-                                if ( result.value(i,j,k)==fillValue ) result.putValue(i,j,k,-1e31);
+                                if ( isFill( result.value(i,j,k) ) ) result.putValue(i,j,k,-1e31);
                             }
                         }
                     }
@@ -204,6 +225,33 @@ public class DataSetBuilder {
         this.fillValue = fillValue;
         propertyChangeSupport.firePropertyChange("fillValue", new Double(oldFillValue), new Double(fillValue));
     }
+
+    protected double validMin = Double.NEGATIVE_INFINITY;
+    public static final String PROP_VALIDMIN = "validMin";
+
+    public double getValidMin() {
+        return validMin;
+    }
+
+    public void setValidMin(double validMin) {
+        double oldValidMin = this.validMin;
+        this.validMin = validMin;
+        propertyChangeSupport.firePropertyChange(PROP_VALIDMIN, oldValidMin, validMin);
+    }
+    
+    protected double validMax = Double.POSITIVE_INFINITY;
+    public static final String PROP_VALIDMAX = "validMax";
+
+    public double getValidMax() {
+        return validMax;
+    }
+
+    public void setValidMax(double validMax) {
+        double oldValidMax = this.validMax;
+        this.validMax = validMax;
+        propertyChangeSupport.firePropertyChange(PROP_VALIDMAX, oldValidMax, validMax);
+    }
+    
     
     @Override
     public String toString() {
