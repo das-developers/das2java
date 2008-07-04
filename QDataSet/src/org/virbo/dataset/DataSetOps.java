@@ -283,7 +283,7 @@ public class DataSetOps {
     /**
      * Applies the sort index to the idim-th dimension of the qube dataset ds.
      * TODO: consider sorting multiple dimensions at once, to reduce excessive copying.
-     * @param ds, rank 1,2, or 3 qube dataset
+     * @param ds rank 1,2, or 3 qube dataset
      * @param idim the dimension being sorted.
      * @param sort rank 1 dataset of new indeces, needn't be same size as index.
      * @param deps do dependencies as well. Note this does not rearrange planes!
@@ -381,12 +381,13 @@ public class DataSetOps {
         QDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize);
         final int[] hits = new int[n];
 
-        OldDataSetIterator iter = OldDataSetIterator.create(ds);
-        OldDataSetIterator witer= OldDataSetIterator.create( DataSetUtil.weightsDataSet(ds) );
+        QubeDataSetIterator iter = new QubeDataSetIterator(ds);
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
         
         for (; iter.hasNext();) {
-            double d = iter.next();
-            double w = witer.next();
+            iter.next();
+            double d = iter.getValue(ds);
+            double w = iter.getValue(wds);
             if ( w>0. ) {
                 int ibin = (int) ((d - min) / binsize);
                 if (ibin >= 0 && ibin < n) {
@@ -403,7 +404,8 @@ public class DataSetOps {
 
     /**
      * performs the moment (mean,variance,etc) on the dataset.
-     * @return QDataSet rank 1 dataset with one tag, the mean.  Properties 
+     * @param ds rank N QDataSet.
+     * @return QDataSet rank 1 dataset with one tag, the mean.  Properties
      *   contain other stats.
      */
     public static QDataSet moment(QDataSet ds) {
@@ -420,12 +422,12 @@ public class DataSetOps {
         double approxMean = 0.;
 
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
-        OldDataSetIterator iter = OldDataSetIterator.create(ds);
-        OldDataSetIterator witer = OldDataSetIterator.create( wds );
+        QubeDataSetIterator iter= new QubeDataSetIterator(ds);
         
         while (iter.hasNext()) {
-            double d = iter.next();
-            double w = witer.next();
+            iter.next();
+            double d = iter.getValue(ds);
+            double w = iter.getValue(wds);
             if ( w==0.0 ) {
                 invalidCount++;
             } else {
@@ -442,11 +444,10 @@ public class DataSetOps {
         double stddev = 0;
 
         if (validCount > 0) {
-            iter = OldDataSetIterator.create(ds);
-            witer = OldDataSetIterator.create( wds );
+            iter= new QubeDataSetIterator(ds);
             while (iter.hasNext()) {
-                double d = iter.next();
-                double w = witer.next();
+                double d = iter.getValue(ds);
+                double w = iter.getValue(wds);
                 if ( w>0.0 ) {
                     mean += (d - approxMean);
                     stddev += Math.pow(d - approxMean, 2);
@@ -482,6 +483,8 @@ public class DataSetOps {
 
     /**
      * transpose the rank 2 qube dataset so the rows are columns and the columns are rows.
+     * @param ds rank 2 Qube DataSet.
+     * @return rank 2 Qube DataSet
      */
     public static QDataSet transpose2(QDataSet ds) {
         return new TransposeRank2DataSet(ds);
