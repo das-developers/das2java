@@ -304,8 +304,8 @@ public class TimeParser {
         int hour = (int) d.hour;
         int minute = (int) d.minute;
         double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
-        double mjd1958 = (jd - 2436205) + seconds / 86400.;
-        double us2000 = (mjd1958 - 15340) * 86400000000. + seconds + d.millis * 1000 + d.micros;
+        int mjd1958 = (jd - 2436205);
+        double us2000 = (mjd1958 - 15340) * 86400000000. + seconds * 1e6 + d.millis * 1000 + d.micros;
         return us2000;
     }
 
