@@ -1389,7 +1389,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         Point2D.Double dp = new Point2D.Double(x, y);
 
-        if (fillElement.acceptContext(dp)) {
+        if ( this.fillToReference && fillElement.acceptContext(dp) ) {
             accept = true;
         }
 
