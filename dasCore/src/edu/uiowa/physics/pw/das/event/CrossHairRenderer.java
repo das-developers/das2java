@@ -42,7 +42,6 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
     protected int xInitial;
     protected int yInitial;
-    protected DataSet ds;
     protected DasAxis XAxis;
     protected DasAxis YAxis;
     protected DasPlot parent;
@@ -203,7 +202,14 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g = (Graphics2D) g1;
         g.setRenderingHints((RenderingHints) edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
-        ds = dataSetConsumer.getConsumedDataSet();
+        
+        DataSet ds;
+        
+        if ( dataSetConsumer!=null ) {
+            ds = dataSetConsumer.getConsumedDataSet();
+        } else {
+            ds = null;
+        }
 
         Rectangle[] superDirty = null;
 
@@ -233,59 +239,60 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
             String nl = multiLine ? "!c" : " ";
 
-            if (ds instanceof TableDataSet) {
-                TableDataSet tds = (TableDataSet) ds;
-                String zAsString;
-                if (tds != null && snapping) {
-                    int[] ij = new int[2];
-                    zAsString = getZString(tds, x, y, ij);
-                    x = tds.getXTagDatum(ij[0]);
-                    xAsString = nfx.format(x);
-                    y = tds.getYTagDatum(tds.tableOfIndex(ij[0]), ij[1]);
-                    yAsString = nfy.format(y);
-                } else {
-                    zAsString = getZString(tds, x, y, null);
-                }
-                report = "x:" + xAsString + nl + "y:" + yAsString + nl + "z:" + zAsString;
-            } else {
-                if (ds == null && dataSetConsumer instanceof DasPlot) {
-                    if (((DasPlot) dataSetConsumer).getRenderers().length > 0) {
-                        ds = ((DasPlot) dataSetConsumer).getRenderer(0).getDataSet();
-                    }
-                }
-                if (ds != null && snapping) {
-                    VectorDataSet vds = (VectorDataSet) ds;
-                    if (vds.getXLength() == 0) {
-                        yAsString = "(empty dataset)";
-                    } else {
-                        int i = closestPointVector(vds, x, y);
-                        x = vds.getXTagDatum(i);
-                        y = vds.getDatum(i);
+            if (ds != null) {
+                if (ds instanceof TableDataSet) {
+                    TableDataSet tds = (TableDataSet) ds;
+                    String zAsString;
+                    if (tds != null && snapping) {
+                        int[] ij = new int[2];
+                        zAsString = getZString(tds, x, y, ij);
+                        x = tds.getXTagDatum(ij[0]);
                         xAsString = nfx.format(x);
+                        y = tds.getYTagDatum(tds.tableOfIndex(ij[0]), ij[1]);
                         yAsString = nfy.format(y);
-                        if (allPlanesReport) {
-                            String result = yAsString;
-                            String[] planeIds = vds.getPlaneIds();
-                            for (int iplane = 0; iplane < planeIds.length; iplane++) {
-                                if (!planeIds[iplane].equals("")) {
-                                    result = result + "!c";
-                                    result += planeIds[iplane] + ":" + nfy.grannyFormat(((VectorDataSet) vds.getPlanarView(planeIds[iplane])).getDatum(i));
-                                    if (debugging) {
-                                        result += " " + ((VectorDataSet) vds.getPlanarView(planeIds[iplane])).toString();
+                    } else {
+                        zAsString = getZString(tds, x, y, null);
+                    }
+                    report = "x:" + xAsString + nl + "y:" + yAsString + nl + "z:" + zAsString;
+                } else {
+                    if (ds == null && dataSetConsumer instanceof DasPlot) {
+                        if (((DasPlot) dataSetConsumer).getRenderers().length > 0) {
+                            ds = ((DasPlot) dataSetConsumer).getRenderer(0).getDataSet();
+                        }
+                    }
+                    if (ds != null && snapping) {
+                        VectorDataSet vds = (VectorDataSet) ds;
+                        if (vds.getXLength() == 0) {
+                            yAsString = "(empty dataset)";
+                        } else {
+                            int i = closestPointVector(vds, x, y);
+                            x = vds.getXTagDatum(i);
+                            y = vds.getDatum(i);
+                            xAsString = nfx.format(x);
+                            yAsString = nfy.format(y);
+                            if (allPlanesReport) {
+                                String result = yAsString;
+                                String[] planeIds = vds.getPlaneIds();
+                                for (int iplane = 0; iplane < planeIds.length; iplane++) {
+                                    if (!planeIds[iplane].equals("")) {
+                                        result = result + "!c";
+                                        result += planeIds[iplane] + ":" + nfy.grannyFormat(((VectorDataSet) vds.getPlanarView(planeIds[iplane])).getDatum(i));
+                                        if (debugging) {
+                                            result += " " + ((VectorDataSet) vds.getPlanarView(planeIds[iplane])).toString();
+                                        }
                                     }
                                 }
+                                yAsString = result;
                             }
-                            yAsString = result;
                         }
                     }
                 }
-                report = "x:" + xAsString + nl + "y:" + yAsString;
             }
+            report = "x:" + xAsString + nl + "y:" + yAsString;
 
             setLabel(report);
             super.renderDrag(g, p1, p2);
         }
-
 
         if (snapping && x != null && y != null) {
             Point p3 = new Point((int) xa.transform(x), (int) ya.transform(y));
@@ -299,7 +306,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             drawCrossHair(g, p2);
         }
 
-        return new Rectangle[]{this.hDirtyBounds, this.vDirtyBounds, dirtyBounds};
+
+        return new Rectangle[]{this.hDirtyBounds,
+                    this.vDirtyBounds,
+                    dirtyBounds
+                };
     }
 
     private void drawCrossHair(Graphics g0, Point p) {
