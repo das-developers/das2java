@@ -106,6 +106,7 @@ public abstract class FileObject {
      *   is immediate, for example with local FileObjects.
      * @throws java.io.FileNotFoundException if the file doesn't exist.
      * @throws IOException if the file cannot be made local
+     * @throws NullPointerException if the monitor is null.
      */
     public abstract File getFile( ProgressMonitor monitor ) throws FileNotFoundException, IOException;
     
