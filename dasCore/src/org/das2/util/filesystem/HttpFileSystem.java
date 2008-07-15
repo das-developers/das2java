@@ -144,8 +144,11 @@ public class HttpFileSystem extends WebFileSystem {
             }
 
             HttpURLConnection hurlc = (HttpURLConnection) urlc;
-            if (hurlc.getResponseCode() != 200) {
-                System.err.println("" + hurlc.getResponseCode() + " URL: " + remoteURL);
+            if ( hurlc.getResponseCode()==404 ) {
+                logger.info("" + hurlc.getResponseCode() + " URL: " + remoteURL);
+                throw new FileNotFoundException("not found: "+remoteURL );
+            } else if (hurlc.getResponseCode() != 200) {
+                logger.info("" + hurlc.getResponseCode() + " URL: " + remoteURL);
                 throw new IOException(hurlc.getResponseMessage());
             }
 
