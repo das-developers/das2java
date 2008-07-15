@@ -190,6 +190,7 @@ public class WebFileObject extends FileObject {
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         boolean download = false;
 
+        if ( monitor==null ) throw new NullPointerException("monitor may not be null");
         Date remoteDate;
         if (wfs instanceof HttpFileSystem) {
             URL url = wfs.getURL(this.getNameExt());
