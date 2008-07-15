@@ -268,6 +268,18 @@ public class TimeDatumFormatter extends DatumFormatter {
                 case 'H': appendSubFormat(formatString, HOUR_FIELD_INDEX, 2 ); break;
                 case 'M': appendSubFormat(formatString, MINUTE_FIELD_INDEX, 2 ); break;
                 case 'S': appendSubFormat(formatString, SECONDS_FIELD_INDEX, 2 ); break;
+                case '{': 
+                    int i1= ss[i].indexOf('}');
+                    String spec= ss[i].substring(1,i1);
+                    if ( spec.equals("milli") ) {
+                       int digitCount = 3;
+                       int fieldIndex = addScaleFactor(digitCount);
+                       appendSubFormat(formatString, fieldIndex, digitCount);
+                       ss[i]= ss[i].substring(i1);
+                    } else {
+                        throw new ParseException("bad format code: {"+spec+"}",offset);
+                    }
+                    break;
                 default: throw new ParseException("bad format code: "+c,offset);
             }
             formatString.append(ss[i].substring(1));
