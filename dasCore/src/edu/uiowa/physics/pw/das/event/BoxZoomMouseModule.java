@@ -91,12 +91,13 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
         if ( xrange!=null ) xAxis.setDatumRange(xrange);
     }
     
+    @Override
     public void mouseRangeSelected(MouseDragEvent e0) {
         if ( e0 instanceof MouseBoxEvent ) {
             MouseBoxEvent e= (MouseBoxEvent)e0;
             
-            xrange= new DatumRange( xAxis.invTransform(e.getXMinimum()), xAxis.invTransform(e.getXMaximum()) );
-            yrange= new DatumRange( yAxis.invTransform(e.getYMaximum()), yAxis.invTransform(e.getYMinimum()) );
+            xrange= GraphUtil.invTransformRange( xAxis, e.getXMinimum(), e.getXMaximum() );
+            yrange= GraphUtil.invTransformRange( yAxis, e.getYMinimum(), e.getYMaximum() );
             
             if ( constrainProportions ) {
                 double aspect= yAxis.getHeight() / (double)xAxis.getWidth();
@@ -115,8 +116,8 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                 yrange= new DatumRange( yAxis.invTransform(my.max().doubleValue(Units.dimensionless)),
                         yAxis.invTransform(my.min().doubleValue(Units.dimensionless)) );
             } else {
-                xrange= new DatumRange( xAxis.invTransform(e.getXMinimum()), xAxis.invTransform(e.getXMaximum()) );
-                yrange= new DatumRange( yAxis.invTransform(e.getYMaximum()), yAxis.invTransform(e.getYMinimum()) );
+                xrange= GraphUtil.invTransformRange(  xAxis, e.getXMinimum(), e.getXMaximum() );
+                yrange= GraphUtil.invTransformRange(  yAxis, e.getYMaximum(), e.getYMinimum() );
             }
             
             if ( ! autoUpdate ) {
