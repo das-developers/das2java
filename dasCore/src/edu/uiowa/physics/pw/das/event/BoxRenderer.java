@@ -27,7 +27,7 @@ import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import java.awt.*;
 
 /**
- *
+ * Draws a box 
  * @author  eew
  */
 public class BoxRenderer implements DragRenderer {
@@ -36,6 +36,11 @@ public class BoxRenderer implements DragRenderer {
     DasCanvasComponent parent;
     
     boolean updating;
+    
+    /** use this value for P1 instead of the one sent by the client.  This
+     * allows the box to used to render tweak of corner.
+     */
+    Point overrideP1;
     
     public BoxRenderer(DasCanvasComponent parent, boolean updating ) {
         this.parent= parent;
@@ -50,8 +55,11 @@ public class BoxRenderer implements DragRenderer {
     public void clear(Graphics g) {
         parent.paintImmediately(dirtyBounds);
     }
-    public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
+    
+    public Rectangle[] renderDrag( Graphics g1, Point p1, Point p2 ) {
         Graphics2D g= (Graphics2D) g1;
+        
+        if ( overrideP1!=null ) p1= overrideP1;
         
         Rectangle r = new Rectangle(p1);
         r.add(p2);
@@ -74,6 +82,7 @@ public class BoxRenderer implements DragRenderer {
     }
     
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
+        if ( overrideP1!=null ) p1= overrideP1;
         return new MouseBoxEvent(source,p1,p2,isModified);
     }
     
@@ -85,4 +94,11 @@ public class BoxRenderer implements DragRenderer {
         return updating;
     }
     
+    /**
+     * set this to override 
+     * @param p1
+     */
+    public void setDragStart( Point p1 ) {
+        this.overrideP1= p1;
+    }
 }
