@@ -25,6 +25,7 @@ import java.util.HashMap;
  *   keyEvents      when a key is pressed.  (The key is the "keyChar" plane of the event)
  *   releaseEvents  when the mouse is released.  (false by default)
  *
+ * @see CrossHairRenderer
  * @author Jeremy
  */
 public class DataPointSelectorMouseModule extends MouseModule {
