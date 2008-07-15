@@ -160,13 +160,19 @@ public class GraphUtil {
      * @return an AffineTransform that transforms data positioned with xaxis0 and yaxis0 on xaxis1 and yaxis1, or null if no such transform exists.
      */
     public static AffineTransform calculateAT(DasAxis xaxis0, DasAxis yaxis0, DasAxis xaxis1, DasAxis yaxis1) {
+        return calculateAT( xaxis0.getDatumRange(), yaxis0.getDatumRange(), xaxis1, yaxis1 );
+    }
+    
+    public static AffineTransform calculateAT( 
+            DatumRange xaxis0, DatumRange yaxis0, 
+            DasAxis xaxis1, DasAxis yaxis1 ) {
+        
         AffineTransform at = new AffineTransform();
 
-        double dmin0 = xaxis1.transform(xaxis0.getDataMinimum());  // old axis in new axis space
-
-        double dmax0 = xaxis1.transform(xaxis0.getDataMaximum());
-        double dmin1 = xaxis1.transform(xaxis1.getDataMinimum());
-        double dmax1 = xaxis1.transform(xaxis1.getDataMaximum());
+        double dmin0 = xaxis1.transform( xaxis0.min() );  // old axis in new axis space
+        double dmax0 = xaxis1.transform( xaxis0.max() );
+        double dmin1 = xaxis1.transform( xaxis1.getDataMinimum() );
+        double dmax1 = xaxis1.transform( xaxis1.getDataMaximum() );
 
         double scalex = (dmin0 - dmax0) / (dmin1 - dmax1);
         double transx = -1 * dmin1 * scalex + dmin0;
@@ -178,9 +184,8 @@ public class GraphUtil {
             return null;
         }
 
-        dmin0 = yaxis1.transform(yaxis0.getDataMinimum());  // old axis in new axis space
-
-        dmax0 = yaxis1.transform(yaxis0.getDataMaximum());
+        dmin0 = yaxis1.transform( yaxis0.min() );  // old axis in new axis space
+        dmax0 = yaxis1.transform( yaxis0.max() );
         dmin1 = yaxis1.transform(yaxis1.getDataMinimum());
         dmax1 = yaxis1.transform(yaxis1.getDataMaximum());
 
@@ -655,5 +660,33 @@ public class GraphUtil {
         return null;
     }
     
+    /**
+     * returns pixel range of the datum range, guarenteeing that the first 
+     * element will be less than or equal to the second.
+     * @param axis
+     * @param range
+     * @return
+     */
+    public static double[] transformRange( DasAxis axis, DatumRange range ) {
+        double x1= axis.transform(range.min());
+        double x2= axis.transform(range.max());
+        if ( x1>x2 ) {
+            double t= x2;
+            x2= x1;
+            x1= t;
+        }
+        return new double[] { x1, x2 };
+    }
+
+    public static DatumRange invTransformRange( DasAxis axis, double x1, double x2 ) {
+        Datum d1= axis.invTransform(x1);
+        Datum d2= axis.invTransform(x2);
+        if ( d1.gt(d2) ) {
+            Datum t= d2;
+            d2= d1;
+            d1= t;
+        }
+        return new DatumRange( d1, d2 );
+    }
     
 }
