@@ -804,7 +804,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         public void dataSetUpdated(DataSetUpdateEvent e) {
             VectorDataSet ds = (VectorDataSet) e.getDataSet();
             if (ds == null) {
-                UserMessageCenter.getDefault().notifyUser(DasAxis.this, e.getException());
+                logger.warning("" + e.getException());
                 return;
             }
             logger.fine("got TCADataSet");
@@ -999,7 +999,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             nTicksMax = axisSize / tickSizePixels;
         }
 
-        nTicksMax= (nTicksMax<7)?nTicksMax:7;
+        nTicksMax = (nTicksMax < 7) ? nTicksMax : 7;
 
         this.tickV = TickVDescriptor.bestTickVLinear(getDataMinimum(), getDataMaximum(), 3, nTicksMax, false);
 
@@ -1349,8 +1349,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
 
-            String[] labels = tickFormatter( ticks.tickV, getDatumRange() );
-		   
+            String[] labels = tickFormatter(ticks.tickV, getDatumRange());
+
 
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
@@ -1452,7 +1452,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLengthMinor = tickLengthMajor / 2;
             int tickLength;
 
-            String[] labels = tickFormatter( ticks.tickV, getDatumRange() );
+            String[] labels = tickFormatter(ticks.tickV, getDatumRange());
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
                 int tickPosition = (int) Math.floor(transform(tick1));
@@ -1666,7 +1666,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         // TODO: whah?--jbf
     }
 
-    public class Memento {
+    public static class Memento {
 
         private DatumRange range;
         private int dmin,  dmax;
@@ -1732,8 +1732,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (!memento.range.getUnits().isConvertableTo(getUnits())) {
             return null;
         }
-        double dmin0 = transform(memento.range.min());  // old axis in new axis space
-        double dmax0 = transform(memento.range.max());
+
+        //TODO: remove cut-n-paste code
+        //return getAffineTransform(memento.range, false, at);
+
+        double dmin0,  dmax0;
+
+        dmin0 = transform(memento.range.min());
+        dmax0 = transform(memento.range.max());
+
         if (!(isHorizontal() ^ flipped)) {
             double tmp = dmin0;
             dmin0 = dmax0;
@@ -1748,16 +1755,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             at.translate(0., transy);
             at.scale(1., scaley);
 
-            double swingscaley = (dmin1 - dmax1) / (memento.dmin - memento.dmax);
-            double swingtransy = -1 * memento.dmin * swingscaley + dmin1;
-
-        //at.translate( 0., -swingtransy );
-        //at.scale( 1., swingscaley );
-
-        //if ( dmin1!=memento.dmin ) {
-        //     System.err.println( ""+dmin1 +"  " + memento.dmin + ( dmin1!=memento.dmin )  );
-        //}
-
         } else {
             double dmin1 = getColumn().getDMinimum();
             double dmax1 = getColumn().getDMaximum();
@@ -1767,16 +1764,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             at.translate(transx, 0);
             at.scale(scalex, 1.);
 
-        //double swingscalex= ( dmin1 - dmax1 ) / ( memento.dmin - memento.dmax );
-        //double swingtransx= -1* memento.dmin * swingscalex + dmin1;
-
-        //at.translate( -swingtransx, 0 );
-        //at.scale( swingscalex, 1. );
-
-        //if ( dmin1!=memento.dmin ) {
-        //    System.err.println( ""+dmin1 +"  " + memento.dmin + ( dmin1!=memento.dmin )  );
-        //}
-
         }
 
         if (at.getDeterminant() == 0.000) {
@@ -1784,7 +1771,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             return at;
         }
-
     }
 
     /** TODO
@@ -2258,7 +2244,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (flipped) {
             alpha = 1.0 - alpha;
         }
-        
+
         double minimum = dataRange.getMinimum();
         double maximum = dataRange.getMaximum();
         double data_range = maximum - minimum;
@@ -2287,7 +2273,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return datumFormatter.grannyFormat(d, d.getUnits());
 
     }
-    
+
     /**
      * return the tick labels for these datums and visible range.  This is intended
      * to be overriden to change behavior.  Note that both tickFormatter methods
@@ -2297,7 +2283,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return Strings, possibly with Granny control characters.
      */
     protected String[] tickFormatter(DatumVector tickV, DatumRange datumRange) {
-	 return datumFormatter.axisFormat( tickV, datumRange );
+        return datumFormatter.axisFormat(tickV, datumRange);
     }
 
     /** TODO
@@ -3158,5 +3144,4 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public boolean valueIsAdjusting() {
         return dataRange.valueIsAdjusting();
     }
-
 }
