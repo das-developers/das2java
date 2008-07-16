@@ -1241,15 +1241,20 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     /**
-     * Setter for property drawGrid.  If true, faint grey lines continue the axis major
-     * ticks across the plot.
-     * @param drawGrid New value of property drawGrid.
-     */
-    public void setDrawGrid(boolean drawGrid) {
-	this.drawGrid = drawGrid;
-	this.invalidateCacheImage();
-	this.repaint();
-    }
+	  * Setter for property drawGrid.  If true, faint grey lines continue the axis major
+	  * ticks across the plot.
+	  * @param drawGrid New value of property drawGrid.
+	  */
+	 public void setDrawGrid(boolean drawGrid) {
+		 boolean bOld = this.drawGrid;
+		 this.drawGrid = drawGrid;
+		 this.invalidateCacheImage();
+		 this.repaint();
+		 
+		 if(bOld != drawGrid)
+			 firePropertyChange(PROP_DRAWGRID, bOld, drawGrid);
+	 }
+	 public static final String PROP_DRAWGRID = "drawGrid";
     private boolean drawMinorGrid;
     public static final String PROP_DRAWMINORGRID = "drawMinorGrid";
 
