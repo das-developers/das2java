@@ -111,10 +111,10 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                     double f= aspect / mouseAspect;
                     my= my.rescale( 0.5-f/2, 0.5+f/2 );
                 }
-                xrange= new DatumRange( xAxis.invTransform(mx.min().doubleValue(Units.dimensionless)),
-                        xAxis.invTransform(mx.max().doubleValue(Units.dimensionless)) );
-                yrange= new DatumRange( yAxis.invTransform(my.max().doubleValue(Units.dimensionless)),
-                        yAxis.invTransform(my.min().doubleValue(Units.dimensionless)) );
+                xrange= GraphUtil.invTransformRange( xAxis, mx.min().doubleValue(Units.dimensionless),
+                        mx.max().doubleValue(Units.dimensionless) );
+                yrange= GraphUtil.invTransformRange( yAxis, my.max().doubleValue(Units.dimensionless),
+                        my.min().doubleValue(Units.dimensionless) );
             } else {
                 xrange= GraphUtil.invTransformRange(  xAxis, e.getXMinimum(), e.getXMaximum() );
                 yrange= GraphUtil.invTransformRange(  yAxis, e.getYMaximum(), e.getYMinimum() );
@@ -142,8 +142,8 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
         }
         
     }
-    
-    /**
+	
+	/**
      * Getter for property autoUpdate.
      * @return Value of property autoUpdate.
      */
