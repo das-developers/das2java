@@ -242,8 +242,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * transforms the simpleTableDataSet into a Raster byte array.  The rows of
      * the table are adjacent in the output byte array.
      */
-    private static byte[] transformSimpleTableDataSet(TableDataSet rebinData, DasColorBar cb) {
-
+    private static byte[] transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb, boolean flipY) {
+        
         if (rebinData.tableCount() > 1) {
             throw new IllegalArgumentException("TableDataSet contains more than one table");
         }
@@ -255,21 +255,27 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         int nx = rebinData.tableEnd(itable) - rebinData.tableStart(itable);
         int w = nx;
         int icolor;
-
+        
         Units units = cb.getUnits();
         int ncolor = cb.getType().getColorCount();
-
+        
         TableDataSet weights = (TableDataSet) rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
-
+        
         byte[] pix = new byte[nx * ny];
         Arrays.fill(pix, (byte) cb.getFillColorIndex());
-
-        for (int i = rebinData.tableStart(itable); i < rebinData.tableEnd(itable); i++) {
-            for (int j = 0; j < ny; j++) {
-                if (weights == null || weights.getDouble(i, j, Units.dimensionless) > 0.) {
-                    int index = (i - 0) + (ny - j - 1) * nx;
-                    icolor = (int) cb.indexColorTransform(rebinData.getDouble(i, j, units), units);
-                    pix[index] = (byte) icolor;
+        
+        for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
+            for (int j=0; j<ny; j++) {
+                if ( weights==null || weights.getDouble(i, j,Units.dimensionless) > 0. ) {
+                    int index;
+                    if (flipY) {
+                        index= i + j*nx;
+                    }
+                    else {
+                        index= (i-0) + ( ny - j - 1 ) * nx;
+                    }
+                    icolor= (int)cb.indexColorTransform(rebinData.getDouble(i,j,units), units );
+                    pix[index]= (byte) icolor;
                 }
             }
         }
@@ -364,7 +370,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     ymemento = yAxis.getMemento();
                     cmemento = colorBar.getMemento();
 
-                    raster = transformSimpleTableDataSet(rebinDataSet, colorBar);
+                    raster = transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped());
 
                 }
 
