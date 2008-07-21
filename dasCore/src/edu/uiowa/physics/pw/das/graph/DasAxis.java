@@ -59,6 +59,10 @@ import java.util.logging.Logger;
  * @author eew
  */
 public class DasAxis extends DasCanvasComponent implements DataRangeSelectionListener, TimeRangeSelectionListener, Cloneable {
+    public static final String PROP_LABEL = "label";
+    public static final String PROP_LOG = "log";
+    public static final String PROP_OPPOSITE_AXIS_VISIBLE = "oppositeAxisVisible";
+    public static final String PROP_BOUNDS = "bounds";
 
     /*
      * PUBLIC CONSTANT DECLARATIONS
@@ -82,6 +86,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* Constants defining the action commands and labels for the scan buttons. */
     private static final String SCAN_PREVIOUS_LABEL = "<< scan";
     private static final String SCAN_NEXT_LABEL = "scan >>";
+    
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
     public static String PROPERTY_TICKS = "ticks";
@@ -155,10 +160,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* DEBUGGING INSTANCE MEMBERS */
     private static final boolean DEBUG_GRAPHICS = false;
     private static final Color[] DEBUG_COLORS;
-    /* true if a lock is out, and an object is animation-interactively adjusting
-     * me
-     */
-    private boolean valueIsAdjusting = false;
+    
     public static String PROPERTY_DATUMRANGE = "datumRange";
     
 
@@ -214,7 +216,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void addListenersToDataRange(DataRange range, PropertyChangeListener listener) {
-        range.addPropertyChangeListener("log", listener);
+        range.addPropertyChangeListener( PROP_LOG,listener);
         range.addPropertyChangeListener("minimum", listener);
         range.addPropertyChangeListener("maximum", listener);
         range.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, listener);
@@ -346,9 +348,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 String propertyName = e.getPropertyName();
                 Object oldValue = e.getOldValue();
                 Object newValue = e.getNewValue();
-                if (propertyName.equals("log")) {
+                if (propertyName.equals(PROP_LOG)) {
                     update();
-                    firePropertyChange("log", oldValue, newValue);
+                    firePropertyChange( PROP_LOG, oldValue,newValue);
                 } else if (propertyName.equals("minimum")) {
                     update();
                     firePropertyChange("dataMinimum", oldValue, newValue);
@@ -636,7 +638,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dataRange.setLog(log);
         update();
         if (log != oldLog) {
-            firePropertyChange("log", oldLog, log);
+            firePropertyChange( PROP_LOG, oldLog,log);
         }
     }
 
@@ -680,7 +682,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         oppositeAxisVisible = visible;
         revalidate();
         repaint();
-        firePropertyChange("oppositeAxisVisible", oldValue, visible);
+        firePropertyChange( PROP_OPPOSITE_AXIS_VISIBLE, oldValue,visible);
     }
 
     /** TODO
@@ -703,7 +705,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Object oldValue = axisLabel;
         axisLabel = t;
         update();
-        firePropertyChange("label", oldValue, t);
+        firePropertyChange( PROP_LABEL, oldValue, t);
     }
 
     /**
@@ -881,16 +883,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void attachTo(DasAxis axis) {
         DataRange oldRange = dataRange;
         dataRange = axis.dataRange;
-        oldRange.removePropertyChangeListener("log", dataRangePropertyListener);
+        oldRange.removePropertyChangeListener( PROP_LOG,dataRangePropertyListener);
         oldRange.removePropertyChangeListener("minimum", dataRangePropertyListener);
         oldRange.removePropertyChangeListener("maximum", dataRangePropertyListener);
         oldRange.removePropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, dataRangePropertyListener);
-        dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
+        dataRange.addPropertyChangeListener( PROP_LOG,dataRangePropertyListener);
         dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, dataRangePropertyListener);
         if (oldRange.isLog() != dataRange.isLog()) {
-            firePropertyChange("log", oldRange.isLog(), dataRange.isLog());
+            firePropertyChange(PROP_LOG, oldRange.isLog(), dataRange.isLog());
         }
         firePropertyChange("minimum", oldRange.getMinimum(), dataRange.getMinimum());
         firePropertyChange("maximum", oldRange.getMaximum(), dataRange.getMaximum());
@@ -900,7 +902,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** TODO */
     public void detach() {
-        dataRange.removePropertyChangeListener("log", dataRangePropertyListener);
+        dataRange.removePropertyChangeListener( PROP_LOG,dataRangePropertyListener);
         dataRange.removePropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.removePropertyChangeListener("maximum", dataRangePropertyListener);
         dataRange.removePropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, dataRangePropertyListener);
@@ -908,7 +910,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 Datum.create(dataRange.getMaximum(), dataRange.getUnits()),
                 dataRange.isLog());
         dataRange = newRange;
-        dataRange.addPropertyChangeListener("log", dataRangePropertyListener);
+        dataRange.addPropertyChangeListener( PROP_LOG,dataRangePropertyListener);
         dataRange.addPropertyChangeListener("minimum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener("maximum", dataRangePropertyListener);
         dataRange.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, dataRangePropertyListener);
@@ -1295,7 +1297,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             for (int i = 0; i < tcaData.length; i++) {
                 baseLine += lineHeight;
-                idlt.setString(this.getGraphics(), (String) tcaData[i].getProperty("label"));
+                idlt.setString(this.getGraphics(), (String) tcaData[i].getProperty(PROP_LABEL));
                 width = (int) Math.floor(idlt.getWidth() + 0.5);
                 leftEdge = rightEdge - width;
                 idlt.draw(g, (float) leftEdge, (float) baseLine);
@@ -1824,11 +1826,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     public void resize() {
         resetTransform();
+        Rectangle oldBounds= this.getBounds();
         setBounds(getAxisBounds());
         invalidate();
         if (tickV == null || tickV.tickV.getUnits().isConvertableTo(getUnits())) {
             validate();
         }
+        firePropertyChange( PROP_BOUNDS, oldBounds, getBounds() );
     }
 
     /** TODO
@@ -1858,7 +1862,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString(this.getGraphics(), "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 for (int i = 0; i < tcaData.length; i++) {
-                    idlt.setString(this.getGraphics(), (String) tcaData[i].getProperty("label"));
+                    idlt.setString(this.getGraphics(), (String) tcaData[i].getProperty(PROP_LABEL));
                     int width = (int) Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }
@@ -1873,9 +1877,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     blLabelRect.width = maxX - minX;
                 }
             }
-            bounds.height += getTickLabelFont().getSize() + getLineSpacing();
-            if (getTickDirection() == -1) {
-                bounds.y -= getTickLabelFont().getSize() + getLineSpacing();
+            
+            if ( true ) { // this is unnecessary?  I think it's a kludge for multiline ticks...
+                bounds.height += getTickLabelFont().getSize() + getLineSpacing();
+                if (getTickDirection() == -1) {
+                    bounds.y -= getTickLabelFont().getSize() + getLineSpacing();
+                }
             }
 
         }
@@ -2407,7 +2414,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     static DasAxis processAxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException, ParseException {
         String name = element.getAttribute("name");
-        boolean log = element.getAttribute("log").equals("true");
+        boolean log = element.getAttribute(PROP_LOG).equals("true");
         Datum dataMinimum;
         Datum dataMaximum;
         if ("TIME".equals(element.getAttribute("units"))) {
@@ -2434,8 +2441,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             axis.setColumn(column);
         }
 
-        axis.setLabel(element.getAttribute("label"));
-        axis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
+        axis.setLabel(element.getAttribute(PROP_LABEL));
+        axis.setOppositeAxisVisible(!element.getAttribute(PROP_OPPOSITE_AXIS_VISIBLE).equals("false"));
         axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
 
         axis.setDasName(name);
@@ -2511,10 +2518,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         element.setAttribute("row", getRow().getDasName());
         element.setAttribute("column", getColumn().getDasName());
 
-        element.setAttribute("label", getLabel());
-        element.setAttribute("log", Boolean.toString(isLog()));
+        element.setAttribute(PROP_LABEL, getLabel());
+        element.setAttribute(PROP_LOG, Boolean.toString(isLog()));
         element.setAttribute("tickLabelsVisible", Boolean.toString(areTickLabelsVisible()));
-        element.setAttribute("oppositeAxisVisible", Boolean.toString(isOppositeAxisVisible()));
+        element.setAttribute(PROP_OPPOSITE_AXIS_VISIBLE, Boolean.toString(isOppositeAxisVisible()));
         element.setAttribute("animated", Boolean.toString(isAnimated()));
         element.setAttribute("orientation", orientationToString(getOrientation()));
 
@@ -2559,8 +2566,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         axis.setDataPath(element.getAttribute("dataPath"));
         axis.setDrawTca(element.getAttribute("showTca").equals("true"));
-        axis.setLabel(element.getAttribute("label"));
-        axis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
+        axis.setLabel(element.getAttribute(PROP_LABEL));
+        axis.setOppositeAxisVisible(!element.getAttribute(PROP_OPPOSITE_AXIS_VISIBLE).equals("false"));
         axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
 
         axis.setDasName(name);
@@ -2744,8 +2751,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         timeaxis.setDataPath(element.getAttribute("dataPath"));
         timeaxis.setDrawTca(element.getAttribute("showTca").equals("true"));
-        timeaxis.setLabel(element.getAttribute("label"));
-        timeaxis.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
+        timeaxis.setLabel(element.getAttribute(PROP_LABEL));
+        timeaxis.setOppositeAxisVisible(!element.getAttribute(PROP_OPPOSITE_AXIS_VISIBLE).equals("false"));
         timeaxis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
 
         timeaxis.setDasName(name);
