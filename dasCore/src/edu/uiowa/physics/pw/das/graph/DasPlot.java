@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
+    public static String PROP_TITLE= "title";
 
     protected DataSetDescriptor dataSetDescriptor;
     protected DataSet Data;
@@ -766,7 +767,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 	    invalidateCacheImage();
 	}
 	if (t != oldValue) {
-	    firePropertyChange("title", oldValue, t);
+	    firePropertyChange( PROP_TITLE, oldValue, t);
 	}
     }
 
