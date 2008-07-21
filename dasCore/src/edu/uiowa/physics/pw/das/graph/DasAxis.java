@@ -970,7 +970,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int maxTick = (int) Math.floor(dMaxTick);
 
         GrannyTextRenderer idlt = new GrannyTextRenderer();
-        idlt.setString(this.getGraphics(), "10!U-10");
+        idlt.setString( this.getTickLabelFont(), "10!U-10");
 
         int nTicksMax;
         if (isHorizontal()) {
@@ -1040,7 +1040,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         GrannyTextRenderer idlt = new GrannyTextRenderer();
         Rectangle bounds = new Rectangle();
         for (int i = 0; i < granny.length; i++) {
-            idlt.setString(this.getGraphics(), granny[i]);
+            idlt.setString( this.getTickLabelFont(), granny[i] );
             bounds.add(idlt.getBounds());
         }
         return bounds;
@@ -1297,7 +1297,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             for (int i = 0; i < tcaData.length; i++) {
                 baseLine += lineHeight;
-                idlt.setString(this.getGraphics(), (String) tcaData[i].getProperty(PROP_LABEL));
+                idlt.setString( this.getGraphics(), (String) tcaData[i].getProperty(PROP_LABEL));
                 width = (int) Math.floor(idlt.getWidth() + 0.5);
                 leftEdge = rightEdge - width;
                 idlt.draw(g, (float) leftEdge, (float) baseLine);
@@ -1798,8 +1798,35 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /** 
+     * calculate the biggest label width
+     * @param fm
+     * @return the width in pixels of the widest label.
+     */
+    private int getMaxLabelWidth(Font f) {
+        try {
+            TickVDescriptor ticks = getTickV();
+            DatumVector tickv = ticks.tickV;
+            int size = Integer.MIN_VALUE;
+            Graphics g = this.getGraphics();
+            for (int i = 0; i < tickv.getLength(); i++) {
+                String label = tickFormatter(tickv.get(i));
+                GrannyTextRenderer idlt = new GrannyTextRenderer();
+                idlt.setString( f,label);
+                int labelSize = (int) Math.round(idlt.getWidth());
+                if (labelSize > size) {
+                    size = labelSize;
+                }
+            }
+            return size;
+        } catch (InconvertibleUnitsException ex) {
+            return 10;
+        }
+    }
+    
     /** TODO
      * @param fm
+     * @deprecated use getMaxLabelWidth(Font)
      * @return the width in pixels of the widest label.
      */
     protected int getMaxLabelWidth(FontMetrics fm) {
@@ -1811,7 +1838,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             for (int i = 0; i < tickv.getLength(); i++) {
                 String label = tickFormatter(tickv.get(i));
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
-                idlt.setString(g, label);
+                //idlt.setString(g, label);
+                idlt.setString( g,label);
                 int labelSize = (int) Math.round(idlt.getWidth());
                 if (labelSize > size) {
                     size = labelSize;
