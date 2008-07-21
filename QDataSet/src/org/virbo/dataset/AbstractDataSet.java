@@ -9,9 +9,7 @@
 
 package org.virbo.dataset;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Abstract class to simplify defining datasets.  Implement rank,
@@ -77,6 +75,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
     
+    @Override
     public String toString( ) {
         return DataSetUtil.toString(this);
     }
