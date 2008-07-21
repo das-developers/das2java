@@ -182,8 +182,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     /**
      * returns the em size for the canvas.  We define the em size as the height of the
      * font.
+     * @return the em height in points.
      */
-    private int getEmSize() {
+    public int getEmSize() {
         return canvas.getFont().getSize();
     }
     
@@ -207,9 +208,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     /**
      * recalculates dMinimum and dMaximum becased on the new values, and checks for
-     * correctness.  Note if dMaximum<=dMinimum, we define dMaximum= dMinimum+1.
-     * This was originally introduced with the thought that this would only be
-     * called when the properties
+     * correctness.  Note if dMaximum&lt;=dMinimum, we define dMaximum= dMinimum+1.
      */
     private void revalidate() {
         int oldmin= dMinimum;
@@ -226,6 +225,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     /**
      * returns the pixel position of the minimum of the Row/Column.  This is
      * the left side of a column and the top of a row.
+     * @return the pixel position (pixel=point for now) 
      */
     public int getDMinimum() {
         if ( canvas==null && parent==null ) {
@@ -238,6 +238,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     /**
      * returns the pixel position of the maximum of the Row/Column.  This is
      * the right side of a column and the bottom of a row.
+     * @return the pixel position (pixel=point for now) 
      */
     public int getDMaximum() {
         if ( canvas==null && parent==null ) {
