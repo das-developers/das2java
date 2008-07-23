@@ -251,6 +251,7 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
         }
         int rank = ds.rank();
         DDataSet result;
+        int len1,len2;
         switch (rank) {
             case 1:
                 result = createRank1(ds.length());
@@ -259,7 +260,8 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
                 }
                 break;
             case 2:
-                result = createRank2(ds.length(), ds.length(0));
+                len1= ds.length() == 0 ? 0 : ds.length(0);
+                result = createRank2(ds.length(), len1 );
                 for (int i = 0; i < ds.length(); i++) {
                     for (int j = 0; j < ds.length(i); j++) {
                         result.putValue(i, j, ds.value(i, j));
@@ -267,7 +269,9 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
                 }
                 break;
             case 3:
-                result = createRank3(ds.length(), ds.length(0), ds.length(0, 0));
+                len1= ds.length() == 0 ? 0 : ds.length(0) ;
+                len2= len1 == 0 ? 0 : ds.length(0,0);
+                result = createRank3(ds.length(), len1, len2 );
                 for (int i = 0; i < ds.length(); i++) {
                     for (int j = 0; j < ds.length(i); j++) {
                         for (int k = 0; k < ds.length(i, j); k++) {
