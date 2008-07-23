@@ -11,6 +11,7 @@ package org.virbo.dataset;
 import edu.uiowa.physics.pw.das.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
 
 /**
  * Useful operations for QDataSets
@@ -378,7 +379,11 @@ public class DataSetOps {
      */
     public static QDataSet histogram(QDataSet ds, final double min, final double max, final double binsize) {
         int n = (int) Math.ceil((max - min) / binsize);
-        QDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize);
+        MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize);
+        
+        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), tags );
+        tags.putProperty( QDataSet.CADENCE, binsize );
+        
         final int[] hits = new int[n];
 
         QubeDataSetIterator iter = new QubeDataSetIterator(ds);
