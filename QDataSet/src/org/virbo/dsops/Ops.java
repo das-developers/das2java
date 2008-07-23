@@ -1276,9 +1276,16 @@ public class Ops {
         });
     }
 
+    /**
+     * Returns the signum function of the argument; zero if the argument is 
+     * zero, 1.0 if the argument is greater than zero, -1.0 if the argument 
+     * is less than zero.
+     * @param ds1
+     * @see copysign
+     * @return 
+     */
     public static QDataSet signum(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
-
             public double op(double a) {
                 return Math.signum(a);
             }
@@ -1290,6 +1297,7 @@ public class Ops {
      * second floating-point argument.
      * @param magnitude
      * @param sign
+     * @see signum
      * @return
      */
     public static QDataSet copysign(QDataSet magnitude, QDataSet sign) {
@@ -1529,7 +1537,6 @@ public class Ops {
      * Example:
      * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
      * @param labels
-     * @param context
      * @return rank 1 QDataSet
      */
     public static QDataSet labels( String[] labels ) {
