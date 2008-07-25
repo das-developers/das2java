@@ -245,6 +245,10 @@ public abstract class Units implements Displayable {
         unitsMap.put( id, this );
     };
     
+    public String getId() {
+        return this.id;
+    }
+    
     public void registerConverter(Units toUnits, UnitsConverter converter) {
         conversionMap.put(toUnits, converter);
         UnitsConverter inverse = (UnitsConverter)toUnits.conversionMap.get(this);
