@@ -151,8 +151,11 @@ public class NumberUnits extends Units {
             return result;
         } else {
             try {
-                
-                String[] ss= s.trim().split("\\s");
+                s= s.trim();
+                if ( s.endsWith(this.getId()) ) {
+                    s= s.substring(0,s.length()-this.getId().length());
+                }
+                String[] ss= s.split("\\s+");
                 double[] dd= parseDecimal(ss[0]);
                 if ( ss.length==1 ) {
                     return Datum.create( dd[0], this, dd[1] );
