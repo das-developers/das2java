@@ -472,6 +472,7 @@ public class AsciiParser {
                     firstRecord = line;
                 }
                 
+                // *** here's where we parse each record ***
                 if (recordParser.tryParseRecord(line, irec, builder)) {
                     irec++;
                     builder.nextRecord();
