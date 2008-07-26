@@ -21,10 +21,10 @@ import edu.uiowa.physics.pw.das.datum.Units;
  * @author jbf
  */
 public interface WritableDataSet extends MutablePropertyDataSet {
-    void putValue( int i, double d );
+    void putValue( int i0, double d );
     void putValue( int i0, int i1, double d );
     void putValue( int i0, int i1, int i2, double d );
     void putProperty( String name, Object object );
-    void putProperty( String name, int i, Object object );
+    void putProperty( String name, int i0, Object object );
     void putProperty( String name, int i0, int i1, Object object );
 }
