@@ -75,6 +75,25 @@ public class VectorDataSetAdapter implements VectorDataSet {
                 || y.property(QDataSet.VALID_MAX) !=null ) {
             y= DataSetUtil.canonizeFill(y);
         }
+        
+        QDataSet dp= (QDataSet) y.property( QDataSet.DELTA_PLUS ) ;
+        if ( dp!=null ) {
+            if ( dp.property(QDataSet.UNITS)==null ) {
+                dp= DDataSet.copy(dp);
+                ((MutablePropertyDataSet)dp).putProperty(QDataSet.UNITS,yunits.getOffsetUnits());
+            }
+            planes.put( "Y_DELTA_PLUS", dp );
+        }
+        
+       dp= (QDataSet) y.property( QDataSet.DELTA_MINUS ) ;
+        if ( dp!=null ) {
+            if ( dp.property(QDataSet.UNITS)==null ) {
+                dp= DDataSet.copy(dp);
+                ((MutablePropertyDataSet)dp).putProperty(QDataSet.UNITS,yunits.getOffsetUnits());
+            }
+            planes.put( "Y_DELTA_MINUS", dp );
+        }
+        
     }
     
     public Datum getDatum(int i) {
@@ -130,14 +149,6 @@ public class VectorDataSetAdapter implements VectorDataSet {
         if ( planeID.equals("") ) return this;
         if ( planes.containsKey(planeID) ) {
             return new VectorDataSetAdapter( (QDataSet)planes.get(planeID), x );
-        }
-        if ( planeID.equals( "Y_DELTA_PLUS" ) ) {
-            QDataSet d= (QDataSet) y.property( QDataSet.DELTA_PLUS );
-            return d==null ? null : VectorDataSetAdapter.create(d);
-        }
-        if ( planeID.equals( "Y_DELTA_MINUS" ) ) {
-            QDataSet d= (QDataSet) y.property( QDataSet.DELTA_MINUS );
-            return d==null ? null : VectorDataSetAdapter.create(d);
         }
         return null;
     }
