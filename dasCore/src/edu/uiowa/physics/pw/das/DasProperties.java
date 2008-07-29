@@ -57,7 +57,7 @@ public class DasProperties extends Properties {
         hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         setDefaults();
         propertyOrder= new ArrayList();
-        readPersistentProperties();
+        if ( DasApplication.hasAllPermission() ) readPersistentProperties();
         logger= Logger.getLogger("das2");
         setPropertyOrder();
     }
@@ -281,7 +281,7 @@ public class DasProperties extends Properties {
                 }
             }
         } catch ( SecurityException ex ) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(edu.uiowa.physics.pw.das.util.DasDie.INFORM, "Unable to read persistent properties");
+            ex.printStackTrace();
         }
     }
     
