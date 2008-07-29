@@ -149,6 +149,39 @@ public class DasApplication {
         }
     }
     
+    /**
+     * check the security manager to see if all permissions are allowed,
+     * True indicates is not an applet running in a sandbox.
+     * @return true if all permissions are allowed
+     */
+    public static boolean hasAllPermission() {
+        try {
+            SecurityManager sm = System.getSecurityManager();
+            if (sm != null) {
+                sm.checkPermission(new java.security.AllPermission());  
+            }
+            return true;
+        } catch ( SecurityException ex ) {
+            return false;
+        }
+    }
+    
+    /**
+     * support restricted security environment by checking permissions before 
+     * checking property.
+     * @param name
+     * @param deft
+     * @return
+     */
+    public static String getProperty( String name, String deft ) {
+        try {
+            return System.getProperty(name, deft);
+        } catch ( SecurityException ex ) {
+            return deft;
+        }
+    }
+      
+     
     // force the application state to be applet or application
     public void setApplet( boolean applet ) {
         this.applet= Boolean.valueOf(applet);
@@ -170,7 +203,7 @@ public class DasApplication {
     }
     
     private static boolean isX11() {
-        String osName= System.getProperty( "os.name" );
+        String osName= System.getProperty( "os.name" ); // applet okay
         return "SunOS".equals( osName )
         || "Linux".equals( osName );
     }
@@ -187,7 +220,8 @@ public class DasApplication {
      */
     public static File getDas2UserDirectory() {
         File local;
-        if ( System.getProperty("user.name").equals("Web") ) {
+        // for applets, if we are running from a disk, then it is okay to write local files, but we can't check permissions
+        if ( DasApplication.getProperty("user.name", "Web").equals("Web") ) {
             local= new File("/tmp");
         } else {
             local= new File( System.getProperty("user.home") );
@@ -231,7 +265,7 @@ public class DasApplication {
         if ( headless!=null ) {
             return headless.booleanValue();
         } else {
-            return "true".equals(System.getProperty("java.awt.headless"));
+            return "true".equals(DasApplication.getProperty("java.awt.headless","false"));
         }
     }
     
