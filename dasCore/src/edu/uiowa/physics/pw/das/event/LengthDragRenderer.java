@@ -109,7 +109,8 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 if ( yaxis.isLog() && xaxis.isLog() ) {
                     fit = "n/a";
                 } else if ( yaxis.isLog() && !xaxis.isLog() ) {
-                    fit= "y="+ " ( x - ("+x1+") ) ** !A" + slope + "!n + " + y1;
+                    //fit= "y="+ " ( x - ("+x1+") ) ** !A" + slope + "!n + " + y1;
+                    fit= "n/a";
                 } else if ( !yaxis.isLog() && xaxis.isLog() ) {
                     fit = "n/a";
                 } else {
