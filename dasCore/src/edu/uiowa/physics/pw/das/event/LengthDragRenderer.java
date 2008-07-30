@@ -8,7 +8,6 @@ package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -61,18 +60,20 @@ public class LengthDragRenderer extends LabelDragRenderer {
         DasAxis ya= yaxis == null ? plot.getYAxis() : yaxis;
         
         if ( !p1.equals(p2) ) {
-            Datum x0= xa.invTransform(p2.x);
-            Datum run= x0.subtract(xa.invTransform(p1.x));
+            Datum x1= xa.invTransform(p2.x);
+            Datum x0= xa.invTransform(p1.x);
+            Datum run= x1.subtract(x0);
             run= DatumUtil.asOrderOneUnits(run);
             String runString;
-            if ( x0.getUnits()==run.getUnits() ) {
-                runString= x0.getFormatter().format(run);
+            if ( x1.getUnits()==run.getUnits() ) {
+                runString= x1.getFormatter().format(run);
             } else {
                 runString= datumString(run);
             }
             
-            Datum y0= ya.invTransform(p2.y);
-            Datum rise= y0.subtract(ya.invTransform(p1.y));
+            Datum y1= ya.invTransform(p2.y);
+            Datum y0= ya.invTransform(p1.y);
+            Datum rise= y1.subtract(y0);
 
             String riseString;
             riseString= datumString(rise);
@@ -99,6 +100,24 @@ public class LengthDragRenderer extends LabelDragRenderer {
             if ( showSlope ) {
                 label += "!c m: "+ UnitsUtil.divideToString( rise, run );
             }
+            
+            if ( showFit ) {
+                // show y= m * ( x - x0 ) + y0
+                Datum slope= rise.divide(run);
+                
+                String fit;
+                if ( yaxis.isLog() && xaxis.isLog() ) {
+                    fit = "n/a";
+                } else if ( yaxis.isLog() && !xaxis.isLog() ) {
+                    fit= "y="+ " ( x - ("+x1+") ) ** !A" + slope + "!n + " + y1;
+                } else if ( !yaxis.isLog() && xaxis.isLog() ) {
+                    fit = "n/a";
+                } else {
+                    fit= "y="+ slope + " * ( x - ("+x1+") ) + "+ y1;
+                }
+                label+= "!c" + fit;
+            }
+            
             
             setLabel( label );
         } else {
@@ -129,4 +148,24 @@ public class LengthDragRenderer extends LabelDragRenderer {
         this.showSlope = showSlope;
     }
     
+    protected boolean showFit = false;
+
+    /**
+     * Get the value of showFit
+     *
+     * @return the value of showFit
+     */
+    public boolean isShowFit() {
+        return showFit;
+    }
+
+    /**
+     * Set the value of showFit
+     *
+     * @param showFit new value of showFit
+     */
+    public void setShowFit(boolean showFit) {
+        this.showFit = showFit;
+    }
+
 }
