@@ -12,8 +12,6 @@ import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.dataset.AverageTableRebinner;
 import edu.uiowa.physics.pw.das.dataset.ClippedTableDataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSetRebinner;
 import edu.uiowa.physics.pw.das.dataset.DataSetUtil;
 import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
 import edu.uiowa.physics.pw.das.dataset.TableDataSet;
@@ -73,12 +71,12 @@ public class ContoursRenderer extends Renderer implements Displayable {
                 
         if (drawLabels) {
             Area labelClip = paintLabels(g);
-            labelClip.transform(AffineTransform.getTranslateInstance(parent.getX(), parent.getY()));
+            
             Shape rclip = g.getClip() == null ? new Rectangle(parent.getX(), parent.getY(), parent.getWidth(), parent.getHeight()) : g.getClip();
             Area clip = new Area(rclip);
             clip.subtract(labelClip);
             g.setClip(clip);
-        //g.draw( labelClip );
+            //g.draw( labelClip );
 
         }
 
@@ -101,6 +99,7 @@ public class ContoursRenderer extends Renderer implements Displayable {
 
         // do labels
         AffineTransform at0 = g.getTransform();
+        
         Font font = font0.deriveFont(8f);
 
         g.setFont(font);
@@ -144,14 +143,14 @@ public class ContoursRenderer extends Renderer implements Displayable {
                         double len3 = GraphUtil.pointsAlongCurve(it2, lens, points, orient, true);
 
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
-                            AffineTransform at = new AffineTransform(at0);
+                            AffineTransform at = new AffineTransform();
                             at.translate(points[ilabel*2].x, points[ilabel*2].y);
                             //double dx= points[ilabel*2+1].x - points[ilabel*2].x;
                             //double dy= points[ilabel*2+1].y - points[ilabel*2].y;
                             //double orient1= Math.atan2(dy,dx);
                             at.rotate(orient[ilabel*2]);
                             //at.rotate(orient1);
-                            g.setTransform(at);
+                            
 
                             Rectangle2D sbounds = g.getFontMetrics().getStringBounds(label, g);
                             double w = sbounds.getWidth();
@@ -161,10 +160,13 @@ public class ContoursRenderer extends Renderer implements Displayable {
                             rect.transform(at);
                             clip.add(new Area(rect));
 
+                            AffineTransform gat= new AffineTransform(at0);
+                            gat.concatenate(at);
+                            
+                            g.setTransform( gat );
                             g.setColor(color);
                             g.drawString(label, (int) (-w / 2), 0);
                         }
-
                     }
                 }
             }
