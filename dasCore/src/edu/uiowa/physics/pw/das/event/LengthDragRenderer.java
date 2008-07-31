@@ -107,10 +107,28 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 
                 String fit;
                 if ( yaxis.isLog() && xaxis.isLog() ) {
-                    fit = "n/a";
+                    double ycycles= Math.log10( y1.divide(y0).doubleValue(Units.dimensionless) );
+                    double xcycles= Math.log10( x1.divide(x0).doubleValue(Units.dimensionless) );
+                    NumberFormat nf= new DecimalFormat("0.00");
+                    String sslope= nf.format( ycycles / xcycles );
+                    fit = "y= ( x/" +x1 +" )!A"+sslope + "!n * " + y1 ;
                 } else if ( yaxis.isLog() && !xaxis.isLog() ) {
-                    //fit= "y="+ " ( x - ("+x1+") ) ** !A" + slope + "!n + " + y1;
-                    fit= "n/a";
+                    NumberFormat nf= new DecimalFormat("0.00");
+                    Units u= run.getUnits();
+                    double drise= Math.log10(y1.divide(y0).doubleValue(Units.dimensionless) );
+                    double drun= x1.subtract(x0).doubleValue(u);
+                    String sslope= nf.format( drise/drun );
+                    String su;
+                    if ( u.isConvertableTo(Units.seconds) ) {
+                        su= UnitsUtil.divideToString( Units.dimensionless.createDatum(drise), run );
+                    } else if ( u==Units.dimensionless ) {
+                        su= sslope;
+                    } else {
+                        su= sslope + "/("+u+")";
+                    }
+                    
+                    fit= "!Cy="+ "10!A( x-("+x1+") )*"+su+"!n * " + y1;
+
                 } else if ( !yaxis.isLog() && xaxis.isLog() ) {
                     fit = "n/a";
                 } else {
