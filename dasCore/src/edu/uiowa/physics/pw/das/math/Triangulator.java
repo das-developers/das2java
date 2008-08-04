@@ -610,6 +610,7 @@ class AlgorithmUIHeading extends Panel {
  * TriangulationCanvas class. Each of the triangulation algorithms
  * needs a canvas to draw into.
  */
+@SuppressWarnings("deprecation")
 class TriangulationCanvas extends Canvas {
     Triangulation t;
     RealWindowGraphics rWG;	// Does the actual drawing. 
@@ -650,6 +651,7 @@ class TriangulationCanvas extends Canvas {
  * AlgorithmUI class.  Each algorithm has a set of user interface
  * controls.  This class provides them.
  */
+@SuppressWarnings("deprecation")
 class AlgorithmUI extends Panel {
     TextField nPointsTextField;
     Checkbox animateCheckBox[];
@@ -1395,6 +1397,7 @@ class AppletUI extends Panel {
 /* 
  * TriangulationApplet class.  "Main Class"
  */
+@SuppressWarnings("deprecation")
 public class Triangulator extends Applet implements Runnable {
     Thread triangulateThread[];
     int nPoints = 10;
