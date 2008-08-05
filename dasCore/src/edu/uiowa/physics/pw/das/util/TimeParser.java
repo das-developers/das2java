@@ -36,13 +36,13 @@ public class TimeParser {
     TimeStruct time;
     TimeStruct timeWidth;
     int ndigits;
-    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore"};
+    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b" };
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore"
-    };
-    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1};
-    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1};
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", };
+    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3 };
+    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1 };
     int[] handlers;
+    
     /**
      * set of custom handlers to allow for extension
      */
@@ -262,6 +262,7 @@ public class TimeParser {
      *  %y    2-digit year
      *  %j     3-digit day of year
      *  %m   2-digit month
+     *  %b   3-char month name
      *  %d    2-digit day
      *  %H    2-digit hour
      *  %M    2-digit minute
@@ -295,14 +296,14 @@ public class TimeParser {
     }
 
     private double toUs2000(TimeStruct d) {
-        int year = (int) d.year;
-        int month = (int) d.month;
-        int day = (int) d.day;
+        int year = d.year;
+        int month = d.month;
+        int day = d.day;
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour = (int) d.hour;
-        int minute = (int) d.minute;
+        int hour = d.hour;
+        int minute = d.minute;
         double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
         int mjd1958 = (jd - 2436205);
         double us2000 = (mjd1958 - 15340) * 86400000000. + seconds * 1e6 + d.millis * 1000 + d.micros;
@@ -310,14 +311,14 @@ public class TimeParser {
     }
 
     private double toUs1980(TimeStruct d) {
-        int year = (int) d.year;
-        int month = (int) d.month;
-        int day = (int) d.day;
+        int year =  d.year;
+        int month =  d.month;
+        int day =  d.day;
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour = (int) d.hour;
-        int minute = (int) d.minute;
+        int hour =  d.hour;
+        int minute =  d.minute;
         double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
         double us1980 = (jd - 2436205 - 8035) * 86400000000. + seconds * 1e6 + d.millis * 1e3 + d.micros;
         return us1980;
@@ -400,10 +401,12 @@ public class TimeParser {
                 }
             } else if (handlers[idigit] == 11) {
                 int offset = Integer.parseInt(timeString.substring(offs, offs + len));
-                DasMath.modp(0, 0);
                 time.hour -= offset / 100;   // careful!
 
                 time.minute -= offset % 100;
+            } else if ( handlers[idigit]== 13 ) {
+                time.month= TimeUtil.monthNumber( timeString.substring(offs, offs + len) );
+                
             }
         }
         return this;
@@ -434,6 +437,9 @@ public class TimeParser {
                 time.day = digit;
                 break;
             case 3:
+                time.month = digit;
+                break;
+            case 13:
                 time.month = digit;
                 break;
             case 4:
@@ -556,6 +562,10 @@ public class TimeParser {
                 result.insert( offs, nf[len].format(digit) );
                 offs+= len;
 
+            } else if ( handlers[idigit]== 13 ) { // month names
+                result.insert( offs, TimeUtil.monthNameAbbrev(timel.month) );
+                offs+= len;
+                
             } else if (handlers[idigit] == 100) {
                 throw new RuntimeException("Handlers not supported");
 
