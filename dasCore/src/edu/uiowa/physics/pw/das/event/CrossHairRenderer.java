@@ -30,6 +30,7 @@ import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 
+import edu.uiowa.physics.pw.das.graph.Renderer;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.*;
@@ -208,7 +209,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         if ( dataSetConsumer!=null ) {
             ds = dataSetConsumer.getConsumedDataSet();
         } else {
-            ds = null;
+            Renderer[] rends= ((DasPlot)this.parent).getRenderers();
+            if ( rends.length>0 ) {
+                ds= rends[0].getConsumedDataSet();
+            } else {
+                ds= null;
+            }
         }
 
         Rectangle[] superDirty = null;
@@ -239,6 +245,8 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
             String nl = multiLine ? "!c" : " ";
 
+            report = "x:" + xAsString + nl + "y:" + yAsString;
+            
             if (ds != null) {
                 if (ds instanceof TableDataSet) {
                     TableDataSet tds = (TableDataSet) ds;
@@ -286,9 +294,9 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                             }
                         }
                     }
+                    report = "x:" + xAsString + nl + "y:" + yAsString;
                 }
             }
-            report = "x:" + xAsString + nl + "y:" + yAsString;
 
             setLabel(report);
             super.renderDrag(g, p1, p2);
