@@ -106,10 +106,10 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                 double mouseAspect= my.width().divide(mx.width()).doubleValue(Units.dimensionless);
                 if ( mouseAspect > aspect ) {
                     double f= mouseAspect / aspect;
-                    mx= mx.rescale( 0.5-f/2, 0.5+f/2 );
+                    mx= DatumRangeUtil.rescale(my, 0.5-f/2, 0.5+f/2 );
                 } else {
                     double f= aspect / mouseAspect;
-                    my= my.rescale( 0.5-f/2, 0.5+f/2 );
+                    my= DatumRangeUtil.rescale(my, 0.5-f/2, 0.5+f/2 );
                 }
                 xrange= GraphUtil.invTransformRange( xAxis, mx.min().doubleValue(Units.dimensionless),
                         mx.max().doubleValue(Units.dimensionless) );

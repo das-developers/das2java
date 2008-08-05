@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
+import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.graph.DasColorBar;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.Renderer;
@@ -59,7 +60,7 @@ public class ColorBarRepaletteMouseModule extends MouseModule {
         DatumRange dr;        
         DasRow row= colorBar.getRow();
         double alpha=  ( row.getDMaximum() - y ) / (1.*row.getHeight());
-        dr= range0.rescale( 0, alpha );        
+        dr= DatumRangeUtil.rescale(range0, 0, alpha );        
         colorBar.setDatumRange(dr);
         parent.update();
     }
