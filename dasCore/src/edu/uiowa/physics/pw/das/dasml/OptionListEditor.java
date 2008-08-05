@@ -162,7 +162,7 @@ public class OptionListEditor extends JButton implements OptionList, javax.swing
             dialog.setResizable(false);
             dialog.addWindowListener(listener);
         }
-        dialog.show();
+        dialog.setVisible(true);
     }
     
     private void addOption() {

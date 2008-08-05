@@ -124,7 +124,7 @@ public class MessageBox extends Dialog {
         Dimension md = mb.getSize();
         mb.setLocation(op.x + (od.width - md.width)/2, op.y + (od.height - md.height)/2);
         
-        mb.show();
+        mb.setVisible(true);
         
         return mb.result;
         
@@ -145,7 +145,7 @@ public class MessageBox extends Dialog {
         public void windowClosing(WindowEvent e)
         {
             result = CANCEL;
-            hide();
+            setVisible(false);
         }
         
         public void actionPerformed(ActionEvent e)
@@ -166,7 +166,7 @@ public class MessageBox extends Dialog {
             {
                 result = NO;
             }
-            hide();
+            setVisible(true);
         }
     }
 }

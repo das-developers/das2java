@@ -478,7 +478,7 @@ public class GraphicalLogHandler extends Handler {
                 spane.setPreferredSize( new Dimension( 800, 600 ) );
                 dialog.getContentPane().add( spane );
                 dialog.pack();
-                dialog.show();
+                dialog.setVisible(true);
             }
         } );
         return result;
