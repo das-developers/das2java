@@ -82,7 +82,7 @@ public class Probe {
         
         Agent( String name, int index, Agent underplotAgent ) {
             builder= new VectorDataSetBuilder(Units.dimensionless,Units.dimensionless);
-            renderer= new SymbolLineRenderer((DataSet)null);
+            renderer= new SymbolLineRenderer();
             this.name= name;
             xrange= new DatumRange( Datum.create(0), Datum.create(1) );
             yrange= DatumRangeUtil.newDimensionless(0,0.000001);
@@ -219,9 +219,9 @@ public class Probe {
             dr= dr.include(d);
             return dr;
         } else if ( d.lt(dr.min()) ) {
-            while ( !dr.contains(d) ) dr= dr.rescale(-1,1);
+            while ( !dr.contains(d) ) dr= DatumRangeUtil.rescale(dr,-1,1);
         } else {
-            while ( !dr.contains(d) ) dr= dr.rescale(0,2);
+            while ( !dr.contains(d) ) dr= DatumRangeUtil.rescale(dr,0,2);
         }
         DasLogger.getLogger( DasLogger.SYSTEM_LOG ).info( "dr="+dr );
         return dr;
@@ -464,7 +464,7 @@ public class Probe {
             return;
         } else {
             
-            frame= DasApplication.getDefaultApplication().createMainFrame();
+            frame= DasApplication.getDefaultApplication().createMainFrame("Das 2");
             JPanel panel= new JPanel();
             panel.setLayout( new BorderLayout());
             
