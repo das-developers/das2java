@@ -389,10 +389,10 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             levelRenderer= new SymbolLineRenderer();
             
             fitRenderer= new SymbolLineRenderer();
-            fitRenderer = new SymbolLineRenderer((DataSetDescriptor)null);
+            fitRenderer = new SymbolLineRenderer();
             fitRenderer.setColor(SymColor.blue);
             
-            fitPointRenderer = new SymbolLineRenderer((DataSetDescriptor)null);
+            fitPointRenderer = new SymbolLineRenderer();
             fitPointRenderer.setColor(SymColor.red);
             fitPointRenderer.setPsymConnector(PsymConnector.NONE);
             fitPointRenderer.setPsym(Psym.TRIANGLES);

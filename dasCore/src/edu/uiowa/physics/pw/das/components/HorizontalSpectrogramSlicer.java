@@ -46,7 +46,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
     private HorizontalSpectrogramSlicer(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
         super(xAxis, yAxis);
         parentPlot = plot;
-        renderer= new SymbolLineRenderer((DataSet)null);
+        renderer= new SymbolLineRenderer();
         addRenderer(renderer);
     }
     

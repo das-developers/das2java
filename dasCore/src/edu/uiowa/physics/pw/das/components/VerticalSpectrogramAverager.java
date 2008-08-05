@@ -48,7 +48,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
     protected VerticalSpectrogramAverager(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
         super(xAxis, yAxis);
         parentPlot = plot;
-        renderer= new SymbolLineRenderer((DataSetDescriptor)null);
+        renderer= new SymbolLineRenderer();
         addRenderer(renderer);
     }
     

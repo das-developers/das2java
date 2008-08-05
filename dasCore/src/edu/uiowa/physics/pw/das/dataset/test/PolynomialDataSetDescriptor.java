@@ -84,6 +84,7 @@ public class PolynomialDataSetDescriptor extends DataSetDescriptor {
         return xUnits;
     }
     
+	@SuppressWarnings("deprecation")
     public static void main(String[] args) {
         
         double[] c = {90.0, 3.0, -1.0};

@@ -223,7 +223,7 @@ public class Toolbox extends JTabbedPane {
             }
             else if (id.equals("line plot renderer")) {
                 return new TransferableRenderer(
-                    new SymbolLineRenderer((DataSetDescriptor)null));
+                    new SymbolLineRenderer());
             }
             else if (id.equals("spectrogram plot")) {
                 DasPlot plot = DasPlot.createNamedPlot(null);
