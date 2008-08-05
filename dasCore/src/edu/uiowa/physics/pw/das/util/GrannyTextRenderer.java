@@ -63,7 +63,7 @@ public class GrannyTextRenderer {
         maybeInitBounds();
         return new Rectangle(bounds); // defensive copy
     }
-    
+
     private void maybeInitBounds() {
         if (bounds == null) {
             bounds = new Rectangle((Rectangle)lineBounds.get(0));
@@ -153,7 +153,7 @@ public class GrannyTextRenderer {
         lineBounds = new ArrayList();
         this.str = str;
         this.tokens = buildTokenArray(str);
-        this.draw( c.getGraphics(), 0f, 0f, false );
+        this.draw( c.getGraphics(), c.getFont(), 0f, 0f, false );
     }
     
     /**
@@ -161,7 +161,7 @@ public class GrannyTextRenderer {
      * of the string.  For greek and math symbols, unicode characters should be
      * used.  (See www.unicode.org).
      *
-     * @param c the component which will provide the graphics.
+     * @param g the graphics context which will supply the FontMetrics.
      * @param str the granny string, such as "E=mc!e2"
      */
     public void setString( Graphics g, String str) {
@@ -169,10 +169,26 @@ public class GrannyTextRenderer {
         lineBounds = new ArrayList();
         this.str = str;
         this.tokens = buildTokenArray(str);
-        this.draw( g, 0f, 0f, false );
+        this.draw( g, g.getFont(), 0f, 0f, false );
     }
     
-    
+    /**
+     * reset the current string for the GTR to draw, calculating the boundaries
+     * of the string.  For greek and math symbols, unicode characters should be
+     * used.  (See www.unicode.org).
+     *
+     * @param Font the font.  This should be consistent
+     * with the Font used when drawing.
+     * @param str the granny string, such as "E=mc!e2"
+     */
+    public void setString( Font font, String label) {
+        bounds = null;
+        lineBounds = new ArrayList();
+        this.str = label;
+        this.tokens = buildTokenArray(str);
+        this.draw( null, font, 0f, 0f, false );
+    }
+        
     /**
      * returns the current alignment, by default LEFT_ALIGNMENT.
      * @return the current alignment.
@@ -200,8 +216,8 @@ public class GrannyTextRenderer {
      * @param ix The x position of the first character of text.
      * @param iy The y position of the baseline of the first line of text.
      */
-    public void draw(Graphics ig, float ix, float iy) {
-        this.draw( ig, ix, iy, true);
+    public void draw( Graphics ig, float ix, float iy ) {
+        this.draw( ig, ig.getFont(), ix, iy, true);
     }
     
     
@@ -225,7 +241,7 @@ public class GrannyTextRenderer {
      * @throws NullPointerException if ig is <code>null</code> AND draw is <code>true</code>.
      * @throws NullPointerException if c is <code>null</code> AND draw is <code>false</code>.
      */
-    private void draw(Graphics ig, float ix, float iy, boolean draw ) {
+    private void draw(Graphics ig, Font baseFont, float ix, float iy, boolean draw ) {
         Graphics2D g = null;
         Rectangle bounds = null;
         
@@ -264,7 +280,6 @@ public class GrannyTextRenderer {
         if ( ig==null ) {
             ig= getHeadlessGraphicsContext();
         }
-        Font baseFont= ig==null ? null : ig.getFont();
         
         if ( baseFont==null ) {
             baseFont= Font.decode("sans-10");
