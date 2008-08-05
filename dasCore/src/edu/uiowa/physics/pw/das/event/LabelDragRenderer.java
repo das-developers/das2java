@@ -116,7 +116,7 @@ public class LabelDragRenderer implements DragRenderer {
         void setText( String text, Point p ) {
             if ( window==null ) init();
             if ( text!=null ) {
-                gtr.setString( containedPanel.getGraphics(), text );
+                gtr.setString( containedPanel.getFont(), text );
                 Rectangle rect= gtr.getBounds();
 
                 int posx= p.x + labelPositionX * 3 + Math.min( labelPositionX, 0 ) * rect.width;
@@ -141,7 +141,7 @@ public class LabelDragRenderer implements DragRenderer {
                     
                 } else {
                     
-                    gtr.setString(label.getGraphics(),text);
+                    gtr.setString(label.getFont(),text);
                     rect= gtr.getBounds();
                     window.setSize( new Dimension( rect.width, rect.height ) );
                     
