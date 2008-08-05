@@ -87,11 +87,11 @@ public class TimeRangeSelectorMouseModule extends MouseModule {
         } else if (e0.getGesture()==Gesture.FORWARD) {
             timeAxis.setDataRangeForward();
         } else if (e0.getGesture()==Gesture.SCANPREV) {
-            DatumRange range0= timeAxis.getRange();
+            DatumRange range0= timeAxis.getDatumRange();
             TimeRangeSelectionEvent te= new TimeRangeSelectionEvent(parent, range0.previous() );
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else if (e0.getGesture()==Gesture.SCANNEXT) {
-            DatumRange range0= timeAxis.getRange();
+            DatumRange range0= timeAxis.getDatumRange();
             TimeRangeSelectionEvent te= new TimeRangeSelectionEvent(parent, range0.next() );
             fireTimeRangeSelectionListenerTimeRangeSelected(te);
         } else {
