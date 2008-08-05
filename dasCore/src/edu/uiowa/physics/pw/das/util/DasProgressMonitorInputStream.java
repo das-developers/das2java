@@ -61,7 +61,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             transferRateFormat.setMaximumFractionDigits(2);
             transferRateFormat.setMinimumFractionDigits(2);
         }
-        monitor.setAdditionalInfo("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
+        monitor.setProgressMessage("("+ transferRateFormat.format(calcTransmitSpeed()/1024) +"kB/s)");
         if ( enableProgressPosition ) monitor.setTaskProgress(bytesRead/1000);
     }
     

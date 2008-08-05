@@ -72,6 +72,7 @@ public class SubTaskMonitor implements ProgressMonitor {
         return parent.isCancelled();
     }
 
+	@Deprecated
     public void setAdditionalInfo(String s) {
         // ignore
     }

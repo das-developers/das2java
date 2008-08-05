@@ -92,6 +92,7 @@ public class NullProgressMonitor implements ProgressMonitor {
         return cancelled; 
     }
     
+	@Deprecated
     public void setAdditionalInfo(String s) { };
     
     private String label;

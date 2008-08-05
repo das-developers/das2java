@@ -423,6 +423,7 @@ public class DasProgressPanel implements ProgressMonitor {
         }
     }
 
+	@Deprecated
     public void setAdditionalInfo(String s) {
         transferRateString = s;
     }
