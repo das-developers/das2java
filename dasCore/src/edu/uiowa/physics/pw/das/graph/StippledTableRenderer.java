@@ -226,7 +226,7 @@ public class StippledTableRenderer extends Renderer {
             }
         }
         
-        SpectrogramRenderer renderer = new SpectrogramRenderer(parent, null, colorbar);
+        SpectrogramRenderer renderer = new SpectrogramRenderer(null, colorbar);
         try {
             renderer.setDataSetID(dataSetID);
         } catch (DasException de) {
