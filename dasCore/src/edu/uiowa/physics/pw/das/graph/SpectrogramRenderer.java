@@ -22,6 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import edu.uiowa.physics.pw.das.DasException;
 import edu.uiowa.physics.pw.das.DasNameException;
 import edu.uiowa.physics.pw.das.DasPropertyException;
@@ -65,6 +66,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private DasColorBar colorBar;
     private Image plotImage;
     private byte[] raster;
+    private int rasterWidth,rasterHeight;
+    
     DatumRange imageXRange;
     DatumRange imageYRange;
     DasAxis.Memento xmemento, ymemento, cmemento;
@@ -295,12 +298,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         updateImageCount++;
         reportCount();
         try {
-            int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
-            int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
 
             BufferedImage plotImage2;  // index color model
 
             synchronized (this) {
+                int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
+                int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();    
+                
                 if (raster != null && xmemento != null && ymemento != null && xAxis.getMemento().equals(xmemento) && yAxis.getMemento().equals(ymemento) && colorBar.getMemento().equals(cmemento)) {
                     logger.fine("same xaxis, yaxis, reusing raster");
 
@@ -321,7 +325,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         return;
 
                     }
-
+                    
                     if (this.ds.getXLength() == 0) {
                         logger.fine("got empty dataset, setting image to null");
                         plotImage = null;
@@ -332,6 +336,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         return;
                     }
 
+                    if ( ! this.ds.getXUnits().isConvertableTo(xAxis.getUnits() ) ) {
+                        logger.fine("dataset units are incompatable with x axis.");
+                        return;
+                    }
+
+                    if ( ! this.ds.getYUnits().isConvertableTo(yAxis.getUnits() ) ) {
+                        logger.fine("dataset units are incompatable with y axis.");
+                        return;
+                    }
+                    
                     RebinDescriptor xRebinDescriptor;
                     xRebinDescriptor = new RebinDescriptor(
                             xAxis.getDataMinimum(), xAxis.getDataMaximum(),
@@ -371,7 +385,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     cmemento = colorBar.getMemento();
 
                     raster = transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped());
-
+                    rasterWidth= w;
+                    rasterHeight= h;
+                    
                 }
 
                 IndexColorModel model = colorBar.getIndexColorModel();
@@ -380,7 +396,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 WritableRaster r = plotImage2.getRaster();
 
                 try {
-                    r.setDataElements(0, 0, w, h, raster);
+                    r.setDataElements(0, 0, rasterWidth, rasterHeight, raster);
                 } catch ( ArrayIndexOutOfBoundsException ex ) {
                     throw ex;
                 }
@@ -408,7 +424,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
                 }
                 parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
-                if (!"true".equals(System.getProperty("java.awt.headless"))) {
+                if (!"true".equals(DasApplication.getProperty("java.awt.headless","false"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer =
                             VerticalSpectrogramSlicer.createSlicer(parent, this);
