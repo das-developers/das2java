@@ -44,7 +44,7 @@ public class FormWindowBeanInfo extends AccessLevelBeanInfo {
     static {
         methods = new MethodDescriptor[1];
         try {
-            methods[0] = new MethodDescriptor(FormWindow.class.getMethod("pack", null));
+            methods[0] = new MethodDescriptor(FormWindow.class.getMethod("pack"));
         }
         catch (NoSuchMethodException nsme) {
             IllegalStateException ise = new IllegalStateException(nsme.getMessage());

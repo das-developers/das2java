@@ -140,7 +140,7 @@ public class NameContext {
                 throw new DasPropertyException(DasPropertyException.NOT_DEFINED, null, property);
             }
             Method readMethod = pd.getReadMethod();
-            return readMethod.invoke(obj, null);
+            return readMethod.invoke(obj);
         }
         catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);

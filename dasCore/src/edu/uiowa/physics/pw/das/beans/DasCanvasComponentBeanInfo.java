@@ -40,7 +40,7 @@ public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
     static {
         try {
             methods = new MethodDescriptor[1];
-            methods[0] = new MethodDescriptor(DasCanvasComponent.class.getMethod("update", null));
+            methods[0] = new MethodDescriptor(DasCanvasComponent.class.getMethod("update"));
         }
         catch (NoSuchMethodException nsme) {
             IllegalStateException ise = new IllegalStateException(nsme.getMessage());

@@ -340,7 +340,7 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
                         "Null read method for: " + pId);
             }
             try {
-                return readMethod.invoke(parent.value, null);
+                return readMethod.invoke(parent.value);
             } catch (IllegalAccessException iae) {
                 Error err = new IllegalAccessError(iae.getMessage());
                 err.initCause(iae);
