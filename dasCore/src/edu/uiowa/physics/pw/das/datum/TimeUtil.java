@@ -28,7 +28,7 @@ import edu.uiowa.physics.pw.das.datum.format.*;
 import java.text.ParseException;
 
 /**
- *
+ * Various time utilities
  * @author  jbf
  */
 public final class TimeUtil {
@@ -219,6 +219,12 @@ public final class TimeUtil {
         }
     }
     
+    /**
+     * return the the integer number of days that have elapsed since roughly Monday, January 1, 4713 BC.  Julian Day
+     * is defined as starting at noon UT, here is is defined starting at midnight.
+     * @param datum
+     * @return
+     */
     public static int getJulianDay( Datum datum ) {
         double xx= datum.doubleValue(Units.mj1958);
         return (int)Math.floor( xx ) + 2436205;
@@ -272,20 +278,26 @@ public final class TimeUtil {
     /**
      * splits the time location datum into y,m,d,etc components.  Note that
      * seconds is a double, and micros will be 0.
+     * @param datum with time location units.
+     * @return TimeStruct containing the time components.
      */
     public static TimeStruct toTimeStruct(Datum datum) {
-        int jalpha, j1, j2, j3, j4, j5;
-        int year, month, day, hour, minute;
+        int hour, minute;
         double justMicroSeconds;
         
-        int jd= getJulianDay(datum);
         double microseconds= getMicroSecondsSinceMidnight(datum);
+        Datum sansMicros= datum.subtract(microseconds,Units.microseconds);
+        
+        int jd= getJulianDay(sansMicros);
+        if ( jd<0 ) {
+            throw new IllegalArgumentException("julian day is negative.");
+        }
         
         TimeStruct result= julianToGregorian( jd );
         
         hour = (int)(microseconds/3600.0e6);
         minute = (int)((microseconds - hour*3600.0e6)/60.0e6);
-        justMicroSeconds = microseconds - hour*(double)3600.0e6 - minute*(double)60.0e6;
+        justMicroSeconds = microseconds - hour*3600.0e6 - minute*60.0e6;
         
         result.doy = dayOfYear(result.month, result.day, result.year);
         result.hour= hour;
@@ -515,6 +527,13 @@ public final class TimeUtil {
         return next(MONTH,datum);
     }
     
+    /**
+     * step down the previous ordinal.  If the datum is already at an ordinal
+     * boundry, then step down by one ordinal.
+     * @param step
+     * @param datum
+     * @return
+     */
     public static Datum prev( int step, Datum datum ) {
         
         TimeStruct t= toTimeStruct(datum);
@@ -586,27 +605,37 @@ public final class TimeUtil {
         }
     }
     
+    private final static String[] mons= {
+             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        };
+    
     /**
-     * returns 1..12 for the month name
+     * returns 1..12 for the English month name
      *
      * @throws ParseException if the name isn't recognized
      */
     public static int monthNumber( String s ) throws ParseException {
-        final String[] mons = {
-            "jan", "feb", "mar", "apr", "may", "jun",
-            "jul", "aug", "sep", "oct", "nov", "dec"
-        };
-        s= s.substring(0,3).toLowerCase();
+        s= s.substring(0,3);
         for ( int i=0; i<12; i++ ) {
-            if ( s.equals( mons[i] ) ) return i+1;
+            if ( s.equalsIgnoreCase( mons[i] ) ) return i+1;
         }
         throw new ParseException("Unable to parse month", 0 );
+    }
+    
+    /**
+     * returns "Jan", "Feb", ... for month number (1..12).
+     * @param mon integer from 1 to 12.
+     * @return three character English month name.
+     */
+    public static String monthNameAbbrev( int mon ) {
+        if ( mon<1 || mon>12 ) throw new IllegalArgumentException("invalid month number: "+mon);
+        return mons[mon-1];
     }
     
     public class TimeParser {
         String regex;
         int[] digits;
-        
     }
     
     public static final TimeStruct parseTime(String s) throws java.text.ParseException {
@@ -942,9 +971,18 @@ public final class TimeUtil {
     }
     
     public static Datum prevMidnight(Datum datum) {
+        //return datum.subtract(getMicroSecondsSinceMidnight(datum), Units.microseconds);
         return datum.subtract(getSecondsSinceMidnight(datum), Units.seconds);
     }
     
+    public static Datum nextMidnight( Datum datum ) {
+        double d= getMicroSecondsSinceMidnight(datum);
+        if ( d==0 ) {
+            return datum;
+        } else {
+            return next( DAY, datum);
+        }
+    }
     /**
      * creates a Datum representing the time given in integer years, months, ..., seconds, nanoseconds.  The year
      * must be at least 1960, and must be a four-digit year.  A double in Units.us2000 is used to represent the 
