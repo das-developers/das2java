@@ -42,7 +42,18 @@ public class WaveformToSpectrum {
             result[i+n21]= (n21-n+i) / ( n*T );
         }
         
-        Units frequencyUnit= UnitsInverter.getInverseUnit( timeUnit );
+        Units frequencyUnit;
+        double unitMult= 1.0;
+        if ( timeUnit.isConvertableTo(Units.seconds ) ) {
+            unitMult= timeUnit.getConverter(Units.seconds).convert(1.0);
+            timeUnit= Units.seconds;
+            frequencyUnit= Units.hertz;
+            for ( int i=0; i< result.length; i++ ) {
+                result[i]= result[i]/unitMult;
+            }
+        } else {
+            frequencyUnit= UnitsInverter.getInverseUnit( timeUnit );
+        }
         return DatumVector.newDatumVector( result, frequencyUnit );
     }
     
@@ -52,7 +63,7 @@ public class WaveformToSpectrum {
         if ( ds.getXLength()<1 ) {
             return false;
         } else {
-            Units units= ds.getXUnits().getOffsetUnits();
+            Units units= ds.getXUnits();
             double base= ds.getXTagDouble( 0, units );
             double delta= ( ds.getXTagDouble( ds.getXLength()-1, units ) - base )
             / ( ds.getXLength()-1 );
