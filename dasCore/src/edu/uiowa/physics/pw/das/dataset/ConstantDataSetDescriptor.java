@@ -65,10 +65,10 @@ public class ConstantDataSetDescriptor extends DataSetDescriptor {
         DataSetUpdateEvent dsue= null;
         try {
             DataSet ds= getDataSet(start, end, resolution, monitor);
-            dsue= new DataSetUpdateEvent( this, ds );
+            dsue= new DataSetUpdateEvent( (Object)this, ds );
             fireDataSetUpdateEvent(dsue);
         } catch ( DasException e ) {
-            dsue= new DataSetUpdateEvent( this,e);
+            dsue= new DataSetUpdateEvent( (Object)this,e);
             fireDataSetUpdateEvent(dsue);
         }
         return;

@@ -114,11 +114,11 @@ public abstract class DataSetDescriptor implements Displayable {
                     if (ds == null) {
                         throw new NoDataInIntervalException(new DatumRange(start, end).toString());
                     }
-                    DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
+                    DataSetUpdateEvent dsue = new DataSetUpdateEvent((Object)DataSetDescriptor.this, ds);
                     dsue.setMonitor(monitor);
                     fireDataSetUpdateEvent(dsue);
                 } catch (DasException e) {
-                    DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, e);
+                    DataSetUpdateEvent dsue = new DataSetUpdateEvent((Object)DataSetDescriptor.this, e);
                     dsue.setMonitor(monitor);
                     fireDataSetUpdateEvent(dsue);
                 }
@@ -154,10 +154,10 @@ public abstract class DataSetDescriptor implements Displayable {
         if (this instanceof ConstantDataSetDescriptor) {
             try {
                 DataSet ds = getDataSet(null, null, null, null);
-                DataSetUpdateEvent dsue = new DataSetUpdateEvent(this, ds);
+                DataSetUpdateEvent dsue = new DataSetUpdateEvent((Object)this, ds);
                 dsue.setMonitor(monitor);
             } catch (DasException e) {
-                DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, e);
+                DataSetUpdateEvent dsue = new DataSetUpdateEvent((Object)DataSetDescriptor.this, e);
                 dsue.setMonitor(monitor);
                 listener.dataSetUpdated(dsue);
             }
@@ -168,11 +168,11 @@ public abstract class DataSetDescriptor implements Displayable {
                     logger.info("request data from dsd: " + start + " " + end + " " + resolution);
                     try {
                         DataSet ds = getDataSet(start, end, resolution, monitor);
-                        DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, ds);
+                        DataSetUpdateEvent dsue = new DataSetUpdateEvent((Object)DataSetDescriptor.this, ds);
                         dsue.setMonitor(monitor);
                         listener.dataSetUpdated(dsue);
                     } catch (DasException e) {
-                        DataSetUpdateEvent dsue = new DataSetUpdateEvent(DataSetDescriptor.this, e);
+                        DataSetUpdateEvent dsue = new DataSetUpdateEvent((Object)DataSetDescriptor.this, e);
                         dsue.setMonitor(monitor);
                         listener.dataSetUpdated(dsue);
                     }

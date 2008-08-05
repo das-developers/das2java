@@ -37,7 +37,7 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
     private PropertyChangeListener getPropertyChangeListener() {
         return new PropertyChangeListener() {
             public void propertyChange( PropertyChangeEvent e ) {
-                fireDataSetUpdateEvent(new DataSetUpdateEvent(MendelbrotDataSetDescriptor.this));
+                fireDataSetUpdateEvent(new DataSetUpdateEvent((Object)MendelbrotDataSetDescriptor.this));
             }
         };
     }
@@ -115,7 +115,7 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
     public void setLimit( int limit ) {
         if ( this.limit!=limit ) {
             this.limit= limit;
-            fireDataSetUpdateEvent( new DataSetUpdateEvent( this ) );
+            fireDataSetUpdateEvent( new DataSetUpdateEvent( (Object)this ) );
         }
     }
     
@@ -138,7 +138,7 @@ public class MendelbrotDataSetDescriptor extends DataSetDescriptor {
     public void setOverSampleFactor(int overSampleFactor) {
         if ( this.overSampleFactor!=overSampleFactor ) {
             this.overSampleFactor = overSampleFactor;
-            fireDataSetUpdateEvent( new DataSetUpdateEvent( this ) );
+            fireDataSetUpdateEvent( new DataSetUpdateEvent( (Object)this ) );
         }
     }
 }
