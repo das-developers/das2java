@@ -354,6 +354,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
     
+    DasCanvasStateSupport stateSupport;
     
     /** The set of Threads that are currently printing this canvas.
      * This set is used to determine of certain operations that are only
@@ -394,6 +395,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
         CanvasAction.currentCanvas = this;
+        stateSupport= new DasCanvasStateSupport(this);
     }
     
     private MouseInputAdapter createMouseInputAdapter() {
@@ -788,6 +790,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         EventQueueBlocker_1.clearEventQueue();
         logger.finer("post data-load pending events processed");
         
+        /** wait for registered pending changes.  TODO: this is cheesy */
+        if ( stateSupport.isPendingChanges() ) {
+            logger.finer("waiting for pending changes");
+            while( stateSupport.isPendingChanges() ) {
+                try {
+                    Thread.sleep(100);
+                } catch ( InterruptedException ex ) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            waitUntilIdle();
+        }
+        
         logger.fine("canvas is idle");
         /* should be in static state */
         return;
@@ -810,7 +825,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setPreferredWidth(width);
         setPreferredHeight(height);
         
-        if ( "true".equals(System.getProperty("java.awt.headless"))) {
+        if ( "true".equals(DasApplication.getProperty("java.awt.headless","false"))) {
             this.addNotify();
             this.setSize(getPreferredSize());
             this.validate();
@@ -875,8 +890,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         } catch ( InterruptedException ex ) {
         }
         graphics = image.getGraphics();
-        graphics.setColor(Color.WHITE);
+        graphics.setColor( this.getBackground() );
         graphics.fillRect(0, 0, image.getWidth(this), image.getHeight(this));
+        graphics.setColor( this.getForeground() );
         print(graphics);
     }
     
@@ -2168,5 +2184,22 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
 	public boolean getScrollableTracksViewportHeight() {
 		return fitted;
 	}
+
+        
+    public void registerPendingChange(Object client, Object lockObject) {
+        stateSupport.registerPendingChange(client, lockObject);
+    }
+
+    public void performingChange(Object client, Object lockObject) {
+        stateSupport.performingChange(client, lockObject);
+    }
+
+    public void changePerformed(Object client, Object lockObject) {
+        stateSupport.changePerformed(client, lockObject);
+    }
+
+    public boolean isPendingChanges() {
+        return stateSupport.isPendingChanges();
+    }
     
 }
