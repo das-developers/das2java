@@ -22,8 +22,10 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
+import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
+import edu.uiowa.physics.pw.das.graph.Renderer;
 
 
 /**
@@ -59,11 +61,25 @@ public class CrossHairMouseModule extends MouseModule {
     public static CrossHairMouseModule create( DasPlot parent ) {
         DasAxis xaxis= null;
         DasAxis yaxis= null;
-        return new CrossHairMouseModule(parent,parent,xaxis,yaxis);
+        return new CrossHairMouseModule(parent,null,xaxis,yaxis);
     }
     
+    private DataSet getContextDataSet() {
+        DataSet ds;
+        if ( dataSetConsumer!=null ) {
+            ds = dataSetConsumer.getConsumedDataSet();
+        } else {
+            Renderer[] rends= ((DasPlot)this.parent).getRenderers();
+            if ( rends.length>0 ) {
+                ds= rends[0].getConsumedDataSet();
+            } else {
+                ds= null;
+            }
+        }
+        return ds;
+    }
     protected DataPointSelectionEvent getDataPointSelectionEvent(MousePointSelectionEvent e) {
-        de.setDataSet(dataSetConsumer.getConsumedDataSet());
+        de.setDataSet( getContextDataSet() );
         DasAxis xa, ya;
         xa= ( this.xaxis==null ) ? plot.getXAxis() : xaxis;
         ya= ( this.yaxis==null ) ? plot.getYAxis() : yaxis;
