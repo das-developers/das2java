@@ -255,14 +255,18 @@ public class DatumRangeUtil {
                 return false;
             }
             
+            if ( delim.equals(".") ) {
+                delim="\\.";
+            }
+            
             String monthNameRegex= "(jan[a-z]*|feb[a-z]*|mar[a-z]*|apr[a-z]*|may|june?|july?|aug[a-z]*|sep[a-z]*|oct[a-z]*|nov[a-z]*|dec[a-z]*)";
             String monthRegex= "((\\d?\\d)|"+monthNameRegex+")";
             String dayRegex= "(\\d?\\d)";
             
             String euroDateRegex;
             
-            if ( delim.equals(".") ) {
-                euroDateRegex= "(" + dayRegex + "\\." + monthRegex + "\\." + yearRegex + dateDelimRegex + ")";
+            if ( delim.equals("\\.") ) {
+                euroDateRegex= "(" + dayRegex + delim + monthRegex + delim + yearRegex + dateDelimRegex + ")";
                 groups= new int [] { 6, 3, 2, 8  };
             } else {
                 euroDateRegex= "(" + dayRegex + delim + monthNameRegex + delim + yearRegex + dateDelimRegex + ")";
