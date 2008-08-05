@@ -23,7 +23,7 @@ public class AboutUtil {
 
     public static String getAboutHtml() {
         String dasVersion = Splash.getVersion();
-        String javaVersion = System.getProperty("java.version");
+        String javaVersion = System.getProperty("java.version"); // applet okay
         String buildTime = "???";
         java.net.URL buildURL = AboutUtil.class.getResource("/buildTime.txt");
         if (buildURL != null) {
@@ -35,7 +35,7 @@ public class AboutUtil {
                 ex.printStackTrace();
             }
         }
-        String arch = System.getProperty("sun.arch.data.model");
+        String arch = System.getProperty("os.arch"); // applet okay
         DecimalFormat nf = new DecimalFormat("0.0");
         String mem = nf.format(Runtime.getRuntime().maxMemory() / (1024 * 1024));
         String aboutContent = "<html>" +
@@ -44,7 +44,7 @@ public class AboutUtil {
                 "<br>build time: " + buildTime +
                 "<br>java version: " + javaVersion +
                 "<br>max memory (Mb): " + mem +
-                "<br>arch (bits): " + arch +
+                "<br>arch: " + arch +
                 "<br><br>";
 
         try {
