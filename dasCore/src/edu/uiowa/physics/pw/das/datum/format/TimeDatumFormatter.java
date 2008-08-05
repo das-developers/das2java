@@ -167,6 +167,7 @@ public class TimeDatumFormatter extends DatumFormatter {
     }
     
     public String format(Datum datum) {
+        if ( datum.isFill() ) return "fill";
         TimeUtil.TimeStruct ts = TimeUtil.toTimeStruct(datum);
         Number[] array = timeStructToArray(ts);
         return format.format(array);
