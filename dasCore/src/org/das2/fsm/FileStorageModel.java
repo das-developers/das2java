@@ -462,9 +462,16 @@ public class FileStorageModel {
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                if ( targetRange==null || getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
+                try {
+                    DatumRange dr= getRangeFor(ff);
+                    if ( targetRange==null || dr.intersects(targetRange) ) list.add(ff);
+                } catch ( IllegalArgumentException ex ) {
+                    // not really part of model.
+                }
+                
             }
         }
+                
         Collections.sort( list, new Comparator() {
             public int compare( Object o1, Object o2 ) {
                 DatumRange dr1= getRangeFor( (String)o1 );
