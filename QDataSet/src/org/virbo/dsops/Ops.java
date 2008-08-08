@@ -669,6 +669,7 @@ public class Ops {
         }
         DDataSet result= DDataSet.wrap(back, 1, len0, 1, 1);
         result.putProperty( QDataSet.UNITS, Units.us2000 );
+        result.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         return result;
     }
 
