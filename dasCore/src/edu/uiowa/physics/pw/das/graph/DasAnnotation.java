@@ -214,9 +214,6 @@ public class DasAnnotation extends DasCanvasComponent {
         r.y = em;
 
         r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
-        if ( this.getDasName().equals("annotation_0") ) {
-            System.err.println("DasAnnotation:paintComponent "+r);
-        }
         
         //r.translate( em, em + (int) gtr.getAscent());
         g.setColor(back);
@@ -303,7 +300,7 @@ public class DasAnnotation extends DasCanvasComponent {
     @Override
     protected void installComponent() {
         super.installComponent();
-        this.gtr.setString( this.getGraphics(), getString() );
+        this.gtr.setString( this.getFont(), getString() );
     }
 
     float fontSize= 0;
