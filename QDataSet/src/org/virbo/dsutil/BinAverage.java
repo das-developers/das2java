@@ -13,6 +13,7 @@ import java.util.Arrays;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -140,6 +141,22 @@ public class BinAverage {
     }
 
     /**
+     * returns number of stddev from adjacent data.
+     * @param ds, rank 1 dataset.
+     * @param boxcarSize
+     * @return QDataSet 
+     */
+    public static QDataSet residuals(QDataSet ds, int boxcarSize) {
+        if (ds.rank() != 1)
+            throw new IllegalArgumentException("rank must be 1");
+        QDataSet mean = BinAverage.boxcar(ds, boxcarSize);
+        QDataSet dres = Ops.pow(Ops.subtract(ds, mean), 2);
+        QDataSet var = Ops.sqrt(BinAverage.boxcar(dres, boxcarSize));
+        QDataSet res = Ops.divide(Ops.abs(Ops.subtract(ds, mean)), var);
+        return res;
+    }
+    
+    /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  Points near the edge are simply copied from the
      * source dataset.  The result dataset contains a property "weights" that is the weights for each point.
      *
@@ -147,7 +164,7 @@ public class BinAverage {
      * @param size the number of adjacent bins to average
      * @return rank 1 dataset of size N
      */
-    public static DDataSet boxcar(QDataSet ds, int size) {
+    public static DDataSet boxcar( QDataSet ds, int size ) {
         int nn = ds.length();
         int s2 = size / 2;
         int s3 = s2 + size % 2;   // one greater than s2 if s2 is odd.
@@ -155,10 +172,12 @@ public class BinAverage {
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
         DDataSet sums = DDataSet.createRank1(nn);
+        //DDataSet sums2 = DDataSet.createRank1(nn); // commented code for one-pass variance incorrect
         DataSetUtil.putProperties(DataSetUtil.getProperties(ds), sums);
         DDataSet weights = DDataSet.createRank1(nn);
 
         double runningSum = 0;
+        //double runningSum2 = 0;
         double runningWeight = 0;
 
         // compute initial boxcar, handle the beginning by copying
@@ -166,13 +185,16 @@ public class BinAverage {
             double d = ds.value(i);
             double w = wds.value(i);
             sums.putValue(i, d); //note for i>=s2, these values will be clobbered.
+            //sums2.putValue(i, d*d);
             weights.putValue(i, w);
             runningSum += d;
+            //runningSum2 += d*d;
             runningWeight += w;
         }
 
         for (int i = s2; i < nn - s3; i++) {
             sums.putValue(i, runningSum);
+            //sums2.putValue(i, runningSum2);
             weights.putValue(i, runningWeight);
 
             double d0 = ds.value(i - s2);
@@ -182,6 +204,7 @@ public class BinAverage {
             double w = wds.value(i - s2 + size);
 
             runningSum += d * w - d0 * w0;
+            //runningSum2 += d * d * w - d0 * d0 * w0; //  DANGER-assumes small boxcar
             runningWeight += w - w0;
 
         }
@@ -191,21 +214,28 @@ public class BinAverage {
             double d = ds.value(i);
             double w = wds.value(i);
             sums.putValue(i, d);
+            //sums2.putValue(i, d*d);
             weights.putValue(i, w);
         }
 
         DDataSet result = sums;
-
+        //DDataSet resultVar= sums2;
+        
         double fill = (Double) wds.property(QDataSet.FILL_VALUE);
         for (int i = 0; i < nn; i++) {
             if (weights.value(i) > 0) {
-                result.putValue(i, result.value(i) / weights.value(i));
+                double s= result.value(i);
+                result.putValue(i, s / weights.value(i));
+                //resultVar.putValue( i, ( Math.sqrt( resultVar.value(i) -  s * s ) / weights.value(i)) ); 
+                
             } else {
                 result.putValue(i, fill);
             }
         }
 
-        result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
+        result.putProperty( QDataSet.WEIGHTS_PLANE, weights );
+        //result.putProperty( QDataSet.DELTA_PLUS, resultVar );
+        //result.putProperty( QDataSet.DELTA_MINUS, resultVar );
 
         return result;
 
