@@ -102,22 +102,24 @@ public class EventsRenderer extends Renderer {
             this.parent= parent;
             this.setTooltip(true);
         }
+        @Override
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
             VectorDataSet vds= (VectorDataSet)getDataSet();
             
             if ( vds==null ) return new Rectangle[0];
             if ( vds.getXLength()==0 ) return new Rectangle[0];
             
-            if ( p2.getX()<0 || p2.getX() >= eventMap.length ) {
+            int ix= (int)p2.getX() - parent.getColumn().getDMinimum();
+            
+            if ( ix<0 || ix >= eventMap.length ) {
                 setLabel(null);
             } else {
-                int i= eventMap[(int)p2.getX()];
+                int i= eventMap[ix];
                 if ( i>=0 ) {
                     Datum sx= vds.getXTagDatum(i);
                     Datum sz= vds.getDatum(i);
                     VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView(widthPlaneId);
                     DatumRange dr= new DatumRange( sx, sx.add(widthsDs.getDatum(i)) );
-                    //setLabel(""+sx+" "+sy+"!c"+sz );
                     setLabel( textSpecifier.getText( dr, sz ) );
                 } else {
                     setLabel(null);
