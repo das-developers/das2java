@@ -128,7 +128,8 @@ public class ContoursRenderer extends Renderer implements Displayable {
                     double phase = (len - ( nlabel-1 )  * labelCadence ) / 2;
 
                     if ( len < minLength ) {
-                        double len2 = GraphUtil.pointsAlongCurve(it2, null, null, null, true);
+                        //advance it2.
+                        GraphUtil.pointsAlongCurve(it2, null, null, null, true);
 
                     } else {
                         double[] lens = new double[nlabel*2];
@@ -141,11 +142,12 @@ public class ContoursRenderer extends Renderer implements Displayable {
                         Point2D.Double[] points = new Point2D.Double[nlabel*2];
                         double[] orient = new double[nlabel*2];
 
-                        double len3 = GraphUtil.pointsAlongCurve(it2, lens, points, orient, true);
+                        //advance it2.
+                        GraphUtil.pointsAlongCurve(it2, lens, points, orient, true);
 
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
                             AffineTransform at = new AffineTransform();
-                                at.translate(points[ilabel*2].x, points[ilabel*2].y);
+                            at.translate(points[ilabel*2].x, points[ilabel*2].y);
                             //double dx= points[ilabel*2+1].x - points[ilabel*2].x;
                             //double dy= points[ilabel*2+1].y - points[ilabel*2].y;
                             //double orient1= Math.atan2(dy,dx);
