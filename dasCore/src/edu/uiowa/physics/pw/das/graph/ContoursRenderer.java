@@ -105,7 +105,8 @@ public class ContoursRenderer extends Renderer implements Displayable {
         g.setFont(font);
 
         String[] cons = this.contours.trim().split(",");
-
+        
+        double minLength= 20;
         for (int i = 0; i < paths.length; i++) {
             if (paths[i] == null) {
                 continue;
@@ -122,11 +123,11 @@ public class ContoursRenderer extends Renderer implements Displayable {
 
                     double len = GraphUtil.pointsAlongCurve(it1, null, null, null, true);
 
-                    int nlabel = (int) Math.floor(0.5 + len / this.labelCadence);
+                    int nlabel = 1 + (int) Math.floor( len / this.labelCadence );
 
-                    double r = (len - nlabel * (labelCadence - 1)) / 2;
+                    double phase = (len - ( nlabel-1 )  * labelCadence ) / 2;
 
-                    if (nlabel == 0) {
+                    if ( len < minLength ) {
                         double len2 = GraphUtil.pointsAlongCurve(it2, null, null, null, true);
 
                     } else {
@@ -134,8 +135,8 @@ public class ContoursRenderer extends Renderer implements Displayable {
                         double labelWidth=10; // approx.
                         if ( labelWidth > labelCadence ) labelWidth= labelCadence * 0.99;
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
-                            lens[ilabel*2] = r + labelCadence * ilabel;
-                            lens[ilabel*2] = r + labelCadence * ilabel + labelWidth;
+                            lens[ilabel*2] = phase + labelCadence * ilabel;
+                            lens[ilabel*2+1] = phase + labelCadence * ilabel + labelWidth;
                         }
                         Point2D.Double[] points = new Point2D.Double[nlabel*2];
                         double[] orient = new double[nlabel*2];
@@ -144,7 +145,7 @@ public class ContoursRenderer extends Renderer implements Displayable {
 
                         for (int ilabel = 0; ilabel < nlabel; ilabel++) {
                             AffineTransform at = new AffineTransform();
-                            at.translate(points[ilabel*2].x, points[ilabel*2].y);
+                                at.translate(points[ilabel*2].x, points[ilabel*2].y);
                             //double dx= points[ilabel*2+1].x - points[ilabel*2].x;
                             //double dy= points[ilabel*2+1].y - points[ilabel*2].y;
                             //double orient1= Math.atan2(dy,dx);
