@@ -871,6 +871,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         };
     }
 
+	@SuppressWarnings("deprecation")
     public void dataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
         String comment = "";
         Map planesMap;
