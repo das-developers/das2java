@@ -32,7 +32,7 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
 import javax.swing.event.EventListenerList;
 
 /**
- * @deprecated  use BoxSelectorMouseModule 
+ * //@deprecated  use BoxSelectorMouseModule 
  * @author  jbf
  */
 public class BoxRangeSelectorMouseModule extends MouseModule {
