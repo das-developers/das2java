@@ -412,7 +412,7 @@ public class GraphicalLogHandler extends Handler {
                 int iy= (int)yaxis.transform( Units.dimensionless.createDatum( ((Integer)yAxisValues.get(iclosest)).intValue() ) );
                 g.drawOval( ix-5 - parent.getX(),  iy-5 - parent.getY(), 10, 10 );
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
-                gtr.setString(parent, label);
+                gtr.setString(g, label);
                 gtr.draw( g, 5, g.getFontMetrics().getHeight() );
                 Rectangle gtrBounds= gtr.getBounds();
                 gtrBounds.translate(5,g.getFontMetrics().getHeight());

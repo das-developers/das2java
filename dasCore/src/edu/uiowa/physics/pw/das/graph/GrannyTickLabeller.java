@@ -61,7 +61,7 @@ public class GrannyTickLabeller implements TickLabeller {
     public Rectangle labelMajorTick(Graphics g, int tickNumber, java.awt.geom.Line2D tickLine) {
         GrannyTextRenderer gtr= new GrannyTextRenderer();
         String grannyString= getLabel( tickNumber, ticks.tickV.get(tickNumber) );
-        gtr.setString(parent, grannyString );
+        gtr.setString(g, grannyString );
         Rectangle bounds= gtr.getBounds();
         
         // the goal is to position the label such that the tick would intersect the label's center of mass.

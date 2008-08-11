@@ -267,7 +267,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
             Graphics2D g2 = (Graphics2D)g.create();
             int titlePositionOffset = getTitlePositionOffset();
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(this, axisLabel);
+            gtr.setString(g, axisLabel);
             int titleWidth = (int)gtr.getWidth();
             int baseline;
             int leftEdge;
@@ -314,7 +314,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
             Graphics2D g2 = (Graphics2D)g.create();
             int titlePositionOffset = getTitlePositionOffset();
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(this, axisLabel);
+            gtr.setString(g, axisLabel);
             int titleWidth = (int)gtr.getWidth();
             int baseline;
             int leftEdge;
@@ -346,7 +346,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         Font labelFont = getLabelFont();
         
         GrannyTextRenderer gtr = new GrannyTextRenderer();
-        gtr.setString(this, axisLabel);
+        gtr.setString(labelFont, axisLabel);
         
         int offset = (int)Math.ceil(emOffset * labelFont.getSize());
         
@@ -420,7 +420,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         //Add room for the axis label
         Font labelFont = getLabelFont();
         GrannyTextRenderer gtr = new GrannyTextRenderer();
-        gtr.setString(this, getLabel());
+        gtr.setString(labelFont, getLabel());
         int offset = getTitlePositionOffset();
         if (bottomLabel) {
             int x = 0;
@@ -458,7 +458,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         //Add room for the axis label
         Font labelFont = getLabelFont();
         GrannyTextRenderer gtr = new GrannyTextRenderer();
-        gtr.setString(this, getLabel());
+        gtr.setString(labelFont, getLabel());
         if (leftLabel) {
             int x = getColumn().getDMinimum() - offset - (int)Math.ceil(gtr.getAscent());
             int y = 0;
