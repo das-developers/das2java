@@ -1880,17 +1880,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (isHorizontal()) {
                     double x = transform(d);
                     if (getOrientation() == BOTTOM) {
-                        r.translate((int) (x - flw / 2), getRow().getBottom() + tickLen + labelFont.getSize() );
+                        r.translate((int) (x - flw / 2), getRow().bottom() + tickLen + labelFont.getSize() );
                     } else {
-                        r.translate((int) (x - flw / 2), getRow().getTop() - tickLen - (int) r.getHeight());
+                        r.translate((int) (x - flw / 2), getRow().top() - tickLen - (int) r.getHeight());
                     }
                     bounds.add(r);
                 } else {
                     double y = transform(d);
                     if (getOrientation() == LEFT) {
-                        r.translate(-(int) r.getWidth() - tickLen + getColumn().getLeft(), (int) (y - getEmSize() / 2));
+                        r.translate(-(int) r.getWidth() - tickLen + getColumn().left(), (int) (y - getEmSize() / 2));
                     } else {
-                        r.translate(tickLen + getColumn().getRight(), (int) (y - getEmSize() / 2));
+                        r.translate(tickLen + getColumn().right(), (int) (y - getEmSize() / 2));
                     }
                     bounds.add(r);
                 }

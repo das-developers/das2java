@@ -126,4 +126,19 @@ public class DasRow extends DasDevicePosition {
         return element;
     }
     
+    /**
+     * return the device location of the top of the row.  
+     * @return
+     */
+    public int top() {
+        return getDMinimum();
+    }
+    
+    /**
+     * return the device location of the bottom (non-inclusive) of the row.
+     * @return
+     */
+    public int bottom() {
+        return getDMaximum();
+    }
 }

@@ -129,5 +129,20 @@ public class DasColumn extends DasDevicePosition {
         return element;
     }
     
+    /**
+     * return the left of the column.
+     * @return
+     */
+    public int left() {
+        return getDMinimum();
+    }
     
+    /**
+     * return the right (non-inclusive) of the column.
+     * @return
+     */
+    public int right() {
+        return getDMaximum();
+    }
 }
+
