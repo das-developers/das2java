@@ -22,6 +22,7 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetAdapter;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
@@ -32,7 +33,10 @@ import org.virbo.dsutil.DataSetBuilder;
 
 /**
  * A fairly complete set of operations for QDataSets.  Currently, most operations
- * require that the dataset be a qube.
+ * require that the dataset be a qube.  
+ * Most operations check for fill data. 
+ * Few operations check units. (TODO: check units)
+ * 
  * @author jbf
  */
 public class Ops {
@@ -73,7 +77,6 @@ public class Ops {
     /**
      * apply the binary operator element-for-element of the two datasets, minding
      * dataset geometry, fill values, etc.
-     * TODO: mind fill values.
      * @param ds1
      * @param ds2
      * @param op
@@ -130,16 +133,23 @@ public class Ops {
 
     /**
      * subtract one dataset from another.
+     * TODO: mind units
      * @param ds1
      * @param ds2
      * @return
      */
     public static QDataSet subtract(QDataSet ds1, QDataSet ds2) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
+        MutablePropertyDataSet result= (MutablePropertyDataSet)applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return d1 - d2;
             }
         });
+        Units units1= (Units) ds1.property(QDataSet.UNITS);
+        Units units2= (Units) ds2.property(QDataSet.UNITS);
+        if ( units1==units2 ) {
+            result.putProperty( QDataSet.UNITS, units1.getOffsetUnits() );
+        }
+        return result;
     }
 
     /**
@@ -1511,7 +1521,8 @@ public class Ops {
         d1.setTrim(0, 0, ds.length() - 1, 1);
         TrimStrideWrapper d2 = new TrimStrideWrapper(ds);
         d2.setTrim(0, 1, ds.length(), 1);
-        return Ops.subtract(d2, d1);
+        QDataSet result= Ops.subtract(d2, d1);
+        return result;
     }
     
     /**
