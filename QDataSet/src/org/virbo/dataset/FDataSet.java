@@ -245,6 +245,13 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
         return new FDataSet( 2, nx, ny, 1, back );
     }
         
+    /**
+     * creates a FDataSet by wrapping an existing array, aliasing it to rank 3.
+     */
+    public static FDataSet wrap( float[] back, int nx, int ny, int nz ) {
+        return new FDataSet( 3, nx, ny, nz, back );
+    }
+
     private void joinProperties( FDataSet ds ) {
         Map result= new HashMap();
         for ( int i=0; i<ds.rank(); i++ ) {
