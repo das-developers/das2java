@@ -78,7 +78,7 @@ public class TableDataSetAdapter implements TableDataSet {
 
         cadence = (Double) y.property(QDataSet.CADENCE);
         if (cadence != null) {
-            properties.put(edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, xunits.getOffsetUnits().createDatum(cadence.doubleValue()));
+            properties.put(edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, yunits.getOffsetUnits().createDatum(cadence.doubleValue()));
         }
 
         if ( z.property(QDataSet.FILL_VALUE) !=null 
