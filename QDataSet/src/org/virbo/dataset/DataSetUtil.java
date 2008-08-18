@@ -248,7 +248,7 @@ public class DataSetUtil {
                 String dname = (String) dep0.property(QDataSet.NAME);
                 if (dname != null) {
                     if (dname.length() > 6) {
-                        dname = dname.substring(0, 6) + "*";
+                        dname = dname.substring(0, 6) + "...";
                     }
                     depNames[i] = dname + "=";
                 }
@@ -271,8 +271,8 @@ public class DataSetUtil {
     }
 
     /**
-     * calculate cadence by averaging the smallest set of consistent inter-point
-     * distance, taking invalid measurements into account.
+     * calculate cadence by averaging consistent inter-point distances, 
+     * taking invalid measurements into account.   
      */
     public static double guessCadence( QDataSet xds, QDataSet yds ) {
         if (yds == null) {
@@ -302,10 +302,10 @@ public class DataSetUtil {
                 double cadenceAvg;
                 cadenceAvg = cadenceS / cadenceN;
                 cadence = Math.abs(xds.value(i) - x0);
-                if ((xds.value(i) - x0) < 0.5 * cadenceAvg) {
+                if ( cadence < 0.5 * cadenceAvg && cadenceN < 10 ) {
                     cadenceS = cadence;
                     cadenceN = 1;
-                } else if ((xds.value(i) - x0) < 1.5 * cadenceAvg) {
+                } else if ( cadence > 0.5 * cadenceAvg && cadence < 1.5 * cadenceAvg) {
                     cadenceS += cadence;
                     cadenceN += 1;
                 }
