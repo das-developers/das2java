@@ -146,7 +146,7 @@ public class Ops {
         });
         Units units1= (Units) ds1.property(QDataSet.UNITS);
         Units units2= (Units) ds2.property(QDataSet.UNITS);
-        if ( units1==units2 ) {
+        if ( units1!=null && units1==units2 ) {
             result.putProperty( QDataSet.UNITS, units1.getOffsetUnits() );
         }
         return result;
