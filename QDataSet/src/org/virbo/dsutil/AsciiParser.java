@@ -673,9 +673,6 @@ public class AsciiParser {
             int ipos = 0;
 
             String[] ss = split( line, delimPattern, delimRegex );
-            if (ss.length == 1) {
-                return false;
-            }
 
             if ( ss.length != fieldCount ) {
                 return false;
