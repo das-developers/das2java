@@ -957,6 +957,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         Dimension pref = getPreferredSize();
         pref.width = width;
         setPreferredSize(pref);
+        ((JComponent)getParent()).revalidate();
     }
     
     /** Sets the preferred height of the canvas to the specified height.
@@ -967,6 +968,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         Dimension pref = getPreferredSize();
         pref.height = height;
         setPreferredSize(pref);
+        ((JComponent)getParent()).revalidate();
     }
     
     private Font baseFont= null;
