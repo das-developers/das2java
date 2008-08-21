@@ -94,8 +94,9 @@ public class BeansUtil {
             // if still null, then keep track of the null so we don't have to search again.
             if (result == null) {
                 nullPropertyEditors.add(propertyClass);
+		//result= new PropertyEditorSupport();
             } else {
-                PropertyEditorManager.registerEditor(propertyClass, result.getClass()); // TODO: this will cause problems when the super class comes before subclass
+                if ( DasApplication.hasAllPermission() ) PropertyEditorManager.registerEditor(propertyClass, result.getClass()); // TODO: this will cause problems when the super class comes before subclass
             }
 
         }
