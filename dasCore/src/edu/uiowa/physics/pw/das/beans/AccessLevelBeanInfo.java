@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import java.beans.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,7 +89,7 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
     private static Object lockObject = new Object();
     
     static {
-        String level = System.getProperty("edu.uiowa.physics.das.beans.AccessLevelBeanInfo.AccessLevel");
+        String level = DasApplication.getProperty("edu.uiowa.physics.das.beans.AccessLevelBeanInfo.AccessLevel",null);
         if (level==null) {
             accessLevel = AccessLevel.ALL;
         } else if (level.equals("ALL")) {
