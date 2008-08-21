@@ -730,11 +730,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         yOffset = l.y;
         pressPosition = e.getPoint();
 
-	Point cp= new Point( e.getPoint() );
-	cp.translate(xOffset, yOffset );
-	if ( !parent.acceptContext(cp.x, cp.y ) ) {
-	    return;
-	}
+        Point cp = new Point(e.getPoint());
+        cp.translate(xOffset, yOffset);
+        if (!parent.acceptContext(cp.x, cp.y)) {
+            return;
+        }
         if (mouseMode == MouseMode.resize) {
             resizeStart = new Point(0, 0);
             if (mouseMode.resizeRight) {
@@ -1011,6 +1011,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * @param label string to search for.
      */
     public void removeMenuItem(String label) {
+        if (headless) {
+            return;
+        }
         MenuElement[] ele = primaryPopup.getSubElements();
         int index = -1;
         for (int i = 0; i < numInserted; i++) {
@@ -1028,19 +1031,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     }
 
-    public void addMenuItem( final Component b ) {
-        //SwingUtilities.invokeLater(new Runnable() {
-        //    public void run() {
-                if (DasMouseInputAdapter.this.headless) {
-                    return;
-                }
-                if (numInserted == 0) {
-                    primaryPopup.insert(new JPopupMenu.Separator(), 0);
-                }
-                primaryPopup.insert(b, numInserted);
-                numInserted++;
-        //    }
-        //});
+    public void addMenuItem(final Component b) {
+        if (headless) {
+            return;
+        }
+        if (numInserted == 0) {
+            primaryPopup.insert(new JPopupMenu.Separator(), 0);
+        }
+        primaryPopup.insert(b, numInserted);
+        numInserted++;
 
     }
 
@@ -1049,16 +1048,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * @param label
      * @return
      */
-    public JMenu addMenu( String label ) {
-        JMenu result= new JMenu(label);
+    public JMenu addMenu(String label) {
+        JMenu result = new JMenu(label);
         //result.setFont(primaryPopup.getFont());
         addMenuItem(result);
         return result;
     }
 
     private DasCanvas.GlassPane getGlassPane() {
-        DasCanvas.GlassPane r= (DasCanvas.GlassPane) ((DasCanvas) parent.getParent()).getGlassPane();
-        if ( r.isVisible()==false ) r.setVisible(true);
+        DasCanvas.GlassPane r = (DasCanvas.GlassPane) ((DasCanvas) parent.getParent()).getGlassPane();
+        if (r.isVisible() == false) {
+            r.setVisible(true);
+        }
         return r;
     }
 
