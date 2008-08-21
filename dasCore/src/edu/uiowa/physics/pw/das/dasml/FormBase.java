@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
-import com.sun.org.apache.xerces.internal.dom.DOMImplementationImpl;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
