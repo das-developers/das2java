@@ -69,6 +69,12 @@ public abstract class FileSystem  {
         }
     }
     
+    public static FileSystemSettings settings() {
+        return settings;
+    }
+    
+    private static FileSystemSettings settings= new FileSystemSettings();
+    
     static HashMap registry;
     static {
         registry= new HashMap();
@@ -76,7 +82,7 @@ public abstract class FileSystem  {
         registry.put("http",new HttpFileSystemFactory() );
         registry.put("ftp",new FtpFileSystemFactory() );
     }
-    
+        
     public static void registerFileSystemFactory( String proto, FileSystemFactory factory ) {
         registry.put( proto, factory );
     }
