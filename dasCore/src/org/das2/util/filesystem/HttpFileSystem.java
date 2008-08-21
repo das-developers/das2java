@@ -26,6 +26,7 @@
  */
 package org.das2.util.filesystem;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.Base64;
@@ -57,7 +58,7 @@ public class HttpFileSystem extends WebFileSystem {
         listings = new HashMap();
     }
 
-    public static synchronized HttpFileSystem createHttpFileSystem(URL root) throws FileSystemOfflineException {
+    public static synchronized HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {
         if (instances.containsKey(root.toString())) {
             logger.finer("reusing " + root);
             return (HttpFileSystem) instances.get(root.toString());
@@ -75,8 +76,16 @@ public class HttpFileSystem extends WebFileSystem {
                 if ( urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode()!=HttpURLConnection.HTTP_FORBIDDEN ) {
                     throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
                 }
-                File local = localRoot(root);
-                logger.finer("initializing httpfs " + root + " at " + local);
+                
+                File local;
+                
+                if ( DasApplication.hasAllPermission() ) {
+                    local = localRoot(root);
+                    logger.finer("initializing httpfs " + root + " at " + local);
+                } else {
+                    local= null;
+                    logger.finer("initializing httpfs " + root + " in applet mode" );
+                }
                 HttpFileSystem result = new HttpFileSystem(root, local);
                 instances.put(root.toString(), result);
                 return result;
@@ -247,6 +256,9 @@ public class HttpFileSystem extends WebFileSystem {
      * 
      */
     public boolean isDirectory(String filename) throws IOException {
+
+        if ( localRoot==null ) return filename.endsWith("/");
+        
         File f = new File(localRoot, filename);
         if (f.exists()) {
             return f.isDirectory();

@@ -24,6 +24,7 @@
 
 package org.das2.util.filesystem;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.net.URL;
 
@@ -38,7 +39,8 @@ public class HttpFileSystemFactory implements FileSystemFactory {
     }
 
     public FileSystem createFileSystem(URL root) throws FileSystemOfflineException {
-        HttpFileSystem hfs= HttpFileSystem.createHttpFileSystem( root );        
+        HttpFileSystem hfs= HttpFileSystem.createHttpFileSystem( root );   
+        if ( ! DasApplication.hasAllPermission() ) hfs.setAppletMode(true);
         return hfs;
     }
     

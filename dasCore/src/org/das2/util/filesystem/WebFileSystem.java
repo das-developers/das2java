@@ -34,7 +34,9 @@ import java.util.*;
 import java.util.regex.*;
 
 /**
- *
+ * Base class for HTTP and FTP-based filesystems.  A local cache is kept of
+ * the files.  
+ * 
  * @author  Jeremy
  */
 public abstract class WebFileSystem extends FileSystem {
@@ -53,15 +55,31 @@ public abstract class WebFileSystem extends FileSystem {
     
     protected final File localRoot;
     
+    /**
+     * if true, then don't download to local cache.  Instead, provide inputStream
+     * and getFile throws exception.
+     */
+    private boolean applet;
+    
+    /**
+     * plug-in template for implementation.  if non-null, use this.
+     */
+    protected WebProtocol protocol;
+    
     /** Creates a new instance of WebFileSystem */
     protected WebFileSystem(URL root, File localRoot) {
         super( root );        
         this.localRoot= localRoot;
+        if ( localRoot==null ) {
+            if ( root.getProtocol().equals("http") ) {
+                this.protocol= new AppletHttpProtocol();
+            }
+        }
     }
     
     static protected File localRoot( URL root ) {
 
-        File local= getDownloadDirectory();
+        File local= FileSystem.settings().getLocalCacheDir();
        
         String s= root.getProtocol() + "/"+ root.getHost() + "/" + root.getFile();
         
@@ -161,5 +179,14 @@ public abstract class WebFileSystem extends FileSystem {
     public String toString() {
         return "wfs "+root;
     }
+    
+    public boolean isAppletMode() {
+        return applet;
+    }
+    
+    public void setAppletMode( boolean applet ) {
+        this.applet= applet;
+    }
+    
     
 }

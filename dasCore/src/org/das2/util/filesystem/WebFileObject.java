@@ -27,6 +27,7 @@ import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.Channels;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -46,6 +47,8 @@ public class WebFileObject extends FileObject {
     Date modifiedDate;
     boolean isRoot;
     boolean isFolder;
+    Map<String,String> metadata;
+    
     /**
      * true if we know if it's a folder or not.
      */
@@ -55,6 +58,12 @@ public class WebFileObject extends FileObject {
         return true;
     }
 
+    synchronized void maybeLoadMetadata() throws IOException {
+        if ( metadata==null ) {
+            metadata= wfs.protocol.getMetadata( this );
+        }
+    }
+    
     public FileObject[] getChildren() throws IOException {
         if (!isFolder) {
             throw new IllegalArgumentException(toString() + "is not a folder");
@@ -68,6 +77,9 @@ public class WebFileObject extends FileObject {
     }
 
     public InputStream getInputStream(ProgressMonitor monitor) throws FileNotFoundException, IOException {
+        if ( wfs.protocol !=null ) {
+            return wfs.protocol.getInputStream(this, monitor);
+        }
         if (isFolder) {
             throw new IllegalArgumentException("is a folder");
         }
@@ -131,11 +143,16 @@ public class WebFileObject extends FileObject {
             return true;
         } else {
             try {
-                // TODO: use HTTP HEAD, etc
-                Logger.getLogger("das2.filesystem").info("This implementation of WebFileObject.exists() is not optimal");
-                File partFile = new File(localFile.toString() + ".part");
-                wfs.downloadFile(pathname, localFile, partFile, new NullProgressMonitor());
-                return localFile.exists();
+                if ( wfs.protocol!=null ) {
+                    maybeLoadMetadata();
+                    return "true".equals( metadata.get( WebProtocol.META_EXIST ) );
+                } else {
+                    // TODO: use HTTP HEAD, etc
+                    Logger.getLogger("das2.filesystem").info("This implementation of WebFileObject.exists() is not optimal");
+                    File partFile = new File(localFile.toString() + ".part");
+                    wfs.downloadFile(pathname, localFile, partFile, new NullProgressMonitor());
+                    return localFile.exists();
+                }
             } catch (FileNotFoundException e) {
                 return false;
             } catch (IOException e) {
@@ -146,33 +163,37 @@ public class WebFileObject extends FileObject {
     }
 
     protected WebFileObject( WebFileSystem wfs, String pathname, Date modifiedDate ) {
-        this.localFile = new File(wfs.getLocalRoot(), pathname);
 
-        this.localFile.deleteOnExit();
         this.modifiedDate = modifiedDate;
 
         this.wfs = wfs;
         this.pathname = pathname;
+        this.isFolderResolved = false;
+        
+        if ( ! wfs.isAppletMode() ) {
+            this.localFile = new File(wfs.getLocalRoot(), pathname);
 
-        try {
-            if (!localFile.canRead()) {
-                if (wfs.isDirectory(pathname)) {
-                    localFile.mkdirs();
-                    this.isFolder = true;
-                    if ("".equals(pathname)) {
-                        this.isRoot = true;
+            if ( FileSystem.settings().getPersistence()==FileSystemSettings.Persistence.SESSION ) this.localFile.deleteOnExit();
+
+            try {
+                if (!localFile.canRead()) {
+                    if (wfs.isDirectory(pathname)) {
+                        localFile.mkdirs();
+                        this.isFolder = true;
+                        if ("".equals(pathname)) {
+                            this.isRoot = true;
+                        }
+                    } else {
+                        this.isFolder = false;
                     }
                 } else {
-                    this.isFolder = false;
+                    this.isFolder = localFile.isDirectory();
                 }
-            } else {
-                this.isFolder = localFile.isDirectory();
+                this.isFolderResolved= true;
+            } catch (IOException ex) {
+                this.isFolderResolved = false;
             }
-            this.isFolderResolved= true;
-        } catch (IOException ex) {
-            this.isFolderResolved = false;
         }
-
     }
 
     public String toString() {
@@ -183,11 +204,22 @@ public class WebFileObject extends FileObject {
         return pathname;
     }
 
+    /**
+     * return a Channel for the resource.  If the resource can be made locally available, a FileChannel is returned.
+     * @param monitor
+     * @return
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
+     */
     public java.nio.channels.ReadableByteChannel getChannel(ProgressMonitor monitor) throws FileNotFoundException, IOException {
-        return ((FileInputStream) getInputStream(monitor)).getChannel();
+        InputStream in= getInputStream(monitor);
+        return Channels.newChannel(in);
     }
 
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
+        
+        if ( wfs.isAppletMode() ) throw new SecurityException("getFile cannot be used with applets.");
+        
         boolean download = false;
 
         if ( monitor==null ) throw new NullPointerException("monitor may not be null");
@@ -237,6 +269,7 @@ public class WebFileObject extends FileObject {
      * is made to ensure that the local file is as new as the website one.
      */
     public boolean isLocal() {
+        if ( wfs.isAppletMode() ) return false;
         try {
             boolean download = false;
 
