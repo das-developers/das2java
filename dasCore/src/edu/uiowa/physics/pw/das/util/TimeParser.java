@@ -496,6 +496,12 @@ public class TimeParser {
         return this.regex;
     }
 
+    /**
+     * format the range into a string.
+     * @param start
+     * @param end currently ignored, and may be used in the future
+     * @return formatted string.
+     */
     public String format(Datum start, Datum end) {
 
         StringBuffer result = new StringBuffer(100);
