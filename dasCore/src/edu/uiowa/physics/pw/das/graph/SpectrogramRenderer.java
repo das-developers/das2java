@@ -78,6 +78,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
         public void propertyChange(PropertyChangeEvent e) {
             update();
+            refreshImage();
         }
     }
     RebinListener rebinListener = new RebinListener();
@@ -372,10 +373,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
                     } catch ( InconvertibleUnitsException ex ) {
                         logger.fine("inconvertable units, setting image to null");
+                        ex.printStackTrace();
                         plotImage = null;
                         rebinDataSet = null;
                         imageXRange = null;
                         imageYRange = null;
+                        if ( this.getLastException()==null ) setException(ex);
                         getParent().repaint();
                         return;
                     }
