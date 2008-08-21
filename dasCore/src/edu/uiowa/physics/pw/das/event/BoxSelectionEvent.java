@@ -24,6 +24,7 @@
 package edu.uiowa.physics.pw.das.event;
 
 import edu.uiowa.physics.pw.das.dataset.DataSet;
+import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import java.util.HashMap;
 
@@ -41,6 +42,8 @@ public class BoxSelectionEvent extends DasEvent {
     
     private DatumRange xrange;
     private DatumRange yrange;
+    private Datum finishx, finishy;
+    private Datum startx, starty;
     private DataSet ds;
     private HashMap planes;
        
@@ -61,6 +64,32 @@ public class BoxSelectionEvent extends DasEvent {
         this.xrange= xrange;
         this.yrange= yrange;
         this.planes= planes;
+    }
+     
+    public void setFinish( Datum x, Datum y ) {
+        this.finishx = x;
+        this.finishy = y;
+    }
+            
+    public Datum getFinishX() {
+        return this.finishx;
+    }
+    
+    public Datum getFinishY() {
+        return this.finishy;
+    }
+    
+    public void setStart( Datum x, Datum y ) {
+        this.startx = x;
+        this.starty = y;
+    }
+            
+    public Datum getStartX() {
+        return this.startx;
+    }
+    
+    public Datum getStartY() {
+        return this.starty;
     }
         
     /**

@@ -135,6 +135,9 @@ public class BoxSelectorMouseModule extends MouseModule {
         DatumRange xrange = null;
         DatumRange yrange = null;
 
+        Datum x=null, y=null;
+        Datum sx= null, sy=null;
+        
         if (xaxis != null) {
             Datum min = xaxis.invTransform(e.getXMinimum());
             Datum max = xaxis.invTransform(e.getXMaximum());
@@ -144,6 +147,8 @@ public class BoxSelectorMouseModule extends MouseModule {
                 max = t;
             }
             xrange = new DatumRange(min, max);
+            x= xaxis.invTransform(e.getPoint().x);
+            sx= xaxis.invTransform(e.getPressPoint().x);
         }
 
         if (yaxis != null) {
@@ -155,9 +160,15 @@ public class BoxSelectorMouseModule extends MouseModule {
                 max = t;
             }
             yrange = new DatumRange(min, max);
+            y= yaxis.invTransform( e.getPoint().y );
+            sy= yaxis.invTransform( e.getPressPoint().y );
         }
 
         BoxSelectionEvent evt = new BoxSelectionEvent(this, xrange, yrange);
+        evt.setStart( sx,sy );
+        evt.setFinish( x,y );
+        
+        
         this.lastSelectionEvent = evt;
         return evt;
     }
