@@ -13,6 +13,7 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import edu.uiowa.physics.pw.das.graph.DasPlot;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -42,6 +43,10 @@ public class BoxSelectorMouseModule extends MouseModule {
     boolean tweakable = false;
     BoxSelectionEvent lastSelectionEvent = null;
 
+    public static BoxSelectorMouseModule create( DasPlot parent, String label ) {
+        return new BoxSelectorMouseModule( parent, parent.getXAxis(), parent.getYAxis(), null, new BoxRenderer(parent), label );
+    }
+    
     public BoxSelectorMouseModule(DasCanvasComponent parent, DasAxis xAxis, DasAxis yAxis,
             DataSetConsumer consumer,
             DragRenderer dragRenderer, String label) {
