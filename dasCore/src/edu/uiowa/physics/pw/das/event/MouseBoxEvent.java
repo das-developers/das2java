@@ -28,7 +28,6 @@ import java.awt.*;
 public class MouseBoxEvent extends MouseDragEvent {
     
     private Point pressPoint;
-    
     private Point releasePoint;
     
     /** Creates a new instance of MouseBoxEvent */
@@ -36,6 +35,14 @@ public class MouseBoxEvent extends MouseDragEvent {
         super(source);
         this.pressPoint= pressPoint;
         this.releasePoint= releasePoint;
+    }
+    
+    public Point getPressPoint() {
+        return pressPoint;
+    }
+    
+    public Point getPoint() {
+        return releasePoint;
     }
     
     public int getXMinimum() {
