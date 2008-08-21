@@ -6,6 +6,7 @@
 
 package edu.uiowa.physics.pw.das.system;
 
+import edu.uiowa.physics.pw.das.DasApplication;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,10 +23,12 @@ public class DasLogger {
             java.net.URL logConfigURL;
             
             File local;
-            if ( System.getProperty("user.name").equals("Web") ) {
+            if ( DasApplication.getProperty("user.name","applet").equals("Web") ) {
                 local= new File("/tmp");
+            } else if ( DasApplication.getProperty("user.name","applet").equals("applet") ) {
+                return;
             } else {
-                local= new File( System.getProperty("user.home") );
+                local= new File( DasApplication.getProperty("user.home","applet") );
             }
             
             File userDirectory=new File( local, ".das2" );
@@ -33,7 +36,7 @@ public class DasLogger {
             
             if ( localLogConfig.exists() ) {
                 Logger.getLogger("").info("using "+localLogConfig);
-                logConfigURL= localLogConfig.toURL();
+                logConfigURL= localLogConfig.toURI().toURL();
             } else {
                 logConfigURL= DasLogger.class.getResource("logging.properties");
             }
