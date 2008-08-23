@@ -64,20 +64,20 @@ public class DataSetUtil {
         int i = 0;
 
         final Units u = (Units) ds.property(QDataSet.UNITS);
-
+        
         if (ds.length() == 0) {
             return false;
         }
 
         double last = ds.value(i);
-
+        
         if (u != null && u.isFill(last)) {
             return false;
         }
-
+        
         for (i = 1; i < ds.length(); i++) {
             double d = ds.value(i);
-            if (d <= last || (u != null && u.isFill(d))) {
+            if ( d < last || (u != null && u.isFill(d))) {
                 return false;
             }
             last = d;
