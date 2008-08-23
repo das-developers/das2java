@@ -251,15 +251,16 @@ public class DataSetOps {
         }
         Integer[] indeces = new Integer[ds.length()];
         int i0 = 0;
-        final Units u = (Units) ds.property(QDataSet.UNITS);
+        
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        
         for (int i = 0; i < ds.length(); i++) {
-            if (u == null || !u.isFill(ds.value(i))) {
+            if ( wds.value(i)>0. ) {
                 indeces[i0] = new Integer(i);
                 i0++;
             }
         }
         Comparator c = new Comparator() {
-
             public int compare(Object o1, Object o2) {
                 int i1 = ((Integer) o1).intValue();
                 int i2 = ((Integer) o2).intValue();
@@ -272,7 +273,6 @@ public class DataSetOps {
             data[i] = indeces[i].intValue();
         }
         MutablePropertyDataSet result = new IndexGenDataSet(i0) {
-
             public double value(int i) {
                 return data[i];
             }
@@ -291,7 +291,7 @@ public class DataSetOps {
      * @return new dataset that is a copy of the first, resorted.
      * @see  org.virbo.dataset.SortDataSet for similar functionality
      */
-    public static MutablePropertyDataSet applyIndex( QDataSet ds, int idim, QDataSet sort, boolean deps ) {
+    public static WritableDataSet applyIndex( QDataSet ds, int idim, QDataSet sort, boolean deps ) {
 
         if (idim > 2) {
             throw new IllegalArgumentException("idim must be <=2 ");
@@ -301,7 +301,7 @@ public class DataSetOps {
         }
 
         if ( idim==0 ) {
-            return new SortDataSet( ds, sort );
+            return DDataSet.copy( new SortDataSet( ds, sort ) );
         }
         
         int[] qube = DataSetUtil.qubeDims( ds );
