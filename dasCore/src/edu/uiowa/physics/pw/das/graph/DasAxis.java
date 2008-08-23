@@ -54,6 +54,7 @@ import java.util.regex.*;
 
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.util.logging.Logger;
+import org.das2.util.Entities;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -158,12 +159,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private VectorDataSet[] tcaData = new VectorDataSet[0];
     private String dataset = "";
     private boolean drawTca;
-    /* DEBUGGING INSTANCE MEMBERS */
-    private static final boolean DEBUG_GRAPHICS = false;
-    private static final Color[] DEBUG_COLORS;
+
     public static String PROPERTY_DATUMRANGE = "datumRange";
     
-
+    /* DEBUGGING INSTANCE MEMBERS */
+    private static boolean DEBUG_GRAPHICS = false;
+    private static final Color[] DEBUG_COLORS;
+    
     static {
         if (DEBUG_GRAPHICS) {
             DEBUG_COLORS = new Color[]{
@@ -630,15 +632,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return dataRange.isLog();
     }
 
-    /** TODO
+    /** 
+     * Set the axis to be log or linear.  If necessary, axis range will be 
+     * adjusted to make the range valid.
      * @param log
      */
     public void setLog(boolean log) {
         boolean oldLog = isLog();
+        DatumRange range= getDatumRange();
         dataRange.setLog(log);
         update();
         if (log != oldLog) {
             firePropertyChange(PROP_LOG, oldLog, log);
+        }
+        // switching log can change the axis range.
+        if ( ! range.equals(getDatumRange()) ) {
+            firePropertyChange( PROPERTY_DATUMRANGE, range, getDatumRange() );
         }
     }
 
@@ -703,7 +712,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             throw new NullPointerException("axis label cannot be null");
         }
         Object oldValue = axisLabel;
-        axisLabel = t;
+        axisLabel = Entities.decodeEntities(t);
         update();
         firePropertyChange(PROP_LABEL, oldValue, t);
     }
@@ -1279,7 +1288,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int tickLength = tickLabelFont.getSize() * 2 / 3;
             int tick_label_gap = tickLabelFontMetrics.stringWidth(" ");
             int lineHeight = tickLabelFont.getSize() + getLineSpacing();
-            int maxLabelWidth = getMaxLabelWidth();
 
             int baseLine = position + tickLength + tick_label_gap + tickLabelFont.getSize();
             int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") - tick_label_gap;
@@ -1505,10 +1513,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     gtr.draw(g2, (float) leftEdge, (float) baseline);
                 }
                 if (rightLabel) {
-                    g2.rotate(Math.PI / 2.0);
-                    leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
-                    baseline = -rightPosition - titlePositionOffset;
-                    gtr.draw(g2, (float) leftEdge, (float) baseline);
+                    if ( flipLabel ) {
+                        g2.rotate( -Math.PI / 2.0);
+                        leftEdge = DMin + (DMax - DMin + titleWidth) / 2;
+                        baseline = rightPosition + titlePositionOffset;
+                        gtr.draw(g2, (float) -leftEdge, (float) baseline);
+                        g2.getClipBounds();
+                    } else {
+                        g2.rotate( Math.PI / 2.0 );
+                        leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
+                        baseline = -rightPosition - titlePositionOffset;
+                        gtr.draw(g2, (float) leftEdge, (float) baseline);
+                    }
                 }
                 g2.dispose();
             }
@@ -1536,9 +1552,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else if (orientation == TOP) {
             offset = tickLength + fm.stringWidth(" ") + labelFont.getSize() + labelFont.getSize() / 2 + (int) gtr.getDescent();
         } else if (orientation == LEFT) {
-            offset = tickLength + getMaxLabelWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
+            offset = tickLength + (int)this.blLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
         } else {
-            offset = tickLength + getMaxLabelWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
+            if ( !flipLabel ) {
+                offset = tickLength + (int)this.trLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getDescent();
+            } else {
+                offset = tickLength + (int)this.trLabelRect.getWidth() + fm.stringWidth(" ") + labelFont.getSize() / 2 + (int) gtr.getAscent();
+            }
         }
         if (getOrientation() == BOTTOM && drawTca && tcaData != null) {
             offset += tcaData.length * (tickLabelFont.getSize() + getLineSpacing());
@@ -1857,6 +1877,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
 
+    /**
+     * calculate the bounds of the labels.  This should including regions that 
+     * the labels could occupy if the axis were panned, so that result doesn't 
+     * change during panning.
+     * 
+     * @return Rectangle in the canvas coordinate frame.
+     */
     protected Rectangle getLabelBounds() {
         String[] labels = tickFormatter(this.getTickV().tickV, getDatumRange());
 
@@ -1870,29 +1897,39 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         int tickLen = (int) getEmSize();
 
+        double dmin= transform(getDataMinimum());
+        double dmax= transform(getDataMaximum());
+        
         for (int i = 0; i < labels.length; i++) {
             Datum d = this.getTickV().tickV.get(i);
             if (DatumRangeUtil.sloppyContains(getDatumRange(), d)) {
                 gtr.setString(labelFont, labels[i]);
-                Rectangle r = gtr.getBounds();
+                Rectangle rmin = gtr.getBounds();
+                Rectangle rmax= new Rectangle(rmin);  // same bound, but positioned at the axis max.
                 double flw = gtr.getLineOneWidth();
 
                 if (isHorizontal()) {
-                    double x = transform(d);
                     if (getOrientation() == BOTTOM) {
-                        r.translate((int) (x - flw / 2), getRow().bottom() + tickLen + labelFont.getSize() );
+                        rmin.translate((int) (dmin - flw / 2), getRow().bottom() + tickLen + labelFont.getSize() );
+                        rmax.translate((int) (dmax - flw / 2), getRow().bottom() + tickLen + labelFont.getSize() );
                     } else {
-                        r.translate((int) (x - flw / 2), getRow().top() - tickLen - (int) r.getHeight());
+                        rmin.translate((int) (dmin - flw / 2), getRow().top() - tickLen - (int) rmin.getHeight());
+                        rmin.translate((int) (dmax - flw / 2), getRow().top() - tickLen - (int) rmax.getHeight());
                     }
-                    bounds.add(r);
+                    bounds.add(rmin);
+                    bounds.add(rmax);
                 } else {
-                    double y = transform(d);
                     if (getOrientation() == LEFT) {
-                        r.translate(-(int) r.getWidth() - tickLen + getColumn().left(), (int) (y - getEmSize() / 2));
+                        rmin.translate(-(int) rmin.getWidth() - tickLen + getColumn().left(), 
+                                (int) (dmin + getEmSize() / 2));
+                        rmax.translate(-(int) rmax.getWidth() - tickLen + getColumn().left(), 
+                                (int) (dmax + getEmSize() / 2));
                     } else {
-                        r.translate(tickLen + getColumn().right(), (int) (y - getEmSize() / 2));
+                        rmin.translate(tickLen + getColumn().right(), (int) (dmin + getEmSize() / 2));
+                        rmax.translate(tickLen + getColumn().right(), (int) (dmax + getEmSize() / 2));
                     }
-                    bounds.add(r);
+                    bounds.add(rmin);
+                    bounds.add(rmax);
                 }
             }
         }
@@ -1946,7 +1983,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
 
             for (int i = 0; i < tickV.tickV.getLength(); i++) {
-                if (true) { // this is unnecessary?  I think it's a kludge for multiline ticks...
+                if (false) { // this is unnecessary?  I think it's a kludge for multiline ticks...
                     bounds.height += getTickLabelFont().getSize() + getLineSpacing();
                     if (getTickDirection() == -1) {
                         bounds.y -= getTickLabelFont().getSize() + getLineSpacing();
@@ -2133,23 +2170,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             trTickRect = setRectangleBounds(trTickRect, x, y, width, height + 1);
         }
 
-        int maxLabelWidth = getMaxLabelWidth();
-        int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
+        //int maxLabelWidth = getMaxLabelWidth();
+        //int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
 
         //Add room for tick labels
         if (leftTickLabels) {
-            int x = blTickRect.x - (maxLabelWidth + tick_label_gap);
-            int y = DMin - tickLabelFont.getSize();
-            int width = maxLabelWidth + tick_label_gap;
-            int height = DMax - DMin + tickLabelFont.getSize() * 2;
-            blLabelRect = setRectangleBounds(blLabelRect, x, y, width, height);
+            blLabelRect= getLabelBounds();
+            //int x = blTickRect.x - (maxLabelWidth + tick_label_gap);
+            //int y = DMin - tickLabelFont.getSize();
+            //int width = maxLabelWidth + tick_label_gap;
+            //int height = DMax - DMin + tickLabelFont.getSize() * 2;
+            //blLabelRect = setRectangleBounds(blLabelRect, x, y, width, height);
         }
         if (rightTickLabels) {
-            int x = trTickRect.x + trTickRect.width;
-            int y = DMin - tickLabelFont.getSize();
-            int width = maxLabelWidth + tick_label_gap;
-            int height = DMax - DMin + tickLabelFont.getSize() * 2;
-            trLabelRect = setRectangleBounds(trLabelRect, x, y, width, height);
+            trLabelRect= getLabelBounds();
+            //int x = trTickRect.x + trTickRect.width;
+            //int y = DMin - tickLabelFont.getSize();
+            //int width = maxLabelWidth + tick_label_gap;
+            //int height = DMax - DMin + tickLabelFont.getSize() * 2;
+            //trLabelRect = setRectangleBounds(trLabelRect, x, y, width, height);
         }
 
         //Add room for the axis label
@@ -3166,6 +3205,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return formatString;
     }
 
+    protected boolean flipLabel = true;
+    public static final String PROP_FLIPLABEL = "flipLabel";
+
+    public boolean isFlipLabel() {
+        return flipLabel;
+    }
+
+    public void setFlipLabel(boolean flipLabel) {
+        boolean oldFlipLabel = this.flipLabel;
+        this.flipLabel = flipLabel;
+        firePropertyChange(PROP_FLIPLABEL, oldFlipLabel, flipLabel);
+    }
+
+    
     /**
      * set a hint at the format string.  Examples include:
      *   0.000
