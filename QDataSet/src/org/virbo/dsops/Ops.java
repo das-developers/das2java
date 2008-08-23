@@ -15,7 +15,9 @@ import edu.uiowa.physics.pw.das.math.fft.FFTUtil;
 import edu.uiowa.physics.pw.das.math.fft.GeneralFFT;
 import edu.uiowa.physics.pw.das.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.virbo.dataset.DataSetOps;
@@ -1555,6 +1557,30 @@ public class Ops {
         return labels( labels, "default" );
     }
         
+    /**
+     * Reshape the dataset to remove the first dimension with length 1, reducing
+     * its rank by 1.
+     * @param ds
+     * @return
+     */
+    public static QDataSet reform( QDataSet ds ) {
+        int[] dsqube= DataSetUtil.qubeDims(ds);
+        List<Integer> newQube= new ArrayList<Integer>();
+        boolean foundDim= false;
+        for ( int i=0; i<dsqube.length; i++ ) {
+            if ( dsqube[i]!=1 || foundDim ) {
+                newQube.add(dsqube[i]);
+            } else {
+                foundDim= true;
+            }
+        }
+        int[] qube= new int[newQube.size()];
+        for ( int i=0; i<newQube.size(); i++ ) {
+            qube[i]= newQube.get(i);
+        }
+        return reform( ds, qube );
+    }
+
     public static QDataSet reform( QDataSet ds, int[] qube ) {
         QubeDataSetIterator it0= new QubeDataSetIterator(ds);
         DDataSet result= DDataSet.create(qube);
