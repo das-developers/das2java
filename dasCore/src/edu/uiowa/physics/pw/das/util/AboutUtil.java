@@ -104,4 +104,25 @@ public class AboutUtil {
         return result;
 
     }
+
+    /**
+     * Identify the release version by looking a non-null build.tag.  It's expected
+     * that the build script will insert build.tag into META-INF/build.txt
+     * @return build tag, which should not contain spaces, or
+     *    null if no tag is found.
+     * @throws java.io.IOException
+     */
+    public static String getReleaseTag() throws IOException {
+        Enumeration<URL> urls = AboutUtil.class.getClassLoader().getResources("META-INF/build.txt");
+        Properties props = new Properties();
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            props.load(url.openStream());
+            String tagName = props.getProperty("build.tag");
+            if ( tagName!=null && tagName.trim().length()>0 ) {
+                return tagName;
+            }
+        }
+        return null;
+    }
 }
