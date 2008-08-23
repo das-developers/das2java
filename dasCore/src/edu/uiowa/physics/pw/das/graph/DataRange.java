@@ -130,6 +130,11 @@ public class DataRange implements Cloneable {
         fireUpdate();
     }
     
+    /**
+     * set the log property.  If log is true and max or min is zero or negative,
+     * then the values are reset to make them valid.
+     * @param log
+     */
     public void setLog(boolean log) {
         /*
          * propose new logic for going between lin/log axes:
@@ -141,9 +146,18 @@ public class DataRange implements Cloneable {
         boolean oldLog = this.log;
         if (log) {
             if (minimum<=0. || maximum <=0.) {
-                if ( maximum<=0 ) maximum=100;
-                if ( minimum<=0 ) minimum= maximum/1000; // three cycles, and typical the number of pixels.
+                if ( maximum<=0 ) {
+                    double oldMax= maximum;
+                    maximum=100;
+                    firePropertyChange("maximum", oldMax, maximum);
+                }
+                if ( minimum<=0 ) {
+                    double oldMin= minimum;
+                    minimum= maximum/1000; // three cycles, and typical the number of pixels.
+                    firePropertyChange("minimum", oldMin, minimum);
+                }
                 this.range= new DatumRange( minimum, maximum, range.getUnits() );
+                firePropertyChange("log", oldLog, log);
             }
             this.minimum= DasMath.log10(minimum);
             this.maximum= DasMath.log10(maximum);
