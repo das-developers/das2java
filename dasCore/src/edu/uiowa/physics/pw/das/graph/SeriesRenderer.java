@@ -926,11 +926,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 extraConnectorElements[i] = new PsymConnectorRenderElement();
 
                 float[] colorHSV = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                if (colorHSV[2] < 0.5f) {
-                    colorHSV[2] = 0.5f;
+                if (colorHSV[2] < 0.7f) {
+                    colorHSV[2] = 0.7f;
                 }
-                if (colorHSV[1] < 0.5f) {
-                    colorHSV[1] = 0.5f;
+                if (colorHSV[1] < 0.7f) {
+                    colorHSV[1] = 0.7f;
                 }
                 extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
                 vds = tds.getYSlice(i, 0);
