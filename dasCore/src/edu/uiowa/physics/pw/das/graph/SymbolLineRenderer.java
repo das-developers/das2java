@@ -202,7 +202,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     
     boolean updating=false;
     
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
+    public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         /*
          *This was an experiment to see if updates were being performed on multiple threads.
             if ( updating ) {
