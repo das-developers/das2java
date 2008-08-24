@@ -1889,7 +1889,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         int majorTickLength = (int) getEmSize();
 
-        Rectangle bounds = new Rectangle(0, 0, -1, -1);
+        Rectangle bounds = null;
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
 
@@ -1916,7 +1916,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         rmin.translate((int) (dmin - flw / 2), getRow().top() - tickLen - (int) rmin.getHeight());
                         rmin.translate((int) (dmax - flw / 2), getRow().top() - tickLen - (int) rmax.getHeight());
                     }
-                    bounds.add(rmin);
+                    if ( bounds==null ) {
+                        bounds= rmin;
+                    } else {
+                        bounds.add(rmin);
+                    }
                     bounds.add(rmax);
                 } else {
                     if (getOrientation() == LEFT) {
@@ -1928,7 +1932,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         rmin.translate(tickLen + getColumn().right(), (int) (dmin + getEmSize() / 2));
                         rmax.translate(tickLen + getColumn().right(), (int) (dmax + getEmSize() / 2));
                     }
-                    bounds.add(rmin);
+                    if ( bounds==null ) {
+                        bounds= rmin;
+                    } else {
+                        bounds.add(rmin);
+                    }
                     bounds.add(rmax);
                 }
             }
