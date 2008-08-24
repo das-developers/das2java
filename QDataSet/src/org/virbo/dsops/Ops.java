@@ -1595,7 +1595,7 @@ public class Ops {
     }
     
     public static QDataSet transpose( QDataSet ds ) {
-        return new TransposeRank2DataSet( ds );
+        return DDataSet.copy( new TransposeRank2DataSet( ds ) );
     }
             
     public static double PI = Math.PI;
