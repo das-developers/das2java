@@ -150,6 +150,10 @@ public class CombinedTreeModel implements TreeModel {
             return treeModels.size() == 0;
         } else {
             TreeModel mt = (TreeModel) sourceMap.get(node);
+            if ( mt==null ) {
+                System.err.println("null on "+node);
+                return true;
+            }
             return mt.isLeaf(node);
         }
     }
