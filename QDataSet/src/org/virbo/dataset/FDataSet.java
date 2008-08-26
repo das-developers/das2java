@@ -80,6 +80,10 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
         }
     }
     
+    public static FDataSet wrap( float[] back, int rank, int len0, int len1, int len2 ) {
+        return new FDataSet( rank, len0, len1, len2, back );
+    }
+    
     /** Creates a new instance of DDataSet */
     private FDataSet( int rank, int len0, int len1, int len2 ) {
         this( rank, len0, len1, len2, new float[ len0 * len1 * len2 ] );

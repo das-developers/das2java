@@ -43,6 +43,29 @@ public final class IDataSet extends AbstractDataSet implements WritableDataSet {
         return new IDataSet( 3, len0, len1, len2 );
     }
     
+    /**
+     * Wraps an array from array of dimension sizes.  The result will have
+     * rank qube.length(). 
+     * @param data array containing the data, with the last dimension contiguous in memory.
+     * @param qube array specifying the rank and size of each dimension
+     * @return IDataSet
+     */
+    public static IDataSet wrap( int[] data, int[] qube ) {
+        if (qube.length == 1) {
+            return new IDataSet( 1, qube[0], 1, 1, data );
+        } else if (qube.length == 2) {
+            return new IDataSet( 2, qube[0], qube[1], 1, data );
+        } else if (qube.length == 3) {
+            return new IDataSet( 3, qube[0], qube[1], qube[2], data );
+        } else {
+            throw new IllegalArgumentException("bad qube");
+        }
+    }
+    
+    public static IDataSet wrap( int[] back, int rank, int len0, int len1, int len2 ) {
+        return new IDataSet( rank, len0, len1, len2, back );
+    }
+    
     /** Creates a new instance of DDataSet */
     private IDataSet( int rank, int len0, int len1, int len2 ) {
         this( rank, len0, len1, len2, new int[ len0 * len1 * len2 ] );

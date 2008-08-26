@@ -43,6 +43,29 @@ public final class BDataSet extends AbstractDataSet implements WritableDataSet {
         return new BDataSet( 3, len0, len1, len2 );
     }
     
+    /**
+     * Wraps an array from array of dimension sizes.  The result will have
+     * rank qube.length(). 
+     * @param data array containing the data, with the last dimension contiguous in memory.
+     * @param qube array specifying the rank and size of each dimension
+     * @return IDataSet
+     */
+    public static BDataSet wrap( byte[] data, int[] qube ) {
+        if (qube.length == 1) {
+            return new BDataSet( 1, qube[0], 1, 1, data );
+        } else if (qube.length == 2) {
+            return new BDataSet( 2, qube[0], qube[1], 1, data );
+        } else if (qube.length == 3) {
+            return new BDataSet( 3, qube[0], qube[1], qube[2], data );
+        } else {
+            throw new IllegalArgumentException("bad qube");
+        }
+    }
+    
+    public static BDataSet wrap( byte[] back, int rank, int len0, int len1, int len2 ) {
+        return new BDataSet( rank, len0, len1, len2, back );
+    }
+    
     /** Creates a new instance of DDataSet */
     private BDataSet( int rank, int len0, int len1, int len2 ) {
         this( rank, len0, len1, len2, new byte[ len0 * len1 * len2 ] );
