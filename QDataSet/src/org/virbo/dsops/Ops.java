@@ -24,6 +24,7 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetAdapter;
+import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SDataSet;
@@ -398,7 +399,6 @@ public class Ops {
         });
     }
 
-    //public static QDataSet smooth( QDataSet )
     /**
      * element-wise sqrt.
      * @param ds
@@ -662,7 +662,84 @@ public class Ops {
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
 
+    /**
+     * returns rank 1 dataset with values [0,1,2,...]
+     * @param size
+     * @return
+     */
+    public static QDataSet findgen(int len0) {
+        int size = len0;
+        float[] back = new float[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return FDataSet.wrap(back, 1, len0, 1, 1);
+    }
+
+    /**
+     * returns rank 2 dataset with values increasing [ [0,1,2], [ 3,4,5] ]
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static QDataSet findgen(int len0, int len1) {
+        int size = len0 * len1;
+        float[] back = new float[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return FDataSet.wrap(back, 2, len0, len1, 1);
+    }
+
+    /**
+     * returns rank 3 dataset with values increasing
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return
+     */
+    public static QDataSet findgen(int len0, int len1, int len2) {
+        int size = len0 * len1 * len2;
+        float[] back = new float[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return FDataSet.wrap(back, 3, len0, len1, len2);
+    }    
       
+    /**
+     * create a dataset filled with zeros.
+     * @param len0
+     * @return
+     */
+    public static QDataSet fltarr( int len0 ) {
+        return Ops.replicate( 0.f, len0 );
+    }
+    
+    public static QDataSet fltarr( int len0, int len1 ) {
+        return Ops.replicate( 0.f, len0, len1 );
+    }
+    
+    public static QDataSet fltarr( int len0, int len1, int len2 ) {
+        return Ops.replicate( 0.f, len0, len1, len2 );
+    }
+    
+    /**
+     * create a dataset filled with zeros.
+     * @param len0
+     * @return
+     */
+    public static QDataSet dblarr( int len0 ) {
+        return Ops.replicate( 0., len0 );
+    }
+    
+    public static QDataSet dblarr( int len0, int len1 ) {
+        return Ops.replicate( 0., len0, len1 );
+    }
+    
+    public static QDataSet dblarr( int len0, int len1, int len2 ) {
+        return Ops.replicate( 0., len0, len1, len2 );
+    }            
     /**
      * returns rank 1 dataset with values [0,1,2,...]
      * @param baseTime e.g. "2003-02-04T00:00"
@@ -706,6 +783,7 @@ public class Ops {
         }
     }
 
+    
     /**
      * returns rank 1 dataset with value
      * @param val fill the dataset with this value.
@@ -754,6 +832,54 @@ public class Ops {
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
 
+    /**
+     * returns rank 1 dataset with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @return
+     */
+    public static QDataSet replicate(float val, int len0) {
+        int size = len0;
+        float[] back = new float[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return FDataSet.wrap(back, 1, len0, 1, 1);
+    }
+
+    /**
+     * returns rank 2 dataset filled with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static QDataSet replicate(float val, int len0, int len1) {
+        int size = len0 * len1;
+        float[] back = new float[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return FDataSet.wrap(back, 2, len0, len1, 1);
+    }
+
+    /**
+     * returns rank 3 dataset with filled with value.
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return
+     */
+    public static QDataSet replicate(float val, int len0, int len1, int len2) {
+        int size = len0 * len1 * len2;
+        float[] back = new float[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return FDataSet.wrap(back, 3, len0, len1, len2);
+    }
+    
     /**
      * return new dataset filled with zeros.
      * @param len0
@@ -1559,26 +1685,41 @@ public class Ops {
         
     /**
      * Reshape the dataset to remove the first dimension with length 1, reducing
-     * its rank by 1.
+     * its rank by 1.  Dependencies are also preserved.
      * @param ds
      * @return
      */
     public static QDataSet reform( QDataSet ds ) {
         int[] dsqube= DataSetUtil.qubeDims(ds);
         List<Integer> newQube= new ArrayList<Integer>();
+        int[] dimMap= new int[ dsqube.length ]; // maps from new dataset to old index
         boolean foundDim= false;
+        int removeDim= -1;
         for ( int i=0; i<dsqube.length; i++ ) {
             if ( dsqube[i]!=1 || foundDim ) {
                 newQube.add(dsqube[i]);
+                dimMap[i]= foundDim ? i+1 : i;
             } else {
                 foundDim= true;
+                removeDim= i;
             }
+        }
+        if ( foundDim==false ) {
+            throw new IllegalArgumentException("there were no dimensions with length 1");
         }
         int[] qube= new int[newQube.size()];
         for ( int i=0; i<newQube.size(); i++ ) {
             qube[i]= newQube.get(i);
         }
-        return reform( ds, qube );
+        MutablePropertyDataSet result= (MutablePropertyDataSet)reform( ds, qube ); //DANGER
+        for ( int i=0; i<qube.length; i++ ) {
+            if ( i>=removeDim ) {
+                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+(i+1) ) );
+            } else {
+                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+i ) );
+            }
+        }
+        return result;
     }
 
     public static QDataSet reform( QDataSet ds, int[] qube ) {
