@@ -48,7 +48,7 @@ public class AngleSlicerMouseModule extends MouseModule {
     }
     
     protected AngleSlicerMouseModule(DasPlot parent, DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis) {
-        super( parent, new HorizontalSliceSelectionRenderer(parent), "Angle Slice" );
+        super( parent, new AngleSelectionDragRenderer(), "Angle Slice" );
         
         if (!(dataSetConsumer instanceof TableDataSetConsumer)) {
             throw new IllegalArgumentException("dataSetConsumer must be an XTaggedYScanDataSetConsumer");
@@ -57,6 +57,7 @@ public class AngleSlicerMouseModule extends MouseModule {
         this.xaxis= xaxis;
         this.yaxis= yaxis;
         this.de= new DataPointSelectionEvent(this,null,null);
+        
     }
     
     public static AngleSlicerMouseModule create(DasPlot parent) {
