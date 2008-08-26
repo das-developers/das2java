@@ -66,8 +66,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private DasColorBar colorBar;
     private Image plotImage;
     private byte[] raster;
-    private int rasterWidth,rasterHeight;
-    
+    private int rasterWidth,  rasterHeight;
     DatumRange imageXRange;
     DatumRange imageYRange;
     DasAxis.Memento xmemento, ymemento, cmemento;
@@ -99,6 +98,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum nearestNeighbor = new RebinnerEnum(new NearestNeighborTableRebinner(), "nearestNeighbor");
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
+        
 
         static {
             AverageTableRebinner rebinner = new AverageTableRebinner();
@@ -145,8 +145,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("dataMinimum", rebinListener);
             colorBar.addPropertyChangeListener("dataMaximum", rebinListener);
             colorBar.addPropertyChangeListener("log", rebinListener);
-            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_TYPE, rebinListener);
-            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
+            colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
+            colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
         }
         setRebinner(SpectrogramRenderer.RebinnerEnum.binAverage);
     }
@@ -188,8 +188,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("dataMinimum", rebinListener);
             colorBar.addPropertyChangeListener("dataMaximum", rebinListener);
             colorBar.addPropertyChangeListener("log", rebinListener);
-            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_TYPE, rebinListener);
-            colorBar.addPropertyChangeListener( DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
+            colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
+            colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
             if (parent != null && parent.getCanvas() != null) {
                 parent.getCanvas().add(colorBar);
             }
@@ -246,8 +246,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * transforms the simpleTableDataSet into a Raster byte array.  The rows of
      * the table are adjacent in the output byte array.
      */
-    private static byte[] transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb, boolean flipY) {
-        
+    private static byte[] transformSimpleTableDataSet(TableDataSet rebinData, DasColorBar cb, boolean flipY) {
+
         if (rebinData.tableCount() > 1) {
             throw new IllegalArgumentException("TableDataSet contains more than one table");
         }
@@ -259,27 +259,26 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         int nx = rebinData.tableEnd(itable) - rebinData.tableStart(itable);
         int w = nx;
         int icolor;
-        
+
         Units units = cb.getUnits();
         int ncolor = cb.getType().getColorCount();
-        
+
         TableDataSet weights = (TableDataSet) rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
-        
+
         byte[] pix = new byte[nx * ny];
         Arrays.fill(pix, (byte) cb.getFillColorIndex());
-        
-        for (int i=rebinData.tableStart(itable); i<rebinData.tableEnd(itable); i++) {
-            for (int j=0; j<ny; j++) {
-                if ( weights==null || weights.getDouble(i, j,Units.dimensionless) > 0. ) {
+
+        for (int i = rebinData.tableStart(itable); i < rebinData.tableEnd(itable); i++) {
+            for (int j = 0; j < ny; j++) {
+                if (weights == null || weights.getDouble(i, j, Units.dimensionless) > 0.) {
                     int index;
                     if (flipY) {
-                        index= i + j*nx;
+                        index = i + j * nx;
+                    } else {
+                        index = (i - 0) + (ny - j - 1) * nx;
                     }
-                    else {
-                        index= (i-0) + ( ny - j - 1 ) * nx;
-                    }
-                    icolor= (int)cb.indexColorTransform(rebinData.getDouble(i,j,units), units );
-                    pix[index]= (byte) icolor;
+                    icolor = (int) cb.indexColorTransform(rebinData.getDouble(i, j, units), units);
+                    pix[index] = (byte) icolor;
                 }
             }
         }
@@ -289,7 +288,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     private void reportCount() {
         if (updateImageCount % 10 == 0) {
-        //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );    
+            //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );    
         }
 
     }
@@ -299,116 +298,117 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         updateImageCount++;
         reportCount();
         try {
+            try {
 
-            BufferedImage plotImage2;  // index color model
+                BufferedImage plotImage2;  // index color model
 
-            synchronized (this) {
-                int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
-                int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();    
-                
-                if (raster != null && xmemento != null && ymemento != null && xAxis.getMemento().equals(xmemento) && yAxis.getMemento().equals(ymemento) && colorBar.getMemento().equals(cmemento)) {
-                    logger.fine("same xaxis, yaxis, reusing raster");
+                synchronized (this) {
+                    int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
+                    int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
 
-                } else {
+                    if (raster != null && xmemento != null && ymemento != null && xAxis.getMemento().equals(xmemento) && yAxis.getMemento().equals(ymemento) && colorBar.getMemento().equals(cmemento)) {
+                        logger.fine("same xaxis, yaxis, reusing raster");
 
-                    if (getParent() == null || w <= 1 || h <= 1) {
-                        logger.finest("canvas not useable!!!");
-                        return;
+                    } else {
+
+                        if (getParent() == null || w <= 1 || h <= 1) {
+                            logger.finest("canvas not useable!!!");
+                            return;
+                        }
+
+                        if (this.ds == null) {
+                            logger.fine("got null dataset, setting image to null");
+                            plotImage = null;
+                            rebinDataSet = null;
+                            imageXRange = null;
+                            imageYRange = null;
+                            getParent().repaint();
+                            return;
+
+                        }
+
+                        if (this.ds.getXLength() == 0) {
+                            logger.fine("got empty dataset, setting image to null");
+                            plotImage = null;
+                            rebinDataSet = null;
+                            imageXRange = null;
+                            imageYRange = null;
+                            getParent().repaint();
+                            return;
+                        }
+
+                        if (!this.ds.getXUnits().isConvertableTo(xAxis.getUnits())) {
+                            logger.fine("dataset units are incompatable with x axis.");
+                            return;
+                        }
+
+                        if (!this.ds.getYUnits().isConvertableTo(yAxis.getUnits())) {
+                            logger.fine("dataset units are incompatable with y axis.");
+                            return;
+                        }
+
+                        RebinDescriptor xRebinDescriptor;
+                        xRebinDescriptor = new RebinDescriptor(
+                                xAxis.getDataMinimum(), xAxis.getDataMaximum(),
+                                w,
+                                xAxis.isLog());
+
+                        RebinDescriptor yRebinDescriptor = new RebinDescriptor(
+                                yAxis.getDataMinimum(), yAxis.getDataMaximum(),
+                                h,
+                                yAxis.isLog());
+
+                        imageXRange = xAxis.getDatumRange();
+                        imageYRange = yAxis.getDatumRange();
+
+                        logger.fine("rebinning to pixel resolution");
+
+                        DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
+
+                        long t0;
+
+                        t0 = System.currentTimeMillis();
+
+                        rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
+
+                        xmemento = xAxis.getMemento();
+                        ymemento = yAxis.getMemento();
+                        cmemento = colorBar.getMemento();
+
+                        raster = transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped());
+                        rasterWidth = w;
+                        rasterHeight = h;
+
                     }
 
-                    if (this.ds == null) {
-                        logger.fine("got null dataset, setting image to null");
-                        plotImage = null;
-                        rebinDataSet = null;
-                        imageXRange = null;
-                        imageYRange = null;
-                        getParent().repaint();
-                        return;
+                    IndexColorModel model = colorBar.getIndexColorModel();
+                    plotImage2 = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_INDEXED, model);
 
-                    }
-                    
-                    if (this.ds.getXLength() == 0) {
-                        logger.fine("got empty dataset, setting image to null");
-                        plotImage = null;
-                        rebinDataSet = null;
-                        imageXRange = null;
-                        imageYRange = null;
-                        getParent().repaint();
-                        return;
-                    }
-
-                    if ( ! this.ds.getXUnits().isConvertableTo(xAxis.getUnits() ) ) {
-                        logger.fine("dataset units are incompatable with x axis.");
-                        return;
-                    }
-
-                    if ( ! this.ds.getYUnits().isConvertableTo(yAxis.getUnits() ) ) {
-                        logger.fine("dataset units are incompatable with y axis.");
-                        return;
-                    }
-                    
-                    RebinDescriptor xRebinDescriptor;
-                    xRebinDescriptor = new RebinDescriptor(
-                            xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-                            w,
-                            xAxis.isLog());
-
-                    RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                            yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-                            h,
-                            yAxis.isLog());
-
-                    imageXRange = xAxis.getDatumRange();
-                    imageYRange = yAxis.getDatumRange();
-
-                    logger.fine("rebinning to pixel resolution");
-
-                    DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
-
-                    long t0;
-
-                    t0 = System.currentTimeMillis();
+                    WritableRaster r = plotImage2.getRaster();
 
                     try {
-                        rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
-                    } catch ( InconvertibleUnitsException ex ) {
-                        logger.fine("inconvertable units, setting image to null");
-                        ex.printStackTrace();
-                        plotImage = null;
-                        rebinDataSet = null;
-                        imageXRange = null;
-                        imageYRange = null;
-                        if ( this.getLastException()==null ) setException(ex);
-                        getParent().repaint();
-                        return;
+                        r.setDataElements(0, 0, rasterWidth, rasterHeight, raster);
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        throw ex;
                     }
+                    plotImage = plotImage2;
 
-                    xmemento = xAxis.getMemento();
-                    ymemento = yAxis.getMemento();
-                    cmemento = colorBar.getMemento();
-
-                    raster = transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped());
-                    rasterWidth= w;
-                    rasterHeight= h;
-                    
                 }
-
-                IndexColorModel model = colorBar.getIndexColorModel();
-                plotImage2 = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_INDEXED, model);
-
-                WritableRaster r = plotImage2.getRaster();
-
-                try {
-                    r.setDataElements(0, 0, rasterWidth, rasterHeight, raster);
-                } catch ( ArrayIndexOutOfBoundsException ex ) {
-                    throw ex;
+                synchronized (lockObject) {
+                    plotImage = plotImage2;
                 }
-                plotImage = plotImage2;
+            } catch (InconvertibleUnitsException ex) {
+                logger.fine("inconvertable units, setting image to null");
+                ex.printStackTrace();
+                plotImage = null;
+                rebinDataSet = null;
+                imageXRange = null;
+                imageYRange = null;
+                if (this.getLastException() == null) setException(ex);
+                getParent().repaint();
+                return;
+            }
 
-            }
-            synchronized (lockObject) {
-                plotImage = plotImage2;
-            }
         } catch (NullPointerException ex) {
             ex.printStackTrace();
         } catch (NoDataInIntervalException e) {
@@ -427,7 +427,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
                 }
                 parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
-                if (!"true".equals(DasApplication.getProperty("java.awt.headless","false"))) {
+                if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer =
                             VerticalSpectrogramSlicer.createSlicer(parent, this);
