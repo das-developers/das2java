@@ -443,12 +443,10 @@ public class AsciiParser {
             bytesRead += line.length() + 1; // +1 is for end-of-line
             iline++;
 
-            if (irec == this.recordCountLimit) {
+            if ( irec == this.recordCountLimit || mon.isCancelled() ) {
                 break;
             }
-            if (mon.isCancelled()) {
-                break;
-            }
+            
             mon.setTaskProgress(bytesRead);
             if (iline % 100 == 0) {
                 mon.setProgressMessage("reading line " + iline);
