@@ -118,7 +118,7 @@ public class CombinedTreeModel implements TreeModel {
         fireTreeNodesRemoved(new TreeModelEvent(this, path));
     }
 
-    public Object getChild(Object parent, int index) {
+    public synchronized Object getChild(Object parent, int index) {
         if (checkEvent && !EventQueue.isDispatchThread())
             throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
         Object result;
