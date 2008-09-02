@@ -268,7 +268,8 @@ public class Ops {
             op.normalize(store);
             it1.putValue(result, store[1] > 0 ? store[0] : fill);
         }
-
+        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result );
+        sliceProperties( dim, ds, result );
         return result;
     }
 
@@ -1683,6 +1684,16 @@ public class Ops {
         return labels( labels, "default" );
     }
         
+    private static void sliceProperties( int removeDim, QDataSet ds, MutablePropertyDataSet result ) {
+        for ( int i=0; i<result.rank(); i++ ) {
+            if ( i>=removeDim ) {
+                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+(i+1) ) );
+            } else {
+                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+i ) );
+            }
+        }        
+    }
+    
     /**
      * Reshape the dataset to remove the first dimension with length 1, reducing
      * its rank by 1.  Dependencies are also preserved.
@@ -1712,13 +1723,7 @@ public class Ops {
             qube[i]= newQube.get(i);
         }
         MutablePropertyDataSet result= (MutablePropertyDataSet)reform( ds, qube ); //DANGER
-        for ( int i=0; i<qube.length; i++ ) {
-            if ( i>=removeDim ) {
-                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+(i+1) ) );
-            } else {
-                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+i ) );
-            }
-        }
+        sliceProperties( removeDim, ds, result );
         return result;
     }
 
