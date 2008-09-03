@@ -522,6 +522,32 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise mod of two datasets with the same geometry.
+     * @param ds
+     * @return
+     */
+    public static QDataSet mod( QDataSet ds1, QDataSet ds2 ) {
+        return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            public double op(double d1, double d2) {
+                return d1 % d2;
+            }
+        });
+    }
+    
+    /**
+     * element-wise div of two datasets with the same geometry.
+     * @param ds
+     * @return
+     */
+    public static QDataSet div( QDataSet ds1, QDataSet ds2 ) {
+        return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            public double op(double d1, double d2) {
+                return (int)d1 / (int)d2;
+            }
+        });
+    }
+    
 // comparators
     /**
      * element-wise equality test.  1.0 is returned where the two datasets are
