@@ -543,7 +543,7 @@ public class Ops {
     public static QDataSet div( QDataSet ds1, QDataSet ds2 ) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
-                return (int)d1 / (int)d2;
+                return (int) ( d1 / d2 );
             }
         });
     }
