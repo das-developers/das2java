@@ -460,7 +460,7 @@ public class AsciiParser {
                         builder.putProperty(m.group(1).trim(), m.group(2).trim());
                     } else {
                         if (keepFileHeader) {
-                            headerBuffer.append(line);
+                            headerBuffer.append(line).append("\n");
                         }
                     }
                     continue;
