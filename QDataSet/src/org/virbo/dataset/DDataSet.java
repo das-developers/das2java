@@ -319,7 +319,7 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
      * creates a DDataSet by wrapping an existing array, aliasing it to rank 2.
      */
     public static DDataSet wrap(double[] back, int nx, int ny) {
-        return new DDataSet(1, nx, ny, 1, back);
+        return new DDataSet(2, nx, ny, 1, back);
     }
 
     public static DDataSet wrap( double[] back, int rank, int len0, int len1, int len2 ) {
