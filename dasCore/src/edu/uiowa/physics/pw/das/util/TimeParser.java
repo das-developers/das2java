@@ -32,17 +32,16 @@ public class TimeParser {
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */
     public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
-    
     TimeStruct time;
     TimeStruct timeWidth;
     int ndigits;
-    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b" };
+    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b"};
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", };
-    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3 };
-    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1 };
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name",
+    };
+    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3};
+    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1};
     int[] handlers;
-    
     /**
      * set of custom handlers to allow for extension
      */
@@ -57,7 +56,6 @@ public class TimeParser {
     String[] fc;
     String regex;
     String formatString;
-    
     /**
      * Least significant digit in format.
      *0=year, 1=month, 2=day, 3=hour, 4=min, 5=sec, 6=milli, 7=micro
@@ -65,6 +63,7 @@ public class TimeParser {
     int lsd;
 
     public interface FieldHandler {
+
         public void handleValue(String fieldContent, TimeStruct startTime, TimeStruct timeWidth);
     }
 
@@ -73,52 +72,79 @@ public class TimeParser {
      * @param exampleTime "1992-353T02:00"
      * @return "%Y-%jT%H%M" etc.
      */
-    public static String iso8601String( String exampleTime ) {
-        int i= exampleTime.indexOf("T");
-        if ( i==-1 ) i= exampleTime.indexOf(" ");
-        char dateTimeDelim= exampleTime.charAt(i);
-        
-        String date=null, time=null;
-        if ( i!=-1 ) {
-            String datePart= exampleTime.substring(0,i);
-            boolean hasDelim= !datePart.matches("\\d+");
-            char delim=0;
-            if ( hasDelim ) delim= datePart.charAt(4);
-            switch ( datePart.length() ) {
-                case 10: date= "%Y" + delim + "%m" + delim + "%d"; break;
-                case 9: date= "%Y" + delim + "%j"; break;
-                case 8: date= hasDelim ? "%Y"+delim+"%j" : "%Y%m%d"; break;
-                case 7: date= "%Y%j"; break;
-                default: throw new IllegalArgumentException("unable to identify date format for "+exampleTime );
+    public static String iso8601String(String exampleTime) {
+        int i = exampleTime.indexOf("T");
+        if (i == -1) {
+            i = exampleTime.indexOf(" ");
+        }
+        char dateTimeDelim = exampleTime.charAt(i);
+
+        String date = null, time = null;
+        if (i != -1) {
+            String datePart = exampleTime.substring(0, i);
+            boolean hasDelim = !datePart.matches("\\d+");
+            char delim = 0;
+            if (hasDelim) {
+                delim = datePart.charAt(4);
             }
-            
-            String timePart= exampleTime.substring(i+1);
-            hasDelim= !timePart.matches("\\d+");
-            delim=0;
-            if ( hasDelim ) delim= timePart.charAt(2);
-            
-            switch ( timePart.length() ) {
-                case 4: time= "%H%M"; break;
-                case 5: time= "%H"+delim+"%M"; break;                
-                case 6: time= "%H%M%S"; break;
-                case 8: time= "%H"+delim+"%M"+delim+"%S"; break;
-                case 12: time= "%H"+delim+"%M"+delim+"%S.%{milli}"; break;
-                case 15: time= "%H"+delim+"%M"+delim+"%S.%{milli}%{micro}"; break;
-                default: throw new IllegalArgumentException("unable to identify time format for "+exampleTime );
+            switch (datePart.length()) {
+                case 10:
+                    date = "%Y" + delim + "%m" + delim + "%d";
+                    break;
+                case 9:
+                    date = "%Y" + delim + "%j";
+                    break;
+                case 8:
+                    date = hasDelim ? "%Y" + delim + "%j" : "%Y%m%d";
+                    break;
+                case 7:
+                    date = "%Y%j";
+                    break;
+                default:
+                    throw new IllegalArgumentException("unable to identify date format for " + exampleTime);
             }
-            
+
+            String timePart = exampleTime.substring(i + 1);
+            hasDelim = !timePart.matches("\\d+");
+            delim = 0;
+            if (hasDelim) {
+                delim = timePart.charAt(2);
+            }
+            switch (timePart.length()) {
+                case 4:
+                    time = "%H%M";
+                    break;
+                case 5:
+                    time = "%H" + delim + "%M";
+                    break;
+                case 6:
+                    time = "%H%M%S";
+                    break;
+                case 8:
+                    time = "%H" + delim + "%M" + delim + "%S";
+                    break;
+                case 12:
+                    time = "%H" + delim + "%M" + delim + "%S.%{milli}";
+                    break;
+                case 15:
+                    time = "%H" + delim + "%M" + delim + "%S.%{milli}%{micro}";
+                    break;
+                default:
+                    throw new IllegalArgumentException("unable to identify time format for " + exampleTime);
+            }
+
             return date + dateTimeDelim + time;
-            
+
         } else {
             throw new IllegalArgumentException("example time must contain T or space.");
         }
     }
-    
-    private TimeParser( String formatString, Map/*<String,FieldHandler>*/ fieldHandlers ) {
+
+    private TimeParser(String formatString, Map/*<String,FieldHandler>*/ fieldHandlers) {
         time = new TimeUtil.TimeStruct();
         this.fieldHandlers = fieldHandlers;
-        this.formatString= formatString;
-        
+        this.formatString = formatString;
+
         String[] ss = formatString.split("%");
         fc = new String[ss.length];
         String[] delim = new String[ss.length + 1];
@@ -127,10 +153,11 @@ public class TimeParser {
 
         StringBuffer regex = new StringBuffer(100);
         regex.append(ss[0]);
-        
+
         lengths = new int[ndigits];
         for (int i = 0; i < lengths.length; i++) {
             lengths[i] = -1; // -1 indicates not known, but we'll figure out as many as we can.
+
         }
 
         delim[0] = ss[0];
@@ -311,14 +338,14 @@ public class TimeParser {
     }
 
     private double toUs1980(TimeStruct d) {
-        int year =  d.year;
-        int month =  d.month;
-        int day =  d.day;
+        int year = d.year;
+        int month = d.month;
+        int day = d.day;
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour =  d.hour;
-        int minute =  d.minute;
+        int hour = d.hour;
+        int minute = d.minute;
         double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
         double us1980 = (jd - 2436205 - 8035) * 86400000000. + seconds * 1e6 + d.millis * 1e3 + d.micros;
         return us1980;
@@ -404,12 +431,86 @@ public class TimeParser {
                 time.hour -= offset / 100;   // careful!
 
                 time.minute -= offset % 100;
-            } else if ( handlers[idigit]== 13 ) {
-                time.month= TimeUtil.monthNumber( timeString.substring(offs, offs + len) );
-                
+            } else if (handlers[idigit] == 13) {
+                time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
+
             }
         }
         return this;
+    }
+
+    /**
+     * Set the digit using the format code.  If multiple digits are found, then
+     * the integer provided should be the misinterpreted integer.  For example,
+     * if the format is "%Y%m%d", the integer 20080830 is split apart into 
+     * 2008,08,30.
+     * @param format spec like "%Y%m%d"
+     * @param value integer like 20080830.
+     * @return
+     */
+    public TimeParser setDigit(String format, int value) {
+        String[] ss = format.split("%", -2);
+        for (int i = ss.length-1; i > 0; i--) {
+            int mod=0;
+            int digit;
+            switch ( ss[i].charAt(0) ) {
+                case 'Y':
+                    mod= 10000;
+                    digit= value % mod;
+                    time.year = digit;
+                    break;
+                case 'y':
+                    mod=100;
+                    digit= value % mod;
+                    time.year = digit < 58 ? 2000 + digit : 1900 + digit;
+                    break;
+                case 'j':
+                    mod= 1000;
+                    digit= value % mod;
+                    time.month = 1;
+                    time.day = digit;
+                    break;
+                case 'm':
+                    mod=100;
+                    digit= value % mod;
+                    time.month = digit;
+                    break;
+                case 'd':
+                    mod=100;
+                    digit= value % mod;
+                    time.day = digit;
+                    break;
+                case 'H':
+                    mod=100;
+                    digit= value % mod;
+                    time.hour = digit;
+                    break;
+                case 'M':
+                    mod=100;
+                    digit= value % mod;
+                    time.minute = digit;
+                    break;
+                case 'S':
+                    mod=100;
+                    digit= value % mod;
+                    time.seconds = digit;
+                    break;
+                case '{':
+                    mod=1000;
+                    digit= value % mod;
+                    if ( ss[i].substring(1).equals("milli}") ) {
+                        time.millis = digit;
+                    } else {
+                        time.micros = digit;
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("format code not supported");
+            }
+            value= value / mod;
+        }
+        return this;
+
     }
 
     /**
@@ -509,7 +610,7 @@ public class TimeParser {
         int offs = 0;
         int len = 0;
 
-        TimeUtil.TimeStruct timel= TimeUtil.toTimeStruct(start);
+        TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
 
         NumberFormat[] nf = new NumberFormat[5];
         nf[2] = new DecimalFormat("00");
@@ -518,8 +619,9 @@ public class TimeParser {
 
 
         for (int idigit = 1; idigit < ndigits; idigit++) {
-            result.insert( offs,  this.delims[idigit - 1]);
+            result.insert(offs, this.delims[idigit - 1]);
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
+
                 offs = offsets[idigit];
             } else {
                 offs += this.delims[idigit - 1].length();
@@ -563,20 +665,22 @@ public class TimeParser {
                     case 9:
                         digit = timel.micros;
                         break;
-                    default: throw new RuntimeException("shouldn't get here");
+                    default:
+                        throw new RuntimeException("shouldn't get here");
                 }
-                result.insert( offs, nf[len].format(digit) );
-                offs+= len;
+                result.insert(offs, nf[len].format(digit));
+                offs += len;
 
-            } else if ( handlers[idigit]== 13 ) { // month names
-                result.insert( offs, TimeUtil.monthNameAbbrev(timel.month) );
-                offs+= len;
-                
+            } else if (handlers[idigit] == 13) { // month names
+
+                result.insert(offs, TimeUtil.monthNameAbbrev(timel.month));
+                offs += len;
+
             } else if (handlers[idigit] == 100) {
                 throw new RuntimeException("Handlers not supported");
 
             } else if (handlers[idigit] == 10) {
-               throw new RuntimeException("AM/PM supported");
+                throw new RuntimeException("AM/PM supported");
 
             } else if (handlers[idigit] == 11) {
                 throw new RuntimeException("Time Zones not supported");
