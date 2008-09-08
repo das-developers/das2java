@@ -95,7 +95,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.label = label;
         }
         public static final RebinnerEnum binAverage = new RebinnerEnum(new AverageTableRebinner(), "binAverage");
-        public static final RebinnerEnum nearestNeighbor = new RebinnerEnum(new NearestNeighborTableRebinner(), "nearestNeighbor");
+        //public static final RebinnerEnum nearestNeighbor = new RebinnerEnum(new NearestNeighborTableRebinner(), "nearestNeighbor");
+        public static final RebinnerEnum nearestNeighbor;
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
         
@@ -109,6 +110,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner.setInterpolate(false);
             rebinner.setEnlargePixels(false);
             binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
+            
+            rebinner = new AverageTableRebinner();
+            rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
+            nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
         }
 
         /*public static final RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
@@ -387,7 +392,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     WritableRaster r = plotImage2.getRaster();
 
                     try {
-                        r.setDataElements(0, 0, rasterWidth, rasterHeight, raster);
+                        if ( w==rasterWidth && h==rasterHeight ) {
+                            r.setDataElements(0, 0, rasterWidth, rasterHeight, raster);
+                        } else {
+                            System.err.println("avoided raster ArrayIndex... track this down sometime...");
+                        }
                     } catch (ArrayIndexOutOfBoundsException ex) {
                         throw ex;
                     }
