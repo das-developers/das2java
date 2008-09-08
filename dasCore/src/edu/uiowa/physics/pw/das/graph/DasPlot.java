@@ -712,7 +712,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (message == null) {
             message = String.valueOf(exception);
         }
-        postMessage(renderer, message, ERROR, null, null);
+        int errorLevel= ERROR;
+        if ( exception instanceof CancelledOperationException ) {
+            errorLevel= INFO;
+            if ( exception.getMessage()==null ) message= "Operation Cancelled";
+        }
+        postMessage(renderer, message, errorLevel, null, null);
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
