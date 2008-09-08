@@ -102,11 +102,11 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         
         Datum xTagWidth= DataSetUtil.guessXTagWidth(ds);
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble );
+        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.Linear );
         
         if ( ddY!=null ) {
             Datum yTagWidth= (Datum)ds.getProperty( DataSet.PROPERTY_Y_TAG_WIDTH );
-            AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, yTagWidth );
+            AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, yTagWidth, AverageTableRebinner.Interpolate.Linear );
         }
         
         if (peaks == null) {
