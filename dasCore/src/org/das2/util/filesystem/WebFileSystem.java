@@ -27,6 +27,8 @@
 
 package org.das2.util.filesystem;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.net.*;
@@ -65,7 +67,35 @@ public abstract class WebFileSystem extends FileSystem {
      * plug-in template for implementation.  if non-null, use this.
      */
     protected WebProtocol protocol;
-    
+
+    protected boolean offline = true;
+        
+    /**
+     * if true, then the remote filesystem is not accessible, but local cache
+     * copies may be accessed.  See FileSystemSettings.allowOffline
+     */
+    public static final String PROP_OFFLINE = "offline";
+
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        boolean oldOffline = offline;
+        this.offline = offline;
+        propertyChangeSupport.firePropertyChange(PROP_OFFLINE, oldOffline, offline);
+    }
+
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
     /** Creates a new instance of WebFileSystem */
     protected WebFileSystem(URL root, File localRoot) {
         super( root );        

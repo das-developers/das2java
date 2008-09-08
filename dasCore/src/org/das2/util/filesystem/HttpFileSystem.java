@@ -27,8 +27,6 @@
 package org.das2.util.filesystem;
 
 import edu.uiowa.physics.pw.das.DasApplication;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
@@ -72,9 +70,17 @@ public class HttpFileSystem extends WebFileSystem {
                     // xerces String encode= new String( Base64.encode(root.getUserInfo().getBytes()) );
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
+                
+                boolean offline= true;
                 urlc.connect();
                 if ( urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode()!=HttpURLConnection.HTTP_FORBIDDEN ) {
-                    throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
+                    if ( FileSystem.settings().isAllowOffline() ) {
+                        logger.info("remote filesystem is offline, allowing access to local cache.");
+                    } else {
+                        throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
+                    }
+                } else {
+                    offline= false;
                 }
                 
                 File local;
@@ -87,8 +93,11 @@ public class HttpFileSystem extends WebFileSystem {
                     logger.finer("initializing httpfs " + root + " in applet mode" );
                 }
                 HttpFileSystem result = new HttpFileSystem(root, local);
+                result.offline= offline;
+                
                 instances.put(root.toString(), result);
                 return result;
+                
             } catch (FileSystemOfflineException e) {
                 throw e;
             } catch (IOException e) {

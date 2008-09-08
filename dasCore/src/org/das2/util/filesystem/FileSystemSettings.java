@@ -65,6 +65,25 @@ public class FileSystemSettings {
     }
 
     
+    protected boolean allowOffline = false;
+    
+    /**
+     * allow use of persistent, cached files when the file system is not accessible.
+     * FileSystem implementations will throw FileNotFound exception when remote
+     * resources are not available, and FileSystemOfflineExceptions are not
+     * thrown.
+     */
+    public static final String PROP_ALLOWOFFLINE = "allowOffline";
+
+    public boolean isAllowOffline() {
+        return allowOffline;
+    }
+
+    public void setAllowOffline(boolean allowOffline) {
+        boolean oldAllowOffline = allowOffline;
+        this.allowOffline = allowOffline;
+        propertyChangeSupport.firePropertyChange(PROP_ALLOWOFFLINE, oldAllowOffline, allowOffline);
+    }
     
     
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
