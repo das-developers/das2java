@@ -34,6 +34,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.StringTokenizer;
 
@@ -420,7 +421,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     public String toString() {
-        return getClass().getName() + "[minimum=" + getDMinimum() + " maximum=" + getDMaximum() + "]";
+        String format="%.1f%%%+.1fem%+dpt";
+        String smin= String.format(format, minimum*100, emMinimum, ptMinimum );
+        String smax= String.format(format, maximum*100, emMaximum, ptMaximum );
+        return getClass().getName() + smin + "," +smax + "[minimum=" + getDMinimum() + " maximum=" + getDMaximum() + "]";
     }
     
     /**
