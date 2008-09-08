@@ -184,7 +184,7 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
             editorState = DATUM;
             Datum d = (Datum)value;
             datumEditor.setValue(d);
-            return datumEditor;
+            return datumEditor.getCustomEditor();
         }
         else if (pd.getPropertyType().equals(CommandBlock.class)) {
             editorState = COMMAND_BLOCK;
