@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.components.propertyeditor;
 import org.das2.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableCellRenderer;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
-import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
+import org.das2.dasml.SerializeUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;

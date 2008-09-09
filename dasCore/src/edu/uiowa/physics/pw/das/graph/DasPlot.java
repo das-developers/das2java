@@ -35,7 +35,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.dasml.FormBase;
+import org.das2.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumVector;

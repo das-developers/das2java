@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dasml.FormBase;
 import org.das2.DasNameException;
 import org.das2.DasPropertyException;
 import org.das2.util.DasExceptionHandler;
@@ -39,7 +40,6 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
-import edu.uiowa.physics.pw.das.dasml.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import org.das2.system.DasLogger;
 

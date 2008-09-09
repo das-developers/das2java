@@ -5,7 +5,7 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.dasml.*;
+import org.das2.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import java.awt.*;

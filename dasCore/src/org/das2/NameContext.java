@@ -24,8 +24,8 @@
 package org.das2;
 
 import org.das2.beans.BeansUtil;
-import edu.uiowa.physics.pw.das.dasml.ParsedExpression;
-import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
+import org.das2.dasml.ParsedExpression;
+import org.das2.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.datum.*;
 
 import java.beans.*;
@@ -278,7 +278,7 @@ public class NameContext {
      * @param valueString the given <code>String</code>
      * @param type the given type
      */
-    public Object parseValue(String valueString, Class type) throws edu.uiowa.physics.pw.das.dasml.ParsedExpressionException, InvocationTargetException, DasPropertyException {
+    public Object parseValue(String valueString, Class type) throws org.das2.dasml.ParsedExpressionException, InvocationTargetException, DasPropertyException {
         Object parsedValue;
         valueString = replaceReferences(valueString);
         if (type == String.class) {

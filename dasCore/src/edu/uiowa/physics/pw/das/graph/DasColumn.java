@@ -27,7 +27,7 @@ import org.das2.NameContext;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.dasml.FormBase;
+import org.das2.dasml.FormBase;
 import java.text.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

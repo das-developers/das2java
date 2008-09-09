@@ -11,8 +11,8 @@ package org.das2.util;
 
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
-import edu.uiowa.physics.pw.das.dasml.SerializeUtil;
-import edu.uiowa.physics.pw.das.dasml.DOMBuilder;
+import org.das2.dasml.SerializeUtil;
+import org.das2.dasml.DOMBuilder;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import org.das2.util.filesystem.Glob;
 import java.awt.Component;

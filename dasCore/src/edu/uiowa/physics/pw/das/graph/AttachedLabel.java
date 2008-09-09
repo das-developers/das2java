@@ -29,7 +29,7 @@ import org.das2.DasApplication;
 import org.das2.DasNameException;
 import org.das2.DasPropertyException;
 import org.das2.NameContext;
-import edu.uiowa.physics.pw.das.dasml.FormBase;
+import org.das2.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;

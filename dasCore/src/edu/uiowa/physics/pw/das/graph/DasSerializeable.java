@@ -6,10 +6,10 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dasml.FormBase;
 import org.das2.DasNameException;
 import org.das2.DasPropertyException;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.dasml.*;
 import java.text.*;
 import org.w3c.dom.*;
 

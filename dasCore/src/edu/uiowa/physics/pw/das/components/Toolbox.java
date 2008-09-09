@@ -23,7 +23,18 @@
 
 package edu.uiowa.physics.pw.das.components;
 
-import edu.uiowa.physics.pw.das.dasml.*;
+import org.das2.dasml.FormTab;
+import org.das2.dasml.FormChoice;
+import org.das2.dasml.FormList;
+import org.das2.dasml.FormPanel;
+import org.das2.dasml.FormText;
+import org.das2.dasml.FormRadioButtonGroup;
+import org.das2.dasml.FormRadioButton;
+import org.das2.dasml.FormWindow;
+import org.das2.dasml.FormTextField;
+import org.das2.dasml.FormCheckBox;
+import org.das2.dasml.TransferableFormComponent;
+import org.das2.dasml.FormButton;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;

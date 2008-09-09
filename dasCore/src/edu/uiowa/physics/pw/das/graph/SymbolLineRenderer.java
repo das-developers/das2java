@@ -30,7 +30,7 @@ import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
-import edu.uiowa.physics.pw.das.dasml.FormBase;
+import org.das2.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;

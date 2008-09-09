@@ -30,7 +30,7 @@ import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
-import edu.uiowa.physics.pw.das.dasml.FormBase;
+import org.das2.dasml.FormBase;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.InconvertibleUnitsException;

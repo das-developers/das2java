@@ -2,10 +2,10 @@ package edu.uiowa.physics.pw.das.components.propertyeditor;
 
 import edu.uiowa.physics.pw.das.components.DatumEditor;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
-import edu.uiowa.physics.pw.das.dasml.CommandBlock;
-import edu.uiowa.physics.pw.das.dasml.CommandBlockEditor;
-import edu.uiowa.physics.pw.das.dasml.ListOption;
-import edu.uiowa.physics.pw.das.dasml.OptionListEditor;
+import org.das2.dasml.CommandBlock;
+import org.das2.dasml.CommandBlockEditor;
+import org.das2.dasml.ListOption;
+import org.das2.dasml.OptionListEditor;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import org.das2.util.DasExceptionHandler;
 import java.awt.Component;
