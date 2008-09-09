@@ -13,7 +13,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;

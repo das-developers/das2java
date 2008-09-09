@@ -11,7 +11,7 @@ import org.das2.util.GrannyTextRenderer;
 import org.das2.util.ObjectLocator;
 import org.das2.util.DenseConsoleFormatter;
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.Units;

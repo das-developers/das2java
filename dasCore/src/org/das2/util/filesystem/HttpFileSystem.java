@@ -26,7 +26,7 @@
  */
 package org.das2.util.filesystem;
 
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;

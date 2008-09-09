@@ -23,7 +23,7 @@
 
 package org.das2.util;
 
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

@@ -24,7 +24,7 @@
 
 package org.das2.util.filesystem;
 
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.net.URL;
 

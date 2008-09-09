@@ -6,6 +6,7 @@
 
 package org.das2.util;
 
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;

@@ -14,7 +14,7 @@ import edu.uiowa.physics.pw.das.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
-import edu.uiowa.physics.pw.das.util.TimeParser;
+import org.das2.util.TimeParser;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
