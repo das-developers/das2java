@@ -164,6 +164,15 @@ public abstract class FileSystem  {
         return properties.get(name);
     }
     
+    /** 
+     * return the folder that is a local copy of the filesystem. 
+     * For LocalFilesystem, this is the same as the filesystem.  For remote
+     * filesystems, this is a folder within their home directory.  
+     * Note File.getAbsolutePath() returns the string representation of this root.
+     * @return the folder that is a local copy of the filesystem. 
+     */
+    abstract public File getLocalRoot();
+        
     /**
      * create a new filesystem that is a part of this filesystem, rooted at
      * directory.

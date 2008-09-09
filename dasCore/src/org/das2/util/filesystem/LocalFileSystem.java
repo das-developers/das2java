@@ -23,7 +23,6 @@
 
 package org.das2.util.filesystem;
 
-import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.io.*;
 import java.net.*;
@@ -109,6 +108,11 @@ public class LocalFileSystem extends FileSystem {
     
     public FileObject getFileObject(String filename) {
         return new LocalFileObject( this, localRoot, filename );
+    }
+    
+    @Override
+    public File getLocalRoot() {
+        return localRoot;
     }
     
 }
