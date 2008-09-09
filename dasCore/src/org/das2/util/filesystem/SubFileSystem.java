@@ -25,6 +25,7 @@
 
 package org.das2.util.filesystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,6 +59,11 @@ public class SubFileSystem extends FileSystem {
     
     public String[] listDirectory(String directory, String regex) throws IOException {
         return parent.listDirectory( dir + directory, regex );
+    }
+    
+    @Override
+    public File getLocalRoot() {
+        return new File( parent.getLocalRoot(), dir );
     }
     
     
