@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das.client;
  *
  * @author  jbf
  */
-public class DataSetDescriptorNotAvailableException extends edu.uiowa.physics.pw.das.DasException {
+public class DataSetDescriptorNotAvailableException extends org.das2.DasException {
     /**
      * Creates a new instance of <code>DataSetDescriptionNotAvailableException</code> without detail message.
      */

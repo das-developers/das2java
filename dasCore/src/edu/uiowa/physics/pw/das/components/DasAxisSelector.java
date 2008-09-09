@@ -98,14 +98,14 @@ public class DasAxisSelector extends javax.swing.JPanel implements ActionListene
                 axis.setDataRange(Datum.create(Double.valueOf(idStart.getText()).doubleValue(),axis.getUnits()),
                 axis.getDataMaximum());
             } catch (NumberFormatException e) {
-                edu.uiowa.physics.pw.das.util.DasDie.println(e);
+                org.das2.util.DasDie.println(e);
             }
         } else if (command.equals("setMaximum")) {
             try {
                 axis.setDataRange(axis.getDataMinimum(),
                  Datum.create(Double.valueOf(idStop.getText()).doubleValue(), axis.getUnits() ));
             } catch (NumberFormatException e) {
-                edu.uiowa.physics.pw.das.util.DasDie.println(e);
+                org.das2.util.DasDie.println(e);
             }
         }
     }

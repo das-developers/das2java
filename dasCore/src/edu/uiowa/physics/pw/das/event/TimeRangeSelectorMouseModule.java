@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;

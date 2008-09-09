@@ -6,7 +6,7 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.util.StreamTool;
+import org.das2.util.StreamTool;
 import java.io.*;
 
 /**

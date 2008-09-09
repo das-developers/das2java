@@ -11,7 +11,7 @@ package edu.uiowa.physics.pw.das.dataset;
 import edu.uiowa.physics.pw.das.dataset.QernalTableRebinner.Qernal;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.util.DasMath;
+import org.das2.util.DasMath;
 
 /**
  *

@@ -1,8 +1,8 @@
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.util.GrannyTextRenderer;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.geom.*;
 

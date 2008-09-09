@@ -23,9 +23,9 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
+import org.das2.util.DasMath;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
-import edu.uiowa.physics.pw.das.util.*;
 
 import java.util.*;
 import java.text.ParseException;

@@ -23,6 +23,9 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasApplication;
+import org.das2.DasProperties;
+import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
@@ -34,7 +37,6 @@ import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.system.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.*;
 import javax.swing.*;
 import org.w3c.dom.Document;
@@ -405,8 +407,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         float lineWidth = Float.parseFloat(element.getAttribute("lineWidth"));
         try {
             renderer.setDataSetID(dataSetID);
-        } catch (edu.uiowa.physics.pw.das.DasException de) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(de);
+        } catch (org.das2.DasException de) {
+            org.das2.util.DasExceptionHandler.handle(de);
         }
         renderer.setPsym(psym);
         renderer.setColor(color);

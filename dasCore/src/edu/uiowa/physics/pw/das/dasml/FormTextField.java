@@ -23,6 +23,9 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import org.das2.NameContext;
+import org.das2.DasApplication;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.Document;
@@ -31,6 +34,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import javax.swing.*;
+import org.das2.DasPropertyException;
 
 /**
  * A subclass of JTextField to override the default Beans properties of
@@ -42,7 +46,7 @@ public class FormTextField extends JTextField implements Editable, FormComponent
     
     private String dasName;
     
-    protected edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
+    protected org.das2.util.DnDSupport dndSupport;
     
     private boolean editingMode;
     
@@ -54,15 +58,15 @@ public class FormTextField extends JTextField implements Editable, FormComponent
         try {
             setDasName(name);
         }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         setMinimumSize(getPreferredSize());
         setMaximumSize(getPreferredSize());
     }
     
     public FormTextField(Element element, FormBase form)
-        throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException,
+        throws  org.das2.DasPropertyException,org.das2.DasNameException,  org.das2.DasException,
         ParsedExpressionException {
 
         String name = element.getAttribute("name");
@@ -85,8 +89,8 @@ public class FormTextField extends JTextField implements Editable, FormComponent
         try {
             setDasName(name);
         }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
     }
     
@@ -108,7 +112,7 @@ public class FormTextField extends JTextField implements Editable, FormComponent
         return parent.getForm();
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         if (dndSupport == null) {
             dndSupport = new DefaultComponentDnDSupport(this);
         }
@@ -126,7 +130,7 @@ public class FormTextField extends JTextField implements Editable, FormComponent
         return dasName;
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
+    public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }

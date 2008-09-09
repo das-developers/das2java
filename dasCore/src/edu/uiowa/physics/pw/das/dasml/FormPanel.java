@@ -74,7 +74,7 @@ public class FormPanel extends FormContainer implements Editable, FormComponent 
      * Element instance.
      */
     FormPanel(Element element, FormBase form)
-        throws edu.uiowa.physics.pw.das.DasException,
+        throws org.das2.DasException,
         ParsedExpressionException, org.xml.sax.SAXException, java.text.ParseException {
         
         super();
@@ -177,7 +177,7 @@ public class FormPanel extends FormContainer implements Editable, FormComponent 
         return element;
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         if (dndSupport == null) {
             dndSupport = new ContainerDnDSupport(null);
         }

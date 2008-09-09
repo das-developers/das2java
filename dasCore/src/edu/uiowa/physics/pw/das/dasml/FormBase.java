@@ -23,10 +23,11 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 //import org.apache.xml.serialize.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,6 +55,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import org.das2.DasException;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 
@@ -130,7 +132,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
         catch (ParserConfigurationException pce) {
             throw new IllegalStateException("DOM parser not configured properly: " + pce.getMessage());
         }
-        catch (edu.uiowa.physics.pw.das.DasException de) {
+        catch (org.das2.DasException de) {
             throw new SAXException(de);
         }
     }
@@ -312,14 +314,14 @@ public class FormBase extends JTabbedPane implements FormComponent {
     }
     
     
-    public Object checkValue(String name, Class type, String tag) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException {
+    public Object checkValue(String name, Class type, String tag) throws  org.das2.DasPropertyException, org.das2.DasNameException {
         try {
             Object obj = application.getNameContext().get(name);
             if (obj == null) {
-                throw new edu.uiowa.physics.pw.das.DasNameException(name + " must be defined before it is used");
+                throw new org.das2.DasNameException(name + " must be defined before it is used");
             }
             if (!type.isInstance(obj)) {
-                throw new edu.uiowa.physics.pw.das.DasPropertyException(edu.uiowa.physics.pw.das.DasPropertyException.TYPE_MISMATCH, name, null);
+                throw new org.das2.DasPropertyException(org.das2.DasPropertyException.TYPE_MISMATCH, name, null);
             }
             return obj;
         }
@@ -328,13 +330,13 @@ public class FormBase extends JTabbedPane implements FormComponent {
         }
     }
     
-    public Object invoke(String name, String[] args) throws edu.uiowa.physics.pw.das.DasPropertyException, DataFormatException, ParsedExpressionException, InvocationTargetException {
+    public Object invoke(String name, String[] args) throws org.das2.DasPropertyException, DataFormatException, ParsedExpressionException, InvocationTargetException {
         int lastDot = name.lastIndexOf('.');
         if (lastDot == -1) throw new DataFormatException("No object associated with method name" + name);
         String objectName = name.substring(0, lastDot);
         String methodName = name.substring(lastDot+1);
-        edu.uiowa.physics.pw.das.util.DasDie.println("object name: " + objectName);
-        edu.uiowa.physics.pw.das.util.DasDie.println("method name: " + methodName);
+        org.das2.util.DasDie.println("object name: " + objectName);
+        org.das2.util.DasDie.println("method name: " + methodName);
         Object o = application.getNameContext().get(objectName);
         Method method = null;
         try {
@@ -342,7 +344,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
             MethodDescriptor[] methodDescriptors = info.getMethodDescriptors();
             for (int i = 0; i <= methodDescriptors.length; i++) {
                 if (i == methodDescriptors.length)
-                    throw new edu.uiowa.physics.pw.das.DasPropertyException(edu.uiowa.physics.pw.das.DasPropertyException.NOT_DEFINED, methodName, objectName);
+                    throw new org.das2.DasPropertyException(org.das2.DasPropertyException.NOT_DEFINED, methodName, objectName);
                 if (!methodDescriptors[i].getName().equals(methodName)) continue;
                 //if (methodDescriptors[i].getMethod().getParameterTypes().length != args.length) continue;
                 method = methodDescriptors[i].getMethod();
@@ -459,7 +461,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
         }
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         return null;
     }
     
@@ -475,8 +477,8 @@ public class FormBase extends JTabbedPane implements FormComponent {
         return Collections.unmodifiableList(windowList);
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
-        throw new edu.uiowa.physics.pw.das.DasNameException();
+    public void setDasName(String name) throws org.das2.DasNameException {
+        throw new org.das2.DasNameException();
     }
     
     public void deregisterComponent() {
@@ -492,11 +494,11 @@ public class FormBase extends JTabbedPane implements FormComponent {
         }
     }
     
-    public edu.uiowa.physics.pw.das.DasApplication getDasApplication() {
+    public org.das2.DasApplication getDasApplication() {
         return application;
     }
     
-    public void registerComponent() throws edu.uiowa.physics.pw.das.DasException {
+    public void registerComponent() throws org.das2.DasException {
         for (int index = 0; index < getComponentCount(); index++) {
             Component c = getComponent(index);
             if (c instanceof FormComponent) {
@@ -632,10 +634,10 @@ public class FormBase extends JTabbedPane implements FormComponent {
             catch (edu.uiowa.physics.pw.das.dasml.ParsedExpressionException pee) {
                 pee.printStackTrace();
             }
-            catch (edu.uiowa.physics.pw.das.DasException de) {
+
+            catch (org.das2.DasException de) {
                 de.printStackTrace();
-            }
-            catch (UnsupportedFlavorException ufe) {
+            }            catch (UnsupportedFlavorException ufe) {
                 //Allow to fall through.
                 //exception is handled by allowing success to remain false
             }

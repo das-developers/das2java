@@ -55,8 +55,8 @@ public class FormRadioButtonGroup extends FormContainer implements Editable, For
     }
     
     FormRadioButtonGroup(Element element, FormBase form)
-        throws edu.uiowa.physics.pw.das.DasPropertyException, ParsedExpressionException,
-        edu.uiowa.physics.pw.das.DasNameException, org.xml.sax.SAXException {
+        throws org.das2.DasPropertyException, ParsedExpressionException,
+        org.das2.DasNameException, org.xml.sax.SAXException {
            
         group = new ButtonGroup();
         
@@ -119,7 +119,7 @@ public class FormRadioButtonGroup extends FormContainer implements Editable, For
         return element;
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         if (dndSupport == null) {
             dndSupport = new ContainerDnDSupport(null);
         }

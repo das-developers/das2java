@@ -22,8 +22,8 @@
  */
 package edu.uiowa.physics.pw.das.client;
 
-import edu.uiowa.physics.pw.das.DasApplication;
-import edu.uiowa.physics.pw.das.DasProperties;
+import org.das2.DasApplication;
+import org.das2.DasProperties;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Toolkit;
@@ -170,7 +170,7 @@ public class Authenticator extends JPanel {
                 if ( password.equals("usePrefs") ) {
                     passCrypt= prefs.get( resourceId+".passwordCrypt", DasProperties.getInstance().getProperty("password") );
                 } else {
-                    passCrypt= edu.uiowa.physics.pw.das.util.Crypt.crypt(password);
+                    passCrypt= org.das2.util.Crypt.crypt(password);
                 }
                 
                 try {

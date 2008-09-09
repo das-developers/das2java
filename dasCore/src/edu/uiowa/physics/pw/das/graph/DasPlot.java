@@ -22,6 +22,13 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.NameContext;
+import org.das2.DasApplication;
+import org.das2.CancelledOperationException;
+import org.das2.DasProperties;
+import org.das2.util.GrannyTextRenderer;
+import org.das2.util.DasExceptionHandler;
+import org.das2.util.DnDSupport;
 import java.beans.PropertyChangeEvent;
 import org.das2.util.monitor.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
@@ -35,7 +42,6 @@ import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -61,6 +67,10 @@ import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.das2.DasException;
+import org.das2.DasNameException;
+import org.das2.DasNameException;
+import org.das2.DasPropertyException;
 
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
@@ -570,7 +580,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 		    plotGraphics = (Graphics2D) cacheImage.getGraphics();
 		    plotGraphics.setBackground(getBackground());
 		    plotGraphics.setColor(getForeground());
-		    plotGraphics.setRenderingHints(edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
+		    plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
 		    if (overSize) {
 			plotGraphics.translate(x - cacheImageBounds.x - 1, y - cacheImageBounds.y - 1);
 		    }
@@ -908,7 +918,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return (Renderer[]) renderers.toArray(new Renderer[0]);
     }
 
-    public static DasPlot processPlotElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    public static DasPlot processPlotElement(Element element, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, DasException, java.text.ParseException {
         String name = element.getAttribute("name");
 
         DasRow row = (DasRow) form.checkValue(element.getAttribute("row"), DasRow.class, "<row>");
@@ -968,7 +978,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return plot;
     }
 
-    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, DasException , java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -998,7 +1008,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
 
-    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -1028,7 +1038,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
 
-    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException, java.text.ParseException {
+    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException, DasException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -1041,7 +1051,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
 
-    private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int index = 0; index < children.getLength(); index++) {
             Node node = children.item(index);
@@ -1109,15 +1119,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         try {
             plot.setDasName(name);
-        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        } catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         return plot;
     }
 
-    private class PlotDnDSupport extends edu.uiowa.physics.pw.das.util.DnDSupport {
+    private class PlotDnDSupport extends org.das2.util.DnDSupport {
 
-        PlotDnDSupport(edu.uiowa.physics.pw.das.util.DnDSupport parent) {
+        PlotDnDSupport(org.das2.util.DnDSupport parent) {
             super(DasPlot.this, DnDConstants.ACTION_COPY_OR_MOVE, parent);
         }
 

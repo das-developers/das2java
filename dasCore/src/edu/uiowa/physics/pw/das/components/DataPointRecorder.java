@@ -5,6 +5,8 @@
  */
 package edu.uiowa.physics.pw.das.components;
 
+import org.das2.DasException;
+import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
@@ -14,7 +16,6 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.BorderLayout;
 import java.awt.event.*;
 import java.io.*;

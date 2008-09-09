@@ -82,7 +82,7 @@ public class DataPointSelectorMouseModule extends MouseModule {
                             break;
                     }
                 } catch ( java.awt.AWTException e1 ) {
-                    edu.uiowa.physics.pw.das.util.DasDie.println(e1.getMessage());
+                    org.das2.util.DasDie.println(e1.getMessage());
                 }
                 
             } else {

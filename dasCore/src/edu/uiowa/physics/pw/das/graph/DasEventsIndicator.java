@@ -11,7 +11,6 @@ import edu.uiowa.physics.pw.das.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;

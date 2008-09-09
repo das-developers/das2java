@@ -23,9 +23,12 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import org.das2.NameContext;
+import org.das2.DasApplication;
+import org.das2.DasException;
+import org.das2.DasPropertyException;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
-import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,6 +36,7 @@ import org.w3c.dom.NodeList;
 
 import javax.swing.*;
 import java.awt.*;
+import org.das2.util.DasExceptionHandler;
 
 /**
  * @author  eew
@@ -84,8 +88,8 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
         try {
             setDasName(name);
         }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         dndSupport = new ContainerDnDSupport(null);
     }
@@ -133,8 +137,8 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
         try {
             setDasName(name);
         }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         dndSupport = new ContainerDnDSupport(null);
     }
@@ -174,7 +178,7 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
         return dasName;
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
+    public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }
@@ -354,7 +358,7 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
         }
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         if (dndSupport == null) {
             dndSupport = new ContainerDnDSupport(null);
         }
@@ -413,7 +417,7 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
         }
     }
     
-    public void registerComponent() throws edu.uiowa.physics.pw.das.DasException {
+    public void registerComponent() throws org.das2.DasException {
         DasApplication app = getDasApplication();
         if (app != null) {
             NameContext nc = app.getNameContext();

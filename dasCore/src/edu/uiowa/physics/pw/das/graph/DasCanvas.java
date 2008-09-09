@@ -23,12 +23,12 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.DasApplication;
-import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.DasNameException;
-import edu.uiowa.physics.pw.das.DasProperties;
-import edu.uiowa.physics.pw.das.DasPropertyException;
-import edu.uiowa.physics.pw.das.NameContext;
+import org.das2.DasApplication;
+import org.das2.DasException;
+import org.das2.DasNameException;
+import org.das2.DasProperties;
+import org.das2.DasPropertyException;
+import org.das2.NameContext;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dasml.FormBase;
@@ -38,12 +38,12 @@ import edu.uiowa.physics.pw.das.event.DragRenderer;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import edu.uiowa.physics.pw.das.system.RequestProcessor;
-import edu.uiowa.physics.pw.das.util.AboutUtil;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
-import edu.uiowa.physics.pw.das.util.DasPNGConstants;
-import edu.uiowa.physics.pw.das.util.DasPNGEncoder;
-import edu.uiowa.physics.pw.das.util.awt.EventQueueBlocker_1;
-import edu.uiowa.physics.pw.das.util.awt.GraphicsOutput;
+import org.das2.util.AboutUtil;
+import org.das2.util.DasExceptionHandler;
+import org.das2.util.DasPNGConstants;
+import org.das2.util.DasPNGEncoder;
+import org.das2.util.awt.EventQueueBlocker_1;
+import org.das2.util.awt.GraphicsOutput;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -197,7 +197,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         try {
                             canvas.writeToPng(ffname);
                         } catch (java.io.IOException ioe) {
-                            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                            org.das2.util.DasExceptionHandler.handle(ioe);
                         }
                     }
                 };
@@ -229,7 +229,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         try {
                             canvas.writeToSVG(ffname);
                         } catch (java.io.IOException ioe) {
-                            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                            org.das2.util.DasExceptionHandler.handle(ioe);
                         }
                     }
                 };
@@ -261,7 +261,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                         try {
                             canvas.writeToPDF(ffname);
                         } catch (java.io.IOException ioe) {
-                            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                            org.das2.util.DasExceptionHandler.handle(ioe);
                         }
                     }
                 };
@@ -272,7 +272,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     public static final Action EDIT_DAS_PROPERTIES_ACTION = new AbstractAction("DAS Properties") {
         public void actionPerformed(ActionEvent e) {
-            edu.uiowa.physics.pw.das.DasProperties.showEditor();
+            org.das2.DasProperties.showEditor();
         }
     };
     
@@ -352,7 +352,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     
     List devicePositionList = new ArrayList();
     
-    edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
+    org.das2.util.DnDSupport dndSupport;
     
     DasCanvasStateSupport stateSupport;
     
@@ -922,7 +922,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      */
     protected void addImpl(Component comp, Object constraints, int index) {
         if (comp == null) {
-            edu.uiowa.physics.pw.das.util.DasDie.println("NULL COMPONENT");
+            org.das2.util.DasDie.println("NULL COMPONENT");
             Thread.dumpStack();
             return;
         }
@@ -1169,7 +1169,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             nc.put(name, canvas);
             
             return canvas;
-        } catch (edu.uiowa.physics.pw.das.DasPropertyException dpe) {
+        } catch (org.das2.DasPropertyException dpe) {
             if (!element.getAttribute("name").equals("")) {
                 dpe.setObjectName(element.getAttribute("name"));
             }
@@ -1192,8 +1192,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         try {
             canvas.setDasName(name);
-        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        } catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         return canvas;
     }
@@ -1232,7 +1232,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
     
-    private class CanvasDnDSupport extends edu.uiowa.physics.pw.das.util.DnDSupport {
+    private class CanvasDnDSupport extends org.das2.util.DnDSupport {
         
         CanvasDnDSupport() {
             super(DasCanvas.this, DnDConstants.ACTION_COPY_OR_MOVE, null);
@@ -1744,7 +1744,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** TODO
      * @return
      */
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         return dndSupport;
     }
     
@@ -1776,7 +1776,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param name
      * @throws DasNameException
      */
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
+    public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }
@@ -1868,7 +1868,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
     
-    public void registerComponent() throws edu.uiowa.physics.pw.das.DasException {
+    public void registerComponent() throws org.das2.DasException {
         try {
             DasApplication app = getDasApplication();
             if (app != null) {

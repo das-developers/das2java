@@ -11,7 +11,7 @@ package edu.uiowa.physics.pw.das.dataset;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.UnitsUtil;
-import edu.uiowa.physics.pw.das.util.DasMath;
+import org.das2.util.DasMath;
 
 /**
  * calculate TableDataSets with tables that are gridded in linear or log space.

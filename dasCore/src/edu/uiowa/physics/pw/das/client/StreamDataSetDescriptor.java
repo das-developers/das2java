@@ -22,16 +22,19 @@
  */
 package edu.uiowa.physics.pw.das.client;
 
+import org.das2.DasIOException;
+import org.das2.CancelledOperationException;
+import org.das2.DasException;
+import org.das2.util.DasProgressMonitorInputStream;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.StreamTool;
+import org.das2.util.StreamTool;
 
 import java.io.*;
 import java.nio.*;

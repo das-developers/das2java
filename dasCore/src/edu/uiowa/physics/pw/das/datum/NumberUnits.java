@@ -23,8 +23,8 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
+import org.das2.util.DasMath;
 import edu.uiowa.physics.pw.das.datum.format.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.math.*;
 import java.text.ParseException;
 import java.util.regex.Matcher;

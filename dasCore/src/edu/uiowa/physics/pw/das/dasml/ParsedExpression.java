@@ -380,7 +380,7 @@ public class ParsedExpression {
         return false;
     }
     
-    public Object evaluate(edu.uiowa.physics.pw.das.NameContext nc) throws ParsedExpressionException, edu.uiowa.physics.pw.das.DasPropertyException {
+    public Object evaluate(org.das2.NameContext nc) throws ParsedExpressionException, org.das2.DasPropertyException {
         try {
             return evaluate(this.list, nc);
         }
@@ -395,7 +395,7 @@ public class ParsedExpression {
         }
     }
     
-    private static Object evaluate(List list, edu.uiowa.physics.pw.das.NameContext nc) throws ParsedExpressionException, InvocationTargetException, edu.uiowa.physics.pw.das.DasPropertyException {
+    private static Object evaluate(List list, org.das2.NameContext nc) throws ParsedExpressionException, InvocationTargetException, org.das2.DasPropertyException {
         if (list.size() == 0) {
             throw new RuntimeException("empty expression");
         }
@@ -419,7 +419,7 @@ public class ParsedExpression {
         return pop(stack);
     }
     
-    private static void evaluate(List stack, int id, edu.uiowa.physics.pw.das.NameContext nc) throws InvocationTargetException, ParsedExpressionException, edu.uiowa.physics.pw.das.DasPropertyException {
+    private static void evaluate(List stack, int id, org.das2.NameContext nc) throws InvocationTargetException, ParsedExpressionException, org.das2.DasPropertyException {
         switch(id) {
             case ID_LOAD:
                 load(stack, nc);
@@ -533,7 +533,7 @@ public class ParsedExpression {
         
     }
     
-    private static void load(List stack, edu.uiowa.physics.pw.das.NameContext nc) throws edu.uiowa.physics.pw.das.DasPropertyException, InvocationTargetException, ParsedExpressionException {
+    private static void load(List stack, org.das2.NameContext nc) throws org.das2.DasPropertyException, InvocationTargetException, ParsedExpressionException {
         String pname = popString(stack);
         Object source = pop(stack);
         Object value;
@@ -546,21 +546,21 @@ public class ParsedExpression {
         push(stack, value);
     }
     
-    private static void aload(List stack, edu.uiowa.physics.pw.das.NameContext nc) throws edu.uiowa.physics.pw.das.DasPropertyException, InvocationTargetException, ParsedExpressionException {
+    private static void aload(List stack, org.das2.NameContext nc) throws org.das2.DasPropertyException, InvocationTargetException, ParsedExpressionException {
         Integer index = popInteger(stack);
         String pname = popString(stack);
         Object source = pop(stack);
         push(stack, nc.getIndexedPropertyValue(source, pname, index.intValue()));
     }
     
-    private static void store(List stack, edu.uiowa.physics.pw.das.NameContext nc) throws edu.uiowa.physics.pw.das.DasPropertyException, InvocationTargetException, ParsedExpressionException {
+    private static void store(List stack, org.das2.NameContext nc) throws org.das2.DasPropertyException, InvocationTargetException, ParsedExpressionException {
         Object value = pop(stack);
         String pname = popString(stack);
         Object dest = pop(stack);
         nc.setPropertyValue(dest, pname, value);
     }
     
-    private static void astore(List stack, edu.uiowa.physics.pw.das.NameContext nc) throws edu.uiowa.physics.pw.das.DasPropertyException, InvocationTargetException, ParsedExpressionException {
+    private static void astore(List stack, org.das2.NameContext nc) throws org.das2.DasPropertyException, InvocationTargetException, ParsedExpressionException {
         Object value = pop(stack);
         Integer index = popInteger(stack);
         String pname = popString(stack);

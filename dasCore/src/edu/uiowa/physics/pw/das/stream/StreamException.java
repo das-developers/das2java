@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.DasException;
+import org.das2.DasException;
 import java.io.IOException;
 import org.xml.sax.SAXException;
 

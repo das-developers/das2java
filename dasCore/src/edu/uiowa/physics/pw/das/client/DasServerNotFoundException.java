@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das.client;
  *
  * @author  jbf
  */
-public class DasServerNotFoundException extends edu.uiowa.physics.pw.das.DasException {
+public class DasServerNotFoundException extends org.das2.DasException {
     
     /**
      * Creates a new instance of <code>DasServerNotFoundException</code> without detail message.

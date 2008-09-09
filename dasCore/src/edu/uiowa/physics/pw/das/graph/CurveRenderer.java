@@ -22,13 +22,13 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.awt.geom.*;
 

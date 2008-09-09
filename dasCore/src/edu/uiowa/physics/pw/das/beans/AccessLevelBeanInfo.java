@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import java.beans.*;
 import java.util.ArrayList;
 import java.util.Arrays;

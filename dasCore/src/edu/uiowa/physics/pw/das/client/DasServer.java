@@ -23,11 +23,11 @@
 
 package edu.uiowa.physics.pw.das.client;
 
+import org.das2.util.URLBuddy;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.DasIOException;
+import org.das2.DasIOException;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -38,6 +38,7 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
 
+import org.das2.DasException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -68,7 +69,7 @@ public class DasServer {
             plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
             sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
         } catch ( java.net.MalformedURLException e ) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(e);
+            org.das2.util.DasExceptionHandler.handle(e);
         }
     }
 
@@ -164,7 +165,7 @@ public class DasServer {
 
     }
 
-    public TreeModel getDataSetList() throws edu.uiowa.physics.pw.das.DasException {
+    public TreeModel getDataSetList() throws org.das2.DasException {
         String formData= "server=list";
 
         try {
@@ -364,9 +365,9 @@ public class DasServer {
         try {
             String formData= "server=changePassword";
             formData+= "&user="+URLBuddy.encodeUTF8(user);
-            String cryptPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(oldPass);
+            String cryptPass= org.das2.util.Crypt.crypt(oldPass);
             formData+= "&passwd="+URLBuddy.encodeUTF8(cryptPass);
-            String cryptNewPass= edu.uiowa.physics.pw.das.util.Crypt.crypt(newPass);
+            String cryptNewPass= org.das2.util.Crypt.crypt(newPass);
             formData+= "&newPasswd="+URLBuddy.encodeUTF8(cryptNewPass);
 
             URL server= new URL("http",host,port,path+"?"+formData);
@@ -433,7 +434,7 @@ public class DasServer {
 
                 das2Response= new String(data,14,index-14);
 
-                edu.uiowa.physics.pw.das.util.DasDie.println("das2Response="+das2Response);
+                org.das2.util.DasDie.println("das2Response="+das2Response);
 
                 in.reset();
                 in.skip( das2Response.length() + 2 * das2ResponseTag.length() + 5 );

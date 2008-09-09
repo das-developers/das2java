@@ -23,6 +23,8 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import org.das2.DasApplication;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
@@ -40,6 +42,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.List;
+import org.das2.DasNameException;
 
 /**
  * A subclass of JPanel to override the default Beans properties of
@@ -53,7 +56,7 @@ public abstract class FormContainer extends JPanel implements Editable, FormComp
     final float verticalComponentAlignment = JComponent.TOP_ALIGNMENT;
     
     boolean onHover = false;
-    edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
+    org.das2.util.DnDSupport dndSupport;
     List flavorList;
     int dropPosition;
     boolean editable;
@@ -180,7 +183,7 @@ public abstract class FormContainer extends JPanel implements Editable, FormComp
         super.addImpl(comp, constraints, index);
         if (comp instanceof FormComponent) {
             FormComponent fc = (FormComponent)comp;
-            edu.uiowa.physics.pw.das.util.DnDSupport childDnDSupport = fc.getDnDSupport();
+            org.das2.util.DnDSupport childDnDSupport = fc.getDnDSupport();
             if (childDnDSupport != null) {
                 childDnDSupport.setParent(dndSupport);
             }
@@ -378,8 +381,8 @@ public abstract class FormContainer extends JPanel implements Editable, FormComp
         return null;
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
-        throw new edu.uiowa.physics.pw.das.DasNameException();
+    public void setDasName(String name) throws org.das2.DasNameException {
+        throw new org.das2.DasNameException();
     }
     
     public void deregisterComponent() {
@@ -432,9 +435,9 @@ public abstract class FormContainer extends JPanel implements Editable, FormComp
         }
     }
     
-    protected class ContainerDnDSupport extends edu.uiowa.physics.pw.das.util.DnDSupport {
+    protected class ContainerDnDSupport extends org.das2.util.DnDSupport {
         
-        ContainerDnDSupport(edu.uiowa.physics.pw.das.util.DnDSupport parent) {
+        ContainerDnDSupport(org.das2.util.DnDSupport parent) {
             super(FormContainer.this, java.awt.dnd.DnDConstants.ACTION_COPY_OR_MOVE, parent);
         }
         
@@ -558,17 +561,17 @@ public abstract class FormContainer extends JPanel implements Editable, FormComp
             catch (org.xml.sax.SAXException se) {
                 throw new RuntimeException(se);
             }
-            catch (edu.uiowa.physics.pw.das.DasException de) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(de);
-            }
-            catch (edu.uiowa.physics.pw.das.dasml.ParsedExpressionException pee) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(pee);
+
+            catch (org.das2.DasException de) {
+                org.das2.util.DasExceptionHandler.handle(de);
+            }            catch (edu.uiowa.physics.pw.das.dasml.ParsedExpressionException pee) {
+                org.das2.util.DasExceptionHandler.handle(pee);
             }
             catch (IOException ioe) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                org.das2.util.DasExceptionHandler.handle(ioe);
             }
             catch ( java.text.ParseException ex ) {
-                edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ex);
+                org.das2.util.DasExceptionHandler.handle(ex);
             }
             return null;
         }

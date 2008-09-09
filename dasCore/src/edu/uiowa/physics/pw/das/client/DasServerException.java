@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das.client;
  *
  * @author  jbf
  */
-public class DasServerException extends edu.uiowa.physics.pw.das.DasException {
+public class DasServerException extends org.das2.DasException {
     
     /** Creates a new instance of DasServerException */
     public DasServerException() {

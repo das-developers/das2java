@@ -642,13 +642,13 @@ public class DasMLValidator extends DefaultHandler {
         
         ErrorHandler errorHandler = new ErrorHandler() {
             public void warning(SAXParseException spe) throws SAXException {
-                edu.uiowa.physics.pw.das.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
+                org.das2.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
             }
             public void error(SAXParseException spe) throws SAXException {
-                edu.uiowa.physics.pw.das.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
+                org.das2.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
             }
             public void fatalError(SAXParseException spe) throws SAXException {
-                edu.uiowa.physics.pw.das.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
+                org.das2.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
             }
         };
         
@@ -656,17 +656,17 @@ public class DasMLValidator extends DefaultHandler {
             String path = new java.io.File(args[0]).getCanonicalPath();
             DasMLValidator validator = new DasMLValidator();
             if (validator.validate(new InputSource("file://" + path), errorHandler)) {
-                edu.uiowa.physics.pw.das.util.DasDie.println("No errors");
+                org.das2.util.DasDie.println("No errors");
             }
         }
         catch (ParserConfigurationException pce) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(pce.getMessage());
+            org.das2.util.DasDie.println(pce.getMessage());
         }
         catch (SAXException se) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(se.getMessage());
+            org.das2.util.DasDie.println(se.getMessage());
         }
         catch (java.io.IOException ioe) {
-            edu.uiowa.physics.pw.das.util.DasDie.println(ioe.getMessage());
+            org.das2.util.DasDie.println(ioe.getMessage());
         }
         
     }

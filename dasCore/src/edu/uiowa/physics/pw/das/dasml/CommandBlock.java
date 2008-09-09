@@ -22,7 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.dasml;
 
-import edu.uiowa.physics.pw.das.DasPropertyException;
+import org.das2.DasPropertyException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -89,7 +89,7 @@ public class CommandBlock {
         String property = element.getAttribute("property");
         String value = element.getAttribute("value");
         
-        if (!edu.uiowa.physics.pw.das.NameContext.QUALIFIED_NAME.matcher(property).matches()) {
+        if (!org.das2.NameContext.QUALIFIED_NAME.matcher(property).matches()) {
             throw new IllegalArgumentException("property attribute must be a valid identifier: <set property=\""+property+"\" ...");
         }
         
@@ -122,7 +122,7 @@ public class CommandBlock {
         return new InvokeCommand(target, argsArray);
     }
     
-    public void execute(FormBase form) throws edu.uiowa.physics.pw.das.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException {
+    public void execute(FormBase form) throws org.das2.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException {
         Iterator iterator = commandList.iterator();
         int lastCommand = -1;
         boolean shouldSkip = false;
@@ -190,7 +190,7 @@ public class CommandBlock {
             this.value = value;
         }
         
-        public void execute(FormBase form)throws edu.uiowa.physics.pw.das.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException, edu.uiowa.physics.pw.das.DasNameException {
+        public void execute(FormBase form)throws org.das2.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException, org.das2.DasNameException {
             try {
                 form.getDasApplication().getNameContext().set(id, value);
             } catch ( DasPropertyException e ) {
@@ -230,7 +230,7 @@ public class CommandBlock {
             this.args = args;
         }
         
-        public void execute(FormBase form)throws edu.uiowa.physics.pw.das.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException {
+        public void execute(FormBase form)throws org.das2.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException {
             form.invoke(target, args);
         }
         
@@ -277,8 +277,8 @@ public class CommandBlock {
             return shouldSkip;
         }
         
-        public void execute(FormBase form)throws edu.uiowa.physics.pw.das.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException {
-            Matcher refMatcher = edu.uiowa.physics.pw.das.NameContext.refPattern.matcher(test);
+        public void execute(FormBase form)throws org.das2.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException {
+            Matcher refMatcher = org.das2.NameContext.refPattern.matcher(test);
             Object value;
             if (refMatcher.matches()) {
                 value = form.getDasApplication().getNameContext().get(refMatcher.group(1));
@@ -356,7 +356,7 @@ public class CommandBlock {
     static interface Command {
         CommandBlock getParent();
         void setParent(CommandBlock parent);
-        void execute(FormBase form)throws edu.uiowa.physics.pw.das.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException;
+        void execute(FormBase form)throws org.das2.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException;
         Element getDOMElement(Document document);
     }
     

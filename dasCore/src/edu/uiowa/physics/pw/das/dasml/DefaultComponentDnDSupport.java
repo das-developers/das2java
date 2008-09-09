@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das.dasml;
  *
  * @author  eew
  */
-class DefaultComponentDnDSupport extends edu.uiowa.physics.pw.das.util.DnDSupport {
+class DefaultComponentDnDSupport extends org.das2.util.DnDSupport {
     
     DefaultComponentDnDSupport(java.awt.Component c) {
         this(c, java.awt.dnd.DnDConstants.ACTION_NONE);

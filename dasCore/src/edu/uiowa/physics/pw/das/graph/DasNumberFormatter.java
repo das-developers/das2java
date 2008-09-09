@@ -49,14 +49,14 @@ public class DasNumberFormatter {
         dFormatter = createDF(b);
         for(int i=0; i<b.length; i++){
             result = dFormatter.format(b[i]);
-            edu.uiowa.physics.pw.das.util.DasDie.println(result);
+            org.das2.util.DasDie.println(result);
         }//for(int i=0; i<b.length; i++)
         
         double [] c = {0.0, 1.0, 20.0, 100.0, 1000.0, .0};
         dFormatter = createDF(c);
         for(int i=0; i<c.length; i++){
             result = dFormatter.format(c[i]);
-            edu.uiowa.physics.pw.das.util.DasDie.println(result);
+            org.das2.util.DasDie.println(result);
         }//for(int i=0; i<c.length; i++)
         
         //To show all digits, set the significant digit count to zero. This does not 
@@ -67,7 +67,7 @@ public class DasNumberFormatter {
         
         for(int i=0; i<d.length; i++){
             result = dFormatter.format(d[i]);
-            edu.uiowa.physics.pw.das.util.DasDie.println(result);
+            org.das2.util.DasDie.println(result);
         }//for(int i=0; i<d.length; i++)
        /*
         myPattern = "##0.##E0";

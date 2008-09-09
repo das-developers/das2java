@@ -1,6 +1,6 @@
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.util.*;
+import org.das2.util.StreamTool;
 import java.io.*;
 import java.io.File;
 import java.io.IOException;

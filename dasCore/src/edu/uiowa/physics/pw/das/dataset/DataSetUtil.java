@@ -8,7 +8,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.util.DasMath;
+import org.das2.util.DasMath;
 import java.util.*;
 
 /**

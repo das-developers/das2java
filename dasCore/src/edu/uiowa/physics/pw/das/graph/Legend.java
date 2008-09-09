@@ -9,7 +9,7 @@ package edu.uiowa.physics.pw.das.graph;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.ObjectLocator;
+import org.das2.util.ObjectLocator;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.*;

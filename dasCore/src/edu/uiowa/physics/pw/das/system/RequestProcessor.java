@@ -23,8 +23,8 @@
 
 package edu.uiowa.physics.pw.das.system;
 
-import edu.uiowa.physics.pw.das.DasApplication;
-import edu.uiowa.physics.pw.das.util.*;
+import org.das2.util.DasExceptionHandler;
+import org.das2.DasApplication;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Logger;

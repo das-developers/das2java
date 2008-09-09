@@ -22,6 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.*;
@@ -29,7 +30,7 @@ import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.system.*;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 import java.awt.*;
 
 import javax.swing.*;
@@ -429,7 +430,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         try {
                             canvas.writeToPng(pngFileTextField.getText());
                         } catch (java.io.IOException ioe) {
-                            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ioe);
+                            org.das2.util.DasExceptionHandler.handle(ioe);
                         }
                     }
                 } else if (command.equals("pngBrowse")) {
@@ -465,7 +466,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     }
                 //secondaryPopup.show( parent, l.x, l.y );
                 } else {
-                    edu.uiowa.physics.pw.das.util.DasDie.println("" + command);
+                    org.das2.util.DasDie.println("" + command);
                 }
             }
         };

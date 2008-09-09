@@ -6,11 +6,11 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.UserMessageCenter;
-import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.nio.channels.*;
 import javax.swing.*;

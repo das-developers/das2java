@@ -91,7 +91,7 @@ public class AccountManager extends JPanel {
                         dasServer.changePassword(tfUser.getText(),pass,newPass);
                         success= true;
                     } 
-                    catch ( edu.uiowa.physics.pw.das.DasException e ) {
+                    catch ( org.das2.DasException e ) {
                         feedbackLabel.setText(e.toString());                        
                     }                        
                     catch ( Exception e ) {

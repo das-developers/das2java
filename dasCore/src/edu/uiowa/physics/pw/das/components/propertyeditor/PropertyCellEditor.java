@@ -7,7 +7,7 @@ import edu.uiowa.physics.pw.das.dasml.CommandBlockEditor;
 import edu.uiowa.physics.pw.das.dasml.ListOption;
 import edu.uiowa.physics.pw.das.dasml.OptionListEditor;
 import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

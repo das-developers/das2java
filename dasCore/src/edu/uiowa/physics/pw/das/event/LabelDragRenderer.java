@@ -6,9 +6,9 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.util.GrannyTextRenderer;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;

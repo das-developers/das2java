@@ -23,12 +23,12 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.DasProperties;
+import org.das2.DasProperties;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.MouseModule;
-import edu.uiowa.physics.pw.das.util.DasMath;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasMath;
+import org.das2.util.DasExceptionHandler;
 
 import java.awt.*;
 import java.awt.geom.*;

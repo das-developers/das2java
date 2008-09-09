@@ -116,7 +116,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                 nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.000");
             }
         } catch (java.text.ParseException pe) {
-            edu.uiowa.physics.pw.das.DasProperties.getLogger().severe("failure to create formatter");
+            org.das2.DasProperties.getLogger().severe("failure to create formatter");
             DasAxis axis = ((TableDataSetConsumer) dataSetConsumer).getZAxis();
             axis.getUnits().getDatumFormatterFactory().defaultFormatter();
         }
@@ -202,7 +202,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     @Override
     public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g = (Graphics2D) g1;
-        g.setRenderingHints((RenderingHints) edu.uiowa.physics.pw.das.DasProperties.getRenderingHints());
+        g.setRenderingHints((RenderingHints) org.das2.DasProperties.getRenderingHints());
         
         DataSet ds;
         

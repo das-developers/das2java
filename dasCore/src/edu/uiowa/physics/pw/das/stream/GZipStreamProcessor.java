@@ -6,8 +6,8 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.util.*;
+import org.das2.DasException;
+import org.das2.util.StreamTool;
 import org.w3c.dom.*;
 
 import java.io.*;

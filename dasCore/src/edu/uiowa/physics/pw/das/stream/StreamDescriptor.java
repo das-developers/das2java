@@ -23,10 +23,10 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.DasIOException;
+import org.das2.util.StreamTool;
+import org.das2.DasIOException;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.util.*;
-import edu.uiowa.physics.pw.das.util.IDLParser;
+import org.das2.util.IDLParser;
 import java.io.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

@@ -22,10 +22,10 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.DasApplication;
-import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.DasNameException;
-import edu.uiowa.physics.pw.das.DasPropertyException;
+import org.das2.DasApplication;
+import org.das2.DasException;
+import org.das2.DasNameException;
+import org.das2.DasPropertyException;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
@@ -37,7 +37,7 @@ import edu.uiowa.physics.pw.das.datum.InconvertibleUnitsException;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.Graphics;

@@ -1,5 +1,5 @@
 package edu.uiowa.physics.pw.das.components.propertyeditor;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 import java.beans.IndexedPropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;

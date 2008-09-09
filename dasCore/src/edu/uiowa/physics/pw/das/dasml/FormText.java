@@ -23,6 +23,8 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import org.das2.DasApplication;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.*;
@@ -37,7 +39,7 @@ import java.awt.*;
  */
 public class FormText extends JTextArea implements Editable, FormComponent {
     
-    protected edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
+    protected org.das2.util.DnDSupport dndSupport;
     
     private boolean editingMode;
     
@@ -86,7 +88,7 @@ public class FormText extends JTextArea implements Editable, FormComponent {
         return parent.getForm();
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         if (dndSupport == null) {
             dndSupport = new DefaultComponentDnDSupport(this);
         }
@@ -105,8 +107,8 @@ public class FormText extends JTextArea implements Editable, FormComponent {
         return null;
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
-        throw new edu.uiowa.physics.pw.das.DasNameException();
+    public void setDasName(String name) throws org.das2.DasNameException {
+        throw new org.das2.DasNameException();
     }
     
     public void deregisterComponent() {

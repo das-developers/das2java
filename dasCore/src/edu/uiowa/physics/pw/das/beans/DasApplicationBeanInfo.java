@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.beans;
 
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo.AccessLevel;
 import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo.Property;
 
@@ -42,7 +42,7 @@ public class DasApplicationBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DasApplicationBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.DasApplication.class);
+        super(properties, org.das2.DasApplication.class);
     }
     
 }

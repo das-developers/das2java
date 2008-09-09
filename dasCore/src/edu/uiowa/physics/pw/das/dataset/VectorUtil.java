@@ -1,8 +1,8 @@
 package edu.uiowa.physics.pw.das.dataset;
 
+import org.das2.util.FixedWidthFormatter;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.stream.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.nio.channels.*;
 import java.text.*;

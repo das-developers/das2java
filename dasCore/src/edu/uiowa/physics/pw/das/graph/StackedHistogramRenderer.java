@@ -23,9 +23,12 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasNameException;
+import org.das2.DasPropertyException;
+import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.DasException;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
@@ -39,7 +42,6 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dasml.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 
 import java.awt.*;
 import java.awt.geom.*;

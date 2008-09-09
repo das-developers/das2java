@@ -19,7 +19,7 @@ import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.Renderer;
-import edu.uiowa.physics.pw.das.util.DasExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;

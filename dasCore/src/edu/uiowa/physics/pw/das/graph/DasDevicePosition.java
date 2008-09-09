@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
@@ -160,7 +161,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return this.canvas;
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
+    public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }

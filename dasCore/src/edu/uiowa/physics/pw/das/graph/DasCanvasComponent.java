@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
@@ -106,7 +107,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         try {
             String name= DasApplication.getDefaultApplication().suggestNameFor(this);
             setDasName(name);
-        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
+        } catch (org.das2.DasNameException dne) {
         }
     }
     
@@ -395,7 +396,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * the application.
      * @throws edu.uiowa.physics.pw.das.DasNameException
      */
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
+    public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }

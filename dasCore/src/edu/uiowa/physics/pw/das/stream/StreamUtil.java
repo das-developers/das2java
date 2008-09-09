@@ -8,13 +8,13 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.DasException;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.client.DataSetStreamHandler;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.dataset.TableDataSet;
 import org.das2.util.monitor.NullProgressMonitor;
-import edu.uiowa.physics.pw.das.util.StreamTool;
+import org.das2.util.StreamTool;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

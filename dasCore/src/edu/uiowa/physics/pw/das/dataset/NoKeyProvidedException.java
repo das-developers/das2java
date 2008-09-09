@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das.dataset;
  *
  * @author  jbf
  */
-public class NoKeyProvidedException extends edu.uiowa.physics.pw.das.DasException {
+public class NoKeyProvidedException extends org.das2.DasException {
     //The requested data set requires a key, but none was provided.
     
     /** Creates a new instance of NoKeyProvidedException */

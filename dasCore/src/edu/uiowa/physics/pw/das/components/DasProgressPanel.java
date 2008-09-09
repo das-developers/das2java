@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.*;
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.util.NumberFormatUtil;
+import org.das2.util.NumberFormatUtil;
 import java.util.*;
 import java.util.logging.Logger;
 

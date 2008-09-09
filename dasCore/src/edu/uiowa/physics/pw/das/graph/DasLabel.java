@@ -81,7 +81,7 @@ public class DasLabel extends DasCanvasComponent {
         
         bounds= fm.getStringBounds(text,g).getBounds();
         bounds.translate(x,y);
-        edu.uiowa.physics.pw.das.util.DasDie.println(bounds);
+        org.das2.util.DasDie.println(bounds);
         
         if (font!=null) g.setFont(oldfont);
         if (at!=null) g.setTransform(oldat);

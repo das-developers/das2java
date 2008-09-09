@@ -23,20 +23,21 @@
 
 package edu.uiowa.physics.pw.das.client;
 
+import org.das2.DasApplication;
+import org.das2.util.URLBuddy;
 import edu.uiowa.physics.pw.das.*;
 /**
  *
  * @author  jbf
  */
 
-import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.DasIOException;
+import org.das2.DasException;
+import org.das2.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 import java.io.*;
 import java.net.*;
 
@@ -222,7 +223,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 String error= serverResponse.substring( errorTag.length()+2,
                         serverResponse.length()-(errorTag.length()+3));
 
-                edu.uiowa.physics.pw.das.util.DasDie.println("error="+error);
+                org.das2.util.DasDie.println("error="+error);
 
                 /* presume that the endUser has opted out */
                 if (error.equals("<needKey/>")) {;
@@ -289,7 +290,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
                 das2Response= new String(data,14,index-14);
 
-                edu.uiowa.physics.pw.das.util.DasDie.println("das2Response="+das2Response);
+                org.das2.util.DasDie.println("das2Response="+das2Response);
 
                 in.reset();
                 in.skip( das2Response.length() + 2 * das2ResponseTag.length() + 5 );

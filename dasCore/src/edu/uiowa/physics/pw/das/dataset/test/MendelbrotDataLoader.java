@@ -6,7 +6,7 @@
 
 package edu.uiowa.physics.pw.das.dataset.test;
 
-import edu.uiowa.physics.pw.das.DasException;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.datum.Units;

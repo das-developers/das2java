@@ -22,9 +22,9 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.DasApplication;
-import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.DasProperties;
+import org.das2.DasApplication;
+import org.das2.DasException;
+import org.das2.DasProperties;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSetUtil;

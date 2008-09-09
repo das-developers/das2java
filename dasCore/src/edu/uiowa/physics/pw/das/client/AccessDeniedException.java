@@ -26,7 +26,7 @@ package edu.uiowa.physics.pw.das.client;
  *
  * @author  jbf
  */
-public class AccessDeniedException extends edu.uiowa.physics.pw.das.DasException {
+public class AccessDeniedException extends org.das2.DasException {
     //The the provided key does not allow access to the dataset.
     
     /** Creates a new instance of NoKeyProvidedException */

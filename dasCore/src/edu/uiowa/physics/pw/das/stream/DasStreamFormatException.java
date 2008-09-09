@@ -25,7 +25,7 @@
 
 package edu.uiowa.physics.pw.das.stream;
 
-import edu.uiowa.physics.pw.das.DasException;
+import org.das2.DasException;
 
 /** This exception indicates that a das2 stream is not formatted properly,
  * and can indicate that a das2 stream was expected but not received.

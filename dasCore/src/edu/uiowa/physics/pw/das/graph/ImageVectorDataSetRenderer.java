@@ -12,6 +12,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;

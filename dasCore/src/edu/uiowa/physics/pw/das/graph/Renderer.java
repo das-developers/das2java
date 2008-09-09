@@ -23,11 +23,13 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasApplication;
+import org.das2.DasException;
+import org.das2.util.DasExceptionHandler;
 import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
-import edu.uiowa.physics.pw.das.util.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
 import java.awt.geom.*;
@@ -202,7 +204,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         //refresh();
     }
     
-    public void setDataSetID(String id) throws edu.uiowa.physics.pw.das.DasException {
+    public void setDataSetID(String id) throws org.das2.DasException {
         if (id == null) throw new NullPointerException("Null dataPath not allowed");
         if (id.equals("")) {
             setDataSetDescriptor(null);

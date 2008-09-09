@@ -6,9 +6,9 @@
 
 package edu.uiowa.physics.pw.das.datum;
 
+import org.das2.util.DasMath;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.*;
 import java.text.*;
 import java.util.*;
 import java.util.logging.*;

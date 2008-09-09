@@ -25,8 +25,8 @@ package edu.uiowa.physics.pw.das.stream;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.util.DeflaterChannel;
-import edu.uiowa.physics.pw.das.util.StreamTool;
+import org.das2.util.DeflaterChannel;
+import org.das2.util.StreamTool;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;

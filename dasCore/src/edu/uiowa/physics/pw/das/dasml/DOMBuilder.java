@@ -9,8 +9,8 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
-import edu.uiowa.physics.pw.das.DasApplication;
-import edu.uiowa.physics.pw.das.NameContext;
+import org.das2.DasApplication;
+import org.das2.NameContext;
 import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo;
 import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.graph.*;

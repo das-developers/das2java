@@ -8,7 +8,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.DasException;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.dataset.AverageTableRebinner;
 import edu.uiowa.physics.pw.das.dataset.ClippedTableDataSet;
 import edu.uiowa.physics.pw.das.dataset.DataSet;
@@ -39,7 +39,7 @@ import edu.uiowa.physics.pw.das.graph.SymColor;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
 import edu.uiowa.physics.pw.das.math.QuadFitUtil;
 import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.util.DasMath;
+import org.das2.util.DasMath;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;

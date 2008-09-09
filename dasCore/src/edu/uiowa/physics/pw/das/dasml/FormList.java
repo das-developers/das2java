@@ -23,7 +23,9 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
-import edu.uiowa.physics.pw.das.*;
+import org.das2.NameContext;
+import org.das2.DasApplication;
+import org.das2.DasException;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,12 +41,13 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
+import org.das2.DasPropertyException;
 
 public class FormList extends JList implements Editable, FormComponent {
     
     private String delimiter = " ";
     
-    protected edu.uiowa.physics.pw.das.util.DnDSupport dndSupport;
+    protected org.das2.util.DnDSupport dndSupport;
     
     private String dasName;
     
@@ -54,13 +57,13 @@ public class FormList extends JList implements Editable, FormComponent {
         try {
             setDasName(name);
         }
-        catch(edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch(org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
     }
     
     FormList(Element element, FormBase form)
-        throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException,
+        throws  org.das2.DasPropertyException,org.das2.DasNameException, org.das2.DasException ,
         ParsedExpressionException {
         
         super(new OptionListModel());
@@ -91,8 +94,8 @@ public class FormList extends JList implements Editable, FormComponent {
         try {
             setDasName(name);
         }
-        catch(edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch(org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
     }
     
@@ -240,7 +243,7 @@ public class FormList extends JList implements Editable, FormComponent {
         editable = b;
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         if (dndSupport == null) {
             dndSupport = new DefaultComponentDnDSupport(this);
         }
@@ -255,7 +258,7 @@ public class FormList extends JList implements Editable, FormComponent {
         return dasName;
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
+    public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }

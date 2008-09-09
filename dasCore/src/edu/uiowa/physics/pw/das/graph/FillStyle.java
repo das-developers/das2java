@@ -9,7 +9,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.DasProperties;
+import org.das2.DasProperties;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import java.awt.Color;

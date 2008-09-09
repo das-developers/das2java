@@ -6,6 +6,8 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.DasNameException;
+import org.das2.DasPropertyException;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.dasml.*;
 import java.text.*;

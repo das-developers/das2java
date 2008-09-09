@@ -23,8 +23,8 @@
 
 package edu.uiowa.physics.pw.das.stream.test;
 
-import edu.uiowa.physics.pw.das.DasException;
-import edu.uiowa.physics.pw.das.DasIOException;
+import org.das2.DasException;
+import org.das2.DasIOException;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;

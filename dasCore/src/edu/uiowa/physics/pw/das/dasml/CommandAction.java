@@ -38,17 +38,17 @@ class CommandAction implements ActionListener {
             FormComponent x = (FormComponent)e.getSource();
             commandBlock.execute(x.getForm());
         }
-        catch (edu.uiowa.physics.pw.das.DasException de) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(de);
+        catch (org.das2.DasException de) {
+            org.das2.util.DasExceptionHandler.handle(de);
         }
         catch (DataFormatException dfe) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dfe);
+            org.das2.util.DasExceptionHandler.handle(dfe);
         }
         catch (ParsedExpressionException pee) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(pee);
+            org.das2.util.DasExceptionHandler.handle(pee);
         }
         catch (java.lang.reflect.InvocationTargetException ite) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(ite.getCause());
+            org.das2.util.DasExceptionHandler.handle(ite.getCause());
         }
     }
     

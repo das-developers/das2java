@@ -38,7 +38,7 @@ public class QernalTableRebinner implements DataSetRebinner {
         this.factory= factory;
     }
             
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, edu.uiowa.physics.pw.das.DasException {
+    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, org.das2.DasException {
         logger.finest("enter QernalTableRebinner.rebin");
         
         if (ds == null) {

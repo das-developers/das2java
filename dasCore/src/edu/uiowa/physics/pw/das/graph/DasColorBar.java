@@ -23,6 +23,8 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.NameContext;
+import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
@@ -163,7 +165,7 @@ public class DasColorBar extends DasAxis {
      *
      * @param element The DOM tree node that represents the element
      */
-    static DasColorBar processColorbarElement(Element element, FormBase form) throws edu.uiowa.physics.pw.das.DasPropertyException, edu.uiowa.physics.pw.das.DasNameException, java.text.ParseException {
+    static DasColorBar processColorbarElement(Element element, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, java.text.ParseException {
         String name = element.getAttribute("name");
         boolean log = element.getAttribute("log").equals("true");
         String unitStr = element.getAttribute("units");
@@ -241,8 +243,8 @@ public class DasColorBar extends DasAxis {
         }
         try {
             cb.setDasName(name);
-        } catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        } catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         return cb;
     }

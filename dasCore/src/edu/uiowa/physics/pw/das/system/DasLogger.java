@@ -6,7 +6,7 @@
 
 package edu.uiowa.physics.pw.das.system;
 
-import edu.uiowa.physics.pw.das.DasApplication;
+import org.das2.DasApplication;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;

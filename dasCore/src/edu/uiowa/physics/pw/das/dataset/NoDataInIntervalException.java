@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das.dataset;
  *
  * @author  jbf
  */
-public class NoDataInIntervalException extends edu.uiowa.physics.pw.das.DasException {
+public class NoDataInIntervalException extends org.das2.DasException {
     
     public NoDataInIntervalException(String msg) {
         super(msg);

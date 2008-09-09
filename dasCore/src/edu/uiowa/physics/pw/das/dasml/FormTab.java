@@ -23,14 +23,18 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
+import org.das2.NameContext;
+import org.das2.DasApplication;
+import org.das2.DasException;
+import org.das2.DasPropertyException;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.swing.*;
+import org.das2.util.DasExceptionHandler;
 
 /**
  *
@@ -68,8 +72,8 @@ public class FormTab extends FormContainer {
         try {
             setDasName(name);
         }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         this.label = label;
         dndSupport = new ContainerDnDSupport(null);
@@ -95,8 +99,8 @@ public class FormTab extends FormContainer {
         try {
             setDasName(name);
         }
-        catch (edu.uiowa.physics.pw.das.DasNameException dne) {
-            edu.uiowa.physics.pw.das.util.DasExceptionHandler.handle(dne);
+        catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
         }
         if (label.equals("")) {
             setLabel(name);
@@ -155,10 +159,10 @@ public class FormTab extends FormContainer {
                         canvas.setAlignmentX(horizontalComponentAlignment);
                         add(canvas);
                     }
-                    catch (edu.uiowa.physics.pw.das.DasException dne) {
+
+                    catch (org.das2.DasException dne) {
                         DasExceptionHandler.handle(dne);
-                    }
-                    catch ( java.text.ParseException ex ) {
+                    }                    catch ( java.text.ParseException ex ) {
                         DasExceptionHandler.handle(ex);
                     }
                 }
@@ -209,7 +213,7 @@ public class FormTab extends FormContainer {
         return dasName;
     }
     
-    public void setDasName(String name) throws edu.uiowa.physics.pw.das.DasNameException {
+    public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }
@@ -225,7 +229,7 @@ public class FormTab extends FormContainer {
         this.firePropertyChange("name", oldName, name);
     }
     
-    public edu.uiowa.physics.pw.das.util.DnDSupport getDnDSupport() {
+    public org.das2.util.DnDSupport getDnDSupport() {
         if (dndSupport == null) {
             dndSupport = new ContainerDnDSupport(null);
         }

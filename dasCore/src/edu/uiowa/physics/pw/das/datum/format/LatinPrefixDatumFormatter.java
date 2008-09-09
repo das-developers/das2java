@@ -23,8 +23,9 @@
 
 package edu.uiowa.physics.pw.das.datum.format;
 
+import org.das2.util.NumberFormatUtil;
+import org.das2.util.DasMath;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.util.*;
 
 import java.text.*;
 import java.util.Locale;
