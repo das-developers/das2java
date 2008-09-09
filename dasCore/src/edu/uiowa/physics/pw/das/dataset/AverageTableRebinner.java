@@ -41,6 +41,11 @@ public class AverageTableRebinner implements DataSetRebinner {
     private boolean interpolate = true;
     private boolean enlargePixels = true;
 
+    public static enum Interpolate {
+
+        None, Linear, NearestNeighbor
+    }
+
     /** Creates a new instance of TableAverageRebinner */
     public AverageTableRebinner() {
     }
@@ -80,25 +85,25 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         average(tds, weights, rebinData, rebinWeights, ddX, ddY);
         if (interpolate) {
-            doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY);
-            doBoundaries2TB(tds, weights, rebinData, rebinWeights, ddX, ddY);
-            doCorners(tds, weights, rebinData, rebinWeights, ddX, ddY);
+            doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
+            doBoundaries2TB(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
+            doCorners(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
         }
 
         double[] xTags;
         double[] xTagMin;
         double[] xTagMax;
-        
+
         if (ddX != null) {
             xTags = ddX.binCenters();
             xTagMin = ddX.binStops();
             xTagMax = ddX.binStarts();
-            for ( int i=0; i<tds.getXLength(); i++ ) {
-                double xt= tds.getXTagDouble(i, xunits );
-                int ibin= ddX.whichBin( xt, xunits );
-                if ( ibin>-1 && ibin<nx ) {
-                    xTagMin[ibin]= Math.min( xTagMin[ibin], xt );
-                    xTagMax[ibin]= Math.max( xTagMax[ibin], xt );
+            for (int i = 0; i < tds.getXLength(); i++) {
+                double xt = tds.getXTagDouble(i, xunits);
+                int ibin = ddX.whichBin(xt, xunits);
+                if (ibin > -1 && ibin < nx) {
+                    xTagMin[ibin] = Math.min(xTagMin[ibin], xt);
+                    xTagMax[ibin] = Math.max(xTagMax[ibin], xt);
                 }
             }
         } else {
@@ -106,14 +111,14 @@ public class AverageTableRebinner implements DataSetRebinner {
             for (int i = 0; i < nx; i++) {
                 xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
             }
-            xTagMin= xTags;
-            xTagMax= xTags;        
+            xTagMin = xTags;
+            xTagMax = xTags;
         }
-        
-        
+
+
         double[][] yTags;
         if (ddY != null) {
-            yTags = new double[][]{ ddY.binCenters() };
+            yTags = new double[][]{ddY.binCenters()};
         } else {
             yTags = new double[1][ny];
             for (int j = 0; j < ny; j++) {
@@ -133,37 +138,43 @@ public class AverageTableRebinner implements DataSetRebinner {
             Datum yTagWidth = (Datum) ds.getProperty("yTagWidth");
 
             if (ddX != null) {
-                fillInterpolateX(rebinData, rebinWeights, xTags, xTagMin, xTagMax, xTagWidthDouble);
+                fillInterpolateX(rebinData, rebinWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, interpolateType);
             }
             if (ddY != null) {
-               /* Note the yTagMin,yTagMax code doesn't work here, because of the 
-                * multiple tables.  So here, we'll just up yTagWidth to be twice
-                * the pixel cadence.  When a new data model is introduced,
-                * this should be revisited.
-                */
-                fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth);
+                /* Note the yTagMin,yTagMax code doesn't work here, because of the 
+                 * multiple tables.  So here, we'll just up yTagWidth to be twice
+                 * the pixel cadence.  When a new data model is introduced,
+                 * this should be revisited.
+                 */
+                if (yTagWidth == null && interpolateType == Interpolate.NearestNeighbor) {
+                    yTagWidth = TableUtil.guessYTagWidth(tds);
+                }
+                fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
             }
         } else if (enlargePixels) {
             enlargePixels(rebinData, rebinWeights);
         }
 
-        double[][][] zValues = {rebinData,rebinWeights};
+        double[][][] zValues = {rebinData, rebinWeights};
 
         int[] tableOffsets = {0};
         Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
         String[] planeIDs = {"", DataSet.PROPERTY_PLANE_WEIGHTS};
 
-        Map properties= new HashMap(ds.getProperties());
+        Map properties = new HashMap(ds.getProperties());
 
-        if ( ddX!=null ) properties.put( DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum() );
-        if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
-
-        TableDataSet result= new DefaultTableDataSet( xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, properties );
+        if (ddX != null) {
+            properties.put(DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum());
+        }
+        if (ddY != null) {
+            properties.put(DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum());
+        }
+        TableDataSet result = new DefaultTableDataSet(xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, properties);
         logger.finest("done, AverageTableRebinner.rebin");
         return result;
     }
 
-    static void doBoundaries2RL(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
+    static void doBoundaries2RL(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
         Units yunits = tds.getYUnits();
         Units zunits = tds.getZUnits();
         Units wunits = Units.dimensionless;
@@ -180,6 +191,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 DatumRange dr = new DatumRange(tds.getXTagDatum(i0), tds.getXTagDatum(i1));
                 if (dr.width().gt(DataSetUtil.guessXTagWidth(tds).multiply(0.9))) {
                     double alpha = DatumRangeUtil.normalize(dr, xx);
+                    if ( interpolateType==Interpolate.NearestNeighbor ) {
+                        alpha= alpha < 0.5 ? 0.0 : 1.0;
+                    }
                     int ny = ddY == null ? tds.getYLength(itable) : ddY.numberOfBins();
                     for (int j = 0; j < tds.getYLength(itable); j++) {
                         int jj = ddY == null ? j : ddY.whichBin(tds.getYTagDouble(itable, j, yunits), yunits);
@@ -201,7 +215,7 @@ public class AverageTableRebinner implements DataSetRebinner {
 
     }
 
-    static void doBoundaries2TB(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
+    static void doBoundaries2TB(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
 
         if (ddY == null) {
             return;
@@ -232,11 +246,14 @@ public class AverageTableRebinner implements DataSetRebinner {
                         double d0 = Math.log(dr.min().doubleValue(u) / d);
                         double d1 = Math.log(dr.max().doubleValue(u) / d);
                         dr = new DatumRange(d0, d1, Units.logERatio);
-                        yy = Units.logERatio.createDatum( Math.log(yy.doubleValue(u) / d ));
+                        yy = Units.logERatio.createDatum(Math.log(yy.doubleValue(u) / d));
                     // TODO: infinity
                     }
                     DatumRange xdr = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
                     double alpha = DatumRangeUtil.normalize(dr, yy);
+                    if ( interpolateType==Interpolate.NearestNeighbor ) {
+                        alpha= alpha < 0.5 ? 0.0 : 1.0;
+                    }
                     int nx = ddX.numberOfBins();
                     for (int ix = tds.tableStart(itable); ix < tds.tableEnd(itable); ix++) {
                         int ii = ddX.whichBin(tds.getXTagDouble(ix, xunits), xunits);
@@ -256,7 +273,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-    static void doCorners(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
+    static void doCorners(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
         if (ddY == null) {
             return;
         }
@@ -281,8 +298,11 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
 
             DatumRange xdr = new DatumRange(tds.getXTagDatum(i0), tds.getXTagDatum(i1));
-            double xalpha = DatumRangeUtil.normalize(xdr, xx);  
-            
+            double xalpha = DatumRangeUtil.normalize(xdr, xx);
+            if (interpolateType == Interpolate.NearestNeighbor) {
+                xalpha = xalpha < 0.5 ? 0.0 : 1.0;
+            }
+
             for (int j = 0; j < 2; j++) {
                 int iy = j == 0 ? 0 : ddY.numberOfBins() - 1;
                 Datum yy = ddY.binCenter(iy);
@@ -295,7 +315,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if (xdr.width().lt(DataSetUtil.guessXTagWidth(tds).multiply(1.1))) {
                         DatumRange xdr1 = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
                         double yalpha = DatumRangeUtil.normalize(ydr, yy);
-
+                        if (interpolateType == Interpolate.NearestNeighbor) {
+                            yalpha = yalpha < 0.5 ? 0.0 : 1.0;
+                        }
                         if (rebinWeights[ix][iy] > 0.0) {
                             continue;
                         }
@@ -391,7 +413,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-    static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, double[] xTagMin, double[] xTagMax, final double xSampleWidth) {
+    static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, double[] xTagMin, double[] xTagMax, final double xSampleWidth, Interpolate interpolateType) {
 
         final int nx = xTags.length;
         final int ny = data[0].length;
@@ -412,6 +434,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i1[i] = -1;
                     i2[i] = -1;
                     ii1 = i;
+                    if (interpolateType == Interpolate.NearestNeighbor) {
+                        for (int jjj = 0; jjj < i; jjj++) {
+                            i2[jjj] = ii1;
+                        }
+                    }
                 } else if (weights[i][j] > 0. && ii1 < (i - 1)) { // bracketed a gap, interpolate
                     if (ii1 > -1) {
                         i1[i] = -1;
@@ -428,30 +455,59 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i2[i] = -1;
                 }
             }
+            if (interpolateType == Interpolate.NearestNeighbor && ii1 > -1) {
+                for (int jjj = ii1; jjj < nx; jjj++) {
+                    i1[jjj] = ii1;
+                }
+            }
+            if (interpolateType == Interpolate.NearestNeighbor) {
 
-            for (int i = 0; i < nx; i++) {
+                for (int i = 0; i < nx; i++) {
+                    if (Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTags[i] - xTagMin[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagMax[i2[i]] - xTags[i])) < xSampleWidth / 2) {
 
-                if (i1[i] != -1) { // needs to be interpolated
-                    if ((xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5) {
-                        a2 = (float) ((xTags[i] - xTagMax[i1[i]]) / (xTagMin[i2[i]] - xTags[i1[i]]));
-                        a1 = 1.f - a2;
+                        int idx = -1;
+                        if (i1[i] == -1) {
+                            if (i2[i] == -1) {
+                                continue;
+                            }
+                            idx = i2[i];
+                        } else if (i2[i] == -1) {
+                            idx = i1[i];
+                        } else {
+                            a2 = ((xTags[i] - xTagMax[i1[i]]) / (xTagMin[i2[i]] - xTags[i1[i]]));
+                            if (a2 < 0.5) {
+                                idx = i1[i];
+                            } else {
+                                idx = i2[i];
+                            }
+                        }
+                        data[i][j] = data[idx][j];
+                        weights[i][j] = weights[idx][j];
+                    }
+                }
+            } else {
+                for (int i = 0; i < nx; i++) {
+                    if (i1[i] > -1 && i2[i] > -1 && (xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5) {
+                        a2 = ((xTags[i] - xTagMax[i1[i]]) / (xTagMin[i2[i]] - xTags[i1[i]]));
+                        a1 = 1. - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                         weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
+
                     }
                 }
             }
         }
     }
 
-    static void fillInterpolateY(final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth) {
+    static void fillInterpolateY(final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType) {
 
         final int nx = data.length;
         final int ny = ddY.numberOfBins();
         final int[] i1 = new int[ny];
         final int[] i2 = new int[ny];
         final double[] yTagTemp = new double[ddY.numberOfBins()];
-        float a1;
-        float a2;
+        double a1;
+        double a2;
 
         final double[] yTags = ddY.binCenters();
         final Units yTagUnits = ddY.getUnits();
@@ -469,6 +525,9 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         double ySampleWidth;
         double fudge = 1.5;
+        if (interpolateType == Interpolate.NearestNeighbor) {
+            fudge = 1.1;
+        }
         if (yTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
             ySampleWidth = d;
@@ -487,15 +546,24 @@ public class AverageTableRebinner implements DataSetRebinner {
             int ii2 = -1;
             for (int j = 0; j < ny; j++) {
                 if (weights[i][j] > 0. && ii1 == (j - 1)) { // ho hum another valid point
+
                     i1[j] = -1;
                     i2[j] = -1;
                     ii1 = j;
                 } else if (weights[i][j] > 0. && ii1 == -1) { // first valid point
+
                     i1[j] = -1;
                     i2[j] = -1;
                     ii1 = j;
+                    if (interpolateType == Interpolate.NearestNeighbor) {
+                        for (int jjj = 0; jjj < j; jjj++) {
+                            i2[jjj] = ii1;
+                        }
+                    }
                 } else if (weights[i][j] > 0. && ii1 < (j - 1)) { // bracketed a gap, interpolate
+
                     if ((ii1 > -1)) {   // need restriction on Y gap size
+
                         i1[j] = -1;
                         i2[j] = -1;
                         ii2 = j;
@@ -510,15 +578,43 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i2[j] = -1;
                 }
             }
+            if (interpolateType == Interpolate.NearestNeighbor && ii1 > -1) {
+                for (int jjj = ii1; jjj < ny; jjj++) {
+                    i1[jjj] = ii1;
+                }
+            }
+            if (interpolateType == Interpolate.NearestNeighbor) {
+                for (int j = 0; j < ny; j++) {
+                    if (Math.min(i1[j] == -1 ? Double.MAX_VALUE : (yTagTemp[j] - yTagTemp[i1[j]]), i2[j] == -1 ? Double.MAX_VALUE : (yTagTemp[i2[j]] - yTagTemp[j])) < ySampleWidth / 2) { //kludge for bug 000321
+                        int idx;
+                        if (i1[j] == -1) {
+                            idx = i2[j];
+                        } else if (i2[j] == -1) {
+                            idx = i1[j];
+                        } else {
+                            a2 = ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
+                            if (a2 < 0.5) {
+                                idx = i1[j];
+                            } else {
+                                idx = i2[j];
+                            }
+                        }
+                        data[i][j] = data[i][idx];
+                        weights[i][j] = weights[i][idx];
 
+                    }
+                }
+            } else {
+                for (int j = 0; j < ny; j++) {
+                    if ((i1[j] != -1) && ((yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidth || i2[j] - i1[j] == 2)) { //kludge for bug 000321
 
-            for (int j = 0; j < ny; j++) {
-                if ((i1[j] != -1) && ( (yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidth || i2[j]-i1[j]==2 ) ) { //kludge for bug 000321
-                    a2 = (float) ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
-                    a1 = 1.f - a2;
-                    data[i][j] = data[i][i1[j]] * a1 + data[i][i2[j]] * a2;
-                    weights[i][j] = weights[i][i1[j]] * a1 + weights[i][i2[j]] * a2; //approximate
-                } 
+                        a2 = ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
+                        a1 = 1. - a2;
+                        data[i][j] = data[i][i1[j]] * a1 + data[i][i2[j]] * a2;
+                        weights[i][j] = weights[i][i1[j]] * a1 + weights[i][i2[j]] * a2; //approximate
+
+                    }
+                }
             }
         }
     }
@@ -583,5 +679,26 @@ public class AverageTableRebinner implements DataSetRebinner {
 
     public boolean isEnlargePixels() {
         return enlargePixels;
+    }
+    protected Interpolate interpolateType = Interpolate.Linear;
+    public static final String PROP_INTERPOLATETYPE = "interpolateType";
+
+    public Interpolate getInterpolateType() {
+        return interpolateType;
+    }
+
+    public void setInterpolateType(Interpolate interpolateType) {
+        Interpolate oldInterpolateType = this.interpolateType;
+        this.interpolateType = interpolateType;
+        propertyChangeSupport.firePropertyChange(PROP_INTERPOLATETYPE, oldInterpolateType, interpolateType);
+    }
+    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 }
