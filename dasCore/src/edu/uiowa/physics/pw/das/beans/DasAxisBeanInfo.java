@@ -37,6 +37,7 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
         new Property("datumRange", AccessLevel.END_USER, "getDatumRange", "setDatumRange", null ),
         new Property("dataMaximum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDataMaximum", "setDataMaximum", null),
         new Property("dataMinimum", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getDataMinimum", "setDataMinimum", null),
+        new Property("flipped", AccessLevel.DASML, "isFlipped", "setFlipped", null),
         new Property("label", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getLabel", "setLabel", null),
         new Property("log", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "isLog", "setLog", null),
         new Property("units", AccessLevel.DASML, "getUnits", null, null),
