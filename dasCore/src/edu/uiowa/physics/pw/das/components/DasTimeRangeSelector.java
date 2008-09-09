@@ -33,7 +33,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;

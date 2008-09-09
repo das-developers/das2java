@@ -23,11 +23,14 @@
 
 package edu.uiowa.physics.pw.das.client;
 
+import org.das2.stream.StreamDescriptor;
+import org.das2.stream.StreamException;
+import org.das2.stream.DasStreamFormatException;
 import org.das2.util.URLBuddy;
 import edu.uiowa.physics.pw.das.*;
 import org.das2.DasIOException;
 import edu.uiowa.physics.pw.das.stream.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

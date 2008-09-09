@@ -10,7 +10,7 @@ import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.ClassMap;
 import java.awt.Color;
 import java.beans.*;

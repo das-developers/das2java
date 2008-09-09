@@ -10,7 +10,7 @@ package edu.uiowa.physics.pw.das.dataset;
 
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;

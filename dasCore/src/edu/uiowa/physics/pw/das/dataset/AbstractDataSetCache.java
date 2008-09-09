@@ -26,7 +26,7 @@ package edu.uiowa.physics.pw.das.dataset;
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.text.*;
 import java.util.*;
 import java.util.logging.Logger;

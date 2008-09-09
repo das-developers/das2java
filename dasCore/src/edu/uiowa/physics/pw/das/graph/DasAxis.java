@@ -37,7 +37,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.*;
 import edu.uiowa.physics.pw.das.event.*;
-import edu.uiowa.physics.pw.das.system.UserMessageCenter;
+import org.das2.system.UserMessageCenter;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
@@ -55,7 +55,7 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.*;
 
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.util.Entities;

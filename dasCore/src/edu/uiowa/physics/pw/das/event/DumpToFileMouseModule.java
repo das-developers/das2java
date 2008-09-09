@@ -10,7 +10,7 @@ import org.das2.util.DasExceptionHandler;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.system.UserMessageCenter;
+import org.das2.system.UserMessageCenter;
 import java.io.*;
 import java.nio.channels.*;
 import javax.swing.*;

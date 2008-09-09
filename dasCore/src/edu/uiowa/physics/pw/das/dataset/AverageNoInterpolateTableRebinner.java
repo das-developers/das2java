@@ -14,7 +14,7 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.datum.UnitsUtil;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.DasMath;
 import java.util.ArrayList;
 import java.util.HashMap;

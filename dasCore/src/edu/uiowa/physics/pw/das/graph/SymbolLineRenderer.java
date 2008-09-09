@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.system.DasLogger;
 import org.das2.DasApplication;
 import org.das2.DasProperties;
 import org.das2.DasException;

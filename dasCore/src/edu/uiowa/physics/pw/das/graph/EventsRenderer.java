@@ -16,7 +16,7 @@ import edu.uiowa.physics.pw.das.datum.DatumUtil;
 import edu.uiowa.physics.pw.das.datum.UnitsConverter;
 import edu.uiowa.physics.pw.das.event.LabelDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Graphics;

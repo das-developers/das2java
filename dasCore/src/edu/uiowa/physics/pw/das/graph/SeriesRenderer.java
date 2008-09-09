@@ -37,7 +37,7 @@ import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;

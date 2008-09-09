@@ -30,7 +30,7 @@ import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 
 import javax.swing.*;
 import java.awt.*;

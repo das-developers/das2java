@@ -38,7 +38,7 @@ import edu.uiowa.physics.pw.das.graph.PsymConnector;
 import edu.uiowa.physics.pw.das.graph.SymColor;
 import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
 import edu.uiowa.physics.pw.das.math.QuadFitUtil;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.DasMath;
 import java.awt.BorderLayout;
 import java.awt.Color;

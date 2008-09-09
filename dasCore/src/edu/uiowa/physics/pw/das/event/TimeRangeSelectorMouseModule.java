@@ -29,7 +29,7 @@ import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import javax.swing.event.EventListenerList;
 
 

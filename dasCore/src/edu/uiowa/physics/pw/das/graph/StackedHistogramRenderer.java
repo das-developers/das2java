@@ -41,7 +41,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import edu.uiowa.physics.pw.das.dasml.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 
 import java.awt.*;
 import java.awt.geom.*;

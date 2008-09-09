@@ -24,7 +24,7 @@
 package edu.uiowa.physics.pw.das.datum;
 
 import edu.uiowa.physics.pw.das.datum.format.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.DasMath;
 import java.text.*;
 import java.util.logging.Level;

@@ -23,7 +23,7 @@
 package edu.uiowa.physics.pw.das.components;
 
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

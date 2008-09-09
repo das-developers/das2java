@@ -1,5 +1,12 @@
 package edu.uiowa.physics.pw.das.dataset;
 
+import org.das2.stream.StreamProducer;
+import org.das2.stream.DataTransferType;
+import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamDescriptor;
+import org.das2.stream.StreamXDescriptor;
+import org.das2.stream.StreamException;
+import org.das2.stream.PacketDescriptor;
 import org.das2.util.FixedWidthFormatter;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.stream.*;

@@ -22,6 +22,11 @@
  */
 package edu.uiowa.physics.pw.das.client;
 
+import org.das2.stream.StreamYScanDescriptor;
+import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamDescriptor;
+import org.das2.stream.StreamException;
+import org.das2.stream.PacketDescriptor;
 import org.das2.DasIOException;
 import org.das2.CancelledOperationException;
 import org.das2.DasException;
@@ -33,7 +38,7 @@ import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.stream.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.StreamTool;
 
 import java.io.*;

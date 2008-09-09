@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import org.das2.system.DasLogger;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.Datum;

@@ -14,8 +14,8 @@ import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DataLoader;
 import edu.uiowa.physics.pw.das.graph.Renderer;
-import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.system.RequestProcessor;
+import org.das2.system.DasLogger;
+import org.das2.system.RequestProcessor;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.logging.Logger;
 

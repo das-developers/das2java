@@ -36,7 +36,7 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.InconvertibleUnitsException;
 import edu.uiowa.physics.pw.das.datum.Units;
 import edu.uiowa.physics.pw.das.event.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;

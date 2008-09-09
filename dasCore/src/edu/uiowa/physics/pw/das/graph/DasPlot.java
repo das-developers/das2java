@@ -41,7 +41,7 @@ import edu.uiowa.physics.pw.das.datum.DatumRange;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;

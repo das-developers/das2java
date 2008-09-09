@@ -13,7 +13,7 @@ package edu.uiowa.physics.pw.das.dasml;
 import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo;
 import edu.uiowa.physics.pw.das.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.beans.*;

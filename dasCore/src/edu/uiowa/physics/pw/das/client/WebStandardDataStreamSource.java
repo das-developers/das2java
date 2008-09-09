@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.client;
 
+import org.das2.stream.StreamYScanDescriptor;
 import org.das2.DasApplication;
 import org.das2.util.URLBuddy;
 import edu.uiowa.physics.pw.das.*;
@@ -37,7 +38,7 @@ import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.io.*;
 import java.net.*;
 

@@ -31,7 +31,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.awt.geom.*;
 
 import javax.swing.*;

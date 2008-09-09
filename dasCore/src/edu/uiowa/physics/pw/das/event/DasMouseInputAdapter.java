@@ -22,6 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.system.DasLogger;
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;

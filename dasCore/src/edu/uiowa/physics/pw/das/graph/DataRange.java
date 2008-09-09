@@ -29,7 +29,7 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 
 import javax.swing.event.EventListenerList;
 import java.beans.PropertyChangeListener;

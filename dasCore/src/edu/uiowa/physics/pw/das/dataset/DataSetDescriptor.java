@@ -21,6 +21,7 @@
  */
 package edu.uiowa.physics.pw.das.dataset;
 
+import org.das2.stream.StreamDescriptor;
 import org.das2.DasIOException;
 import org.das2.DasApplication;
 import org.das2.DasException;
@@ -31,8 +32,8 @@ import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.stream.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
-import edu.uiowa.physics.pw.das.system.RequestProcessor;
+import org.das2.system.DasLogger;
+import org.das2.system.RequestProcessor;
 
 import org.das2.util.URLBuddy;
 import java.net.*;
