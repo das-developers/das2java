@@ -1,4 +1,4 @@
-/* File: FormTextFieldBeanInfo.java
+/* File: DasPlotBeanInfo.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,23 +21,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dasml;
+package org.das2.beans;
 
-import org.das2.beans.AccessLevelBeanInfo;
+import java.beans.BeanInfo;
 
-/**
- * Bean info class for the FormTextField class
- */
-public class FormTextFieldBeanInfo extends AccessLevelBeanInfo {
+public class CrossHairRendererBeanInfo extends AccessLevelBeanInfo {
     
-    private static Property[] properties = {
-        new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
-        new Property("enabled", AccessLevel.DASML, "isEnabled", "setEnabled", null),
-        new Property("text", AccessLevel.DASML, "getText", "setText", null)
+    private static final Property[] properties = {
+        new Property("debugging", AccessLevel.DASML, "isDebugging", "setDebugging", null),
+        new Property("allPlanesReport", AccessLevel.DASML, "isAllPlanesReport", "setAllPlanesReport", null),
+        new Property("snapping", AccessLevel.DASML, "isSnapping", "setSnapping", null),
+        new Property("multiLine", AccessLevel.DASML, "isMultiLine", "setMultiLine", null),
     };
     
-    public FormTextFieldBeanInfo() {
-        super(properties, FormTextField.class);
+    public CrossHairRendererBeanInfo() {
+        super(properties, edu.uiowa.physics.pw.das.event.CrossHairRenderer.class);
+    }
+     
+    public java.beans.BeanInfo[] getAdditionalBeanInfo() {
+        BeanInfo[] additional = {
+            new LabelDragRendererBeanInfo(),
+        };
+        return additional;
     }
     
 }

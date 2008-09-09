@@ -23,7 +23,7 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
-import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo;
+import org.das2.beans.AccessLevelBeanInfo;
 
 /**
  * Bean info class for the FormRadioButton class

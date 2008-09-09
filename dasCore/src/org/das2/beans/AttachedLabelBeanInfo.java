@@ -21,49 +21,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.graph;
+package org.das2.beans;
 
-import org.das2.beans.DasCanvasComponentBeanInfo;
-import edu.uiowa.physics.pw.das.beans.*;
+import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
+import org.das2.beans.AccessLevelBeanInfo.Property;
 import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
+import edu.uiowa.physics.pw.das.graph.DasAxis;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.beans.SimpleBeanInfo;
+import java.beans.Introspector;
 
 /**
  * BeanInfo class for DasColorBar
  *
  * @author Edward West
  */
-public class DasAnnotationBeanInfo extends SimpleBeanInfo {
+public class AttachedLabelBeanInfo extends AccessLevelBeanInfo {
     
-    private static PropertyDescriptor[] properties;
-    static {
-        try {
-            properties = new PropertyDescriptor[] {
-                new PropertyDescriptor("text", DasAnnotation.class),
-                new PropertyDescriptor("borderType", DasAnnotation.class),
-                new PropertyDescriptor("arrowStyle", DasAnnotation.class ),
-                new PropertyDescriptor("fontSize", DasAnnotation.class ),
-            };
-            properties[1].setPropertyEditorClass( EnumerationEditor.class );
-            properties[2].setPropertyEditorClass( EnumerationEditor.class );
-            System.err.println("yeah!!!");
-        } catch ( IntrospectionException e) {
-            e.printStackTrace();
-            properties= null;
-        }
-
+    protected static final Property[] properties = {
+        new Property("label", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getLabel", "setLabel", null ),
+        new Property("orientation", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getOrientation", "setOrientation", null ),
+        new Property("emOffset", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getEmOffet", "setEmOffset", null ),
+    };
+    
+    public AttachedLabelBeanInfo() {
+        super(properties, edu.uiowa.physics.pw.das.graph.AttachedLabel.class);
     }
     
-
-    @Override
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        return properties;
-    }
-    
-    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         BeanInfo[] additional = {
             new DasCanvasComponentBeanInfo(), 

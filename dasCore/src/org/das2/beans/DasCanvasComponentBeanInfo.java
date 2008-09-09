@@ -1,4 +1,4 @@
-/* File: FormWindowBeanInfo.java
+/* File: DasCanvasComponentBeanInfo.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,41 +21,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dasml;
+package org.das2.beans;
 
-import org.das2.beans.AccessLevelBeanInfo;
+import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 
 import java.beans.MethodDescriptor;
 
-/**
- *
- * @author  eew
- */
-public class FormWindowBeanInfo extends AccessLevelBeanInfo {
+public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
     
     private static Property[] properties = {
-        new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
-        new Property("visible", AccessLevel.DASML, "isWindowVisible", "setWindowVisible", null),
-        new Property("title", AccessLevel.ALL, "getTitle", "setTitle", null)
+        new Property("name", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
+        new Property("row", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getRow", "setRow", null),
+        new Property("column", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getColumn", "setColumn", null),
+        new Property("mouseAdapter", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasMouseInputAdapter", "setDasMouseInputAdapter", null)
     };
     
     private static MethodDescriptor[] methods;
-    
     static {
-        methods = new MethodDescriptor[1];
         try {
-            methods[0] = new MethodDescriptor(FormWindow.class.getMethod("pack"));
+            methods = new MethodDescriptor[1];
+            methods[0] = new MethodDescriptor(DasCanvasComponent.class.getMethod("update"));
         }
         catch (NoSuchMethodException nsme) {
             IllegalStateException ise = new IllegalStateException(nsme.getMessage());
             ise.initCause(nsme);
             throw ise;
         }
-        
     }
     
-    public FormWindowBeanInfo() {
-        super(properties, FormWindow.class);
+    public DasCanvasComponentBeanInfo() {
+        super(properties, edu.uiowa.physics.pw.das.graph.DasCanvasComponent.class);
     }
     
     public MethodDescriptor[] getMethodDescriptors() {

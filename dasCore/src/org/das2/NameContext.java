@@ -23,7 +23,7 @@
 
 package org.das2;
 
-import edu.uiowa.physics.pw.das.beans.BeansUtil;
+import org.das2.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpression;
 import edu.uiowa.physics.pw.das.dasml.ParsedExpressionException;
 import edu.uiowa.physics.pw.das.datum.*;

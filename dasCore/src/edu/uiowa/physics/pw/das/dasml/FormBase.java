@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.dasml;
 
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.beans.BeansUtil;
+import org.das2.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import org.das2.util.DasExceptionHandler;
 //import org.apache.xml.serialize.*;

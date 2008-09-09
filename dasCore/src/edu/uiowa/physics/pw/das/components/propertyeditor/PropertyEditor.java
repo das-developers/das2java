@@ -22,7 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
-import edu.uiowa.physics.pw.das.beans.BeansUtil;
+import org.das2.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableCellRenderer;
 import edu.uiowa.physics.pw.das.components.treetable.TreeTableModel;
 import edu.uiowa.physics.pw.das.dasml.SerializeUtil;

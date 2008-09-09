@@ -10,8 +10,8 @@
 
 package edu.uiowa.physics.pw.das.dasml;
 
-import edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo;
-import edu.uiowa.physics.pw.das.beans.BeansUtil;
+import org.das2.beans.AccessLevelBeanInfo;
+import org.das2.beans.BeansUtil;
 import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;

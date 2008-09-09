@@ -1,4 +1,4 @@
-/* File: FormTextFieldBeanInfo.java
+/* File: DasRowBeanInfo.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,23 +21,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dasml;
+package org.das2.beans;
 
-import org.das2.beans.AccessLevelBeanInfo;
+import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
+import org.das2.beans.AccessLevelBeanInfo.Property;
+import edu.uiowa.physics.pw.das.client.DasServer;
 
 /**
- * Bean info class for the FormTextField class
+ * Bean Info implementation for DasDevicePosition
+ *
+ * @author Edward West
  */
-public class FormTextFieldBeanInfo extends AccessLevelBeanInfo {
-    
-    private static Property[] properties = {
-        new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
-        new Property("enabled", AccessLevel.DASML, "isEnabled", "setEnabled", null),
-        new Property("text", AccessLevel.DASML, "getText", "setText", null)
+public class DasServerBeanInfo extends AccessLevelBeanInfo {
+    DasServer me;
+    private static Property[] properties = {                
+        new Property("name", AccessLevel.DASML, "getName", null, null),
     };
     
-    public FormTextFieldBeanInfo() {
-        super(properties, FormTextField.class);
+    public DasServerBeanInfo() {
+        super(properties, edu.uiowa.physics.pw.das.client.DasServer.class);
     }
     
 }

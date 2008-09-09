@@ -1,4 +1,4 @@
-/* File: FormTextFieldBeanInfo.java
+/* File: DasPlotBeanInfo.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,23 +21,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dasml;
+package org.das2.beans;
 
-import org.das2.beans.AccessLevelBeanInfo;
+import java.beans.BeanInfo;
 
-/**
- * Bean info class for the FormTextField class
- */
-public class FormTextFieldBeanInfo extends AccessLevelBeanInfo {
+public class DasMouseInputAdapterBeanInfo extends AccessLevelBeanInfo {
     
-    private static Property[] properties = {
-        new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
-        new Property("enabled", AccessLevel.DASML, "isEnabled", "setEnabled", null),
-        new Property("text", AccessLevel.DASML, "getText", "setText", null)
-    };
+    private static final Property[] properties = {
+        new Property("mouseModules", AccessLevel.DASML, "getMouseModules", null, "getMouseModule", null, null),
+        //new Property("hoverHighlite", AccessLevel.DASML, "isHoverHighlite", "setHoverHighlite", null ),
+        
+        new Property("primaryModule", AccessLevel.DASML, PersistenceLevel.PERSISTENT,
+                "getPrimaryModule", "setPrimaryModule", null ),
+        new Property("secondaryModule", AccessLevel.DASML, PersistenceLevel.PERSISTENT,
+                "getSecondaryModule", "setSecondaryModule", null ) };
     
-    public FormTextFieldBeanInfo() {
-        super(properties, FormTextField.class);
+    
+    public DasMouseInputAdapterBeanInfo() {
+        super(properties, edu.uiowa.physics.pw.das.event.DasMouseInputAdapter.class);
     }
     
 }

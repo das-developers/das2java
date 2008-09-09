@@ -1,4 +1,4 @@
-/* File: FormTextFieldBeanInfo.java
+/* File: RendererBeanInfo.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,23 +21,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.dasml;
+package org.das2.beans;
 
-import org.das2.beans.AccessLevelBeanInfo;
 
-/**
- * Bean info class for the FormTextField class
- */
-public class FormTextFieldBeanInfo extends AccessLevelBeanInfo {
+
+public class DataPointRecorderBeanInfo extends AccessLevelBeanInfo {
     
-    private static Property[] properties = {
-        new Property("name", AccessLevel.ALL, "getDasName", "setDasName", null),
-        new Property("enabled", AccessLevel.DASML, "isEnabled", "setEnabled", null),
-        new Property("text", AccessLevel.DASML, "getText", "setText", null)
+    private static final Property[] properties = {   
+        new Property("xTagWidth", AccessLevel.DASML, "getXTagWidth", "setXTagWidth", null),        
+        new Property("snapToGrid", AccessLevel.DASML, "isSnapToGrid", "setSnapToGrid", null),        
     };
     
-    public FormTextFieldBeanInfo() {
-        super(properties, FormTextField.class);
+    public DataPointRecorderBeanInfo() {
+        super(properties, edu.uiowa.physics.pw.das.components.DataPointRecorder.class);
     }
     
 }

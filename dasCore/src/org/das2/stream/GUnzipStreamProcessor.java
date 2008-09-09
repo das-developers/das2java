@@ -8,7 +8,6 @@ package org.das2.stream;
 
 import org.das2.DasException;
 import org.das2.util.StreamTool;
-import edu.uiowa.physics.pw.das.*;
 import org.w3c.dom.*;
 
 import java.io.*;
