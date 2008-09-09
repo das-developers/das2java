@@ -352,6 +352,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
+                        if (!((TableDataSet)this.ds).getZUnits().isConvertableTo(colorBar.getUnits()) ) {
+                            logger.fine("dataset units are incompatable with colorbar.");
+                            return;                            
+                        }
+                        
                         RebinDescriptor xRebinDescriptor;
                         xRebinDescriptor = new RebinDescriptor(
                                 xAxis.getDataMinimum(), xAxis.getDataMaximum(),
