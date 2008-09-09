@@ -22,6 +22,12 @@
  */
 package org.das2.util;
 
+import org.das2.stream.StreamComment;
+import org.das2.stream.StreamDescriptor;
+import org.das2.stream.StreamException;
+import org.das2.stream.StreamHandler;
+import org.das2.stream.PropertyType;
+import org.das2.stream.PacketDescriptor;
 import org.das2.util.InflaterChannel;
 import org.das2.util.ByteBufferInputStream;
 import edu.uiowa.physics.pw.das.datum.Datum;
