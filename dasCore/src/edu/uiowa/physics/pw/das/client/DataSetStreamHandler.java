@@ -44,7 +44,6 @@ import edu.uiowa.physics.pw.das.datum.DatumUtil;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.stream.*;
 import org.das2.system.DasLogger;
 import java.text.ParseException;
 import java.util.*;

@@ -32,7 +32,6 @@ import org.das2.util.InflaterChannel;
 import org.das2.util.ByteBufferInputStream;
 import edu.uiowa.physics.pw.das.datum.Datum;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.stream.*;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;

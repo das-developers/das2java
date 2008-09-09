@@ -31,7 +31,6 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.stream.*;
 import org.das2.system.DasLogger;
 import org.das2.system.RequestProcessor;
 

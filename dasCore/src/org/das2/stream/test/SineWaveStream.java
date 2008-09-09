@@ -9,9 +9,15 @@ package org.das2.stream.test;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.test.*;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.stream.*;
 import java.nio.channels.*;
 import java.util.*;
+import org.das2.stream.DataTransferType;
+import org.das2.stream.PacketDescriptor;
+import org.das2.stream.StreamDescriptor;
+import org.das2.stream.StreamException;
+import org.das2.stream.StreamMultiYDescriptor;
+import org.das2.stream.StreamProducer;
+import org.das2.stream.StreamXDescriptor;
 
 /**
  *

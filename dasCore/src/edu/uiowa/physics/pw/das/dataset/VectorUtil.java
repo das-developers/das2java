@@ -9,7 +9,6 @@ import org.das2.stream.StreamException;
 import org.das2.stream.PacketDescriptor;
 import org.das2.util.FixedWidthFormatter;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.stream.*;
 import java.io.*;
 import java.nio.channels.*;
 import java.text.*;

@@ -24,7 +24,6 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.beans.DasCanvasComponentBeanInfo;
-import edu.uiowa.physics.pw.das.beans.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;

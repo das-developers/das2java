@@ -35,7 +35,6 @@ import edu.uiowa.physics.pw.das.*;
 import org.das2.DasException;
 import org.das2.DasIOException;
 import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.stream.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;

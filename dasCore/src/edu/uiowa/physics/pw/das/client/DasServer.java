@@ -27,9 +27,7 @@ import org.das2.stream.StreamDescriptor;
 import org.das2.stream.StreamException;
 import org.das2.stream.DasStreamFormatException;
 import org.das2.util.URLBuddy;
-import edu.uiowa.physics.pw.das.*;
 import org.das2.DasIOException;
-import edu.uiowa.physics.pw.das.stream.*;
 import org.das2.system.DasLogger;
 
 import javax.swing.*;

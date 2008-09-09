@@ -30,7 +30,6 @@ import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
-import edu.uiowa.physics.pw.das.system.*;
 import org.das2.util.DasExceptionHandler;
 import java.awt.*;
 

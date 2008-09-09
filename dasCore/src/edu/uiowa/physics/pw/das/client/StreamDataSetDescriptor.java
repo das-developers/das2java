@@ -37,7 +37,6 @@ import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.stream.*;
 import org.das2.system.DasLogger;
 import org.das2.util.StreamTool;
 

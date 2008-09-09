@@ -1,7 +1,6 @@
 package edu.uiowa.physics.pw.das.components.propertyeditor;
 
 import org.das2.beans.BeansUtil;
-import edu.uiowa.physics.pw.das.beans.*;
 import org.das2.system.DasLogger;
 import org.das2.util.DasExceptionHandler;
 import java.beans.*;
