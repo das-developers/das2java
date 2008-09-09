@@ -38,7 +38,6 @@ import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.system.*;
-import edu.uiowa.physics.pw.das.util.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.HashMap;

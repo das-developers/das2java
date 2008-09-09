@@ -4,7 +4,6 @@
  */
 package org.das2.util;
 
-import edu.uiowa.physics.pw.das.util.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

@@ -23,7 +23,6 @@
 
 package org.das2.util;
 
-import edu.uiowa.physics.pw.das.util.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
