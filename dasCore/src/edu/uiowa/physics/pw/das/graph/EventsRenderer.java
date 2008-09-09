@@ -8,12 +8,12 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.DatumUtil;
-import edu.uiowa.physics.pw.das.datum.UnitsConverter;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumUtil;
+import org.das2.datum.UnitsConverter;
 import edu.uiowa.physics.pw.das.event.LabelDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import org.das2.system.DasLogger;

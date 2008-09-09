@@ -23,6 +23,8 @@
 
 package org.das2;
 
+import org.das2.dataset.LimitSizeBytesDataSetCache;
+import org.das2.dataset.NullDataSetCache;
 import org.das2.system.DefaultExceptionHandler;
 import org.das2.system.DasLogger;
 import org.das2.system.ExceptionHandler;
@@ -35,8 +37,7 @@ import org.das2.util.Splash;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.ClassMap;
 import org.das2.client.InputStreamMeter;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.dataset.DataSetCache;
+import org.das2.dataset.DataSetCache;
 import edu.uiowa.physics.pw.das.graph.DasAnnotation;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;

@@ -10,8 +10,8 @@
 
 package org.das2.client;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import java.io.IOException;
 import java.io.InputStream;

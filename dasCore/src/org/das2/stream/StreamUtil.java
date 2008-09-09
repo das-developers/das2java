@@ -10,9 +10,9 @@ package org.das2.stream;
 
 import org.das2.DasException;
 import org.das2.client.DataSetStreamHandler;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.TableDataSet;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.StreamTool;
 import java.io.FileInputStream;

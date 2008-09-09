@@ -6,8 +6,12 @@
 
 package org.das2.math.fft;
 
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Units;
+import org.das2.datum.DatumVector;
+import org.das2.datum.Datum;
 
 /**
  *

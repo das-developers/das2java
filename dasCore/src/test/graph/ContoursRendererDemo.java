@@ -9,8 +9,8 @@
 
 package test.graph;
 
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.dataset.test.RipplesDataSet;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.test.RipplesDataSet;
 import edu.uiowa.physics.pw.das.event.AnnotatorMouseModule;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.event.PointSlopeDragRenderer;

@@ -23,9 +23,9 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
-import edu.uiowa.physics.pw.das.dataset.*;
+import org.das2.dataset.TableDataSetConsumer;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetConsumer;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.Renderer;
@@ -78,7 +78,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     }
     
     public void mousePointSelected(MousePointSelectionEvent e) {
-        edu.uiowa.physics.pw.das.dataset.DataSet ds= dataSetConsumer.getConsumedDataSet();
+        org.das2.dataset.DataSet ds= dataSetConsumer.getConsumedDataSet();
         de.setDataSet(ds);
         de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
 

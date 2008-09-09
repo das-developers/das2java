@@ -6,13 +6,13 @@
 
 package org.das2.fsm;
 
-import edu.uiowa.physics.pw.das.datum.TimeUtil.TimeStruct;
+import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.TimeUtil;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;

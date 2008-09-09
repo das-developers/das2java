@@ -6,8 +6,14 @@
 
 package org.das2.math.fft;
 
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.dataset.QuickVectorDataSet;
+import org.das2.dataset.VectorDataSetBuilder;
+import org.das2.dataset.ClippedVectorDataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.DataSetUtil;
+import org.das2.datum.Units;
+import org.das2.datum.DatumVector;
+import org.das2.datum.UnitsUtil;
 
 /**
  *

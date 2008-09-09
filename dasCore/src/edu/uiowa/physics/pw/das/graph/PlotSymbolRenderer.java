@@ -4,8 +4,8 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.awt.Graphics;

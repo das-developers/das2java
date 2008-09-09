@@ -22,11 +22,11 @@
  */
 package org.das2.stream;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
-import edu.uiowa.physics.pw.das.datum.TimeUtil;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumVector;
+import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;

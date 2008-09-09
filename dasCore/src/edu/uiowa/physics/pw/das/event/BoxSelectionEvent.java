@@ -23,9 +23,9 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
+import org.das2.dataset.DataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import java.util.HashMap;
 
 /**
@@ -50,7 +50,7 @@ public class BoxSelectionEvent extends DasEvent {
     /**
      * @deprecated  use BoxSelectionEvent( Object, DatumRange, DatumRange );
      */
-    public BoxSelectionEvent(Object source, edu.uiowa.physics.pw.das.datum.Datum xMin, edu.uiowa.physics.pw.das.datum.Datum xMax, edu.uiowa.physics.pw.das.datum.Datum yMin, edu.uiowa.physics.pw.das.datum.Datum yMax) {
+    public BoxSelectionEvent(Object source, org.das2.datum.Datum xMin, org.das2.datum.Datum xMax, org.das2.datum.Datum yMin, org.das2.datum.Datum yMax) {
         this( source, xMin.le(xMax) ? new DatumRange( xMin, xMax ) : new DatumRange( xMax, xMin ),
                 yMin.le(yMax) ? new DatumRange( yMin, yMax ) : new DatumRange( yMax, yMin ) );
     }
@@ -95,28 +95,28 @@ public class BoxSelectionEvent extends DasEvent {
     /**
      * @deprecated  use getXRange().min();
      */
-    public edu.uiowa.physics.pw.das.datum.Datum getXMinimum() {
+    public org.das2.datum.Datum getXMinimum() {
         if ( xrange!=null ) return xrange.min(); else return null;
     }
     
     /**
      * @deprecated  use getXRange().max();
      */
-    public edu.uiowa.physics.pw.das.datum.Datum getXMaximum() {
+    public org.das2.datum.Datum getXMaximum() {
         if ( xrange!=null ) return xrange.max(); else return null;
     }
     
     /**
      * @deprecated  use getYRange().min();
      */    
-    public edu.uiowa.physics.pw.das.datum.Datum getYMinimum() {
+    public org.das2.datum.Datum getYMinimum() {
         if ( yrange!=null ) return yrange.min(); else return null;
     }
     
     /**
      * @deprecated  use getYRange().max();
      */
-    public edu.uiowa.physics.pw.das.datum.Datum getYMaximum() {
+    public org.das2.datum.Datum getYMaximum() {
         if ( yrange!=null ) return yrange.max(); else return null;
     }
     

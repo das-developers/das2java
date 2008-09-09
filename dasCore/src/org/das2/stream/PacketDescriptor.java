@@ -24,8 +24,8 @@
 package org.das2.stream;
 
 import org.das2.util.StreamTool;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumVector;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.Arrays;

@@ -22,6 +22,15 @@
  */
 package org.das2.client;
 
+import org.das2.dataset.VectorDataSetBuilder;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.TableDataSetBuilder;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.UnitsConverter;
 import org.das2.stream.StreamYScanDescriptor;
 import org.das2.stream.StreamMultiYDescriptor;
 import org.das2.stream.StreamDescriptor;
@@ -33,10 +42,7 @@ import org.das2.DasException;
 import org.das2.util.DasProgressMonitorInputStream;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
+import org.das2.datum.DatumVector;
 import org.das2.system.DasLogger;
 import org.das2.util.StreamTool;
 

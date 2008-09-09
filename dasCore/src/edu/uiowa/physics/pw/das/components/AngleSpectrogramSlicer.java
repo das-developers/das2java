@@ -23,9 +23,15 @@
 
 package edu.uiowa.physics.pw.das.components;
 
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.dataset.TableDataSetConsumer;
+import org.das2.dataset.VectorDataSetBuilder;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.DataSetUtil;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.event.BoxSelectionEvent;
 import edu.uiowa.physics.pw.das.event.BoxSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;

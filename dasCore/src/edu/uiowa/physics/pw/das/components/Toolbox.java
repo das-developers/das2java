@@ -36,7 +36,6 @@ import org.das2.dasml.FormCheckBox;
 import org.das2.dasml.TransferableFormComponent;
 import org.das2.dasml.FormButton;
 import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;

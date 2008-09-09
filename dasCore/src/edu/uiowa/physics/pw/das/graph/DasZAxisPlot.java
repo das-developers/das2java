@@ -27,17 +27,17 @@ package edu.uiowa.physics.pw.das.graph;
  *
  * @author  jbf
  */
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.TableDataSetConsumer;
 
-public interface DasZAxisPlot extends edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer {
+public interface DasZAxisPlot extends org.das2.dataset.TableDataSetConsumer {
     
     /** Creates a new instance of DasZAxisPlot */
     public DasAxis getZAxis();
     public DasAxis getYAxis();
     public DasAxis getXAxis();
     
-    public edu.uiowa.physics.pw.das.dataset.DataSet getDataSet();
+    public org.das2.dataset.DataSet getDataSet();
     
     public void setZAxis(DasAxis zAxis);
     

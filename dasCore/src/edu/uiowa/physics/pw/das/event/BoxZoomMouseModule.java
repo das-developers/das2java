@@ -6,9 +6,10 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.dataset.DataSetConsumer;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.*;

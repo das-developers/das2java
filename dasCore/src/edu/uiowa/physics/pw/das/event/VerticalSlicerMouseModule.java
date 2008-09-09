@@ -22,7 +22,7 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
-import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
+import org.das2.dataset.DataSetConsumer;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
@@ -33,12 +33,12 @@ import edu.uiowa.physics.pw.das.graph.Renderer;
  */
 public class VerticalSlicerMouseModule extends MouseModule {
     
-    private edu.uiowa.physics.pw.das.dataset.DataSet ds;
+    private org.das2.dataset.DataSet ds;
     double offset;
     private DasAxis xaxis;
     private DasAxis yaxis;
     
-    private edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer;
+    private org.das2.dataset.DataSetConsumer dataSetConsumer;
     /** Creates a new instance of VerticalSlicerMouseModule */
     
     private DataPointSelectionEvent de;

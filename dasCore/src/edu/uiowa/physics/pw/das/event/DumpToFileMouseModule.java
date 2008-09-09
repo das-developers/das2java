@@ -6,9 +6,16 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.dataset.DataSetConsumer;
+import org.das2.dataset.VectorDataSetBuilder;
+import org.das2.dataset.VectorUtil;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.ClippedTableDataSet;
+import org.das2.dataset.TableUtil;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.DatumRange;
 import org.das2.util.DasExceptionHandler;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.UserMessageCenter;
 import java.io.*;

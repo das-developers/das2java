@@ -6,8 +6,10 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.TableUtil;
+import org.das2.datum.Datum;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.geom.*;

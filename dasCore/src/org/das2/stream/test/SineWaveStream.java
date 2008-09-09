@@ -6,9 +6,10 @@
 
 package org.das2.stream.test;
 
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.dataset.test.*;
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.datum.Units;
+import org.das2.datum.DatumVector;
+import org.das2.datum.Datum;
+import org.das2.datum.TimeUtil;
 import java.nio.channels.*;
 import java.util.*;
 import org.das2.stream.DataTransferType;

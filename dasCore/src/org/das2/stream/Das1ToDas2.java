@@ -6,11 +6,11 @@
 
 package org.das2.stream;
 
+import org.das2.datum.Datum;
+import org.das2.datum.TimeUtil;
 import org.das2.DasProperties;
 import org.das2.DasException;
 import org.das2.util.IDLParser;
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import java.io.*;
 import java.util.*;
 

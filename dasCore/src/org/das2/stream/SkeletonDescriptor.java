@@ -23,7 +23,7 @@
 
 package org.das2.stream;
 
-import edu.uiowa.physics.pw.das.datum.DatumVector;
+import org.das2.datum.DatumVector;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import org.w3c.dom.Document;

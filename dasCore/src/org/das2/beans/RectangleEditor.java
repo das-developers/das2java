@@ -10,7 +10,7 @@
 
 package org.das2.beans;
 
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Units;
 import java.awt.Rectangle;
 import java.beans.PropertyEditorSupport;
 import java.beans.XMLEncoder;

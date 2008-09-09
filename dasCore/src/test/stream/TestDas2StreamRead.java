@@ -5,7 +5,7 @@
 package test.stream;
 
 import org.das2.client.DataSetStreamHandler;
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
+import org.das2.dataset.VectorDataSet;
 import org.das2.stream.StreamException;
 import org.das2.util.DasProgressMonitorInputStream;
 import org.das2.util.StreamTool;

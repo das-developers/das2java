@@ -26,7 +26,7 @@ package org.das2.dasml;
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
 import org.das2.beans.BeansUtil;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import org.das2.util.DasExceptionHandler;
 //import org.apache.xml.serialize.*;
 import org.w3c.dom.Document;
@@ -309,7 +309,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
         return type.isPrimitive()
         || type == String.class
         || type == Datum.class
-        || edu.uiowa.physics.pw.das.datum.Datum.class.isAssignableFrom(type)
+        || org.das2.datum.Datum.class.isAssignableFrom(type)
         || Number.class.isAssignableFrom(type);
     }
     

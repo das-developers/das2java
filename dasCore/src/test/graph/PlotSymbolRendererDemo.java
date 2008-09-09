@@ -4,12 +4,12 @@
  */
 package test.graph;
 
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
-import edu.uiowa.physics.pw.das.dataset.VectorDataSetBuilder;
-import edu.uiowa.physics.pw.das.dataset.test.BigVectorDataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.VectorDataSetBuilder;
+import org.das2.dataset.test.BigVectorDataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.graph.DasColorBar;
 import edu.uiowa.physics.pw.das.graph.DasColumn;
 import edu.uiowa.physics.pw.das.graph.DasPlot;

@@ -36,7 +36,7 @@ public class DataSetDescriptorBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DataSetDescriptorBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.dataset.DataSetDescriptor.class);
+        super(properties, org.das2.dataset.DataSetDescriptor.class);
     }
     
 }

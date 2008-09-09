@@ -5,9 +5,18 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.ConstantDataSetDescriptor;
+import org.das2.dataset.XTagsVectorDataSet;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.TableUtil;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.DataSetUtil;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.UnitsUtil;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.*;

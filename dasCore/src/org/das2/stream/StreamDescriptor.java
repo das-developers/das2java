@@ -25,7 +25,7 @@ package org.das2.stream;
 
 import org.das2.util.StreamTool;
 import org.das2.DasIOException;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
+import org.das2.datum.DatumVector;
 import org.das2.util.IDLParser;
 import java.io.*;
 import org.xml.sax.InputSource;

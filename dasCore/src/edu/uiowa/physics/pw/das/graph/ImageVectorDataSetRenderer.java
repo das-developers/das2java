@@ -12,10 +12,17 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.WritableTableDataSet;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.RebinDescriptor;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.DataSetUtil;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
 import org.das2.DasException;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.geom.*;

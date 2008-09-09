@@ -23,10 +23,11 @@
 
 package org.das2;
 
+import org.das2.datum.Datum;
+import org.das2.datum.TimeUtil;
 import org.das2.beans.BeansUtil;
 import org.das2.dasml.ParsedExpression;
 import org.das2.dasml.ParsedExpressionException;
-import edu.uiowa.physics.pw.das.datum.*;
 
 import java.beans.*;
 import java.lang.ref.WeakReference;

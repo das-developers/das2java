@@ -23,10 +23,13 @@
 
 package org.das2.client;
 
+import org.das2.dataset.NoDataInIntervalException;
+import org.das2.dataset.NoKeyProvidedException;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
 import org.das2.stream.StreamYScanDescriptor;
 import org.das2.DasApplication;
 import org.das2.util.URLBuddy;
-import edu.uiowa.physics.pw.das.*;
 /**
  *
  * @author  jbf
@@ -34,9 +37,7 @@ import edu.uiowa.physics.pw.das.*;
 
 import org.das2.DasException;
 import org.das2.DasIOException;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.format.DatumFormatter;
+import org.das2.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;
 import java.io.*;
 import java.net.*;

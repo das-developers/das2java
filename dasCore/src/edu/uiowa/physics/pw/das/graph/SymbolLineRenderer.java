@@ -23,6 +23,13 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.VectorUtil;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.DataSetUtil;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Datum;
 import org.das2.system.DasLogger;
 import org.das2.DasApplication;
 import org.das2.DasProperties;
@@ -31,8 +38,6 @@ import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
@@ -44,6 +49,7 @@ import org.w3c.dom.Element;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.logging.Logger;
+import org.das2.datum.Units;
 
 
 /**
@@ -143,8 +149,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         
         double xmin, xmax, ymin, ymax;
         
-        edu.uiowa.physics.pw.das.datum.Units xUnits= xAxis.getUnits();
-        edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();
+        org.das2.datum.Units xUnits= xAxis.getUnits();
+        org.das2.datum.Units yUnits= yAxis.getUnits();
         
         Rectangle r= g.getClipBounds();
         

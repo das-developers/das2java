@@ -23,9 +23,9 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
-import edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.dataset.DataSetConsumer;
+import org.das2.dataset.TableDataSetConsumer;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 
@@ -42,9 +42,9 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
     
-    private edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer;
+    private org.das2.dataset.DataSetConsumer dataSetConsumer;
     
-    public HorizontalDragRangeSelectorMouseModule(DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis axis) {
+    public HorizontalDragRangeSelectorMouseModule(DasPlot parent, org.das2.dataset.DataSetConsumer dataSetConsumer, DasAxis axis) {
         super( parent, new HorizontalDragRangeRenderer(parent), "Horizontal Drag Range" );
         if (!axis.isHorizontal()) {
             throw new IllegalArgumentException("Axis orientation is not horizontal");
@@ -63,8 +63,8 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
     
     public void mouseRangeSelected(MouseDragEvent e0) {
         MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
-        edu.uiowa.physics.pw.das.datum.Datum min;
-        edu.uiowa.physics.pw.das.datum.Datum max;
+        org.das2.datum.Datum min;
+        org.das2.datum.Datum max;
         
         min= axis.invTransform(e.getMinimum());
         max= axis.invTransform(e.getMaximum());

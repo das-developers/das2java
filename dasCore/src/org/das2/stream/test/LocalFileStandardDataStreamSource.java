@@ -28,8 +28,8 @@ import org.das2.client.DataSetDescriptorNotAvailableException;
 import org.das2.client.StreamDataSetDescriptor;
 import org.das2.DasException;
 import org.das2.DasIOException;
-import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.datum.Datum;
 
 import java.io.*;
 import java.util.Map;

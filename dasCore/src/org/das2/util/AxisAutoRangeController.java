@@ -8,9 +8,9 @@
 
 package org.das2.util;
 
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
-import edu.uiowa.physics.pw.das.dataset.DataSetUpdateListener;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.DataSetUpdateListener;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.GraphUtil;
 import java.beans.PropertyChangeListener;
@@ -46,7 +46,7 @@ public class AxisAutoRangeController implements DataSetUpdateListener, PropertyC
         isAutomaticPropertyChange= false;
     }
     
-    public void dataSetUpdated(edu.uiowa.physics.pw.das.dataset.DataSetUpdateEvent e) {
+    public void dataSetUpdated(org.das2.dataset.DataSetUpdateEvent e) {
         DataSet ds= e.getDataSet();
         if ( ds==null ) return;
         

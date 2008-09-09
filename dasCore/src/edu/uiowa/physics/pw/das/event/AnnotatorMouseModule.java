@@ -6,7 +6,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.Point;
 import java.awt.event.MouseEvent;

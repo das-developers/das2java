@@ -6,7 +6,10 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumUtil;
+import org.das2.datum.UnitsUtil;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;

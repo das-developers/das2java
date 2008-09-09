@@ -23,6 +23,14 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.NoDataInIntervalException;
+import org.das2.dataset.DataSetConsumer;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.VectorUtil;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.TableUtil;
+import org.das2.dataset.VectorDataSet;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.util.DasExceptionHandler;
@@ -30,7 +38,6 @@ import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
-import edu.uiowa.physics.pw.das.dataset.*;
 import org.das2.system.DasLogger;
 import java.awt.geom.*;
 

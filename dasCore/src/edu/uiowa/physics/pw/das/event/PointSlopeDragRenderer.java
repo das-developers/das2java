@@ -6,8 +6,8 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.datum.Datum;
 import org.das2.util.GrannyTextRenderer;
-import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.text.*;

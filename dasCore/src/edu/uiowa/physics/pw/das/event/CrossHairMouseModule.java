@@ -22,7 +22,7 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
+import org.das2.dataset.DataSet;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.Renderer;
@@ -40,7 +40,7 @@ public class CrossHairMouseModule extends MouseModule {
     
     protected DataPointSelectionEvent de;
     
-    edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer;
+    org.das2.dataset.DataSetConsumer dataSetConsumer;
     
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
@@ -49,7 +49,7 @@ public class CrossHairMouseModule extends MouseModule {
         this( parent, parent, xaxis, yaxis );
     }
     
-    public CrossHairMouseModule( DasPlot parent, edu.uiowa.physics.pw.das.dataset.DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
+    public CrossHairMouseModule( DasPlot parent, org.das2.dataset.DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {
         super(parent,new CrossHairRenderer(parent,dataSetConsumer,xAxis,yAxis),"Crosshair Digitizer");
         this.plot= parent;
         this.dataSetConsumer= dataSetConsumer;

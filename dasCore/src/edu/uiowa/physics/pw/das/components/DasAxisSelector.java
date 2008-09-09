@@ -27,7 +27,7 @@ package edu.uiowa.physics.pw.das.components;
  *
  * @author  jbf
  */
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 
 import javax.swing.*;

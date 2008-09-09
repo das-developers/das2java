@@ -23,7 +23,7 @@
 
 package org.das2.stream;
 
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.Map;
 

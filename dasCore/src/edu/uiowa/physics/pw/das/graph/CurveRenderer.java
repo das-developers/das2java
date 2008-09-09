@@ -22,13 +22,14 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Units;
 import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -103,8 +104,8 @@ public class CurveRenderer extends Renderer {
         
         double xmin, xmax, ymin, ymax;
         
-        edu.uiowa.physics.pw.das.datum.Units xUnits= xAxis.getUnits();
-        edu.uiowa.physics.pw.das.datum.Units yUnits= yAxis.getUnits();
+        org.das2.datum.Units xUnits= xAxis.getUnits();
+        org.das2.datum.Units yUnits= yAxis.getUnits();
         
         Rectangle r= g1.getClipBounds();
         

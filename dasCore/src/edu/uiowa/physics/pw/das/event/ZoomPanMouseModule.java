@@ -8,11 +8,11 @@
  */
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
-import edu.uiowa.physics.pw.das.datum.TimeLocationUnits;
-import edu.uiowa.physics.pw.das.datum.UnitsUtil;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.UnitsUtil;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.TickVDescriptor;

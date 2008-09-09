@@ -22,8 +22,8 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.dataset.DataSet;
+import org.das2.datum.Datum;
 import java.util.Map;
 
 /**
@@ -65,11 +65,11 @@ public class DataPointSelectionEvent extends DasEvent {
         this( source, x, y, null );        
     }    
     
-    public edu.uiowa.physics.pw.das.datum.Datum getX() {
+    public org.das2.datum.Datum getX() {
         return x;
     }
 
-    public edu.uiowa.physics.pw.das.datum.Datum getY() {
+    public org.das2.datum.Datum getY() {
         return y;
     }
     
@@ -90,11 +90,11 @@ public class DataPointSelectionEvent extends DasEvent {
         this.y= y;
     }
     
-    public void setDataSet(edu.uiowa.physics.pw.das.dataset.DataSet ds) {
+    public void setDataSet(org.das2.dataset.DataSet ds) {
         this.ds= ds;
     }
     
-    public edu.uiowa.physics.pw.das.dataset.DataSet getDataSet() {
+    public org.das2.dataset.DataSet getDataSet() {
         return this.ds;
     }
     

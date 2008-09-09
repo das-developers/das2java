@@ -23,8 +23,8 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 
 /**
  *

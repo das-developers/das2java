@@ -1,6 +1,6 @@
 package org.das2.math.fft.jnt;
 
-import edu.uiowa.physics.pw.das.math.fft.*;
+import org.das2.math.fft.ComplexArray;
 
 /** Computes FFT's of complex, single precision data of arbitrary length n.
  * This class uses the Mixed Radix method; it has special methods to handle

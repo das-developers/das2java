@@ -23,8 +23,8 @@
 
 package org.das2.stream;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumVector;
 import java.util.IdentityHashMap;
 import java.util.Map;
 

@@ -22,8 +22,8 @@
  */
 
 package edu.uiowa.physics.pw.das.event;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import edu.uiowa.physics.pw.das.graph.DasColorBar;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.Renderer;

@@ -6,7 +6,13 @@
 
 package org.das2.math.fft;
 
-import edu.uiowa.physics.pw.das.math.fft.jnt.*;
+import org.das2.math.fft.jnt.ComplexDoubleFFT;
+import org.das2.math.fft.jnt.ComplexDoubleFFT_Mixed;
+import org.das2.math.fft.jnt.ComplexFloatFFT;
+import org.das2.math.fft.jnt.ComplexFloatFFT_Mixed;
+import org.das2.math.fft.jnt.RealDoubleFFT;
+import org.das2.math.fft.jnt.RealDoubleFFT_Even;
+
 
 /**
  * Provides forward and reverse FFT methods for any number of elements.  The FFTs

@@ -20,7 +20,7 @@ public class Sonifier implements StreamHandler {
     int bufferInputIndex;        
     
     
-    public void packet(PacketDescriptor pd, edu.uiowa.physics.pw.das.datum.Datum xTag, edu.uiowa.physics.pw.das.datum.DatumVector[] vectors) throws StreamException {
+    public void packet(PacketDescriptor pd, org.das2.datum.Datum xTag, org.das2.datum.DatumVector[] vectors) throws StreamException {
         double max= 1.0;
         buffer[bufferInputIndex++]= (byte) ( 256 * vectors[0].doubleValue(0, vectors[0].getUnits() ) );  
         if ( bufferInputIndex==100 ) {

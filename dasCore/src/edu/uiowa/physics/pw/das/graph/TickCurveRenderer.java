@@ -22,13 +22,15 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.VectorUtil;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Units;
 import org.das2.util.DasMath;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import java.awt.*;
 import java.awt.geom.*;
 

@@ -6,10 +6,13 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.DataSetUpdateEvent;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.DataSetUpdateListener;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.DasProgressPanel;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.*;

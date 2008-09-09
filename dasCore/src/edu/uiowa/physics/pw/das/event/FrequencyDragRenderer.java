@@ -6,10 +6,10 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.*;
-import edu.uiowa.physics.pw.das.datum.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.*;

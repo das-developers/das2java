@@ -9,9 +9,9 @@
 
 package org.das2.persistence;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;

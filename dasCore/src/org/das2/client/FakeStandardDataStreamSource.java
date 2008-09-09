@@ -23,8 +23,9 @@
 
 package org.das2.client;
 
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.datum.*;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;

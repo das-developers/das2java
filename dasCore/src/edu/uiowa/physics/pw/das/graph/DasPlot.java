@@ -22,6 +22,13 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.DataSetConsumer;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.VectorUtil;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.TableUtil;
+import org.das2.dataset.VectorDataSet;
 import org.das2.NameContext;
 import org.das2.DasApplication;
 import org.das2.CancelledOperationException;
@@ -34,11 +41,10 @@ import org.das2.util.monitor.NullProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
 import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumVector;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import org.das2.system.DasLogger;

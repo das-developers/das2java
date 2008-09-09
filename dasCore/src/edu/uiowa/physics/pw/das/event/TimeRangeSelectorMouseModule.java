@@ -23,9 +23,9 @@
 
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.datum.DatumRange;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import edu.uiowa.physics.pw.das.graph.DasPlot;

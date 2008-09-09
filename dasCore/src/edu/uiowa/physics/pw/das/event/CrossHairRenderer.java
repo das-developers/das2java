@@ -22,12 +22,19 @@
  */
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.dataset.*;
+import org.das2.dataset.DataSetConsumer;
+import org.das2.dataset.TableDataSetConsumer;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.TableUtil;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetUtil;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.format.DefaultDatumFormatterFactory;
+import org.das2.datum.format.DatumFormatter;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 
-import edu.uiowa.physics.pw.das.datum.format.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 
 import edu.uiowa.physics.pw.das.graph.Renderer;

@@ -1,6 +1,6 @@
 package org.das2.math.fft.jnt;
 
-import edu.uiowa.physics.pw.das.math.fft.*;
+import org.das2.math.fft.ComplexArray;
 
 /** Abstract Class representing FFT's of complex, single precision data.
   * Concrete classes are typically named ComplexFloatFFT_<i>method</i>, implement the

@@ -6,7 +6,7 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.event.*;
 import javax.swing.*;

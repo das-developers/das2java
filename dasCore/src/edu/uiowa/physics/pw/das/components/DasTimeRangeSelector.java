@@ -23,14 +23,17 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.util.DasExceptionHandler;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.datum.*;
 /**
  *
  * @author  jbf
  */
-import edu.uiowa.physics.pw.das.datum.TimeUtil;
+import org.das2.datum.TimeUtil;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
 import org.das2.system.DasLogger;

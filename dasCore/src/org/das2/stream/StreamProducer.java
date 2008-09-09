@@ -23,8 +23,8 @@
 
 package org.das2.stream;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumVector;
 import org.das2.util.DeflaterChannel;
 import org.das2.util.StreamTool;
 import java.io.ByteArrayOutputStream;

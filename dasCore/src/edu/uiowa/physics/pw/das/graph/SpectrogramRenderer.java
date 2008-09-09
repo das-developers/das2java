@@ -22,6 +22,14 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.DataSetRebinner;
+import org.das2.dataset.NoDataInIntervalException;
+import org.das2.dataset.TableDataSetConsumer;
+import org.das2.dataset.AverageTableRebinner;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.RebinDescriptor;
+import org.das2.dataset.DataSet;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasNameException;
@@ -31,10 +39,9 @@ import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.InconvertibleUnitsException;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.DatumRange;
+import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.event.*;
 import org.das2.system.DasLogger;
 import org.das2.util.DasExceptionHandler;

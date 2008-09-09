@@ -7,11 +7,11 @@
  */
 package org.das2.util;
 
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.TimeUtil;
-import edu.uiowa.physics.pw.das.datum.TimeUtil.TimeStruct;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.TimeUtil.TimeStruct;
+import org.das2.datum.Units;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;

@@ -6,13 +6,14 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import org.das2.datum.DatumRange;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasPNGEncoder;
 import org.das2.util.DasPNGConstants;
-import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.datum.*;
 import edu.uiowa.physics.pw.das.event.*;
-import edu.uiowa.physics.pw.das.graph.*;
+import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import org.das2.system.DasLogger;
 import java.awt.*;
 import java.awt.image.*;

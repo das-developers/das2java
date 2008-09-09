@@ -23,6 +23,12 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.dataset.DataSetRebinner;
+import org.das2.dataset.AverageTableRebinner;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.DefaultTableDataSet;
+import org.das2.dataset.RebinDescriptor;
 import org.das2.util.DasMath;
 import edu.uiowa.physics.pw.das.*;
 import org.das2.DasException;
@@ -33,8 +39,7 @@ import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
 import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.event.*;
 import org.das2.util.DasDie;
 import org.das2.util.DasExceptionHandler;

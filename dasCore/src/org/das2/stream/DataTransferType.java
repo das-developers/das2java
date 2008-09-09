@@ -23,9 +23,9 @@
 
 package org.das2.stream;
 
-import edu.uiowa.physics.pw.das.datum.TimeUtil;
-import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.datum.format.TimeDatumFormatter;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.util.FixedWidthFormatter;
 import org.das2.util.NumberFormatUtil;
 import java.io.UnsupportedEncodingException;

@@ -10,7 +10,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
+import org.das2.dataset.RebinDescriptor;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**

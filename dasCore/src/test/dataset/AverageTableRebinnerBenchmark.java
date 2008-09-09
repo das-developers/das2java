@@ -6,11 +6,11 @@
 package test.dataset;
 
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.dataset.AverageTableRebinner;
-import edu.uiowa.physics.pw.das.dataset.RebinDescriptor;
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.dataset.test.RipplesDataSet;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.dataset.AverageTableRebinner;
+import org.das2.dataset.RebinDescriptor;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.test.RipplesDataSet;
+import org.das2.datum.Units;
 
 /**
  *

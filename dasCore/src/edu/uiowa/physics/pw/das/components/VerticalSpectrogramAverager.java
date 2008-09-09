@@ -23,10 +23,15 @@
 
 package edu.uiowa.physics.pw.das.components;
 
+import org.das2.dataset.TableDataSetConsumer;
+import org.das2.dataset.AverageTableRebinner;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.RebinDescriptor;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.DatumRange;
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.dataset.*;
-import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
 import edu.uiowa.physics.pw.das.event.DataRangeSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;

@@ -26,14 +26,14 @@ import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasProperties;
 import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
-import edu.uiowa.physics.pw.das.dataset.DataSet;
-import edu.uiowa.physics.pw.das.dataset.DataSetUtil;
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.DatumRangeUtil;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetUtil;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.LengthDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
@@ -1295,13 +1295,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
     /**
      * Holds value of property colorByDataSet.
      */
-    private edu.uiowa.physics.pw.das.dataset.VectorDataSet colorByDataSet;
+    private org.das2.dataset.VectorDataSet colorByDataSet;
 
     /**
      * Getter for property colorByDataSet.
      * @return Value of property colorByDataSet.
      */
-    public edu.uiowa.physics.pw.das.dataset.VectorDataSet getColorByDataSet() {
+    public org.das2.dataset.VectorDataSet getColorByDataSet() {
         return this.colorByDataSet;
     }
 
@@ -1309,7 +1309,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * Setter for property colorByDataSet.
      * @param colorByDataSet New value of property colorByDataSet.
      */
-    public void setColorByDataSet(edu.uiowa.physics.pw.das.dataset.VectorDataSet colorByDataSet) {
+    public void setColorByDataSet(org.das2.dataset.VectorDataSet colorByDataSet) {
         this.colorByDataSet = colorByDataSet;
         refreshImage();
     }

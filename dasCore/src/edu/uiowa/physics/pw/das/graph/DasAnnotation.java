@@ -6,7 +6,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.util.GrannyTextRenderer;
-import edu.uiowa.physics.pw.das.datum.Datum;
+import org.das2.datum.Datum;
 import edu.uiowa.physics.pw.das.event.ArrowDragRenderer;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.event.MoveComponentMouseModule;

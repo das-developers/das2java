@@ -6,10 +6,11 @@
 
 package org.das2.fsm;
 
+import org.das2.datum.DatumRange;
+import org.das2.datum.Datum;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
-import edu.uiowa.physics.pw.das.dataset.CacheTag;
-import edu.uiowa.physics.pw.das.datum.*;
+import org.das2.dataset.CacheTag;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
