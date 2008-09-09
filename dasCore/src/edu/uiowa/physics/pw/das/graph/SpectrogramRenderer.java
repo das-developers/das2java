@@ -282,7 +282,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     } else {
                         index = (i - 0) + (ny - j - 1) * nx;
                     }
-                    icolor = (int) cb.indexColorTransform(rebinData.getDouble(i, j, units), units);
+                    icolor = cb.indexColorTransform(rebinData.getDouble(i, j, units), units);
                     pix[index] = (byte) icolor;
                 }
             }
