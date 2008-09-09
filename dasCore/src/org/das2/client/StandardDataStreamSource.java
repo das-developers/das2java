@@ -1,4 +1,4 @@
-/* File: DataSetDescriptorNotAvailableException.java
+/* File: StandardDataStreamSource.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,22 +21,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.client;
+package org.das2.client;
+
+import org.das2.DasException;
+import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
+import edu.uiowa.physics.pw.das.datum.*;
+
+import java.io.InputStream;
 
 /**
  *
  * @author  jbf
  */
-public class DataSetDescriptorNotAvailableException extends org.das2.DasException {
-    /**
-     * Creates a new instance of <code>DataSetDescriptionNotAvailableException</code> without detail message.
-     */
+public interface StandardDataStreamSource {
     
-    /**
-     * Constructs an instance of <code>DataSetDescriptionNotAvailableException</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public DataSetDescriptorNotAvailableException(String msg) {
-        super(msg);
-    }
+    public InputStream getInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException;
+    public InputStream getReducedInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException;
+    public void reset();
 }

@@ -26,11 +26,15 @@
  */
 package org.das2.util.filesystem;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import org.das2.DasApplication;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
-import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;

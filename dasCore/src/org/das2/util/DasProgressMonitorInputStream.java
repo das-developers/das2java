@@ -24,7 +24,6 @@
 package org.das2.util;
 
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.client.*;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;

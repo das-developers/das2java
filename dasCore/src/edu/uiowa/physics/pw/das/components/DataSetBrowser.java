@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.components;
 
 import org.das2.DasException;
 import org.das2.DasIOException;
-import edu.uiowa.physics.pw.das.client.DasServer;
+import org.das2.client.DasServer;
 
 import javax.swing.*;
 import javax.swing.tree.TreeModel;

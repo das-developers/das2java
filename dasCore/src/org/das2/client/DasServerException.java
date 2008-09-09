@@ -1,4 +1,4 @@
-/* File: Key.java
+/* File: DasServerException.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,22 +21,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.client;
+package org.das2.client;
 
 /**
  *
  * @author  jbf
  */
-public class Key {
+public class DasServerException extends org.das2.DasException {
     
-    String value;
-    
-    /** Creates a new instance of Key */
-    public Key(String value) {
-        this.value= value;
+    /** Creates a new instance of DasServerException */
+    public DasServerException() {
+        super();
+    }
+
+    public DasServerException(String msg) {
+        super(msg);
     }
     
-    public String toString() {
-        return this.value;
-    }
 }

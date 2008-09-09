@@ -1,4 +1,4 @@
-/* File: AccessDeniedException.java
+/* File: Key.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -20,18 +20,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package edu.uiowa.physics.pw.das.client;
+
+package org.das2.client;
 
 /**
  *
  * @author  jbf
  */
-public class AccessDeniedException extends org.das2.DasException {
-    //The the provided key does not allow access to the dataset.
+public class Key {
     
-    /** Creates a new instance of NoKeyProvidedException */
-    public AccessDeniedException(String msg) {
-        super(msg);
+    String value;
+    
+    /** Creates a new instance of Key */
+    public Key(String value) {
+        this.value= value;
     }
     
+    public String toString() {
+        return this.value;
+    }
 }

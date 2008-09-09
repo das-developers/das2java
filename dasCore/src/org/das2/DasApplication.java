@@ -34,7 +34,7 @@ import org.das2.system.ThrowRuntimeExceptionHandler;
 import org.das2.util.Splash;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.ClassMap;
-import edu.uiowa.physics.pw.das.client.InputStreamMeter;
+import org.das2.client.InputStreamMeter;
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetCache;
 import edu.uiowa.physics.pw.das.graph.DasAnnotation;

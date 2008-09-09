@@ -46,7 +46,7 @@ public class StreamDataSetDescriptorBeanInfo extends AccessLevelBeanInfo {
     }
         
     public StreamDataSetDescriptorBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.client.StreamDataSetDescriptor.class);
+        super(properties, org.das2.client.StreamDataSetDescriptor.class);
     }
     
 }

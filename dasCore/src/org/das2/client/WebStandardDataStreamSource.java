@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.client;
+package org.das2.client;
 
 import org.das2.stream.StreamYScanDescriptor;
 import org.das2.DasApplication;

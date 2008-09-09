@@ -21,6 +21,10 @@
  */
 package edu.uiowa.physics.pw.das.dataset;
 
+import org.das2.client.DasServer;
+import org.das2.client.DataSetDescriptorNotAvailableException;
+import org.das2.client.StreamDataSetDescriptor;
+import org.das2.client.NoSuchDataSetException;
 import org.das2.stream.StreamDescriptor;
 import org.das2.DasIOException;
 import org.das2.DasApplication;
@@ -28,7 +32,6 @@ import org.das2.DasException;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.datum.*;
 import org.das2.system.DasLogger;

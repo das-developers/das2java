@@ -25,7 +25,7 @@ package org.das2.beans;
 
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
-import edu.uiowa.physics.pw.das.client.DasServer;
+import org.das2.client.DasServer;
 
 /**
  * Bean Info implementation for DasDevicePosition
@@ -39,7 +39,7 @@ public class DasServerBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DasServerBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.client.DasServer.class);
+        super(properties, org.das2.client.DasServer.class);
     }
     
 }

@@ -23,7 +23,6 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetConsumer;
 import edu.uiowa.physics.pw.das.dataset.TableDataSetConsumer;
 import edu.uiowa.physics.pw.das.datum.Datum;

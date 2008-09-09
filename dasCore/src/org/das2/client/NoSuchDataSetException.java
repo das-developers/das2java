@@ -1,4 +1,4 @@
-/* File: DasServerNotFoundException.java
+/* File: NoSuchDataSetException.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -21,26 +21,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.uiowa.physics.pw.das.client;
+package org.das2.client;
 
 /**
  *
  * @author  jbf
  */
-public class DasServerNotFoundException extends org.das2.DasException {
+public class NoSuchDataSetException extends org.das2.client.DasServerException {
     
     /**
-     * Creates a new instance of <code>DasServerNotFoundException</code> without detail message.
+     * Creates a new instance of <code>NoSuchDataSet</code> without detail message.
      */
-    public DasServerNotFoundException() {
+    public NoSuchDataSetException() {
     }
     
     
     /**
-     * Constructs an instance of <code>DasServerNotFoundException</code> with the specified detail message.
+     * Constructs an instance of <code>NoSuchDataSet</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public DasServerNotFoundException(String msg) {
+    public NoSuchDataSetException(String msg) {
         super(msg);
     }
 }

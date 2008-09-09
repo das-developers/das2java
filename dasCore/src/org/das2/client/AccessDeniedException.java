@@ -1,4 +1,4 @@
-/* File: NoSuchDataSetException.java
+/* File: AccessDeniedException.java
  * Copyright (C) 2002-2003 The University of Iowa
  * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
  *             Jessica Swanner <jessica@space.physics.uiowa.edu>
@@ -20,27 +20,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-package edu.uiowa.physics.pw.das.client;
+package org.das2.client;
 
 /**
  *
  * @author  jbf
  */
-public class NoSuchDataSetException extends edu.uiowa.physics.pw.das.client.DasServerException {
+public class AccessDeniedException extends org.das2.DasException {
+    //The the provided key does not allow access to the dataset.
     
-    /**
-     * Creates a new instance of <code>NoSuchDataSet</code> without detail message.
-     */
-    public NoSuchDataSetException() {
-    }
-    
-    
-    /**
-     * Constructs an instance of <code>NoSuchDataSet</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public NoSuchDataSetException(String msg) {
+    /** Creates a new instance of NoKeyProvidedException */
+    public AccessDeniedException(String msg) {
         super(msg);
     }
+    
 }

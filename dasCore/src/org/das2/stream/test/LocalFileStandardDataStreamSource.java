@@ -23,9 +23,11 @@
 
 package org.das2.stream.test;
 
+import org.das2.client.StandardDataStreamSource;
+import org.das2.client.DataSetDescriptorNotAvailableException;
+import org.das2.client.StreamDataSetDescriptor;
 import org.das2.DasException;
 import org.das2.DasIOException;
-import edu.uiowa.physics.pw.das.client.*;
 import edu.uiowa.physics.pw.das.dataset.DataSetDescriptor;
 import edu.uiowa.physics.pw.das.datum.Datum;
 
