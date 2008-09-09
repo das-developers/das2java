@@ -260,10 +260,10 @@ public class DataSetOps {
                 i0++;
             }
         }
-        Comparator c = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                int i1 = ((Integer) o1).intValue();
-                int i2 = ((Integer) o2).intValue();
+        Comparator<Integer> c = new Comparator<Integer>() {
+            public int compare(Integer o1, Integer o2) {
+                int i1 = o1.intValue();
+                int i2 = o2.intValue();
                 return Double.compare(ds.value(i1), ds.value(i2));
             }
         };
@@ -272,11 +272,7 @@ public class DataSetOps {
         for (int i = 0; i < i0; i++) {
             data[i] = indeces[i].intValue();
         }
-        MutablePropertyDataSet result = new IndexGenDataSet(i0) {
-            public double value(int i) {
-                return data[i];
-            }
-        };
+        MutablePropertyDataSet result = IDataSet.wrap(data);
         result.putProperty(QDataSet.NAME, "sort" + ds.length());
         return result;
     }
