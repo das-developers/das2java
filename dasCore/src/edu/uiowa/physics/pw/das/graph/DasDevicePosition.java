@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateEvent;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import java.beans.PropertyChangeEvent;
@@ -38,6 +37,7 @@ import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.StringTokenizer;
+import org.das2.components.propertyeditor.Editable;
 
 /**
  *

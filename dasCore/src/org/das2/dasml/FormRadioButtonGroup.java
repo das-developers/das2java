@@ -23,7 +23,6 @@
 
 package org.das2.dasml;
 
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -32,6 +31,7 @@ import org.w3c.dom.NodeList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
+import org.das2.components.propertyeditor.Editable;
 
 public class FormRadioButtonGroup extends FormContainer implements Editable, FormComponent {
     

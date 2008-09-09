@@ -9,7 +9,7 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
+import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.ClippedTableDataSet;
 import org.das2.dataset.DataSetUtil;

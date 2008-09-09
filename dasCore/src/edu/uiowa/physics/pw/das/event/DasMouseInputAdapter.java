@@ -25,7 +25,6 @@ package edu.uiowa.physics.pw.das.event;
 import org.das2.system.DasLogger;
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.*;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
@@ -41,6 +40,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.*;
 import java.util.logging.Logger;
+import org.das2.components.propertyeditor.Editable;
 
 /**
  * DasMouseInputAdapter delegates mouse and key events to mouse modules, which

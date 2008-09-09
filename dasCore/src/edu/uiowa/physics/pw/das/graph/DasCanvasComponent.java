@@ -25,8 +25,6 @@ package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
-import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
 import edu.uiowa.physics.pw.das.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
@@ -36,6 +34,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.logging.*;
+import org.das2.components.propertyeditor.Editable;
+import org.das2.components.propertyeditor.PropertyEditor;
 
 /**
  *

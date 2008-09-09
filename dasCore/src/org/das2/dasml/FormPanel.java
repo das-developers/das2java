@@ -23,8 +23,6 @@
 
 package org.das2.dasml;
 
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -34,6 +32,7 @@ import org.w3c.dom.NodeList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
+import org.das2.components.propertyeditor.Editable;
 
 /**
  * A subclass of JPanel to override the default Beans properties of

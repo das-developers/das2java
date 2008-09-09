@@ -33,7 +33,7 @@ public class DataPointRecorderBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DataPointRecorderBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.components.DataPointRecorder.class);
+        super(properties, org.das2.components.DataPointRecorder.class);
     }
     
 }

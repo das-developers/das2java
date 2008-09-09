@@ -5,13 +5,16 @@
  */
 package org.das2.beans;
 
+import org.das2.components.DatumEditor;
+import org.das2.components.propertyeditor.BooleanEditor;
+import org.das2.components.propertyeditor.EnumerationEditor;
+import org.das2.components.propertyeditor.ColorEditor;
+import org.das2.components.DatumRangeEditor;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.NumberUnits;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.components.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import org.das2.util.ClassMap;

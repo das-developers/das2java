@@ -37,7 +37,7 @@ import org.das2.util.DasExceptionHandler;
 import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
+import org.das2.components.propertyeditor.Editable;
 import org.das2.system.DasLogger;
 import java.awt.geom.*;
 

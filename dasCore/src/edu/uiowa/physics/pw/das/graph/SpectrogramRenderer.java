@@ -22,6 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.components.propertyeditor.Enumeration;
 import org.das2.dataset.DataSetRebinner;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.dataset.TableDataSetConsumer;
@@ -34,10 +35,9 @@ import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasNameException;
 import org.das2.DasPropertyException;
-import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
-import edu.uiowa.physics.pw.das.components.VerticalSpectrogramAverager;
-import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
+import org.das2.components.HorizontalSpectrogramSlicer;
+import org.das2.components.VerticalSpectrogramAverager;
+import org.das2.components.VerticalSpectrogramSlicer;
 import org.das2.dasml.FormBase;
 import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
@@ -67,7 +67,7 @@ import org.w3c.dom.*;
  *
  * @author  jbf
  */
-public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, edu.uiowa.physics.pw.das.components.propertyeditor.Displayable {
+public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, org.das2.components.propertyeditor.Displayable {
 
     private Object lockObject = new Object();
     private DasColorBar colorBar;

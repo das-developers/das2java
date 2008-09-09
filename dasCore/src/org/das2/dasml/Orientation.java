@@ -23,7 +23,7 @@
 
 package org.das2.dasml;
 
-import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
+import org.das2.components.propertyeditor.Enumeration;
 
 /**
  *

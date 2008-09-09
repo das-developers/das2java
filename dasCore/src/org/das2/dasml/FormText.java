@@ -25,13 +25,12 @@ package org.das2.dasml;
 
 import org.das2.DasApplication;
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import org.das2.components.propertyeditor.Editable;
 
 /**
  *

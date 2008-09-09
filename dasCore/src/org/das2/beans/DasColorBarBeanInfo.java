@@ -25,11 +25,11 @@ package org.das2.beans;
 
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
-import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
 import edu.uiowa.physics.pw.das.graph.DasAxis;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import org.das2.components.propertyeditor.EnumerationEditor;
 
 /**
  * BeanInfo class for DasColorBar

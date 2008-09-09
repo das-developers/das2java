@@ -22,6 +22,7 @@
  */
 package edu.uiowa.physics.pw.das.event;
 
+import org.das2.components.propertyeditor.Editable;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.TableDataSet;
@@ -35,7 +36,6 @@ import edu.uiowa.physics.pw.das.graph.DasAxis;
 import edu.uiowa.physics.pw.das.graph.DasPlot;
 
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 
 import edu.uiowa.physics.pw.das.graph.Renderer;
 import java.awt.*;

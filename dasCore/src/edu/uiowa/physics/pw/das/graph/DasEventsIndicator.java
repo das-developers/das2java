@@ -12,7 +12,7 @@ import org.das2.dataset.DataSetUpdateListener;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.DasProgressPanel;
+import org.das2.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.*;

@@ -23,7 +23,7 @@
 
 package org.das2.beans;
 
-import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
+import org.das2.components.propertyeditor.EnumerationEditor;
 import java.beans.BeanInfo;
 
 /**

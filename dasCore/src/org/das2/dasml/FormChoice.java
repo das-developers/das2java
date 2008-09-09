@@ -26,8 +26,6 @@ package org.das2.dasml;
 import org.das2.NameContext;
 import org.das2.DasApplication;
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -35,6 +33,7 @@ import org.w3c.dom.NodeList;
 
 import javax.swing.*;
 import org.das2.DasPropertyException;
+import org.das2.components.propertyeditor.Editable;
 
 /**
  * Drop down list for making single selections.

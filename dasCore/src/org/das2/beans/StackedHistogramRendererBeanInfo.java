@@ -23,8 +23,8 @@
 
 package org.das2.beans;
 
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import java.beans.BeanInfo;
+import org.das2.components.propertyeditor.EnumerationEditor;
 
 /**
  * BeanInfo class for DasStackedHistogramPlot

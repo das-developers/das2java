@@ -8,7 +8,7 @@
 
 package org.das2.system;
 
-import edu.uiowa.physics.pw.das.components.DasProgressPanel;
+import org.das2.components.DasProgressPanel;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.Collection;

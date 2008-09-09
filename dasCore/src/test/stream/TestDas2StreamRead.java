@@ -20,7 +20,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.components.DasProgressPanel;
+import org.das2.components.DasProgressPanel;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 

@@ -28,8 +28,6 @@ import org.das2.datum.Units;
 import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
 

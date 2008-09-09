@@ -23,9 +23,8 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.components.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
+import org.das2.components.propertyeditor.Displayable;
+import org.das2.components.propertyeditor.Enumeration;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;

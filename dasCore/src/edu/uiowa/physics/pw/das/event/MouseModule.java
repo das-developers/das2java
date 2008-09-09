@@ -23,7 +23,8 @@
 
 package edu.uiowa.physics.pw.das.event;
 
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
+import org.das2.components.propertyeditor.Displayable;
+import org.das2.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
 
 import javax.swing.event.MouseInputAdapter;

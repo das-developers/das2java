@@ -24,11 +24,11 @@
 package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.beans.DasCanvasComponentBeanInfo;
-import edu.uiowa.physics.pw.das.components.propertyeditor.EnumerationEditor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import org.das2.components.propertyeditor.EnumerationEditor;
 
 /**
  * BeanInfo class for DasColorBar

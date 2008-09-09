@@ -23,8 +23,8 @@
 
 package org.das2.datum;
 
+import org.das2.components.propertyeditor.Displayable;
 import org.das2.util.DasMath;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 
 import java.util.*;
 import java.text.ParseException;

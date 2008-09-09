@@ -25,8 +25,6 @@ package org.das2.dasml;
 
 import org.das2.DasApplication;
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Editable;
 import edu.uiowa.physics.pw.das.graph.DasCanvas;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;
 import org.w3c.dom.Document;
@@ -43,6 +41,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.List;
 import org.das2.DasNameException;
+import org.das2.components.propertyeditor.Editable;
 
 /**
  * A subclass of JPanel to override the default Beans properties of

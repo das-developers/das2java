@@ -25,7 +25,7 @@ package edu.uiowa.physics.pw.das.graph;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasProperties;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
+import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetUtil;
 import org.das2.dataset.TableDataSet;

@@ -27,7 +27,6 @@ import org.das2.NameContext;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasPropertyException;
-import edu.uiowa.physics.pw.das.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

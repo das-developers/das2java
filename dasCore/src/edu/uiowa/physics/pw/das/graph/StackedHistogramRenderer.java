@@ -23,6 +23,7 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetRebinner;
 import org.das2.dataset.NearestNeighborTableRebinner;
 import org.das2.dataset.AveragePeakTableRebinner;
@@ -41,15 +42,14 @@ import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import edu.uiowa.physics.pw.das.*;
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.components.HorizontalSpectrogramSlicer;
-import edu.uiowa.physics.pw.das.components.VerticalSpectrogramSlicer;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
+import org.das2.components.HorizontalSpectrogramSlicer;
+import org.das2.components.VerticalSpectrogramSlicer;
 import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.event.HorizontalSlicerMouseModule;
 import edu.uiowa.physics.pw.das.event.VerticalSlicerMouseModule;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import edu.uiowa.physics.pw.das.components.propertyeditor.Enumeration;
+import org.das2.components.propertyeditor.Enumeration;
 import org.das2.system.DasLogger;
 
 import java.awt.*;

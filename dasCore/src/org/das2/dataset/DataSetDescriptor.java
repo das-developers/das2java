@@ -21,6 +21,7 @@
  */
 package org.das2.dataset;
 
+import org.das2.components.propertyeditor.Displayable;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -34,7 +35,6 @@ import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import org.das2.system.DasLogger;
 import org.das2.system.RequestProcessor;
 

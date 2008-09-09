@@ -6,8 +6,6 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.components.propertyeditor.Displayable;
-import edu.uiowa.physics.pw.das.components.propertyeditor.PropertyEditor;
 import org.das2.system.DasLogger;
 import org.das2.util.ObjectLocator;
 import java.awt.*;
@@ -16,6 +14,8 @@ import java.awt.image.*;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.*;
+import org.das2.components.propertyeditor.Displayable;
+import org.das2.components.propertyeditor.PropertyEditor;
 
 /**
  *

@@ -22,9 +22,9 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.components.propertyeditor.Displayable;
+import org.das2.components.propertyeditor.Enumeration;
 import org.das2.DasProperties;
-import edu.uiowa.physics.pw.das.components.*;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 
 /** Type-safe enumeration class for the psym property of
  * a <code>DasSymbolPlot</code>.

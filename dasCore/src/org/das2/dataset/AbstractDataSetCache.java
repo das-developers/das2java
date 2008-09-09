@@ -23,9 +23,9 @@
 
 package org.das2.dataset;
 
+import org.das2.components.propertyeditor.Displayable;
 import org.das2.datum.Datum;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.components.propertyeditor.*;
 import org.das2.system.DasLogger;
 import java.text.*;
 import java.util.*;
