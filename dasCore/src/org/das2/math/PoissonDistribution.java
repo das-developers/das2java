@@ -6,7 +6,7 @@
  * Adapted from stocc.cpp.  Agner Fog GNU Public License.
  */
 
-package edu.uiowa.physics.pw.das.math;
+package org.das2.math;
 
 import java.util.Random;
 

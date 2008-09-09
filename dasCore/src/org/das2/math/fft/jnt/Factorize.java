@@ -1,4 +1,4 @@
-package edu.uiowa.physics.pw.das.math.fft.jnt;
+package org.das2.math.fft.jnt;
 /** Supplies static methods for factoring integers needed by various FFT classes. 
   *
   * @author Bruce R. Miller bruce.miller@nist.gov

@@ -1,4 +1,4 @@
-package edu.uiowa.physics.pw.das.pw;
+package org.das2.pw;
 
 import java.awt.*;
 

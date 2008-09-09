@@ -4,7 +4,7 @@
  * Created on March 7, 2005, 8:13 PM
  */
 
-package edu.uiowa.physics.pw.das.math.matrix;
+package org.das2.math.matrix;
 
 /** All of the elementary row and column operations are applied to both
  * underlying matrices.  Reads are done from the first matrix.  Writes

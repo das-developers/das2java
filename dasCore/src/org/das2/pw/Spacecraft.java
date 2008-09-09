@@ -4,7 +4,7 @@
  * Created on June 18, 2004, 9:59 AM
  */
 
-package edu.uiowa.physics.pw.das.pw;
+package org.das2.pw;
 
 import java.util.*;
 

@@ -19,7 +19,7 @@ import edu.uiowa.physics.pw.das.dataset.TableUtil;
 import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
 import edu.uiowa.physics.pw.das.datum.DatumVector;
 import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.math.Contour;
+import org.das2.math.Contour;
 import java.awt.BasicStroke;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;

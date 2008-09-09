@@ -4,7 +4,7 @@
  * Created on November 29, 2004, 9:34 PM
  */
 
-package edu.uiowa.physics.pw.das.math.fft;
+package org.das2.math.fft;
 
 /**
  * Interface for passing complex arrays to and from FFT routines.  The intent is

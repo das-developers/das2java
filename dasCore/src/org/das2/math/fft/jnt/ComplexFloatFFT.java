@@ -1,4 +1,4 @@
-package edu.uiowa.physics.pw.das.math.fft.jnt;
+package org.das2.math.fft.jnt;
 
 import edu.uiowa.physics.pw.das.math.fft.*;
 

@@ -4,7 +4,7 @@
  * Created on November 29, 2004, 10:58 PM
  */
 
-package edu.uiowa.physics.pw.das.math.fft.jnt;
+package org.das2.math.fft.jnt;
 
 import java.io.*;
 import java.util.regex.*;

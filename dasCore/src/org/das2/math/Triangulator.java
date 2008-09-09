@@ -29,8 +29,9 @@
  * 
  */
 
-package edu.uiowa.physics.pw.das.math;
+package org.das2.math;
 
+import edu.uiowa.physics.pw.das.math.*;
 import java.applet.*;
 import java.awt.*;
 import java.io.PrintStream;

@@ -4,7 +4,7 @@
  * Created on March 15, 2005, 9:00 AM
  */
 
-package edu.uiowa.physics.pw.das.math;
+package org.das2.math;
 
 /**
  *

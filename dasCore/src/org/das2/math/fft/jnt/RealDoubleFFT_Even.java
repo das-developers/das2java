@@ -1,6 +1,6 @@
-package edu.uiowa.physics.pw.das.math.fft.jnt;
+package org.das2.math.fft.jnt;
 
-import edu.uiowa.physics.pw.das.math.fft.ComplexArray;
+import org.das2.math.fft.ComplexArray;
 /** Computes FFT's of real, double precision data when n is even, by
   * computing complex FFT.
   *

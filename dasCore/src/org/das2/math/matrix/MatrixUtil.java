@@ -4,7 +4,7 @@
  * Created on March 7, 2005, 10:38 AM
  */
 
-package edu.uiowa.physics.pw.das.math.matrix;
+package org.das2.math.matrix;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;

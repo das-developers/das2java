@@ -1,6 +1,6 @@
-package edu.uiowa.physics.pw.das.math.fft.jnt;
+package org.das2.math.fft.jnt;
 
-import edu.uiowa.physics.pw.das.math.fft.ComplexArray;
+import org.das2.math.fft.ComplexArray;
 /** Abstract Class representing FFT's of real, double precision data.
   * Concrete classes are typically named RealDoubleFFT_<i>method</i>, implement the
   * FFT using some particular method.

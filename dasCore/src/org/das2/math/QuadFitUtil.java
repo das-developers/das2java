@@ -4,11 +4,11 @@
  * Created on March 8, 2005, 5:24 PM
  */
 
-package edu.uiowa.physics.pw.das.math;
+package org.das2.math;
 
-import edu.uiowa.physics.pw.das.math.matrix.ArrayMatrix;
-import edu.uiowa.physics.pw.das.math.matrix.Matrix;
-import edu.uiowa.physics.pw.das.math.matrix.MatrixUtil;
+import org.das2.math.matrix.ArrayMatrix;
+import org.das2.math.matrix.Matrix;
+import org.das2.math.matrix.MatrixUtil;
 import java.util.Arrays;
 
 /**

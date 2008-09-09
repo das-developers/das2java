@@ -4,7 +4,7 @@
  * Created on March 25, 2004, 9:30 PM
  */
 
-package edu.uiowa.physics.pw.das.math.fft;
+package org.das2.math.fft;
 
 import edu.uiowa.physics.pw.das.dataset.*;
 import edu.uiowa.physics.pw.das.datum.*;
