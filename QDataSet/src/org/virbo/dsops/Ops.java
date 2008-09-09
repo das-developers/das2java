@@ -25,12 +25,14 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetAdapter;
 import org.virbo.dataset.FDataSet;
+import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.VectorDataSetAdapter;
+import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.DataSetBuilder;
 
@@ -1098,7 +1100,7 @@ public class Ops {
         }
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
-
+    
     /**
      * element-wise sin.
      * @param ds
@@ -1345,6 +1347,37 @@ public class Ops {
     public static QDataSet sort(QDataSet ds) {
         return DataSetOps.sort(ds);
     }
+    
+    
+    /**
+     * returns a rank 1 dataset of indeces that shuffle the rank 1 dataset ds
+     * <pre>
+     *   s= shuffle( ds )
+     *   dsShuffled= ds[s]
+     * </pre>
+     * @param ds rank 1 dataset
+     * @return rank 1 dataset of integer indeces.
+     */
+    public static QDataSet shuffle( QDataSet ds ) {
+        int size = ds.length();
+        int[] back = new int[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        WritableDataSet wds= IDataSet.wrap(back, 1, size, 1, 1);
+        
+        Random r= new Random();
+        
+        for ( int i=0; i<size; i++ ) {
+            int i1= r.nextInt(size-i) + i;
+            double t= wds.value(i1);
+            wds.putValue( i1, wds.value(i) );
+            wds.putValue( i, t );
+        }
+        
+        return wds;
+    }
+
 
     /**
      * Performs an FFT on the provided rank 1 dataset.  A rank 2 dataset of 
