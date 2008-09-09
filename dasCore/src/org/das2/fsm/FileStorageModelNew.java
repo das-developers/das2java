@@ -10,7 +10,7 @@ import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
 import edu.uiowa.physics.pw.das.dataset.CacheTag;
 import edu.uiowa.physics.pw.das.datum.*;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;

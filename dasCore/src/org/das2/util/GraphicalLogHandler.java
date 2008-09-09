@@ -28,7 +28,7 @@ import edu.uiowa.physics.pw.das.graph.DasPlot;
 import edu.uiowa.physics.pw.das.graph.DasRow;
 import edu.uiowa.physics.pw.das.graph.Legend;
 import edu.uiowa.physics.pw.das.graph.Renderer;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

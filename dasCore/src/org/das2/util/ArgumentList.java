@@ -1,7 +1,7 @@
 package org.das2.util;
 
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.system.DasLogger;
+import org.das2.system.DasLogger;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
