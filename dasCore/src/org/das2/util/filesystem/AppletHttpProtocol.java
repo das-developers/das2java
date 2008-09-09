@@ -4,7 +4,7 @@
  */
 package org.das2.util.filesystem;
 
-import edu.uiowa.physics.pw.das.util.DasProgressMonitorInputStream;
+import org.das2.util.DasProgressMonitorInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
