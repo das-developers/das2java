@@ -40,7 +40,7 @@ public class StackedHistogramRendererBeanInfo extends AccessLevelBeanInfo {
     };
     
     public StackedHistogramRendererBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.StackedHistogramRenderer.class);
+        super(properties, org.das2.graph.StackedHistogramRenderer.class);
     }
     
     public BeanInfo[] getAdditionalBeanInfo() {

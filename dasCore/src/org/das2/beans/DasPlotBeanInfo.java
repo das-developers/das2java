@@ -39,7 +39,7 @@ public class DasPlotBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DasPlotBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.DasPlot.class);
+        super(properties, org.das2.graph.DasPlot.class);
     }
     
     public java.beans.BeanInfo[] getAdditionalBeanInfo() {

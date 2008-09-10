@@ -13,7 +13,7 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasPNGEncoder;
 import org.das2.util.DasPNGConstants;
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import org.das2.graph.DasCanvas;
 import org.das2.system.DasLogger;
 import java.awt.*;
 import java.awt.image.*;

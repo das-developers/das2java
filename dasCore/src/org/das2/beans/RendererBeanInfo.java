@@ -38,7 +38,7 @@ public class RendererBeanInfo extends AccessLevelBeanInfo {
     };
     
     public RendererBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.Renderer.class);
+        super(properties, org.das2.graph.Renderer.class);
     }
     
 }

@@ -23,8 +23,8 @@
 
 package org.das2.event;
 
-import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
-import edu.uiowa.physics.pw.das.graph.DasRow;
+import org.das2.graph.DasCanvasComponent;
+import org.das2.graph.DasRow;
 
 import java.awt.*;
 /**

@@ -23,6 +23,12 @@
 
 package org.das2.components;
 
+import org.das2.graph.SymbolLineRenderer;
+import org.das2.graph.DasColumn;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasRow;
+import org.das2.graph.DasPlot;
+import org.das2.graph.DasAxis;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.TableDataSet;
@@ -34,7 +40,6 @@ import org.das2.DasException;
 import org.das2.datum.Datum;
 import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
-import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

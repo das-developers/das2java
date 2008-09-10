@@ -26,9 +26,9 @@ package org.das2.event;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetConsumer;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.graph.DasPlot;
-import edu.uiowa.physics.pw.das.graph.Renderer;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasPlot;
+import org.das2.graph.Renderer;
 /**
  *
  * @author  jbf

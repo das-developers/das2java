@@ -51,7 +51,7 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
         try {
             methods = new MethodDescriptor[1];
             Class[] writeToPngParams = { String.class };
-            methods[0] = new MethodDescriptor(edu.uiowa.physics.pw.das.graph.DasCanvas.class.getMethod("writeToPng", writeToPngParams));
+            methods[0] = new MethodDescriptor(org.das2.graph.DasCanvas.class.getMethod("writeToPng", writeToPngParams));
         }
         catch (NoSuchMethodException nsme) {
             IllegalStateException ise = new IllegalStateException(nsme.getMessage());
@@ -61,7 +61,7 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
     }
     
     public DasCanvasBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.DasCanvas.class);
+        super(properties, org.das2.graph.DasCanvas.class);
     }
     
     public MethodDescriptor[] getMethodDescriptors() {

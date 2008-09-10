@@ -5,6 +5,10 @@
  */
 package org.das2.beans;
 
+import org.das2.graph.FillStyle;
+import org.das2.graph.PsymConnector;
+import org.das2.graph.Psym;
+import org.das2.graph.PlotSymbol;
 import org.das2.components.DatumEditor;
 import org.das2.components.propertyeditor.BooleanEditor;
 import org.das2.components.propertyeditor.EnumerationEditor;
@@ -15,7 +19,6 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.NumberUnits;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import org.das2.util.ClassMap;
 import java.awt.Color;

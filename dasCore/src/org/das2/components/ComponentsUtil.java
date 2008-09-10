@@ -8,7 +8,7 @@
 
 package org.das2.components;
 
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import org.das2.graph.DasCanvas;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;

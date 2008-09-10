@@ -23,6 +23,15 @@
 
 package org.das2.components;
 
+import org.das2.graph.SymbolLineRenderer;
+import org.das2.graph.DasColorBar;
+import org.das2.graph.SpectrogramRenderer;
+import org.das2.graph.DasColumn;
+import org.das2.graph.Psym;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasRow;
+import org.das2.graph.DasPlot;
+import org.das2.graph.DasAxis;
 import org.das2.dataset.DefaultVectorDataSet;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.DataSet;
@@ -37,7 +46,6 @@ import org.das2.util.DasMath;
 import org.das2.datum.Datum;
 import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
-import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

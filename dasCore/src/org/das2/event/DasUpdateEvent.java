@@ -32,7 +32,7 @@ public class DasUpdateEvent extends java.awt.AWTEvent {
     public static final int DAS_UPDATE_EVENT_ID = java.awt.AWTEvent.RESERVED_ID_MAX + 0xAD01;
     
     /** Creates a new instance of DasUpdateEvent */
-    public DasUpdateEvent(edu.uiowa.physics.pw.das.graph.DasCanvasComponent source) {
+    public DasUpdateEvent(org.das2.graph.DasCanvasComponent source) {
         super(source, DAS_UPDATE_EVENT_ID);
     }
     

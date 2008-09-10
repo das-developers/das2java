@@ -37,7 +37,7 @@ public class RowRowConnectorBeanInfo extends AccessLevelBeanInfo {
     };
 
     public RowRowConnectorBeanInfo() {
-	super(properties, edu.uiowa.physics.pw.das.graph.RowRowConnector.class);
+	super(properties, org.das2.graph.RowRowConnector.class);
     }
 
 }

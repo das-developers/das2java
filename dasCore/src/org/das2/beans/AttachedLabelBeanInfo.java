@@ -25,7 +25,7 @@ package org.das2.beans;
 
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
+import org.das2.graph.DasAxis;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -44,7 +44,7 @@ public class AttachedLabelBeanInfo extends AccessLevelBeanInfo {
     };
     
     public AttachedLabelBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.AttachedLabel.class);
+        super(properties, org.das2.graph.AttachedLabel.class);
     }
     
     public BeanInfo[] getAdditionalBeanInfo() {

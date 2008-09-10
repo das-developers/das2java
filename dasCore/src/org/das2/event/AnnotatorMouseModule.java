@@ -6,10 +6,11 @@
 
 package org.das2.event;
 
-import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.graph.*;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
+import org.das2.graph.DasCanvasComponent;
+import org.das2.graph.DasColumn;
+import org.das2.graph.DasAnnotation;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasRow;
         
 /**
  *

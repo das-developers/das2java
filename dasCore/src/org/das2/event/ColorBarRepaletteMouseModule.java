@@ -24,9 +24,9 @@
 package org.das2.event;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
-import edu.uiowa.physics.pw.das.graph.DasColorBar;
-import edu.uiowa.physics.pw.das.graph.DasRow;
-import edu.uiowa.physics.pw.das.graph.Renderer;
+import org.das2.graph.DasColorBar;
+import org.das2.graph.DasRow;
+import org.das2.graph.Renderer;
 import java.awt.event.MouseEvent;
 import javax.swing.event.EventListenerList;
 

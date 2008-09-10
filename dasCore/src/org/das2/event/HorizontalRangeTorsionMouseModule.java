@@ -6,8 +6,8 @@
 
 package org.das2.event;
 
+import org.das2.graph.DasAxis;
 import org.das2.datum.Units;
-import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.event.*;
 import javax.swing.*;
 /**

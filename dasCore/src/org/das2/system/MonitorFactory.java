@@ -9,7 +9,7 @@
 
 package org.das2.system;
 
-import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import org.das2.graph.DasCanvasComponent;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**

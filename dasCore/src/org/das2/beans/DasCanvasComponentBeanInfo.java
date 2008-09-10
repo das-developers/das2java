@@ -23,7 +23,7 @@
 
 package org.das2.beans;
 
-import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import org.das2.graph.DasCanvasComponent;
 
 import java.beans.MethodDescriptor;
 
@@ -50,7 +50,7 @@ public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
     }
     
     public DasCanvasComponentBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.DasCanvasComponent.class);
+        super(properties, org.das2.graph.DasCanvasComponent.class);
     }
     
     public MethodDescriptor[] getMethodDescriptors() {

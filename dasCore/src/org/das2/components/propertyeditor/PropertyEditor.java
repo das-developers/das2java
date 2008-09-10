@@ -28,7 +28,7 @@ import org.das2.components.treetable.TreeTableModel;
 import org.das2.dasml.SerializeUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import org.das2.graph.DasCanvas;
 import org.das2.system.DasLogger;
 import java.awt.*;
 import java.awt.event.ActionEvent;

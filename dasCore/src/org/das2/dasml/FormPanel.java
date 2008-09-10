@@ -23,7 +23,7 @@
 
 package org.das2.dasml;
 
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import org.das2.graph.DasCanvas;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,7 +53,7 @@ public class FormPanel extends FormContainer implements Editable, FormComponent 
             TransferableFormComponent.PANEL_FLAVOR,
             TransferableFormComponent.TEXTFIELD_FLAVOR,
             TransferableFormComponent.TEXT_FLAVOR,
-            edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas.CANVAS_FLAVOR
+            org.das2.graph.dnd.TransferableCanvas.CANVAS_FLAVOR
         };
         flavorList = java.util.Arrays.asList(flavors);
     }

@@ -22,13 +22,13 @@
  */
 package org.das2.event;
 
+import org.das2.graph.DasColumn;
+import org.das2.graph.DasRow;
 import org.das2.system.DasLogger;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
-import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasCanvasComponent;
 import org.das2.util.DasExceptionHandler;
 import java.awt.*;
 

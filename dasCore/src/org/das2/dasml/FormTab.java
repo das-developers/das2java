@@ -56,7 +56,7 @@ public class FormTab extends FormContainer {
             TransferableFormComponent.PANEL_FLAVOR,
             TransferableFormComponent.TEXTFIELD_FLAVOR,
             TransferableFormComponent.TEXT_FLAVOR,
-            edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas.CANVAS_FLAVOR
+            org.das2.graph.dnd.TransferableCanvas.CANVAS_FLAVOR
         };
         flavorList = java.util.Arrays.asList(flavors);
     }
@@ -154,7 +154,7 @@ public class FormTab extends FormContainer {
                 }
                 else if (tagName.equals("canvas")) {
                     try {
-                        edu.uiowa.physics.pw.das.graph.DasCanvas canvas = edu.uiowa.physics.pw.das.graph.DasCanvas.processCanvasElement((Element)node, form);
+                        org.das2.graph.DasCanvas canvas = org.das2.graph.DasCanvas.processCanvasElement((Element)node, form);
                         canvas.setAlignmentX(horizontalComponentAlignment);
                         add(canvas);
                     }
@@ -199,8 +199,8 @@ public class FormTab extends FormContainer {
                 Element child = formComponent.getDOMElement(document);
                 element.appendChild(child);
             }
-            else if (comp instanceof edu.uiowa.physics.pw.das.graph.DasCanvas) {
-                edu.uiowa.physics.pw.das.graph.DasCanvas canvas = (edu.uiowa.physics.pw.das.graph.DasCanvas)comp;
+            else if (comp instanceof org.das2.graph.DasCanvas) {
+                org.das2.graph.DasCanvas canvas = (org.das2.graph.DasCanvas)comp;
                 Element child = canvas.getDOMElement(document);
                 element.appendChild(child);
             }

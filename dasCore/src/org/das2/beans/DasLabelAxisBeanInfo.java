@@ -42,7 +42,7 @@ public class DasLabelAxisBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DasLabelAxisBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.DasLabelAxis.class);
+        super(properties, org.das2.graph.DasLabelAxis.class);
     }
     
     public BeanInfo[] getAdditionalBeanInfo() {

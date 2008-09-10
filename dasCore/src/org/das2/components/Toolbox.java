@@ -23,6 +23,12 @@
 
 package org.das2.components;
 
+import org.das2.graph.DasColorBar;
+import org.das2.graph.SymbolLineRenderer;
+import org.das2.graph.SpectrogramRenderer;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasPlot;
+import org.das2.graph.DasAxis;
 import org.das2.dasml.FormTab;
 import org.das2.dasml.FormChoice;
 import org.das2.dasml.FormList;
@@ -35,11 +41,10 @@ import org.das2.dasml.FormTextField;
 import org.das2.dasml.FormCheckBox;
 import org.das2.dasml.TransferableFormComponent;
 import org.das2.dasml.FormButton;
-import edu.uiowa.physics.pw.das.graph.*;
-import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;
-import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
-import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 
+import org.das2.graph.dnd.TransferableCanvas;
+import org.das2.graph.dnd.TransferableCanvasComponent;
+import org.das2.graph.dnd.TransferableRenderer;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;

@@ -27,7 +27,6 @@ import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasNameException;
 import java.awt.event.MouseEvent;
-import edu.uiowa.physics.pw.das.*;
 import org.das2.util.DnDSupport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

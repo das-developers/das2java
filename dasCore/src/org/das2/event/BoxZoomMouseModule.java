@@ -6,11 +6,13 @@
 
 package org.das2.event;
 
+import org.das2.graph.DasCanvasComponent;
+import org.das2.graph.GraphUtil;
+import org.das2.graph.DasAxis;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumRangeUtil;
-import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;

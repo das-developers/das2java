@@ -68,7 +68,7 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
             TransferableFormComponent.PANEL_FLAVOR,
             TransferableFormComponent.TEXTFIELD_FLAVOR,
             TransferableFormComponent.TEXT_FLAVOR,
-            edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas.CANVAS_FLAVOR
+            org.das2.graph.dnd.TransferableCanvas.CANVAS_FLAVOR
         });
         setLayout(new BorderLayout());
     }
@@ -121,7 +121,7 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
             }
             else if (node instanceof Element && node.getNodeName().equals("canvas")) {
                 try {
-                    edu.uiowa.physics.pw.das.graph.DasCanvas canvas = edu.uiowa.physics.pw.das.graph.DasCanvas.processCanvasElement((Element)node, form);
+                    org.das2.graph.DasCanvas canvas = org.das2.graph.DasCanvas.processCanvasElement((Element)node, form);
                     add(canvas);
                 } catch ( java.text.ParseException ex ) {
                     DasExceptionHandler.handle(ex);
@@ -165,8 +165,8 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
                 FormComponent child = (FormComponent)comp;
                 element.appendChild(child.getDOMElement(document));
             }
-            else if (comp instanceof edu.uiowa.physics.pw.das.graph.DasCanvas) {
-                edu.uiowa.physics.pw.das.graph.DasCanvas child = (edu.uiowa.physics.pw.das.graph.DasCanvas)comp;
+            else if (comp instanceof org.das2.graph.DasCanvas) {
+                org.das2.graph.DasCanvas child = (org.das2.graph.DasCanvas)comp;
                 element.appendChild(child.getDOMElement(document));
             }
         }

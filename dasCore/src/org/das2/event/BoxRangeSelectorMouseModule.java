@@ -26,9 +26,9 @@ package org.das2.event;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.graph.DasCanvasComponent;
-import edu.uiowa.physics.pw.das.graph.DasPlot;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasCanvasComponent;
+import org.das2.graph.DasPlot;
 import javax.swing.event.EventListenerList;
 
 /**

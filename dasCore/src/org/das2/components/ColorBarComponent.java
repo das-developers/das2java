@@ -6,8 +6,11 @@
 
 package org.das2.components;
 
+import org.das2.graph.DasColorBar;
+import org.das2.graph.DasColumn;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasRow;
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.graph.*;
 import javax.swing.*;
 
 /**

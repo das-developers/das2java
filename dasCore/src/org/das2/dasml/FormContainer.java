@@ -25,8 +25,8 @@ package org.das2.dasml;
 
 import org.das2.DasApplication;
 import org.das2.DasException;
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
-import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvas;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.dnd.TransferableCanvas;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

@@ -6,11 +6,13 @@
 
 package org.das2.event;
 
+import org.das2.graph.DasCanvasComponent;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasPlot;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsUtil;
-import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;

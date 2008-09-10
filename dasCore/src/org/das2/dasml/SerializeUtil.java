@@ -10,9 +10,9 @@
 
 package org.das2.dasml;
 
+import org.das2.graph.DasCanvasComponent;
 import org.das2.beans.AccessLevelBeanInfo;
 import org.das2.beans.BeansUtil;
-import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;

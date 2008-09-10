@@ -11,7 +11,7 @@ package org.das2.event;
 
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
+import org.das2.graph.DasAxis;
 
 /**
  *

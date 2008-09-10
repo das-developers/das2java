@@ -6,8 +6,9 @@
 
 package org.das2.event;
 
+import org.das2.graph.DasCanvasComponent;
+import org.das2.graph.DasAxis;
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;

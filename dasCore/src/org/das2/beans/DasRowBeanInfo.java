@@ -46,7 +46,7 @@ public class DasRowBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DasRowBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.DasRow.class);
+        super(properties, org.das2.graph.DasRow.class);
     }
     
 }

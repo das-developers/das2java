@@ -22,7 +22,7 @@
  */
 package org.das2.components;
 
-import edu.uiowa.physics.pw.das.graph.*;
+import org.das2.graph.DasCanvasComponent;
 import org.das2.system.DasLogger;
 import java.awt.*;
 import java.awt.event.ActionEvent;

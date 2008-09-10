@@ -9,8 +9,8 @@
 package org.das2.event;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.graph.DasPlot;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasPlot;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;

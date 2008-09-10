@@ -23,9 +23,9 @@
 
 package org.das2.event;
 import org.das2.dataset.DataSet;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.graph.DasPlot;
-import edu.uiowa.physics.pw.das.graph.Renderer;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasPlot;
+import org.das2.graph.Renderer;
 
 
 /**

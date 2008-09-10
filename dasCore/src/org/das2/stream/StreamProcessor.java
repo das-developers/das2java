@@ -7,7 +7,6 @@
 package org.das2.stream;
 
 import org.das2.DasProperties;
-import edu.uiowa.physics.pw.das.*;
 import java.io.*;
 
 /**

@@ -6,8 +6,8 @@
 
 package org.das2.event;
 
+import org.das2.graph.DasCanvasComponent;
 import org.das2.util.GrannyTextRenderer;
-import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import java.awt.*;
 import java.util.ArrayList;

@@ -14,10 +14,10 @@ import org.das2.dataset.test.RipplesDataSet;
 import org.das2.event.AnnotatorMouseModule;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
-import edu.uiowa.physics.pw.das.graph.GraphUtil;
-import edu.uiowa.physics.pw.das.graph.Renderer;
-import edu.uiowa.physics.pw.das.graph.ContoursRenderer;
-import edu.uiowa.physics.pw.das.graph.DasPlot;
+import org.das2.graph.GraphUtil;
+import org.das2.graph.Renderer;
+import org.das2.graph.ContoursRenderer;
+import org.das2.graph.DasPlot;
 
 /**
  *

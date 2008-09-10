@@ -32,12 +32,12 @@ import org.das2.dataset.DataSetUtil;
 import org.das2.dataset.VectorDataSet;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
 import org.das2.datum.format.DatumFormatter;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.graph.DasPlot;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasPlot;
 
 import org.das2.datum.Datum;
 
-import edu.uiowa.physics.pw.das.graph.Renderer;
+import org.das2.graph.Renderer;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.*;

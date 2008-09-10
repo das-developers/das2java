@@ -32,7 +32,7 @@ public class TickCurveRendererBeanInfo extends AccessLevelBeanInfo {
     };
     
     public TickCurveRendererBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.TickCurveRenderer.class);
+        super(properties, org.das2.graph.TickCurveRenderer.class);
     }
     
 }

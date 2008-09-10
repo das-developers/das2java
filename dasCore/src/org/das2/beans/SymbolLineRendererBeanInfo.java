@@ -39,7 +39,7 @@ public class SymbolLineRendererBeanInfo extends AccessLevelBeanInfo {
     };
     
     public SymbolLineRendererBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.SymbolLineRenderer.class);
+        super(properties, org.das2.graph.SymbolLineRenderer.class);
     }
     
     public BeanInfo[] getAdditionalBeanInfo() {

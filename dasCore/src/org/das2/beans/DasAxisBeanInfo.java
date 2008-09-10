@@ -51,7 +51,7 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
     };
     
     public DasAxisBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.DasAxis.class);
+        super(properties, org.das2.graph.DasAxis.class);
     }
     
     public BeanInfo[] getAdditionalBeanInfo() {

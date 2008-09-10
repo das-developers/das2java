@@ -8,7 +8,7 @@
 
 package org.das2.event;
 
-import edu.uiowa.physics.pw.das.graph.DasPlot;
+import org.das2.graph.DasPlot;
 import java.awt.event.MouseEvent;
 
 /**

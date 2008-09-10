@@ -36,7 +36,7 @@ public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
     };
     
     public SpectrogramRendererBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.graph.SpectrogramRenderer.class);
+        super(properties, org.das2.graph.SpectrogramRenderer.class);
     }
     
     public java.beans.BeanInfo[] getAdditionalBeanInfo() {

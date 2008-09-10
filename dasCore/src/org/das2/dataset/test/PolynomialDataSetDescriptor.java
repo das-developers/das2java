@@ -13,12 +13,12 @@ import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
-import edu.uiowa.physics.pw.das.graph.DasAxis;
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
-import edu.uiowa.physics.pw.das.graph.DasColumn;
-import edu.uiowa.physics.pw.das.graph.DasPlot;
-import edu.uiowa.physics.pw.das.graph.DasRow;
-import edu.uiowa.physics.pw.das.graph.SymbolLineRenderer;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasColumn;
+import org.das2.graph.DasPlot;
+import org.das2.graph.DasRow;
+import org.das2.graph.SymbolLineRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import javax.swing.JFrame;
 

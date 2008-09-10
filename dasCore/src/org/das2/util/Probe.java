@@ -6,6 +6,17 @@
 
 package org.das2.util;
 
+import org.das2.graph.SymbolLineRenderer;
+import org.das2.graph.Leveler;
+import org.das2.graph.DasColumn;
+import org.das2.graph.Psym;
+import org.das2.graph.DasAnnotation;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.SymColor;
+import org.das2.graph.DasRow;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasPlot;
+import org.das2.graph.Legend;
 import org.das2.event.DumpToFileMouseModule;
 import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.dataset.DataSet;
@@ -14,7 +25,6 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import java.awt.*;
 import java.awt.event.*;
@@ -328,7 +338,7 @@ public class Probe {
             throw new IllegalStateException("value is not finite: "+name);
         }
         VectorDataSetBuilder builder;
-        edu.uiowa.physics.pw.das.graph.SymbolLineRenderer renderer;
+        org.das2.graph.SymbolLineRenderer renderer;
         Agent a;
         if ( ! agents.containsKey(name) ) {
             maybeCreateWidget();

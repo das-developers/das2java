@@ -25,7 +25,7 @@ package org.das2.beans;
 
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
-import edu.uiowa.physics.pw.das.graph.ColumnColumnConnector;
+import org.das2.graph.ColumnColumnConnector;
 
 /**
  * BeanInfo class for DasColorBar
@@ -46,7 +46,7 @@ public class ColumnColumnConnectorBeanInfo extends AccessLevelBeanInfo {
     };
 
     public ColumnColumnConnectorBeanInfo() {
-	super(properties, edu.uiowa.physics.pw.das.graph.ColumnColumnConnector.class);
+	super(properties, org.das2.graph.ColumnColumnConnector.class);
     }
 
 }

@@ -8,7 +8,7 @@
 
 package org.das2.event;
 
-import edu.uiowa.physics.pw.das.graph.Arrow;
+import org.das2.graph.Arrow;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;

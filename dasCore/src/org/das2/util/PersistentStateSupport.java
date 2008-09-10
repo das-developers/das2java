@@ -13,7 +13,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.DasProgressPanel;
 import org.das2.dasml.SerializeUtil;
 import org.das2.dasml.DOMBuilder;
-import edu.uiowa.physics.pw.das.graph.DasCanvas;
+import org.das2.graph.DasCanvas;
 import org.das2.util.filesystem.Glob;
 import java.awt.Component;
 import java.awt.event.ActionEvent;

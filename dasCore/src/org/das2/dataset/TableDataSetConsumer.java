@@ -28,7 +28,7 @@ package org.das2.dataset;
  * @author  jbf
  */
 
-import edu.uiowa.physics.pw.das.graph.DasAxis;
+import org.das2.graph.DasAxis;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetConsumer;
 

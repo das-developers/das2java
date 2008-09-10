@@ -6,11 +6,12 @@
 
 package org.das2.dataset;
 
+import org.das2.graph.GraphUtil;
+import org.das2.graph.DasPlot;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.util.DasMath;
 import java.util.*;
 
