@@ -77,7 +77,7 @@ public interface QDataSet {
     public static int MAX_RANK=3;
     
     /**
-     * type Units.  The dataset units, found in edu.uiowa.physics.pw.das2.units.Units.
+     * type Units.  The dataset units, found in org.das2.units.Units.
      */
     public final static String UNITS="UNITS";
 

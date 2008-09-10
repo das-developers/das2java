@@ -4,8 +4,8 @@
  */
 package org.virbo.dataset;
 
-import edu.uiowa.physics.pw.das.datum.DatumRange;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 
 
 /**

@@ -8,11 +8,11 @@
  */
 package org.virbo.dataset;
 
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumVector;
+import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,16 +69,16 @@ public class TableDataSetAdapter implements TableDataSet {
 
         Boolean xMono = (Boolean) x.property(QDataSet.MONOTONIC);
         if (xMono != null && xMono.booleanValue()) {
-            properties.put(edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
+            properties.put(org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
         }
         Double cadence = (Double) x.property(QDataSet.CADENCE);
         if (cadence != null) {
-            properties.put(edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_X_TAG_WIDTH, xunits.getOffsetUnits().createDatum(cadence.doubleValue()));
+            properties.put(org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, xunits.getOffsetUnits().createDatum(cadence.doubleValue()));
         }
 
         cadence = (Double) y.property(QDataSet.CADENCE);
         if (cadence != null) {
-            properties.put(edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, yunits.getOffsetUnits().createDatum(cadence.doubleValue()));
+            properties.put(org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, yunits.getOffsetUnits().createDatum(cadence.doubleValue()));
         }
 
         if ( z.property(QDataSet.FILL_VALUE) !=null 
@@ -210,7 +210,7 @@ public class TableDataSetAdapter implements TableDataSet {
         return x.length();
     }
 
-    public edu.uiowa.physics.pw.das.dataset.DataSet getPlanarView(String planeID) {
+    public org.das2.dataset.DataSet getPlanarView(String planeID) {
         return planeID.equals("") ? this : null;
     }
 

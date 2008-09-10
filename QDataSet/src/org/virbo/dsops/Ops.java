@@ -5,15 +5,15 @@
 package org.virbo.dsops;
 
 import org.virbo.dataset.QubeDataSetIterator;
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.EnumerationUnits;
-import edu.uiowa.physics.pw.das.datum.TimeUtil;
-import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.math.fft.ComplexArray;
-import edu.uiowa.physics.pw.das.math.fft.FFTUtil;
-import edu.uiowa.physics.pw.das.math.fft.GeneralFFT;
-import edu.uiowa.physics.pw.das.math.fft.WaveformToSpectrum;
+import org.das2.dataset.TableDataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.EnumerationUnits;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
+import org.das2.math.fft.ComplexArray;
+import org.das2.math.fft.FFTUtil;
+import org.das2.math.fft.GeneralFFT;
+import org.das2.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;

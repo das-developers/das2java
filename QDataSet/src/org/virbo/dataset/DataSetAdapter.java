@@ -9,8 +9,8 @@
 
 package org.virbo.dataset;
 
-import edu.uiowa.physics.pw.das.dataset.TableDataSet;
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
+import org.das2.dataset.TableDataSet;
+import org.das2.dataset.VectorDataSet;
 
 /**
  * Presents legacy das2 datasets as QDataSets.
@@ -20,7 +20,7 @@ public class DataSetAdapter {
     
     public static final String PROPERTY_SOURCE= "adapterSource";
     
-    public static AbstractDataSet create( edu.uiowa.physics.pw.das.dataset.DataSet ds ) {
+    public static AbstractDataSet create( org.das2.dataset.DataSet ds ) {
         if ( ds instanceof VectorDataSet ) {
             return new Vector((VectorDataSet) ds);
         } else if ( ds instanceof TableDataSet ) {
@@ -30,7 +30,7 @@ public class DataSetAdapter {
         }
     }
     
-    public static edu.uiowa.physics.pw.das.dataset.DataSet createLegacyDataSet( org.virbo.dataset.QDataSet ds ) {
+    public static org.das2.dataset.DataSet createLegacyDataSet( org.virbo.dataset.QDataSet ds ) {
         if ( ds.rank()==1 ) {
             return VectorDataSetAdapter.create(ds);
         } else if ( ds.rank()==2 ) {
@@ -41,11 +41,11 @@ public class DataSetAdapter {
     }
     
     static class XTagsDataSet extends AbstractDataSet {
-        edu.uiowa.physics.pw.das.dataset.DataSet source;
-        XTagsDataSet( edu.uiowa.physics.pw.das.dataset.DataSet source ) {
+        org.das2.dataset.DataSet source;
+        XTagsDataSet( org.das2.dataset.DataSet source ) {
             this.source= source;
             properties.put( QDataSet.UNITS, source.getXUnits() );
-            Object o= source.getProperty( edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_X_MONOTONIC );
+            Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
         }
         

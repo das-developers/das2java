@@ -8,8 +8,8 @@
  */
 package org.virbo.dsutil;
 
-import edu.uiowa.physics.pw.das.datum.Units;
-import edu.uiowa.physics.pw.das.datum.UnitsUtil;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;

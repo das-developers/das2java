@@ -9,9 +9,9 @@
 
 package org.virbo.dataset;
 
-import edu.uiowa.physics.pw.das.dataset.VectorDataSet;
-import edu.uiowa.physics.pw.das.datum.Datum;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -62,12 +62,12 @@ public class VectorDataSetAdapter implements VectorDataSet {
         
         Boolean xMono=  (Boolean) x.property( QDataSet.MONOTONIC );
         if ( xMono!=null && xMono.booleanValue() ) {
-            properties.put( edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
+            properties.put( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
         }
         
         Double cadence= (Double) x.property( QDataSet.CADENCE );
         if ( cadence!=null ) {
-            properties.put( edu.uiowa.physics.pw.das.dataset.DataSet.PROPERTY_X_TAG_WIDTH, xunits.getOffsetUnits().createDatum( cadence.doubleValue() ) );
+            properties.put( org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, xunits.getOffsetUnits().createDatum( cadence.doubleValue() ) );
         }
                 
         if ( y.property(QDataSet.FILL_VALUE) !=null 
@@ -145,7 +145,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
         return x.length();
     }
     
-    public edu.uiowa.physics.pw.das.dataset.DataSet getPlanarView(String planeID) {
+    public org.das2.dataset.DataSet getPlanarView(String planeID) {
         if ( planeID.equals("") ) return this;
         if ( planes.containsKey(planeID) ) {
             return new VectorDataSetAdapter( (QDataSet)planes.get(planeID), x );

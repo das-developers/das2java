@@ -4,7 +4,7 @@
  */
 package test;
 
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Units;
 import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.JTree;

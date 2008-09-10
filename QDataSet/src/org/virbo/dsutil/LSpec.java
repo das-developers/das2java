@@ -9,7 +9,7 @@
 
 package org.virbo.dsutil;
 
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 

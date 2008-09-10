@@ -16,5 +16,6 @@
         <libraries xmlns="http://www.netbeans.org/ns/ant-project-libraries/1">
             <definitions>../APLibs/lib/nblibraries.properties</definitions>
         </libraries>
+        <references xmlns="http://www.netbeans.org/ns/ant-project-references/1"/>
     </configuration>
 </project>

@@ -9,8 +9,8 @@
 
 package org.virbo.dataset;
 
-import edu.uiowa.physics.pw.das.datum.DatumVector;
-import edu.uiowa.physics.pw.das.datum.Units;
+import org.das2.datum.DatumVector;
+import org.das2.datum.Units;
 
 /**
  * utility routines for adapting legacy das2 DatumVector.
