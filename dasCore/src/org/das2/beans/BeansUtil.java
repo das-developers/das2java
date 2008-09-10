@@ -43,7 +43,10 @@ public class BeansUtil {
     }
     static ClassMap editorRegistry = new ClassMap();
 
-    private static void registerEditor(Class beanClass, Class editorClass) {
+    /** 
+     * see BeanBindingDemo2.java 
+     */
+    public static void registerEditor(Class beanClass, Class editorClass) {
         PropertyEditorManager.registerEditor(beanClass, editorClass);
         editorRegistry.put(beanClass, editorClass);
     }
