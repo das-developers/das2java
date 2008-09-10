@@ -67,7 +67,7 @@ public abstract class DatumFormatter {
      * be tagged with the Units. 
      *
      * The default implementation just returns the result of
-     * {@link #format(edu.uiowa.physics.pw.das.datum.Datum)}
+     * {@link #format(org.das2.datum.Datum)}
      */
     public String grannyFormat(Datum datum) {
         return format(datum);

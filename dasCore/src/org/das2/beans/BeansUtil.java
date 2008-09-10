@@ -36,7 +36,7 @@ public class BeansUtil {
     
 
     static {
-        String[] beanInfoSearchPath = {"edu.uiowa.physics.pw.das.beans", "sun.beans.infos"};
+        String[] beanInfoSearchPath = {"org.das2.beans", "sun.beans.infos"};
         if (DasApplication.hasAllPermission()) {
             Introspector.setBeanInfoSearchPath(beanInfoSearchPath);
         }
@@ -219,7 +219,7 @@ public class BeansUtil {
                 maybeClass = Class.forName(beanInfoClassName);
             } catch (ClassNotFoundException e) {
                 try {
-                    beanInfoClassName = "edu.uiowa.physics.pw.das.beans." + s + "BeanInfo";
+                    beanInfoClassName = "org.das2.beans." + s + "BeanInfo";
                     maybeClass = Class.forName(beanInfoClassName);
                 } catch (ClassNotFoundException e2) {
                     beanInfo = Introspector.getBeanInfo(c);

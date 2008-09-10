@@ -57,7 +57,7 @@ public class DataRequestThread extends Thread {
     /**
      * Begins a data reqest operation that will be executed
      * in a separate thread and pass the resulting DataSet to the
-     * edu.uiowa.physics.pw.das.event.DataRequestListener#finished(edu.uiowa.physics.pw.das.event.DataRequestEvent)
+     * org.das2.event.DataRequestListener#finished(org.das2.event.DataRequestEvent)
      * finished() method of the <code>DataRequestor</code>
      * specified.
      * 
@@ -79,7 +79,7 @@ public class DataRequestThread extends Thread {
     /**
      * Begins a data reqest operation that will be executed
      * in a separate thread and pass the resulting DataSet to the
-     * edu.uiowa.physics.pw.das.event.DataRequestListener#finished(edu.uiowa.physics.pw.das.event.DataRequestEvent)
+     * org.das2.event.DataRequestListener#finished(org.das2.event.DataRequestEvent)
      * finished() method of the <code>DataRequestor</code>
      * specified.
      *
@@ -89,7 +89,7 @@ public class DataRequestThread extends Thread {
      * @param dsd the <code>DataSetDescriptor</code> used to obtain
      *      the <code>DataSet</code>
      * @param params extra parameters passed to the 
-     *      DataSetDescriptor#getDataSet(edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,edu.uiowa.physics.pw.das.util.Datum,org.das2.util.monitor.ProgressMonitor)
+     *      DataSetDescriptor#getDataSet(org.das2.util.Datum,org.das2.util.Datum,org.das2.util.Datum,org.das2.util.monitor.ProgressMonitor)
      *      getDataSet() method.  (TODO: these are ignored)
      * @param start the start of the requested time interval
      * @param end the end of the requested time interval

@@ -135,7 +135,7 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
      * for this property.</li>
      * <li><code>mutatorMethod</code> - A <code>String</code> specifying the name of the write method
      * for this property</li>
-     * <li><code>accessLevel</code> - A <code>edu.uiowa.physics.pw.das.beans.AccessLevelBeanInfo.AccessLevel</code> instance specifying
+     * <li><code>accessLevel</code> - A <code>org.das2.beans.AccessLevelBeanInfo.AccessLevel</code> instance specifying
      * the access level for this property.</li>
      * </ul>
      */

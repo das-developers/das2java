@@ -74,8 +74,8 @@ public class StippledTableRenderer extends Renderer {
     
     /** Creates a new instance of SpectrogramRenderer
      * @deprecated use {link
-     * #SpectrogramRenderer(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor,
-     * edu.uiowa.physics.pw.das.graph.DasColorBar)}
+     * #SpectrogramRenderer(org.das2.dataset.DataSetDescriptor,
+     * org.das2.graph.DasColorBar)}
      */
     public StippledTableRenderer(DasPlot parent, DataSetDescriptor dsd ) {
         this( dsd );

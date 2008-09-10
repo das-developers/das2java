@@ -112,7 +112,7 @@ public class Probe {
             }
             
             if ( underplotAgent==null ) {
-                //plot= edu.uiowa.physics.pw.das.graph.Util.newDasPlot(canvas, xrange, yrange );
+                //plot= org.das2.graph.Util.newDasPlot(canvas, xrange, yrange );
                 plot= new DasPlot( thisXAxis, new DasAxis( yrange, DasAxis.VERTICAL ) );
                 plot.addMouseModule( new DumpToFileMouseModule( plot, renderer, thisXAxis, plot.getYAxis() ) );
             } else {
@@ -244,7 +244,7 @@ public class Probe {
    /* public synchronized void add( String name, double value, String name2, double value2 ) {
         // this doesn't work.
         VectorDataSetBuilder builder;
-        edu.uiowa.physics.pw.das.graph.CurveRenderer renderer;
+        org.das2.graph.CurveRenderer renderer;
         if ( ! builders.containsKey(name) ) {
             maybeCreateWidget();
             builder= new VectorDataSetBuilder(Units.seconds,Units.dimensionless);
@@ -284,7 +284,7 @@ public class Probe {
             maybeCreateWidget();
             histogram= new int[50];
             histograms.put(name,histogram);
-            edu.uiowa.physics.pw.das.graph.SymbolLineRenderer renderer;
+            org.das2.graph.SymbolLineRenderer renderer;
             renderer= new SymbolLineRenderer((DataSet)null);
             renderer.setHistogram(true);
             renderer.setPsym( Psym.NONE );
@@ -504,7 +504,7 @@ public class Probe {
             //xrange= new DatumRange( Datum.create(0), Datum.create(1) );
             //yrange= DatumRangeUtil.newDimensionless(0,0.000001);
             
-            //plot= edu.uiowa.physics.pw.das.graph.Util.newDasPlot(canvas, xrange, yrange );
+            //plot= org.das2.graph.Util.newDasPlot(canvas, xrange, yrange );
             //            MouseModule mm=  new MouseModule( plot, new PointSlopeDragRenderer( plot, plot.getXAxis(),  plot.getYAxis() ), "Point,Slope" );
             //            plot.addMouseModule( mm );
             

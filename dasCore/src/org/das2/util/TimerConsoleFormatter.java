@@ -32,9 +32,9 @@ public class TimerConsoleFormatter extends Formatter {
         String source = "???";
         if (st.length > 8) {
             source = String.valueOf(st[8].getClassName());
-            if (source.startsWith("edu.uiowa.physics.pw.das")) {
+            if (source.startsWith("org.das2")) {
                 String spaces = "                                  ";
-                source = source.substring("edu.uiowa.physics.pw.das".length());
+                source = source.substring("org.das2".length());
                 if (source.length() < spaces.length()) {
                     source = spaces.substring(source.length()) + source;
                 }

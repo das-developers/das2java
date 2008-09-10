@@ -393,7 +393,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * "timeAxis1" or "theTimeAxis"
      * @param name unique String identifying the component within
      * the application.
-     * @throws edu.uiowa.physics.pw.das.DasNameException
+     * @throws org.das2.DasNameException
      */
     public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {

@@ -11,7 +11,7 @@ import java.util.prefs.PreferencesFactory;
 /**
  * Creates NullPreferences for use with applets.  The system property 
  * java.util.prefs.Preferences should be set to 
- * edu.uiowa.physics.pw.das.system.NullPreferencesFactory 
+ * org.das2.system.NullPreferencesFactory 
  * (or soon org.das2.system.NullPreferencesFactory) to use this class.
  * @author jbf
  */

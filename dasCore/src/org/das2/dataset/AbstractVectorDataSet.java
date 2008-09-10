@@ -31,8 +31,8 @@ import java.util.*;
  * implementation of concrete base classes easier.  Subclasses only need to
  * implement:<ul>
  * <li>{@link VectorDataSet#getDatum(int)}</li>
- * <li>{@link VectorDataSet#getDouble(int, edu.uiowa.physics.pw.das.datum.Units)}</li>
- * <li>{@link VectorDataSet#getInt(int, edu.uiowa.physics.pw.das.datum.Units)}</li>
+ * <li>{@link VectorDataSet#getDouble(int, org.das2.datum.Units)}</li>
+ * <li>{@link VectorDataSet#getInt(int, org.das2.datum.Units)}</li>
  * <li>{@link DataSet#getPlanarView(java.lang.String)}</li>
  *
  * @author  Edward West

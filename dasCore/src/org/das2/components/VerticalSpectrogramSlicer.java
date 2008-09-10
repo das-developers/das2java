@@ -168,7 +168,7 @@ extends DasPlot implements DataPointSelectionListener {
         
         super.drawContent(g);
         x= System.currentTimeMillis()-eventBirthMilli;
-        //edu.uiowa.physics.pw.das.util.DasDie.println("event handled in "+x+" milliseconds");
+        //org.das2.util.DasDie.println("event handled in "+x+" milliseconds");
     }
     
     protected boolean isPopupVisible() {

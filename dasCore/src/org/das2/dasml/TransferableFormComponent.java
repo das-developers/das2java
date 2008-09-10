@@ -44,18 +44,18 @@ import org.w3c.dom.ls.LSSerializer;
  */
 public class TransferableFormComponent implements Transferable {
     
-    public static final DataFlavor COMPONENT_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormComponent");
-    public static final DataFlavor PANEL_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormPanel");
-    public static final DataFlavor TEXT_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormText");
-    public static final DataFlavor TEXTFIELD_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormTextField");
-    public static final DataFlavor BUTTON_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormButton");
-    public static final DataFlavor CHECKBOX_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormCheckBox");
-    public static final DataFlavor BUTTONGROUP_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormRadioButtonGroup");
-    public static final DataFlavor RADIOBUTTON_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormRadioButton");
-    public static final DataFlavor TAB_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormTab");
-    public static final DataFlavor CHOICE_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormChoice");
-    public static final DataFlavor LIST_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormList");
-    public static final DataFlavor WINDOW_FLAVOR = createJVMLocalDataFlavor("edu.uiowa.physics.pw.das.dasml.FormWindow");
+    public static final DataFlavor COMPONENT_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormComponent");
+    public static final DataFlavor PANEL_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormPanel");
+    public static final DataFlavor TEXT_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormText");
+    public static final DataFlavor TEXTFIELD_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormTextField");
+    public static final DataFlavor BUTTON_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormButton");
+    public static final DataFlavor CHECKBOX_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormCheckBox");
+    public static final DataFlavor BUTTONGROUP_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormRadioButtonGroup");
+    public static final DataFlavor RADIOBUTTON_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormRadioButton");
+    public static final DataFlavor TAB_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormTab");
+    public static final DataFlavor CHOICE_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormChoice");
+    public static final DataFlavor LIST_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormList");
+    public static final DataFlavor WINDOW_FLAVOR = createJVMLocalDataFlavor("org.das2.dasml.FormWindow");
     public static final DataFlavor DASML_FRAGMENT_FLAVOR;
     static {
         try {

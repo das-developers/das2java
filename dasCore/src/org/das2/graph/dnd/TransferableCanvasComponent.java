@@ -40,10 +40,10 @@ import org.das2.graph.DasPlot;
  */
 public class TransferableCanvasComponent implements Transferable {
     
-    public static final DataFlavor CANVAS_COMPONENT_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasCanvasComponent");
-    public static final DataFlavor AXIS_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasAxis");
-    public static final DataFlavor PLOT_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasPlot");
-    public static final DataFlavor COLORBAR_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.DasColorBar");
+    public static final DataFlavor CANVAS_COMPONENT_FLAVOR = localJVMFlavor("org.das2.graph.DasCanvasComponent");
+    public static final DataFlavor AXIS_FLAVOR = localJVMFlavor("org.das2.graph.DasAxis");
+    public static final DataFlavor PLOT_FLAVOR = localJVMFlavor("org.das2.graph.DasPlot");
+    public static final DataFlavor COLORBAR_FLAVOR = localJVMFlavor("org.das2.graph.DasColorBar");
     
     private List flavorList;
     private DasCanvasComponent component;

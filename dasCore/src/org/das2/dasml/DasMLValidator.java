@@ -636,7 +636,7 @@ public class DasMLValidator extends DefaultHandler {
     
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.err.println("usage: java edu.uiowa.physics.pw.das.dasml.DasMLValidator <filename>");
+            System.err.println("usage: java org.das2.dasml.DasMLValidator <filename>");
             return;
         }
         

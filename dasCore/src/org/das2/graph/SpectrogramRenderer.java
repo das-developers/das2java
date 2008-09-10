@@ -170,8 +170,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     /** Creates a new instance of SpectrogramRenderer
      * @deprecated use {link
-     * #SpectrogramRenderer(edu.uiowa.physics.pw.das.dataset.DataSetDescriptor,
-     * edu.uiowa.physics.pw.das.graph.DasColorBar)}
+     * #SpectrogramRenderer(org.das2.dataset.DataSetDescriptor,
+     * org.das2.graph.DasColorBar)}
      */
     public SpectrogramRenderer(DasPlot parent, DataSetDescriptor dsd, DasColorBar colorBar) {
         this(dsd, colorBar);

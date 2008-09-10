@@ -29,7 +29,7 @@ import java.util.HashMap;
 public class StreamUtil {
     
     private static final String DATA_SET_ID_PREFIX
-            = "class:edu.uiowa.physics.pw.das.stream.test.LocalFileStandardDataStreamSource?file=";
+            = "class:org.das2.stream.test.LocalFileStandardDataStreamSource?file=";
     
     public static TableDataSet loadTableDataSet( String filename ) {
         try {

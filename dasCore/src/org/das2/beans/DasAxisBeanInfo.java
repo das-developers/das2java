@@ -26,10 +26,10 @@ package org.das2.beans;
 import java.beans.BeanInfo;
 
 /**
- * BeanInfo class for edu.uiowa.physics.pw.das.graph.DasAxis.
+ * BeanInfo class for org.das2.graph.DasAxis.
  *
  * @author Edward West
- * @see edu.uiowa.physics.pw.das.graph.DasAxis
+ * @see org.das2.graph.DasAxis
  */
 public class DasAxisBeanInfo extends AccessLevelBeanInfo {
     

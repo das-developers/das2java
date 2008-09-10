@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 public class TransferableRenderer implements Transferable {
     
-    public static final DataFlavor RENDERER_FLAVOR = localJVMFlavor("edu.uiowa.physics.pw.das.graph.Renderer");
+    public static final DataFlavor RENDERER_FLAVOR = localJVMFlavor("org.das2.graph.Renderer");
 
     private static DataFlavor localJVMFlavor(String className) {
         try {
