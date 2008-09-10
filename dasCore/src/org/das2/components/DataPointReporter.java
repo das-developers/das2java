@@ -23,13 +23,14 @@
 
 package org.das2.components;
 
-import edu.uiowa.physics.pw.das.event.*;
+import org.das2.event.DataPointSelectionEvent;
+
 
 /**
  *
  * @author  Owner
  */
-public class DataPointReporter extends javax.swing.JPanel implements edu.uiowa.physics.pw.das.event.DataPointSelectionListener {
+public class DataPointReporter extends javax.swing.JPanel implements org.das2.event.DataPointSelectionListener {
     
     private javax.swing.JTextField output;    
     
@@ -42,7 +43,7 @@ public class DataPointReporter extends javax.swing.JPanel implements edu.uiowa.p
         
     }
     
-    public void dataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
+    public void dataPointSelected(org.das2.event.DataPointSelectionEvent e) {
         output.setText("("+e.getX()+","+e.getY()+")");
         fireDataPointSelectionListenerDataPointSelected(e);       
     }
@@ -50,18 +51,18 @@ public class DataPointReporter extends javax.swing.JPanel implements edu.uiowa.p
     /** Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
+    public synchronized void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
         if (listenerList == null ) {
             listenerList = new javax.swing.event.EventListenerList();
         }
-        listenerList.add(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+        listenerList.add(org.das2.event.DataPointSelectionListener.class, listener);
     }
     
     /** Removes DataPointSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
-        listenerList.remove(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+    public synchronized void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
+        listenerList.remove(org.das2.event.DataPointSelectionListener.class, listener);
     }
     
     /** Notifies all registered listeners about the event.
@@ -72,8 +73,8 @@ public class DataPointReporter extends javax.swing.JPanel implements edu.uiowa.p
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
-            if (listeners[i]==edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener)listeners[i+1]).dataPointSelected(event);
+            if (listeners[i]==org.das2.event.DataPointSelectionListener.class) {
+                ((org.das2.event.DataPointSelectionListener)listeners[i+1]).dataPointSelected(event);
             }
         }
     }

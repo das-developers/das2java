@@ -32,8 +32,8 @@ import org.das2.dataset.DataSetUtil;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.event.BoxSelectionEvent;
-import edu.uiowa.physics.pw.das.event.BoxSelectionListener;
+import org.das2.event.BoxSelectionEvent;
+import org.das2.event.BoxSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -201,7 +201,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         
     }
     
-    protected void processDasUpdateEvent(edu.uiowa.physics.pw.das.event.DasUpdateEvent e) {
+    protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
         if (isDisplayable()) {
             updateImmediately();
             resize();

@@ -30,7 +30,6 @@ import org.das2.DasNameException;
 import org.das2.DasPropertyException;
 import org.das2.NameContext;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;

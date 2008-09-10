@@ -22,6 +22,12 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.event.DasMouseInputAdapter;
+import org.das2.event.MouseModule;
+import org.das2.event.HorizontalSlicerMouseModule;
+import org.das2.event.HorizontalDragRangeSelectorMouseModule;
+import org.das2.event.VerticalSlicerMouseModule;
+import org.das2.event.CrossHairMouseModule;
 import org.das2.components.propertyeditor.Enumeration;
 import org.das2.dataset.DataSetRebinner;
 import org.das2.dataset.NoDataInIntervalException;
@@ -42,7 +48,6 @@ import org.das2.dasml.FormBase;
 import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
-import edu.uiowa.physics.pw.das.event.*;
 import org.das2.system.DasLogger;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;

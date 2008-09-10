@@ -33,10 +33,10 @@ import org.das2.NameContext;
 import org.das2.DasApplication;
 import org.das2.components.propertyeditor.Enumeration;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.event.DataRangeSelectionEvent;
-import edu.uiowa.physics.pw.das.event.HorizontalSliceSelectionRenderer;
-import edu.uiowa.physics.pw.das.event.MouseModule;
-import edu.uiowa.physics.pw.das.event.MousePointSelectionEvent;
+import org.das2.event.DataRangeSelectionEvent;
+import org.das2.event.HorizontalSliceSelectionRenderer;
+import org.das2.event.MouseModule;
+import org.das2.event.MousePointSelectionEvent;
 import java.awt.image.IndexColorModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -577,18 +577,18 @@ public class DasColorBar extends DasAxis {
         /** Registers DataRangeSelectionListener to receive events.
          * @param listener The listener to register.
          */
-        public synchronized void addDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
+        public synchronized void addDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
             if (listenerList == null ) {
                 listenerList = new EventListenerList();
             }
-            listenerList.add(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
+            listenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
         }
         
         /** Removes DataRangeSelectionListener from the list of listeners.
          * @param listener The listener to remove.
          */
-        public synchronized void removeDataRangeSelectionListener(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener listener) {
-            listenerList.remove(edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class, listener);
+        public synchronized void removeDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
+            listenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
         }
         
         /** Notifies all registered listeners about the event.
@@ -599,8 +599,8 @@ public class DasColorBar extends DasAxis {
             if (listenerList == null) return;
             Object[] listeners = listenerList.getListenerList();
             for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i]==edu.uiowa.physics.pw.das.event.DataRangeSelectionListener.class) {
-                    ((edu.uiowa.physics.pw.das.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
+                if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
+                    ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
                 }
             }
         }

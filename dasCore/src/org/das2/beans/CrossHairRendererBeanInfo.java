@@ -35,7 +35,7 @@ public class CrossHairRendererBeanInfo extends AccessLevelBeanInfo {
     };
     
     public CrossHairRendererBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.event.CrossHairRenderer.class);
+        super(properties, org.das2.event.CrossHairRenderer.class);
     }
      
     public java.beans.BeanInfo[] getAdditionalBeanInfo() {

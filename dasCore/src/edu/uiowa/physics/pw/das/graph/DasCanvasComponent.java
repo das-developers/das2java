@@ -25,8 +25,8 @@ package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.DasApplication;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.event.DasMouseInputAdapter;
-import edu.uiowa.physics.pw.das.event.MouseModule;
+import org.das2.event.DasMouseInputAdapter;
+import org.das2.event.MouseModule;
 import edu.uiowa.physics.pw.das.graph.event.DasUpdateListener;
 import org.das2.system.DasLogger;
 
@@ -243,7 +243,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         logger.finer("updateImmediately for "+this.getClass().getName() );
     }
     
-    private edu.uiowa.physics.pw.das.event.DasUpdateEvent devt;
+    private org.das2.event.DasUpdateEvent devt;
     
     /**
      * posts an update event on the SystemEventQueue, indicating that work needs to be
@@ -253,7 +253,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         logger.finer("update for "+this.getClass().getName() );
         java.awt.EventQueue eventQueue =
                 Toolkit.getDefaultToolkit().getSystemEventQueue();
-        if (devt == null) devt = new edu.uiowa.physics.pw.das.event.DasUpdateEvent(this);
+        if (devt == null) devt = new org.das2.event.DasUpdateEvent(this);
         eventQueue.postEvent(devt);
     }
     
@@ -278,12 +278,12 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      */
     protected void processEvent(AWTEvent e) {
         super.processEvent(e);
-        if (e instanceof edu.uiowa.physics.pw.das.event.DasUpdateEvent) {
-            processDasUpdateEvent((edu.uiowa.physics.pw.das.event.DasUpdateEvent)e);
+        if (e instanceof org.das2.event.DasUpdateEvent) {
+            processDasUpdateEvent((org.das2.event.DasUpdateEvent)e);
         }
     }
     
-    protected void processDasUpdateEvent(edu.uiowa.physics.pw.das.event.DasUpdateEvent e) {
+    protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
         if (isDisplayable()) {
             if (isDirty()) {
                 markClean();
@@ -315,7 +315,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * 		coalescing was done
      */
     protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent) {
-        if (existingEvent instanceof edu.uiowa.physics.pw.das.event.DasUpdateEvent && newEvent instanceof edu.uiowa.physics.pw.das.event.DasUpdateEvent) {
+        if (existingEvent instanceof org.das2.event.DasUpdateEvent && newEvent instanceof org.das2.event.DasUpdateEvent) {
             return existingEvent;
         }
         return super.coalesceEvents(existingEvent, newEvent);

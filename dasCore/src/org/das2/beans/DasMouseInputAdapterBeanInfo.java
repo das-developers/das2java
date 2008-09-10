@@ -38,7 +38,7 @@ public class DasMouseInputAdapterBeanInfo extends AccessLevelBeanInfo {
     
     
     public DasMouseInputAdapterBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.event.DasMouseInputAdapter.class);
+        super(properties, org.das2.event.DasMouseInputAdapter.class);
     }
     
 }

@@ -22,6 +22,14 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.event.MouseModule;
+import org.das2.event.HorizontalRangeSelectorMouseModule;
+import org.das2.event.LengthDragRenderer;
+import org.das2.event.DisplayDataMouseModule;
+import org.das2.event.CrossHairMouseModule;
+import org.das2.event.BoxZoomMouseModule;
+import org.das2.event.VerticalRangeSelectorMouseModule;
+import org.das2.event.ZoomPanMouseModule;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorUtil;
@@ -45,7 +53,6 @@ import org.das2.datum.Datum;
 import org.das2.dasml.FormBase;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
-import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableRenderer;
 import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;

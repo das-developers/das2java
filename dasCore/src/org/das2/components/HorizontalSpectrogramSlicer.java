@@ -33,8 +33,8 @@ import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.event.DataPointSelectionEvent;
-import edu.uiowa.physics.pw.das.event.DataPointSelectionListener;
+import org.das2.event.DataPointSelectionEvent;
+import org.das2.event.DataPointSelectionListener;
 import edu.uiowa.physics.pw.das.graph.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -184,7 +184,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         super.installComponent();
     }
     
-    protected void processDasUpdateEvent(edu.uiowa.physics.pw.das.event.DasUpdateEvent e) {
+    protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
         if (isDisplayable()) {
             updateImmediately();
             resize();

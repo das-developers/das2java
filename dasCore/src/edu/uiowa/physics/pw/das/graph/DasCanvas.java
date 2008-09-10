@@ -32,7 +32,7 @@ import org.das2.NameContext;
 import org.das2.dasml.FormBase;
 import org.das2.dasml.FormComponent;
 import org.das2.dasml.ParsedExpressionException;
-import edu.uiowa.physics.pw.das.event.DragRenderer;
+import org.das2.event.DragRenderer;
 import edu.uiowa.physics.pw.das.graph.dnd.TransferableCanvasComponent;
 import org.das2.system.DasLogger;
 import org.das2.system.RequestProcessor;

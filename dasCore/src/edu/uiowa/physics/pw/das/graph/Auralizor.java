@@ -9,7 +9,6 @@ package edu.uiowa.physics.pw.das.graph;
 import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Units;
 import edu.uiowa.physics.pw.das.*;
-import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import java.io.*;

@@ -9,7 +9,7 @@
 
 package org.das2.util.awt;
 
-import edu.uiowa.physics.pw.das.event.DasUpdateEvent;
+import org.das2.event.DasUpdateEvent;
 import org.das2.system.DasLogger;
 import java.awt.AWTEvent;
 import java.awt.EventQueue;

@@ -33,7 +33,7 @@ public class MouseModuleBeanInfo extends AccessLevelBeanInfo {
     };
     
     public MouseModuleBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.event.MouseModule.class);
+        super(properties, org.das2.event.MouseModule.class);
     }     
     
 }

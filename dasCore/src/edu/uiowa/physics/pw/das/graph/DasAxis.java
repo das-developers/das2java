@@ -22,6 +22,14 @@
  */
 package edu.uiowa.physics.pw.das.graph;
 
+import org.das2.event.MouseModule;
+import org.das2.event.TimeRangeSelectionEvent;
+import org.das2.event.TimeRangeSelectionListener;
+import org.das2.event.HorizontalRangeSelectorMouseModule;
+import org.das2.event.DataRangeSelectionEvent;
+import org.das2.event.DataRangeSelectionListener;
+import org.das2.event.VerticalRangeSelectorMouseModule;
+import org.das2.event.ZoomPanMouseModule;
 import org.das2.dataset.DataSetUpdateEvent;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorDataSet;
@@ -48,7 +56,6 @@ import org.das2.DasNameException;
 import org.das2.DasPropertyException;
 import org.das2.NameContext;
 import org.das2.dasml.FormBase;
-import edu.uiowa.physics.pw.das.event.*;
 import org.das2.system.UserMessageCenter;
 import java.awt.*;
 import java.awt.event.*;
@@ -2829,18 +2836,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** Registers TimeRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addTimeRangeSelectionListener(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener listener) {
+    public synchronized void addTimeRangeSelectionListener(org.das2.event.TimeRangeSelectionListener listener) {
         if (timeRangeListenerList == null) {
             timeRangeListenerList = new javax.swing.event.EventListenerList();
         }
-        timeRangeListenerList.add(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class, listener);
+        timeRangeListenerList.add(org.das2.event.TimeRangeSelectionListener.class, listener);
     }
 
     /** Removes TimeRangeSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeTimeRangeSelectionListener(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener listener) {
-        timeRangeListenerList.remove(edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class, listener);
+    public synchronized void removeTimeRangeSelectionListener(org.das2.event.TimeRangeSelectionListener listener) {
+        timeRangeListenerList.remove(org.das2.event.TimeRangeSelectionListener.class, listener);
     }
 
     /** Notifies all registered listeners about the event.
@@ -2853,10 +2860,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         Object[] listeners = timeRangeListenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener.class) {
+            if (listeners[i] == org.das2.event.TimeRangeSelectionListener.class) {
                 String logmsg = "fire event: " + this.getClass().getName() + "-->" + listeners[i + 1].getClass().getName() + " " + event;
                 DasLogger.getLogger(DasLogger.GUI_LOG).fine(logmsg);
-                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener) listeners[i + 1]).timeRangeSelected(event);
+                ((org.das2.event.TimeRangeSelectionListener) listeners[i + 1]).timeRangeSelected(event);
             }
         }
     }

@@ -32,7 +32,7 @@ public class LabelDragRendererBeanInfo extends AccessLevelBeanInfo {
     };
     
     public LabelDragRendererBeanInfo() {
-        super(properties, edu.uiowa.physics.pw.das.event.LabelDragRenderer.class);
+        super(properties, org.das2.event.LabelDragRenderer.class);
     }
     
 }

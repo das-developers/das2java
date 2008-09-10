@@ -7,9 +7,9 @@ package edu.uiowa.physics.pw.das.graph;
 
 import org.das2.util.GrannyTextRenderer;
 import org.das2.datum.Datum;
-import edu.uiowa.physics.pw.das.event.ArrowDragRenderer;
-import edu.uiowa.physics.pw.das.event.MouseModule;
-import edu.uiowa.physics.pw.das.event.MoveComponentMouseModule;
+import org.das2.event.ArrowDragRenderer;
+import org.das2.event.MouseModule;
+import org.das2.event.MoveComponentMouseModule;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;

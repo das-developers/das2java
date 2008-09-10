@@ -6,6 +6,7 @@
 
 package org.das2.util;
 
+import org.das2.event.DumpToFileMouseModule;
 import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.dataset.DataSet;
 import org.das2.datum.DatumRange;
@@ -13,7 +14,6 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.DasApplication;
-import edu.uiowa.physics.pw.das.event.*;
 import edu.uiowa.physics.pw.das.graph.*;
 import org.das2.system.DasLogger;
 import java.awt.*;

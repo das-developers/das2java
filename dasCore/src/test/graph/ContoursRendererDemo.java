@@ -11,9 +11,9 @@ package test.graph;
 
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.test.RipplesDataSet;
-import edu.uiowa.physics.pw.das.event.AnnotatorMouseModule;
-import edu.uiowa.physics.pw.das.event.MouseModule;
-import edu.uiowa.physics.pw.das.event.PointSlopeDragRenderer;
+import org.das2.event.AnnotatorMouseModule;
+import org.das2.event.MouseModule;
+import org.das2.event.PointSlopeDragRenderer;
 import edu.uiowa.physics.pw.das.graph.GraphUtil;
 import edu.uiowa.physics.pw.das.graph.Renderer;
 import edu.uiowa.physics.pw.das.graph.ContoursRenderer;

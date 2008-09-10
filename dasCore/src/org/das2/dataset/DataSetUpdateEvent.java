@@ -6,7 +6,7 @@
 
 package org.das2.dataset;
 
-import edu.uiowa.physics.pw.das.event.*;
+import org.das2.event.DasEvent;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**

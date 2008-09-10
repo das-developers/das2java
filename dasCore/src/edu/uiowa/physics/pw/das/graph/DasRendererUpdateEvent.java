@@ -23,7 +23,8 @@
 
 package edu.uiowa.physics.pw.das.graph;
 
-import edu.uiowa.physics.pw.das.event.DasUpdateEvent;
+import org.das2.event.DasUpdateEvent;
+
 
 /**
  *

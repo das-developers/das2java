@@ -40,7 +40,6 @@ import org.das2.components.VerticalSpectrogramSlicer;
 import org.das2.components.propertyeditor.Enumeration;
 import org.das2.dasml.FormBase;
 import org.das2.datum.Units;
-import edu.uiowa.physics.pw.das.event.*;
 import org.das2.util.DasDie;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;

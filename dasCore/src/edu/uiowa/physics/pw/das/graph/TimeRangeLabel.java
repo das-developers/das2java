@@ -30,7 +30,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.TimeUtil;
 import org.das2.DasProperties;
-import edu.uiowa.physics.pw.das.event.MouseModule;
+import org.das2.event.MouseModule;
 import org.das2.util.DasMath;
 import org.das2.util.DasExceptionHandler;
 

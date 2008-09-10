@@ -34,8 +34,8 @@ import org.das2.DasApplication;
  * @author  jbf
  */
 import org.das2.datum.TimeUtil;
-import edu.uiowa.physics.pw.das.event.TimeRangeSelectionEvent;
-import edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener;
+import org.das2.event.TimeRangeSelectionEvent;
+import org.das2.event.TimeRangeSelectionListener;
 import org.das2.system.DasLogger;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -418,7 +418,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
             if (listeners[i]==TimeRangeSelectionListener.class) {
                 String logmsg= "fire event: "+this.getClass().getName()+"-->"+listeners[i+1].getClass().getName()+" "+event;
                 DasLogger.getLogger( DasLogger.GUI_LOG ).fine(logmsg);
-                ((edu.uiowa.physics.pw.das.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
+                ((org.das2.event.TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
                 ((TimeRangeSelectionListener)listeners[i+1]).timeRangeSelected(event);
             }
         }

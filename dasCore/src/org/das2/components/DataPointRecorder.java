@@ -5,6 +5,9 @@
  */
 package org.das2.components;
 
+import org.das2.event.CommentDataPointSelectionEvent;
+import org.das2.event.DataPointSelectionListener;
+import org.das2.event.DataPointSelectionEvent;
 import org.das2.dataset.DataSetUpdateEvent;
 import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.dataset.DataSetDescriptor;
@@ -21,10 +24,8 @@ import org.das2.DasException;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import edu.uiowa.physics.pw.das.*;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.format.DatumFormatter;
-import edu.uiowa.physics.pw.das.event.*;
 import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
 import java.awt.event.*;
@@ -883,7 +884,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
 	@SuppressWarnings("deprecation")
-    public void dataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent e) {
+    public void dataPointSelected(org.das2.event.DataPointSelectionEvent e) {
         String comment = "";
         Map planesMap;
 
@@ -1008,7 +1009,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
+    public synchronized void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
 
         if (listenerList == null) {
             listenerList = new javax.swing.event.EventListenerList();
@@ -1017,16 +1018,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
 
 
-        listenerList.add(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+        listenerList.add(org.das2.event.DataPointSelectionListener.class, listener);
     }
 
     /**
      * Removes DataPointSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeDataPointSelectionListener(edu.uiowa.physics.pw.das.event.DataPointSelectionListener listener) {
+    public synchronized void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
 
-        listenerList.remove(edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class, listener);
+        listenerList.remove(org.das2.event.DataPointSelectionListener.class, listener);
     }
 
     /**
@@ -1034,7 +1035,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      *
      * @param event The event to be fired
      */
-    private void fireDataPointSelectionListenerDataPointSelected(edu.uiowa.physics.pw.das.event.DataPointSelectionEvent event) {
+    private void fireDataPointSelectionListenerDataPointSelected(org.das2.event.DataPointSelectionEvent event) {
         if (listenerList == null) {
             return;
         }
@@ -1044,8 +1045,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         for (int i = listeners.length - 2; i >=
                 0; i -=
                         2) {
-            if (listeners[i] == edu.uiowa.physics.pw.das.event.DataPointSelectionListener.class) {
-                ((edu.uiowa.physics.pw.das.event.DataPointSelectionListener) listeners[i + 1]).dataPointSelected(event);
+            if (listeners[i] == org.das2.event.DataPointSelectionListener.class) {
+                ((org.das2.event.DataPointSelectionListener) listeners[i + 1]).dataPointSelected(event);
             }
         }
 
