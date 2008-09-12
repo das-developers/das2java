@@ -484,9 +484,10 @@ public class AsciiParser {
         }
         mon.finished();
 
-        builder.putProperty(PROPERTY_FILE_HEADER, headerBuffer.toString());
-        builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
-        builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties)); // QDataSet doesn't propogate unknown props.
+        String header= headerBuffer.toString();
+        builder.putProperty(PROPERTY_FILE_HEADER, header);
+        builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord );
+        builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
 
         return builder.getDataSet();
     }
@@ -568,6 +569,9 @@ public class AsciiParser {
      * hide the nuances of java's split function.  When the string endswith the
      * regex, add an empty field.  Also, trim the string so leading and trailing
      * whitespace is not treated as a delimiter.
+     * 
+     * no longer used because String.split( delim, -2 ) has the same effect.
+     * 
      * @param string
      * @param regex regular expression like \\s+
      * @return string array containing the fields.
@@ -589,13 +593,14 @@ public class AsciiParser {
      * the number of fields.  If the line appears to contain column headings,
      * then column names will be set as well.
      * This has the side effect of turning off property record pattern.
+     * Trailing and leading whitespace is ignored.
      * @param line
      * @param fieldSep
      * @return
      */
     private DelimParser createDelimParser(String line, String fieldSep) {
 
-        String[] ss = split( line, fieldSep );
+        String[] ss = split( line.trim(), fieldSep );
 
         fieldCount = ss.length;
         fieldParsers = new FieldParser[fieldCount];
@@ -638,6 +643,7 @@ public class AsciiParser {
 
     /**
      * DelimParser splits the line on a regex (like "," or "\\s+") to create the fields.
+     * Trailing and leading whitespace is ignored.
      */
     public final class DelimParser implements RecordParser {
 
@@ -670,7 +676,7 @@ public class AsciiParser {
             int failCount = 0;
             int ipos = 0;
 
-            String[] ss = split( line, delimPattern, delimRegex );
+            String[] ss = line.trim().split( delimRegex, -2 );
 
             if ( ss.length != fieldCount ) {
                 return false;
@@ -705,7 +711,7 @@ public class AsciiParser {
         }
 
         public String[] fields(String line) {
-            String[] ss = split( line, delimPattern, delimRegex );
+            String[] ss = line.split( delimRegex, -2 );
             return ss;
         }
     }
