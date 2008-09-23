@@ -160,8 +160,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                             }
                         }
                         JFrame babySitter = (JFrame) desc.babysitter;
+                        babySitter.setVisible(false);
                         babySitter.setVisible(true);
-                        babySitter.toFront();  // no effect on Linux/Gnome
+                        //babySitter.toFront();  // no effect on Linux/Gnome
                     }
                 }));
                 dockMenu.add(new JMenuItem(new AbstractAction("dock") {
