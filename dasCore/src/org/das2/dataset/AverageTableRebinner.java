@@ -589,7 +589,14 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
             if (interpolateType == Interpolate.NearestNeighbor) {
                 for (int j = 0; j < ny; j++) {
-                    if (Math.min(i1[j] == -1 ? Double.MAX_VALUE : (yTagTemp[j] - yTagTemp[i1[j]]), i2[j] == -1 ? Double.MAX_VALUE : (yTagTemp[i2[j]] - yTagTemp[j])) < ySampleWidth / 2) { //kludge for bug 000321
+                    boolean doInterp;
+                    if ( i1[j]!= -1 && i2[j] != -1) {
+                        doInterp= ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2;
+                    } else {
+                        //kludge for bug 000321
+                        doInterp= Math.min(i1[j] == -1 ? Double.MAX_VALUE : (yTagTemp[j] - yTagTemp[i1[j]]), i2[j] == -1 ? Double.MAX_VALUE : (yTagTemp[i2[j]] - yTagTemp[j])) < ySampleWidth / 2;
+                    }
+                    if ( doInterp ) { 
                         int idx;
                         if (i1[j] == -1) {
                             idx = i2[j];
@@ -607,6 +614,10 @@ public class AverageTableRebinner implements DataSetRebinner {
                         weights[i][j] = weights[i][idx];
 
                     }
+                        if ( i==1 && j==34 ) {
+                            int jkk=0;                            
+                        }
+                    
                 }
             } else {
                 for (int j = 0; j < ny; j++) {
