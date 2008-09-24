@@ -10,8 +10,10 @@
 package org.virbo.dsutil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import org.virbo.dataset.DDataSet;
 
 /**
@@ -27,6 +29,7 @@ public class DataSetBuilder {
     DDataSet current;
     int recCount;
     int dim1, dim2;
+    int recElements; // number of elements per record
     int index;
     int offset;
     HashMap<String,Object> properties;
@@ -59,6 +62,7 @@ public class DataSetBuilder {
         this.recCount= recCount;
         this.dim1= dim1;
         this.dim2= dim2;
+        this.recElements= dim1 * dim2;
         newCurrent();
         index=0;
         properties= new HashMap<String,Object>();
@@ -96,6 +100,19 @@ public class DataSetBuilder {
     }
     
     /**
+     * copy the elements from one DDataSet into the builder (which can be done with
+     * a system call), ignoring dataset geometry.  TODO: since the element count
+     * allows for putting multiple records in at once, an index out of bounds may 
+     * occur after the last record of current is written.
+     * @param index0
+     * @param values
+     * @param count the number of elements to copy
+     */
+    public void putValues( int index0, DDataSet values, int count ) {
+        DDataSet.copyElements( values, 0, current, this.index, count, false );
+    }
+    
+    /**
      * This must be called each time a record is complete.  
      * TODO:  I always forget to call this, find another way to do this.  Check
      * for unspecified entries.
@@ -109,6 +126,14 @@ public class DataSetBuilder {
             index -= current.length();
             newCurrent();
         }
+    }
+    
+    /**
+     * return the number of elements in each record.
+     * @return
+     */
+    public int getRecordElements() {
+        return this.recElements;
     }
     
     private final boolean isFill( double d ) {
@@ -180,6 +205,14 @@ public class DataSetBuilder {
     
     public void putProperty( String string, Object o ) {
         properties.put( string, o );
+    }
+    
+    /**
+     * get a map of all the properties set thus far.
+     * @return
+     */
+    public Map<String,Object> getProperties() {
+        return Collections.unmodifiableMap(properties);
     }
     
     /**
