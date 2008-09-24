@@ -163,7 +163,7 @@ public class SimpleStreamFormatter {
         String name = nameFor(ds);
         streamElement.setAttribute("dataset_id", name);
         if (asciiTypes == false) {
-            streamElement.setAttribute("byte_order", isBigEndian ? " big_endian" : "little_endian");
+            streamElement.setAttribute("byte_order", isBigEndian ? "big_endian" : "little_endian");
         }
 
         sd.setDomElement(streamElement);
