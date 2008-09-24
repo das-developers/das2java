@@ -242,6 +242,19 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
     }
 
     /**
+     * Copy the dataset to a DDataSet only if the dataset is not already a DDataSet.
+     * @param ds
+     * @return
+     */
+    public static DDataSet maybeCopy( QDataSet ds ) {
+        if ( ds instanceof DDataSet ) {
+            return (DDataSet)ds;
+        } else {
+            return copy(ds);
+        }
+    }
+    
+    /**
      * copies the dataset into a writeable dataset, and all of its depend datasets as well.
      * An optimized copy is used when the argument is a DDataSet.
      */
@@ -337,7 +350,7 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
                 QDataSet dep0 = (QDataSet) this.property("DEPEND_" + i);
                 DDataSet djoin = DDataSet.copy(dep0);
                 DDataSet ddep1 = dep1 instanceof DDataSet ? (DDataSet) dep1 : DDataSet.copy(dep1);
-                djoin.join(ddep1);
+                djoin.append(ddep1);
                 result.put("DEPEND_" + i, djoin);
             }
         }
@@ -348,7 +361,7 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
                 QDataSet dep0 = (QDataSet) this.property("PLANE_" + i);
                 DDataSet djoin = DDataSet.copy(dep0); 
                 DDataSet dd1 = dep1 instanceof DDataSet ? (DDataSet) dep1 : DDataSet.copy(dep1);
-                djoin.join(dd1);  //TODO extra copy of djoin here--why not check type and do cast as above?
+                djoin.append(dd1);  
                 result.put("PLANE_" + i, djoin);
             }
         }
@@ -358,25 +371,57 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
 
     /**
      * copy elements of src DDataSet into dest DDataSet, with System.arraycopy.
-     * src and dst must have the same geometry, except for dim 0.
+     * src and dst must have the same geometry, except for dim 0.  Allows for
+     * aliasing when higher dimension element count matches.
+     * @param len number of records to copy.
      * @throws IllegalArgumentException if the higher rank geometry doesn't match
      * @throws IndexOutOfBoundsException
      */
     public static void copyElements(DDataSet src, int srcpos, DDataSet dest, int destpos, int len) {
-        if (src.len1 != dest.len1 || src.len2 != dest.len2) {
+        if ( src.len1 != dest.len1 || src.len2 != dest.len2 ) {
+            throw new IllegalArgumentException("src and dest geometry don't match");
+        }
+        copyElements( src, srcpos, dest, destpos, len * src.len1 * src.len2, false); 
+    }    
+    
+    /**
+     * copy elements of src DDataSet into dest DDataSet, with System.arraycopy.
+     * src and dst must have the same geometry, except for dim 0.  Allows for
+     * aliasing when higher dimension element count matches.
+     * @param src source dataset
+     * @param srcpos source dataset first dimension index.
+     * @param dest destination dataset
+     * @param destpos destination dataset first dimension index.
+     * @param len total number of elements to copy
+     * @param checkAlias bounds for aliased write (same number of elements, different geometry.)
+     * @throws IllegalArgumentException if the higher rank geometry doesn't match
+     * @throws IndexOutOfBoundsException
+     */
+    public static void copyElements( DDataSet src, int srcpos, DDataSet dest, int destpos, int len, boolean checkAlias ) {
+        if ( checkAlias && ( src.len1*src.len2 != dest.len1*dest.len2 ) ) {
             throw new IllegalArgumentException("src and dest geometry don't match");
         }
         int srcpos1 = srcpos * src.len1 * src.len2;
-        int destpos1 = destpos * src.len1 * src.len2;
-        int len1 = len * src.len1 * src.len2;
-        System.arraycopy(src.back, srcpos1, dest.back, destpos1, len1);
+        int destpos1 = destpos * dest.len1 * dest.len2;
+        int len1 = len;
+        System.arraycopy( src.back, srcpos1, dest.back, destpos1, len1 );
     }
 
     /**
      * append the second dataset onto this dataset.  Not thread safe!!!
      * TODO: this really should return a new dataset.  Presumably this is to avoid copies, but currently it copies anyway!
+     * TODO: this will be renamed "concatentate" or "append" since "join" is the anti-slice.
+     * @deprecated use append instead.
      */
     public void join(DDataSet ds) {
+        append(ds);
+    }
+    
+    /**
+     * append the second dataset onto this dataset.  Not thread safe!!!
+     * TODO: this really should return a new dataset.  Presumably this is to avoid copies, but currently it copies anyway!
+     */
+    public void append( DDataSet ds ) {
         if (ds.rank() != rank) {
             throw new IllegalArgumentException("rank mismatch");
         }
