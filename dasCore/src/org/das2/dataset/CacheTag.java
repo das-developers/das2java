@@ -80,7 +80,7 @@ public class CacheTag {
      * one line as it is used to list cache contents.
      */
     public String toString() {
-        return range + " @ " + ( resolution==null ? "intrisic" : ""+DatumUtil.asOrderOneUnits(resolution) );
+        return range + " @ " + ( resolution==null ? "intrinsic" : ""+DatumUtil.asOrderOneUnits(resolution) );
     }
     
     /**
