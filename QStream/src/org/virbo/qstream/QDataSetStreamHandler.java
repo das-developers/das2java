@@ -131,6 +131,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                         builder.putProperty(pname, svalue);
                     } else {
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
+                        if ( delegate==null ) {
+                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \""+stype+"\"");
+                            continue;
+                        }
                         try {
                             builder.putProperty(pname, delegate.parse(stype, svalue));
                         } catch (ParseException ex) {
