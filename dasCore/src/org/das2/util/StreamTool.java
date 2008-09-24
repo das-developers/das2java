@@ -567,8 +567,12 @@ public class StreamTool {
 		DOMImplementationLS ls = (DOMImplementationLS)
 				document.getImplementation().getFeature("LS", "3.0");
 		LSOutput output = ls.createLSOutput();
+      
 		output.setCharacterStream(writer);
 		LSSerializer serializer = ls.createLSSerializer();
+      if ( serializer.getDomConfig().canSetParameter( "format-pretty-print", Boolean.TRUE ) ) {
+        serializer.getDomConfig().setParameter( "format-pretty-print", Boolean.TRUE );
+      }
 		serializer.write(document, output);
 		/*
         try {
