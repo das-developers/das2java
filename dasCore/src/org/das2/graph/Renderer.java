@@ -440,11 +440,18 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         }
     }
     
-    protected abstract void installRenderer();
+    protected void installRenderer() {
+        // override me
+    }
     
-    protected abstract void uninstallRenderer();
+    protected void uninstallRenderer() {
+        // override me
+    }
     
-    protected abstract Element getDOMElement( Document document );
+    protected Element getDOMElement( Document document ) {
+        // override me
+        return null;
+    }
     
     private boolean overloading=false;
     
