@@ -22,8 +22,10 @@
  */
 package org.das2.datum;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.EnumerationDatumFormatterFactory;
 
@@ -40,11 +42,11 @@ import org.das2.datum.format.EnumerationDatumFormatterFactory;
  */
 public class EnumerationUnits extends Units {
 
-    private HashMap ordinals;  // maps from ordinal to Datum.Integer
+    private HashMap<Integer, Datum> ordinals;  // maps from ordinal to Datum.Integer
     private int highestOrdinal; // highest ordinal for each Units type
-    private HashMap objects;    // maps from object to Datum.Integer
-    private HashMap invObjects; // maps from Datum.Integer to object
-    public static HashMap unitsInstances;
+    private HashMap<Object, Datum> objects;    // maps from object to Datum.Integer
+    private HashMap<Datum, Object> invObjects; // maps from Datum.Integer to object
+    public static HashMap<Class, EnumerationUnits> unitsInstances;
 
     public EnumerationUnits(String id) {
         this(id, "");
@@ -53,13 +55,42 @@ public class EnumerationUnits extends Units {
     public EnumerationUnits(String id, String description) {
         super(id, description);
         highestOrdinal = 0;
-        ordinals = new HashMap();
-        objects = new HashMap();
-        invObjects = new HashMap();
+        ordinals = new HashMap<Integer, Datum>();
+        objects = new HashMap<Object, Datum>();
+        invObjects = new HashMap<Datum, Object>();
     }
 
     public static Datum createDatumAndUnits(Object object) {
         return create(object).createDatum(object);
+    }
+
+    /**
+     * creates the datum, explicitly setting the ordinal.  Use with caution.
+     * @param ival
+     * @param sval
+     * @throws IllegalArgumentException if this ordinal is already taken by a different value.
+     */
+    public Datum createDatum(int ival, Object object) {
+        if (objects.containsKey(object)) {
+            return objects.get(object);
+        } else {
+            if (highestOrdinal < ival) {
+                highestOrdinal = ival;
+            }
+            Integer ordinal = new Integer(ival);
+            Datum result = new Datum.Double(ordinal, this);
+            if ( ordinals.containsKey(ordinal) ) {
+                Datum d=  ordinals.get(ordinal);
+                if ( ! invObjects.get( d ).equals(object) ) {
+                    throw new IllegalArgumentException("value already exists for this ordinal!");
+                }
+            }
+            ordinals.put(ordinal, result);
+            invObjects.put(result, object);
+            objects.put(object, result);
+            return result;
+        }
+
     }
 
     public DatumVector createDatumVector(Object[] objects) {
@@ -72,7 +103,7 @@ public class EnumerationUnits extends Units {
 
     public synchronized Datum createDatum(Object object) {
         if (objects.containsKey(object)) {
-            return (Datum) objects.get(object);
+            return objects.get(object);
         } else {
             highestOrdinal++;
             Integer ordinal = new Integer(highestOrdinal);
@@ -84,10 +115,18 @@ public class EnumerationUnits extends Units {
         }
     }
 
+    /**
+     * provides access to map of all values.
+     * @return
+     */
+    public Map<Integer, Datum> getValues() {
+        return Collections.unmodifiableMap(ordinals);
+    }
+
     public Datum createDatum(int value) {
         Integer key = new Integer(value);
         if (ordinals.containsKey(key)) {
-            return (Datum) ordinals.get(key);
+            return ordinals.get(key);
         } else {
             throw new IllegalArgumentException("No Datum exists for this ordinal: " + value);
         }
@@ -111,10 +150,10 @@ public class EnumerationUnits extends Units {
 
     public static EnumerationUnits create(Object o) {
         if (unitsInstances == null)
-            unitsInstances = new HashMap();
+            unitsInstances = new HashMap<Class, EnumerationUnits>();
         Class c = o.getClass();
         if (unitsInstances.containsKey(c)) {
-            return (EnumerationUnits) unitsInstances.get(c);
+            return unitsInstances.get(c);
         } else {
             EnumerationUnits result = new EnumerationUnits(c.toString() + "Unit");
             unitsInstances.put(c, result);
