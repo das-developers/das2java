@@ -5,6 +5,7 @@
 
 package org.virbo.qstream;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import org.das2.dataset.CacheTag;
@@ -25,6 +26,7 @@ public class SerializeRegistry {
         register( EnumerationUnits.class, new EnumerationUnitsSerializeDelegate() );
         register( String.class, new StringSerializeDelegate() );
         register( CacheTag.class, new CacheTagSerializeDelegate() );
+        register( AbstractMap.class, new MapSerializeDelegate() );
         DefaultSerializeDelegate.registerDelegates();
     }
     
