@@ -20,7 +20,7 @@ public class StringSerializeDelegate implements SerializeDelegate {
     }
 
     public String typeId(Class clas) {
-        return "string";
+        return "String";
     }
 
 }
