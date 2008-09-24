@@ -20,8 +20,6 @@ import java.util.Map;
 public class JoinDataSet implements QDataSet, MutablePropertyDataSet {
     
     ArrayList<QDataSet> datasets;
-    int[] offsets= new int[20];
-    int[] lengths= new int[20];
     int rank;
     Map<String,Object> properties;
     
