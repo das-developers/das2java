@@ -334,8 +334,8 @@ public class StreamTool {
                     sd.setDomElement(doc.getDocumentElement());
                     sd.setSizeBytes(contentLength);
                     String b= root.getAttribute("byte_order");
-                    if ( b!=null ) {
-                        sd.setByteOrder( b.equals("big_endian") ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN );
+                    if ( b!=null && !b.equals("") ) {
+                        sd.setByteOrder( b.equals("little_endian") ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN );
                         struct.bigBuffer.order( sd.getByteOrder() );
                     }
                     struct.bigBuffer.clear();
