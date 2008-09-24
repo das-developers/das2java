@@ -60,6 +60,9 @@ public class ClassMap<T> implements Map<Class,T> {
     }
 
     public T put(Class key, T value) {
+        if ( key.isInterface() ) {
+            System.err.println("interfaces not supported");
+        }
         T result= map.get(key);
         map.put( key, value );
         return result;
