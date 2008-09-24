@@ -11,6 +11,8 @@ import org.das2.datum.DatumUtil;
  */
 public class CacheTag {
     
+    public static final String INTRINSIC = "intrinsic";
+    
     DatumRange range;    
     Datum resolution;
     
@@ -80,7 +82,7 @@ public class CacheTag {
      * one line as it is used to list cache contents.
      */
     public String toString() {
-        return range + " @ " + ( resolution==null ? "intrinsic" : ""+DatumUtil.asOrderOneUnits(resolution) );
+        return range + " @ " + ( resolution==null ? INTRINSIC : ""+DatumUtil.asOrderOneUnits(resolution) );
     }
     
     /**
