@@ -62,7 +62,7 @@ public class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public String toString() {
-            return all ? ":" : ""+start+":"+stop+( step==1 ? "" : ":"+step ) +"@"+index;
+            return all ? ":" : ""+start+":"+stop+( step==1 ? "" : ":"+step ) ;
         }
         
     }
@@ -240,7 +240,7 @@ public class QubeDataSetIterator implements DataSetIterator {
             result= new QubeDataSetIterator( ds, 
                     new DimensionIteratorFactory[] { new SingletonIteratorFactory(sliceIndex), 
                     new StartStopStepIteratorFactory( 0, ds.length(sliceIndex), 1 ),
-                    new StartStopStepIteratorFactory( 0, -1, 1 ),
+                    new StartStopStepIteratorFactory( 0, null, 1 ),
             } );
         } else {
             throw new IllegalArgumentException("rank limit");
