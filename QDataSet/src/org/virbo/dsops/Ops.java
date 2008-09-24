@@ -26,6 +26,7 @@ import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetAdapter;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.IDataSet;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SDataSet;
@@ -47,28 +48,32 @@ import org.virbo.dsutil.DataSetBuilder;
 public class Ops {
 
     public interface UnaryOp {
+
         double op(double d1);
     }
 
     public static final QDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
-        Units u= (Units) ds1.property(QDataSet.UNITS);
-        if ( u==null ) u= Units.dimensionless;
+        Units u = (Units) ds1.property(QDataSet.UNITS);
+        if (u == null) {
+            u = Units.dimensionless;
+        }
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
         while (it1.hasNext()) {
             it1.next();
             double d1 = it1.getValue(ds1);
-            it1.putValue(result, u.isFill(d1) ? u.getFillDouble() : op.op(d1) );
+            it1.putValue(result, u.isFill(d1) ? u.getFillDouble() : op.op(d1));
         }
         DataSetUtil.putProperties(DataSetUtil.getProperties(ds1), result);
         return result;
     }
 
     public interface BinaryOp {
+
         double op(double d1, double d2);
     }
 
-    private static HashMap<String,Object> equalProperties(Map<String,Object> m1, Map<String,Object> m2) {
+    private static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
         HashMap result = new HashMap();
         for (Object o : m1.keySet()) {
             Object v = m1.get(o);
@@ -92,20 +97,24 @@ public class Ops {
 
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
         QubeDataSetIterator it2 = new QubeDataSetIterator(ds2);
-        Units u1= (Units)ds1.property(QDataSet.UNITS);
-        Units u2= (Units)ds2.property(QDataSet.UNITS);
-        if ( u1==null ) u1= Units.dimensionless;
-        if ( u2==null ) u2= Units.dimensionless;
+        Units u1 = (Units) ds1.property(QDataSet.UNITS);
+        Units u2 = (Units) ds2.property(QDataSet.UNITS);
+        if (u1 == null) {
+            u1 = Units.dimensionless;
+        }
+        if (u2 == null) {
+            u2 = Units.dimensionless;
+        }
         while (it1.hasNext()) {
             it1.next();
             double d1 = it1.getValue(ds1);
             it2.next();
             double d2 = it2.getValue(ds2);
-            it1.putValue(result, u1.isFill(d1)||u2.isFill(d2) ? u1.getFillDouble() : op.op(d1, d2) );
+            it1.putValue(result, u1.isFill(d1) || u2.isFill(d2) ? u1.getFillDouble() : op.op(d1, d2));
         }
-        Map<String,Object> m1= DataSetUtil.getProperties(ds1);
-        Map<String,Object> m2= DataSetUtil.getProperties(ds2);
-        Map<String,Object> m3= equalProperties( m1, m2 );
+        Map<String, Object> m1 = DataSetUtil.getProperties(ds1);
+        Map<String, Object> m2 = DataSetUtil.getProperties(ds2);
+        Map<String, Object> m3 = equalProperties(m1, m2);
         DataSetUtil.putProperties(m3, result);
         return result;
     }
@@ -130,6 +139,7 @@ public class Ops {
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+
             public double op(double d1, double d2) {
                 return d1 + d2;
             }
@@ -144,15 +154,16 @@ public class Ops {
      * @return
      */
     public static QDataSet subtract(QDataSet ds1, QDataSet ds2) {
-        MutablePropertyDataSet result= (MutablePropertyDataSet)applyBinaryOp(ds1, ds2, new BinaryOp() {
+        MutablePropertyDataSet result = (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+
             public double op(double d1, double d2) {
                 return d1 - d2;
             }
         });
-        Units units1= (Units) ds1.property(QDataSet.UNITS);
-        Units units2= (Units) ds2.property(QDataSet.UNITS);
-        if ( units1!=null && units1==units2 ) {
-            result.putProperty( QDataSet.UNITS, units1.getOffsetUnits() );
+        Units units1 = (Units) ds1.property(QDataSet.UNITS);
+        Units units2 = (Units) ds2.property(QDataSet.UNITS);
+        if (units1 != null && units1 == units2) {
+            result.putProperty(QDataSet.UNITS, units1.getOffsetUnits());
         }
         return result;
     }
@@ -164,6 +175,7 @@ public class Ops {
      */
     public static QDataSet negate(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
+
             public double op(double d1) {
                 return -d1;
             }
@@ -265,13 +277,13 @@ public class Ops {
             }
             while (it0.hasNext()) {
                 it0.next();
-                op.accum( it0.getValue(ds), it0.getValue(wds), store);
+                op.accum(it0.getValue(ds), it0.getValue(wds), store);
             }
             op.normalize(store);
             it1.putValue(result, store[1] > 0 ? store[0] : fill);
         }
-        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result );
-        sliceProperties( dim, ds, result );
+        DataSetUtil.putProperties(DataSetUtil.getProperties(ds), result);
+        sliceProperties(dim, ds, result);
         return result;
     }
 
@@ -433,6 +445,7 @@ public class Ops {
      */
     public static QDataSet pow(QDataSet ds1, double pow) {
         return applyBinaryOp(ds1, pow, new BinaryOp() {
+
             public double op(double d1, double d2) {
                 return Math.pow(d1, d2);
             }
@@ -448,6 +461,7 @@ public class Ops {
      */
     public static QDataSet pow(QDataSet ds1, QDataSet pow) {
         return applyBinaryOp(ds1, pow, new BinaryOp() {
+
             public double op(double d1, double d2) {
                 return Math.pow(d1, d2);
             }
@@ -529,27 +543,28 @@ public class Ops {
      * @param ds
      * @return
      */
-    public static QDataSet mod( QDataSet ds1, QDataSet ds2 ) {
+    public static QDataSet mod(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+
             public double op(double d1, double d2) {
                 return d1 % d2;
             }
         });
     }
-    
+
     /**
      * element-wise div of two datasets with the same geometry.
      * @param ds
      * @return
      */
-    public static QDataSet div( QDataSet ds1, QDataSet ds2 ) {
+    public static QDataSet div(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+
             public double op(double d1, double d2) {
-                return (int) ( d1 / d2 );
+                return (int) (d1 / d2);
             }
         });
     }
-    
 // comparators
     /**
      * element-wise equality test.  1.0 is returned where the two datasets are
@@ -734,41 +749,42 @@ public class Ops {
             back[i] = i;
         }
         return FDataSet.wrap(back, 3, len0, len1, len2);
-    }    
-      
+    }
+
     /**
      * create a dataset filled with zeros.
      * @param len0
      * @return
      */
-    public static QDataSet fltarr( int len0 ) {
-        return Ops.replicate( 0.f, len0 );
+    public static QDataSet fltarr(int len0) {
+        return Ops.replicate(0.f, len0);
     }
-    
-    public static QDataSet fltarr( int len0, int len1 ) {
-        return Ops.replicate( 0.f, len0, len1 );
+
+    public static QDataSet fltarr(int len0, int len1) {
+        return Ops.replicate(0.f, len0, len1);
     }
-    
-    public static QDataSet fltarr( int len0, int len1, int len2 ) {
-        return Ops.replicate( 0.f, len0, len1, len2 );
+
+    public static QDataSet fltarr(int len0, int len1, int len2) {
+        return Ops.replicate(0.f, len0, len1, len2);
     }
-    
+
     /**
      * create a dataset filled with zeros.
      * @param len0
      * @return
      */
-    public static QDataSet dblarr( int len0 ) {
-        return Ops.replicate( 0., len0 );
+    public static QDataSet dblarr(int len0) {
+        return Ops.replicate(0., len0);
     }
-    
-    public static QDataSet dblarr( int len0, int len1 ) {
-        return Ops.replicate( 0., len0, len1 );
+
+    public static QDataSet dblarr(int len0, int len1) {
+        return Ops.replicate(0., len0, len1);
     }
-    
-    public static QDataSet dblarr( int len0, int len1, int len2 ) {
-        return Ops.replicate( 0., len0, len1, len2 );
-    }            
+
+    public static QDataSet dblarr(int len0, int len1, int len2) {
+        return Ops.replicate(0., len0, len1, len2);
+    }
+
     /**
      * returns rank 1 dataset with values [0,1,2,...]
      * @param baseTime e.g. "2003-02-04T00:00"
@@ -776,18 +792,18 @@ public class Ops {
      * @param len0 the number of elements.
      * @return
      */
-    public static QDataSet timegen( String baseTime, String cadence, int len0) throws ParseException {
+    public static QDataSet timegen(String baseTime, String cadence, int len0) throws ParseException {
         int size = len0;
-        double base= TimeUtil.create(baseTime).doubleValue( Units.us2000 );
-        double dcadence= Units.us2000.getOffsetUnits().parse(cadence).doubleValue( Units.us2000.getOffsetUnits() );
-        
+        double base = TimeUtil.create(baseTime).doubleValue(Units.us2000);
+        double dcadence = Units.us2000.getOffsetUnits().parse(cadence).doubleValue(Units.us2000.getOffsetUnits());
+
         double[] back = new double[size];
         for (int i = 0; i < size; i++) {
-            back[i] = base + i*dcadence;
+            back[i] = base + i * dcadence;
         }
-        DDataSet result= DDataSet.wrap(back, 1, len0, 1, 1);
-        result.putProperty( QDataSet.UNITS, Units.us2000 );
-        result.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
+        DDataSet result = DDataSet.wrap(back, 1, len0, 1, 1);
+        result.putProperty(QDataSet.UNITS, Units.us2000);
+        result.putProperty(QDataSet.MONOTONIC, Boolean.TRUE);
         return result;
     }
 
@@ -812,7 +828,6 @@ public class Ops {
         }
     }
 
-    
     /**
      * returns rank 1 dataset with value
      * @param val fill the dataset with this value.
@@ -908,7 +923,7 @@ public class Ops {
         }
         return FDataSet.wrap(back, 3, len0, len1, len2);
     }
-    
+
     /**
      * return new dataset filled with zeros.
      * @param len0
@@ -966,12 +981,13 @@ public class Ops {
     /**
      * joins the two datasets together, appending the on the zeroth dimension.
      * The two datasets must be QUBES have similar geometry on the higher dimensions.
+     * This was briefly known as "join."
      * @param ds1
      * @param ds2
      * @return 
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
      */
-    public static QDataSet join(QDataSet ds1, QDataSet ds2) {
+    public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         DDataSet result = DDataSet.copy(ds1);
         result.join(DDataSet.copy(ds2));
         return result;
@@ -1100,7 +1116,7 @@ public class Ops {
         }
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
-    
+
     /**
      * element-wise sin.
      * @param ds
@@ -1298,8 +1314,8 @@ public class Ops {
             int count = 0;
             while (iter.hasNext()) {
                 iter.next();
-                if ( iter.getValue(ds) != 0.) {
-                    builder.putValue( count, iter.index(0) );
+                if (iter.getValue(ds) != 0.) {
+                    builder.putValue(count, iter.index(0));
                     builder.nextRecord();
                 }
             }
@@ -1309,7 +1325,7 @@ public class Ops {
             int count = 0;
             while (iter.hasNext()) {
                 iter.next();
-                if ( iter.getValue(ds) != 0.) {
+                if (iter.getValue(ds) != 0.) {
                     builder.putValue(count, 0, iter.index(0));
                     if (ds.rank() > 1) {
                         builder.putValue(count, 1, iter.index(1));
@@ -1320,10 +1336,10 @@ public class Ops {
                     builder.nextRecord();
                 }
             }
-            if ( ds.rank()==2 ) {
-                builder.putProperty( QDataSet.DEPEND_1, labels( new String[] { "dim0", "dim1" } ) );
-            } else if ( ds.rank()==3 ) {
-                builder.putProperty( QDataSet.DEPEND_1, labels( new String[] { "dim0", "dim1", "dim2" } ) );
+            if (ds.rank() == 2) {
+                builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1"}));
+            } else if (ds.rank() == 3) {
+                builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1", "dim2"}));
             }
         }
 
@@ -1347,8 +1363,7 @@ public class Ops {
     public static QDataSet sort(QDataSet ds) {
         return DataSetOps.sort(ds);
     }
-    
-    
+
     /**
      * returns a rank 1 dataset of indeces that shuffle the rank 1 dataset ds
      * <pre>
@@ -1358,26 +1373,25 @@ public class Ops {
      * @param ds rank 1 dataset
      * @return rank 1 dataset of integer indeces.
      */
-    public static QDataSet shuffle( QDataSet ds ) {
+    public static QDataSet shuffle(QDataSet ds) {
         int size = ds.length();
         int[] back = new int[size];
         for (int i = 0; i < size; i++) {
             back[i] = i;
         }
-        WritableDataSet wds= IDataSet.wrap(back, 1, size, 1, 1);
-        
-        Random r= new Random();
-        
-        for ( int i=0; i<size; i++ ) {
-            int i1= r.nextInt(size-i) + i;
-            double t= wds.value(i1);
-            wds.putValue( i1, wds.value(i) );
-            wds.putValue( i, t );
+        WritableDataSet wds = IDataSet.wrap(back, 1, size, 1, 1);
+
+        Random r = new Random();
+
+        for (int i = 0; i < size; i++) {
+            int i1 = r.nextInt(size - i) + i;
+            double t = wds.value(i1);
+            wds.putValue(i1, wds.value(i));
+            wds.putValue(i, t);
         }
-        
+
         return wds;
     }
-
 
     /**
      * Performs an FFT on the provided rank 1 dataset.  A rank 2 dataset of 
@@ -1485,6 +1499,7 @@ public class Ops {
      */
     public static QDataSet signum(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
+
             public double op(double a) {
                 return Math.signum(a);
             }
@@ -1553,9 +1568,9 @@ public class Ops {
                     ic1 = ~index;  // usually this is the case
 
                     ic0 = ic1 - 1;
-                } else if ( index>=(n-1) ) {
-                    ic0 = n-2;
-                    ic1 = n-1;
+                } else if (index >= (n - 1)) {
+                    ic0 = n - 2;
+                    ic1 = n - 1;
                 } else {
                     ic0 = index;
                     ic1 = index + 1;
@@ -1689,8 +1704,8 @@ public class Ops {
         if (ds.rank() > 1) {
             throw new IllegalArgumentException("only rank 1");
         }
-        DDataSet result= BinAverage.boxcar(ds, size);
-        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result );
+        DDataSet result = BinAverage.boxcar(ds, size);
+        DataSetUtil.putProperties(DataSetUtil.getProperties(ds), result);
         return result;
     }
 
@@ -1709,10 +1724,10 @@ public class Ops {
         d1.setTrim(0, 0, ds.length() - 1, 1);
         TrimStrideWrapper d2 = new TrimStrideWrapper(ds);
         d2.setTrim(0, 1, ds.length(), 1);
-        QDataSet result= Ops.subtract(d2, d1);
+        QDataSet result = Ops.subtract(d2, d1);
         return result;
     }
-    
+
     /**
      * create a labels dataset for tagging rows of a dataset.
      * Example:
@@ -1721,12 +1736,12 @@ public class Ops {
      * @param context
      * @return rank 1 QDataSet
      */
-    public static QDataSet labels( String[] labels, String context ) {
-        EnumerationUnits u= new EnumerationUnits( context );
-        SDataSet result= SDataSet.createRank1(labels.length);
-        for ( int i=0; i<labels.length; i++ ) {
-            Datum d= u.createDatum(labels[i]);
-            result.putValue(i,d.doubleValue(u));
+    public static QDataSet labels(String[] labels, String context) {
+        EnumerationUnits u = new EnumerationUnits(context);
+        SDataSet result = SDataSet.createRank1(labels.length);
+        for (int i = 0; i < labels.length; i++) {
+            Datum d = u.createDatum(labels[i]);
+            result.putValue(i, d.doubleValue(u));
         }
         result.putProperty(QDataSet.UNITS, u);
         return result;
@@ -1739,70 +1754,104 @@ public class Ops {
      * @param labels
      * @return rank 1 QDataSet
      */
-    public static QDataSet labels( String[] labels ) {
-        return labels( labels, "default" );
+    public static QDataSet labels(String[] labels) {
+        return labels(labels, "default");
     }
-        
-    private static void sliceProperties( int removeDim, QDataSet ds, MutablePropertyDataSet result ) {
-        for ( int i=0; i<result.rank(); i++ ) {
-            if ( i>=removeDim ) {
-                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+(i+1) ) );
+
+    private static void sliceProperties(int removeDim, QDataSet ds, MutablePropertyDataSet result) {
+        for (int i = 0; i < result.rank(); i++) {
+            if (i >= removeDim) {
+                result.putProperty("DEPEND_" + i, ds.property("DEPEND_" + (i + 1)));
             } else {
-                result.putProperty( "DEPEND_"+i, ds.property("DEPEND_"+i ) );
+                result.putProperty("DEPEND_" + i, ds.property("DEPEND_" + i));
             }
-        }        
+        }
     }
-    
+
     /**
      * Reshape the dataset to remove the first dimension with length 1, reducing
      * its rank by 1.  Dependencies are also preserved.
      * @param ds
      * @return
      */
-    public static QDataSet reform( QDataSet ds ) {
-        int[] dsqube= DataSetUtil.qubeDims(ds);
-        List<Integer> newQube= new ArrayList<Integer>();
-        int[] dimMap= new int[ dsqube.length ]; // maps from new dataset to old index
-        boolean foundDim= false;
-        int removeDim= -1;
-        for ( int i=0; i<dsqube.length; i++ ) {
-            if ( dsqube[i]!=1 || foundDim ) {
+    public static QDataSet reform(QDataSet ds) {
+        int[] dsqube = DataSetUtil.qubeDims(ds);
+        List<Integer> newQube = new ArrayList<Integer>();
+        int[] dimMap = new int[dsqube.length]; // maps from new dataset to old index
+        boolean foundDim = false;
+        int removeDim = -1;
+        for (int i = 0; i < dsqube.length; i++) {
+            if (dsqube[i] != 1 || foundDim) {
                 newQube.add(dsqube[i]);
-                dimMap[i]= foundDim ? i+1 : i;
+                dimMap[i] = foundDim ? i + 1 : i;
             } else {
-                foundDim= true;
-                removeDim= i;
+                foundDim = true;
+                removeDim = i;
             }
         }
-        if ( foundDim==false ) {
+        if (foundDim == false) {
             throw new IllegalArgumentException("there were no dimensions with length 1");
         }
-        int[] qube= new int[newQube.size()];
-        for ( int i=0; i<newQube.size(); i++ ) {
-            qube[i]= newQube.get(i);
+        int[] qube = new int[newQube.size()];
+        for (int i = 0; i < newQube.size(); i++) {
+            qube[i] = newQube.get(i);
         }
-        MutablePropertyDataSet result= (MutablePropertyDataSet)reform( ds, qube ); //DANGER
-        sliceProperties( removeDim, ds, result );
+        MutablePropertyDataSet result = (MutablePropertyDataSet) reform(ds, qube); //DANGER
+        sliceProperties(removeDim, ds, result);
         return result;
     }
 
-    public static QDataSet reform( QDataSet ds, int[] qube ) {
-        QubeDataSetIterator it0= new QubeDataSetIterator(ds);
-        DDataSet result= DDataSet.create(qube);
-        QubeDataSetIterator it1= new QubeDataSetIterator(result);
-        while ( it0.hasNext() ) {
+    public static QDataSet reform(QDataSet ds, int[] qube) {
+        QubeDataSetIterator it0 = new QubeDataSetIterator(ds);
+        DDataSet result = DDataSet.create(qube);
+        QubeDataSetIterator it1 = new QubeDataSetIterator(result);
+        while (it0.hasNext()) {
             it0.next();
             it1.next();
-            double v= it0.getValue(ds);
+            double v = it0.getValue(ds);
             it1.putValue(result, v);
         }
         return result;
     }
-    
-    public static QDataSet transpose( QDataSet ds ) {
-        return DDataSet.copy( new TransposeRank2DataSet( ds ) );
+
+    /**
+     * Join two rank N datasets to make a rank N+1 dataset, with the first dimension
+     * having two elements.  This is the anti-slice operator.  
+     * 
+     * Soon: Alternatively, 
+     * if one dataset is rank N+1 and the other is rank N, then the rank N dataset is
+     * added to the rank N+1 dataset.
+     * 
+     * This is underimplemented right now, and can only join two rank N datasets
+     * or if the first dataset is the result of a join.
+     * 
+     * @param ds1 rank N dataset, or null
+     * @param ds2 rank N dataset
+     * @see slice
+     * @see concatenate
+     * @return rank N+1 dataset
+     */
+    public static QDataSet join(QDataSet ds1, QDataSet ds2) {
+        if ( ds1==null && ds2!=null ) {
+            JoinDataSet ds= new JoinDataSet( ds2.rank() );
+            ds.join(ds2);
+            return ds;
+        } else if (ds1.rank() == ds2.rank()) {
+            JoinDataSet ds= new JoinDataSet( ds1.rank() );
+            ds.join(ds1);
+            ds.join(ds2);
+            return ds;
+        } else if ( ds1 instanceof JoinDataSet && ds1.rank()-1==ds2.rank() ) {
+            ((JoinDataSet)ds1).join(ds2);
+            return ds1;
+        } else {
+            throw new IllegalArgumentException("not supported yet");
+        }
     }
-            
+
+    public static QDataSet transpose(QDataSet ds) {
+        return DDataSet.copy(new TransposeRank2DataSet(ds));
+    }
     public static double PI = Math.PI;
     public static double E = Math.E;
 }
