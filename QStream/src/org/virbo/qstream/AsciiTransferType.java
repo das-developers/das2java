@@ -31,7 +31,7 @@ public class AsciiTransferType extends TransferType {
 
     private static String getFormat( int length, boolean sci ) {
         if (length < 9 || sci==false ) {
-            return "0.#";
+            return "0.#####";
         } else {
             StringBuffer buffer = new StringBuffer(length);
             buffer.append("+0.");

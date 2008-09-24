@@ -7,6 +7,7 @@ package org.virbo.qstream;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.dataset.CacheTag;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.util.ClassMap;
@@ -23,6 +24,7 @@ public class SerializeRegistry {
         register( Units.class, new UnitsSerializeDelegate() );
         register( EnumerationUnits.class, new EnumerationUnitsSerializeDelegate() );
         register( String.class, new StringSerializeDelegate() );
+        register( CacheTag.class, new CacheTagSerializeDelegate() );
         DefaultSerializeDelegate.registerDelegates();
     }
     

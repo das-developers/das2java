@@ -5,6 +5,8 @@
 
 package org.virbo.qstream;
 
+import java.text.ParseException;
+
 /**
  *
  * @author jbf
@@ -12,7 +14,7 @@ package org.virbo.qstream;
 public interface SerializeDelegate {
     String format( Object o );
     
-    public Object parse( String typeId,String s  );
+    public Object parse( String typeId,String s  ) throws ParseException;
     
     /**
      * identifier for the delegate, that is used to qualify the name of the thing formatted.

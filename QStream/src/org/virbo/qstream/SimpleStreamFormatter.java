@@ -101,7 +101,7 @@ public class SimpleStreamFormatter {
             } else if (u instanceof TimeLocationUnits) {
                 planeDescriptor.setType(new AsciiTimeTransferType(24, u));
             } else {
-                if (false && min > -1000 && max < 1000 && (absMin == 0 || absMin > 0.0001)) {
+                if ( min > -10000 && max < 10000 && (absMin == 0 || absMin > 0.0001)) {
                     planeDescriptor.setType(new AsciiTransferType(10, false));
                 } else {
                     planeDescriptor.setType(new AsciiTransferType(10, true));
@@ -142,7 +142,7 @@ public class SimpleStreamFormatter {
                 SerializeDelegate sd = SerializeRegistry.getDelegate(value.getClass());
                 if (sd == null) {
                     throw new IllegalArgumentException("Unsupported data type: " + value.getClass());
-                // TODO: just skip the property.
+                // TODO: just skip the property, or insert it as a string.
                 }
                 prop.setAttribute("name", name);
                 prop.setAttribute("type", sd.typeId(value.getClass()));

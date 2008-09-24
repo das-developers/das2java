@@ -5,7 +5,9 @@
 package org.virbo.qstream;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,9 +33,18 @@ public class QDataSetStreamHandler implements StreamHandler {
     XPathFactory factory = XPathFactory.newInstance();
     XPath xpath = factory.newXPath();
     String dsname;
+    boolean readPackets = true;
 
     public QDataSetStreamHandler() {
         builders = new HashMap<String, DataSetBuilder>();
+    }
+
+    /**
+     * return a list of available datasets
+     * @return
+     */
+    public List<String> getDataSetNames() {
+        return new ArrayList<String>(builders.keySet());
     }
 
     /**
@@ -129,8 +140,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                 boolean isStream = rank > dims.length;
                 pd.setStream(isStream);
 
-                TransferType tt= TransferType.getForName(ttype, builder.getProperties());
-                if ( tt==null ) throw new IllegalArgumentException("unrecognized transfer type: "+ttype);
+                TransferType tt = TransferType.getForName(ttype, builder.getProperties());
+                if (tt == null) throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
                 planeDescriptor.setType(tt);
                 planeDescriptor.setName(name);
                 planeDescriptor.setBuilder(builder);
@@ -144,30 +155,31 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
 
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
-        for ( PlaneDescriptor planeDescriptor : pd.planes) {
-            DataSetBuilder builder = planeDescriptor.getBuilder();
-            if ( planeDescriptor.getElements()>1 ) {
-                DDataSet rec= DDataSet.createRank1(planeDescriptor.getElements());
-                for (int ii = 0; ii < planeDescriptor.getElements(); ii++) {
-                    rec.putValue(ii, planeDescriptor.getType().read(data) );
-                }
-                if ( pd.isStream()==false ) {
-                    if ( planeDescriptor.getRank()>1 ) throw new IllegalArgumentException("non-streaming and rank>1 not supported");
-                    for ( int i=0; i<rec.length(); i++ ) {
-                        builder.putValue( -1, rec.value(i) );
+        if (readPackets) {
+            for (PlaneDescriptor planeDescriptor : pd.planes) {
+                DataSetBuilder builder = planeDescriptor.getBuilder();
+                if (planeDescriptor.getElements() > 1) {
+                    DDataSet rec = DDataSet.createRank1(planeDescriptor.getElements());
+                    for (int ii = 0; ii < planeDescriptor.getElements(); ii++) {
+                        rec.putValue(ii, planeDescriptor.getType().read(data));
+                    }
+                    if (pd.isStream() == false) {
+                        if (planeDescriptor.getRank() > 1) throw new IllegalArgumentException("non-streaming and rank>1 not supported");
+                        for (int i = 0; i < rec.length(); i++) {
+                            builder.putValue(-1, rec.value(i));
+                            builder.nextRecord();
+                        }
+                    } else {
+                        builder.putValues(-1, rec, planeDescriptor.getElements()); // aliasing okay
                         builder.nextRecord();
                     }
                 } else {
-                    builder.putValues( -1, rec, planeDescriptor.getElements() ); // aliasing okay
+                    builder.putValue(-1, planeDescriptor.getType().read(data));
                     builder.nextRecord();
                 }
-            } else {
-                builder.putValue( -1, planeDescriptor.getType().read(data) );
-                builder.nextRecord();
+
             }
-                    
         }
-        
     }
 
     public void streamClosed(StreamDescriptor sd) throws StreamException {
@@ -176,31 +188,46 @@ public class QDataSetStreamHandler implements StreamHandler {
     public void streamException(StreamException se) throws StreamException {
     }
 
-    
-    public QDataSet getDataSet( String name ) {
-        DataSetBuilder builder = builders.get(name);        
-        if ( builder==null ) throw new IllegalArgumentException("No such dataset");
+    public QDataSet getDataSet(String name) {
+        DataSetBuilder builder = builders.get(name);
+        if (builder == null) throw new IllegalArgumentException("No such dataset");
         MutablePropertyDataSet result = builder.getDataSet();
         for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             String s = (String) result.property("DEPEND_" + i);
             if (s != null) {
-                result.putProperty("DEPEND_" + i, getDataSet(s) );
+                result.putProperty("DEPEND_" + i, getDataSet(s));
             }
         }
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
             String s = (String) result.property("PLANE_" + i);
             if (s != null) {
-                result.putProperty( "PLANE_"+i, getDataSet(s) );
+                result.putProperty("PLANE_" + i, getDataSet(s));
             }
         }
         return result;
     }
-    
+
     /**
      * return the default dataset for the stream.
      * @return
      */
     public QDataSet getDataSet() {
         return getDataSet(dsname);
+    }
+
+    /**
+     * set this is false if you just want to look at the empty dataset metadata.
+     * @param val
+     */
+    public void setReadPackets(boolean val) {
+        this.readPackets = val;
+    }
+
+    /**
+     * if true, then packets are interpretted.
+     * @return
+     */
+    public boolean getReadPackets() {
+        return this.readPackets;
     }
 }
