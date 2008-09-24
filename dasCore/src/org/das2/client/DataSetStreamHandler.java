@@ -93,7 +93,7 @@ public class DataSetStreamHandler implements StreamHandler {
                 Datum min= TimeUtil.create(ss[0]);
                 Datum max= TimeUtil.create(ss[2]);
                 Datum res= DatumUtil.parse(ss[1]);
-                if ( res.doubleValue( res.getUnits() ) == 0 ) res= null; // intrisic resolution
+                if ( res.doubleValue( res.getUnits() ) == 0 ) res= null; // intrinsic resolution
                 extraProperties.put( DataSet.PROPERTY_CACHE_TAG, new CacheTag( min, max, res ) );
             } catch ( ParseException e ) {
                 e.printStackTrace();
