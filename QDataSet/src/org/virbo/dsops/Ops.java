@@ -979,7 +979,7 @@ public class Ops {
     }
 
     /**
-     * joins the two datasets together, appending the on the zeroth dimension.
+     * concatenates the two datasets together, appending the on the zeroth dimension.
      * The two datasets must be QUBES have similar geometry on the higher dimensions.
      * This was briefly known as "join."
      * @param ds1
@@ -989,7 +989,7 @@ public class Ops {
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         DDataSet result = DDataSet.copy(ds1);
-        result.join(DDataSet.copy(ds2));
+        result.append(DDataSet.maybeCopy(ds2));
         return result;
     }
 
