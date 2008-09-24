@@ -8,9 +8,12 @@
  */
 package org.virbo.dataset;
 
+import java.util.ArrayList;
 import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,20 +67,20 @@ public class DataSetUtil {
         int i = 0;
 
         final Units u = (Units) ds.property(QDataSet.UNITS);
-        
+
         if (ds.length() == 0) {
             return false;
         }
 
         double last = ds.value(i);
-        
+
         if (u != null && u.isFill(last)) {
             return false;
         }
-        
+
         for (i = 1; i < ds.length(); i++) {
             double d = ds.value(i);
-            if ( d < last || (u != null && u.isFill(d))) {
+            if (d < last || (u != null && u.isFill(d))) {
                 return false;
             }
             last = d;
@@ -155,33 +158,27 @@ public class DataSetUtil {
     }
 
     public static String[] propertyNames() {
-        return new String[]{QDataSet.UNITS, QDataSet.CADENCE,
-            QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
-            QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX, 
-            QDataSet.VALID_MIN, QDataSet.VALID_MAX, 
-            QDataSet.FILL_VALUE,
-            QDataSet.QUBE,
-            QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
-            QDataSet.CACHE_TAG,
-            QDataSet.COORDINATE_FRAME,
-            QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
-            QDataSet.USER_PROPERTIES,
-        };
+        return new String[]{
+                    QDataSet.UNITS, QDataSet.CADENCE,
+                    QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
+                    QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
+                    QDataSet.VALID_MIN, QDataSet.VALID_MAX,
+                    QDataSet.FILL_VALUE,
+                    QDataSet.QUBE,
+                    QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
+                    QDataSet.CACHE_TAG,
+                    QDataSet.COORDINATE_FRAME,
+                    QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
+                    QDataSet.USER_PROPERTIES,
+                };
     }
+
     /**
      * gets all the properties of the dataset.  This is a shallow
      * copy of properties.
      */
     public static Map<String, Object> getProperties(QDataSet ds, Map def) {
         Map result = def;
-
-        String[] names = propertyNames();
-
-        for (int i = 0; i < names.length; i++) {
-            if (ds.property(names[i]) != null) {
-                result.put(names[i], ds.property(names[i]));
-            }
-        }
 
         for (int i = 0; i < ds.rank(); i++) {
             Object dep = ds.property("DEPEND_" + i);
@@ -199,6 +196,14 @@ public class DataSetUtil {
             }
         }
 
+        String[] names = propertyNames();
+
+        for (int i = 0; i < names.length; i++) {
+            if (ds.property(names[i]) != null) {
+                result.put(names[i], ds.property(names[i]));
+            }
+        }
+
         return result;
 
     }
@@ -208,7 +213,7 @@ public class DataSetUtil {
      * copy of properties.
      */
     public static Map<String, Object> getProperties(QDataSet ds) {
-        return getProperties(ds, new HashMap());
+        return getProperties(ds, new LinkedHashMap());
     }
 
     /**
@@ -237,7 +242,7 @@ public class DataSetUtil {
             name = "dataSet";
         }
 
-        String qubeStr = Boolean.TRUE.equals(ds.property(QDataSet.QUBE)) ? "" : "*";
+        String qubeStr = DataSetUtil.isQube(ds) ? "" : "*";
 
         String[] depNames = new String[4];
 
@@ -274,9 +279,9 @@ public class DataSetUtil {
      * calculate cadence by averaging consistent inter-point distances, 
      * taking invalid measurements into account.   
      */
-    public static double guessCadence( QDataSet xds, QDataSet yds ) {
+    public static double guessCadence(QDataSet xds, QDataSet yds) {
         if (yds == null) {
-            yds = DataSetUtil.replicateDataSet( xds.length(), 1.0 );
+            yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
         assert (xds.length() == yds.length());
         Units u = (Units) yds.property(QDataSet.UNITS);
@@ -302,10 +307,10 @@ public class DataSetUtil {
                 double cadenceAvg;
                 cadenceAvg = cadenceS / cadenceN;
                 cadence = Math.abs(xds.value(i) - x0);
-                if ( cadence < 0.5 * cadenceAvg && cadenceN < 10 ) {
+                if (cadence < 0.5 * cadenceAvg && cadenceN < 10) {
                     cadenceS = cadence;
                     cadenceN = 1;
-                } else if ( cadence > 0.5 * cadenceAvg && cadence < 1.5 * cadenceAvg) {
+                } else if (cadence > 0.5 * cadenceAvg && cadence < 1.5 * cadenceAvg) {
                     cadenceS += cadence;
                     cadenceN += 1;
                 }
@@ -314,13 +319,27 @@ public class DataSetUtil {
         }
         return cadenceS / cadenceN;
     }
-    
+
     /**
      * calculate cadence by averaging the smallest set of consistent inter-point
      * distance.  Assumes all points are valid
      */
     public static double guessCadence(QDataSet xds) {
-        return guessCadence( xds, null );
+        return guessCadence(xds, null);
+    }
+
+    /**
+     * test to see that the dataset is a qube.
+     * @param ds QDataSet of any rank.
+     * @return true if the dataset is a qube.
+     */
+    public static boolean isQube(QDataSet ds) {
+        if (ds.rank() == 1) return true;
+        Boolean q = (Boolean) ds.property(QDataSet.QUBE);
+        if (q == null || q.equals(Boolean.FALSE)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -443,6 +462,31 @@ public class DataSetUtil {
     }
 
     /**
+     * returns true if the dataset is valid, false otherwise.  If problems is
+     * non-null, then problems will be indicated here.
+     * @param ds rank N dataset.
+     * @param problems insert problem descriptions here
+     * @return true if the dataset is valid, false otherwise
+     */
+    public static boolean validate(QDataSet ds, List<String> problems) {
+        if (problems==null ) problems= new ArrayList<String>();
+        return validate(ds, problems, 0);
+    }
+
+    private static boolean validate(QDataSet ds, List<String> problems, int dimOffset) {
+        QDataSet dep = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if (dep != null) {
+            if (dep.length() != ds.length()) {
+                problems.add("DEPEND_" + dimOffset + " length");
+            }
+            if (ds.rank() > 1 && ds.length() > 0) {
+                validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1);
+            }
+        }
+        return problems.size()==0;
+    }
+
+    /**
      * Provide consistent valid logic to operators by providing a QDataSet
      * with 1.0 where the data is valid, and 0.0 where the data is invalid.
      * VALID_MIN, VALID_MAX and FILL_VALUE properties are used.
@@ -460,7 +504,7 @@ public class DataSetUtil {
         }
         return result;
     }
-    
+
     /** 
      * Iterate through the dataset, changing all points outside of validmin,
      * validmax and with zero weight to fill=-1e31.  VALID_MIN and VALID_MAX 
@@ -469,21 +513,21 @@ public class DataSetUtil {
      * @param ds rank N QUBE dataset.
      * @return ds with same geometry as ds.
      */
-    public static WritableDataSet canonizeFill( QDataSet ds ) {
-        if ( !( ds instanceof WritableDataSet ) ) {
-            ds= DDataSet.copy(ds);  // assumes ds is QUBE right now...
+    public static WritableDataSet canonizeFill(QDataSet ds) {
+        if (!(ds instanceof WritableDataSet)) {
+            ds = DDataSet.copy(ds);  // assumes ds is QUBE right now...
         }
-        WritableDataSet wrds= (WritableDataSet)ds;
-        QubeDataSetIterator it= new QubeDataSetIterator(ds);
-        QDataSet wds= weightsDataSet(ds);
-        double fill= -1e31;
-        while ( it.hasNext() ) {
+        WritableDataSet wrds = (WritableDataSet) ds;
+        QubeDataSetIterator it = new QubeDataSetIterator(ds);
+        QDataSet wds = weightsDataSet(ds);
+        double fill = -1e31;
+        while (it.hasNext()) {
             it.next();
-            if ( it.getValue(wds)==0 ) it.putValue(wrds,fill);
+            if (it.getValue(wds) == 0) it.putValue(wrds, fill);
         }
-        wrds.putProperty( QDataSet.FILL_VALUE, fill );
-        wrds.putProperty( QDataSet.VALID_MIN, null );
-        wrds.putProperty( QDataSet.VALID_MAX, null );
+        wrds.putProperty(QDataSet.FILL_VALUE, fill);
+        wrds.putProperty(QDataSet.VALID_MIN, null);
+        wrds.putProperty(QDataSet.VALID_MAX, null);
         return wrds;
     }
 }
