@@ -4,10 +4,6 @@
  */
 package org.virbo.dataset;
 
-import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.WritableDataSet;
-
 /**
  *
  * @author jbf
@@ -84,7 +80,7 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
 
         public DimensionIterator newIterator(int length) {
-            int start1 = this.start = start == null ? 0 : start;
+            int start1 = start == null ? 0 : start;
             int stop1 = stop == null ? length : stop;
             int step1 = step == null ? 1 : step;
             if ( start1 < 0) start1 = length + start1;
@@ -214,6 +210,43 @@ public class QubeDataSetIterator implements DataSetIterator {
         initialize();
     }
 
+    private QubeDataSetIterator( QDataSet ds, DimensionIteratorFactory[] fits ) {
+        if ( Boolean.TRUE.equals(ds.property(QDataSet.QUBE)) ) {
+            this.qube = DataSetUtil.qubeDims(ds);
+        } else {
+            this.ds= ds;
+        }
+        this.rank= ds.rank();
+        this.ds= ds;
+        this.fit= fits;
+        initialize();
+    }
+    
+    /**
+     * return an iterator for the slice of a dataset.  This is introduced to improve
+     * performance by reducing the number of bounds checks, etc from the general
+     * case.
+     * @param ds
+     * @param sliceIndex
+     * @return
+     */
+    public static QubeDataSetIterator sliceIterator( QDataSet ds, int sliceIndex ) {
+        QubeDataSetIterator result;
+        if ( ds.rank()==1 ) {
+            throw new IllegalArgumentException("can't slice rank 1");
+        } else if ( ds.rank()==2 ) {
+            result= new QubeDataSetIterator( ds, new DimensionIteratorFactory[] { new SingletonIteratorFactory(sliceIndex), new StartStopStepIteratorFactory( 0, ds.length(sliceIndex), 1 ) } );
+        } else if ( ds.rank()==3 ) {
+            result= new QubeDataSetIterator( ds, 
+                    new DimensionIteratorFactory[] { new SingletonIteratorFactory(sliceIndex), 
+                    new StartStopStepIteratorFactory( 0, ds.length(sliceIndex), 1 ),
+                    new StartStopStepIteratorFactory( 0, -1, 1 ),
+            } );
+        } else {
+            throw new IllegalArgumentException("rank limit");
+        }
+        return result;
+    }
     /**
      * reinitializes the iterator.
      * @param dim
