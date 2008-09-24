@@ -179,7 +179,7 @@ public class PersistentStateSupport {
         };
     }
     
-    private void saveAs() {
+    public void saveAs() {
         JFileChooser chooser= new JFileChooser();
         if ( getCurrentFile()!=null ) chooser.setCurrentDirectory(getCurrentFile().getParentFile());
         if ( getCurrentFile()!=null ) chooser.setSelectedFile( getCurrentFile());
