@@ -247,7 +247,7 @@ public class DataSetOps {
      */
     public static QDataSet sort(final QDataSet ds) {
         if (ds.rank() > 1) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException( "dataset must be rank 1");
         }
         Integer[] indeces = new Integer[ds.length()];
         int i0 = 0;
