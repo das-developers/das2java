@@ -18,12 +18,12 @@ import java.util.Set;
  * Map that takes a Class for keys, and the get method finds the closest matching class.
  * @author Jeremy
  */
-public class ClassMap implements Map {
-    HashMap map;
+public class ClassMap<T> implements Map<Class,T> {
+    HashMap<Class,T> map;
     
     /** Creates a new instance of ClassMap */
     public ClassMap() {
-        map= new HashMap();
+        map= new HashMap<Class,T>();
     }
 
     public int size() {
@@ -35,7 +35,7 @@ public class ClassMap implements Map {
     }
 
     public boolean containsKey(Object key) {
-        Object close= closestKey(key);
+        Object close= closestKey((Class)key);
         return close!=null;
     }
 
@@ -54,16 +54,18 @@ public class ClassMap implements Map {
         return clas;
     }
     
-    public Object get(Object key) {
+    public T get(Object key) {
         Object close= closestKey(key);
         return ( close==null ) ? null : map.get(close);
     }
 
-    public Object put(Object key, Object value) {
-        return map.put( key, value );
+    public T put(Class key, T value) {
+        T result= map.get(key);
+        map.put( key, value );
+        return result;
     }
 
-    public Object remove(Object key) {
+    public T remove(Object key) {
         return map.remove(key);
     }
 
@@ -75,7 +77,7 @@ public class ClassMap implements Map {
         map.clear();
     }
 
-    public Set keySet() {
+    public Set<Class> keySet() {
         return map.keySet();
     }
 
