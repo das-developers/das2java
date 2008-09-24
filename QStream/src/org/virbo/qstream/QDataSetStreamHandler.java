@@ -5,6 +5,7 @@
 package org.virbo.qstream;
 
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,7 +131,11 @@ public class QDataSetStreamHandler implements StreamHandler {
                         builder.putProperty(pname, svalue);
                     } else {
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
-                        builder.putProperty(pname, delegate.parse(stype, svalue));
+                        try {
+                            builder.putProperty(pname, delegate.parse(stype, svalue));
+                        } catch (ParseException ex) {
+                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
 
