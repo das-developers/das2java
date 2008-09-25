@@ -1,4 +1,4 @@
 build.timestamp: 
 build.user.name: 
-build.svnurl: $URL: https://vxoware.svn.sourceforge.net/svnroot/vxoware/autoplot/trunk/QDataSet/src/META-INF/build.txt $
+build.svnurl: $URL: https://vxoware.svn.sourceforge.net/svnroot/vxoware/autoplot/trunk/QStream/src/META-INF/build.txt $
 build.svnrevision: $Revision: 594 $
