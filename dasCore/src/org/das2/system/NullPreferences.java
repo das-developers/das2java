@@ -4,6 +4,7 @@
  */
 package org.das2.system;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
@@ -17,8 +18,9 @@ public class NullPreferences extends AbstractPreferences {
 
     Map<String,String> values;
 
-    NullPreferences() {
+    public NullPreferences() {
         super(null, "");
+        values= new HashMap<String, String>();
     }
 
     protected void putSpi(String key, String value) {
