@@ -354,7 +354,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             public void actionPerformed(ActionEvent e) {
                 String command = e.getActionCommand();
-                DasLogger.getLogger(DasLogger.GUI_LOG).info("event " + command);
+                DasLogger.getLogger(DasLogger.GUI_LOG).fine("event " + command);
                 if (command.equals(SCAN_PREVIOUS_LABEL)) {
                     scanPrevious();
                 } else if (command.equals(SCAN_NEXT_LABEL)) {
@@ -1223,7 +1223,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** paints the axis component.  The tickV's and bounds should be calculated at this point */
     protected void paintComponent(Graphics graphics) {
-        logger.info("enter DasAxis.paintComponent");
+        logger.fine("enter DasAxis.paintComponent");
         /* This was code was keeping axes from being printed on PC's
         Shape saveClip = null;
         if (getCanvas().isPrintingThread()) {
@@ -1231,7 +1231,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         graphics.setClip(null);
         }
          */
-        logger.info("DasAxis clip=" + graphics.getClip());
+        logger.fine("DasAxis clip=" + graphics.getClip());
 
         Graphics2D g = (Graphics2D) graphics.create();
         //g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
