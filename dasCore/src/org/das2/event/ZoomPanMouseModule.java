@@ -34,6 +34,7 @@ public class ZoomPanMouseModule extends MouseModule {
     Point p0;
     DatumRange xAxisRange0;
     DatumRange yAxisRange0;
+    long t0,tbirth;
 
     /** Creates a new instance of ZoomPanMouseModule */
     public ZoomPanMouseModule(DasCanvasComponent parent, DasAxis horizontalAxis, DasAxis verticalAxis) {
@@ -41,14 +42,26 @@ public class ZoomPanMouseModule extends MouseModule {
         setLabel("Zoom Pan");
         this.xAxis = horizontalAxis;
         this.yAxis = verticalAxis;
+        t0= System.nanoTime();
+        tbirth= System.nanoTime();
     }
 
     private boolean axisIsAdjustable(DasAxis axis) {
         return axis != null && (UnitsUtil.isIntervalMeasurement(axis.getUnits()) || UnitsUtil.isRatioMeasurement(axis.getUnits()));
     }
 
+    /**
+     * mouse wheel events zoom or pan rapidly.  With a physical wheel, I (jbf) found
+     * that I get 17ms per click, and this is managable.  With a touchpad on a mac,
+     * these events come much faster, like 10ms per click, which can disorient the
+     * operator.  So we limit the speed to 20ms per click, for now by dropping
+     * rapid clicks.
+     *
+     * @param e
+     */
     public void mouseWheelMoved(MouseWheelEvent e) {
         double nmin, nmax;
+        
         if (e.isControlDown()) {
             if (e.getWheelRotation() < 0) {
                 nmin = -0.20;
@@ -68,6 +81,16 @@ public class ZoomPanMouseModule extends MouseModule {
         }
         //int clickMag= Math.abs(e.getWheelRotation());
         int clickMag = 1;
+        final long t1 = System.nanoTime();
+        long limitNanos= (long)20e6;
+        if ( ( t1 - t0 ) / clickMag < limitNanos ) {
+            clickMag= (int) Math.floor( ( t1 - t0 ) / limitNanos );
+        }
+        
+        if ( clickMag==0 ) return;
+        t0= System.nanoTime();
+            
+        //System.err.println(":ns:  "+(System.nanoTime()-tbirth)+"  "+clickMag);
         if (axisIsAdjustable(xAxis)) {
             DatumRange dr = xAxis.getDatumRange();
             for (int i = 0; i < clickMag; i++) {
