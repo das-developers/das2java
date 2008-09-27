@@ -377,14 +377,19 @@ public class DataSetOps {
         int n = (int) Math.ceil((max - min) / binsize);
         MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize);
         
-        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), tags );
+        tags.putProperty( QDataSet.NAME, ds.property(QDataSet.NAME) );
+        tags.putProperty( QDataSet.LABEL, ds.property(QDataSet.LABEL) );
+        tags.putProperty( QDataSet.TITLE, ds.property(QDataSet.TITLE) );
+        tags.putProperty( QDataSet.TYPICAL_MAX, ds.property(QDataSet.TYPICAL_MAX) );
+        tags.putProperty( QDataSet.TYPICAL_MIN, ds.property(QDataSet.TYPICAL_MIN) );
         tags.putProperty( QDataSet.CADENCE, binsize );
         
         final int[] hits = new int[n];
 
         QubeDataSetIterator iter = new QubeDataSetIterator(ds);
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
-        
+
+        int count=0;
         for (; iter.hasNext();) {
             iter.next();
             double d = iter.getValue(ds);
@@ -394,11 +399,13 @@ public class DataSetOps {
                 if (ibin >= 0 && ibin < n) {
                     hits[ibin]++;
                 }
+                count++;
             }
         }
 
         IDataSet result = IDataSet.wrap(hits);
         result.putProperty(QDataSet.DEPEND_0, tags);
+        result.putProperty("count",count);
 
         return result;
     }
