@@ -67,4 +67,19 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="do-tag" >
+        <property name="das2.dotag" value="true" />
+        <ant target="jar" />
+    </target>
+    
+    <target name="-post-compile" if="das2.dotag" >
+        <propertyfile comment="Build Information"
+              file="${build.classes.dir}/META-INF/build.txt">
+           <entry key="build.timestamp"
+           type="date"
+           pattern="yyyyMMdd_HHmmss"
+           value="now"/>
+    <entry key="build.user.name" value="${user.name}"/>
+        </propertyfile>
+    </target>
 </project>
