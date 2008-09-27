@@ -570,8 +570,12 @@ public class StreamTool {
       
 		output.setCharacterStream(writer);
 		LSSerializer serializer = ls.createLSSerializer();
-      if ( serializer.getDomConfig().canSetParameter( "format-pretty-print", Boolean.TRUE ) ) {
-        serializer.getDomConfig().setParameter( "format-pretty-print", Boolean.TRUE );
+      try {
+        if ( serializer.getDomConfig().canSetParameter( "format-pretty-print", Boolean.TRUE ) ) {
+            serializer.getDomConfig().setParameter( "format-pretty-print", Boolean.TRUE );
+          }
+      } catch ( Error e ) {
+          e.printStackTrace();
       }
 		serializer.write(document, output);
 		/*
