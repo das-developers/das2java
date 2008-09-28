@@ -80,6 +80,7 @@ public abstract class FileSystem  {
         registry= new HashMap();
         registry.put("file",new LocalFileSystemFactory() );
         registry.put("http",new HttpFileSystemFactory() );
+        registry.put("https",new HttpFileSystemFactory() );
         registry.put("ftp",new FtpFileSystemFactory() );
     }
         
