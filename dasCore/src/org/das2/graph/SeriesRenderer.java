@@ -32,7 +32,6 @@ import org.das2.dataset.TableDataSet;
 import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.LengthDragRenderer;
@@ -56,6 +55,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,7 +72,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     private double symSize = 3.0; // radius in pixels
+
     private double lineWidth = 1.0; // width in pixels
+
     private boolean histogram = false;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     private FillStyle fillStyle = FillStyle.STYLE_FILL;
@@ -121,9 +123,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
     class PsymRenderElement implements RenderElement {
 
         protected GeneralPath psymsPath; // store the location of the psyms here.
+
         int[] colors; // store the color index  of each psym
+
         int[] ipsymsPath; // store the location of the psyms here, evens=x, odds=y
+
         int count; // the number of points to plot
+
 
         /**
          * render the psyms by stamping an image at the psym location.  The intent is to
@@ -323,6 +329,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         private GeneralPath path1;
         private Color color;  // override default color
 
+
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             if (path1 == null) {
                 return 0;
@@ -341,7 +348,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
-            double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+            double xSampleWidth;
+            if ( UnitsUtil.isRatiometric(sw.getUnits())) {
+                xSampleWidth = sw.doubleValue(Units.logERatio);
+            } else {
+                xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+            }
 
             /* fuzz the xSampleWidth */
             xSampleWidth = xSampleWidth * 1.10;
@@ -368,7 +380,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
             if (histogram) {
-                float fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                float fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, sw.getUnits(), -0.5 );
                 newPath.moveTo(fx1, fy);
                 newPath.lineTo(fx, fy);
             } else {
@@ -457,6 +469,16 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
     }
 
+    private float midPoint(DasAxis axis, double d1, Units units, double delta, Units offsetUnits, double alpha ) {
+        float fx1;
+        if (axis.isLog() && offsetUnits==Units.logERatio ) {
+            fx1 = (float) axis.transform( Math.exp( Math.log(d1) + delta * alpha ), units);
+        } else {
+            fx1 = (float) axis.transform( d1 + delta * alpha, units);
+        }
+        return fx1;
+    }
+
     class FillRenderElement implements RenderElement {
 
         private GeneralPath fillToRefPath1;
@@ -474,8 +496,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
-            double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
-
+            double xSampleWidth;
+            if ( UnitsUtil.isRatiometric(sw.getUnits())) {
+                xSampleWidth = sw.doubleValue(Units.logERatio);
+            } else {
+                xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+            }
+            
             /* fuzz the xSampleWidth */
             xSampleWidth = xSampleWidth * 1.10;
 
@@ -512,7 +539,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
             if (histogram) {
-                float fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                float fx1;
+                fx1= midPoint( xAxis, x, xUnits, xSampleWidth, sw.getUnits(), -0.5 );
                 fillPath.moveTo(fx1, fyref);
                 fillPath.lineTo(fx1, fy);
                 fillPath.lineTo(fx, fy);
@@ -545,7 +573,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
                         if ((x - x0) < xSampleWidth) {
                             // draw connect-a-dot between last valid and here
                             if (histogram) {
-                                float fx1 = (fx0 + fx) / 2;
+                                float fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fy);
                                 fillPath.lineTo(fx, fy);
@@ -556,10 +584,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
                         } else {
                             // introduce break in line
                             if (histogram) {
-                                float fx1 = (float) xAxis.transform(x0 + xSampleWidth / 2, xUnits);
+                                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidth, sw.getUnits(), 0.5 );
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fyref);
-                                fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                                fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, sw.getUnits(), -0.5 );
                                 fillPath.moveTo(fx1, fyref);
                                 fillPath.lineTo(fx1, fy);
                                 fillPath.lineTo(fx, fy);
@@ -731,6 +759,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
                     graphics.setColor(color);
                     if (extraConnectorElements[j] != null) {  // thread race
+
                         extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
 
                         int myIndex = j;
@@ -790,7 +819,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * the data that is plottable.  The plottable part is the part that 
      * might be visible while limiting the number of plotted points.
      */
-    private void updateFirstLast( DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet ) {
+    private void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
 
         Units xUnits = xAxis.getUnits();
         Units yUnits = yAxis.getUnits();
@@ -802,12 +831,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
             if (parent.isOverSize()) {
-                Rectangle plotBounds= parent.getCacheImageBounds();
-                visibleRange= new DatumRange( xAxis.invTransform( plotBounds.x ), xAxis.invTransform( plotBounds.x+plotBounds.width ) );
-            
+                Rectangle plotBounds = parent.getCacheImageBounds();
+                visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
+
             }
             ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
             ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
+
         } else {
             ixmin = 0;
             ixmax = dataSet.getXLength();
@@ -832,6 +862,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
             if (isValid) {
                 firstIndex = index;  // TODO: what if no valid points?
+
                 index++;
                 break;
             }
@@ -937,6 +968,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
                 if (i == 0) {
                     updateFirstLast(xAxis, yAxis, vds); // minimal support assumes vert slice data is all valid or all invalid.
+
                 }
                 extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
             }
@@ -1389,7 +1421,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         Point2D.Double dp = new Point2D.Double(x, y);
 
-        if ( this.fillToReference && fillElement.acceptContext(dp) ) {
+        if (this.fillToReference && fillElement.acceptContext(dp)) {
             accept = true;
         }
 
@@ -1399,7 +1431,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         if ((!accept) && extraConnectorElements != null) {
             for (int j = 0; j < extraConnectorElements.length; j++) {
-                if (!accept && extraConnectorElements[j]!=null && extraConnectorElements[j].acceptContext(dp)) {
+                if (!accept && extraConnectorElements[j] != null && extraConnectorElements[j].acceptContext(dp)) {
                     accept = true;
                 }
             }
