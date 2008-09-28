@@ -19,6 +19,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.dasml.FormBase;
 import java.awt.*;
 import java.awt.geom.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -698,4 +699,26 @@ public class GraphUtil {
         return new DatumRange( d1, d2 );
     }
     
+    /**
+     * return a block with the color and size.
+     * @param w
+     * @param h
+     * @return 
+     */
+    public static Icon colorIcon( Color iconColor, int w, int h ) {
+        BufferedImage image= new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        Graphics g= image.getGraphics();
+        Color save = g.getColor();
+        if ( iconColor.getAlpha()!=255 ) { // draw checkerboard to indicate transparency
+            for ( int j=0; j<16/4; j++ ) {
+                for ( int i=0; i<16/4; i++ ) {
+                    g.setColor( (i-j)%2 ==0 ? Color.GRAY : Color.WHITE );
+                    g.fillRect( 0+i*4,0+j*4,4,4);
+                }
+            }
+        }
+        g.setColor(iconColor);
+        g.fillRect( 0, 0, w, h );
+        return new ImageIcon(image);
+    }
 }
