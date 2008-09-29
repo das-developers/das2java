@@ -101,7 +101,7 @@ public class AsciiParser {
         int iline = 0;
         line = reader.readLine();
 
-        while (line != null && iline < skipLines || (commentPrefix != null && line.startsWith(commentPrefix))) {
+        while ( line != null && ( iline < skipLines || (commentPrefix != null && line.startsWith(commentPrefix)) ) ) {
             line = reader.readLine();
             iline++;
         }
