@@ -48,11 +48,17 @@ import org.virbo.dsutil.DataSetBuilder;
 public class Ops {
 
     public interface UnaryOp {
-
         double op(double d1);
     }
 
-    public static final QDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
+    /**
+     * apply the unary operation (such as "cos") to the dataset.
+     * DEPEND_* is propogated.
+     * @param ds1
+     * @param op
+     * @return
+     */
+    public static final DDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
         Units u = (Units) ds1.property(QDataSet.UNITS);
         if (u == null) {
@@ -64,12 +70,15 @@ public class Ops {
             double d1 = it1.getValue(ds1);
             it1.putValue(result, u.isFill(d1) ? u.getFillDouble() : op.op(d1));
         }
-        DataSetUtil.putProperties(DataSetUtil.getProperties(ds1), result);
+        Map<String,Object> m= new HashMap<String,Object>();
+        m.put( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
+        m.put( QDataSet.DEPEND_1, ds1.property(QDataSet.DEPEND_1) );
+        m.put( QDataSet.DEPEND_2, ds1.property(QDataSet.DEPEND_2) );
+        DataSetUtil.putProperties( m, result );
         return result;
     }
 
     public interface BinaryOp {
-
         double op(double d1, double d2);
     }
 
@@ -475,9 +484,22 @@ public class Ops {
      */
     public static QDataSet exp(QDataSet ds) {
         return applyUnaryOp(ds, new UnaryOp() {
-
             public double op(double d1) {
                 return Math.pow(Math.E, d1);
+            }
+        });
+    }
+
+    /**
+     * element-wise exponentiate 10**x.
+     * @param ds
+     * @return
+     */
+    public static QDataSet exp10(QDataSet ds) {
+        return applyUnaryOp(ds, new UnaryOp() {
+
+            public double op(double d1) {
+                return Math.pow(10, d1);
             }
         });
     }
@@ -1441,6 +1463,56 @@ public class Ops {
     }
 
     /**
+     * returns a two element, rank 1 dataset containg the extent of the data.
+     * The property QDataSet.SCALE_TYPE is set to lin or log.
+     * The property QDataSet.COUNT is set to the number of valid measurements.
+     * @param ds
+     * @return two element, rank 1 dataset.
+     */
+    public static QDataSet extent( QDataSet ds ) {
+
+        QDataSet max = ds;
+        QDataSet min = ds;
+        QDataSet delta;
+        delta = (QDataSet) ds.property(QDataSet.DELTA_PLUS);
+        if (delta != null) {
+            max = Ops.add(ds, delta);
+        }
+
+        delta = (QDataSet) ds.property(QDataSet.DELTA_MINUS);
+        if (delta != null) {
+            min = Ops.subtract(ds, delta);
+        }
+
+        QDataSet w = DataSetUtil.weightsDataSet(ds);
+        QubeDataSetIterator it = new QubeDataSetIterator(ds);
+        double[] result = new double[]{Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        int count=0;
+
+        while (it.hasNext()) {
+            it.next();
+            if (it.getValue(w) > 0.) {
+                count++;
+                result[0] = Math.min(result[0], it.getValue(min));
+                result[1] = Math.max(result[1], it.getValue(max));
+            } else {
+
+            }
+        }
+        if ( count==0 ) {  // no valid data!
+            double fill= (Double)w.property(QDataSet.FILL_VALUE);
+            result[0] = fill;
+            result[1] = fill;
+        }
+
+        DDataSet qresult= DDataSet.wrap(result);
+        qresult.putProperty( QDataSet.SCALE_TYPE, ds.property(QDataSet.SCALE_TYPE) );
+        qresult.putProperty( "count", new Integer(count) );
+        return qresult;
+        
+    }
+    
+    /**
      * returns histogram of dataset, the number of points falling in each bin.
      * 
      * @param ds
@@ -1451,6 +1523,34 @@ public class Ops {
      */
     public static QDataSet histogram(QDataSet ds, double min, double max, double binSize) {
         return DataSetOps.histogram(ds, min, max, binSize);
+    }
+    
+    
+    /**
+     * returns a histogram of the dataset, based on the extent and scaletype of the data.
+     * @param ds
+     * @param binCount number of bins
+     * @return
+     */
+    public static QDataSet histogram( QDataSet ds, int binCount ) {
+        
+        if ( "log".equals(ds.property(QDataSet.SCALE_TYPE)) ) {
+            QDataSet linds= Ops.log10(ds);
+            QDataSet range= Ops.extent( linds );
+            double width= range.value(1)-range.value(0);
+            MutablePropertyDataSet h= (MutablePropertyDataSet) histogram( linds, range.value(0), range.value(1), width/binCount );
+            MutablePropertyDataSet bins=  (MutablePropertyDataSet) h.property(QDataSet.DEPEND_0);
+            bins= (MutablePropertyDataSet) Ops.exp10(bins);
+            bins.putProperty( QDataSet.SCALE_TYPE, "log" );
+            h.putProperty(QDataSet.DEPEND_0, bins);
+            return h;
+
+        } else {
+            QDataSet range= Ops.extent( ds );
+            double width= range.value(1)-range.value(0);
+            return histogram( ds, range.value(0), range.value(1), width/binCount );
+        }
+        
     }
 
     /**
