@@ -277,7 +277,12 @@ public class DataSetUtil {
 
     /**
      * calculate cadence by averaging consistent inter-point distances, 
-     * taking invalid measurements into account.   
+     * taking invalid measurements into account.  This number needs to be interpretted
+     * in the context of the dataset, for example using the properties UNITS and
+     * SCALE_TYPE.  If SCALE_TYPE is "log", then this number should be interpreted
+     * as the ratiometric spacing in natural log space.  
+     * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
+     * Math.log( xds.value(1) / xds.value(0) )
      */
     public static double guessCadence(QDataSet xds, QDataSet yds) {
         if (yds == null) {
@@ -302,11 +307,16 @@ public class DataSetUtil {
         if (i < yds.length()) {
             x0 = xds.value(i);
         }
+        final boolean log= "log".equals( xds.property( QDataSet.SCALE_TYPE ) );
         for (i++; i < xds.length(); i++) {
             if (u.isValid(yds.value(i))) {
                 double cadenceAvg;
                 cadenceAvg = cadenceS / cadenceN;
-                cadence = Math.abs(xds.value(i) - x0);
+                if (log) {
+                    cadence = Math.abs( Math.log( xds.value(i) / x0 ) );
+                } else {
+                    cadence = Math.abs( xds.value(i) - x0 );
+                }
                 if (cadence < 0.5 * cadenceAvg && cadenceN < 10) {
                     cadenceS = cadence;
                     cadenceN = 1;
@@ -322,7 +332,12 @@ public class DataSetUtil {
 
     /**
      * calculate cadence by averaging the smallest set of consistent inter-point
-     * distance.  Assumes all points are valid
+     * distance.  Assumes all points are valid.  This number needs to be interpretted
+     * in the context of the dataset, for example using the properties UNITS and
+     * SCALE_TYPE.  If SCALE_TYPE is "log", then this number should be interpreted
+     * as the ratiometric spacing in natural log space.  
+     * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
+     * Math.log( xds.value(1) / xds.value(0) )
      */
     public static double guessCadence(QDataSet xds) {
         return guessCadence(xds, null);

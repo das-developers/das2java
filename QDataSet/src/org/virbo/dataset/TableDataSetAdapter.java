@@ -71,14 +71,27 @@ public class TableDataSetAdapter implements TableDataSet {
         if (xMono != null && xMono.booleanValue()) {
             properties.put(org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
         }
-        Double cadence = (Double) x.property(QDataSet.CADENCE);
-        if (cadence != null) {
-            properties.put(org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, xunits.getOffsetUnits().createDatum(cadence.doubleValue()));
+        
+        Double cadence= (Double) x.property( QDataSet.CADENCE );
+        if ( cadence!=null ) {
+            Datum dcadence;
+            if ( "log".equals( x.property(QDataSet.SCALE_TYPE) ) ) {
+                dcadence= Units.logERatio.createDatum(cadence);
+            } else {
+                dcadence= xunits.getOffsetUnits().createDatum( cadence.doubleValue() );
+            }
+            properties.put( org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence );
         }
-
+                
         cadence = (Double) y.property(QDataSet.CADENCE);
-        if (cadence != null) {
-            properties.put(org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, yunits.getOffsetUnits().createDatum(cadence.doubleValue()));
+        if ( cadence!=null ) {
+            Datum dcadence;
+            if ( "log".equals( y.property(QDataSet.SCALE_TYPE) ) ) {
+                dcadence= Units.logERatio.createDatum(cadence);
+            } else {
+                dcadence= xunits.getOffsetUnits().createDatum( cadence.doubleValue() );
+            }
+            properties.put( org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, dcadence );
         }
 
         if ( z.property(QDataSet.FILL_VALUE) !=null 
