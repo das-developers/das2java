@@ -199,7 +199,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     public QDataSet getDataSet(String name) {
         DataSetBuilder builder = builders.get(name);
-        if (builder == null) throw new IllegalArgumentException("No such dataset");
+        if (builder == null) throw new IllegalArgumentException("No such dataset \""+name+"\"");
         MutablePropertyDataSet result = builder.getDataSet();
         for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             String s = (String) result.property("DEPEND_" + i);
@@ -215,7 +215,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         return result;
     }
-
+        
     /**
      * return the default dataset for the stream.
      * @return
