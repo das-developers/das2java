@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
@@ -31,6 +32,7 @@ import org.w3c.dom.NodeList;
 public class QDataSetStreamHandler implements StreamHandler {
 
     Map<String, DataSetBuilder> builders;
+    Map<String, JoinDataSet> joinDataSets;
     XPathFactory factory = XPathFactory.newInstance();
     XPath xpath = factory.newXPath();
     String dsname;
@@ -38,6 +40,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     public QDataSetStreamHandler() {
         builders = new HashMap<String, DataSetBuilder>();
+        joinDataSets = new HashMap<String, JoinDataSet>();
     }
 
     /**
@@ -70,7 +73,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 default:
                     throw new IllegalArgumentException("rank limit");
             }
-        } else {
+        } else if (rank == qube.length + 1) {
             switch (rank) {
                 case 1:
                     result = new DataSetBuilder(rank, 100);
@@ -84,7 +87,21 @@ public class QDataSetStreamHandler implements StreamHandler {
                 default:
                     throw new IllegalArgumentException("rank limit");
             }
+        } else if (rank == qube.length + 2) {
+            switch (rank) {
+                case 2:
+                    result = new DataSetBuilder(rank - 1, 100);
+                    break;
+                case 3:
+                    result = new DataSetBuilder(rank - 1, 100, qube[0]);
+                    break;
+                default:
+                    throw new IllegalArgumentException("rank limit");
+            }
+        } else {
+            throw new IllegalArgumentException("rank and qube don't reconcile");
         }
+
         return result;
     }
 
@@ -119,6 +136,15 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if (builder == null) {
                     builder = createBuilder(rank, dims);
                     builders.put(name, builder);
+                } else {
+                    JoinDataSet join = joinDataSets.get(name);
+                    if (join == null) {
+                        join = new JoinDataSet(rank);
+                        joinDataSets.put(name, join);
+                    }
+                    join.join(builder.getDataSet());
+                    builder = createBuilder(rank, dims);
+                    builders.put(name, builder);
                 }
                 NodeList odims = (NodeList) xpath.evaluate("properties/property", n, XPathConstants.NODESET);
 
@@ -131,8 +157,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                         builder.putProperty(pname, svalue);
                     } else {
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
-                        if ( delegate==null ) {
-                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \""+stype+"\"");
+                        if (delegate == null) {
+                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"" + stype + "\"");
                             continue;
                         }
                         try {
@@ -148,6 +174,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 planeDescriptor.setQube(dims); // zero length is okay
                 boolean isStream = rank > dims.length;
                 pd.setStream(isStream);
+                pd.setStreamRank( rank - dims.length );
 
                 TransferType tt = TransferType.getForName(ttype, builder.getProperties());
                 if (tt == null) throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
@@ -199,23 +226,56 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     public QDataSet getDataSet(String name) {
         DataSetBuilder builder = builders.get(name);
-        if (builder == null) throw new IllegalArgumentException("No such dataset \""+name+"\"");
-        MutablePropertyDataSet result = builder.getDataSet();
-        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
-            String s = (String) result.property("DEPEND_" + i);
-            if (s != null) {
-                result.putProperty("DEPEND_" + i, getDataSet(s));
+        if (builder == null) throw new IllegalArgumentException("No such dataset \"" + name + "\"");
+
+        JoinDataSet join = joinDataSets.get(name);
+        MutablePropertyDataSet result;
+        QDataSet sliceDs= null;
+            
+        if (join != null) {
+            sliceDs= builder.getDataSet();
+            join.join(sliceDs);
+            result = join;
+            
+        } else {
+            result = builder.getDataSet();
+        }
+
+        if (join != null) {
+            for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+                String s = (String) sliceDs.property("DEPEND_" + i);
+                if (s != null) {
+                    result.putProperty("DEPEND_" + i, getDataSet(s));
+                }
+            }
+            for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
+                String s = (String) sliceDs.property("PLANE_" + i);
+                if (s != null) {
+                    result.putProperty("PLANE_" + i, getDataSet(s));
+                } else {
+                    break;
+                }
+            }            
+        } else {
+            for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+                String s = (String) result.property("DEPEND_" + i);
+                if (s != null) {
+                    result.putProperty("DEPEND_" + i, getDataSet(s));
+                }
+            }
+            for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
+                String s = (String) result.property("PLANE_" + i);
+                if (s != null) {
+                    result.putProperty("PLANE_" + i, getDataSet(s));
+                } else {
+                    break;
+                }
             }
         }
-        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-            String s = (String) result.property("PLANE_" + i);
-            if (s != null) {
-                result.putProperty("PLANE_" + i, getDataSet(s));
-            }
-        }
+
         return result;
     }
-        
+
     /**
      * return the default dataset for the stream.
      * @return

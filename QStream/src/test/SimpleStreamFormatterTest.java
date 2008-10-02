@@ -25,7 +25,8 @@ import org.virbo.qstream.SimpleStreamFormatter;
 public class SimpleStreamFormatterTest {
 
     public static void main(String[] args) throws ParseException, StreamException, FileNotFoundException, IOException, ParserConfigurationException {
-        QDataSet ds = test4_rank3();
+        //QDataSet ds = test4_rank3();
+        test6();
     }
 
     private static QDataSet test1() throws ParseException, StreamException, IOException, ParserConfigurationException {
@@ -106,4 +107,31 @@ public class SimpleStreamFormatterTest {
         return ds;
     }
     
+    private static QDataSet test5() throws StreamException, IOException, ParserConfigurationException {
+        DDataSet ds= (DDataSet) Ops.dindgen( 5 );
+        SimpleStreamFormatter format = new SimpleStreamFormatter();
+        format.format( ds, new FileOutputStream("test5.qds"), true );
+        return ds;
+    }
+    
+    /**
+     * "city skyline" dataset with mode changes.
+     * @return
+     * @throws org.das2.stream.StreamException
+     * @throws java.io.IOException
+     * @throws javax.xml.parsers.ParserConfigurationException
+     */
+    private static QDataSet test6() throws StreamException, IOException, ParserConfigurationException {
+        QDataSet result= null;
+        result= Ops.join( result, Ops.dindgen( 5 ) );
+        result= Ops.join( result, Ops.dindgen( 5 ) );
+        result= Ops.join( result, Ops.dindgen( 5 ) );
+        result= Ops.join( result, Ops.dindgen( 4 ) );
+        result= Ops.join( result, Ops.dindgen( 4 ) );
+        result= Ops.join( result, Ops.dindgen( 4 ) );
+        result= Ops.join( result, Ops.dindgen( 4 ) );
+        SimpleStreamFormatter format = new SimpleStreamFormatter();
+        format.format( result, new FileOutputStream("test6.qds"), true );
+        return result;
+    }
 }

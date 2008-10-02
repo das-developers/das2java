@@ -53,11 +53,11 @@ public class SimpleStreamFormatter {
     }
     Map<QDataSet, String> names = new HashMap<QDataSet, String>();
 
-    private PlaneDescriptor doPlaneDescriptor(Document document, PacketDescriptor pd, QDataSet ds) {
+    private PlaneDescriptor doPlaneDescriptor(Document document, PacketDescriptor pd, QDataSet ds, int streamRank) {
         Element qdatasetElement = document.createElement("qdataset");
         qdatasetElement.setAttribute("id", nameFor(ds));
 
-        qdatasetElement.setAttribute("rank", "" + ds.rank());
+        qdatasetElement.setAttribute("rank", "" + (ds.rank() + (streamRank - 1)));
 
         Element props = doProperties(document, ds);
         qdatasetElement.appendChild(props);
@@ -101,7 +101,7 @@ public class SimpleStreamFormatter {
             } else if (u instanceof TimeLocationUnits) {
                 planeDescriptor.setType(new AsciiTimeTransferType(24, u));
             } else {
-                if ( min > -10000 && max < 10000 && (absMin == 0 || absMin > 0.0001)) {
+                if (min > -10000 && max < 10000 && (absMin == 0 || absMin > 0.0001)) {
                     planeDescriptor.setType(new AsciiTransferType(10, false));
                 } else {
                     planeDescriptor.setType(new AsciiTransferType(10, true));
@@ -288,7 +288,7 @@ public class SimpleStreamFormatter {
         return name;
     }
 
-    PacketDescriptor doPacketDescriptor(StreamDescriptor sd, QDataSet ds, boolean stream) throws ParserConfigurationException {
+    PacketDescriptor doPacketDescriptor(StreamDescriptor sd, QDataSet ds, boolean stream, int streamRank) throws ParserConfigurationException {
 
         if (DataSetUtil.isQube(ds) == false) {
             throw new IllegalArgumentException("must be qube!");
@@ -296,6 +296,7 @@ public class SimpleStreamFormatter {
 
         PacketDescriptor packetDescriptor = new PacketDescriptor();
         packetDescriptor.setStream(stream);
+        packetDescriptor.setStreamRank(streamRank);
 
         Document document = sd.newDocument(packetDescriptor);
 
@@ -303,7 +304,7 @@ public class SimpleStreamFormatter {
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep0 != null) {
-            PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, dep0);
+            PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, dep0, streamRank);
             packetDescriptor.addPlane(planeDescriptor);
             packetElement.appendChild(planeDescriptor.getDomElement());
         }
@@ -311,13 +312,15 @@ public class SimpleStreamFormatter {
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
             QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
             if (plane0 != null) {
-                PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, plane0);
+                PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, plane0, streamRank);
                 packetDescriptor.addPlane(planeDescriptor);
                 packetElement.appendChild(planeDescriptor.getDomElement());
+            } else {
+                break;
             }
         }
 
-        PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, ds);
+        PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, ds, streamRank);
         packetDescriptor.addPlane(planeDescriptor);
 
         packetElement.appendChild(planeDescriptor.getDomElement());
@@ -339,30 +342,60 @@ public class SimpleStreamFormatter {
 
         sd.send(sd, out);
 
-        PacketDescriptor mainPd = doPacketDescriptor(sd, ds, true);
+        int packetDescriptorCount = 1;
+        int streamRank;
+        String dep0Name= null;
+         
+        if (DataSetUtil.isQube(ds)) {
+            packetDescriptorCount = 1;
+            streamRank = 1;
+        } else {
+            packetDescriptorCount = ds.length();
+            streamRank = 2;
+        }
 
-        sd.addDescriptor(mainPd);
-
-        // check for DEPEND_1 and DEPEND_2 datasets that need to be sent out first.
-        for (int i = 1; i < QDataSet.MAX_RANK; i++) {
-            QDataSet depi = (QDataSet) ds.property("DEPEND_" + i);
-            if (depi != null) {
-                PacketDescriptor pd = doPacketDescriptor(sd, depi, false);
-
-                sd.addDescriptor(pd);
-
-                depPackets.add(pd);
-                sd.send(pd, out);
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) dep0Name= nameFor(dep0);
+        
+        for (int ipacket = 0; ipacket < packetDescriptorCount; ipacket++) {
+            PacketDescriptor mainPd;
+            QDataSet packetDs;
+            
+            if (streamRank==1) {
+                packetDs= ds;
+            } else {
+                packetDs= DataSetOps.slice0(ds, ipacket);
+                names.put( packetDs, nameFor(ds) );
+                if ( dep0Name!=null ) names.put( (QDataSet) packetDs.property(QDataSet.DEPEND_0), dep0Name );
+                //TODO: Planes are still a problem
             }
+            
+            mainPd = doPacketDescriptor(sd, packetDs, true, streamRank );
+
+            sd.addDescriptor(mainPd);
+
+            // check for DEPEND_1 and DEPEND_2 datasets that need to be sent out first.
+            for (int i = 1; i < QDataSet.MAX_RANK; i++) {
+                QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
+                if (depi != null) {
+                    PacketDescriptor pd;
+                    pd= doPacketDescriptor(sd, depi, false, 0);
+
+                    sd.addDescriptor(pd);
+
+                    depPackets.add(pd);
+                    sd.send(pd, out);
+                }
+            }
+
+            sd.send(mainPd, out);
+
+            for (PacketDescriptor deppd : depPackets) {
+                formatPackets(out, sd, deppd);
+            }
+
+            formatPackets(out, sd, mainPd);
         }
-
-        sd.send(mainPd, out);
-
-        for (PacketDescriptor deppd : depPackets) {
-            formatPackets(out, sd, deppd);
-        }
-
-        formatPackets(out, sd, mainPd);
 
     }
 }

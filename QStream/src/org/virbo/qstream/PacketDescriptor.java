@@ -22,6 +22,13 @@ public class PacketDescriptor implements Descriptor {
      * If true, then slices of the dataset fill each packet.
      */
     boolean stream;
+    
+    /**
+     * number of dimensions being streamed.  Zero means all the data is 
+     * found in the first packet (no streaming).  One means a qube is being
+     * streamed.  Two means a this packet is one qube of a higher rank dataset.
+     */
+    int streamRank;
 
     PacketDescriptor() {
         planes = new ArrayList<PlaneDescriptor>();
@@ -43,6 +50,14 @@ public class PacketDescriptor implements Descriptor {
         this.stream = stream;
     }
 
+    public int streamRank() {
+        return streamRank;
+    }
+    
+    public void setStreamRank( int streamRank ) {
+        this.streamRank= streamRank;
+    }
+    
     void addPlane( PlaneDescriptor planeDescriptor ) {
         planes.add(planeDescriptor);
     }
