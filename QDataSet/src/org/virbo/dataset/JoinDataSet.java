@@ -17,20 +17,18 @@ import java.util.Map;
  * create a higher rank dataset with dim 0 being a join dimension.
  * @author jbf
  */
-public class JoinDataSet implements QDataSet, MutablePropertyDataSet {
+public class JoinDataSet extends AbstractDataSet {
     
     ArrayList<QDataSet> datasets;
     /**
      * rank of the dataset.  Joined DataSets should have rank rank-1.
      */
     int rank;
-    Map<String,Object> properties;
     
     /** Creates a new instance of JoinDataSet */
     public JoinDataSet( int rank ) {
         this.rank= rank;
         datasets= new ArrayList<QDataSet>();
-        properties= new HashMap<String,Object>();
     }
     
     public void join( QDataSet ds ) {
@@ -42,20 +40,12 @@ public class JoinDataSet implements QDataSet, MutablePropertyDataSet {
         return rank;
     }
 
-    public double value(int i) {
-        throw new IllegalArgumentException("rank error");
-    }
-
     public double value(int i0, int i1) {
         return datasets.get(i0).value(i1);
     }
 
     public double value(int i0, int i1, int i2) {
         return datasets.get(i0).value(i1,i2);
-    }
-
-    public Object property(String name) {
-        return properties.get(name);
     }
 
     public Object property(String name, int i0) {
@@ -76,18 +66,6 @@ public class JoinDataSet implements QDataSet, MutablePropertyDataSet {
 
     public int length(int i0, int i1) {
         return datasets.get(i0).length(i1);
-    }
-
-    public void putProperty(String name, Object value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void putProperty(String name, int index, Object value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void putProperty(String name, int index1, int index2, Object value) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public String toString() {
