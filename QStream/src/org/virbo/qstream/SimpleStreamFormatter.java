@@ -20,7 +20,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.Units;
-import org.das2.stream.StreamException;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -330,72 +329,80 @@ public class SimpleStreamFormatter {
         return packetDescriptor;
     }
 
-    public void format(QDataSet ds, OutputStream osout, boolean asciiTypes) throws StreamException, IOException, ParserConfigurationException {
+    public void format(QDataSet ds, OutputStream osout, boolean asciiTypes) throws StreamException, IOException {
 
-        this.asciiTypes = asciiTypes;
+        try {
 
-        WritableByteChannel out = Channels.newChannel(osout);
+            this.asciiTypes = asciiTypes;
 
-        StreamDescriptor sd = doStreamDescriptor(ds);
+            WritableByteChannel out = Channels.newChannel(osout);
 
-        List<PacketDescriptor> depPackets = new ArrayList<PacketDescriptor>();
+            StreamDescriptor sd = doStreamDescriptor(ds);
 
-        sd.send(sd, out);
+            List<PacketDescriptor> depPackets = new ArrayList<PacketDescriptor>();
 
-        int packetDescriptorCount = 1;
-        int streamRank;
-        String dep0Name= null;
-         
-        if (DataSetUtil.isQube(ds)) {
-            packetDescriptorCount = 1;
-            streamRank = 1;
-        } else {
-            packetDescriptorCount = ds.length();
-            streamRank = 2;
-        }
+            sd.send(sd, out);
 
-        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if ( dep0!=null ) dep0Name= nameFor(dep0);
-        
-        for (int ipacket = 0; ipacket < packetDescriptorCount; ipacket++) {
-            PacketDescriptor mainPd;
-            QDataSet packetDs;
-            
-            if (streamRank==1) {
-                packetDs= ds;
+            int packetDescriptorCount = 1;
+            int streamRank;
+            String dep0Name = null;
+
+            if (DataSetUtil.isQube(ds)) {
+                packetDescriptorCount = 1;
+                streamRank = 1;
             } else {
-                packetDs= DataSetOps.slice0(ds, ipacket);
-                names.put( packetDs, nameFor(ds) );
-                if ( dep0Name!=null ) names.put( (QDataSet) packetDs.property(QDataSet.DEPEND_0), dep0Name );
-                //TODO: Planes are still a problem
+                packetDescriptorCount = ds.length();
+                streamRank = 2;
+            }
+
+            QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+            if (dep0 != null) {
+                dep0Name = nameFor(dep0);
+            }
+            for (int ipacket = 0; ipacket < packetDescriptorCount; ipacket++) {
+                PacketDescriptor mainPd;
+                QDataSet packetDs;
+
+                if (streamRank == 1) {
+                    packetDs = ds;
+                } else {
+                    packetDs = DataSetOps.slice0(ds, ipacket);
+                    names.put(packetDs, nameFor(ds));
+                    if (dep0Name != null) {
+                        names.put((QDataSet) packetDs.property(QDataSet.DEPEND_0), dep0Name);
+                    //TODO: Planes are still a problem
+                    }
+                }
+
+                mainPd = doPacketDescriptor(sd, packetDs, true, streamRank);
+
+                sd.addDescriptor(mainPd);
+
+                // check for DEPEND_1 and DEPEND_2 datasets that need to be sent out first.
+                for (int i = 1; i < QDataSet.MAX_RANK; i++) {
+                    QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
+                    if (depi != null) {
+                        PacketDescriptor pd;
+                        pd = doPacketDescriptor(sd, depi, false, 0);
+
+                        sd.addDescriptor(pd);
+
+                        depPackets.add(pd);
+                        sd.send(pd, out);
+                    }
+                }
+
+                sd.send(mainPd, out);
+
+                for (PacketDescriptor deppd : depPackets) {
+                    formatPackets(out, sd, deppd);
+                }
+
+                formatPackets(out, sd, mainPd);
             }
             
-            mainPd = doPacketDescriptor(sd, packetDs, true, streamRank );
-
-            sd.addDescriptor(mainPd);
-
-            // check for DEPEND_1 and DEPEND_2 datasets that need to be sent out first.
-            for (int i = 1; i < QDataSet.MAX_RANK; i++) {
-                QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
-                if (depi != null) {
-                    PacketDescriptor pd;
-                    pd= doPacketDescriptor(sd, depi, false, 0);
-
-                    sd.addDescriptor(pd);
-
-                    depPackets.add(pd);
-                    sd.send(pd, out);
-                }
-            }
-
-            sd.send(mainPd, out);
-
-            for (PacketDescriptor deppd : depPackets) {
-                formatPackets(out, sd, deppd);
-            }
-
-            formatPackets(out, sd, mainPd);
+        } catch (ParserConfigurationException ex) {
+            throw new RuntimeException(ex);
         }
-
     }
 }
