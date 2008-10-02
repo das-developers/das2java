@@ -1933,11 +1933,11 @@ public class Ops {
      */
     public static QDataSet join(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) {
-            JoinDataSet ds= new JoinDataSet( ds2.rank() );
+            JoinDataSet ds= new JoinDataSet( ds2.rank()+1 );
             ds.join(ds2);
             return ds;
         } else if (ds1.rank() == ds2.rank()) {
-            JoinDataSet ds= new JoinDataSet( ds1.rank() );
+            JoinDataSet ds= new JoinDataSet( ds1.rank()+1 );
             ds.join(ds1);
             ds.join(ds2);
             return ds;

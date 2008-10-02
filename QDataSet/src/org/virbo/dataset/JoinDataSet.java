@@ -20,23 +20,26 @@ import java.util.Map;
 public class JoinDataSet implements QDataSet, MutablePropertyDataSet {
     
     ArrayList<QDataSet> datasets;
+    /**
+     * rank of the dataset.  Joined DataSets should have rank rank-1.
+     */
     int rank;
     Map<String,Object> properties;
     
     /** Creates a new instance of JoinDataSet */
-    public JoinDataSet( int dataSetsRank ) {
-        this.rank= dataSetsRank;
+    public JoinDataSet( int rank ) {
+        this.rank= rank;
         datasets= new ArrayList<QDataSet>();
         properties= new HashMap<String,Object>();
     }
     
     public void join( QDataSet ds ) {
-        if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("dataset rank must be "+this.rank);
+        if ( ds.rank()!=this.rank-1 ) throw new IllegalArgumentException("dataset rank must be "+(this.rank-1));
         datasets.add( ds );
     }
 
     public int rank() {
-        return rank+1;
+        return rank;
     }
 
     public double value(int i) {
@@ -85,6 +88,14 @@ public class JoinDataSet implements QDataSet, MutablePropertyDataSet {
 
     public void putProperty(String name, int index1, int index2, Object value) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public String toString() {
+        if ( datasets.size()>4 ) {
+            return "JoinDataSet["+datasets.size()+" datasets: "+ datasets.get(0)+", "+datasets.get(1)+", ...]";
+        } else {
+            return "JoinDataSet["+datasets.size()+" datasets: "+ datasets +" ]";
+        }
     }
     
 }
