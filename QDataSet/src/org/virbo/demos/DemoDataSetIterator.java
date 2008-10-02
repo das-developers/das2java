@@ -60,7 +60,7 @@ public class DemoDataSetIterator {
         System.err.println( "zero length second index, better example:");
         // this dataset has eleven elements in three inner datasets.  The
         // second inner dataset is empty.
-        JoinDataSet join= new JoinDataSet(1);
+        JoinDataSet join= new JoinDataSet(2);
         join.join( DDataSet.createRank1(5) );
         join.join( DDataSet.createRank1(0) );
         join.join( DDataSet.createRank1(6) );
