@@ -49,6 +49,9 @@ public class AsciiTransferType extends TransferType {
         if (s.length() < sizeBytes ) {
             s = FixedWidthFormatter.format(s, sizeBytes ) ;
         }
+        if ( s.charAt(sizeBytes-1)!=' ' && s.charAt(0)=='+' ) {
+            s= s.substring(1)+' ';
+        }
         byte[] bytes=null;
         try {
             bytes = s.getBytes("US-ASCII");
