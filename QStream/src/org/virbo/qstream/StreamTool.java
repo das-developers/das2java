@@ -24,8 +24,6 @@ package org.virbo.qstream;
 
 import org.das2.util.InflaterChannel;
 import org.das2.util.ByteBufferInputStream;
-import org.das2.datum.Datum;
-import org.das2.datum.DatumVector;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -37,17 +35,12 @@ import java.nio.channels.ReadableByteChannel;
  */
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-//import org.apache.xml.serialize.Method;
-//import org.apache.xml.serialize.OutputFormat;
-//import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.*;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
@@ -59,7 +52,7 @@ import org.xml.sax.SAXParseException;
 public class StreamTool {
 
     ByteOrder byteOrder;
-    
+
     /** Creates a new instance of StreamTool */
     public StreamTool() {
     }
@@ -250,16 +243,17 @@ public class StreamTool {
             this.stream = stream;
             this.handler = handler;
         }
+
         public String toString() {
-            return "\ndescriptorCount="+descriptorCount+
-                    "\npacketCount="+packetCount+
-                    "\nbyteOffset="+byteOffset+
-                    "\ncarotPos="+(byteOffset-bigBuffer.limit()+bigBuffer.position())+
-                    "\nbuffer="+String.valueOf(bigBuffer);
+            return "\ndescriptorCount=" + descriptorCount +
+                    "\npacketCount=" + packetCount +
+                    "\nbyteOffset=" + byteOffset +
+                    "\ncarotPos=" + (byteOffset - bigBuffer.limit() + bigBuffer.position()) +
+                    "\nbuffer=" + String.valueOf(bigBuffer);
         }
     }
 
-    public static void readStream( ReadableByteChannel stream, StreamHandler handler ) throws StreamException {
+    public static void readStream(ReadableByteChannel stream, StreamHandler handler) throws StreamException {
 
         ReadStreamStructure struct = new ReadStreamStructure(stream, handler);
 
@@ -268,7 +262,7 @@ public class StreamTool {
             if ("deflate".equals(sd.getCompression())) {
                 stream = getInflaterChannel(stream);
             }
-            
+
             handler.streamDescriptor(sd);
             struct.descriptorCount++;
             int bytesRead;
@@ -276,14 +270,14 @@ public class StreamTool {
             while ((bytesRead = stream.read(struct.bigBuffer)) != -1) {
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
-                
+
                 totalBytesRead += bytesRead;
                 //System.err.println("d2s bytesRead="+bytesRead+" total="+totalBytesRead );
                 //if ( totalBytesRead>318260 ) {
                 //  System.err.println("here");
                 //}
                 while (getChunk(struct)) {
-                // this block is empty
+                    // this block is empty
                 }
                 struct.bigBuffer.compact();
             }
@@ -330,13 +324,13 @@ public class StreamTool {
                 Document doc = getXMLDocument(struct.bigBuffer, contentLength);
                 Element root = doc.getDocumentElement();
                 if (root.getTagName().equals("stream")) {
-                    StreamDescriptor sd = new StreamDescriptor( doc.getDocumentElement() );
+                    StreamDescriptor sd = new StreamDescriptor(doc.getDocumentElement());
                     sd.setDomElement(doc.getDocumentElement());
                     sd.setSizeBytes(contentLength);
-                    String b= root.getAttribute("byte_order");
-                    if ( b!=null && !b.equals("") ) {
-                        sd.setByteOrder( b.equals("little_endian") ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN );
-                        struct.bigBuffer.order( sd.getByteOrder() );
+                    String b = root.getAttribute("byte_order");
+                    if (b != null && !b.equals("")) {
+                        sd.setByteOrder(b.equals("little_endian") ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
+                        struct.bigBuffer.order(sd.getByteOrder());
                     }
                     struct.bigBuffer.clear();
                     return sd;
@@ -346,7 +340,7 @@ public class StreamTool {
                     throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
                 }
             } catch (SAXException ex) {
-                String msg = getSAXParseExceptionMessage(ex, struct, contentLength );
+                String msg = getSAXParseExceptionMessage(ex, struct, contentLength);
                 throw new StreamException(msg);
             }
         } else {
@@ -377,42 +371,40 @@ public class StreamTool {
         return s;
     }
 
-    private static String getSAXParseExceptionMessage(final SAXException ex, final ReadStreamStructure struct,int contentLength) {
+    private static String getSAXParseExceptionMessage(final SAXException ex, final ReadStreamStructure struct, int contentLength) {
         String loc = null;
         if (ex instanceof SAXParseException) {
             SAXParseException spe = (SAXParseException) ex;
             loc = "Relative to packet start, line number is " + spe.getLineNumber() + ", column is " + spe.getColumnNumber();
         }
-        
-        int bufOffset= struct.byteOffset - struct.bigBuffer.limit();
-        
+
+        int bufOffset = struct.byteOffset - struct.bigBuffer.limit();
+
         String msg = "xml parser fails with the message: \"" + ex.getMessage() +
-                "\" within the packet ending at byte offset " + ( bufOffset + struct.bigBuffer.position() ) + ".";
+                "\" within the packet ending at byte offset " + (bufOffset + struct.bigBuffer.position()) + ".";
         if (ex.getMessage().contains("trailing")) {
             msg += "\nNon-whitespace data found after xml closing tag, probably caused by content length error.";
             int i;
             // find the end of the closing xml tag.
             for (i = bufOffset + struct.bigBuffer.position() - 1; i > 0; i--) {
-                int bpos= i - bufOffset ;
-                if (struct.bigBuffer.get( bpos ) == '>' ) {
+                int bpos = i - bufOffset;
+                if (struct.bigBuffer.get(bpos) == '>') {
                     break;
                 } else {
-                    System.err.println( (char)struct.bigBuffer.get(bpos) );
+                    System.err.println((char) struct.bigBuffer.get(bpos));
                 }
             }
-            for ( ; i < bufOffset + struct.bigBuffer.position() ; i++) {
-                int bpos= i - bufOffset;
-                if (struct.bigBuffer.get(bpos) == '[' || struct.bigBuffer.get(bpos)==':' ) {
+            for (; i < bufOffset + struct.bigBuffer.position(); i++) {
+                int bpos = i - bufOffset;
+                if (struct.bigBuffer.get(bpos) == '[' || struct.bigBuffer.get(bpos) == ':') {
                     break;
                 }
             }
             if (i > 0) {
-                int error= i - ( struct.bigBuffer.position() + bufOffset );
+                int error = i - (struct.bigBuffer.position() + bufOffset);
                 //int error= ( i + bufOffset ) - ( struct.byteOffset - 10 );
                 NumberFormat nf = new DecimalFormat("000000");
-                msg += "\nContent length was " + nf.format(contentLength) 
-                        + ", maybe it should have been " 
-                        + nf.format(contentLength+error) + ".";
+                msg += "\nContent length was " + nf.format(contentLength) + ", maybe it should have been " + nf.format(contentLength + error) + ".";
             }
         }
 
@@ -457,27 +449,27 @@ public class StreamTool {
             try {
                 Document doc = getXMLDocument(struct.bigBuffer, contentLength);
                 Element root = doc.getDocumentElement();
-                
-                DescriptorFactory factory= DescriptorRegistry.get( root.getTagName() );
-                
-                Descriptor pd= factory.create(doc.getDocumentElement());
-                
-                if ( pd instanceof PacketDescriptor ) {
-                    struct.handler.packetDescriptor((PacketDescriptor)pd);
+
+                DescriptorFactory factory = DescriptorRegistry.get(root.getTagName());
+
+                Descriptor pd = factory.create(doc.getDocumentElement());
+
+                if (pd instanceof PacketDescriptor) {
+                    struct.handler.packetDescriptor((PacketDescriptor) pd);
                     struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
                 } else if (root.getTagName().equals("exception")) {
                     throw exception(root);
-                } else if ( pd instanceof StreamComment ) {
+                } else if (pd instanceof StreamComment) {
                     //struct.handler.streamComment( (StreamComment)pd);
                 } else {
                     throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
                 }
                 struct.descriptorCount++;
             } catch (SAXException ex) {
-                String msg = getSAXParseExceptionMessage(ex, struct, contentLength );
+                String msg = getSAXParseExceptionMessage(ex, struct, contentLength);
                 throw new StreamException(msg);
             }
-            
+
         } else if (isPacketHeader(struct.four)) {
             String key = asciiBytesToString(struct.four, 1, 2);
             PacketDescriptor pd = (PacketDescriptor) struct.descriptors.get(key);
@@ -486,22 +478,22 @@ public class StreamTool {
                 struct.bigBuffer.reset();
                 return false;
             }
-            
-            int oldLimit= struct.bigBuffer.limit();
-            struct.bigBuffer.limit( struct.bigBuffer.position() + contentLength );
-            ByteBuffer packet= struct.bigBuffer.slice();
+
+            int oldLimit = struct.bigBuffer.limit();
+            struct.bigBuffer.limit(struct.bigBuffer.position() + contentLength);
+            ByteBuffer packet = struct.bigBuffer.slice();
             packet.order(struct.bigBuffer.order());
-            struct.bigBuffer.position( struct.bigBuffer.position() + contentLength );
+            struct.bigBuffer.position(struct.bigBuffer.position() + contentLength);
             struct.bigBuffer.limit(oldLimit);
-            struct.handler.packet( pd, packet );
+            struct.handler.packet(pd, packet);
             struct.packetCount++;
-            
+
         } else {
             String msg = "Expected four byte header, found '";
             String s = new String(struct.four);
             s = s.replaceAll("\n", "\\\\n"); // TODO: what's the right wat to say this?
             msg += s;
-            msg += "' at byteOffset=" + ( struct.byteOffset - struct.bigBuffer.limit() + struct.bigBuffer.position() - 4 + 10 );
+            msg += "' at byteOffset=" + (struct.byteOffset - struct.bigBuffer.limit() + struct.bigBuffer.position() - 4 + 10);
             msg += " after reading " + struct.descriptorCount + " descriptors and " + struct.packetCount + " packets.";
             throw new StreamException(msg);
         }
@@ -572,20 +564,26 @@ public class StreamTool {
         return contentLength;
     }
 
-    public static void formatHeader( Document document, Writer writer ) throws StreamException {
-		DOMImplementationLS ls = (DOMImplementationLS)
-				document.getImplementation().getFeature("LS", "3.0");
-		LSOutput output = ls.createLSOutput();
-      
-		output.setCharacterStream(writer);
-		LSSerializer serializer = ls.createLSSerializer();
-      if ( serializer.getDomConfig().canSetParameter( "format-pretty-print", Boolean.TRUE ) ) {
-        serializer.getDomConfig().setParameter( "format-pretty-print", Boolean.TRUE );
-      }
-		serializer.write(document, output);
+    public static void formatHeader(Document document, Writer writer) throws StreamException {
+        DOMImplementationLS ls = (DOMImplementationLS) document.getImplementation().getFeature("LS", "3.0");
+        LSOutput output = ls.createLSOutput();
+
+        output.setCharacterStream(writer);
+        LSSerializer serializer = ls.createLSSerializer();
+        try {
+            if (serializer.getDomConfig().canSetParameter("format-pretty-print", Boolean.TRUE)) {
+                serializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
+            }
+        } catch (Error e) {
+            // Ed's nice trick for finding the implementation
+            String name = serializer.getClass().getSimpleName();
+            java.net.URL u = serializer.getClass().getResource(name+".class");
+            System.err.println(u);
+            e.printStackTrace();
+        }
+        serializer.write(document, output);
 
     }
-
 
     private static ReadableByteChannel getInflaterChannel(ReadableByteChannel channel) throws IOException {
         return new InflaterChannel(channel);
