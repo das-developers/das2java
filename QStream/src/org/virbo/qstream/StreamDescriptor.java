@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.das2.stream.StreamException;
-import org.das2.util.StreamTool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
