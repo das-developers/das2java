@@ -20,9 +20,17 @@ public class Slice0DataSet extends AbstractDataSet {
         }
         this.ds = ds;
         this.index = index;
-        putProperty( QDataSet.DEPEND_0, ds.property( QDataSet.DEPEND_1 ) );
-        putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
-        putProperty( QDataSet.DEPEND_2, null );
+        if ( DataSetUtil.isQube(ds) ) {
+            putProperty( QDataSet.DEPEND_0, ds.property( QDataSet.DEPEND_1 ) );
+            putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
+            putProperty( QDataSet.DEPEND_2, null );
+        } else {
+            QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+            if ( dep0!=null && dep0.rank()>1 ) {
+                putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));
+            }
+        }
+        
         QDataSet plane0= (QDataSet) ds.property( QDataSet.PLANE_0 );
         if ( plane0!=null ) {
             putProperty( QDataSet.PLANE_0, new Slice0DataSet( plane0, index ) );
