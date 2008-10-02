@@ -11,12 +11,12 @@ import java.text.ParseException;
 import javax.xml.parsers.ParserConfigurationException;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
-import org.das2.stream.StreamException;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
 import org.virbo.qstream.SimpleStreamFormatter;
+import org.virbo.qstream.StreamException;
 
 /**
  *
@@ -25,7 +25,6 @@ import org.virbo.qstream.SimpleStreamFormatter;
 public class SimpleStreamFormatterTest {
 
     public static void main(String[] args) throws ParseException, StreamException, FileNotFoundException, IOException, ParserConfigurationException {
-        //QDataSet ds = test4_rank3();
         test6();
     }
 
@@ -107,6 +106,14 @@ public class SimpleStreamFormatterTest {
         return ds;
     }
     
+    private static QDataSet test0_rank2()  throws ParseException, StreamException, IOException, ParserConfigurationException {
+        DDataSet ds= (DDataSet) Ops.dindgen( 3, 4 );
+        SimpleStreamFormatter format = new SimpleStreamFormatter();
+
+        format.format( ds, new FileOutputStream("test0_rank2.qds"), true );
+        return ds;
+    }
+    
     private static QDataSet test5() throws StreamException, IOException, ParserConfigurationException {
         DDataSet ds= (DDataSet) Ops.dindgen( 5 );
         SimpleStreamFormatter format = new SimpleStreamFormatter();
@@ -134,4 +141,5 @@ public class SimpleStreamFormatterTest {
         format.format( result, new FileOutputStream("test6.qds"), true );
         return result;
     }
+
 }
