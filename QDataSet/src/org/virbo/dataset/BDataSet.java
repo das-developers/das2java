@@ -158,6 +158,8 @@ public final class BDataSet extends AbstractDataSet implements WritableDataSet {
             QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
             if (plane0 != null) {
                 result.put("PLANE_" + i, copy(plane0));
+            } else {
+                break;
             }
         }
 

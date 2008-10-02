@@ -57,6 +57,8 @@ public class VectorDataSetAdapter implements VectorDataSet {
                 String name= "PLANE_"+i;
                 if ( pds.property(QDataSet.NAME )!=null ) name= (String)pds.property(QDataSet.NAME );
                 planes.put( name, pds );
+            } else {
+                break;
             }
         }
         

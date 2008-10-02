@@ -222,6 +222,8 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
             QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
             if (plane0 != null) {
                 result.put("PLANE_" + i, copy(plane0));
+            } else {
+                break;
             }
         }
 
@@ -363,6 +365,8 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
                 DDataSet dd1 = dep1 instanceof DDataSet ? (DDataSet) dep1 : DDataSet.copy(dep1);
                 djoin.append(dd1);  
                 result.put("PLANE_" + i, djoin);
+            } else {
+                break;
             }
         }
 
