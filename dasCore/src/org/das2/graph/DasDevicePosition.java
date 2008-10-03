@@ -152,6 +152,22 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return result;
     }
     
+    public static String formatLayoutStr( DasDevicePosition pos, boolean min ) {
+        StringBuffer buf= new StringBuffer();
+        DecimalFormat nf2= new DecimalFormat("0.00");
+        DecimalFormat nf1= new DecimalFormat("0.0");
+        if ( min ) {
+            if ( pos.getMinimum()!=0 ) buf.append( nf2.format(pos.getMinimum()*100 )+"%" );
+            if ( pos.getEmMinimum()!=0 ) buf.append( nf1.format(pos.getEmMinimum() )+"em" );
+            if ( pos.getPtMinimum()!=0 ) buf.append( pos.getPtMinimum() + "pt" );
+        } else {
+            if ( pos.getMaximum()!=0 ) buf.append( nf2.format(pos.getMaximum()*100 )+"%" );
+            if ( pos.getEmMaximum()!=0 ) buf.append( nf1.format(pos.getEmMaximum() )+"em" );
+            if ( pos.getPtMaximum()!=0 ) buf.append( pos.getPtMaximum() + "pt" );            
+        }
+        return buf.toString();
+    }
+    
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum, boolean width) {
         this( parent, width, null, minimum, maximum, 0., 0., 0, 0 );
     }
@@ -421,10 +437,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     public String toString() {
-        String format="%.1f%%%+.1fem%+dpt";
-        String smin= String.format(format, minimum*100, emMinimum, ptMinimum );
-        String smax= String.format(format, maximum*100, emMaximum, ptMaximum );
-        return getClass().getName() + smin + "," +smax + "[minimum=" + getDMinimum() + " maximum=" + getDMaximum() + "]";
+        //String format="%.1f%%%+.1fem%+dpt";
+        //String smin= String.format(format, minimum*100, emMinimum, ptMinimum );
+        //String smax= String.format(format, maximum*100, emMaximum, ptMaximum );
+        return getClass().getName() + " " + formatLayoutStr(this, true) + "," +formatLayoutStr(this, false)  + " [dpos=" + getDMinimum() + "," + getDMaximum() + "]";
     }
     
     /**
