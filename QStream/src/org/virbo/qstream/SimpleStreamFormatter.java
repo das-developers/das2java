@@ -87,7 +87,7 @@ public class SimpleStreamFormatter {
                     min = d;
                 }
                 final double dd = Math.abs(d);
-                if (dd < absMin) {
+                if ( dd>0 && dd < absMin ) {
                     absMin = dd;
                 }
                 if (d > max) {
@@ -100,10 +100,14 @@ public class SimpleStreamFormatter {
             } else if (u instanceof TimeLocationUnits) {
                 planeDescriptor.setType(new AsciiTimeTransferType(24, u));
             } else {
-                if (min > -10000 && max < 10000 && (absMin == 0 || absMin > 0.0001)) {
+                if ( min > -10000 && max < 10000 && absMin > 0.0001 ) {
                     planeDescriptor.setType(new AsciiTransferType(10, false));
                 } else {
-                    planeDescriptor.setType(new AsciiTransferType(10, true));
+                    if ( absMin>1e-100 && max<1e100 ) {
+                        planeDescriptor.setType(new AsciiTransferType(10, true));
+                    } else {
+                        planeDescriptor.setType(new AsciiTransferType(12, true));
+                    }
                 }
             }
         } else {
