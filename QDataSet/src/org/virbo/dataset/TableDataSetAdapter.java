@@ -27,30 +27,78 @@ public class TableDataSetAdapter implements TableDataSet {
     HashMap properties = new HashMap();
 
     public static TableDataSet create(QDataSet z) {
-        QDataSet xds = (QDataSet) z.property(QDataSet.DEPEND_0);
-        if (xds == null) {
-            xds = new IndexGenDataSet(z.length());
+
+        if (z.rank() == 2) {
+            QDataSet xds = (QDataSet) z.property(QDataSet.DEPEND_0);
+            if (xds == null) {
+                xds = new IndexGenDataSet(z.length());
+            }
+            QDataSet yds = (QDataSet) z.property(QDataSet.DEPEND_1);
+            if (yds == null) {
+                yds = new IndexGenDataSet(z.length(0));
+            }
+            if (!DataSetUtil.isMonotonic(xds)) {
+                QDataSet sort = DataSetOps.sort(xds);
+                z = DataSetOps.applyIndex(z, 0, sort, false);
+                xds = DataSetOps.applyIndex(xds, 0, sort, false);
+            }
+            if (!DataSetUtil.isMonotonic(yds)) {
+                QDataSet sort = DataSetOps.sort(yds);
+                z = DataSetOps.applyIndex(z, 1, sort, false);
+                yds = DataSetOps.applyIndex(yds, 0, sort, false);
+            }
+            return new TableDataSetAdapter(z, xds, yds);
+        } else if (z.rank() == 3) {
+            JoinDataSet xds= new JoinDataSet(2);
+            JoinDataSet yds= new JoinDataSet(2);
+            int ix=0;
+            int iy=0;
+            boolean haveX= true;
+            boolean haveY= true;
+            for (int i0 = 0; i0 < z.length(); i0++) {
+                QDataSet xds1 = (QDataSet) z.property(QDataSet.DEPEND_0,i0);
+                if (xds1 == null) {
+                    haveX= true;
+                    xds1 = new TagGenDataSet( z.length(i0), 1., ix );
+                    ix+= z.length(i0);
+                }
+                QDataSet yds1 = (QDataSet) z.property(QDataSet.DEPEND_1,i0);
+                if (yds1 == null) {
+                    yds1 = new IndexGenDataSet( z.length(i0,0) );
+                }
+                if (!DataSetUtil.isMonotonic(xds)) {
+                    throw new IllegalArgumentException("x table must be monotonic");
+                }
+                if (!DataSetUtil.isMonotonic(yds)) {
+                    throw new IllegalArgumentException("x table must be monotonic");
+                }
+                if ( haveX ) {
+                    xds.join( xds1 );
+                } 
+                if ( haveY ) {
+                    yds.join(yds1);
+                }
+            }
+            if ( ( haveX || haveY ) && !( z instanceof MutablePropertyDataSet ) ) {
+                z= DDataSet.maybeCopy(z);
+            }
+            if ( haveX ) {
+                ((MutablePropertyDataSet)z).putProperty( QDataSet.DEPEND_0, xds );
+            }
+            if ( haveY ) {
+                ((MutablePropertyDataSet)z).putProperty( QDataSet.DEPEND_1, yds );
+            }
+            
+            return new Rank3TableDataSetAdapter(z, xds, yds);
+        } else {
+            throw new IllegalArgumentException("rank must be 2 or 3");
         }
-        QDataSet yds = (QDataSet) z.property(QDataSet.DEPEND_1);
-        if (yds == null) {
-            yds = new IndexGenDataSet(z.length(0));
-        }
-        if ( !DataSetUtil.isMonotonic(xds) ) {
-            QDataSet sort= DataSetOps.sort(xds);
-            z= DataSetOps.applyIndex( z, 0, sort, false );
-            xds= DataSetOps.applyIndex( xds, 0, sort, false );
-        }
-        if ( !DataSetUtil.isMonotonic(yds) ) {
-            QDataSet sort= DataSetOps.sort(yds);
-            z= DataSetOps.applyIndex( z, 1, sort, false );    
-            yds= DataSetOps.applyIndex( yds, 0, sort, false );
-        }
-        return new TableDataSetAdapter(z, xds, yds);
-        
+
     }
 
     /** Creates a new instance of TableDataSetAdapter */
     public TableDataSetAdapter(QDataSet z, QDataSet x, QDataSet y) {
+
         xunits = (Units) x.property(QDataSet.UNITS);
         yunits = (Units) y.property(QDataSet.UNITS);
         zunits = (Units) z.property(QDataSet.UNITS);
@@ -71,34 +119,32 @@ public class TableDataSetAdapter implements TableDataSet {
         if (xMono != null && xMono.booleanValue()) {
             properties.put(org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
         }
-        
-        Double cadence= (Double) x.property( QDataSet.CADENCE );
-        if ( cadence!=null ) {
+
+        Double cadence = (Double) x.property(QDataSet.CADENCE);
+        if (cadence != null) {
             Datum dcadence;
-            if ( "log".equals( x.property(QDataSet.SCALE_TYPE) ) ) {
-                dcadence= Units.logERatio.createDatum(cadence);
+            if ("log".equals(x.property(QDataSet.SCALE_TYPE))) {
+                dcadence = Units.logERatio.createDatum(cadence);
             } else {
-                dcadence= xunits.getOffsetUnits().createDatum( cadence.doubleValue() );
+                dcadence = xunits.getOffsetUnits().createDatum(cadence.doubleValue());
             }
-            properties.put( org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence );
-        }
-                
-        cadence = (Double) y.property(QDataSet.CADENCE);
-        if ( cadence!=null ) {
-            Datum dcadence;
-            if ( "log".equals( y.property(QDataSet.SCALE_TYPE) ) ) {
-                dcadence= Units.logERatio.createDatum(cadence);
-            } else {
-                dcadence= xunits.getOffsetUnits().createDatum( cadence.doubleValue() );
-            }
-            properties.put( org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, dcadence );
+            properties.put(org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence);
         }
 
-        if ( z.property(QDataSet.FILL_VALUE) !=null 
-                || z.property(QDataSet.VALID_MIN) !=null  
-                || z.property(QDataSet.VALID_MAX) !=null )      {
-            z= DataSetUtil.canonizeFill(z);
-        } 
+        cadence = (Double) y.property(QDataSet.CADENCE);
+        if (cadence != null) {
+            Datum dcadence;
+            if ("log".equals(y.property(QDataSet.SCALE_TYPE))) {
+                dcadence = Units.logERatio.createDatum(cadence);
+            } else {
+                dcadence = xunits.getOffsetUnits().createDatum(cadence.doubleValue());
+            }
+            properties.put(org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, dcadence);
+        }
+
+        if (z.property(QDataSet.FILL_VALUE) != null || z.property(QDataSet.VALID_MIN) != null || z.property(QDataSet.VALID_MAX) != null) {
+            z = DataSetUtil.canonizeFill(z);
+        }
     }
 
     public Units getZUnits() {
@@ -112,7 +158,6 @@ public class TableDataSetAdapter implements TableDataSet {
     public double getDouble(int i, int j, Units units) {
         return zunits.convertDoubleTo(units, z.value(i, j));
     }
-
 
     public double[] getDoubleScan(int i, Units units) {
         double[] zz = new double[getYLength(tableOfIndex(i))];
@@ -186,15 +231,14 @@ public class TableDataSetAdapter implements TableDataSet {
         return (result != null) ? result : z.property(name);
     }
 
-    public Object getProperty( int table, String name ) {
+    public Object getProperty(int table, String name) {
         return getProperty(name);
     }
 
-    
     public Map getProperties() {
         Map result = new HashMap();
-        result.put(QDataSet.UNITS, null );
-        Map m = new HashMap(DataSetUtil.getProperties(z,result));
+        result.put(QDataSet.UNITS, null);
+        Map m = new HashMap(DataSetUtil.getProperties(z, result));
         m.putAll(properties);
         return m;
     }
