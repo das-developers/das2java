@@ -24,7 +24,6 @@
 package org.das2.system;
 
 import org.das2.util.DasExceptionHandler;
-import org.das2.DasApplication;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Logger;
