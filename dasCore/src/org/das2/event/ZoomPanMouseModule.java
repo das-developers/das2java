@@ -62,7 +62,7 @@ public class ZoomPanMouseModule extends MouseModule {
     public void mouseWheelMoved(MouseWheelEvent e) {
         double nmin, nmax;
         
-        if (e.isControlDown()) {
+        if ( e.isControlDown() || e.isShiftDown() ) {
             if (e.getWheelRotation() < 0) {
                 nmin = -0.20;
                 nmax = +0.80;
