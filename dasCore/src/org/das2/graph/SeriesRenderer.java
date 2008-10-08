@@ -1482,7 +1482,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void setUpdatesPointsPerMillisecond(double newupdatesPointsPerMillisecond) {
         double oldupdatesPointsPerMillisecond = updatesPointsPerMillisecond;
         this.updatesPointsPerMillisecond = newupdatesPointsPerMillisecond;
-        propertyChangeSupport.firePropertyChange(PROP_UPDATESPOINTSPERMILLISECOND, oldupdatesPointsPerMillisecond, newupdatesPointsPerMillisecond);
+        //propertyChangeSupport.firePropertyChange(PROP_UPDATESPOINTSPERMILLISECOND, oldupdatesPointsPerMillisecond, newupdatesPointsPerMillisecond);
     }
     private double renderPointsPerMillisecond;
     public static final String PROP_RENDERPOINTSPERMILLISECOND = "renderPointsPerMillisecond";
@@ -1494,7 +1494,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void setRenderPointsPerMillisecond(double newrenderPointsPerMillisecond) {
         double oldrenderPointsPerMillisecond = renderPointsPerMillisecond;
         this.renderPointsPerMillisecond = newrenderPointsPerMillisecond;
-        propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
+        //propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
     }
 
     public int getFirstIndex() {
