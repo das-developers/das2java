@@ -1540,8 +1540,12 @@ public class Ops {
             double width= range.value(1)-range.value(0);
             MutablePropertyDataSet h= (MutablePropertyDataSet) histogram( linds, range.value(0), range.value(1), width/binCount );
             MutablePropertyDataSet bins=  (MutablePropertyDataSet) h.property(QDataSet.DEPEND_0);
+            
             bins= (MutablePropertyDataSet) Ops.exp10(bins);
             bins.putProperty( QDataSet.SCALE_TYPE, "log" );
+            bins.putProperty( QDataSet.LABEL, ds.property(QDataSet.LABEL) );
+            bins.putProperty( QDataSet.TITLE, ds.property(QDataSet.TITLE) );
+            
             h.putProperty(QDataSet.DEPEND_0, bins);
             return h;
 
