@@ -52,7 +52,16 @@ public class SimpleStreamFormatter {
     }
     Map<QDataSet, String> names = new HashMap<QDataSet, String>();
 
-    private PlaneDescriptor doPlaneDescriptor(Document document, PacketDescriptor pd, QDataSet ds, int streamRank) {
+    /**
+     * 
+     * @param document
+     * @param pd
+     * @param ds
+     * @param streamRank
+     * @return
+     */
+    private PlaneDescriptor doPlaneDescriptor(Document document, PacketDescriptor pd,
+            QDataSet ds, int streamRank) {
         Element qdatasetElement = document.createElement("qdataset");
         qdatasetElement.setAttribute("id", nameFor(ds));
 
@@ -87,7 +96,7 @@ public class SimpleStreamFormatter {
                     min = d;
                 }
                 final double dd = Math.abs(d);
-                if ( dd>0 && dd < absMin ) {
+                if (dd > 0 && dd < absMin) {
                     absMin = dd;
                 }
                 if (d > max) {
@@ -100,10 +109,10 @@ public class SimpleStreamFormatter {
             } else if (u instanceof TimeLocationUnits) {
                 planeDescriptor.setType(new AsciiTimeTransferType(24, u));
             } else {
-                if ( min > -10000 && max < 10000 && absMin > 0.0001 ) {
+                if (min > -10000 && max < 10000 && absMin > 0.0001) {
                     planeDescriptor.setType(new AsciiTransferType(10, false));
                 } else {
-                    if ( absMin>1e-100 && max<1e100 ) {
+                    if (absMin > 1e-100 && max < 1e100) {
                         planeDescriptor.setType(new AsciiTransferType(10, true));
                     } else {
                         planeDescriptor.setType(new AsciiTransferType(12, true));
@@ -187,6 +196,13 @@ public class SimpleStreamFormatter {
             }
         } else {
             values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length));
+            if ( packetDescriptor.isValuesInDescriptor() ) {
+                String s = "";
+                for (int i = 0; i < ds.length(); i++) {
+                    s += "," + ds.value(i);
+                }
+                values.setAttribute("values", ds.length() == 0 ? "" : s.substring(1));
+            }
         }
         return values;
     }
@@ -291,7 +307,7 @@ public class SimpleStreamFormatter {
         return name;
     }
 
-    PacketDescriptor doPacketDescriptor(StreamDescriptor sd, QDataSet ds, boolean stream, int streamRank) throws ParserConfigurationException {
+    PacketDescriptor doPacketDescriptor(StreamDescriptor sd, QDataSet ds, boolean stream, boolean valuesInDescriptor, int streamRank) throws ParserConfigurationException {
 
         if (DataSetUtil.isQube(ds) == false) {
             throw new IllegalArgumentException("must be qube!");
@@ -300,6 +316,7 @@ public class SimpleStreamFormatter {
         PacketDescriptor packetDescriptor = new PacketDescriptor();
         packetDescriptor.setStream(stream);
         packetDescriptor.setStreamRank(streamRank);
+        if ( valuesInDescriptor ) packetDescriptor.setValuesInDescriptor(true);
 
         Document document = sd.newDocument(packetDescriptor);
 
@@ -378,7 +395,7 @@ public class SimpleStreamFormatter {
                     }
                 }
 
-                mainPd = doPacketDescriptor(sd, packetDs, true, streamRank);
+                mainPd = doPacketDescriptor(sd, packetDs, true, false, streamRank);
 
                 sd.addDescriptor(mainPd);
 
@@ -387,8 +404,10 @@ public class SimpleStreamFormatter {
                     QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
                     if (depi != null) {
                         PacketDescriptor pd;
-                        pd = doPacketDescriptor(sd, depi, false, 0);
-
+                        
+                        boolean valuesInDescriptor= depi.rank()==1 && depi.length() < 6;
+                        pd = doPacketDescriptor(sd, depi, false, valuesInDescriptor, 1);
+                        
                         sd.addDescriptor(pd);
 
                         depPackets.add(pd);
@@ -399,12 +418,12 @@ public class SimpleStreamFormatter {
                 sd.send(mainPd, out);
 
                 for (PacketDescriptor deppd : depPackets) {
-                    formatPackets(out, sd, deppd);
+                    if ( !deppd.isValuesInDescriptor() ) formatPackets(out, sd, deppd);
                 }
 
                 formatPackets(out, sd, mainPd);
             }
-            
+
         } catch (ParserConfigurationException ex) {
             throw new RuntimeException(ex);
         }
