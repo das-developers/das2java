@@ -72,6 +72,17 @@ public class PacketDescriptor implements Descriptor {
         return Collections.unmodifiableList(planes);
     }
 
+    boolean valuesInDescriptor= false;
+    
+    void setValuesInDescriptor(boolean b) {
+        valuesInDescriptor= b;
+    }
+
+    boolean isValuesInDescriptor() {
+        return valuesInDescriptor;
+    }
+
+
     void setDomElement(Element packetElement) {
         domElement = packetElement;
     }
