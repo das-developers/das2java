@@ -93,7 +93,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * indicates the dataset was clipped by dataSetSizeLimit 
      */
     private boolean dataSetClipped;
-
+    
+    /**
+     * indicates that no valid data was found in interval
+     */
+    private boolean noValidData;
+    
     public SeriesRenderer() {
         super();
         updatePsym();
@@ -812,6 +817,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (dataSetClipped) {
             parent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
+        
+        if (noValidData) {
+            if ( lastIndex > firstIndex ) {
+                parent.postMessage(this, "no valid data in interval", DasPlot.INFO, null, null);
+            } else {
+                parent.postMessage(this, "no data in interval", DasPlot.INFO, null, null);
+            }
+        }
     }
 
     /**
@@ -884,6 +897,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
             dataSetClipped = true;
         }
 
+        noValidData= pointsPlotted==0; //TODO: this doesn't support oversize rendering
+        
         lastIndex = index;
 
     }
