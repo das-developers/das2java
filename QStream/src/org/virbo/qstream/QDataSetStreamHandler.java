@@ -126,6 +126,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 int rank = Integer.parseInt(n.getAttribute("rank"));
                 String sdims = xpath.evaluate("values/@length", n);
                 String ttype = xpath.evaluate("values/@encoding", n);
+                String svals = xpath.evaluate("values/@values", n );
                 int[] dims;
                 if (sdims == null) {
                     dims = new int[0];
@@ -145,6 +146,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                     join.join(builder.getDataSet());
                     builder = createBuilder(rank, dims);
                     builders.put(name, builder);
+                }
+                if ( svals!=null && !svals.trim().equals("") ) { //TODO: length 0?
+                    String[] ss= svals.split(",");
+                    for ( int j=0; j<ss.length; j++ ) builder.putValue( j, Double.parseDouble(ss[j]) );
                 }
                 NodeList odims = (NodeList) xpath.evaluate("properties/property", n, XPathConstants.NODESET);
 
