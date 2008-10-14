@@ -105,4 +105,7 @@ public class NullProgressMonitor implements ProgressMonitor {
         return label; 
     }
     
+    public String toString() {
+        return "" + this.position + " of "+ this.taskSize;
+    }
 }
