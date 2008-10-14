@@ -66,7 +66,9 @@ public class AboutUtil {
      * @return one line per jar
      */
     public static List<String> getBuildInfos() throws IOException {
-        Enumeration<URL> urls = AboutUtil.class.getClassLoader().getResources("META-INF/build.txt");
+        ClassLoader loader= AboutUtil.class.getClassLoader();
+        if ( loader==null ) loader= ClassLoader.getSystemClassLoader();
+        Enumeration<URL> urls = loader.getResources("META-INF/build.txt");
 
         List<String> result = new ArrayList<String>();
 
