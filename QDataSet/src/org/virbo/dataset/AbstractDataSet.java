@@ -19,10 +19,10 @@ import java.util.HashMap;
  */
 public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSet {
     
-    protected HashMap properties;
+    protected HashMap<String,Object> properties;
     
     public AbstractDataSet() {
-        properties= new HashMap();
+        properties= new HashMap<String,Object>();
     }
 
     public abstract int rank();
