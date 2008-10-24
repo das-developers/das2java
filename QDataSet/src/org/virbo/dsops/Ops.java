@@ -58,7 +58,7 @@ public class Ops {
      * @param op
      * @return
      */
-    public static final DDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
+    public static final MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
         Units u = (Units) ds1.property(QDataSet.UNITS);
         if (u == null) {
@@ -101,7 +101,7 @@ public class Ops {
      * @param op
      * @return
      */
-    public static final QDataSet applyBinaryOp(QDataSet ds1, QDataSet ds2, BinaryOp op) {
+    public static final MutablePropertyDataSet applyBinaryOp(QDataSet ds1, QDataSet ds2, BinaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
 
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
@@ -125,6 +125,7 @@ public class Ops {
         Map<String, Object> m2 = DataSetUtil.getProperties(ds2);
         Map<String, Object> m3 = equalProperties(m1, m2);
         DataSetUtil.putProperties(m3, result);
+        result.putProperty( QDataSet.FILL_VALUE, u1.getFillDouble() );
         return result;
     }
 
@@ -538,12 +539,13 @@ public class Ops {
      * @return
      */
     public static QDataSet multiply(QDataSet ds1, QDataSet ds2) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
+        MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return d1 * d2;
             }
         });
+        result.putProperty( QDataSet.UNITS, null );
+        return result;
     }
 
     /**
@@ -552,12 +554,13 @@ public class Ops {
      * @return
      */
     public static QDataSet divide(QDataSet ds1, QDataSet ds2) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
+        MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return d1 / d2;
             }
         });
+        result.putProperty( QDataSet.UNITS, null );
+        return result;
     }
 
     /**
