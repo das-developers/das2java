@@ -93,12 +93,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * indicates the dataset was clipped by dataSetSizeLimit 
      */
     private boolean dataSetClipped;
-    
-    /**
-     * indicates that no valid data was found in interval
-     */
-    private boolean noValidData;
-    
+
     public SeriesRenderer() {
         super();
         updatePsym();
@@ -315,10 +310,14 @@ public class SeriesRenderer extends Renderer implements Displayable {
             p = new GeneralPath();
             for (int i = firstIndex; i < lastIndex; i++) {
                 float ix = (float) xAxis.transform(vds.getXTagDouble(i, xunits), xunits);
-                float iym = (float) yAxis.transform(vds.getDouble(i, yunits) - deltaMinusY.getDouble(i, yoffsetUnits), yunits);
-                float iyp = (float) yAxis.transform(vds.getDouble(i, yunits) + deltaPlusY.getDouble(i, yoffsetUnits), yunits);
-                p.moveTo(ix, iym);
-                p.lineTo(ix, iyp);
+                double dp= deltaPlusY.getDouble(i, yoffsetUnits);
+                double dm= deltaMinusY.getDouble(i, yoffsetUnits);
+                if ( yoffsetUnits.isValid(dp) && yoffsetUnits.isValid(dm) ) {
+                    float iym = (float) yAxis.transform(vds.getDouble(i, yunits) - dm, yunits);
+                    float iyp = (float) yAxis.transform(vds.getDouble(i, yunits) + dp, yunits);
+                    p.moveTo(ix, iym);
+                    p.lineTo(ix, iyp);
+                }
             }
 
         }
@@ -766,16 +765,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
                     if (extraConnectorElements[j] != null) {  // thread race
 
                         extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
-
-                        int myIndex = j;
-
-                        int ix = (int) (xAxis.getColumn().getDMaximum() - maxWidth - parent.getEmSize());
-                        int iy = (int) (yAxis.getRow().getDMinimum() + parent.getEmSize() * (0.5 + myIndex));
-                        g.setColor(extraConnectorElements[j].color);
-                        g.fillRect(ix, iy, 5, 5);
-                        String label = String.valueOf(tds.getYTagDatum(0, j));
-                        g.setColor(color);
-                        g.drawString(label, ix + (int) (parent.getEmSize() / 2), iy + (int) (parent.getEmSize() / 2));
+                        
+                        String label = String.valueOf(tds.getYTagDatum(0, j)).trim();
+                        
+                        parent.addToLegend( this, (ImageIcon)GraphUtil.colorIcon( extraConnectorElements[j].color, 5, 5 ), j, label );
                     }
                 }
             }
@@ -816,14 +809,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         if (dataSetClipped) {
             parent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
-        }
-        
-        if (noValidData) {
-            if ( lastIndex > firstIndex ) {
-                parent.postMessage(this, "no valid data in interval", DasPlot.INFO, null, null);
-            } else {
-                parent.postMessage(this, "no data in interval", DasPlot.INFO, null, null);
-            }
         }
     }
 
@@ -897,8 +882,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             dataSetClipped = true;
         }
 
-        noValidData= pointsPlotted==0; //TODO: this doesn't support oversize rendering
-        
         lastIndex = index;
 
     }
@@ -1495,7 +1478,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
 
     public void setUpdatesPointsPerMillisecond(double newupdatesPointsPerMillisecond) {
-        double oldupdatesPointsPerMillisecond = updatesPointsPerMillisecond;
+        //double oldupdatesPointsPerMillisecond = updatesPointsPerMillisecond;
         this.updatesPointsPerMillisecond = newupdatesPointsPerMillisecond;
         //propertyChangeSupport.firePropertyChange(PROP_UPDATESPOINTSPERMILLISECOND, oldupdatesPointsPerMillisecond, newupdatesPointsPerMillisecond);
     }
@@ -1507,7 +1490,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     }
 
     public void setRenderPointsPerMillisecond(double newrenderPointsPerMillisecond) {
-        double oldrenderPointsPerMillisecond = renderPointsPerMillisecond;
+        //double oldrenderPointsPerMillisecond = renderPointsPerMillisecond;
         this.renderPointsPerMillisecond = newrenderPointsPerMillisecond;
         //propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
     }
