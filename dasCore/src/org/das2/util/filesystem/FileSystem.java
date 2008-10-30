@@ -248,4 +248,26 @@ public abstract class FileSystem  {
         return result;
         
     }
+    
+    /**
+     * DirectoryEntry defines a structure for containing directory entry data.
+     */
+    public class DirectoryEntry {
+        /**
+         * the name within the context of the directory.
+         */
+        public String name; 
+        /**
+         * the type of entry.  d=directory, f=file
+         */
+        public char type; 
+        /**
+         * the length in bytes of the entry
+         */
+        public long size; 
+        /**
+         * modified date, in seconds since 1970.
+         */
+        public long modified;
+    }
 }
