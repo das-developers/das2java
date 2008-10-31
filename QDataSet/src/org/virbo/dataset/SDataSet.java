@@ -233,6 +233,13 @@ public final class SDataSet extends AbstractDataSet implements WritableDataSet {
         return new SDataSet( 2, nx, ny, 1, back );
     }
         
+    /**
+     * creates a DataSet by wrapping an existing array, aliasing it to rank 3.
+     */
+    public static SDataSet wrap( short[] back, int nx, int ny, int nz ) {
+        return new SDataSet( 3, nx, ny, nz, back );
+    }
+    
     private void joinProperties( SDataSet ds ) {
         Map result= new HashMap();
         for ( int i=0; i<ds.rank(); i++ ) {

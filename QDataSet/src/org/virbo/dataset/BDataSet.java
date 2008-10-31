@@ -233,6 +233,13 @@ public final class BDataSet extends AbstractDataSet implements WritableDataSet {
         return new BDataSet( 2, nx, ny, 1, back );
     }
         
+    /**
+     * creates a DataSet by wrapping an existing array, aliasing it to rank 3.
+     */
+    public static BDataSet wrap( byte[] back, int nx, int ny, int nz ) {
+        return new BDataSet( 3, nx, ny, nz, back );
+    }
+    
     private void joinProperties( BDataSet ds ) {
         Map result= new HashMap();
         for ( int i=0; i<ds.rank(); i++ ) {

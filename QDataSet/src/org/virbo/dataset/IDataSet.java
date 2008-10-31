@@ -232,7 +232,14 @@ public final class IDataSet extends AbstractDataSet implements WritableDataSet {
     public static IDataSet wrap( int[] back, int nx, int ny ) {
         return new IDataSet( 2, nx, ny, 1, back );
     }
-        
+
+    /**
+     * creates a DataSet by wrapping an existing array, aliasing it to rank 3.
+     */
+    public static IDataSet wrap( int[] back, int nx, int ny, int nz ) {
+        return new IDataSet( 3, nx, ny, nz, back );
+    }
+    
     private void joinProperties( IDataSet ds ) {
         Map result= new HashMap();
         for ( int i=0; i<ds.rank(); i++ ) {
