@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -278,7 +279,7 @@ public class DataSetUtil {
     /**
      * calculate cadence by averaging consistent inter-point distances, 
      * taking invalid measurements into account.  This number needs to be interpretted
-     * in the context of the dataset, for example using the properties UNITS and
+     * in the context of the dataset using the properties UNITS and
      * SCALE_TYPE.  If SCALE_TYPE is "log", then this number should be interpreted
      * as the ratiometric spacing in natural log space.  
      * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
@@ -327,7 +328,26 @@ public class DataSetUtil {
                 x0 = xds.value(i);
             }
         }
-        return cadenceS / cadenceN;
+        
+        double avg= cadenceS / cadenceN;
+        
+        QDataSet hist= Ops.histogram( Ops.diff(xds), 0, avg*10, avg*10/99 );
+        
+        int maxPeak= -1;
+        int minPeak= -1;
+        int peakHeight= Math.min( 1, xds.length() / 20 );
+        for ( i=0; i<hist.length(); i++ ) {  // expect to see just one peak, otherwise use max peak.
+            if ( hist.value(i)>=peakHeight ) {
+                if ( minPeak==-1 ) minPeak= i;
+                maxPeak= i;
+            }
+        }
+        if ( maxPeak>minPeak ) {
+            return ((QDataSet)hist.property(QDataSet.DEPEND_0)).value(maxPeak);
+        } else {
+            return avg;
+        }
+        
     }
 
     /**
