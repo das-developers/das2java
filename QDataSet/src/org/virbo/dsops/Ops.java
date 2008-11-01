@@ -165,7 +165,6 @@ public class Ops {
      */
     public static QDataSet subtract(QDataSet ds1, QDataSet ds2) {
         MutablePropertyDataSet result = (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
                 return d1 - d2;
             }
@@ -175,6 +174,9 @@ public class Ops {
         if (units1 != null && units1 == units2) {
             result.putProperty(QDataSet.UNITS, units1.getOffsetUnits());
         }
+        result.putProperty(QDataSet.NAME, null );
+        result.putProperty(QDataSet.MONOTONIC, null );
+        
         return result;
     }
 
