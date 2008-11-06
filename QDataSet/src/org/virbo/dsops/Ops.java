@@ -861,7 +861,7 @@ public class Ops {
      * @param len0
      * @return
      */
-    public static QDataSet replicate(double val, int len0) {
+    public static WritableDataSet replicate(double val, int len0) {
         int size = len0;
         double[] back = new double[size];
         for (int i = 0; i < size; i++) {
@@ -877,7 +877,7 @@ public class Ops {
      * @param len1
      * @return
      */
-    public static QDataSet replicate(double val, int len0, int len1) {
+    public static WritableDataSet replicate(double val, int len0, int len1) {
         int size = len0 * len1;
         double[] back = new double[size];
         for (int i = 0; i < size; i++) {
@@ -894,7 +894,7 @@ public class Ops {
      * @param len2
      * @return
      */
-    public static QDataSet replicate(double val, int len0, int len1, int len2) {
+    public static WritableDataSet replicate(double val, int len0, int len1, int len2) {
         int size = len0 * len1 * len2;
         double[] back = new double[size];
         for (int i = 0; i < size; i++) {
@@ -909,7 +909,7 @@ public class Ops {
      * @param len0
      * @return
      */
-    public static QDataSet replicate(float val, int len0) {
+    public static WritableDataSet replicate(float val, int len0) {
         int size = len0;
         float[] back = new float[size];
         for (int i = 0; i < size; i++) {
@@ -925,7 +925,7 @@ public class Ops {
      * @param len1
      * @return
      */
-    public static QDataSet replicate(float val, int len0, int len1) {
+    public static WritableDataSet replicate(float val, int len0, int len1) {
         int size = len0 * len1;
         float[] back = new float[size];
         for (int i = 0; i < size; i++) {
@@ -942,7 +942,7 @@ public class Ops {
      * @param len2
      * @return
      */
-    public static QDataSet replicate(float val, int len0, int len1, int len2) {
+    public static WritableDataSet replicate(float val, int len0, int len1, int len2) {
         int size = len0 * len1 * len2;
         float[] back = new float[size];
         for (int i = 0; i < size; i++) {
@@ -956,7 +956,7 @@ public class Ops {
      * @param len0
      * @return
      */
-    public static QDataSet zeros(int len0) {
+    public static WritableDataSet zeros(int len0) {
         return replicate(0.0, len0);
     }
 
@@ -965,7 +965,7 @@ public class Ops {
      * @param len0
      * @return
      */
-    public static QDataSet zeros(int len0, int len1) {
+    public static WritableDataSet zeros(int len0, int len1) {
         return replicate(0.0, len0, len1);
     }
 
@@ -974,8 +974,19 @@ public class Ops {
      * @param len0
      * @return
      */
-    public static QDataSet zeros(int len0, int len1, int len2) {
+    public static WritableDataSet zeros(int len0, int len1, int len2) {
         return replicate(0.0, len0, len1, len2);
+    }
+
+    /**
+     * return a new dataset filled with zeroes that has the same geometry as
+     * the given dataset.
+     * Only supports QUBE datasets.
+     * @param ds
+     * @return a new dataset with filled with zeroes with the same geometry.
+     */
+    public static WritableDataSet zeros( QDataSet ds ) {
+        return DDataSet.create( DataSetUtil.qubeDims(ds) );
     }
 
     /**
@@ -1824,6 +1835,7 @@ public class Ops {
      * N-1 elements is returned.
      * @param ds a rank 1 dataset with N elements.
      * @return a rank 1 dataset with N-1 elements.
+     * @see accumulate
      */
     public static QDataSet diff(QDataSet ds) {
         if (ds.rank() > 1) {
@@ -1837,6 +1849,25 @@ public class Ops {
         return result;
     }
 
+    /**
+     * return an array that is the running sum of each element in the array,
+     * starting with the value accum.
+     * Result[i]= accum + total( ds[0:i+1] )
+     * @param accum
+     * @param ds
+     * @return the running of each element in the array.
+     * @see diff
+     */
+    public static QDataSet accum( double accum, QDataSet ds ) {
+        WritableDataSet result= zeros( ds );
+        QubeDataSetIterator it= new QubeDataSetIterator(ds);
+        while ( it.hasNext() ) {
+            it.next();
+            accum+= it.getValue(ds);
+            it.putValue(result, accum);
+        }
+        return result;
+    }
     /**
      * create a labels dataset for tagging rows of a dataset.
      * Example:
