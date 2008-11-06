@@ -23,6 +23,12 @@ public class TrimStrideWrapper extends AbstractDataSet {
         offset= new int[ds.rank()];
         stride= new int[ds.rank()];
         for ( int i=0; i<ds.rank(); i++ ) stride[i]= 1;
+        putProperty( QDataSet.NAME, ds.property(QDataSet.NAME ) );
+        putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
+        putProperty( QDataSet.FILL_VALUE, ds.property(QDataSet.FILL_VALUE) );
+        putProperty( QDataSet.VALID_MIN, ds.property(QDataSet.VALID_MIN) );
+        putProperty( QDataSet.VALID_MAX, ds.property(QDataSet.VALID_MAX) );
+        
     }
 
     public void setTrim( int dim, Integer start, Integer stop, Integer stride ) {
@@ -30,6 +36,12 @@ public class TrimStrideWrapper extends AbstractDataSet {
         this.stride[dim]= stride == null ? 1 : stride;
         int sstop= stop==null ? qube[dim] : stop;
         this.len[dim]= ( sstop - this.offset[dim] ) / this.stride[dim];
+        QDataSet dep= (QDataSet) ds.property("DEPEND_"+dim);
+        if ( dep!=null && dep.rank()==1 ) {
+            TrimStrideWrapper depw= new TrimStrideWrapper( dep );
+            depw.setTrim( 0, start, stop, stride );
+            putProperty( "DEPEND_"+dim, depw );
+        }
     }
     
     @Override
@@ -60,10 +72,5 @@ public class TrimStrideWrapper extends AbstractDataSet {
     public int length() {
         return len[0];
     }
-
-    public Object property(String name) {
-        return ds.property(name);
-    }
-    
     
 }
