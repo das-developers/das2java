@@ -290,11 +290,14 @@ public class DataSetUtil {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
         assert (xds.length() == yds.length());
+
         Units u = (Units) yds.property(QDataSet.UNITS);
         if (u == null) {
             u = Units.dimensionless;
         }
         double cadence = Double.MAX_VALUE;
+
+        if ( xds.length()<2 ) return cadence;
 
         // calculate average cadence for consistent points.  Preload to avoid extra branch.
         double cadenceS = Double.MAX_VALUE;
