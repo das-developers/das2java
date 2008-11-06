@@ -77,6 +77,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private Object lockObject = new Object();
     private DasColorBar colorBar;
     private Image plotImage;
+    private Rectangle plotImageBounds;
+    
     private byte[] raster;
     private int rasterWidth,  rasterHeight;
     DatumRange imageXRange;
@@ -236,7 +238,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 }
             } else if (plotImage != null) {
                 Point2D p;
-                p = new Point2D.Float(xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum());
+                p = new Point2D.Float( plotImageBounds.x, plotImageBounds.y );
                 int x = (int) (p.getX() + 0.5);
                 int y = (int) (p.getY() + 0.5);
                 if (parent.getCanvas().isPrintingThread() && print300dpi) {
@@ -319,16 +321,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 BufferedImage plotImage2;  // index color model
 
-                synchronized (this) {
-                    int w = xAxis.getColumn().getDMaximum() - xAxis.getColumn().getDMinimum();
-                    int h = yAxis.getRow().getDMaximum() - yAxis.getRow().getDMinimum();
+                synchronized (lockObject) {
+
+                    Rectangle plotImageBounds2= parent.getCacheImageBounds();
 
                     if (raster != null && xmemento != null && ymemento != null && xAxis.getMemento().equals(xmemento) && yAxis.getMemento().equals(ymemento) && colorBar.getMemento().equals(cmemento)) {
                         logger.fine("same xaxis, yaxis, reusing raster");
 
                     } else {
 
-                        if (getParent() == null || w <= 1 || h <= 1) {
+                        if (getParent() == null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
                             logger.finest("canvas not useable!!!");
                             return;
                         }
@@ -336,6 +338,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         if (this.ds == null) {
                             logger.fine("got null dataset, setting image to null");
                             plotImage = null;
+                            plotImageBounds= null;
                             rebinDataSet = null;
                             imageXRange = null;
                             imageYRange = null;
@@ -347,6 +350,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         if (this.ds.getXLength() == 0) {
                             logger.fine("got empty dataset, setting image to null");
                             plotImage = null;
+                            plotImageBounds= null;
                             rebinDataSet = null;
                             imageXRange = null;
                             imageYRange = null;
@@ -371,13 +375,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         
                         RebinDescriptor xRebinDescriptor;
                         xRebinDescriptor = new RebinDescriptor(
-                                xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-                                w,
+                                xAxis.invTransform(plotImageBounds2.x),
+                                xAxis.invTransform(plotImageBounds2.x+plotImageBounds2.width),
+                                plotImageBounds2.width,
                                 xAxis.isLog());
 
                         RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                                yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-                                h,
+                                yAxis.invTransform(plotImageBounds2.y+plotImageBounds2.height),
+                                yAxis.invTransform(plotImageBounds2.y),
+                                plotImageBounds2.height,
                                 yAxis.isLog());
 
                         imageXRange = xAxis.getDatumRange();
@@ -398,18 +404,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         cmemento = colorBar.getMemento();
 
                         raster = transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped());
-                        rasterWidth = w;
-                        rasterHeight = h;
+                        rasterWidth = plotImageBounds2.width;
+                        rasterHeight = plotImageBounds2.height;
 
                     }
 
                     IndexColorModel model = colorBar.getIndexColorModel();
-                    plotImage2 = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_INDEXED, model);
+                    plotImage2 = new BufferedImage(plotImageBounds2.width, plotImageBounds2.height, BufferedImage.TYPE_BYTE_INDEXED, model);
 
                     WritableRaster r = plotImage2.getRaster();
 
                     try {
-                        if ( w==rasterWidth && h==rasterHeight ) {
+                        if ( plotImageBounds2.width==rasterWidth && plotImageBounds2.height==rasterHeight ) {
                             r.setDataElements(0, 0, rasterWidth, rasterHeight, raster);
                         } else {
                             System.err.println("avoided raster ArrayIndex... track this down sometime...");
@@ -418,15 +424,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         throw ex;
                     }
                     plotImage = plotImage2;
+                    plotImageBounds= plotImageBounds2;
 
-                }
-                synchronized (lockObject) {
-                    plotImage = plotImage2;
                 }
             } catch (InconvertibleUnitsException ex) {
                 logger.fine("inconvertable units, setting image to null");
                 ex.printStackTrace();
                 plotImage = null;
+                plotImageBounds= null;
                 rebinDataSet = null;
                 imageXRange = null;
                 imageYRange = null;
