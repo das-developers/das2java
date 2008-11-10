@@ -8,6 +8,8 @@ package org.virbo.dataset;
  * return a rank N-1 dataset from a rank N dataset by slicing on the first
  * dimension.  (Rank 2 and 3 supported.)
  * 
+ * plane datasets are sliced as well, when they have rank 2 or greater.
+ * 
  * @author jbf
  */
 public class Slice1DataSet extends AbstractDataSet {
@@ -19,6 +21,9 @@ public class Slice1DataSet extends AbstractDataSet {
         if (ds.rank() > 3 ) {
             throw new IllegalArgumentException("rank limit > 3");
         }
+        if ( ds.rank()<2 ) {
+            throw new IllegalArgumentException("rank limit < 2");
+        }
         this.ds = ds;
         this.index = index;
 
@@ -26,7 +31,11 @@ public class Slice1DataSet extends AbstractDataSet {
         
         QDataSet plane0= (QDataSet) ds.property( QDataSet.PLANE_0 );
         if ( plane0!=null ) {
-            putProperty( QDataSet.PLANE_0, new Slice1DataSet( plane0, index ) );
+            if ( plane0.rank()<2 ) {
+                putProperty( QDataSet.PLANE_0, plane0 );
+            } else {
+                putProperty( QDataSet.PLANE_0, new Slice1DataSet( plane0, index ) );
+            }
         }
     }
 
