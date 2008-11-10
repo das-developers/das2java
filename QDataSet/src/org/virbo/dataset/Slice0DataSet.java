@@ -7,9 +7,11 @@ package org.virbo.dataset;
 /**
  * Wraps a rank N dataset, slicing on an index of the first dimension to make a rank N-1 dataset.
  * This is currently used to implement DataSetOps.slice0().
+ * 
+ * Slicing a rank 1 dataset results in a rank 0 dataset.
  * @author jbf
  */
-public class Slice0DataSet extends AbstractDataSet {
+public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
 
     QDataSet ds;
     int index;
@@ -100,5 +102,10 @@ public class Slice0DataSet extends AbstractDataSet {
     @Override
     public int hashCode() {
         return ds.hashCode() + index;
+    }
+
+    public double value() {
+        if ( rank()!=0 ) throw new IllegalArgumentException("rank error");
+        return ds.value(index);
     }
 }
