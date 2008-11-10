@@ -11,13 +11,40 @@ package org.virbo.dataset;
 import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Map;
 
 /**
  * Useful operations for QDataSets
  * @author jbf
  */
 public class DataSetOps {
+
+    /**
+     * return a dataset that has mutable properties.  If the dataset parameter already has, then the 
+     * dataset is returned.
+     * @param dataset
+     * @return a WritableDataSet that is either a copy of the read-only dataset provided, or the parameter writable dataset provided.
+     */
+    public static MutablePropertyDataSet makePropertiesMutable( final QDataSet dataset) {
+        if ( dataset instanceof MutablePropertyDataSet ) {
+            return (MutablePropertyDataSet) dataset;
+        } else {
+            return new DataSetWrapper(dataset);
+        }
+    }
+
+    /**
+     * return a dataset that is writable.  If the dataset parameter is already writable, then the 
+     * dataset is returned.
+     * @param dataset
+     * @return a WritableDataSet that is either a copy of the read-only dataset provided, or the parameter writable dataset provided.
+     */
+    public static WritableDataSet makeWritable(QDataSet dataset) {
+        if ( dataset instanceof WritableDataSet ) {
+            return (WritableDataSet) dataset;
+        } else {
+            return DDataSet.copy(dataset);
+        }
+    }
 
     /**
      *slice on the first dimension
@@ -409,7 +436,7 @@ public class DataSetOps {
 
         return result;
     }
-
+    
     /**
      * performs the moment (mean,variance,etc) on the dataset.
      * @param ds rank N QDataSet.
