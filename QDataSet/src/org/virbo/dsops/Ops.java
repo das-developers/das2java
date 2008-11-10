@@ -1331,7 +1331,7 @@ public class Ops {
             }
         });
     }
-
+    
     /**
      * returns a dataset containing the indeces of where the dataset is non-zero.
      * For a rank 1 dataset, returns a rank 1 dataset with indeces for the values.
@@ -1853,8 +1853,8 @@ public class Ops {
      * return an array that is the running sum of each element in the array,
      * starting with the value accum.
      * Result[i]= accum + total( ds[0:i+1] )
-     * @param accum
-     * @param ds
+     * @param accum the initial value of the running sum
+     * @param ds each element is added to the running sum
      * @return the running of each element in the array.
      * @see diff
      */
@@ -1868,6 +1868,20 @@ public class Ops {
         }
         return result;
     }
+
+
+    /**
+     * return an array that is the running sum of each element in the array,
+     * starting with the value accum.
+     * Result[i]= total( ds[0:i+1] )
+     * @param ds each element is added to the running sum
+     * @return the running of each element in the array.
+     * @see diff
+     */
+    public static QDataSet accum( QDataSet ds ) {
+        return accum( 0., ds );
+    }
+
     /**
      * create a labels dataset for tagging rows of a dataset.
      * Example:
