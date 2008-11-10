@@ -291,6 +291,10 @@ public class DataSetUtil {
         }
         assert (xds.length() == yds.length());
 
+        if ( yds.rank()>1 ) { //TODO: check for fill columns.
+            yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
+        }
+        
         Units u = (Units) yds.property(QDataSet.UNITS);
         if (u == null) {
             u = Units.dimensionless;
@@ -540,7 +544,25 @@ public class DataSetUtil {
     public static QDataSet weightsDataSet(final QDataSet ds) {
         QDataSet result = (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
         if (result == null) {
-            result = new WeightsDataSet(ds);
+            Double validMin = (Double) ds.property(QDataSet.VALID_MIN);
+            if ( validMin==null ) validMin= Double.NEGATIVE_INFINITY;
+            Double validMax = (Double) ds.property(QDataSet.VALID_MAX);
+            if ( validMax==null ) validMax= Double.POSITIVE_INFINITY;
+            Units u = (Units) ds.property(QDataSet.UNITS);
+            Double ofill = (Double) ds.property(QDataSet.FILL_VALUE);
+            double fill = ( ofill == null ? Double.NaN : ofill.doubleValue() );
+            boolean check= ( validMin > -1*Double.MAX_VALUE 
+                || validMax < Double.MAX_VALUE 
+                || !( Double.isNaN(fill) ) );
+            if ( check ) {
+                result = new WeightsDataSet.ValidRangeFillFinite(ds);
+            } else {
+                if ( u!=null ) {
+                    result = new WeightsDataSet.FillFinite(ds); // support legacy Units to specify fill value
+                } else {
+                    result = new WeightsDataSet.Finite(ds);
+                }
+            }
         }
         return result;
     }
