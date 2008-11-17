@@ -716,6 +716,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public void setPinned(boolean b) {
         pinned = b;
     }
+    
+    public boolean getPinned() {
+        return pinned;
+    }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -956,11 +960,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         return result;
     }
 
+    /**
+     * @deprecated use getPrimaryModuleByLabel
+     * @return
+     */
     public String getPrimaryModuleLabel() {
         MouseModule primary = getPrimaryModule();
         return primary == null ? "" : primary.getLabel();
     }
 
+    public String getPrimaryModuleByLabel() {
+        MouseModule primary = getPrimaryModule();
+        return primary == null ? "" : primary.getLabel();
+    }
+    
     public void setPrimaryModuleByLabel(String label) {
         MouseModule mm = getModuleByLabel(label);
         if (mm != null) {
@@ -968,11 +981,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
     }
 
+    /**
+     * @deprecated use getSecondaryModuleByLabel
+     * @return
+     */
     public String getSecondaryModuleLabel() {
         MouseModule secondary = getPrimaryModule();
         return secondary == null ? "" : secondary.getLabel();
     }
 
+    public String getSecondaryModuleByLabel() {
+        MouseModule secondary = getPrimaryModule();
+        return secondary == null ? "" : secondary.getLabel();
+    }
+    
     public void setSecondaryModuleByLabel(String label) {
         MouseModule mm = getModuleByLabel(label);
         if (mm != null) {
