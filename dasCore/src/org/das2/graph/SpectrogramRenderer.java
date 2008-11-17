@@ -325,12 +325,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                     Rectangle plotImageBounds2= parent.getCacheImageBounds();
 
-                    if (raster != null && xmemento != null && ymemento != null && xAxis.getMemento().equals(xmemento) && yAxis.getMemento().equals(ymemento) && colorBar.getMemento().equals(cmemento)) {
+                    if ( raster != null 
+                            && xmemento != null && ymemento != null 
+                            && xAxis.getMemento().equals(xmemento)                             
+                            && yAxis.getMemento().equals(ymemento) 
+                            && colorBar.getMemento().equals(cmemento)
+                            && plotImageBounds2.width==rasterWidth  // TODO: figure out how plotImageBounds2 and xmemento get out of sync.
+                            && plotImageBounds2.height==rasterHeight ) {
                         logger.fine("same xaxis, yaxis, reusing raster");
-
+                        
                     } else {
 
-                        if (getParent() == null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
+                        if (getParent() == null || plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
                             logger.finest("canvas not useable!!!");
                             return;
                         }
