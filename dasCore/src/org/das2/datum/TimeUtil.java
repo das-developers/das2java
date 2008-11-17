@@ -402,7 +402,7 @@ public final class TimeUtil {
         if (result.day==0) {
             int daysLastMonth;
             if (result.month>1) {
-                daysLastMonth= daysInMonth(result.year,result.month-1);
+                daysLastMonth= daysInMonth(result.month-1,result.year);
             } else {
                 daysLastMonth= 31;
             }
@@ -417,8 +417,24 @@ public final class TimeUtil {
         
         return result;
     }
-    
+
+    /**
+     * convert times like "2000-01-01T24:00" to "2000-01-02T00:00" and
+     * "2000-002T00:00" to "2000-01-02T00:00".
+     * @param t
+     * @return
+     */
     public static TimeStruct normalize( TimeStruct t ) {
+        if ( t.doy>0 && t.day==0 ) {
+             int leap= isLeapYear(t.year) ? 1: 0;
+             if ( t.doy>dayOffset[leap][13] ) throw new IllegalArgumentException("doy>"+dayOffset[leap][13]+")");
+             int month= 12;
+             while ( dayOffset[leap][month] > t.doy ) {
+                 month--;
+             }
+             t.day= t.doy - dayOffset[leap][month];
+             t.month= month;
+        }
         return carry(borrow(t));
     }
     
