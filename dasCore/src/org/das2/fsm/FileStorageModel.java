@@ -325,9 +325,9 @@ public class FileStorageModel {
         
         TimeUtil.TimeStruct ts1= new TimeUtil.TimeStruct();
         ts1.year=0;
-        ts1.day=1;
+        ts1.day=0;
         ts1.month=1;
-        ts1.doy=1;
+        ts1.doy=0;
         ts1.hour=0;
         ts1.minute=0;
         ts1.seconds=0;
@@ -341,6 +341,7 @@ public class FileStorageModel {
                 String s= m.group(i+1);
                 fieldHandlers[i].handle(s,ts1,ts2);
             }
+            if ( ts1.doy==0 && ts1.day==0 ) ts1.day= 1;
             TimeUtil.normalize(ts1);
             if ( copyToEndTime[1] ) ts2.year= ts1.year;
             if ( copyToEndTime[2] ) ts2.month= ts1.month;
