@@ -18,10 +18,10 @@ public class TimerConsoleFormatter extends Formatter {
     long t0;
     DecimalFormat nf;
     String lastLoggerName;
+    String resetMessage;
 
     public String format(LogRecord rec) {
-        String resetMessage = "firing data point selection event";
-        StackTraceElement[] st = new Throwable().getStackTrace();
+        
         final String message = rec.getMessage();
         //if ( lastLoggerName==null || lastLoggerName!=rec.getLoggerName() ) {
         if (message != null && message.contains(resetMessage)) {
@@ -29,11 +29,15 @@ public class TimerConsoleFormatter extends Formatter {
             t0 = System.currentTimeMillis();
         }
 
+        String spaces = "                                  ";
         String source = "???";
+        
+        StackTraceElement[] st = new Throwable().getStackTrace();
         if (st.length > 8) {
-            source = String.valueOf(st[8].getClassName());
+            int idx= 5;
+            while ( idx<8 && st[idx].getClassName().contains("java.util.logging.Logger") ) idx++;
+            source = String.valueOf(st[idx].getClassName());
             if (source.startsWith("org.das2")) {
-                String spaces = "                                  ";
                 source = source.substring("org.das2".length());
                 if (source.length() < spaces.length()) {
                     source = spaces.substring(source.length()) + source;
@@ -42,11 +46,30 @@ public class TimerConsoleFormatter extends Formatter {
         }
 
         long t = System.currentTimeMillis() - t0;
-        return nf.format(t) + ":" + rec.getLoggerName() + ": " + source + ": " + rec.getLevel().getLocalizedName() + ": " + String.valueOf(message) + "\n";
+        
+        String threadId= Thread.currentThread().getName();
+        threadId = fixedColumn(threadId, 20);
+        
+        return nf.format(t) + ":" + fixedColumn(rec.getLoggerName(),20) + ": " + source + ": " + threadId+":" + rec.getLevel().getLocalizedName() + ": " + String.valueOf(message) + "\n";
     }
 
+    public void setResetMessage( String msg ) {
+        this.resetMessage= msg;
+    }
+    
     public TimerConsoleFormatter() {
         t0 = System.currentTimeMillis();
         nf = new DecimalFormat("00000");
+    }
+
+    String spaces= "                                                               ";
+    private String fixedColumn(String threadId, int sp) {
+        try {
+        if (threadId.length() > sp) threadId = threadId.substring(threadId.length()-sp, threadId.length());
+        if (threadId.length() < sp) threadId = spaces.substring(0, sp - threadId.length()) + threadId;
+        return threadId;
+        } catch ( StringIndexOutOfBoundsException ex ) {
+            return threadId;
+        }
     }
 }
