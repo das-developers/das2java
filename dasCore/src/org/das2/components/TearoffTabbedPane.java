@@ -82,7 +82,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             this.babysitter = null;
         }
     }
-    HashMap tabs = new HashMap();
+    HashMap<Component,TabDesc> tabs = new HashMap<Component,TabDesc>();
     int lastSelected; /* keep track of selected index before context menu */
 
 
@@ -336,9 +336,36 @@ public class TearoffTabbedPane extends JTabbedPane {
         tabs.put(component, new TabDesc(title, icon, component, tip, indexOfComponent(component)));
     }
 
+    private Component getTabComponentByIndex( int index ) {
+        for ( Component key:tabs.keySet() ) {
+            TabDesc td= tabs.get(key);
+            if ( td.index==index ) {
+                return key;
+            }
+        }
+        return null;
+    }
+
+    private Component getTabComponentByTitle( String title ) {
+        for ( Component key:tabs.keySet() ) {
+            TabDesc td= tabs.get(key);
+            if ( td.title==title ) {
+                return key;
+            }
+        }
+        return null;
+    }
+    
     public void removeTabAt(int index) {
+        Component c= getTabComponentByIndex(index);
         super.removeTabAt(index);
-        tabs.remove(getComponentAt(index));
+        TabDesc tab= tabs.get(c);
+        if ( tab.babysitter!=null ) { //perhaps better to dock it first
+            if ( tab.babysitter instanceof Window ) {
+                ((Window)tab.babysitter).dispose();
+            }
+        }
+        tabs.remove(c);
     }
 
     public void setSelectedIndex(int index) {
