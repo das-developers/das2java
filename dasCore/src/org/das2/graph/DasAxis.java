@@ -1655,6 +1655,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         pixelSize = getDatumRange().width().divide(getDLength()).doubleValue(
                 getUnits().getOffsetUnits());
+
+        if ( tcaData[0].getXLength()==0 ) {
+            g.drawString("tca data is empty", leftEdge, baseLine);
+            return;
+        }
+
         tcaValue = tcaData[0].getXTagDouble(index, getUnits());
 
         //Added in to say take nearest nieghbor as long as the distance to the nieghbor is
