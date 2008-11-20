@@ -91,9 +91,10 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 double rad= Math.sqrt( rised * rised + rund * rund );
                 double srised= rise.getResolution(u);
                 double srund= run.getResolution(u);
-                double res= rad * Math.sqrt( Math.pow( srised / Math.max(  Math.abs(rised), srised ), 2 )  +
+                double res= rad * Math.sqrt(
+                        Math.pow( srised / Math.max(  Math.abs(rised), srised ), 2 )  +
                         Math.pow( srund / Math.max( Math.abs( rund ), srund ), 2 ) );
-                Datum radDatum= Datum.create( rad, u, res );
+                Datum radDatum= Datum.create( rad, u, res/100. );
                 
                 radString= "!cR:" + radDatum;
             } else {
