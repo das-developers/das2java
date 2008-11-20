@@ -19,6 +19,11 @@ import java.util.Comparator;
 public class DataSetOps {
 
     /**
+     * absolute length limit for plots.  This is used to limit the elements used in autoranging, etc.
+     */
+    public final static int DS_LENGTH_LIMIT= 10000000;
+    
+    /**
      * return a dataset that has mutable properties.  If the dataset parameter already has, then the 
      * dataset is returned.
      * @param dataset
@@ -417,7 +422,7 @@ public class DataSetOps {
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
         int count=0;
-        for (; iter.hasNext();) {
+        for (; count<DS_LENGTH_LIMIT && iter.hasNext();) {
             iter.next();
             double d = iter.getValue(ds);
             double w = iter.getValue(wds);
