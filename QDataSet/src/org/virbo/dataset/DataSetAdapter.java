@@ -61,18 +61,6 @@ public class DataSetAdapter {
             return source.getXLength();
         }
         
-        public void putProperty(String name, int index1, int index2, Object value) {
-            throw new IllegalArgumentException("not supported");
-        }
-        
-        public void putProperty(String name, int index, Object value) {
-            throw new IllegalArgumentException("not supported");
-        }
-        
-        public void putProperty(String name, Object value) {
-            throw new IllegalArgumentException("not supported");
-        }
-        
     }
     
     static class Vector extends AbstractDataSet {
@@ -150,19 +138,6 @@ public class DataSetAdapter {
             return source.getXLength();
         }
         
-        public void putProperty(String name, Object value) {
-            throw new IllegalArgumentException("not supported");
-        }
-        
-        public void putProperty(String name, int index, Object value) {
-            throw new IllegalArgumentException("not supported");
-        }
-        
-        public void putProperty(String name, int index1, int index2, Object value) {
-            throw new IllegalArgumentException("not supported");
-        }
-        
     }
-    
     
 }
