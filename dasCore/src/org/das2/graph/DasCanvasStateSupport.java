@@ -45,7 +45,7 @@ public class DasCanvasStateSupport {
      *   canvas (and developers) identify who has registered the change.
      * @param lockObject object identifying the change.
      */
-    void registerPendingChange( Object client, Object lockObject ) {
+    synchronized void registerPendingChange( Object client, Object lockObject ) {
         logger.fine( "registerPendingChange "+lockObject+" by "+client);
         Object existingClient= changesPending.get(lockObject);
         if ( existingClient!=null ) {
@@ -66,7 +66,7 @@ public class DasCanvasStateSupport {
      * nothing.
      * @param lockObject
      */
-    void performingChange( Object client, Object lockObject ) {
+    synchronized void performingChange( Object client, Object lockObject ) {
         
     }
     
@@ -75,10 +75,10 @@ public class DasCanvasStateSupport {
      * is valid.
      * @param lockObject
      */
-    void changePerformed( Object client, Object lockObject ) {
+    synchronized void changePerformed( Object client, Object lockObject ) {
         logger.fine( "clearPendingChange "+lockObject+" by "+client);
         if ( changesPending.get(lockObject)==null ) {
-            throw new IllegalStateException( "no such lock object: "+lockObject );
+           // throw new IllegalStateException( "no such lock object: "+lockObject );  //TODO: handle multiple registrations by the same client
         }
         boolean oldVal= this.isPendingChanges();
         changesPending.remove(lockObject);
