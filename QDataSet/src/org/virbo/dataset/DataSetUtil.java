@@ -59,7 +59,8 @@ public class DataSetUtil {
 
     /**
      * returns true if the dataset is monotonically increasing, and contains no fill.
-     * An empty dataset is monotonic.
+     * If the dataset says it's monotonic, believe it.
+     * An empty dataset is not monotonic.
      */
     public static boolean isMonotonic(QDataSet ds) {
         if (ds.rank() != 1) {
@@ -73,6 +74,10 @@ public class DataSetUtil {
             return false;
         }
 
+        if ( Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC) ) ) {
+            return true;
+        }
+        
         double last = ds.value(i);
 
         if (u != null && u.isFill(last)) {
@@ -316,7 +321,7 @@ public class DataSetUtil {
             x0 = xds.value(i);
         }
         final boolean log= "log".equals( xds.property( QDataSet.SCALE_TYPE ) );
-        for (i++; i < xds.length(); i++) {
+        for (i++; i < xds.length() && i<DataSetOps.DS_LENGTH_LIMIT; i++) {
             if (u.isValid(yds.value(i))) {
                 double cadenceAvg;
                 cadenceAvg = cadenceS / cadenceN;
@@ -585,7 +590,9 @@ public class DataSetUtil {
         double fill = -1e31;
         while (it.hasNext()) {
             it.next();
-            if (it.getValue(wds) == 0) it.putValue(wrds, fill);
+            if (it.getValue(wds) == 0) {
+                it.putValue(wrds, fill);
+            }
         }
         wrds.putProperty(QDataSet.FILL_VALUE, fill);
         wrds.putProperty(QDataSet.VALID_MIN, null);
