@@ -137,7 +137,7 @@ public class TableDataSetAdapter implements TableDataSet {
             if ("log".equals(y.property(QDataSet.SCALE_TYPE))) {
                 dcadence = Units.logERatio.createDatum(cadence);
             } else {
-                dcadence = xunits.getOffsetUnits().createDatum(cadence.doubleValue());
+                dcadence = yunits.getOffsetUnits().createDatum(cadence.doubleValue());
             }
             properties.put(org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, dcadence);
         }
