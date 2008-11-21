@@ -62,20 +62,21 @@ public class ZoomPanMouseModule extends MouseModule {
     public void mouseWheelMoved(MouseWheelEvent e) {
         double nmin, nmax;
         
-        if ( ( e.isControlDown() || e.isShiftDown() ) && ( xAxis==null || yAxis==null ) ) {
+        if ( ( e.isControlDown() || e.isShiftDown() ) ) {
+            if ( xAxis!=null && yAxis!=null ) return; // this happens when mouse drifts onto plot during xaxis pan.
             if (e.getWheelRotation() < 0) {
-                nmin = -0.20;
+                nmin = -0.20; // pan left on xaxis
                 nmax = +0.80;
             } else {
-                nmin = +0.20;
+                nmin = +0.20; // pan right on xaxis
                 nmax = +1.20;
             }            
         } else {
             if (e.getWheelRotation() < 0) {
-                nmin = 0.20;
+                nmin = 0.20; // zoom in
                 nmax = 0.80;
             } else {
-                nmin = -0.25;
+                nmin = -0.25; // zoom out
                 nmax = 1.25;
             }
         }
