@@ -307,7 +307,7 @@ public abstract class Units implements Displayable {
      * @return UnitsConverter object
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
-    private static UnitsConverter getConverterInternal( final Units fromUnits, final Units toUnits ) {
+    private static synchronized UnitsConverter getConverterInternal( final Units fromUnits, final Units toUnits ) {
         if (fromUnits == toUnits) {
             return UnitsConverter.IDENTITY;
         }
