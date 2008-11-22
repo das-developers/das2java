@@ -53,6 +53,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.datum.UnitsUtil;
@@ -675,10 +676,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         cmx = (int) dcmx;
-        cmy =
-                (int) dcmy;
+        cmy = (int) dcmy;
 
-        refresh();
+        update();
     }
 
     private void reportCount() {
@@ -690,6 +690,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
+        logger.fine( "ds: "+this.ds+",  drawing indeces "+this.firstIndex+" to "+this.lastIndex );
         if (this.ds == null && lastException != null) {
             parent.postException(this, lastException);
             return;
@@ -891,7 +892,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
-
+        logger.fine("enter updatePlotImage");
+        
         updating = true;
 
         updateImageCount++;
@@ -908,10 +910,16 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         DataSet dataSet = getDataSet();
 
-        if (dataSet == null || dataSet.getXLength() == 0) {
+        if (dataSet == null ) {
+            logger.fine("dataset was null");
             return;
         }
 
+        if ( dataSet.getXLength() == 0) {
+            logger.fine("dataset was empty");
+            return;
+        }
+        
         TableDataSet tds = null;
         VectorDataSet vds = null;
         boolean plottable = false;
@@ -1006,7 +1014,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) i.getGraphics();
         g.setRenderingHints(DasProperties.getRenderingHints());
-        g.setBackground(parent.getBackground());
+        if ( parent!=null ) g.setBackground(parent.getBackground());
 
         // leave transparent if not white
         if (color.equals(Color.white)) {
@@ -1069,7 +1077,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             Object oldValue = this.psym;
             this.psym = (DefaultPlotSymbol) psym;
             updatePsym();
-            refreshImage();
+            update();
             propertyChangeSupport.firePropertyChange("psym", oldValue, psym);
         }
 
@@ -1091,7 +1099,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             this.symSize = symSize;
             setPsym(this.psym);
             updatePsym();
-            refreshImage();
+            update();
             propertyChangeSupport.firePropertyChange("symSize", new Double(old), new Double(symSize));
         }
 
@@ -1211,7 +1219,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         Color old = this.fillColor;
         if (!this.fillColor.equals(color)) {
             this.fillColor = color;
-            refresh();
+            update();
             propertyChangeSupport.firePropertyChange("fillColor", old, color);
         }
 
@@ -1237,7 +1245,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void setColorByDataSetId(String colorByDataSetId) {
         String oldVal = this.colorByDataSetId;
         this.colorByDataSetId = colorByDataSetId;
-        refresh();
+        update();
         propertyChangeSupport.firePropertyChange("colorByDataSetId", oldVal, colorByDataSetId);
     }
     /**
@@ -1263,7 +1271,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                    refresh();
+                    update();
                 }
             }
         });
@@ -1291,7 +1299,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         boolean old = this.fillToReference;
         if (this.fillToReference != fillToReference) {
             this.fillToReference = fillToReference;
-            refresh();
+            update();
             propertyChangeSupport.firePropertyChange("fillToReference", old, fillToReference);
         }
 
@@ -1364,7 +1372,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (resetDebugCounters) {
             renderCount = 0;
             updateImageCount = 0;
-            refresh();
+            update();
         }
 
     }
