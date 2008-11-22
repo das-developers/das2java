@@ -347,7 +347,7 @@ public class DataSetUtil {
         
         int maxPeak= -1;
         int minPeak= -1;
-        int peakHeight= Math.min( 1, xds.length() / 20 );
+        int peakHeight= Math.max( 1, xds.length() / 20 );
         for ( i=0; i<hist.length(); i++ ) {  // expect to see just one peak, otherwise use max peak.
             // TODO: verify that the cadence is in the middle of the 10th bin.  
             // TODO: check for peaks at integer multiples of the cadence.
