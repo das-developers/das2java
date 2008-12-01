@@ -9,6 +9,7 @@
 
 package org.das2.system;
 
+import org.das2.graph.DasCanvas;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -31,6 +32,10 @@ public class NullMonitorFactory implements MonitorFactory {
     }
     
     public ProgressMonitor getMonitor(String label, String description) {
+        return createNullMonitor();
+    }
+
+    public ProgressMonitor getMonitor(DasCanvas canvas, String string, String string0) {
         return createNullMonitor();
     }
     

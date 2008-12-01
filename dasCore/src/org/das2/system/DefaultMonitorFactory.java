@@ -9,6 +9,7 @@
 package org.das2.system;
 
 import org.das2.components.DasProgressPanel;
+import org.das2.graph.DasCanvas;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.Collection;
@@ -38,6 +39,13 @@ public class DefaultMonitorFactory implements MonitorFactory {
             return String.valueOf(monitor)+" "+desc;
         }
         
+    }
+    
+
+    public ProgressMonitor getMonitor(DasCanvas canvas, String label, String description ) {
+        ProgressMonitor result= DasProgressPanel.createComponentPanel( canvas, label );
+        putMonitor( result, label, description );
+        return result;
     }
     
     public ProgressMonitor getMonitor( DasCanvasComponent context, String label, String description ) {
@@ -75,6 +83,7 @@ public class DefaultMonitorFactory implements MonitorFactory {
     public boolean isClear() {
         return false;
     }
+
     
     
 }
