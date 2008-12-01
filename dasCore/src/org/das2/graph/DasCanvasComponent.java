@@ -163,8 +163,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * class for handling resize events.
      */
     private class ResizeListener implements DasUpdateListener {
-        
         public void update(org.das2.graph.event.DasUpdateEvent e) {
+            logger.fine("component row or column moved: "+e.getSource());
             markDirty();
             DasCanvasComponent.this.update();
         }
