@@ -36,6 +36,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.NumberFormatUtil;
 import java.util.*;
 import java.util.logging.Logger;
+import org.das2.graph.DasCanvas;
 
 /**
  *
@@ -73,6 +74,7 @@ public class DasProgressPanel implements ProgressMonitor {
     private JPanel thePanel;
     private boolean componentsInitialized;
     private DasCanvasComponent parentComponent;
+    private DasCanvas parentCanvas;
     private static int createComponentCount = 0;
 
     class MyPanel extends JPanel {
@@ -144,8 +146,14 @@ public class DasProgressPanel implements ProgressMonitor {
         DasProgressPanel progressPanel = new DasProgressPanel(initialMessage);
         progressPanel.parentComponent = component;
         return progressPanel;
-
     }
+    
+    public static DasProgressPanel createComponentPanel(DasCanvas canvas, String initialMessage) {
+        DasProgressPanel progressPanel = new DasProgressPanel(initialMessage);
+        progressPanel.parentCanvas = canvas;
+        return progressPanel;
+    }
+    
 
     /** Returning true here keeps the progress bar from forcing the whole canvas
      * to repaint when the label of the progress bar changes.
@@ -281,6 +289,13 @@ public class DasProgressPanel implements ProgressMonitor {
             int y = parentComponent.getRow().getDMiddle();
             thePanel.setLocation(x - thePanel.getWidth() / 2, y - thePanel.getHeight() / 2);
             ((Container) (parentComponent.getCanvas().getGlassPane())).add(thePanel);
+            thePanel.setVisible(false);
+        } else if ( parentCanvas!=null ) {
+            thePanel.setSize(thePanel.getPreferredSize());
+            int x = parentCanvas.getWidth()/2;
+            int y = parentCanvas.getHeight()/2;
+            thePanel.setLocation(x - thePanel.getWidth() / 2, y - thePanel.getHeight() / 2);
+            ((Container) (parentCanvas.getGlassPane())).add(thePanel);
             thePanel.setVisible(false);
         }
 
