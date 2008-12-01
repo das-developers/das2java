@@ -6,8 +6,6 @@
 
 package org.das2.dataset;
 
-import java.util.*;
-
 /**
  *
  * @author  jbf
