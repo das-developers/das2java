@@ -457,7 +457,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     public void setDatumRange(DatumRange dr) {
-        this.setDataRange(dr.min(), dr.max());
+        if ( getUnits().isConvertableTo(dr.getUnits()) ) {
+            this.setDataRange(dr.min(), dr.max());
+        } else {
+            this.resetRange(dr);
+        }
+        
     }
 
     public DatumRange getDatumRange() {
@@ -684,7 +689,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * changes the units of the axis to a new unit, probably breaking all sorts of things!
+     * changes the units of the axis to a new unit.
      */
     public void resetRange(DatumRange range) {
         if (range.getUnits() != this.getUnits()) {
@@ -1231,7 +1236,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         graphics.setClip(null);
         }
          */
-        logger.fine("DasAxis clip=" + graphics.getClip());
+        logger.fine("DasAxis clip=" + graphics.getClip() + " @ "+getX()+","+getY() );
 
         Graphics2D g = (Graphics2D) graphics.create();
         //g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
