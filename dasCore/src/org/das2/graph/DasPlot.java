@@ -81,7 +81,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.DasNameException;
-import org.das2.DasNameException;
 import org.das2.DasPropertyException;
 
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
@@ -100,11 +99,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected RebinListener rebinListener = new RebinListener();
     protected PropertyChangeListener ticksListener = new PropertyChangeListener() {
 
-	public void propertyChange(PropertyChangeEvent evt) {
-	    if (drawGrid || drawMinorGrid) {
-		//invalidateCacheImage();
-	    }
-	}
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (drawGrid || drawMinorGrid) {
+                //invalidateCacheImage();
+            }
+        }
     };
     DnDSupport dndSupport;
     final static Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
@@ -130,58 +129,151 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         addMouseListener(new MouseInputAdapter() {
 
-	    public void mousePressed(MouseEvent e) {
-		if (e.getButton() == MouseEvent.BUTTON3) {
-		    if (editRendererMenuItem != null) {
-			int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
-			editRendererMenuItem.setText("Renderer Properties");
-			if (ir > -1) {
-			    editRendererMenuItem.setEnabled(true);
-			    Renderer r = (Renderer) renderers.get(ir);
-			    if (r instanceof Displayable) {
-				Displayable d = (Displayable) r;
-				editRendererMenuItem.setIcon(d.getListIcon());
-			    } else {
-				editRendererMenuItem.setIcon(null);
-			    }
-			} else {
-			    editRendererMenuItem.setEnabled(false);
-			    editRendererMenuItem.setIcon(null);
-			}
-		    }
-		}
-	    }
-	});
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    if (editRendererMenuItem != null) {
+                        int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
+                        editRendererMenuItem.setText("Renderer Properties");
+                        if (ir > -1) {
+                            editRendererMenuItem.setEnabled(true);
+                            Renderer r = (Renderer) renderers.get(ir);
+                            if (r instanceof Displayable) {
+                                Displayable d = (Displayable) r;
+                                editRendererMenuItem.setIcon(d.getListIcon());
+                            } else {
+                                editRendererMenuItem.setIcon(null);
+                            }
+                        } else {
+                            editRendererMenuItem.setEnabled(false);
+                            editRendererMenuItem.setIcon(null);
+                        }
+                    }
+                }
+            }
+        });
 
         setOpaque(false);
 
-	this.renderers = new ArrayList();
-	this.xAxis = xAxis;
-	if (xAxis != null) {
-	    if (!xAxis.isHorizontal()) {
-		throw new IllegalArgumentException("xAxis is not horizontal");
-	    }
-	    xAxis.addPropertyChangeListener("dataMinimum", rebinListener);
-	    xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
-	    xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
-	    xAxis.addPropertyChangeListener("log", rebinListener);
-	    xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
-	}
-	this.yAxis = yAxis;
-	if (yAxis != null) {
-	    if (yAxis.isHorizontal()) {
-		throw new IllegalArgumentException("yAxis is not vertical");
-	    }
-	    yAxis.addPropertyChangeListener("dataMinimum", rebinListener);
-	    yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
-	    yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
-	    yAxis.addPropertyChangeListener("log", rebinListener);
-	    xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
-	}
+        this.renderers = new ArrayList();
+        this.xAxis = xAxis;
+        if (xAxis != null) {
+            if (!xAxis.isHorizontal()) {
+                throw new IllegalArgumentException("xAxis is not horizontal");
+            }
+            xAxis.addPropertyChangeListener("dataMinimum", rebinListener);
+            xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
+            xAxis.addPropertyChangeListener("log", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+        }
+        this.yAxis = yAxis;
+        if (yAxis != null) {
+            if (yAxis.isHorizontal()) {
+                throw new IllegalArgumentException("yAxis is not vertical");
+            }
+            yAxis.addPropertyChangeListener("dataMinimum", rebinListener);
+            yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
+            yAxis.addPropertyChangeListener("log", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+        }
 
-	if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
-	    addDefaultMouseModules();
-	}
+        if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
+            addDefaultMouseModules();
+        }
+    }
+
+    private void drawLegend(Graphics2D graphics) {
+
+        int em = (int) getEmSize();
+        int msgx, msgy;
+
+        Color backColor = GraphUtil.getRicePaperColor();
+        Rectangle boundRect = null;
+        Rectangle mrect;
+
+        em = (int) getEmSize();
+
+        msgx = xAxis.getColumn().getDMiddle() + em;
+        msgy = yAxis.getRow().getDMinimum() + em;
+
+        int maxIconWidth = 0;
+        for (int i = 0; i < legendElements.size(); i++) {
+            LegendElement le = legendElements.get(i);
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
+            mrect = gtr.getBounds();
+            mrect.translate(msgx, msgy);
+            maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
+            mrect.height = Math.max(mrect.height, le.icon.getIconHeight());
+            if (boundRect == null) {
+                boundRect = mrect;
+            } else {
+                boundRect.add(mrect);
+            }
+            msgy += mrect.getHeight();
+        }
+
+        mrect = new Rectangle(boundRect);
+        int iconColumnWidth = maxIconWidth + em / 4;
+        mrect.width += iconColumnWidth;
+        mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
+        boundRect.x= mrect.x;
+
+        graphics.setColor(backColor);
+        graphics.fillRoundRect( mrect.x - em / 4 , mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+        graphics.setColor(getForeground());
+        graphics.drawRoundRect( mrect.x - em / 4 , mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+
+        msgx = xAxis.getColumn().getDMaximum() - boundRect.width - em ;
+        msgy = yAxis.getRow().getDMinimum() + em;
+
+        for (int i = 0; i < legendElements.size(); i++) {
+            LegendElement le = legendElements.get(i);
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
+            mrect = gtr.getBounds();
+            mrect.translate(msgx, msgy);
+            gtr.draw(graphics, msgx, msgy);
+            graphics.drawImage(le.icon.getImage(), msgx - (le.icon.getIconWidth() + em / 4), msgy - (int) (mrect.getHeight() / 2 + le.icon.getIconHeight() / 2), null);
+            msgy += mrect.getHeight();
+        }
+        
+    }
+
+    private void drawMessages(Graphics2D graphics) {
+        Font font0 = graphics.getFont();
+        int msgem = (int) Math.max(8, font0.getSize2D() / 2);
+        graphics.setFont(font0.deriveFont((float) msgem));
+        int em = (int) getEmSize();
+
+        int msgx = xAxis.getColumn().getDMinimum() + em;
+        int msgy = yAxis.getRow().getDMinimum() + em;
+
+        Color warnColor = new Color(255, 255, 100, 200);
+        Color errorColor = new Color(255, 140, 140, 200);
+        for (int i = 0; i < messages.size(); i++) {
+            MessageDescriptor message = (MessageDescriptor) messages.get(i);
+
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
+            Rectangle mrect = gtr.getBounds();
+            mrect.translate(msgx, msgy);
+            Color backColor = GraphUtil.getRicePaperColor();
+            if (message.messageType == DasPlot.WARNING) {
+                backColor = warnColor;
+            } else if (message.messageType == DasPlot.ERROR) {
+                backColor = errorColor;
+            }
+            graphics.setColor(backColor);
+            graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+            graphics.setColor(getForeground());
+            graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+            gtr.draw(graphics, msgx, msgy);
+            message.bounds = mrect;
+
+            msgy += gtr.getHeight() + msgem / 2;
+        }
     }
 
     private void maybeDrawGrid(Graphics2D plotGraphics) {
@@ -218,13 +310,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
     private void drawCacheImage(Graphics2D plotGraphics) {
 
-	/* clear all the messages */
-	messages = new ArrayList();
+        /* clear all the messages */
+        messages = new ArrayList();
+        legendElements = new ArrayList<LegendElement>();
 
-	if (!gridOver) {
-	    maybeDrawGrid(plotGraphics);
-	}
-	drawContent(plotGraphics);
+        if (!gridOver) {
+            maybeDrawGrid(plotGraphics);
+        }
+        drawContent(plotGraphics);
 
         boolean noneActive = true;
         for (int i = 0; i < renderers.size(); i++) {
@@ -236,15 +329,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
         }
 
-	if (gridOver) {
-	    maybeDrawGrid(plotGraphics);
-	}
-	if (renderers.size() == 0) {
-	    postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
-	    logger.info("dasPlot has no renderers");
-	} else if (noneActive) {
-	    postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
-	}
+        if (gridOver) {
+            maybeDrawGrid(plotGraphics);
+        }
+        if (renderers.size() == 0) {
+            postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
+            logger.info("dasPlot has no renderers");
+        } else if (noneActive) {
+            postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
+        }
     }
 
     /**
@@ -303,7 +396,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         MouseModule x = CrossHairMouseModule.create(this);
         mouseAdapter.addMouseModule(x);
 
-	mouseAdapter.setSecondaryModule(new ZoomPanMouseModule(this, getXAxis(), getYAxis()));
+        mouseAdapter.setSecondaryModule(new ZoomPanMouseModule(this, getXAxis(), getYAxis()));
 
         mouseAdapter.setPrimaryModule(x);
 
@@ -319,10 +412,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         editRendererMenuItem = new JMenuItem(getEditAction());
         getMouseAdapter().addMenuItem(editRendererMenuItem);
 
-	if (DasApplication.hasAllPermission()) {
-	    JMenuItem dumpMenuItem = new JMenuItem(DUMP_TO_FILE_ACTION);
-	    mouseAdapter.addMenuItem(dumpMenuItem);
-	}
+        if (DasApplication.hasAllPermission()) {
+            JMenuItem dumpMenuItem = new JMenuItem(DUMP_TO_FILE_ACTION);
+            mouseAdapter.addMenuItem(dumpMenuItem);
+        }
 
 
     }
@@ -368,37 +461,37 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public void setXAxis(DasAxis xAxis) {
-	Object oldValue = this.xAxis;
-	Container parent = getParent();
-	if (this.xAxis != null) {
-	    DasProperties.getLogger().fine("setXAxis upsets the dmia");
-	    if (parent != null) {
-		parent.remove(this.xAxis);
-	    }
-	    xAxis.removePropertyChangeListener("dataMinimum", rebinListener);
-	    xAxis.removePropertyChangeListener("dataMaximum", rebinListener);
-	    xAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
-	    xAxis.removePropertyChangeListener("log", rebinListener);
-	    xAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
-	}
-	this.xAxis = xAxis;
-	if (xAxis != null) {
-	    if (!xAxis.isHorizontal()) {
-		throw new IllegalArgumentException("xAxis is not horizontal");
-	    }
-	    if (parent != null) {
-		parent.add(this.xAxis);
-		parent.validate();
-	    }
-	    xAxis.addPropertyChangeListener("dataMinimum", rebinListener);
-	    xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
-	    xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
-	    xAxis.addPropertyChangeListener("log", rebinListener);
-	    xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
-	}
-	if (xAxis != oldValue) {
-	    firePropertyChange("xAxis", oldValue, xAxis);
-	}
+        Object oldValue = this.xAxis;
+        Container parent = getParent();
+        if (this.xAxis != null) {
+            DasProperties.getLogger().fine("setXAxis upsets the dmia");
+            if (parent != null) {
+                parent.remove(this.xAxis);
+            }
+            xAxis.removePropertyChangeListener("dataMinimum", rebinListener);
+            xAxis.removePropertyChangeListener("dataMaximum", rebinListener);
+            xAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
+            xAxis.removePropertyChangeListener("log", rebinListener);
+            xAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+        }
+        this.xAxis = xAxis;
+        if (xAxis != null) {
+            if (!xAxis.isHorizontal()) {
+                throw new IllegalArgumentException("xAxis is not horizontal");
+            }
+            if (parent != null) {
+                parent.add(this.xAxis);
+                parent.validate();
+            }
+            xAxis.addPropertyChangeListener("dataMinimum", rebinListener);
+            xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
+            xAxis.addPropertyChangeListener("log", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+        }
+        if (xAxis != oldValue) {
+            firePropertyChange("xAxis", oldValue, xAxis);
+        }
     }
 
     /**
@@ -411,40 +504,40 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * (goes grey because updatePlotImage is never done.
      */
     public void setYAxis(DasAxis yAxis) {
-	Object oldValue = this.yAxis;
-	logger.info("setYAxis(" + yAxis.getName() + "), removes " + this.yAxis);
-	Container parent = getParent();
-	if (this.yAxis != null) {
-	    DasProperties.getLogger().fine("setYAxis upsets the dmia");
-	    if (parent != null) {
-		parent.remove(this.yAxis);
-	    }
-	    this.yAxis.removePropertyChangeListener("dataMinimum", rebinListener);
-	    this.yAxis.removePropertyChangeListener("dataMaximum", rebinListener);
-	    this.yAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
-	    this.yAxis.removePropertyChangeListener("log", rebinListener);
-	    this.yAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
-	}
-	this.yAxis = yAxis;
-	if (yAxis != null) {
-	    if (yAxis.isHorizontal()) {
-		throw new IllegalArgumentException("yAxis is not vertical");
-	    }
-	    yAxis.setRow(getRow());
-	    yAxis.setColumn(getColumn());
-	    if (parent != null) {
-		parent.add(this.yAxis);
-		parent.validate();
-	    }
-	    yAxis.addPropertyChangeListener("dataMinimum", rebinListener);
-	    yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
-	    yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
-	    yAxis.addPropertyChangeListener("log", rebinListener);
-	    yAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
-	}
-	if (yAxis != oldValue) {
-	    firePropertyChange("yAxis", oldValue, yAxis);
-	}
+        Object oldValue = this.yAxis;
+        logger.info("setYAxis(" + yAxis.getName() + "), removes " + this.yAxis);
+        Container parent = getParent();
+        if (this.yAxis != null) {
+            DasProperties.getLogger().fine("setYAxis upsets the dmia");
+            if (parent != null) {
+                parent.remove(this.yAxis);
+            }
+            this.yAxis.removePropertyChangeListener("dataMinimum", rebinListener);
+            this.yAxis.removePropertyChangeListener("dataMaximum", rebinListener);
+            this.yAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
+            this.yAxis.removePropertyChangeListener("log", rebinListener);
+            this.yAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+        }
+        this.yAxis = yAxis;
+        if (yAxis != null) {
+            if (yAxis.isHorizontal()) {
+                throw new IllegalArgumentException("yAxis is not vertical");
+            }
+            yAxis.setRow(getRow());
+            yAxis.setColumn(getColumn());
+            if (parent != null) {
+                parent.add(this.yAxis);
+                parent.validate();
+            }
+            yAxis.addPropertyChangeListener("dataMinimum", rebinListener);
+            yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
+            yAxis.addPropertyChangeListener("log", rebinListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+        }
+        if (yAxis != oldValue) {
+            firePropertyChange("yAxis", oldValue, yAxis);
+        }
     }
 
     @Override
@@ -511,7 +604,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         //paintComponentCount++;
         logger.finer("entering DasPlot.paintComponent");
-        logger.info("entering DasPlot.paintComponent");
+        
+        if ( getCanvas().isPrintingThread() ) logger.fine("* printing thread *");
 
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
@@ -527,17 +621,20 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             saveClip = null;
         }
 
-        logger.info("DasPlot clip=" + graphics1.getClip());
+        logger.fine("DasPlot clip=" + graphics1.getClip() + " @ "+getX()+","+getY() );
 
         Rectangle clip = graphics1.getClipBounds();
         if (clip != null && (clip.y + getY()) >= (y + ySize)) {
+            logger.finer("returning because clip indicates nothing to be done.");
             return;
         }
 
+        boolean disableImageCache= false;
+        
         Graphics2D graphics = (Graphics2D) graphics1;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
-        if (cacheImageValid && !getCanvas().isPrintingThread()) {
+        if (cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache ) {
 
             Graphics2D atGraphics = (Graphics2D) graphics.create();
 
@@ -558,7 +655,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     logger.finest(" using cacheImage");
                 }
 
+                //int reduceHeight=  getRow().getDMinimum() - clip.y;
+                //if ( reduceHeight>0 ) {
+                //    clip.y+= reduceHeight;
+                //    clip.height-= reduceHeight;
+                //}
+                //clip.translate( getX(), getY() );
+                //atGraphics.setClip(clip);
                 atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                //atGraphics.setClip(null);
+                //return;
             //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
 
             }
@@ -567,55 +673,64 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         } else {
 
-	    synchronized (this) {
-		Graphics2D plotGraphics;
-		if (getCanvas().isPrintingThread()) {
-		    plotGraphics = (Graphics2D) graphics.create(x - 1, y - 1, xSize + 2, ySize + 2);
-		    logger.finest(" printing thread, drawing");
-		} else {
-		    if (overSize) {
-			cacheImageBounds = new Rectangle();
-			cacheImageBounds.width = 14 * getWidth() / 10;
+            synchronized (this) {
+                Graphics2D plotGraphics;
+                if ( getCanvas().isPrintingThread() || disableImageCache ) {
+                    plotGraphics = (Graphics2D) graphics.create(x - 1, y - 1, xSize + 2, ySize + 2);
+                    cacheImageBounds = new Rectangle();
+                    cacheImageBounds.width = getWidth();
+                    cacheImageBounds.height = getHeight();
+                    cacheImageBounds.x = x - 1;
+                    cacheImageBounds.y = y - 1;
+                    logger.finest(" printing thread, drawing");
+                } else {
+                    if (overSize) {
+                        cacheImageBounds = new Rectangle();
+                        cacheImageBounds.width = 16 * getWidth() / 10;
 			cacheImageBounds.height = getHeight();
-			cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-			cacheImageBounds.x = x - 2 * getWidth() / 10;
+                        cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
+                        cacheImageBounds.x = x - 3 * getWidth() / 10;
 			cacheImageBounds.y = y - 1;
 
-		    } else {
-			cacheImageBounds = new Rectangle();
-			cacheImageBounds.width = getWidth();
-			cacheImageBounds.height = getHeight();
-			cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-			cacheImageBounds.x = x - 1;
-			cacheImageBounds.y = y - 1;
-		    }
-		    plotGraphics = (Graphics2D) cacheImage.getGraphics();
-		    plotGraphics.setBackground(getBackground());
-		    plotGraphics.setColor(getForeground());
-		    plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
-		    if (overSize) {
-			plotGraphics.translate(x - cacheImageBounds.x - 1, y - cacheImageBounds.y - 1);
-		    }
+                    } else {
+                        cacheImageBounds = new Rectangle();
+                        cacheImageBounds.width = getWidth();
+                        cacheImageBounds.height = getHeight();
+                        cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
+                        cacheImageBounds.x = x - 1;
+                        cacheImageBounds.y = y - 1;
+                    }
+                    plotGraphics = (Graphics2D) cacheImage.getGraphics();
+                    plotGraphics.setBackground(getBackground());
+                    plotGraphics.setColor(getForeground());
+                    plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
+                    if (overSize) {
+                        plotGraphics.translate(x - cacheImageBounds.x - 1, y - cacheImageBounds.y - 1);
+                    }
 
-		    logger.finest(" rebuilding cacheImage");
+                    logger.finest(" rebuilding cacheImage");
 
-		}
+                }
 
-		plotGraphics.translate(-x + 1, -y + 1);
+                plotGraphics.translate(-x + 1, -y + 1);
 
-		drawCacheImage(plotGraphics);
+                drawCacheImage(plotGraphics);
 
-		if (overSize) {
-		    postMessage(null, "Over size on", DasPlot.INFO, null, null);
-		}
+                //if (overSize) {
+                //    postMessage(null, "Over size on", DasPlot.INFO, null, null);
+                //}
             }
 
 
-            if (!getCanvas().isPrintingThread()) {
+            if ( !disableImageCache && !getCanvas().isPrintingThread() ) {
                 cacheImageValid = true;
+                //clip.y= Math.max( clip.y, getRow().getDMinimum() );
+                //clip.translate( getX(), getY() );
+                //graphics.setClip(clip);
                 graphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
                 //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
-
+                //graphics.setClip(null);
+                
                 xmemento = xAxis.getMemento();
                 ymemento = yAxis.getMemento();
 
@@ -638,40 +753,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             gtr.draw(graphics, (float) titleX, (float) titleY);
         }
 
+        Font font0= graphics.getFont();
         // --- draw messages ---
-        Font font0 = graphics.getFont();
-        int msgem = (int) Math.max(8, font0.getSize2D() / 2);
-        graphics.setFont(font0.deriveFont((float) msgem));
-        int em = (int) getEmSize();
-
-        int msgx = xAxis.getColumn().getDMinimum() + em;
-        int msgy = yAxis.getRow().getDMinimum() + em;
-
-        Color warnColor = new Color(255, 255, 100, 200);
-        Color errorColor = new Color(255, 140, 140, 200);
-        for (int i = 0; i < messages.size(); i++) {
-            MessageDescriptor message = (MessageDescriptor) messages.get(i);
-
-            GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
-            Rectangle mrect = gtr.getBounds();
-            mrect.translate(msgx, msgy);
-            Color backColor = GraphUtil.getRicePaperColor();
-            if (message.messageType == DasPlot.WARNING) {
-                backColor = warnColor;
-            } else if (message.messageType == DasPlot.ERROR) {
-                backColor = errorColor;
-            }
-            graphics.setColor(backColor);
-            graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
-            graphics.setColor(getForeground());
-            graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
-            gtr.draw(graphics, msgx, msgy);
-            message.bounds = mrect;
-
-            msgy += gtr.getHeight() + msgem / 2;
-
+        if (messages.size() > 0) {
+            drawMessages(graphics);
         }
+
+        if (legendElements.size() > 0) {
+            drawLegend(graphics);
+        }
+
         graphics.setFont(font0);
 
         graphics.translate(getX(), getY());
@@ -703,10 +794,24 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             this.y = y;
         }
     }
+
+    private class LegendElement {
+
+        ImageIcon icon;
+        Displayable rend;
+        String label;
+
+        LegendElement(ImageIcon icon, Displayable rend, String label) {
+            this.icon = icon;
+            this.rend = rend;
+            this.label = label;
+        }
+    }
     public static final int INFO = 0;
     public static final int WARNING = 1;
     public static final int ERROR = 2;
     List messages;
+    List<LegendElement> legendElements;
 
     /**
      * Notify user of an exception, in the context of the plot.  A position in
@@ -734,32 +839,45 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (message == null) {
             message = String.valueOf(exception);
         }
-        int errorLevel= ERROR;
-        if ( exception instanceof CancelledOperationException ) {
-            errorLevel= INFO;
-            if ( exception.getMessage()==null ) message= "Operation Cancelled";
+        int errorLevel = ERROR;
+        if (exception instanceof CancelledOperationException) {
+            errorLevel = INFO;
+            if (exception.getMessage() == null) {
+                message = "Operation Cancelled";
+            }
         }
         postMessage(renderer, message, errorLevel, null, null);
     }
 
-    private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
-	int xmin = this.cacheImageBounds.x;
-	int xmax = this.cacheImageBounds.x + this.cacheImageBounds.width;
-	int ymin = this.cacheImageBounds.y;
-	int ymax = this.cacheImageBounds.y + this.cacheImageBounds.height;
+    /**
+     * 
+     * @param renderer identifies the renderer adding to the legend
+     * @param icon if non-null, an icon to use.  If null, the renderer's icon is used.
+     * @param pos integer order parameter, and also identifies item.
+     * @param message String message to display.  
+     */
+    public void addToLegend(Renderer renderer, ImageIcon icon, int pos, String message) {
+        legendElements.add(new LegendElement(icon, null, message));
+    }
 
-	if (yticks != null && yticks.getUnits().isConvertableTo(yAxis.getUnits())) {
-	    for (int i = 0; i < yticks.getLength(); i++) {
-		int y = (int) yAxis.transform(yticks.get(i));
-		g.drawLine(xmin, y, xmax, y);
-	    }
-	}
-	if (xticks != null && xticks.getUnits().isConvertableTo(xAxis.getUnits())) {
-	    for (int i = 0; i < xticks.getLength(); i++) {
-		int x = (int) xAxis.transform(xticks.get(i));
-		g.drawLine(x, ymin, x, ymax);
-	    }
-	}
+    private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
+        int xmin = this.cacheImageBounds.x;
+        int xmax = this.cacheImageBounds.x + this.cacheImageBounds.width;
+        int ymin = this.cacheImageBounds.y;
+        int ymax = this.cacheImageBounds.y + this.cacheImageBounds.height;
+
+        if (yticks != null && yticks.getUnits().isConvertableTo(yAxis.getUnits())) {
+            for (int i = 0; i < yticks.getLength(); i++) {
+                int y = (int) yAxis.transform(yticks.get(i));
+                g.drawLine(xmin, y, xmax, y);
+            }
+        }
+        if (xticks != null && xticks.getUnits().isConvertableTo(xAxis.getUnits())) {
+            for (int i = 0; i < xticks.getLength(); i++) {
+                int x = (int) xAxis.transform(xticks.get(i));
+                g.drawLine(x, ymin, x, ymax);
+            }
+        }
     }
 
     protected void drawContent(Graphics2D g) {
@@ -767,10 +885,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public void resize() {
-	logger.fine("resize");
-	if (isDisplayable()) {
-	    GrannyTextRenderer gtr = new GrannyTextRenderer();
-	    gtr.setString(getFont(), getTitle());
+        logger.fine("resize DasPlot");
+        if (isDisplayable()) {
+            GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setString(getFont(), getTitle());
 
             int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
 
@@ -784,6 +902,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 bounds.height += titleHeight;
             }
             // TODO check bounds.height<10
+            logger.fine("DasPlot setBounds "+bounds);
             setBounds(bounds);
         }
     }
@@ -793,17 +912,17 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @param t The new title for this plot.
      */
     public void setTitle(String t) {
-	Object oldValue = plotTitle;
-	plotTitle = t;
-	if (getCanvas() != null) {
-	    FontMetrics fm = getFontMetrics(getCanvas().getFont());
-	    int titleHeight = fm.getHeight() + fm.getHeight() / 2;
-	    resize();
-	    invalidateCacheImage();
-	}
-	if (t != oldValue) {
-	    firePropertyChange(PROP_TITLE, oldValue, t);
-	}
+        Object oldValue = plotTitle;
+        plotTitle = t;
+        if (getCanvas() != null) {
+            FontMetrics fm = getFontMetrics(getCanvas().getFont());
+            int titleHeight = fm.getHeight() + fm.getHeight() / 2;
+            resize();
+            invalidateCacheImage();
+        }
+        if (t != oldValue) {
+            firePropertyChange(PROP_TITLE, oldValue, t);
+        }
     }
 
     /** Returns the title of this plot.
@@ -856,20 +975,20 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     protected void installComponent() {
-	super.installComponent();
-	if (xAxis != null) {
-	    getCanvas().add(xAxis, getRow(), getColumn());
-	}
-	if (yAxis != null) {
-	    getCanvas().add(yAxis, getRow(), getColumn());
-	}
-	Renderer[] r = getRenderers();
-	for (int index = 0; index < r.length; index++) {
-	    r[index].installRenderer();
-	}
-	if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
-	    dndSupport = new PlotDnDSupport(getCanvas().dndSupport);
-	}
+        super.installComponent();
+        if (xAxis != null) {
+            getCanvas().add(xAxis, getRow(), getColumn());
+        }
+        if (yAxis != null) {
+            getCanvas().add(yAxis, getRow(), getColumn());
+        }
+        Renderer[] r = getRenderers();
+        for (int index = 0; index < r.length; index++) {
+            r[index].installRenderer();
+        }
+        if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
+            dndSupport = new PlotDnDSupport(getCanvas().dndSupport);
+        }
     }
 
     protected void uninstallComponent() {
@@ -930,7 +1049,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return (Renderer[]) renderers.toArray(new Renderer[0]);
     }
 
-    public static DasPlot processPlotElement(Element element, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, DasException, java.text.ParseException {
+    public static DasPlot processPlotElement(Element element, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, DasException, java.text.ParseException {
         String name = element.getAttribute("name");
 
         DasRow row = (DasRow) form.checkValue(element.getAttribute("row"), DasRow.class, "<row>");
@@ -990,7 +1109,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return plot;
     }
 
-    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, DasException , java.text.ParseException {
+    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, DasException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -1020,7 +1139,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
 
-    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
+    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -1063,7 +1182,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return null;
     }
 
-    private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
+    private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
         NodeList children = element.getChildNodes();
         for (int index = 0; index < children.getLength(); index++) {
             Node node = children.item(index);
@@ -1282,14 +1401,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @param drawGrid New value of property drawGrid.
      */
     public void setDrawGrid(boolean drawGrid) {
-	boolean bOld = this.drawGrid;
-	this.drawGrid = drawGrid;
-	this.invalidateCacheImage();
-	this.repaint();
+        boolean bOld = this.drawGrid;
+        this.drawGrid = drawGrid;
+        this.invalidateCacheImage();
+        this.repaint();
 
-	if (bOld != drawGrid) {
-	    firePropertyChange(PROP_DRAWGRID, bOld, drawGrid);
-	}
+        if (bOld != drawGrid) {
+            firePropertyChange(PROP_DRAWGRID, bOld, drawGrid);
+        }
     }
     public static final String PROP_DRAWGRID = "drawGrid";
     private boolean drawMinorGrid;
@@ -1320,15 +1439,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public static final String PROP_GRIDOVER = "gridOver";
 
     public boolean isGridOver() {
-	return gridOver;
+        return gridOver;
     }
 
     public void setGridOver(boolean gridOver) {
-	boolean oldGridOver = this.gridOver;
-	this.gridOver = gridOver;
-	this.invalidateCacheImage();
-	this.repaint();
-	firePropertyChange(PROP_GRIDOVER, oldGridOver, gridOver);
+        boolean oldGridOver = this.gridOver;
+        this.gridOver = gridOver;
+        this.invalidateCacheImage();
+        this.repaint();
+        firePropertyChange(PROP_GRIDOVER, oldGridOver, gridOver);
     }
 
     public void setPreviewEnabled(boolean preview) {
@@ -1348,14 +1467,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public static final String PROP_OVERSIZE = "overSize";
 
     public boolean isOverSize() {
-	return overSize;
+        return overSize;
     }
 
     public void setOverSize(boolean overSize) {
-	boolean oldOverSize = this.overSize;
-	this.overSize = overSize;
-	invalidateCacheImage();
-	firePropertyChange(PROP_OVERSIZE, oldOverSize, overSize);
+        boolean oldOverSize = this.overSize;
+        this.overSize = overSize;
+        invalidateCacheImage();
+        firePropertyChange(PROP_OVERSIZE, oldOverSize, overSize);
     }
 
     /**
@@ -1363,6 +1482,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @return Rectangle
      */
     protected Rectangle getCacheImageBounds() {
-	return cacheImageBounds;
+        return cacheImageBounds;
     }
 }
