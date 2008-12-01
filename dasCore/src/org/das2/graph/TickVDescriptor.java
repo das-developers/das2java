@@ -533,7 +533,7 @@ public class TickVDescriptor {
         Datum d = ticks.get(0);
         for (int i = 1; i < ticks.getLength(); i++) {
             if (ticks.get(i).lt(d)) {
-                System.err.println("not mono at " + i + ": " + d + " > " + ticks.get(i));
+               // System.err.println("TickVDescriptor: not mono at " + i + ": " + d + " > " + ticks.get(i));
                 return false;
             }
             d = ticks.get(i);
@@ -618,7 +618,6 @@ public class TickVDescriptor {
                     test = countOffTicks2(minD, maxD, units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
                 }
                 if (!checkMono(test.getMinorTicks())) {
-                    System.err.println("not mono");
                     test = countOffTicks2(minD, maxD, units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
                 }
                 if (test.tickV.getLength() <= nTicksMax && test.tickV.getLength() >= nTicksMin) {
