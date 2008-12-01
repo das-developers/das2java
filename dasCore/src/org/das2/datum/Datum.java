@@ -68,6 +68,7 @@ public class Datum implements Comparable {
     }
     
     private Datum(Number value, Units units, DatumFormatter formatter, double resolution ) {
+        if ( value==null ) throw new IllegalArgumentException("value is null");
         this.value = value;
         this.units = units;
         this.resolution= resolution;
@@ -366,7 +367,7 @@ public class Datum implements Comparable {
      * @return true if the datums are equal.
      */
     public boolean equals( Object a ) throws IllegalArgumentException {
-        return ((a instanceof Datum) && this.equals( (Datum)a ) );
+        return ( a!=null && (a instanceof Datum) && this.equals( (Datum)a ) );
     }
     
     /**
@@ -376,7 +377,7 @@ public class Datum implements Comparable {
      * @return true if the datums are equal.
      */
     public boolean equals( Datum a ) throws IllegalArgumentException {
-        return ( this.compareTo(a)==0 );
+        return ( a!=null && this.getUnits().isConvertableTo( a.getUnits() ) && this.compareTo(a)==0 );
     }
     
     /**
