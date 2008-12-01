@@ -43,6 +43,8 @@ import java.awt.geom.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.w3c.dom.*;
 
@@ -94,7 +96,7 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      */
     protected Exception renderException;
     
-    protected Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );        
+    protected static Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );    
 
     private String PROPERTY_ACTIVE="active";
 
