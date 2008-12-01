@@ -33,6 +33,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -789,7 +790,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         updateStatus();
     }
 
-    private void addDataPoint(Datum x, Datum y, Map planes) {
+    public void addDataPoint(Datum x, Datum y, Map planes) {
+        if ( planes==null ) planes= new HashMap();
         if (dataPoints.size() == 0) {
             Datum[] datums = new Datum[]{x, y};
             unitsArray =
