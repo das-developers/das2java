@@ -155,4 +155,15 @@ public class DasLogger {
         return Logger.getLogger("debug");
     }
     
+    public static void addHandlerToAll( Handler h ) {
+        LoggerId[] loggers= new LoggerId[] { APPLICATION_LOG, SYSTEM_LOG, GUI_LOG, GRAPHICS_LOG, RENDERER_LOG, FILESYSTEM_LOG, DATA_TRANSFER_LOG, DATA_OPERATIONS_LOG, DASML_LOG };
+        for ( int i=0; i<loggers.length; i++ ) {
+            Logger logger= loggers[i].getLogger();
+            Handler[] hh= logger.getHandlers();
+            for ( Handler h1: hh ) {
+                if ( h.getClass().isInstance(h1) ) logger.removeHandler(h1);
+            }
+            logger.addHandler(h);
+        }
+    }
 }
