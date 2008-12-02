@@ -218,8 +218,13 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             setDataSetDescriptor(null);
             return;
         }
-        DataSetDescriptor dsd = DataSetDescriptor.create(id);
-        setDataSetDescriptor(dsd);
+        try {
+            DataSetDescriptor dsd = DataSetDescriptor.create(id);
+            setDataSetDescriptor(dsd);
+        } catch ( DasException ex ) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
     
     public String getDataSetID() {
@@ -311,7 +316,12 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             refresh();
         }
     }
-    
+
+    /**
+     * Something has changed with the Render, and the plot should come back
+     * to allow this render to repaint.  Its cacheImage is invalidated and a
+     * repaint is posted on the event thread.
+     */
     public void update() {
         if ( getParent()!=null ) getParent().repaint();
         logger.fine("Renderer.update");
