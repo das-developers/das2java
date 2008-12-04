@@ -8,6 +8,7 @@
  */
 package org.das2.event;
 
+import java.awt.Component;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -20,6 +21,9 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import org.das2.graph.DasDevicePosition;
 
 /**
  *
@@ -34,7 +38,7 @@ public class ZoomPanMouseModule extends MouseModule {
     Point p0;
     DatumRange xAxisRange0;
     DatumRange yAxisRange0;
-    long t0,tbirth;
+    long t0, tbirth;
 
     /** Creates a new instance of ZoomPanMouseModule */
     public ZoomPanMouseModule(DasCanvasComponent parent, DasAxis horizontalAxis, DasAxis verticalAxis) {
@@ -42,12 +46,36 @@ public class ZoomPanMouseModule extends MouseModule {
         setLabel("Zoom Pan");
         this.xAxis = horizontalAxis;
         this.yAxis = verticalAxis;
-        t0= System.nanoTime();
-        tbirth= System.nanoTime();
+        t0 = System.nanoTime();
+        tbirth = System.nanoTime();
     }
 
     private boolean axisIsAdjustable(DasAxis axis) {
         return axis != null && (UnitsUtil.isIntervalMeasurement(axis.getUnits()) || UnitsUtil.isRatioMeasurement(axis.getUnits()));
+    }
+
+    private enum Pos {
+        _null, beyondMin, min, middle, max, beyondMax
+    
+    
+    
+    };
+
+    private Pos position(DasDevicePosition ddp, int pos, int threshold) {
+        int max = ddp.getDMaximum();
+        int min = ddp.getDMinimum();
+        if (((max - min) / threshold) < 3) threshold = (max - min) / 3;
+        if (pos < min) {
+            return Pos.beyondMin;
+        } else if (pos < min + threshold ) {
+            return Pos.min;
+        } else if (pos <= max - threshold) {
+            return Pos.middle;
+        } else if (pos <= max) {
+            return Pos.max;
+        } else {
+            return Pos.beyondMax;
+        }
     }
 
     /**
@@ -60,18 +88,26 @@ public class ZoomPanMouseModule extends MouseModule {
      * @param e
      */
     public void mouseWheelMoved(MouseWheelEvent e) {
-        double nmin, nmax;
+        double nmin, nmax; 
         
-        if ( ( e.isControlDown() || e.isShiftDown() ) ) {
-            if ( xAxis!=null && yAxis!=null ) return; // this happens when mouse drifts onto plot during xaxis pan.
+        double xshift = 0., yshift = 0.;
+
+        if ((e.isControlDown() || e.isShiftDown())) {
+            if (xAxis != null && yAxis != null) return; // this happens when mouse drifts onto plot during xaxis pan.
             if (e.getWheelRotation() < 0) {
                 nmin = -0.20; // pan left on xaxis
                 nmax = +0.80;
             } else {
                 nmin = +0.20; // pan right on xaxis
                 nmax = +1.20;
-            }            
+            }
         } else {
+            Point ep= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), parent.getCanvas() );
+            
+            //ep.translate( e.getComponent().getX(), e.getComponent().getY() );
+            Pos xpos = xAxis == null ? Pos._null : position(xAxis.getColumn(), ep.x, 20);
+            Pos ypos = yAxis == null ? Pos._null : position(yAxis.getRow(), ep.y, 20);
+
             if (e.getWheelRotation() < 0) {
                 nmin = 0.20; // zoom in
                 nmax = 0.80;
@@ -79,26 +115,43 @@ public class ZoomPanMouseModule extends MouseModule {
                 nmin = -0.25; // zoom out
                 nmax = 1.25;
             }
+            switch (xpos) {
+                case min:
+                    xshift = -nmin;
+                    break;
+                case max:
+                    xshift = nmin;
+                    break;
+            }
+            switch (ypos) {
+                case min:
+                    yshift = nmin;
+                    break;
+                case max:
+                    yshift = -nmin;
+                    break;
+            }
         }
+
         //int clickMag= Math.abs(e.getWheelRotation());
         int clickMag = 1;
         final long t1 = System.nanoTime();
-        long limitNanos= (long)20e6;
-        if ( ( t1 - t0 ) / clickMag < limitNanos ) {
-            clickMag= (int) Math.floor( ( t1 - t0 ) / limitNanos );
+        long limitNanos = (long) 20e6;
+        if ((t1 - t0) / clickMag < limitNanos) {
+            clickMag = (int) Math.floor((t1 - t0) / limitNanos);
         }
-        
-        if ( clickMag==0 ) return;
-        t0= System.nanoTime();
-            
+
+        if (clickMag == 0) return;
+        t0 = System.nanoTime();
+
         //System.err.println(":ns:  "+(System.nanoTime()-tbirth)+"  "+clickMag);
         if (axisIsAdjustable(xAxis)) {
             DatumRange dr = xAxis.getDatumRange();
             for (int i = 0; i < clickMag; i++) {
                 if (xAxis.isLog()) {
-                    dr = DatumRangeUtil.rescaleLog(dr, nmin, nmax);
+                    dr = DatumRangeUtil.rescaleLog(dr, nmin+xshift, nmax+xshift);
                 } else {
-                    dr = DatumRangeUtil.rescale(dr, nmin, nmax);
+                    dr = DatumRangeUtil.rescale(dr, nmin+xshift, nmax+xshift);
                 }
             }
             xAxis.setDatumRange(dr);
@@ -108,9 +161,9 @@ public class ZoomPanMouseModule extends MouseModule {
             for (int i = 0; i < clickMag; i++) {
 
                 if (yAxis.isLog()) {
-                    dr = DatumRangeUtil.rescaleLog(dr, nmin, nmax);
+                    dr = DatumRangeUtil.rescaleLog(dr, nmin+yshift, nmax+yshift);
                 } else {
-                    dr = DatumRangeUtil.rescale(dr, nmin, nmax);
+                    dr = DatumRangeUtil.rescale(dr, nmin+yshift, nmax+yshift);
                 }
             }
             yAxis.setDatumRange(dr);
