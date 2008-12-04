@@ -37,6 +37,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.StringTokenizer;
 import org.das2.components.propertyeditor.Editable;
+import org.das2.system.MutatorLock;
 
 /**
  *
@@ -121,7 +122,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     /**
      * parse position strings like "100%-5em+4pt" into npos, emoffset, pt_offset.
-     * Note px is acceptable, but pt is proper.
+     * Note px is acceptable, but pt is proper. 
+     * Ems are rounded to the nearest hundredth.
+     * Percents are returned as normal (0-1) and rounded to the nearest thousandth.
      */
     public static double[] parseFormatStr( String s ) throws ParseException {
         double[] result= new double[] { 0, 0, 0 };
@@ -149,22 +152,42 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
                 result[2]= d;
             }
         }
+        result[0]= Math.round(result[0]*1000)/1000;
+        result[1]= Math.round(result[1]*10)/10;
         return result;
+    }
+    
+    public static void parseLayoutStr( DasDevicePosition pos, String spec ) throws ParseException {
+        String[] ss= spec.split(",");
+        double[] pmin= parseFormatStr( ss[0] );
+        double[] pmax= parseFormatStr( ss[1] );
+        
+        MutatorLock lock= pos.mutatorLock();
+        lock.lock();
+        pos.setMinimum(pmin[0]);
+        pos.setEmMinimum(pmin[1]);
+        pos.setPtMinimum((int)pmin[2]);
+        pos.setMaximum(pmax[0]);
+        pos.setEmMaximum(pmax[1]);
+        pos.setPtMaximum((int)pmax[2]);        
+        lock.unlock();
     }
     
     public static String formatLayoutStr( DasDevicePosition pos, boolean min ) {
         StringBuffer buf= new StringBuffer();
         DecimalFormat nf2= new DecimalFormat("0.00");
         DecimalFormat nf1= new DecimalFormat("0.0");
+        DecimalFormat nf0= new DecimalFormat("0");
         if ( min ) {
             if ( pos.getMinimum()!=0 ) buf.append( nf2.format(pos.getMinimum()*100 )+"%" );
             if ( pos.getEmMinimum()!=0 ) buf.append( nf1.format(pos.getEmMinimum() )+"em" );
-            if ( pos.getPtMinimum()!=0 ) buf.append( pos.getPtMinimum() + "pt" );
+            if ( pos.getPtMinimum()!=0 ) buf.append( nf0.format(pos.getPtMinimum()) + "pt" );
         } else {
             if ( pos.getMaximum()!=0 ) buf.append( nf2.format(pos.getMaximum()*100 )+"%" );
             if ( pos.getEmMaximum()!=0 ) buf.append( nf1.format(pos.getEmMaximum() )+"em" );
-            if ( pos.getPtMaximum()!=0 ) buf.append( pos.getPtMaximum() + "pt" );            
+            if ( pos.getPtMaximum()!=0 ) buf.append( nf0.format(pos.getPtMaximum()) + "pt" );            
         }
+        if ( buf.length()==0 ) return "0%";
         return buf.toString();
     }
     
@@ -368,6 +391,24 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         fireUpdate();
     }
     
+    private boolean valueIsAdjusting= false;
+    
+    protected synchronized MutatorLock mutatorLock() {
+        return new MutatorLock() {
+            public void lock() {
+                if ( isValueIsAdjusting() ) {
+                    System.err.println("lock is already set!");
+                }
+                valueIsAdjusting= true;
+            }
+            public void unlock() {
+                valueIsAdjusting= false;
+                propertyChangeDelegate.firePropertyChange( "mutatorLock", "locked", "unlocked");
+            }
+        };
+    }
+    
+    
     public void addpwUpdateListener(DasUpdateListener l) {
         listenerList.add(DasUpdateListener.class, l);
     }
@@ -534,6 +575,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     public DasDevicePosition getParentDevicePosition() {
         return this.parent;
+    }
+
+    public boolean isValueIsAdjusting() {
+        return valueIsAdjusting;
     }
     
 }
