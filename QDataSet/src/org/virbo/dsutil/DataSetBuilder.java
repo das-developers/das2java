@@ -128,6 +128,10 @@ public class DataSetBuilder {
         }
     }
     
+    public int getLength() {
+        return index+offset;
+    }
+    
     /**
      * return the number of elements in each record.
      * @return
