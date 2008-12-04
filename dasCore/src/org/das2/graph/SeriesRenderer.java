@@ -53,7 +53,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Handler;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.datum.UnitsUtil;
@@ -292,7 +291,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return lastIndex - firstIndex;
         }
 
-        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             VectorDataSet deltaPlusY = (VectorDataSet) vds.getPlanarView(PROPERTY_Y_DELTA_PLUS);
             VectorDataSet deltaMinusY = (VectorDataSet) vds.getPlanarView(PROPERTY_Y_DELTA_MINUS);
 
@@ -346,19 +345,28 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return 0;
         }
 
-        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
+
+            if ( lastIndex-firstIndex==0 ) {
+                this.path1= null;
+                return;
+            }
 
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth;
+            boolean logStep;
             if ( UnitsUtil.isRatiometric(sw.getUnits())) {
                 xSampleWidth = sw.doubleValue(Units.logERatio);
+                logStep= true;
             } else {
                 xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                logStep= false;
             }
+            
 
             /* fuzz the xSampleWidth */
             xSampleWidth = xSampleWidth * 1.10;
@@ -417,7 +425,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
                 //System.err.println( ""+(float)tx+ "   " + fx );
 
                 if (isValid) {
-                    if ((x - x0) < xSampleWidth) {
+                    double step= logStep ? Math.log(x/x0) : x-x0;
+                    if ( step < xSampleWidth) {
                         // draw connect-a-dot between last valid and here
                         if (histogram) {
                             float fx1 = (fx0 + fx) / 2;
@@ -818,7 +827,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * the data that is plottable.  The plottable part is the part that 
      * might be visible while limiting the number of plotted points.
      */
-    private void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
+    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
 
         Units xUnits = xAxis.getUnits();
         Units yUnits = yAxis.getUnits();
