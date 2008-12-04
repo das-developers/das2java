@@ -111,6 +111,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* Constants defining the action commands and labels for the scan buttons. */
     private static final String SCAN_PREVIOUS_LABEL = "<< scan";
     private static final String SCAN_NEXT_LABEL = "scan >>";
+
+    public static String PROP_UNITS= "units";
+    
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
     public static String PROPERTY_TICKS = "ticks";
@@ -460,7 +463,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( getUnits().isConvertableTo(dr.getUnits()) ) {
             this.setDataRange(dr.min(), dr.max());
         } else {
+            Units oldUnits= getUnits();
             this.resetRange(dr);
+            firePropertyChange( PROP_UNITS, oldUnits, dr.getUnits() );
         }
         
     }
