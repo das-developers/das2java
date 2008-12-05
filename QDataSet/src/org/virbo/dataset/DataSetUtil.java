@@ -74,10 +74,10 @@ public class DataSetUtil {
             return false;
         }
 
-        if ( Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC) ) ) {
+        if (Boolean.TRUE.equals(ds.property(QDataSet.MONOTONIC))) {
             return true;
         }
-        
+
         double last = ds.value(i);
 
         if (u != null && u.isFill(last)) {
@@ -289,24 +289,27 @@ public class DataSetUtil {
      * as the ratiometric spacing in natural log space.  
      * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
      * Math.log( xds.value(1) / xds.value(0) )
+     * 
+     * @return double in the units of xds's units.getOffsetUnits(), or null if
+     * no cadence is detected.
      */
-    public static double guessCadence(QDataSet xds, QDataSet yds) {
+    public static Double guessCadence(QDataSet xds, QDataSet yds) {
         if (yds == null) {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
         assert (xds.length() == yds.length());
 
-        if ( yds.rank()>1 ) { //TODO: check for fill columns.
+        if (yds.rank() > 1) { //TODO: check for fill columns.
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
-        
+
         Units u = (Units) yds.property(QDataSet.UNITS);
         if (u == null) {
             u = Units.dimensionless;
         }
         double cadence = Double.MAX_VALUE;
 
-        if ( xds.length()<2 ) return cadence;
+        if (xds.length() < 2) return cadence;
 
         // calculate average cadence for consistent points.  Preload to avoid extra branch.
         double cadenceS = Double.MAX_VALUE;
@@ -320,15 +323,15 @@ public class DataSetUtil {
         if (i < yds.length()) {
             x0 = xds.value(i);
         }
-        final boolean log= "log".equals( xds.property( QDataSet.SCALE_TYPE ) );
-        for (i++; i < xds.length() && i<DataSetOps.DS_LENGTH_LIMIT; i++) {
+        final boolean log = "log".equals(xds.property(QDataSet.SCALE_TYPE));
+        for (i++; i < xds.length() && i < DataSetOps.DS_LENGTH_LIMIT; i++) {
             if (u.isValid(yds.value(i))) {
                 double cadenceAvg;
                 cadenceAvg = cadenceS / cadenceN;
                 if (log) {
-                    cadence = Math.abs( Math.log( xds.value(i) / x0 ) );
+                    cadence = Math.abs(Math.log(xds.value(i) / x0));
                 } else {
-                    cadence = Math.abs( xds.value(i) - x0 );
+                    cadence = Math.abs(xds.value(i) - x0);
                 }
                 if (cadence < 0.5 * cadenceAvg && cadenceN < 10) {
                     cadenceS = cadence;
@@ -351,17 +354,17 @@ public class DataSetUtil {
         for ( i=0; i<hist.length(); i++ ) {  // expect to see just one peak, otherwise use max peak.
             // TODO: verify that the cadence is in the middle of the 10th bin.  
             // TODO: check for peaks at integer multiples of the cadence.
-            if ( hist.value(i)>=peakHeight ) {
-                if ( minPeak==-1 ) minPeak= i;
-                maxPeak= i;
+            if (hist.value(i) >= peakHeight) {
+                if (minPeak == -1) minPeak = i;
+                maxPeak = i;
             }
         }
         if ( maxPeak>minPeak ) {
-            return ((QDataSet)hist.property(QDataSet.DEPEND_0)).value(maxPeak);
+            return null;
         } else {
             return avg;
         }
-        
+
     }
 
     /**
@@ -372,8 +375,10 @@ public class DataSetUtil {
      * as the ratiometric spacing in natural log space.  
      * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
      * Math.log( xds.value(1) / xds.value(0) )
+     * 
+     * result can be null, indicating that no cadence can be established.
      */
-    public static double guessCadence(QDataSet xds) {
+    public static Double guessCadence(QDataSet xds) {
         return guessCadence(xds, null);
     }
 
@@ -518,7 +523,7 @@ public class DataSetUtil {
      * @return true if the dataset is valid, false otherwise
      */
     public static boolean validate(QDataSet ds, List<String> problems) {
-        if (problems==null ) problems= new ArrayList<String>();
+        if (problems == null) problems = new ArrayList<String>();
         return validate(ds, problems, 0);
     }
 
@@ -526,13 +531,42 @@ public class DataSetUtil {
         QDataSet dep = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep != null) {
             if (dep.length() != ds.length()) {
-                problems.add( String.format("DEPEND_%d length is %d, should be %d.", dimOffset, dep.length(), ds.length() ) );
+                problems.add(String.format("DEPEND_%d length is %d, should be %d.", dimOffset, dep.length(), ds.length()));
             }
             if (ds.rank() > 1 && ds.length() > 0) {
                 validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1);
             }
         }
-        return problems.size()==0;
+        return problems.size() == 0;
+    }
+
+    /**
+     * throw out DEPEND and PLANE to make dataset valid.
+     * @param ds
+     */
+    public static void makeValid(MutablePropertyDataSet ds) {
+        int[] qubeDims = null;
+        if (DataSetUtil.isQube(ds)) {
+            qubeDims = DataSetUtil.qubeDims(ds);
+        }
+        int i = 0;
+        QDataSet dep = (QDataSet) ds.property("DEPEND_" + i);
+        if (dep != null) {
+            if (dep.length() != ds.length()) {
+                ds.putProperty("DEPEND_" + i, null);
+            }
+        }
+        if (qubeDims != null) {
+            for (i = 1; i < qubeDims.length; i++) {
+                dep = (QDataSet) ds.property("DEPEND_" + i);
+                if (dep != null) {
+                    if ( dep.length() != qubeDims[i] ) {
+                        ds.putProperty("DEPEND_" + i, null);
+                    }
+                }
+            }
+        }
+
     }
 
     /**
@@ -550,19 +584,17 @@ public class DataSetUtil {
         QDataSet result = (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
         if (result == null) {
             Double validMin = (Double) ds.property(QDataSet.VALID_MIN);
-            if ( validMin==null ) validMin= Double.NEGATIVE_INFINITY;
+            if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
             Double validMax = (Double) ds.property(QDataSet.VALID_MAX);
-            if ( validMax==null ) validMax= Double.POSITIVE_INFINITY;
+            if (validMax == null) validMax = Double.POSITIVE_INFINITY;
             Units u = (Units) ds.property(QDataSet.UNITS);
             Double ofill = (Double) ds.property(QDataSet.FILL_VALUE);
-            double fill = ( ofill == null ? Double.NaN : ofill.doubleValue() );
-            boolean check= ( validMin > -1*Double.MAX_VALUE 
-                || validMax < Double.MAX_VALUE 
-                || !( Double.isNaN(fill) ) );
-            if ( check ) {
+            double fill = (ofill == null ? Double.NaN : ofill.doubleValue());
+            boolean check = (validMin > -1 * Double.MAX_VALUE || validMax < Double.MAX_VALUE || !(Double.isNaN(fill)));
+            if (check) {
                 result = new WeightsDataSet.ValidRangeFillFinite(ds);
             } else {
-                if ( u!=null ) {
+                if (u != null) {
                     result = new WeightsDataSet.FillFinite(ds); // support legacy Units to specify fill value
                 } else {
                     result = new WeightsDataSet.Finite(ds);

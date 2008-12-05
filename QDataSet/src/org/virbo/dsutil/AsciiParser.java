@@ -419,6 +419,19 @@ public class AsciiParser {
      * Parse the stream using the current settings.
      */
     public WritableDataSet readStream(Reader in, ProgressMonitor mon) throws IOException {
+        return readStream( in, null, mon );
+    }
+    
+    /**
+     * read in the stream, including the first record if non-null.
+     * @param in
+     * @param firstRecord, if non-null, parse this record first.  This allows information to be extracted about the
+     * records, then fed into this loop.
+     * @param mon
+     * @return
+     * @throws java.io.IOException
+     */
+    public WritableDataSet readStream( Reader in, String firstRecord, ProgressMonitor mon) throws IOException {
         BufferedReader reader = new BufferedReader(in);
         String line;
         int iline = 0;
@@ -434,12 +447,18 @@ public class AsciiParser {
         long bytesRead = 0;
 
         StringBuffer headerBuffer = new StringBuffer();
-        String firstRecord = null;
-
+        
         int skipInt = skipLines + (skipColumnHeader ? 1 : 0);
 
+        if ( firstRecord!=null ) {
+            line= firstRecord;
+            firstRecord= null;
+        } else {
+            line= reader.readLine();
+        }
+        
         Matcher m;
-        while ((line = reader.readLine()) != null) {
+        while ( line != null ) {
             bytesRead += line.length() + 1; // +1 is for end-of-line
             iline++;
 
@@ -481,13 +500,16 @@ public class AsciiParser {
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
+            
+            line= reader.readLine();
         }
+        
         mon.finished();
 
         String header= headerBuffer.toString();
-        builder.putProperty(PROPERTY_FILE_HEADER, header);
-        builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord );
-        builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
+        builder.putProperty( PROPERTY_FILE_HEADER, header );
+        builder.putProperty( PROPERTY_FIRST_RECORD, firstRecord );
+        builder.putProperty( QDataSet.USER_PROPERTIES, new HashMap(builder.properties) );
 
         return builder.getDataSet();
     }
@@ -618,7 +640,7 @@ public class AsciiParser {
             // TODO: check for units too.
             // if ( m.groupCount() is 2) String u= m.group(2).trim()
             } else {
-                logger.finest("first parsed line does not appear to be column header because of field #" + i + ": " + ss[i]);
+                if ( isColumnHeaders ) logger.finest("first parsed line does not appear to be column header because of field #" + i + ": " + ss[i]);
                 isColumnHeaders = false;
             }
         }

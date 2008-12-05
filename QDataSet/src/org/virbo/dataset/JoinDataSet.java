@@ -25,7 +25,10 @@ public class JoinDataSet extends AbstractDataSet {
      */
     int rank;
     
-    /** Creates a new instance of JoinDataSet */
+    /** Creates a new instance of JoinDataSet 
+     * @param rank The rank of the JoinDataSet.  Each dataset joined must have rank <tt>rank</tt>-1.
+     * 
+     */
     public JoinDataSet( int rank ) {
         this.rank= rank;
         datasets= new ArrayList<QDataSet>();

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.QDataSet;
 
 /**
  * allows dataset of unknown length to be built. Presently, this only builds QUBES, but should allow for geometry changes.
@@ -127,7 +128,10 @@ public class DataSetBuilder {
             newCurrent();
         }
     }
-    
+
+   /**
+    * return the number of records added to the builder.
+    */
     public int getLength() {
         return index+offset;
     }
@@ -260,6 +264,7 @@ public class DataSetBuilder {
     public void setFillValue(double fillValue) {
         double oldFillValue = this.fillValue;
         this.fillValue = fillValue;
+        if ( !Double.isNaN(fillValue) ) properties.put( QDataSet.FILL_VALUE, fillValue );
         propertyChangeSupport.firePropertyChange("fillValue", new Double(oldFillValue), new Double(fillValue));
     }
 
@@ -273,6 +278,7 @@ public class DataSetBuilder {
     public void setValidMin(double validMin) {
         double oldValidMin = this.validMin;
         this.validMin = validMin;
+        if ( validMin>Double.NEGATIVE_INFINITY ) properties.put( QDataSet.VALID_MIN, validMin );
         propertyChangeSupport.firePropertyChange(PROP_VALIDMIN, oldValidMin, validMin);
     }
     
@@ -286,6 +292,7 @@ public class DataSetBuilder {
     public void setValidMax(double validMax) {
         double oldValidMax = this.validMax;
         this.validMax = validMax;
+        if ( validMax<Double.POSITIVE_INFINITY ) properties.put( QDataSet.VALID_MAX, validMax );
         propertyChangeSupport.firePropertyChange(PROP_VALIDMAX, oldValidMax, validMax);
     }
     
