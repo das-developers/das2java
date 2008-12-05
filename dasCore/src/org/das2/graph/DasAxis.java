@@ -1181,16 +1181,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     public void updateTickV() {
-        if (autoTickV) {
-            TickVDescriptor oldTicks = this.tickV;
-            if (getUnits() instanceof TimeLocationUnits) {
-                updateTickVTime();
-            } else if (dataRange.isLog()) {
-                updateTickVLog();
-            } else {
-                updateTickVLinear();
+        if ( !valueIsAdjusting() ) {
+            if (autoTickV) {
+                TickVDescriptor oldTicks = this.tickV;
+                if (getUnits() instanceof TimeLocationUnits) {
+                    updateTickVTime();
+                } else if (dataRange.isLog()) {
+                    updateTickVLog();
+                } else {
+                    updateTickVLinear();
+                }
+                firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
             }
-            firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
         }
 
     }
