@@ -27,6 +27,7 @@ public class DatumRangeUtil {
     
     private static final boolean DEBUG=false;
 
+
     // this pattern is always a year
     private static boolean isYear( String string ) {
         return string.length()==4 && Pattern.matches("\\d{4}",string);
@@ -1044,4 +1045,23 @@ public class DatumRangeUtil {
     public static boolean sloppyContains(DatumRange context, Datum datum) {
         return context.contains(datum) || context.max().equals(datum);
     }    
+    
+    /**
+     * return the union of two DatumRanges.  If they do not intersect, the
+     * range between the two is included as well.
+     * @param range
+     * @param include
+     * @return
+     */
+    public static DatumRange union( DatumRange range, DatumRange include ) {
+        Units units= range.getUnits();
+        double s11= range.min().doubleValue(units);
+        double s12= include.min().doubleValue(units);
+        double s21= range.max().doubleValue(units);
+        double s22= include.max().doubleValue(units);
+        
+        return new DatumRange( Math.min(s11,s12), Math.max(s21, s22), units );
+        
+    }
+
 }
