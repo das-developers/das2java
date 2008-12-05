@@ -484,10 +484,15 @@ public final class TimeUtil {
         
         return result;
     }
-    
-    public static Datum next( int step, Datum datum ) {
-        if ( step==NANO ) throw new IllegalArgumentException("not supported nanos");
-        TimeStruct array= toTimeStruct(datum);
+
+    /**
+     * introduced as a way to incread the efficiency of the time axis tick calculation, this wasn't
+     * used because datums need to be created anyway.  So this is private for now.
+     * @param step
+     * @param array
+     * @return
+     */
+    private static final TimeStruct next( int step, TimeStruct array ) {
         switch (step) {
             case SECOND: 
                 array.seconds= array.seconds+1;
@@ -506,11 +511,11 @@ public final class TimeUtil {
                 array.day=1;
                 break;
             case QUARTER:
-                array.month= ((int)(array.month-1)+3)/3*3+1;
+                array.month= ((array.month-1)+3)/3*3+1;
                 array.day=1;
                 break;
             case HALF_YEAR:
-                array.month= ((int)(array.month-1)+6)/6*6+1;
+                array.month= ((array.month-1)+6)/6*6+1;
                 array.day=1;
                 break;                
             case YEAR:
@@ -531,9 +536,12 @@ public final class TimeUtil {
             array.year++;
             array.month-=12;
         }
-        Datum result= toDatum(array);
-        
-        return result;
+        return array;
+    }
+    
+    public static final Datum next( int step, Datum datum ) {
+        if ( step==NANO ) throw new IllegalArgumentException("not supported nanos");
+        return toDatum( next( step, toTimeStruct(datum) ) );
     }
     
     /**
