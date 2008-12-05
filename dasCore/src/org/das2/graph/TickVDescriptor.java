@@ -442,6 +442,7 @@ public class TickVDescriptor {
      * @param biggerUnitsCount kludge for when units==YEAR and biggerUnits==YEAR, so we can get "10 years"
      * @param unitLengthNanos 
      * @param mantissa 
+     * @param fin true when this is called for the last time, for debugging.
      * @return 
      */
     private static TickVDescriptor countOffTicks2(Datum minD, Datum maxD,
@@ -528,7 +529,7 @@ public class TickVDescriptor {
         return TickVDescriptor.newTickVDescriptor(majorTicks, minorTicks);
 
     }
-
+    
     private static boolean checkMono(DatumVector ticks) {
         Datum d = ticks.get(0);
         for (int i = 1; i < ticks.getLength(); i++) {
@@ -613,20 +614,26 @@ public class TickVDescriptor {
                 mantissa = ((Integer) mantissas.get(imant)).intValue();
 
                 int biggerUnitsCount = units[iunit] == biggerUnits ? mantissa : 1;
-                test = countOffTicks2(minD, maxD, units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
-                if (fin && test.tickV.getLength() <= nTicksMax) {
-                    test = countOffTicks2(minD, maxD, units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
-                }
-                if (!checkMono(test.getMinorTicks())) {
-                    test = countOffTicks2(minD, maxD, units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
-                }
-                if (test.tickV.getLength() <= nTicksMax && test.tickV.getLength() >= nTicksMin) {
+
+                DatumRange visibleRange= new DatumRange( minD, maxD );
+                DatumRange ticksRange= fin ? DatumRangeUtil.rescale( visibleRange, -1.0, 2.0 ) : visibleRange;
+
+                test = countOffTicks2( ticksRange.min(), ticksRange.max(), units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
+                //    // for debugging
+                //if (fin && test.tickV.getLength() <= nTicksMax) {
+                //    test = countOffTicks2(ticksRange.min(), ticksRange.max(), units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
+                //}
+                //if (!checkMono(test.getMinorTicks())) {
+                //    test = countOffTicks2(minD, maxD, units[iunit], biggerUnits, biggerUnitsCount, lengths[lessThanIndex], mantissa, fin);
+                //}
+                int nticks= fin ? test.tickV.getLength() / 3 : test.tickV.getLength();
+                if ( nticks <= nTicksMax && nticks >= nTicksMin) {
                     bestTickV = test;
                     bestUnit = units[iunit];
                     break;
                 }
 
-                if (test.tickV.getLength() >= nTicksMin) {  // this is our back up.
+                if ( nticks >= nTicksMin) {  // this is our back up.
                     secondBestTickV = test;
                     secondBestUnit = units[iunit];
                 }
