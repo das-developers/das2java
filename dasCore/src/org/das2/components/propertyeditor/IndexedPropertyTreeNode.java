@@ -34,6 +34,12 @@ class IndexedPropertyTreeNode extends PropertyTreeNode {
     public String getDisplayName() {
         return propertyDescriptor.getName() + "[]";
     }
+
+    @Override
+    public Object getDisplayValue() {
+        return ""+ getChildCount() + " element" + ( getChildCount()!=1 ? "s" : "" );
+    }
+    
     
     public void flush() {
         if (childDirty) {
