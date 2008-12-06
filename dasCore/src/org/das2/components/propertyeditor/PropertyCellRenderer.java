@@ -36,7 +36,7 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         TreeTableModel model = (TreeTableModel)table.getModel();
         PropertyTreeNodeInterface node = (PropertyTreeNodeInterface)model.getNodeForRow(row);
         PropertyDescriptor pd = node.getPropertyDescriptor();
-        return pd.getWriteMethod() != null;
+        return !( node instanceof IndexedPropertyTreeNode ) && ( pd.getWriteMethod() != null );
     }
     
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
