@@ -132,6 +132,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     if (editRendererMenuItem != null) {
+                        //TODO: check out SwingUtilities, I think this is wrong:
                         int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
                         editRendererMenuItem.setText("Renderer Properties");
                         if (ir > -1) {
@@ -143,9 +144,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                             } else {
                                 editRendererMenuItem.setIcon(null);
                             }
+                            setFocusRenderer(r);
                         } else {
                             editRendererMenuItem.setEnabled(false);
                             editRendererMenuItem.setIcon(null);
+                            setFocusRenderer(null);
                         }
                     }
                 }
@@ -181,6 +184,22 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
             addDefaultMouseModules();
         }
+    }
+
+    /**
+     * returns the Renderer with the current focus.  Clicking on a trace sets the focus.
+     */
+    protected Renderer focusRenderer = null;
+    public static final String PROP_FOCUSRENDERER = "focusRenderer";
+
+    public Renderer getFocusRenderer() {
+        return focusRenderer;
+    }
+
+    public void setFocusRenderer(Renderer focusRenderer) {
+        Renderer oldFocusRenderer = this.focusRenderer;
+        this.focusRenderer = focusRenderer;
+        firePropertyChange(PROP_FOCUSRENDERER, oldFocusRenderer, focusRenderer);
     }
 
     private void drawLegend(Graphics2D graphics) {
