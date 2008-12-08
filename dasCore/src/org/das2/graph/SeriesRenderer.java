@@ -498,6 +498,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
         private GeneralPath fillToRefPath1;
 
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+            if ( fillToRefPath1==null ) {
+                return 0;
+            }
             g.setColor(fillColor);
             g.fill(fillToRefPath1);
             return 0;
@@ -643,11 +646,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
      * updates the image of a psym that is stamped
      */
     private void updatePsym() {
-        int sx = (int) Math.ceil(symSize + 2 * lineWidth);
-        int sy = (int) Math.ceil(symSize + 2 * lineWidth);
+        int sx = 6+(int) Math.ceil(symSize + 2 * lineWidth);
+        int sy = 6+(int) Math.ceil(symSize + 2 * lineWidth);
         double dcmx, dcmy;
-        dcmx = (lineWidth + (int) (symSize / 2)) + 0.5;
-        dcmy = (lineWidth + (int) (symSize / 2)) + 0.5;
+        dcmx = (lineWidth + (int) Math.ceil( ( symSize ) / 2)) +2 ;
+        dcmy = (lineWidth + (int) Math.ceil( ( symSize ) / 2)) +2 ;
         BufferedImage image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -840,7 +843,9 @@ public class SeriesRenderer extends Renderer implements Displayable {
             DatumRange visibleRange = xAxis.getDatumRange();
             if (parent.isOverSize()) {
                 Rectangle plotBounds = parent.getCacheImageBounds();
-                visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
+                if ( plotBounds!=null ) {
+                    visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
+                }
 
             }
             ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
