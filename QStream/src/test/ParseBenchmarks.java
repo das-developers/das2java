@@ -32,7 +32,7 @@ public class ParseBenchmarks {
     }
 
     private static void readStream( File f ) throws FileNotFoundException, StreamException, org.das2.stream.StreamException {
-        String ext= f.toString().substring(f.toString().lastIndexOf(".") );
+        String ext= f.toString().substring(f.toString().lastIndexOf(".") ); // URI okay
         
         if ( ext.equals(".qds") ) {
             long t0 = System.currentTimeMillis();
