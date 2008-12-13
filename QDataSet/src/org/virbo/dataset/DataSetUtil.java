@@ -294,26 +294,35 @@ public class DataSetUtil {
      * no cadence is detected.
      */
     public static Double guessCadence(QDataSet xds, QDataSet yds) {
+        Double d= (Double) xds.property( QDataSet.CADENCE );
+        if ( d!=null ) {
+            return d;
+        }
+        
         if (yds == null) {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
         assert (xds.length() == yds.length());
 
-        if (yds.rank() > 1) { //TODO: check for fill columns.
+        if ( yds.rank()>1 ) { //TODO: check for fill columns.
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
-
+        
         Units u = (Units) yds.property(QDataSet.UNITS);
         if (u == null) {
             u = Units.dimensionless;
         }
         double cadence = Double.MAX_VALUE;
 
-        if (xds.length() < 2) return cadence;
+        if ( xds.length()<2 ) return cadence;
 
-        // calculate average cadence for consistent points.  Preload to avoid extra branch.
-        double cadenceS = Double.MAX_VALUE;
-        int cadenceN = 1;
+        // calculate average cadence for points consistent with max.  Preload to avoid extra branch.
+        double cadenceSMax = 0;
+        int cadenceNMax = 1;
+        
+        // calculate average cadence for points consistent with min.  Preload to avoid extra branch.
+        double cadenceSMin = Double.MAX_VALUE;
+        int cadenceNMin = 1;
 
         int i = 0;
         double x0 = 0;
@@ -323,48 +332,62 @@ public class DataSetUtil {
         if (i < yds.length()) {
             x0 = xds.value(i);
         }
-        final boolean log = "log".equals(xds.property(QDataSet.SCALE_TYPE));
-        for (i++; i < xds.length() && i < DataSetOps.DS_LENGTH_LIMIT; i++) {
+        final boolean log= "log".equals( xds.property( QDataSet.SCALE_TYPE ) );
+        for (i++; i < xds.length() && i<DataSetOps.DS_LENGTH_LIMIT; i++) {
             if (u.isValid(yds.value(i))) {
-                double cadenceAvg;
-                cadenceAvg = cadenceS / cadenceN;
+                double cadenceAvgMin;
+                cadenceAvgMin = cadenceSMin / cadenceNMin;
+                double cadenceAvgMax;
+                cadenceAvgMax = cadenceSMax / cadenceNMax;
                 if (log) {
-                    cadence = Math.abs(Math.log(xds.value(i) / x0));
+                    cadence = Math.abs( Math.log( xds.value(i) / x0 ) );
                 } else {
-                    cadence = Math.abs(xds.value(i) - x0);
+                    cadence = Math.abs( xds.value(i) - x0 );
                 }
-                if (cadence < 0.5 * cadenceAvg && cadenceN < 10) {
-                    cadenceS = cadence;
-                    cadenceN = 1;
-                } else if (cadence > 0.5 * cadenceAvg && cadence < 1.5 * cadenceAvg) {
-                    cadenceS += cadence;
-                    cadenceN += 1;
+                
+                if ( cadence < 0.5 * cadenceAvgMin && cadenceNMin < 10 ) {  // set the initial value
+                    cadenceSMin = cadence;
+                    cadenceNMin = 1;
+                    cadenceAvgMin = cadence; // set this, since cadenceMax uses it.
+                } else if (cadence > 0.5 * cadenceAvgMin && cadence < 1.5 * cadenceAvgMin) {
+                    cadenceSMin += cadence;
+                    cadenceNMin += 1;
                 }
+
+                if ( cadence > 1.5 * cadenceAvgMax && cadenceNMax < 10 && cadence < 100 * cadenceAvgMin ) {  // set the initial value
+                    cadenceSMax = cadence;
+                    cadenceNMax = 1;
+                } else if (cadence > 0.5 * cadenceAvgMax && cadence < 1.5 * cadenceAvgMax) {
+                    cadenceSMax += cadence;
+                    cadenceNMax += 1;
+                }
+                
                 x0 = xds.value(i);
             }
         }
         
-        double avg= cadenceS / cadenceN;
+        double avgMin= cadenceSMin / cadenceNMin;
+        double avgMax= cadenceSMax / cadenceNMax;
         
-        QDataSet hist= Ops.histogram( Ops.diff(xds), 0, avg*10, avg*10/99 );
+        QDataSet hist= Ops.histogram( Ops.diff(xds), 0, avgMin*10, avgMin*10/99 );
         
         int maxPeak= -1;
         int minPeak= -1;
-        int peakHeight= Math.max( 1, xds.length() / 20 );
+        int peakHeight= Math.max( 1, xds.length() / 100 );
         for ( i=0; i<hist.length(); i++ ) {  // expect to see just one peak, otherwise use max peak.
             // TODO: verify that the cadence is in the middle of the 10th bin.  
             // TODO: check for peaks at integer multiples of the cadence.
-            if (hist.value(i) >= peakHeight) {
-                if (minPeak == -1) minPeak = i;
-                maxPeak = i;
+            if ( hist.value(i)>=peakHeight ) {
+                if ( minPeak==-1 ) minPeak= i;
+                maxPeak= i;
+                peakHeight= (int)hist.value(i);
             }
         }
         if ( maxPeak>minPeak ) {
-            return null;
+            return avgMax*2;
         } else {
-            return avg;
-        }
-
+            return avgMin;
+        }    
     }
 
     /**
