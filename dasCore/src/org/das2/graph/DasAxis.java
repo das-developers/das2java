@@ -696,7 +696,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * changes the units of the axis to a new unit.
      */
-    public void resetRange(DatumRange range) {
+    public synchronized void resetRange(DatumRange range) {
         if (range.getUnits() != this.getUnits()) {
             if (dasPlot != null) {
                 dasPlot.invalidateCacheImage();
@@ -1180,7 +1180,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    public void updateTickV() {
+    public synchronized void updateTickV() {
         if ( !valueIsAdjusting() ) {
             if (autoTickV) {
                 TickVDescriptor oldTicks = this.tickV;
@@ -1927,7 +1927,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * 
      * @return Rectangle in the canvas coordinate frame.
      */
-    protected Rectangle getLabelBounds( Rectangle bounds ) {
+    protected synchronized Rectangle getLabelBounds( Rectangle bounds ) {
         String[] labels = tickFormatter(this.getTickV().tickV, getDatumRange());
 
         int majorTickLength = (int) getEmSize();
@@ -1941,9 +1941,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double dmin= transform(getDataMinimum());
         double dmax= transform(getDataMaximum());
         
+        DatumVector ticks= this.getTickV().tickV;
         for (int i = 0; i < labels.length; i++) {
-            Datum d = this.getTickV().tickV.get(i);
-            if (DatumRangeUtil.sloppyContains(getDatumRange(), d)) {
+            Datum d = ticks.get(i);
+            DatumRange dr= getDatumRange();
+            if (DatumRangeUtil.sloppyContains(dr, d)) {
                 gtr.setString(labelFont, labels[i]);
                 Rectangle rmin = gtr.getBounds();
                 Rectangle rmax= new Rectangle(rmin);  // same bound, but positioned at the axis max.
@@ -2534,11 +2536,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** TODO
      * @return
+     * @deprecated use isTickLabelsVisible
      */
     public boolean areTickLabelsVisible() {
         return tickLabelsVisible;
     }
 
+    /**
+     * true if the tick labels should be drawn.
+     * @return
+     */
+    public boolean isTickLabelsVisible() {
+        return tickLabelsVisible;
+    }
+    
     /** TODO
      * @param b
      */
