@@ -352,6 +352,14 @@ public class TimeParser {
         return us1980;
     }
 
+    /**
+     * reset the seconds register.  setDigit( String formatCode, double val ) accumulates 
+     * fractional part in the seconds.
+     */
+    public void resetSeconds() {
+        time.seconds= 0;
+    }
+    
     public TimeParser parse(String timeString) throws ParseException {
         int offs = 0;
         int len = 0;
@@ -362,7 +370,7 @@ public class TimeParser {
         time.minute = 0;
         time.seconds = 0;
         time.micros = 0;
-
+        
         for (int idigit = 1; idigit < ndigits; idigit++) {
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
 
@@ -440,6 +448,76 @@ public class TimeParser {
         return this;
     }
 
+    /**
+     * set the digit with the integer part, and move the fractional part to the less significant digits.
+     * @param format
+     * @param value
+     */
+    public void setDigit( String format, double value ) {
+        if ( value<0 ) throw new IllegalArgumentException("value must not be negative");
+        String[] ss = format.split("%", -2);
+        if ( ss.length>2 ) throw new IllegalArgumentException("multiple fields not supported");
+        for (int i = ss.length-1; i > 0; i--) {
+            int digit= (int)value;
+            double fp= value-digit;
+            
+            switch ( ss[i].charAt(0) ) {
+                case 'Y':
+                    time.year = digit;
+                    if ( TimeUtil.isLeapYear(time.year) ) {
+                        time.seconds+= 366 * 24 * 3600 * fp;
+                    } else {
+                        time.seconds+= 365 * 24 * 3600 * fp;
+                    }
+                    break;
+                case 'y':
+                    time.year = digit < 58 ? 2000 + digit : 1900 + digit;
+                    if ( TimeUtil.isLeapYear(time.year) ) {
+                        time.seconds+= 366 * 24 * 3600 * fp;
+                    } else {
+                        time.seconds+= 365 * 24 * 3600 * fp;
+                    }
+                    break;
+                case 'j':
+                    time.month = 1;
+                    time.day = digit;
+                    time.seconds+= 24 * 3600 * fp;
+                    break;
+                case 'm':
+                    time.month = digit;
+                    time.seconds+= TimeUtil.daysInMonth(time.month,time.year) * 24 * 3600 * fp;
+                    break;
+                case 'd':
+                    time.day = digit;
+                    time.seconds+= 24 * 3600 * fp;
+                    break;
+                case 'H':
+                    time.hour = digit;
+                    time.seconds+= 3600 * fp;
+                    break;
+                case 'M':
+                    time.minute = digit;
+                    time.seconds+= 60 * fp;
+                    break;
+                case 'S':
+                    time.seconds = digit + fp;
+                    break;
+                case '{':
+                    if ( ss[i].substring(1).equals("milli}") ) {
+                        time.millis = digit;
+                        time.micros += 1000 * fp;
+                        time.seconds += ( ( 1000*fp)-time.micros ) * 1e-6;
+                    } else if ( ss[i].substring(1).equals("micro}") ) {
+                        time.micros = digit;
+                        time.seconds += fp * 1e-6;
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("format code not supported");
+            }
+        }
+    }
+    
     /**
      * Set the digit using the format code.  If multiple digits are found, then
      * the integer provided should be the misinterpreted integer.  For example,
