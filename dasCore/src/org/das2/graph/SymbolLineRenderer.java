@@ -254,7 +254,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             ixmin= DataSetUtil.getPreviousColumn( dataSet, visibleRange.min() );
             ixmax= DataSetUtil.getNextColumn( dataSet, visibleRange.max() );
             
-            GeneralPath newPath = new GeneralPath( GeneralPath.WIND_NON_ZERO, 110 * ( ixmax - ixmin ) / 100 );
+            GeneralPath newPath = new GeneralPath( GeneralPath.WIND_NON_ZERO, Math.max( 100, 110 * ( ixmax - ixmin ) / 100 ) );
             
             double xSampleWidth;
             if (dataSet.getProperty("xTagWidth") != null) {
