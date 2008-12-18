@@ -164,11 +164,13 @@ public class TimeParser {
         delim[0] = ss[0];
         for (int i = 1; i < ndigits; i++) {
             int pp = 0;
-            while (Character.isDigit(ss[i].charAt(pp))) {
+            while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp)=='-' ) {
                 pp++;
             }
             if (pp > 0) {
                 lengths[i] = Integer.parseInt(ss[i].substring(0, pp));
+            } else {
+                lengths[i] = 0; // determine later by field type
             }
 
             if (ss[i].charAt(pp) != '{') {
@@ -176,7 +178,12 @@ public class TimeParser {
                 delim[i] = ss[i].substring(pp + 1);
             } else {
                 int endIndex = ss[i].indexOf('}', pp);
-                fc[i] = ss[i].substring(pp + 1, endIndex);
+                int comma= ss[i].indexOf(",",pp);
+                if (  comma!=-1 ) {
+                    fc[i] = ss[i].substring(pp + 1, comma);
+                } else {
+                    fc[i] = ss[i].substring(pp + 1, endIndex);
+                }
                 delim[i] = ss[i].substring(endIndex + 1);
             }
         }
@@ -219,7 +226,7 @@ public class TimeParser {
                 }
             } else {
                 handlers[i] = handler;
-                if (lengths[i] == -1) {
+                if (lengths[i] == 0) {
                     lengths[i] = formatCode_lengths[handler];
                 }
                 offsets[i] = pos;
@@ -360,6 +367,18 @@ public class TimeParser {
         time.seconds= 0;
     }
     
+    /**
+     * force the parser to look for delimiters
+     */
+    public void sloppyColumns() {
+        this.lengths[0]=-1;
+        for (int i=1; i<this.offsets.length; i++ ) {
+            this.offsets[i]=-1;
+            this.lengths[i]=-1;
+            //TODO: check for delims
+        }
+    }
+    
     public TimeParser parse(String timeString) throws ParseException {
         int offs = 0;
         int len = 0;
@@ -389,6 +408,7 @@ public class TimeParser {
                     }
                 } else {
                     int i = timeString.indexOf(this.delims[idigit], offs);
+                    if ( i==-1 ) throw new ParseException("expected delimiter \""+this.delims[idigit]+"\"",offs);
                     len = i - offs;
                 }
             }
