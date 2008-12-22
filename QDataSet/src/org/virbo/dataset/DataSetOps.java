@@ -411,13 +411,15 @@ public class DataSetOps {
         
         tags.putProperty( QDataSet.NAME, ds.property(QDataSet.NAME) );
         tags.putProperty( QDataSet.LABEL, ds.property(QDataSet.LABEL) );
+        tags.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
         tags.putProperty( QDataSet.TITLE, ds.property(QDataSet.TITLE) );
         tags.putProperty( QDataSet.TYPICAL_MAX, ds.property(QDataSet.TYPICAL_MAX) );
         tags.putProperty( QDataSet.TYPICAL_MIN, ds.property(QDataSet.TYPICAL_MIN) );
         tags.putProperty( QDataSet.CADENCE, binsize );
         
         final int[] hits = new int[n];
-
+        int maxFreq= 0;
+        
         QubeDataSetIterator iter = new QubeDataSetIterator(ds);
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
@@ -430,14 +432,16 @@ public class DataSetOps {
                 int ibin = (int) ((d - min) / binsize);
                 if (ibin >= 0 && ibin < n) {
                     hits[ibin]++;
+                    if ( hits[ibin]>maxFreq ) maxFreq= hits[ibin];
                 }
                 count++;
             }
         }
 
         IDataSet result = IDataSet.wrap(hits);
-        result.putProperty(QDataSet.DEPEND_0, tags);
-        result.putProperty("count",count);
+        result.putProperty( QDataSet.DEPEND_0, tags );
+        result.putProperty( "count", count );
+        result.putProperty( "max", maxFreq );
 
         return result;
     }
