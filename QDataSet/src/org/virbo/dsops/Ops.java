@@ -1451,7 +1451,8 @@ public class Ops {
         }
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-        double cadence = dep0 == null ? 1.0 : DataSetUtil.guessCadence(dep0);
+        Double cadence = dep0 == null ? 1.0 : DataSetUtil.guessCadence(dep0);
+        if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
 
         double[] tags = FFTUtil.getFrequencyDomainTags(cadence, ds.length());
         result.putProperty(QDataSet.DEPEND_0, DDataSet.wrap(tags));
