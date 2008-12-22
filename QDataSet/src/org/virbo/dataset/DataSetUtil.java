@@ -331,6 +331,8 @@ public class DataSetUtil {
         }
         if (i < yds.length()) {
             x0 = xds.value(i);
+        } else {
+            return Double.MAX_VALUE;
         }
         final boolean log= "log".equals( xds.property( QDataSet.SCALE_TYPE ) );
         for (i++; i < xds.length() && i<DataSetOps.DS_LENGTH_LIMIT; i++) {
