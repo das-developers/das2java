@@ -148,7 +148,7 @@ public class EnumerationUnits extends Units {
         }
     }
 
-    public static EnumerationUnits create(Object o) {
+    public static synchronized EnumerationUnits create(Object o) {
         if (unitsInstances == null)
             unitsInstances = new HashMap<Class, EnumerationUnits>();
         Class c = o.getClass();
