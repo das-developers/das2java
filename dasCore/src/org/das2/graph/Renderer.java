@@ -404,12 +404,17 @@ public abstract class Renderer implements DataSetConsumer, Editable {
                 parent.repaint();
             }
         };
-        
-        //if ( EventQueue.isDispatchThread() ) {
-        //    new Thread( run, "updatePlotImage" ).start();
-        //} else {
-        run.run();
-        //}
+
+        boolean async= false;  // updating was done on the event thread...
+        if ( EventQueue.isDispatchThread() ) {
+            if ( async ) {
+                new Thread( run, "updatePlotImage" ).start();
+            } else {
+                run.run();
+            }
+        } else {
+            run.run();
+        }
     }
     
     
