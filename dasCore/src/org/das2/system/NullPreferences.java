@@ -48,7 +48,7 @@ public class NullPreferences extends AbstractPreferences {
     }
 
     protected AbstractPreferences childSpi(String name) {
-        return null;
+        return new NullPreferences();
     }
 
     protected void syncSpi() throws BackingStoreException {
