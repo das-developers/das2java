@@ -38,8 +38,8 @@ public class TimeLocationUnits extends LocationUnits {
      * special tickV for time units.)
      */        
     
-    public TimeLocationUnits( String id, String description, Units offsetUnits ) {
-        super(id,description,offsetUnits);
+    public TimeLocationUnits( String id, String description, Units offsetUnits, Basis basis ) {
+        super(id,description,offsetUnits,basis);
     }
 
     public DatumFormatterFactory getDatumFormatterFactory() {

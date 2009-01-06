@@ -133,39 +133,46 @@ public abstract class Units implements Displayable {
     /**
      * Microseconds since midnight Jan 1, 2000.
      */
-    public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",Units.microseconds);
+    public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",
+            Units.microseconds, Basis.since2000);
 
     /**
      * Microseconds since midnight Jan 1, 1980.
      */
-    public static final TimeLocationUnits us1980= new TimeLocationUnits("us1980", "Microseconds since midnight Jan 1, 1980.",Units.microseconds);
+    public static final TimeLocationUnits us1980= new TimeLocationUnits("us1980", "Microseconds since midnight Jan 1, 1980.",
+            Units.microseconds, Basis.since1980 );
 
     /**
      * Seconds since midnight Jan 1, 2000.
      */    
-    public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",Units.seconds);
+    public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",
+            Units.seconds, Basis.since2000 );
 
     /**
      * seconds since midnight Jan 1, 1970.
      */
-    public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",Units.seconds);
+    public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",
+            Units.seconds, Basis.since1970 );
     
     /**
      * roughly days since noon on some day in 1958, Julian - 2436204.5 to be more precise.
      */
-    public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", Units.days);
+    public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", 
+            Units.days, Basis.since1958 );
     
     /**
      * The Modified Julian Day (MJD) is the number of days (with decimal fraction of the day) that have elapsed since midnight at the beginning of Wednesday November 17, 1858. 
      * Julian - 2400000.5
      */
-    public static final TimeLocationUnits mjd= new TimeLocationUnits("mjd", "days since midnight November 17, 1858.", Units.days );
+    public static final TimeLocationUnits mjd= new TimeLocationUnits("mjd", "days since midnight November 17, 1858.", 
+            Units.days , Basis.modifiedJulian );
     
     /**
      * cdf epoch milliseconds since midnight, 01-Jan-0000.  There must be skipped days, because this doesn't yeild 01-Jan-0000 for 0.,
      * but works fine at 1-1-2000.
      */
-    public static final TimeLocationUnits cdfEpoch= new TimeLocationUnits("cdfEpoch","milliseconds since 01-Jan-0000", Units.milliseconds);
+    public static final TimeLocationUnits cdfEpoch= new TimeLocationUnits("cdfEpoch","milliseconds since 01-Jan-0000", 
+            Units.milliseconds, Basis.since0000 );
     
     
     static {

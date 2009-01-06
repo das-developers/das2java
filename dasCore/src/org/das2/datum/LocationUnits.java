@@ -30,15 +30,29 @@ package org.das2.datum;
 public class LocationUnits extends NumberUnits {
     
     Units offsetUnits; 
+    Basis basis;
     
     /** Creates a new instance of LocationUnit */
-    public LocationUnits( String id, String description, Units offsetUnits ) {
+    public LocationUnits( String id, String description, Units offsetUnits, Basis basis ) {
         super( id, description );
         this.offsetUnits= offsetUnits;
+        this.basis= basis;
     }
     
+    /**
+     * return the physical units of the basis vector, such as "microseconds" or "degrees"
+     * @return
+     */
     public Units getOffsetUnits() {
         return this.offsetUnits;
+    }
+    
+    /**
+     * return the basis for the unit, such as "since 2000-01-01T00:00Z" or "degrees north"
+     * @return
+     */
+    public Basis getBasis() {
+        return this.basis;
     }
     
     public Datum add(Number a, Number b, Units bUnits) {
