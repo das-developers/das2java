@@ -4,7 +4,6 @@
  */
 package org.virbo.dataset;
 
-import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 
 /**
@@ -82,7 +81,7 @@ public abstract class WeightsDataSet implements QDataSet {
     public int length(int i, int j) {
         return ds.length(i, j);
     }
-
+    
     public static final class ValidRangeFillFinite extends WeightsDataSet {
 
         public ValidRangeFillFinite( QDataSet ds ) {
@@ -112,7 +111,7 @@ public abstract class WeightsDataSet implements QDataSet {
             super(ds);
         }
         
-        private final double weight(double v) {
+        public final double weight(double v) {
             return v == fill || Double.isNaN(v) ? 0.0 : 1.0;
         }
 
