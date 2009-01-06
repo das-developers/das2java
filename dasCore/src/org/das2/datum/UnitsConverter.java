@@ -23,8 +23,6 @@
 
 package org.das2.datum;
 
-import org.das2.datum.Units;
-
 /**
  *
  * @author  jbf
