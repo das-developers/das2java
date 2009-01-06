@@ -43,14 +43,16 @@ public class LocationUnits extends NumberUnits {
      * return the physical units of the basis vector, such as "microseconds" or "degrees"
      * @return
      */
+    @Override
     public Units getOffsetUnits() {
         return this.offsetUnits;
     }
     
     /**
-     * return the basis for the unit, such as "since 2000-01-01T00:00Z" or "degrees north"
+     * return the basis for the unit, such as "since 2000-01-01T00:00Z" or "north of Earth's equator"
      * @return
      */
+    @Override
     public Basis getBasis() {
         return this.basis;
     }

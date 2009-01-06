@@ -44,6 +44,7 @@ public abstract class Units implements Displayable {
     static {
         dimensionless.registerConverter(dB, new dBConverter());
     }
+    
     private static final class dBConverter extends UnitsConverter {
         public double convert(double value) {
             return 10 * DasMath.log10(value);
@@ -63,10 +64,15 @@ public abstract class Units implements Displayable {
         }
     }
     
-    public static final Units celcius= new NumberUnits("deg C");
-    public static final Units fahrenheit= new NumberUnits("deg F");
+    /* introduced for tutorials */
+    public static final Units centigrade= new LocationUnits( "centigrade", "centigrade", Units.celciusDegrees, Basis.centigrade );
+    public static final Units celciusDegrees= new NumberUnits("deg C");
+    public static final Units fahrenheitScale= new LocationUnits("deg F", "deg F", Units.fahrenheitDegrees, Basis.fahrenheit );
+    public static final Units fahrenheitDegrees= new NumberUnits("deg F");
+    
     static {
-        celcius.registerConverter(fahrenheit, new UnitsConverter.ScaleOffset(1.8, 32));
+        centigrade.registerConverter(fahrenheitScale, new UnitsConverter.ScaleOffset(1.8, 32));
+        celciusDegrees.registerConverter(fahrenheitDegrees, new UnitsConverter.ScaleOffset(1.8,0) );
     }
     
     public static final Units hours= new NumberUnits("hr");
@@ -388,6 +394,10 @@ public abstract class Units implements Displayable {
     
     public Units getOffsetUnits() {
         return this;
+    }
+    
+    public Basis getBasis() {
+        return Basis.physicalZero;
     }
     
     public abstract Datum createDatum( double value );

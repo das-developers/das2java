@@ -21,6 +21,14 @@ public class Basis {
     static Basis since1958= new Basis( "since1958", "since 1958-01-01T00:00Z", since2000, -1325376000., Units.seconds );
     static Basis modifiedJulian= new Basis( "modifiedJulian", "since 1858-11-17T00:00Z", since2000, 4453401600., Units.seconds );
     static Basis since0000= new Basis( "since0000", "since 01-Jan-0000T00:00Z", since2000, 63113904000., Units.seconds );
+    static Basis fahrenheit= new Basis( "fahrenheit", "fahrenheit", Basis.physicalZero, 255.370, Units.celciusDegrees );
+    static Basis kelvin= new Basis( "kelvin", "kelvin", Basis.physicalZero, 0, Units.celciusDegrees );
+    static Basis centigrade= new Basis( "centigrade", "centigrade", Basis.physicalZero, 273.15, Units.celciusDegrees );
+            
+    /**
+     * special basis representing physical zero for all combinations of physical units.
+     */
+    static Basis physicalZero= new Basis( "", "physical zero", null, 0, null );
             
     private IdentityHashMap<Basis,Datum> bases;
     
@@ -70,5 +78,8 @@ public class Basis {
         Basis since2010= new Basis( "since2010", "since 2010-01-01T00:00Z", Basis.since2000, 315619200000000.0, Units.microseconds );
         Basis since2011= new Basis( "since2011", "since 2011-01-01T00:00Z", Basis.since2000, 347155200000000.0, Units.microseconds );
         System.err.println( since2011.getOffset(since2010, Units.days ));
+        
+        System.err.println( centigrade.getOffset( fahrenheit, Units.fahrenheitDegrees ) );
+        
     }
 }
