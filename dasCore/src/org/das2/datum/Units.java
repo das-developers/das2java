@@ -64,16 +64,8 @@ public abstract class Units implements Displayable {
         }
     }
     
-    /* introduced for tutorials */
-    public static final Units centigrade= new LocationUnits( "centigrade", "centigrade", Units.celciusDegrees, Basis.centigrade );
-    public static final Units celciusDegrees= new NumberUnits("deg C");
-    public static final Units fahrenheitScale= new LocationUnits("deg F", "deg F", Units.fahrenheitDegrees, Basis.fahrenheit );
-    public static final Units fahrenheitDegrees= new NumberUnits("deg F");
-    
-    static {
-        centigrade.registerConverter(fahrenheitScale, new UnitsConverter.ScaleOffset(1.8, 32));
-        celciusDegrees.registerConverter(fahrenheitDegrees, new UnitsConverter.ScaleOffset(1.8,0) );
-    }
+    public static final Units celciusDegrees= new NumberUnits("celcius degrees"); // disambiguate from "deg C" which is the temperature scale
+    public static final Units fahrenheitDegrees= new NumberUnits("fahrenheit degrees"); // disambiguate from "deg F" which is the temperature scale
     
     public static final Units hours= new NumberUnits("hr");
     public static final Units minutes= new NumberUnits("min");
@@ -135,6 +127,17 @@ public abstract class Units implements Displayable {
     static {
         meters.registerConverter(kiloMeters, UnitsConverter.KILO);
     }
+
+    /**** begin of LocationUnits.  These must be defined after the physical units to support Basis. ****/
+    
+    public static final Units centigrade= new LocationUnits( "centigrade", "centigrade", Units.celciusDegrees, Basis.centigrade );
+    public static final Units fahrenheitScale= new LocationUnits("deg F", "deg F", Units.fahrenheitDegrees, Basis.fahrenheit );
+
+    static {
+        centigrade.registerConverter(fahrenheitScale, new UnitsConverter.ScaleOffset(1.8, 32));
+        celciusDegrees.registerConverter(fahrenheitDegrees, new UnitsConverter.ScaleOffset(1.8,0) );
+    }
+
     
     /**
      * Microseconds since midnight Jan 1, 2000.
@@ -189,6 +192,8 @@ public abstract class Units implements Displayable {
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 15340 ));
         ((Units)t2000).registerConverter(mjd, new UnitsConverter.ScaleOffset(1.0/8.64e4, 51544 ));
     }
+
+    /****  ratiometric units ***********/
     
     public static final Units percent= new NumberUnits("%","");
 
@@ -392,10 +397,20 @@ public abstract class Units implements Displayable {
         return id;
     }
     
+    /**
+     * return the units from the Basis for the unit, such as "seconds" in
+     * "seconds since midnight, Jan 1, 1970"
+     * @return
+     */
     public Units getOffsetUnits() {
         return this;
     }
     
+    /**
+     * return the Basis which defines the meaning of zero and the direction of positive values, such as 
+     * "since midnight, Jan 1, 1970"
+     * @return
+     */
     public Basis getBasis() {
         return Basis.physicalZero;
     }
