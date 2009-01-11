@@ -369,18 +369,21 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             public void run() {
                 logger.fine("update plot image");
                 try {
-                    final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
-                    updatePlotImage(parent.getXAxis(), parent.getYAxis(), progressPanel);
-                    xmemento = parent.getXAxis().getMemento();
-                    ymemento = parent.getYAxis().getMemento();
-                    renderException = null;
+                    if (parent != null) { // TODO: make synchronized, but this is non-trivial since deadlock.
+                        final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
+                        updatePlotImage(parent.getXAxis(), parent.getYAxis(), progressPanel);
+                        xmemento = parent.getXAxis().getMemento();
+                        ymemento = parent.getYAxis().getMemento();
+                        renderException = null;
+                    }
                 } catch (DasException de) {
-                    // TODO: there's a problem here, that the Renderer can set its own exeception and dataset.  This needs to be addressed, or handled as an invalid state.
+                    // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
                     logger.warning("exception: " + de);
                     ds = null;
                     renderException = de;
                 } catch (RuntimeException re) {
                     logger.warning("exception: " + re);
+                    re.printStackTrace();
                     renderException = re;
                     parent.invalidateCacheImage();
                     parent.repaint();
