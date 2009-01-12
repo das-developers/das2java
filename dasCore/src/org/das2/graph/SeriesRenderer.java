@@ -708,6 +708,10 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
+        if ( parent!=null && legendLabel!=null && legendLabel.length()>0 ) {
+            parent.addToLegend( this, (ImageIcon)this.getListIcon(), 0, legendLabel );
+        }
+        
         renderCount++;
         reportCount();
 
@@ -1024,6 +1028,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         return null;
     }
 
+    /**
+     * get an Icon representing the trace.  This will be an ImageIcon.
+     * TODO: cache the result to support use in legend.
+     * @return
+     */
     public javax.swing.Icon getListIcon() {
         Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) i.getGraphics();
@@ -1434,6 +1443,25 @@ public class SeriesRenderer extends Renderer implements Displayable {
         updatePsym();
         refreshImage();
     }
+    
+    /**
+     * If non-null and non-zero-length, use this label to describe the renderer
+     * in the plot's legend.
+     */
+    public static final String PROP_LEGENDLABEL = "legendLabel";
+
+    protected String legendLabel = "";
+    
+    public String getLegendLabel() {
+        return legendLabel;
+    }
+
+    public void setLegendLabel(String legendLabel) {
+        String oldLegendLabel = this.legendLabel;
+        this.legendLabel = legendLabel;
+        propertyChangeSupport.firePropertyChange(PROP_LEGENDLABEL, oldLegendLabel, legendLabel);
+    }
+
 
     @Override
     public boolean acceptContext(int x, int y) {
