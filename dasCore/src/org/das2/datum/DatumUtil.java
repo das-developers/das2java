@@ -185,7 +185,7 @@ public final class DatumUtil {
             double discernable= DasMath.exp10(-1*fracDigits);
             
             Datum step= maximum.subtract(minimum).divide( nsteps );
-            double dstep= step.doubleValue(units);
+            double dstep= step.doubleValue(units.getOffsetUnits());
             for ( int j=0; j<nsteps; j++ ) {
                 double d= minimum.add(step.multiply(j)).doubleValue(units);
                 if ( Math.abs(d)>(discernable*0.1) ) { // don't look at fuzzy zero
