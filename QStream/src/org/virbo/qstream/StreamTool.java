@@ -267,7 +267,7 @@ public class StreamTool {
             struct.descriptorCount++;
             int bytesRead;
             int totalBytesRead = 0;
-            while ((bytesRead = stream.read(struct.bigBuffer)) != -1) {
+            while ( (bytesRead = stream.read(struct.bigBuffer)) >= 0 || struct.bigBuffer.position()!=0 ) {
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
 
