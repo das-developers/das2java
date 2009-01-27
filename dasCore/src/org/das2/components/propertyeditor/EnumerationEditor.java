@@ -142,6 +142,7 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
         if (selected != value) {
             oldValue = selected;
             selected = value;
+            if ( editor!=null ) editor.repaint();
             pcSupport.firePropertyChange("value", oldValue, selected);
         }
     }
@@ -162,6 +163,7 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
         Object oldValue = selected;
         selected = obj;
         if (oldValue != obj) {
+            if ( editor!=null ) editor.repaint();
             pcSupport.firePropertyChange("value", oldValue, selected);
         }
     }
