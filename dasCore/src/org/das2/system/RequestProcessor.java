@@ -96,7 +96,7 @@ public final class RequestProcessor {
      * @param run the task to be executed.
      */    
     public static void invokeLater(Runnable run) {
-        logger.info("invokeLater "+run);
+        logger.fine("invokeLater "+run);
         
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
@@ -114,7 +114,7 @@ public final class RequestProcessor {
      * @param lock associates run with other tasks.
      */
     public static void invokeLater(Runnable run, Object lock) {
-        logger.info("invokeLater "+run+" "+lock);        
+        logger.fine("invokeLater "+run+" "+lock);
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -140,7 +140,7 @@ public final class RequestProcessor {
      * @param lock associates run with other tasks.
      */
     public static void invokeAfter(Runnable run, Object lock) {
-        logger.info("invokeAfter "+run+" "+lock);
+        logger.fine("invokeAfter "+run+" "+lock);
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -212,7 +212,7 @@ public final class RequestProcessor {
                         throw td;
                     }
                     catch (Throwable t) {
-                        logger.info("uncaught exception "+t);
+                        logger.fine("uncaught exception "+t);
                         DasExceptionHandler.handleUncaught(t);
                         //Clear interrupted status (if set)
                         Thread.interrupted();
