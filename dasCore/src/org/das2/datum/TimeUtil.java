@@ -942,7 +942,8 @@ public final class TimeUtil {
             month = i;
             day_month = day_year - dayOffset[leap][i];
         } else {
-            throw new java.text.ParseException( "Need month/day or doy in '"+s+"'",0 );
+            if ( month==0 ) month= 1;
+            day_month= 1;
         }
         
         TimeStruct result= new TimeStruct();
