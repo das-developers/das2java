@@ -799,8 +799,24 @@ public final class TimeUtil {
             if (want[DATE]) {
                 
                 if (number == 0) throw new java.text.ParseException( "m,d, or y can't be 0 in '"+s+"'", 0 );
-                
-                if (number > 31) {
+
+                if ( number >= 10000000 && want[YEAR] ) { // %Y%m%d
+                    year= number / 10000;
+                    want[YEAR]= false;
+                    month= number / 100 % 100;
+                    want[MONTH]= false;
+                    day_month= number % 100;
+                    day_year= 0;
+                    want[DAY]= false;
+                } else if (number >= 1000000 && want[YEAR] ) { //%Y%j
+                    year= number / 1000;
+                    want[YEAR]= false;
+                    day_year= number % 1000;
+                    month= 0;
+                    want[MONTH]= false;
+                    want[DAY]= false;
+
+                } else if (number > 31) {
                     
                     if (want[YEAR]) {
                         year = number;
