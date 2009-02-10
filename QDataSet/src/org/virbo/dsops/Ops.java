@@ -33,6 +33,7 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.VectorDataSetAdapter;
+import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.DataSetBuilder;
@@ -108,24 +109,22 @@ public class Ops {
         QubeDataSetIterator it2 = new QubeDataSetIterator(ds2);
         Units u1 = (Units) ds1.property(QDataSet.UNITS);
         Units u2 = (Units) ds2.property(QDataSet.UNITS);
-        if (u1 == null) {
-            u1 = Units.dimensionless;
-        }
-        if (u2 == null) {
-            u2 = Units.dimensionless;
-        }
+        WeightsDataSet w1= DataSetUtil.weightsDataSet(ds1);
+        WeightsDataSet w2= DataSetUtil.weightsDataSet(ds2);
+        double fill= -1e38;
         while (it1.hasNext()) {
             it1.next();
-            double d1 = it1.getValue(ds1);
             it2.next();
+            double d1 = it1.getValue(ds1);
             double d2 = it2.getValue(ds2);
-            it1.putValue(result, u1.isFill(d1) || u2.isFill(d2) ? u1.getFillDouble() : op.op(d1, d2));
+            double w= it1.getValue(w1) * it2.getValue(w2);
+            it1.putValue(result, w==0 ? fill : op.op(d1, d2));
         }
         Map<String, Object> m1 = DataSetUtil.getProperties(ds1);
         Map<String, Object> m2 = DataSetUtil.getProperties(ds2);
         Map<String, Object> m3 = equalProperties(m1, m2);
         DataSetUtil.putProperties(m3, result);
-        result.putProperty( QDataSet.FILL_VALUE, u1.getFillDouble() );
+        result.putProperty( QDataSet.FILL_VALUE, fill );
         return result;
     }
 
