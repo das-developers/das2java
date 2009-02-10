@@ -12,7 +12,7 @@ package org.virbo.dataset;
  * 
  * @author jbf
  */
-public interface RankZeroDataSet {
+public interface RankZeroDataSet extends QDataSet {
     /**
      * rank 0 accessor.
      * @return the scalar value stored in this dataset.
