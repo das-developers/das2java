@@ -274,11 +274,18 @@ public class DataSetUtil {
             dimStr.append("," + depNames[2] + ds.length(0, 0) + qubeStr);
         }
 
-        String u = String.valueOf(ds.property(QDataSet.UNITS));
-        if (u.equals("null") || u.equals("")) {
-            u = "dimensionless";
+        Units u= (Units)ds.property(QDataSet.UNITS);
+        if ( u==null ) u= Units.dimensionless;
+        String su = String.valueOf(u);
+        if ( su.equals("")) {
+            su = "dimensionless";
         }
-        return name + "[" + dimStr.toString() + "] (" + u + ")";
+        
+        if ( ds.rank()>0 ) {
+            return name + "[" + dimStr.toString() + "] (" + su + ")";
+        } else {
+            return name + "=" + u.createDatum(((RankZeroDataSet)ds).value());
+        }
     }
 
     /**
@@ -596,8 +603,8 @@ public class DataSetUtil {
 
     /**
      * Provide consistent valid logic to operators by providing a QDataSet
-     * with 1.0 where the data is valid, and 0.0 where the data is invalid.
-     * VALID_MIN, VALID_MAX and FILL_VALUE properties are used.
+     * with >0.0 where the data is valid, and 0.0 where the data is invalid.
+     * VALID_MIN, VALID_MAX and FILL_VALUE properties are used.  
      * 
      * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
      * support legacy logic.
@@ -605,8 +612,8 @@ public class DataSetUtil {
      * For convenience, the property FILL_VALUE is set to the fill value used.
      * 
      */
-    public static QDataSet weightsDataSet(final QDataSet ds) {
-        QDataSet result = (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
+    public static WeightsDataSet weightsDataSet(final QDataSet ds) {
+        WeightsDataSet result = (WeightsDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
         if (result == null) {
             Double validMin = (Double) ds.property(QDataSet.VALID_MIN);
             if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
