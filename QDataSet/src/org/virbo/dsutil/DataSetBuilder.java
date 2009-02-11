@@ -175,7 +175,8 @@ public class DataSetBuilder {
             result= DDataSet.copy(current);
         }
         result.putLength( index+offset );
-        
+
+        // install canonical fill value
         if ( fillValue!=-1e31 || validMax<Double.POSITIVE_INFINITY || validMin>Double.NEGATIVE_INFINITY ) {
             switch ( rank ) {
                 case 1: {
@@ -201,6 +202,7 @@ public class DataSetBuilder {
                 }
                 default: throw new RuntimeException("bad rank");
             }
+            if ( fillValue!=-1e31 ) properties.put( QDataSet.FILL_VALUE, -1e31 );
         }
         
         for ( Iterator<String> i= properties.keySet().iterator(); i.hasNext();  ) {
