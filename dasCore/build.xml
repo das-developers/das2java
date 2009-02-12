@@ -87,7 +87,7 @@
 The property keystore.pass is not set.  No signed jar file will be created.
         </echo>
     </target>
-    
+
     <target name="signjar" if="keystore.pass">
         <basename property="signed.jar.name" file="${dist.jar}"/>
         <property name="signed.jar.dir" location="${dist.dir}/signed"/>
@@ -98,4 +98,17 @@ The property keystore.pass is not set.  No signed jar file will be created.
                 storepass="${keystore.pass}"/>
     </target>
     <target name="-post-jar" depends="no-pass,signjar"/>
+
+	<target name="findbugs" description="produce findbugs report" depends="jar" if="libs.FindBugs.classpath">
+		<taskdef name="findbugs" classpath="${libs.FindBugs.classpath}" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" />
+		<findbugs home="${findbugs.home}"
+				output="xml" outputFile="${basedir}/findbugs.xml">
+			<auxClasspath path="${dist.dir}/lib/batik-svggen.jar" />
+			<auxClasspath path="${dist.dir}/lib/itext-1.3.jar" />
+			<auxClasspath path="${dist.dir}/lib/swing-layout-1.0.3.jar" />
+			<sourcePath path="${basedir}/src" />
+			<class location="${dist.jar}" />
+		</findbugs>
+	</target>
+
 </project>
