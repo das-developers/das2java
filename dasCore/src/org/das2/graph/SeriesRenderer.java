@@ -745,6 +745,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
         plottable = plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
 
         if (!plottable) {
+            parent.postMessage( this, "data set units cannot convert to axis units", DasPlot.WARNING, null, null );
             return;
         }
 
