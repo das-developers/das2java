@@ -83,9 +83,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     Rectangle[] dirtyBoundsList;
     Logger log = DasLogger.getLogger(DasLogger.GUI_LOG);
     /**
-     * number of additional inserted popup menu items.
+     * number of additional inserted popup menu items to the primary menu.
      */
     int numInserted;
+
+    /**
+     * number of additional inserted popup menu items to the secondary menu.
+     * Components can be added to the primary menu, but not the secondary.
+     */
+    int numInsertedSecondary;
+
     protected ActionListener popupListener;
     protected DasCanvasComponent parent = null;
     //private Point selectionStart;   // in component frame
@@ -141,12 +148,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         primaryActionButtonMap = new HashMap();
         secondaryActionButtonMap = new HashMap();
 
-        numInserted = 0;
-
         this.headless = DasApplication.getDefaultApplication().isHeadless();
         if (!headless) {
-            primaryPopup = createPopup();
-            secondaryPopup = createPopup();
+            primaryPopup= new JPopupMenu();
+            numInserted = createPopup(primaryPopup);
+            secondaryPopup= new JPopupMenu();
+            numInsertedSecondary = createPopup(secondaryPopup);
         }
 
         active = null;
@@ -201,9 +208,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 primaryActionButtonMap.put(module, primaryNewItem);
                 secondaryActionButtonMap.put(module, secondaryNewItem);
 
-                // insert the check box after the separator, and at the end of the actions list.
-                primaryPopup.add(primaryNewItem, numInserted + 1 + primaryActionButtonMap.size() - 1);
-                secondaryPopup.add(secondaryNewItem, numInserted + 1 + secondaryActionButtonMap.size() - 1);
+                try {
+                    // insert the check box after the separator, and at the end of the actions list.
+                    primaryPopup.add(primaryNewItem, numInserted + 1 + primaryActionButtonMap.size() - 1);
+                    secondaryPopup.add(secondaryNewItem, numInsertedSecondary + 1 + secondaryActionButtonMap.size() - 1);
+                } catch ( IllegalArgumentException ex ) {
+                    ex.printStackTrace();
+                }
 
             }
         }
@@ -354,8 +365,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * The variable numInserted is the number of actions inserted, and
      * is used to calculate the position of inserted mouse modules.
      */
-    private JPopupMenu createPopup() {
-        JPopupMenu popup = new JPopupMenu();
+    private int createPopup(JPopupMenu popup) {
+        
         popupListener = createPopupMenuListener();
 
         Action[] componentActions = parent.getActions();
@@ -364,7 +375,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             item.setAction(componentActions[iaction]);
             popup.add(item);
         }
-        numInserted = componentActions.length;
+        int numInsert = componentActions.length;
 
         popup.addSeparator();
         // mouse modules go here
@@ -377,7 +388,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             popup.add(item);
         }
 
-        return popup;
+        return numInsert;
     }
 
     private ActionListener createPopupMenuListener() {
@@ -1033,7 +1044,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * hack to provide way to get rid of "Dump Data".  
      * @param label string to search for.
      */
-    public void removeMenuItem(String label) {
+    public synchronized void removeMenuItem(String label) {
         if (headless) {
             return;
         }
@@ -1054,7 +1065,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     }
 
-    public void addMenuItem(final Component b) {
+    public synchronized void addMenuItem(final Component b) {
         if (headless) {
             return;
         }
