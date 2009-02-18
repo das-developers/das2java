@@ -112,10 +112,13 @@ public class CombinedTreeModel implements TreeModel {
             throw new IllegalArgumentException("must be called from AWT thread"); // useful for debugging concurrent exception
 
         int index = treeModelRoots.indexOf(treeModel.getRoot());
-        treeModels.remove(index);
-        treeModelRoots.remove(index);
-        TreePath path = new TreePath(root);
-        fireTreeNodesRemoved(new TreeModelEvent(this, path));
+        if ( index!=-1 ) {
+            treeModels.remove(index);
+            treeModelRoots.remove(index);
+            treeModelSortIndexes.remove(index);
+            TreePath path = new TreePath(root);
+            fireTreeNodesRemoved( new TreeModelEvent(this, path, new int[] { index }, new Object[] { treeModel.getRoot() } ) );
+        }
     }
 
     public synchronized Object getChild(Object parent, int index) {
