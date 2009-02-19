@@ -432,7 +432,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
                 }
             } );
             topPlot.addMouseModule( tweakSlicer );
-            topPlot.getMouseAdapter().setPrimaryModule(tweakSlicer);
+            topPlot.getDasMouseInputAdapter().setPrimaryModule(tweakSlicer);
             
             DataPointSelectorMouseModule levelSlicer=
                     new DataPointSelectorMouseModule( topPlot, levelRenderer,
