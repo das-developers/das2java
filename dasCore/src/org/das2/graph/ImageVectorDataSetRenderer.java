@@ -223,7 +223,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         VectorDataSet ds= (VectorDataSet)getDataSet();
         if ( ds==null ) return;
         if ( !xAxis.getUnits().isConvertableTo( ds.getXUnits() )) {
-            parent.postMessage( this, "inconvertable xaxis units",DasPlot.INFO,null,null);
+            parent.postMessage( this, "inconvertable xaxis units",DasPlot.INFO,null,null); 
             return;
         }
 
