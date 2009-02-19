@@ -68,6 +68,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
 
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        if ( ds==null ) {
+            parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            return;
+        }
         if (!xAxis.getUnits().isConvertableTo(ds.getXUnits())) {
             parent.postMessage(this, "inconvertable xaxis units", DasPlot.INFO, null, null);
             return;
