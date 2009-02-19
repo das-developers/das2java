@@ -27,6 +27,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import org.das2.dataset.DataSet;
 
 /**
  *
@@ -47,11 +48,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     public ImageVectorDataSetRenderer( DataSetDescriptor dsd ) {
         super(dsd);
     }
-    
-    protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
-        return null;
-    }
-    
+
     private void renderGhostly( java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis ) {
         Graphics2D g2= (Graphics2D)g1.create();
         
@@ -91,16 +88,16 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
         DatumRange visibleRange= xAxis.getDatumRange();
         //if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
-        
-        
-        int firstIndex= DataSetUtil.getPreviousColumn( ds, visibleRange.min() );
-        int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );
+
+        boolean xmono= Boolean.TRUE== ds.getProperty( DataSet.PROPERTY_X_MONOTONIC );
+
+        int firstIndex= xmono ? DataSetUtil.getPreviousColumn( ds, visibleRange.min() ) : 0;
+        int lastIndex= xmono ? DataSetUtil.getNextColumn( ds, visibleRange.max() ) : ds.getXLength();
         
         final int STATE_LINETO= -991;
         final int STATE_MOVETO= -992;
         
         int state= STATE_MOVETO;
-        
         
         // TODO: data breaks
         int ix0=0, iy0=0;
@@ -218,6 +215,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         imageYRange= yrange;
     }
     
+    @Override
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
         
@@ -239,13 +237,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );
         
         if ( ( lastIndex-firstIndex ) > 20 * xAxis.getColumn().getWidth() ) {
-            logger.info("rendering with histogram");
+            logger.fine("rendering with histogram");
             ghostlyImage( xAxis, yAxis, ds );
         } else {
-            logger.info("rendinging with lines");
+            logger.fine("rendinging with lines");
             ghostlyImage2( xAxis, yAxis, ds );
         }
-        logger.info( "done updatePlotImage" );
+        logger.fine( "done updatePlotImage" );
         
     }
     
@@ -259,12 +257,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
     
     public int getSaturationHitCount( ) {
         return this.saturationHitCount;
-    }
-    
-    protected void uninstallRenderer() {
-    }
-    
-    protected void installRenderer() {
     }
     
 }
