@@ -292,6 +292,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         plotImageBounds = parent.getCacheImageBounds();
+        if ( plotImageBounds==null ) {
+            //transient state in parent component.  TODO: fix these
+            return;
+        }
 
         DatumRange visibleRange = xAxis.getDatumRange();
 
