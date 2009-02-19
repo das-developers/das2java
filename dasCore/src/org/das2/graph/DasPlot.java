@@ -130,7 +130,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         addMouseListener(new MouseInputAdapter() {
 
             public void mousePressed(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON3) {
+                //if (e.getButton() == MouseEvent.BUTTON3) {
                     if (editRendererMenuItem != null) {
                         //TODO: check out SwingUtilities, I think this is wrong:
                         int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
@@ -151,7 +151,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                             setFocusRenderer(null);
                         }
                     }
-                }
+                //}
             }
         });
 
@@ -254,8 +254,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             mrect = gtr.getBounds();
             mrect.translate(msgx, msgy);
             gtr.draw(graphics, msgx, msgy);
-            graphics.drawImage(le.icon.getImage(), msgx - (le.icon.getIconWidth() + em / 4), msgy - (int) (mrect.getHeight() / 2 + le.icon.getIconHeight() / 2), null);
+            Rectangle imgBounds= new Rectangle( msgx - (le.icon.getIconWidth() + em / 4), 
+                    msgy - (int) (mrect.getHeight() / 2 + le.icon.getIconHeight() / 2), 
+                    le.icon.getIconWidth(), le.icon.getIconHeight() );
+            graphics.drawImage( le.icon.getImage(), imgBounds.x, imgBounds.y, null );
             msgy += mrect.getHeight();
+            mrect.add( imgBounds );
+            le.bounds= mrect;
         }
         
     }
@@ -363,7 +368,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * return the index of the renderer at canvas location (x,y), or -1 if
      * no renderer is found at the position.
      */
-    private int findRendererAt(int x, int y) {
+    public int findRendererAt(int x, int y) {
         for (int i = 0; messages != null && i < messages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) messages.get(i);
             if (message.bounds.contains(x, y) && message.renderer != null) {
@@ -374,6 +379,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
         }
 
+        for (int i = 0; legendElements != null && i < legendElements.size(); i++) {
+            LegendElement legendElement =  legendElements.get(i);
+            if (legendElement.bounds.contains(x, y) && legendElement.renderer != null) {
+                int result = this.renderers.indexOf( legendElement.renderer  );
+                if (result != -1) {
+                    return result;
+                }
+            }
+        }
+        
         for (int i = renderers.size() - 1; i >= 0; i--) {
             Renderer rend = (Renderer) renderers.get(i);
             if (rend.isActive() && rend.acceptContext(x, y)) {
@@ -387,7 +402,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return new AbstractAction("Renderer Properties") {
 
             public void actionPerformed(ActionEvent e) {
-                Point p = getMouseAdapter().getMousePressPosition();
+                Point p = getDasMouseInputAdapter().getMousePressPosition();
                 int i = findRendererAt(p.x + getX(), p.y + getY());
                 if (i > -1) {
                     Renderer rend = getRenderer(i);
@@ -429,7 +444,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         mouseAdapter.addMouseModule(x);
 
         editRendererMenuItem = new JMenuItem(getEditAction());
-        getMouseAdapter().addMenuItem(editRendererMenuItem);
+        getDasMouseInputAdapter().addMenuItem(editRendererMenuItem);
 
         if (DasApplication.hasAllPermission()) {
             JMenuItem dumpMenuItem = new JMenuItem(DUMP_TO_FILE_ACTION);
@@ -786,7 +801,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         graphics.translate(getX(), getY());
 
-        getMouseAdapter().paint(graphics);
+        getDasMouseInputAdapter().paint(graphics);
 
         if (saveClip != null) {
             graphics1.setClip(saveClip);
@@ -817,12 +832,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     private class LegendElement {
 
         ImageIcon icon;
-        Displayable rend;
+        Renderer renderer;
         String label;
+        Rectangle bounds;
 
-        LegendElement(ImageIcon icon, Displayable rend, String label) {
+        LegendElement(ImageIcon icon, Renderer rend, String label) {
             this.icon = icon;
-            this.rend = rend;
+            this.renderer = rend;
             this.label = label;
         }
     }
@@ -876,7 +892,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @param message String message to display.  
      */
     public void addToLegend(Renderer renderer, ImageIcon icon, int pos, String message) {
-        legendElements.add(new LegendElement(icon, null, message));
+        legendElements.add(new LegendElement( icon, renderer, message ));
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
@@ -1044,6 +1060,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         renderers.remove(rend);
         rend.parent = null;
+        invalidateCacheImage();
+        
     }
 
     public static DasPlot createDummyPlot() {

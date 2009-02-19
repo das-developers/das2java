@@ -368,12 +368,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setBackground(Color.white);
         setPreferredSize(new Dimension(400, 300));
         this.setDoubleBuffered(true);
-        //setFont( new Font( "dialog.bolditalic", Font.PLAIN, 12 ) );
-        //setFont( new Font( "Zapf Elliptical 711 Italic BT", Font.PLAIN, 12 ) );
-        //setFont( new Font( "croobie", Font.PLAIN, 12 ) );
-        //setFont( new Font( "Planet Benson 2", Font.PLAIN, 12 ) );
-        //setFont( new Font( "Rockwell Condensed Bold", Font.PLAIN, 12 ) );
-        //setFont( new Font( "Pristina", Font.PLAIN, 12 ) );
         glassPane = new GlassPane();
         add(glassPane, GLASS_PANE_LAYER);
         if (!application.isHeadless()) {
@@ -504,7 +498,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param gl the Graphics object
      */
     protected void paintComponent(Graphics g1) {
-        logger.info("entering DasCanvas.paintComponent");
+        logger.fine("entering DasCanvas.paintComponent");
 
         Graphics2D g = (Graphics2D) g1;
 
@@ -514,10 +508,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 antiAlias ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);
 
+
         if (!(isPrintingThread() && getBackground().equals(Color.WHITE))) {
             g.setColor(getBackground());
             //g.fillRect(0, 0, getWidth(), getHeight());
-            Graphics2D g2 = (Graphics2D) g;
+            Graphics2D g2 = g;
             g2.fill(g2.getClipBounds());
         }
         g.setColor(getForeground());
@@ -641,6 +636,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
         try {
             setOpaque(false);
+            logger.fine("*** print graphics: " + g);
+            logger.fine("*** print graphics clip: " + g.getClip());
+
+            for (int i = 0; i < getComponentCount(); i++) {
+                Component c = getComponent(i);
+                if (c instanceof DasPlot) {
+                    DasPlot p = (DasPlot) c;
+                    logger.fine("    DasPlot.isDirty()=" + p.isDirty());
+                    logger.fine("    DasPlot.getBounds()=" + p.getBounds());
+                    System.err.println("    DasPlot.isDirty()=" + p.isDirty());
+                    System.err.println("    DasPlot.getBounds()=" + p.getBounds());
+                }
+            }
             super.print(g);
         } finally {
             setOpaque(true);
@@ -752,6 +760,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
 
     /**
+     * returns true if work needs to be done to make the canvas clean.  This checks each component's
+     * isDirty.
+     * 
+     * @return
+     */
+    public boolean isDirty() {
+        DasCanvasComponent[] cc= this.getCanvasComponents();
+        boolean result= false;
+        for ( int i=0; i<cc.length; i++ ) {
+             result= result | cc[i].isDirty();
+        }
+        return result;
+    }
+
+    /**
      * Blocks the caller's thread until all events have been dispatched from the awt event thread, and
      * then waits for the RequestProcessor to finish all tasks with this canvas as the lock object.
      */
@@ -811,6 +834,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     }
 
     /**
+     * introduced as a kludgy way for clients to force the canvas to resize all of its components.
+     * validate or revalidate should probably do this.
+     */
+    public void resizeAllComponents() {
+        for (int i = 0; i < getComponentCount(); i++) {
+            Component c = getComponent(i);
+            if (c instanceof DasCanvasComponent) {
+                ((DasCanvasComponent) c).resize();
+            }
+        }
+    }
+
+    /**
      * resets the width and height, then waits for all update
      * messages to be processed.  In headless mode,
      * the gui components are validated.
@@ -829,8 +865,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
 
         if ("true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
             this.addNotify();
+            logger.finer("setSize(" + getPreferredSize() + ")");
             this.setSize(getPreferredSize());
+            logger.finer("validate()");
             this.validate();
+
+            resizeAllComponents();
         }
         try {
             waitUntilIdle();
@@ -840,12 +880,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
 
     }
 
-    /** TODO
+    /** 
      * Creates a BufferedImage by blocking until the image is ready.  This
      * includes waiting for datasets to load, etc.  Works by submitting
      * an invokeAfter request to the RequestProcessor that calls
      * {@link #writeToImageImmediately(Image)}.
-     *
+     * 
      * @param width
      * @param height
      * @return
@@ -864,6 +904,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             Runnable run = new Runnable() {
 
                 public void run() {
+                    logger.fine("writeToImageImmediately");
                     writeToImageImmediately(image);
                 }
             };
@@ -914,6 +955,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             c.setColumn(column);
         }
         add(c);
+        PropertyChangeListener positionListener = new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                repaint();
+            }
+        };
+        row.addPropertyChangeListener(positionListener);
+        column.addPropertyChangeListener(positionListener);
     }
 
     /** TODO

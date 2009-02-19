@@ -83,7 +83,7 @@ public class Arrow extends DasCanvasComponent {
         Graphics2D g= (Graphics2D) g1.create();
         g.translate(-getX(),-getY());
         paintArrow( g, head, tail, em , HeadStyle.DRAFTING );
-        getMouseAdapter().paint(g1);
+        getDasMouseInputAdapter().paint(g1);
     }
     
     

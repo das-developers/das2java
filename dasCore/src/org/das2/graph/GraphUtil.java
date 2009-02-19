@@ -325,7 +325,7 @@ public class GraphUtil {
         DasCanvas canvas = new DasCanvas(400, 400);
         jframe.getContentPane().add(canvas);
         DasPlot result = guessPlot(ds);
-        canvas.add(result, DasRow.create(canvas), DasColumn.create(canvas));
+        canvas.add(result, DasRow.create(canvas), DasColumn.create(canvas,null,"5em","100%-10em") );
 
         jframe.pack();
         jframe.setVisible(true);
@@ -340,7 +340,7 @@ public class GraphUtil {
         DasCanvas canvas = new DasCanvas(400, 400);
         jframe.getContentPane().add(canvas);
         DasPlot result = guessPlot(ds);
-        canvas.add(result, DasRow.create(canvas), DasColumn.create(canvas));
+        canvas.add(result, DasRow.create(canvas), DasColumn.create(canvas,null,"5em","100%-10em"));
         Units xunits = result.getXAxis().getUnits();
         result.getXAxis().setDatumRange(xRange.zoomOut(1.1));
         Units yunits = result.getYAxis().getUnits();

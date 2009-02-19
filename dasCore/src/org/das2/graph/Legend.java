@@ -90,13 +90,13 @@ public class Legend extends DasCanvasComponent {
     
     public Legend(  ) {
         elements= new ArrayList();
-        getMouseAdapter().addMenuItem( new JMenuItem( getEditAction() ) );
+        getDasMouseInputAdapter().addMenuItem( new JMenuItem( getEditAction() ) );
     }
     
     private Action getEditAction() {
         return new AbstractAction("Renderer Properties") {
             public void actionPerformed(ActionEvent e) {
-                Point p= getMouseAdapter().getMousePressPosition();
+                Point p= getDasMouseInputAdapter().getMousePressPosition();
                 LegendElement item= (LegendElement)locator.closestObject(p);
                 if ( item==null ) return;
                 Displayable rend= item.getDisplayable();
@@ -146,7 +146,7 @@ public class Legend extends DasCanvasComponent {
     public void paintComponent( Graphics g1 ) {
         if ( elements.size()==0 ) {
             logger.fine("no elements in legend, returning.");
-            getMouseAdapter().paint(g1);
+            getDasMouseInputAdapter().paint(g1);
             return;
         }
         Graphics2D g= (Graphics2D) g1;
@@ -224,7 +224,7 @@ public class Legend extends DasCanvasComponent {
         int width= maxWidth+10+1;
         int height= y;
         
-        getMouseAdapter().paint(g1);
+        getDasMouseInputAdapter().paint(g1);
         
     }
     

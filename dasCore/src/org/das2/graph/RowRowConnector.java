@@ -77,7 +77,7 @@ public class RowRowConnector extends DasCanvasComponent implements java.beans.Pr
 
         g.dispose();
 
-        getMouseAdapter().paint(g1);
+        getDasMouseInputAdapter().paint(g1);
     }
 
     public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {

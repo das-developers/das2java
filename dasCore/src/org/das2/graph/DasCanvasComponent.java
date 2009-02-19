@@ -94,14 +94,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         row= DasRow.NULL;
         column= DasColumn.NULL;
         
-        mouseAdapter= new DasMouseInputAdapter(this);
-        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
-            addMouseListener(mouseAdapter);
-            addMouseMotionListener(mouseAdapter);
-            addMouseListener(currentComponentListener);
-            addKeyListener(mouseAdapter.getKeyAdapter());
-            addMouseWheelListener(mouseAdapter);
-        }
+        setDasMouseInputAdapter( new DasMouseInputAdapter(this) );
         
         try {
             String name= DasApplication.getDefaultApplication().suggestNameFor(this);
@@ -158,7 +151,23 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
                     (row.getDMaximum()-row.getDMinimum()));
         }
     }
-    
+
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        if ( getDasName().startsWith("plot_") ) {
+            //new Exception().printStackTrace();
+            //System.err.println( getDasName() + " setBounds(" + new Rectangle(x, y, width, height) + ")" );
+        }
+        super.setBounds(x, y, width, height);
+    }
+
+    @Override
+    public void setBounds(Rectangle r) {
+        //if ( getDasName().startsWith("plot_") ) System.err.println( getDasName() + " setBounds(" + r );
+        super.setBounds(r);
+    }
+
+
     /**
      * class for handling resize events.
      */
@@ -441,6 +450,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * accessor to the DasMouseInputAdapter handling mouse input for the component.
      * Note there is also getDasMouseInputAdapter.
      * @return DasMouseInputAdaptor handling mouse input for the component.
+     * @deprecated use getDasMouseInputAdapter instead
      */
     public DasMouseInputAdapter getMouseAdapter() {
         return mouseAdapter;
@@ -464,8 +474,23 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * Setter for property dasMouseInputAdapter.
      * @param dasMouseInputAdapter New value of property dasMouseInputAdapter.
      */
-    public void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
+    public synchronized void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
+        if ( mouseAdapter!=null ) {
+            removeMouseListener(mouseAdapter);
+            removeMouseMotionListener(mouseAdapter);
+            removeMouseListener(currentComponentListener);
+            removeKeyListener(mouseAdapter.getKeyAdapter());
+            removeMouseWheelListener(mouseAdapter);
+        }
         this.mouseAdapter = dasMouseInputAdapter;
+        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+            addMouseListener(mouseAdapter);
+            addMouseMotionListener(mouseAdapter);
+            addMouseListener(currentComponentListener);
+            addKeyListener(mouseAdapter.getKeyAdapter());
+            addMouseWheelListener(mouseAdapter);
+        }
+
     }
     
 }

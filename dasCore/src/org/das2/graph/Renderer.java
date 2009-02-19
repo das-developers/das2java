@@ -375,6 +375,8 @@ public abstract class Renderer implements DataSetConsumer, Editable {
                         xmemento = parent.getXAxis().getMemento();
                         ymemento = parent.getYAxis().getMemento();
                         renderException = null;
+                    } else {
+                        return;
                     }
                 } catch (DasException de) {
                     // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.

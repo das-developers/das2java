@@ -224,7 +224,16 @@ public class ImageVectorDataSetRenderer extends Renderer {
         long t0= System.currentTimeMillis();
         VectorDataSet ds= (VectorDataSet)getDataSet();
         if ( ds==null ) return;
-        
+        if ( !xAxis.getUnits().isConvertableTo( ds.getXUnits() )) {
+            parent.postMessage( this, "inconvertable xaxis units",DasPlot.INFO,null,null);
+            return;
+        }
+
+        if ( !yAxis.getUnits().isConvertableTo( ds.getYUnits() )) {
+            parent.postMessage( this, "inconvertable yaxis units",DasPlot.INFO,null,null);
+            return;
+        }
+
         DatumRange visibleRange= xAxis.getDatumRange();
         int firstIndex= DataSetUtil.getPreviousColumn( ds, visibleRange.min() );
         int lastIndex= DataSetUtil.getNextColumn( ds, visibleRange.max() );

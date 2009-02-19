@@ -129,7 +129,6 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public static double[] parseFormatStr( String s ) throws ParseException {
         double[] result= new double[] { 0, 0, 0 };
         StringTokenizer tok= new StringTokenizer( s, "%emptx", true );
-        double lastDouble;
         int pos=0;
         while ( tok.hasMoreTokens() ) {
             String ds= tok.nextToken();
@@ -152,8 +151,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
                 result[2]= d;
             }
         }
-        result[0]= Math.round(result[0]*1000)/1000;
-        result[1]= Math.round(result[1]*10)/10;
+        result[0]= Math.round(result[0]*1000)/1000.;
+        result[1]= Math.round(result[1]*10)/10.;
         return result;
     }
     

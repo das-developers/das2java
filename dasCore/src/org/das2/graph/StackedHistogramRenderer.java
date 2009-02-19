@@ -161,7 +161,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         this.peaksIndicator= PeaksIndicator.MaxLines;
         
-        DasMouseInputAdapter mouseAdapter = parent.getMouseAdapter();
+        DasMouseInputAdapter mouseAdapter = parent.getDasMouseInputAdapter();
         
         //TODO: consider delaying construction of slicers until first event
         VerticalSpectrogramSlicer vSlicer = VerticalSpectrogramSlicer.createSlicer( parent, this );

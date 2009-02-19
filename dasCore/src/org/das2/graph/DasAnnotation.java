@@ -47,7 +47,7 @@ public class DasAnnotation extends DasCanvasComponent {
             }
         };
 
-        this.getMouseAdapter().addMenuItem(new JMenuItem(removeArrowAction));
+        this.getDasMouseInputAdapter().addMenuItem(new JMenuItem(removeArrowAction));
 
         Action removeMeAction = new AbstractAction("remove") {
 
@@ -59,13 +59,13 @@ public class DasAnnotation extends DasCanvasComponent {
             }
         };
 
-        this.getMouseAdapter().addMenuItem(new JMenuItem(removeMeAction));
+        this.getDasMouseInputAdapter().addMenuItem(new JMenuItem(removeMeAction));
 
         MouseModule mm = new MoveComponentMouseModule(this);
-        this.getMouseAdapter().setPrimaryModule(mm);
+        this.getDasMouseInputAdapter().setPrimaryModule(mm);
 
         arrowToMouseModule = createArrowToMouseModule(this);
-        this.getMouseAdapter().setSecondaryModule(arrowToMouseModule);
+        this.getDasMouseInputAdapter().setSecondaryModule(arrowToMouseModule);
     }
 
     public static class DatumPairPointDescriptor implements PointDescriptor {
@@ -269,7 +269,7 @@ public class DasAnnotation extends DasCanvasComponent {
         
         g.dispose();
         
-        getMouseAdapter().paint(g1);
+        getDasMouseInputAdapter().paint(g1);
 
     }
 

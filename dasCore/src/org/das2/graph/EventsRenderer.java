@@ -88,8 +88,8 @@ public class EventsRenderer extends Renderer {
     
     protected void installRenderer() {
         MouseModule mm= getMouseModule();
-        parent.getMouseAdapter().addMouseModule( mm );
-        parent.getMouseAdapter().setPrimaryModule( mm );
+        parent.getDasMouseInputAdapter().addMouseModule( mm );
+        parent.getDasMouseInputAdapter().setPrimaryModule( mm );
     }
     
     private class DragRenderer extends LabelDragRenderer {

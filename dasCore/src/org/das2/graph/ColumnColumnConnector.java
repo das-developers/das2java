@@ -6,6 +6,7 @@ import org.das2.datum.DatumRangeUtil;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import javax.swing.JLayeredPane;
+import org.das2.event.DasMouseInputAdapter;
 
 /**
  * draws lines connecting two DasPlots, one on top of the other, typically used
@@ -156,9 +157,9 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         
         g.dispose();
         
-        getMouseAdapter().paint(g1);
+        getDasMouseInputAdapter().paint(g1);
     }
-    
+
     public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
         markDirty();
         update();
