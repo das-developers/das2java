@@ -73,25 +73,26 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
                 }
             };
             editor.setRenderer(new Renderer());
+            editor.setSelectedItem(selected);
         }
     }
     private static final int PUBLIC_STATIC_FINAL = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
 
     private void setClass(Class c) {
         type = c;
-            Map valueM = new HashMap();
-            Map nameM = new IdentityHashMap();
-            Map toStringM = new HashMap();
+        Map valueM = new HashMap();
+        Map nameM = new IdentityHashMap();
+        Map toStringM = new HashMap();
 
         if (c.isEnum()) {
-            Object[] vals= c.getEnumConstants();
-            for ( Object o:vals ) {
-                Enum e = (Enum)o;
+            Object[] vals = c.getEnumConstants();
+            for (Object o : vals) {
+                Enum e = (Enum) o;
                 nameM.put(e.name(), e);
                 toStringM.put(e.toString(), e);
                 valueM.put(e, e.name());
             }
-            
+
         } else {
 
             Field[] fields = type.getDeclaredFields();
@@ -117,9 +118,9 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
                 }
             }
         }
-            nameMap = nameM;
-            valueMap = valueM;
-            toStringMap = toStringM;
+        nameMap = nameM;
+        valueMap = valueM;
+        toStringMap = toStringM;
     }
 
     public String getAsText() {
@@ -142,7 +143,10 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
         if (selected != value) {
             oldValue = selected;
             selected = value;
-            if ( editor!=null ) editor.repaint();
+            if ( editor!=null ) {
+                editor.setSelectedItem(selected);
+                editor.repaint();
+            }
             pcSupport.firePropertyChange("value", oldValue, selected);
         }
     }
@@ -163,8 +167,11 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
         Object oldValue = selected;
         selected = obj;
         if (oldValue != obj) {
-            if ( editor!=null ) editor.repaint();
             pcSupport.firePropertyChange("value", oldValue, selected);
+            if ( editor!=null ) {
+                editor.setSelectedItem(selected);
+                editor.repaint();
+            }
         }
     }
 
