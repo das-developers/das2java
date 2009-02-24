@@ -14,12 +14,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.das2.datum.Units;
 import org.das2.util.DasMath;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetIterator;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.TagGenDataSet;
+import org.virbo.dataset.WeightsDataSet;
 
 /**
  * Self-configuring histogram dynamically adjusts range and bin size as data
@@ -45,6 +48,9 @@ public final class AutoHistogram {
     DataSetBuilder timer;
     long t0;
     long total;
+    boolean initialOutliers;
+    long invalidCount;
+    Units units;
     /**
      * list of outliers and thier count.  When we rescale, we see if any outliers can be added to the distribution.
      */
@@ -64,9 +70,12 @@ public final class AutoHistogram {
         zeroesRight = nbin / 2;
         zeroesLeft = nbin / 2;
         total = 0;
+        initialOutliers= true;
         outliers = new TreeMap<Double, Integer>();
-        //timer = new DataSetBuilder(1, 1000000);
-        //t0 = System.currentTimeMillis();
+        invalidCount = 0;
+        units = null;
+    //timer = new DataSetBuilder(1, 1000000);
+    //t0 = System.currentTimeMillis();
     }
 
     /**
@@ -74,16 +83,16 @@ public final class AutoHistogram {
      * @param ibin
      * @param d
      */
-    private final void addToDistribution( int ibin, double d, int count ) {
+    private final void addToDistribution(int ibin, double d, int count) {
         if (ibin < zeroesLeft) {
             zeroesLeft = ibin;
         }
         if (ibin >= nbin - zeroesRight) {
             zeroesRight = nbin - ibin - 1;
         }
-        nn[ibin]+= count;
-        ss[ibin] += d*count;
-        total+= count;
+        nn[ibin] += count;
+        ss[ibin] += d * count;
+        total += count;
     }
 
     private DDataSet asDataSet() {
@@ -91,16 +100,20 @@ public final class AutoHistogram {
         DDataSet totals = DDataSet.wrap(ss);
         totals.putProperty(QDataSet.NAME, "total");
         result.putProperty(QDataSet.PLANE_0, totals);
-        QDataSet dep0 = new TagGenDataSet(nbin, binw / binwDenom, firstb);
+        TagGenDataSet dep0 = new TagGenDataSet(nbin, binw / binwDenom, firstb);
+        dep0.putProperty(QDataSet.UNITS, units);
         result.putProperty(DDataSet.DEPEND_0, dep0);
         Map<String, Object> user = new HashMap<String, Object>();
         user.put("binStart", firstb);
         user.put("binWidth", binw / binwDenom);
         user.put("total", total);
-        user.put("outliers",outliers);
-        int outlierCount=0;
-        for ( int i : outliers.values() )  outlierCount+= i;
-        user.put("outlierCount",outlierCount);
+        user.put("outliers", outliers);
+        user.put("invalid", invalidCount);
+        int outlierCount = 0;
+        for (int i : outliers.values()) {
+            outlierCount += i;
+        }
+        user.put("outlierCount", outlierCount);
         result.putProperty(QDataSet.USER_PROPERTIES, user);
         return result;
     }
@@ -108,7 +121,6 @@ public final class AutoHistogram {
     //public QDataSet getTiming() {
     //    return timer.getDataSet();
     //}
-
     /**
      * do a histogram, dynamically shifting the bins and changing the bin size.
      * returns a QDataSet with the planes:
@@ -124,77 +136,34 @@ public final class AutoHistogram {
      * @param ds
      * @return
      */
-    public QDataSet doit(QDataSet ds) {
+    public QDataSet doit(QDataSet ds, WeightsDataSet wds) {
+
+        if (wds == null) {
+            wds = DataSetUtil.weightsDataSet(ds);
+        }
+
         DataSetIterator iter = new QubeDataSetIterator(ds);
-
-        if (firstb == INITIAL_FIRST_BIN) {
-            // prime the firstb
-            if (iter.hasNext()) {
-                iter.next();
-                double d = iter.getValue(ds);
-                firstb = Math.floor(d * binwDenom / binw) * binw / binwDenom;
-                ss[0] += d;
-                nn[0] += 1;
-                total++;
-            }
-        }
-
-        if (binw == INITIAL_BINW && binwDenom == INITIAL_BINW_DENOM) {
-            // prime the binw
-            if (iter.hasNext()) {
-                iter.next();
-                double d = iter.getValue(ds);
-                int ibin = binOf(d);
-                while (ibin == 0) {
-                    ss[0] += d;
-                    nn[0] += 1;
-                    if (iter.hasNext()) {
-                        iter.next();
-                        d = iter.getValue(ds);
-                        ibin = binOf(d);
-                    } else {
-                        break;
-                    }
-                }
-                binw = Math.abs(d - ss[0] / nn[0]) / (nbin / 100);
-                if (binw < 1.0) {
-                    binwDenom = DasMath.exp10(Math.ceil(DasMath.log10(1 / binw)));
-                    binw = 1.0;
-                } else {
-                    binw = DasMath.exp10(Math.floor(DasMath.log10(binw)));
-                    binwDenom = 1.0;
-                }
-
-                ibin = binOf(d);
-                if (ibin < 0) {
-                    ss[-ibin] = ss[0];
-                    nn[-ibin] = nn[0];
-                    ss[0] = d;
-                    nn[0] = 1;
-                    firstb = firstb - ibin * binw / binwDenom;
-                    ibin = -ibin;
-                } else {
-                    ss[ibin] = d;
-                    nn[ibin] = 1;
-                }
-                total++;
-                zeroesRight = nbin - ibin - 1;
-                zeroesLeft = 0;
-            }
-
-        //System.err.printf("initial zeroesLeft %d  zeroesRight %d  binw=%f   binwDemon=%f\n", zeroesLeft, zeroesRight, binw, binwDenom);
-        }
 
         while (iter.hasNext()) {
 
             iter.next();
 
+            if (iter.getValue(wds) == 0) {
+                invalidCount++;
+                continue;
+            }
+
             double d = iter.getValue(ds);
 
-            //if (iter.index(0) % 10 == 0) {
-            //    timer.putValue(-1, System.currentTimeMillis() - t0);
-            //    timer.nextRecord();
-            //}
+            if ( initialOutliers ) {
+                if ( outliers.size()<5 ) { // collect points as outliers until we have enough points to prime the bins.
+                    putOutlier(d);
+                    continue;
+                } else {
+                    initialDist();
+                    initialOutliers=false;
+                }
+            }
 
             int ibin = binOf(d);
 
@@ -204,7 +173,7 @@ public final class AutoHistogram {
                     ibin = shiftRight(ibin, shift);
                 } else if (ibin < nbin * 3) {
                     putOutlier(d);
-                    reduceOutliers( Math.max(30,total/100) );
+                    reduceOutliers(Math.max(30, total / 100));
                     continue;
                 } else {
                     while (ibin < 0) {
@@ -218,7 +187,7 @@ public final class AutoHistogram {
                     ibin = shiftLeft(ibin, shift);
                 } else if (ibin > nbin * 4) {
                     putOutlier(d);
-                    reduceOutliers( Math.max(30,total/100) );
+                    reduceOutliers(Math.max(30, total / 100));
                     continue;
                 } else {
                     while (ibin >= nbin) {
@@ -228,11 +197,15 @@ public final class AutoHistogram {
 
             }
 
-            addToDistribution(ibin,d,1);
+            addToDistribution(ibin, d, 1);
 
-            //checkTotal();
+        //checkTotal();
         }
 
+        if ( initialOutliers ) {
+            initialDist();
+        }
+        
         DDataSet result = asDataSet();
 
         return result;
@@ -242,17 +215,65 @@ public final class AutoHistogram {
      * see if any outliers can now be added to the distribution
      */
     private void checkOutliers() {
-        List<Double> remove= new ArrayList<Double>();
-        for ( Entry<Double,Integer> out: outliers.entrySet() ) {
-            int ibin= binOf(out.getKey());
-            if ( ibin>=0 && ibin<nbin ) {
+        List<Double> remove = new ArrayList<Double>();
+        for (Entry<Double, Integer> out : outliers.entrySet()) {
+            int ibin = binOf(out.getKey());
+            if (ibin >= 0 && ibin < nbin) {
                 remove.add(out.getKey());
-                addToDistribution( ibin, out.getKey(), out.getValue() );
+                addToDistribution(ibin, out.getKey(), out.getValue());
+            } else if ( ibin<0 && ibin + zeroesRight >= 0) { // shift hist to the left
+                int shift = (int) Math.ceil((zeroesRight + (-ibin)) / 2.);
+                ibin = shiftRight(ibin, shift);
+                remove.add(out.getKey());
+                addToDistribution(ibin, out.getKey(), out.getValue());
+            } else if ( ibin>=nbin && ibin - zeroesLeft < nbin ) {  // shift hist to the right
+                int shift = (int) Math.ceil((zeroesLeft + (ibin - nbin)) / 2.);
+                ibin = shiftLeft(ibin, shift);
+                remove.add(out.getKey());
+                addToDistribution(ibin, out.getKey(), out.getValue());
             }
         }
-        for ( Double d: remove ) {
+        for (Double d : remove) {
             outliers.remove(d);
         }
+    }
+
+    /**
+     * come up with initial distribution by picking the closest two points.
+     */
+    private void initialDist() {
+
+        double closestA = outliers.firstKey();
+        double lastD = closestA;
+        double closestB= Double.NaN;
+        double closestDist = Double.MAX_VALUE;
+        for (Double d : outliers.keySet()) {
+            double dist = d - lastD;
+            if (dist > 0 && dist < closestDist) {
+                closestA = lastD;
+                closestB = d;
+                closestDist = dist;
+            }
+            lastD= d;
+        }
+        
+        binw = Math.abs( closestB - closestA ) / (nbin / 100);
+        if (binw < 1.0) {
+            binwDenom = DasMath.exp10(Math.ceil(DasMath.log10(1 / binw)));
+            binw = 1.0;
+        } else {
+            binw = DasMath.exp10(Math.floor(DasMath.log10(binw)));
+            binwDenom = 1.0;
+        }
+        firstb = Math.floor(closestA * binwDenom / binw) * binw / binwDenom;
+
+        int count= outliers.remove(closestA);
+        int ibin= binOf(closestA);
+        zeroesLeft= ibin;
+        zeroesRight= nbin-ibin-1; // allow invalid state because checkOutliers will fix it.
+        addToDistribution( ibin, closestA, count );
+        
+        checkOutliers();
     }
 
     /**
@@ -272,17 +293,17 @@ public final class AutoHistogram {
      * reduce the number of outliers by scaling the distribution to include
      * the closest outliers
      */
-    private void reduceOutliers( long limit ) {
-        while ( outliers.size()>limit ) {
-            double d0= firstb + binw/binwDenom * ( zeroesLeft );
-            SortedMap<Double,Integer> headmap= outliers.headMap( d0 );
-            double d1= firstb + binw/binwDenom * ( nbin - zeroesRight );
-            SortedMap<Double,Integer> tailmap= outliers.tailMap( d1 );
-            if ( headmap.size()==0 ) {
+    private void reduceOutliers(long limit) {
+        while (outliers.size() > limit) {
+            double d0 = firstb + binw / binwDenom * (zeroesLeft);
+            SortedMap<Double, Integer> headmap = outliers.headMap(d0);
+            double d1 = firstb + binw / binwDenom * (nbin - zeroesRight);
+            SortedMap<Double, Integer> tailmap = outliers.tailMap(d1);
+            if (headmap.size() == 0) {
                 rescaleLeft(0);
-            } else if ( tailmap.size()==0 ) {
+            } else if (tailmap.size() == 0) {
                 rescaleRight(0);
-            } else if ( d0 - headmap.lastKey()  >  tailmap.firstKey() - d1 ) {
+            } else if (d0 - headmap.lastKey() > tailmap.firstKey() - d1) {
                 rescaleLeft(0);
             } else {
                 rescaleRight(0);
@@ -304,7 +325,6 @@ public final class AutoHistogram {
             throw new IllegalArgumentException("hello!");
         }
     }
-    
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -354,12 +374,12 @@ public final class AutoHistogram {
 
     private int nextFactor() {
         int factor;
-        int exp = (int) Math.floor(DasMath.log10(binw)+0.001);
+        int exp = (int) Math.floor(DasMath.log10(binw) + 0.001);
         int mant = (int) Math.round(binw / DasMath.exp10(exp));
         int expDenom = (int) Math.floor(DasMath.log10(binwDenom));
         int mantDenom = (int) Math.round(binwDenom / DasMath.exp10(expDenom));
-        if ( mantDenom>1 ) {
-            mant= 10 / mantDenom;
+        if (mantDenom > 1) {
+            mant = 10 / mantDenom;
         }
         if (mant == 1) {
             factor = 5;
