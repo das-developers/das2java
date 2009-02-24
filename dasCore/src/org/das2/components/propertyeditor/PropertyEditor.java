@@ -22,7 +22,6 @@
  */
 package org.das2.components.propertyeditor;
 
-import org.das2.beans.BeansUtil;
 import org.das2.components.treetable.TreeTableCellRenderer;
 import org.das2.components.treetable.TreeTableModel;
 import org.das2.dasml.SerializeUtil;
@@ -47,7 +46,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashSet;
