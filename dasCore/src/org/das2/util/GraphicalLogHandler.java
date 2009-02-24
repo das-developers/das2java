@@ -123,12 +123,12 @@ public class GraphicalLogHandler extends Handler {
         canvas.add( plot, DasRow.create( canvas ), DasColumn.create(canvas) );
         
         MouseModule mm=  getMouseModule();
-        plot.getMouseAdapter().addMouseModule( mm );
-        plot.getMouseAdapter().setPrimaryModule( mm );
+        plot.getDasMouseInputAdapter().addMouseModule( mm );
+        plot.getDasMouseInputAdapter().setPrimaryModule( mm );
         
         mm= getShowLogMouseModule( plot );
-        plot.getMouseAdapter().addMouseModule( mm );
-        plot.getMouseAdapter().setSecondaryModule( mm );
+        plot.getDasMouseInputAdapter().addMouseModule( mm );
+        plot.getDasMouseInputAdapter().setSecondaryModule( mm );
         
         legend= new Legend();
         canvas.add( legend, new DasRow( canvas, 0.1, 0.5 ), new DasColumn( canvas, 0.8, 0.98 ) );
