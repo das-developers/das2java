@@ -47,8 +47,12 @@ public class BeansUtil {
      * see BeanBindingDemo2.java 
      */
     public static void registerEditor(Class beanClass, Class editorClass) {
-        PropertyEditorManager.registerEditor(beanClass, editorClass);
-        editorRegistry.put(beanClass, editorClass);
+        if ( DasApplication.hasAllPermission() ) {
+            PropertyEditorManager.registerEditor(beanClass, editorClass);
+            editorRegistry.put(beanClass, editorClass);
+        } else {
+            
+        }
     }
     /**
      * See that the known editors are registered with the PropertyEditorManager
