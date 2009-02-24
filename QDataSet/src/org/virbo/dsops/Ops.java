@@ -1450,7 +1450,7 @@ public class Ops {
         }
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-        Double cadence = dep0 == null ? 1.0 : DataSetUtil.guessCadence(dep0);
+        Double cadence = dep0 == null ? 1.0 : DataSetUtil.guessCadenceNew(dep0,null);
         if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
 
         double[] tags = FFTUtil.getFrequencyDomainTags(cadence, ds.length());
@@ -1540,7 +1540,6 @@ public class Ops {
     public static QDataSet histogram(QDataSet ds, double min, double max, double binSize) {
         return DataSetOps.histogram(ds, min, max, binSize);
     }
-    
     
     /**
      * returns a histogram of the dataset, based on the extent and scaletype of the data.
