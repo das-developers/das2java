@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.virbo.dsops.Ops;
+import org.virbo.dsutil.AutoHistogram;
 
 /**
  *
@@ -287,6 +288,61 @@ public class DataSetUtil {
             return name + "=" + u.createDatum(((RankZeroDataSet)ds).value());
         }
     }
+
+    public static Double guessCadenceNew( QDataSet xds, QDataSet yds) {
+        Double d= (Double) xds.property( QDataSet.CADENCE );
+        if ( d!=null ) {
+            return d;
+        }
+        if (yds == null) {
+            yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
+        }
+        assert (xds.length() == yds.length());
+
+        if ( yds.rank()>1 ) { //TODO: check for fill columns.
+            yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
+        }
+
+        AutoHistogram ah= new AutoHistogram();
+        QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds));
+
+        int ipeak=0;
+        int peakv=(int) hist.value(0);
+
+        for ( int i=0; i<hist.length(); i++ ) {
+            if ( hist.value(i)>peakv ) {
+                ipeak=i;
+                peakv= (int) hist.value(i);
+            }
+        }
+
+        double ss=0;
+        double nn=0;
+
+        QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 );
+
+        for ( int i=ipeak; i>=0; i-- ) {
+            if ( hist.value(i)>(peakv/4) ) {
+                ss+= sss.value(i);
+                nn+= hist.value(i);
+            } else {
+                break;
+            }
+        }
+
+        for ( int i=ipeak+1; i<hist.length(); i++ ) {
+            if ( hist.value(i)>(peakv/4) ) {
+                ss+= sss.value(i);
+                nn+= hist.value(i);
+            } else {
+                break;
+            }
+        }
+
+        return ss/nn;
+
+    }
+
 
     /**
      * calculate cadence by averaging consistent inter-point distances, 
