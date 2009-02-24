@@ -409,7 +409,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
             index++;
 
             // now loop through all of them. //
-
+            boolean ignoreCadence= ! cadenceCheck;
             for (; index < lastIndex; index++) {
 
                 x = dataSet.getXTagDouble(index, xUnits);
@@ -426,7 +426,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
                 if (isValid) {
                     double step= logStep ? Math.log(x/x0) : x-x0;
-                    if ( step < xSampleWidth) {
+                    if ( ignoreCadence || step < xSampleWidth) {
                         // draw connect-a-dot between last valid and here
                         if (histogram) {
                             float fx1 = (fx0 + fx) / 2;
@@ -808,10 +808,12 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         if (psym != DefaultPlotSymbol.NONE) {
 
-            psymsElement.render(graphics, xAxis, yAxis, vds, mon);
+            int count= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
-
+            if ( count==0 ) {
+                parent.postMessage( this, "no valid points", DasPlot.INFO, null, null );
+            }
             mon.finished();
         }
 
@@ -828,6 +830,11 @@ public class SeriesRenderer extends Renderer implements Displayable {
         if (dataSetClipped) {
             parent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
+
+        if ( lastIndex - firstIndex < 2 ) {
+            parent.postMessage(this, "less than two points visible", DasPlot.INFO, null, null);
+        }
+
     }
 
     /**
@@ -1553,4 +1560,22 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public int getLastIndex() {
         return this.lastIndex;
     }
+
+    protected boolean cadenceCheck = true;
+    public static final String PROP_CADENCECHECK = "cadenceCheck";
+
+    public boolean isCadenceCheck() {
+        return cadenceCheck;
+    }
+
+    /**
+     * If true, then use a cadence estimate to determine and indicate data gaps.
+     * @param cadenceCheck
+     */
+    public void setCadenceCheck(boolean cadenceCheck) {
+        boolean oldCadenceCheck = this.cadenceCheck;
+        this.cadenceCheck = cadenceCheck;
+        propertyChangeSupport.firePropertyChange(PROP_CADENCECHECK, oldCadenceCheck, cadenceCheck);
+    }
+
 }
