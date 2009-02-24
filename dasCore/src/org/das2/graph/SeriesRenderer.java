@@ -1575,6 +1575,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public void setCadenceCheck(boolean cadenceCheck) {
         boolean oldCadenceCheck = this.cadenceCheck;
         this.cadenceCheck = cadenceCheck;
+        refreshImage();
         propertyChangeSupport.firePropertyChange(PROP_CADENCECHECK, oldCadenceCheck, cadenceCheck);
     }
 
