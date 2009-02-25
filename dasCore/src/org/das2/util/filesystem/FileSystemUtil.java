@@ -5,6 +5,7 @@
 
 package org.das2.util.filesystem;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -40,14 +41,16 @@ public class FileSystemUtil {
             oc.close();
         } else {
             ByteBuffer buf= ByteBuffer.allocateDirect( 16*1024 );
-            while ( ic.read(buf) >= 0 ) {
+            while ( ic.read(buf) >= 0 || buf.position() != 0 ) {
                 buf.flip();
                 oc.write(buf);
                 buf.compact();
             }
-            while ( buf.hasRemaining() ) {
-                oc.write(buf);
-            }
         }
+    }
+
+    public static void main( String[] args ) throws Exception {
+        InputStream in= new ByteArrayInputStream( "Hello there".getBytes() );
+        dumpToFile( in, new File( "/home/jbf/text.txt" ) );
     }
 }
