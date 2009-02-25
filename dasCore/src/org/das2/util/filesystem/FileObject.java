@@ -122,6 +122,7 @@ public abstract class FileObject {
     
     /**
      * returns the parent FileObject (a folder).
+     * If the fileObject is root, then null should be returned.
      * @return the parent folder of this object.
      */
     public abstract FileObject getParent();
