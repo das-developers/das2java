@@ -341,7 +341,7 @@ public final class AutoHistogram {
     }
 
     private final int shiftLeft(int ibin, int shift) {
-        System.err.printf("shiftLeft(%d)\n", shift);
+        //System.err.printf("shiftLeft(%d)\n", shift);
         // shift hist to the left
         checkTotal();
         System.arraycopy(ss, shift, ss, 0, nbin - shift - zeroesRight);
@@ -357,7 +357,7 @@ public final class AutoHistogram {
     }
 
     private final int shiftRight(int ibin, int shift) {
-        System.err.printf("shiftRight(%d)\n", shift);
+        //System.err.printf("shiftRight(%d)\n", shift);
         // shift hist to the right
         checkTotal();
         System.arraycopy(ss, zeroesLeft, ss, shift + zeroesLeft, nbin - zeroesLeft - shift);
@@ -398,7 +398,7 @@ public final class AutoHistogram {
      */
     private final int rescaleLeft(int ibin) {
         int factor = nextFactor();
-        System.err.println("rescaleLeft to " + binw / binwDenom + "*" + factor);
+        //System.err.println("rescaleLeft to " + binw / binwDenom + "*" + factor);
         checkTotal();
         // how many bins must we shift to get a nice initial bin?
         int shift = (int) Math.round(DasMath.modp(firstb, (binw * factor / binwDenom)) / (binw / binwDenom));
@@ -440,7 +440,7 @@ public final class AutoHistogram {
      */
     private final int rescaleRight(int ibin) {
         int factor = nextFactor();
-        System.err.println("rescaleRight to " + binw / binwDenom + "*" + factor);
+        //System.err.println("rescaleRight to " + binw / binwDenom + "*" + factor);
         checkTotal();
         // how many bins must we shift to get a nice initial bin?
         int shift = (int) Math.round(DasMath.modp(firstb, (binw * factor / binwDenom)) / (binw / binwDenom));
