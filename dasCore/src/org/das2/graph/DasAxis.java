@@ -743,7 +743,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             throw new NullPointerException("axis label cannot be null");
         }
         Object oldValue = axisLabel;
-        axisLabel = Entities.decodeEntities(t);
+        axisLabel = t; 
         update();
         firePropertyChange(PROP_LABEL, oldValue, t);
     }
