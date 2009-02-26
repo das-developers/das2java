@@ -151,8 +151,8 @@ public class GrannyTextRenderer {
         this.parent= c;
         bounds = null;
         lineBounds = new ArrayList();
-        this.str = str;
-        this.tokens = buildTokenArray(str);
+        this.str = Entities.decodeEntities(str);
+        this.tokens = buildTokenArray(this.str);
         this.draw( c.getGraphics(), c.getFont(), 0f, 0f, false );
     }
     
@@ -167,8 +167,8 @@ public class GrannyTextRenderer {
     public void setString( Graphics g, String str) {
         bounds = null;
         lineBounds = new ArrayList();
-        this.str = str;
-        this.tokens = buildTokenArray(str);
+        this.str = Entities.decodeEntities(str);
+        this.tokens = buildTokenArray(this.str);
         this.draw( g, g.getFont(), 0f, 0f, false );
     }
     
@@ -184,8 +184,8 @@ public class GrannyTextRenderer {
     public void setString( Font font, String label) {
         bounds = null;
         lineBounds = new ArrayList();
-        this.str = label;
-        this.tokens = buildTokenArray(str);
+        this.str = Entities.decodeEntities(label);
+        this.tokens = buildTokenArray(this.str);
         this.draw( null, font, 0f, 0f, false );
     }
         
