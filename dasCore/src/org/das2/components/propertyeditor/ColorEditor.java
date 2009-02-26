@@ -133,11 +133,16 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
 
     public void setAsText(String str) throws IllegalArgumentException {
         Color c= Color.decode(str);
-        editorSupport.setValue(c);
+        setValue(c);
     }
 
     public void setValue(Object obj) {
+        Object oldValue= this.editorSupport.getValue();
         editorSupport.setValue(obj);
+        if ( oldValue!=obj ) {
+            choice.setSelectedItem(obj);
+            choice.repaint();
+        }
     }
 
     public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int row, int column) {
