@@ -25,7 +25,10 @@ package org.das2.util.filesystem;
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * Filesystems provide an abstraction layer so that clients can access
@@ -55,13 +58,41 @@ public abstract class FileSystem  {
         }
     }
     
+    public static FileSystem create(URL root) throws FileSystemOfflineException {
+        return create(root, new NullProgressMonitor());
+    }
     /**
      * Creates a FileSystem by parsing the URL and creating the correct FS type.
-     * Presently, only "file://" and "http://" are supported.
+     * Presently, file, http, and ftp are supported.  If the URL contains a folder
+     * ending in .zip and a FileSystemFactory is registered as handling .zip, then
+     * The zip file will be transferred and the zip file mounted.
      */
-    public static FileSystem create( URL root ) throws FileSystemOfflineException {
+    public static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException {
         logger.fine("create filesystem "+root);
-        FileSystemFactory factory= (FileSystemFactory) registry.get(root.getProtocol());
+        FileSystemFactory factory;
+        if ( root.getPath().contains(".zip") && registry.containsKey("zip") ) {
+            try {
+                String surl= root.toString();
+                int i= surl.indexOf(".zip");
+                String[] ss= FileSystem.splitUrl( surl.substring(0,i+4) );
+                URL parent = new URL(ss[2]); //getparent
+                String zipname = ss[3].substring(ss[2].length());
+                String subdir = surl.substring(i+4);
+                FileSystem remote = FileSystem.create(parent);
+                File localZipFile = remote.getFileObject(zipname).getFile(mon);
+                factory = (FileSystemFactory) registry.get("zip");
+                FileSystem zipfs = factory.createFileSystem(localZipFile.toURI().toURL());
+                if ( subdir.equals("") || subdir.equals("/") ) {
+                    return zipfs;
+                } else {
+                    return new SubFileSystem(zipfs, subdir);
+                }
+            } catch (IOException ex) {
+                throw new FileSystemOfflineException(ex);
+            }
+        } else {
+            factory= (FileSystemFactory) registry.get(root.getProtocol());
+        }
         if ( factory==null ) {
             throw new IllegalArgumentException( "unsupported protocol: "+root );
         } else {
