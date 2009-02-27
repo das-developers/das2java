@@ -46,13 +46,13 @@ public abstract class FileSystem  {
     protected static Logger logger= Logger.getLogger(  "das2.filesystem" );
     
     public static class FileSystemOfflineException extends IOException {
-        FileSystemOfflineException() {
+        public FileSystemOfflineException() {
             super();
         }
-        FileSystemOfflineException( String message ) {
+        public FileSystemOfflineException( String message ) {
             super( message );
         }
-        FileSystemOfflineException( IOException e ) {
+        public FileSystemOfflineException( IOException e ) {
             super( e.getMessage() );
             initCause(e);
         }
