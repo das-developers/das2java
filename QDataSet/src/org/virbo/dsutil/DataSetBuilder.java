@@ -22,7 +22,7 @@ import org.virbo.dataset.QDataSet;
  * TODO: consider using WritableDataSet interface.
  * @author jbf
  */
-public class DataSetBuilder {
+public class DataSetBuilder { 
     
     int rank;
     
