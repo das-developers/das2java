@@ -303,6 +303,10 @@ public class DataSetUtil {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
 
+        double cadence = Double.MAX_VALUE;
+
+        if ( xds.length()<2 ) return cadence;
+
         AutoHistogram ah= new AutoHistogram();
         QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds));
 
