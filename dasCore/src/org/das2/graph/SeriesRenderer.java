@@ -202,6 +202,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             int i;
+            if ( parent==null ) return 0;
             if (stampPsyms && !parent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
             } else {
@@ -703,12 +704,13 @@ public class SeriesRenderer extends Renderer implements Displayable {
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         logger.fine( "ds: "+this.ds+",  drawing indeces "+this.firstIndex+" to "+this.lastIndex );
-        if (this.ds == null && lastException != null) {
+        if ( parent==null ) return;
+        if ( this.ds == null && lastException != null) {
             parent.postException(this, lastException);
             return;
         }
 
-        if ( parent!=null && legendLabel!=null && legendLabel.length()>0 ) {
+        if ( legendLabel!=null && legendLabel.length()>0 ) {
             parent.addToLegend( this, (ImageIcon)this.getListIcon(), 0, legendLabel );
         }
         
