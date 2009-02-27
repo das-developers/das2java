@@ -33,6 +33,7 @@ public class DataSetBuilder {
     int recElements; // number of elements per record
     int index;
     int offset;
+    int length;  // number of records or partial records written
     HashMap<String,Object> properties;
     
     /**
@@ -68,6 +69,27 @@ public class DataSetBuilder {
         index=0;
         properties= new HashMap<String,Object>();
     }
+
+    /**
+     * check the stream index specified.  If it's -1, that indicates that the builder
+     * should keep track of the index and nextRecord() will be used to explicitly
+     * increment the index.  If it is not -1, then it must either be equal to the
+     * current position, or equal to the position + 1, which is implicitly a nextRecord().
+     * @param index0
+     * @throws java.lang.IllegalArgumentException if the index doesn't follow these rules.
+     */
+    private void checkStreamIndex(int index0) throws IllegalArgumentException {
+        if (index0 > -1) {
+            if (index0 == index + offset) {
+                
+            } else if ( index0 == index + offset + 1 ) {
+                nextRecord();
+            } else {
+                throw new IllegalArgumentException("index0 must only increment by one");
+            }
+        }
+        length= index + offset + 1;
+    }
     
     private void newCurrent() {
         if ( rank==1 ) {
@@ -80,23 +102,35 @@ public class DataSetBuilder {
     }
     
     /**
-     * index0 is ignored!!!
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param d the value to insert.
      */
     public void putValue( int index0, double d ) {
+        checkStreamIndex(index0);
         current.putValue( this.index, d );
     }
     
     /**
-     * index0 is ignored!!!
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param d the value to insert.
      */
     public void putValue( int index0, int index1, double d ) {
+        checkStreamIndex(index0);
         current.putValue( this.index, index1, d );
     }
     
     /**
-     * index0 is ignored!!!
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param index2 the third index
+     * @param d the value to insert.
      */
     public void putValue( int index0, int index1, int index2, double d ) {
+        checkStreamIndex(index0);
         current.putValue( this.index, index1, index2, d );
     }
     
@@ -110,6 +144,7 @@ public class DataSetBuilder {
      * @param count the number of elements to copy
      */
     public void putValues( int index0, DDataSet values, int count ) {
+        checkStreamIndex(index0);
         DDataSet.copyElements( values, 0, current, this.index, count, false );
     }
     
@@ -133,7 +168,7 @@ public class DataSetBuilder {
     * return the number of records added to the builder.
     */
     public int getLength() {
-        return index+offset;
+        return length;
     }
     
     /**
@@ -157,9 +192,9 @@ public class DataSetBuilder {
         int len;
         
         switch (rank ) {
-            case 1: result= DDataSet.createRank1(index+offset); break;
-            case 2: result= DDataSet.createRank2(index+offset,dim1); break;
-            case 3: result= DDataSet.createRank3(index+offset,dim1,dim2); break;
+            case 1: result= DDataSet.createRank1(length); break;
+            case 2: result= DDataSet.createRank2(length,dim1); break;
+            case 3: result= DDataSet.createRank3(length,dim1,dim2); break;
             default: throw new RuntimeException("bad rank");
         }
         
@@ -174,7 +209,7 @@ public class DataSetBuilder {
         } else {
             result= DDataSet.copy(current);
         }
-        result.putLength( index+offset );
+        result.putLength( length );
 
         // install canonical fill value
         if ( fillValue!=-1e31 || validMax<Double.POSITIVE_INFINITY || validMin>Double.NEGATIVE_INFINITY ) {
