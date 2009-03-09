@@ -44,27 +44,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
     DatumRange imageXRange;
     DatumRange imageYRange;
     TableDataSet hist;
+    private Color color = Color.BLACK;
 
     /** Creates a new instance of LotsaPointsRenderer */
     public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {
         super(dsd);
-    }
-
-    private void renderGhostly(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis) {
-        Graphics2D g2 = (Graphics2D) g1.create();
-
-        if (getDataSet() == null && lastException != null) {
-            renderException(g2, xAxis, yAxis, lastException);
-        } else if (plotImage != null) {
-            Point2D p;
-
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-            p = new Point2D.Double(xAxis.transform(imageXRange.min()), yAxis.transform(imageYRange.max()));
-
-            g2.drawImage(plotImage, (int) (p.getX() + 0.5), (int) (p.getY() + 0.5), getParent());
-
-        }
-        g2.dispose();
     }
 
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
@@ -130,12 +114,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g.setColor(Color.black);
+        g.setColor(color);
         g.setStroke(new BasicStroke(1.f / saturationHitCount));
 
         g.translate( -plotImageBounds2.x, -plotImageBounds2.y);
-
-        
         
         imageXRange= GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x+plotImageBounds2.width );
         imageYRange= GraphUtil.invTransformRange( yAxis, plotImageBounds2.y, plotImageBounds2.y+plotImageBounds2.height );
@@ -232,7 +214,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 yAxis.isLog());
 
 
-        TableDataSet hist = histogram(ddx, ddy, ds);
+        TableDataSet newHist = histogram(ddx, ddy, ds);
         //WritableTableDataSet whist= (WritableTableDataSet)hist;
 
         /* double histMax= TableUtil.tableMax(hist, Units.dimensionless);
@@ -249,21 +231,19 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int w = ddx.numberOfBins();
 
         int[] raster = new int[h * w];
-
+        int colorInt = color.getRGB() & 0x00ffffff;
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
                 int index = (i - 0) + (h - j - 1) * w;
-                int alpha = 255 - (256 * (int) hist.getDouble(i, j, Units.dimensionless) / saturationHitCount);
-                if (alpha < 0) {
-                    alpha = 0;
-                }
+                // alpha=0 for transparent, alpha=255 for opaque
+                int alpha = 255 * (int) newHist.getDouble(i, j, Units.dimensionless) / saturationHitCount;
 
-                int icolor = (alpha << 16) + (alpha << 8) + alpha;
+                int icolor = (alpha << 24) | colorInt;
                 raster[index] = icolor;
             }
         }
 
-        plotImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        plotImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         WritableRaster r = plotImage.getRaster();
         r.setDataElements(0, 0, w, h, raster);
 
@@ -328,15 +308,26 @@ public class ImageVectorDataSetRenderer extends Renderer {
         return this.saturationHitCount;
     }
 
+    public void setColor(Color color) {
+        this.color = color;
+        refreshImage();
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
     @Override
     public boolean acceptContext(int x, int y) {
+        x -= parent.getCacheImageBounds().getX();
+        y -= parent.getCacheImageBounds().getY();
         int i0 = Math.max(x - 2, 0);
         int j0 = Math.max(y - 2, 0);
         int i1 = Math.min(x + 3, plotImage.getWidth());
         int j1 = Math.min(y + 3, plotImage.getHeight());
         for (int i = i0; i < i1; i++) {
             for (int j = j0; j < j1; j++) {
-                if (this.plotImage.getRGB(i, j) < 0xffffff) {
+                if ( (this.plotImage.getRGB(i, j) & 0xff000000 ) > 0) {
                     return true;
                 }
             }
