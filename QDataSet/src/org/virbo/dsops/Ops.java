@@ -1348,27 +1348,25 @@ public class Ops {
 
         if (ds.rank() == 1) {
             builder = new DataSetBuilder(1, 100, 1, 1);
-            int count = 0;
             while (iter.hasNext()) {
                 iter.next();
                 if (iter.getValue(ds) != 0.) {
-                    builder.putValue(count, iter.index(0));
+                    builder.putValue(-1, iter.index(0));
                     builder.nextRecord();
                 }
             }
             builder.putProperty(QDataSet.MONOTONIC, Boolean.TRUE);
         } else {
             builder = new DataSetBuilder(2, 100, ds.rank(), 1);
-            int count = 0;
             while (iter.hasNext()) {
                 iter.next();
                 if (iter.getValue(ds) != 0.) {
-                    builder.putValue(count, 0, iter.index(0));
+                    builder.putValue(-1, 0, iter.index(0));
                     if (ds.rank() > 1) {
-                        builder.putValue(count, 1, iter.index(1));
+                        builder.putValue(-1, 1, iter.index(1));
                     }
                     if (ds.rank() > 2) {
-                        builder.putValue(count, 2, iter.index(2));
+                        builder.putValue(-1, 2, iter.index(2));
                     }
                     builder.nextRecord();
                 }
