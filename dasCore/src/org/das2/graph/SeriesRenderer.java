@@ -47,8 +47,9 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
@@ -480,7 +481,26 @@ public class SeriesRenderer extends Renderer implements Displayable {
         }
 
         public boolean acceptContext(Point2D.Double dp) {
-            return this.path1 != null && path1.intersects(dp.x - 5, dp.y - 5, 10, 10);
+            Rectangle2D hitbox = new Rectangle2D.Double(dp.x-5, dp.y-5, 10f, 10f);
+            double[] coords = new double[6];
+            PathIterator it = path1.getPathIterator(null);
+            it.currentSegment(coords);
+            
+            double x1 = coords[0];
+            double y1 = coords[1];
+            it.next();
+            
+            while (!it.isDone()) {
+                int segType = it.currentSegment(coords);
+                // don't test against SEG_MOVETO; we shouldn't have any others
+                if (segType == PathIterator.SEG_LINETO) {
+                    if(hitbox.intersectsLine(x1, y1, coords[0], coords[1])) return true;
+                }
+                x1 = coords[0];
+                y1 = coords[1];
+                it.next();
+            }
+            return false;
         }
     }
 
@@ -1454,25 +1474,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
         refreshImage();
     }
     
-    /**
-     * If non-null and non-zero-length, use this label to describe the renderer
-     * in the plot's legend.
-     */
-    public static final String PROP_LEGENDLABEL = "legendLabel";
-
-    protected String legendLabel = "";
-    
-    public String getLegendLabel() {
-        return legendLabel;
-    }
-
-    public void setLegendLabel(String legendLabel) {
-        String oldLegendLabel = this.legendLabel;
-        this.legendLabel = legendLabel;
-        propertyChangeSupport.firePropertyChange(PROP_LEGENDLABEL, oldLegendLabel, legendLabel);
-    }
-
-
     @Override
     public boolean acceptContext(int x, int y) {
         boolean accept = false;

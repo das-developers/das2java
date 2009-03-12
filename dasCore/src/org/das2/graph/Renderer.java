@@ -497,6 +497,26 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         propertyChangeSupport.firePropertyChange(PROPERTY_ACTIVE, oldValue, active);
         update();
     }
+
+     /**
+     * If non-null and non-zero-length, use this label to describe the renderer
+     * in the plot's legend.
+     */
+    public static final String PROP_LEGENDLABEL = "legendLabel";
+
+    protected String legendLabel = "";
+
+    public String getLegendLabel() {
+        return legendLabel;
+    }
+
+    public void setLegendLabel(String legendLabel) {
+        String oldLegendLabel = this.legendLabel;
+        this.legendLabel = legendLabel;
+        propertyChangeSupport.firePropertyChange(PROP_LEGENDLABEL, oldLegendLabel, legendLabel);
+        refreshImage();
+    }
+
     /**
      * Utility field used by bound properties.
      */
