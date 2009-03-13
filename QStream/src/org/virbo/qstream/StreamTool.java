@@ -231,7 +231,7 @@ public class StreamTool {
     private static class ReadStreamStructure {
 
         private ReadableByteChannel stream;
-        private ByteBuffer bigBuffer = ByteBuffer.allocate(4096);
+        private ByteBuffer bigBuffer = ByteBuffer.allocate(10000);
         private byte[] four = new byte[4];
         private StreamHandler handler;
         private Map descriptors = new HashMap();
@@ -267,10 +267,12 @@ public class StreamTool {
             struct.descriptorCount++;
             int bytesRead;
             int totalBytesRead = 0;
+
             while ( (bytesRead = stream.read(struct.bigBuffer)) >= 0 || struct.bigBuffer.position()!=0 ) {
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
-
+                System.err.println("d2s bytesRead="+bytesRead+" total="+totalBytesRead );
+                
                 totalBytesRead += bytesRead;
                 //System.err.println("d2s bytesRead="+bytesRead+" total="+totalBytesRead );
                 //if ( totalBytesRead>318260 ) {
