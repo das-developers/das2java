@@ -149,7 +149,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }
                 if ( svals!=null && !svals.trim().equals("") ) { //TODO: length 0?
                     String[] ss= svals.split(",");
-                    for ( int j=0; j<ss.length; j++ ) builder.putValue( j, Double.parseDouble(ss[j]) );
+                    for ( int j=0; j<ss.length; j++ ) {
+                        builder.putValue( j, Double.parseDouble(ss[j]) );
+                    }
                 }
                 NodeList odims = (NodeList) xpath.evaluate("properties/property", n, XPathConstants.NODESET);
 
