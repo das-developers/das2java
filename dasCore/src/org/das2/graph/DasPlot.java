@@ -350,6 +350,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 logger.finest("rendering #" + i + ": " + rend);
                 rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
                 noneActive = false;
+                if ( rend.getLegendLabel()!=null && rend.getLegendLabel().length()>0 ) {
+                    addToLegend( rend, (ImageIcon)rend.getListIcon(), 0, rend.getLegendLabel() );
+                }
+            } else {
+                if ( rend.getLegendLabel()!=null && rend.getLegendLabel().length()>0 ) {
+                    addToLegend( rend, (ImageIcon)rend.getListIcon(), 0, rend.getLegendLabel() +" (inactive)" );
+                }
             }
         }
 
