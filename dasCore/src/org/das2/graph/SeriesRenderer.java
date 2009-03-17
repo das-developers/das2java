@@ -69,7 +69,7 @@ import org.w3c.dom.Element;
  * 
  * @author  jbf
  */
-public class SeriesRenderer extends Renderer implements Displayable {
+public class SeriesRenderer extends Renderer  {
 
     private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     private double symSize = 3.0; // radius in pixels
@@ -730,10 +730,6 @@ public class SeriesRenderer extends Renderer implements Displayable {
             return;
         }
 
-        if ( legendLabel!=null && legendLabel.length()>0 ) {
-            parent.addToLegend( this, (ImageIcon)this.getListIcon(), 0, legendLabel );
-        }
-        
         renderCount++;
         reportCount();
 
