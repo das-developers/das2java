@@ -41,13 +41,13 @@ import java.awt.geom.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Logger;
+import org.das2.components.propertyeditor.Displayable;
 import org.w3c.dom.*;
 
-public abstract class Renderer implements DataSetConsumer, Editable {
+public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
 
     /**
      * identifies the dataset (in the DataSetDescriptor sense) being plotted
@@ -516,6 +516,33 @@ public abstract class Renderer implements DataSetConsumer, Editable {
         propertyChangeSupport.firePropertyChange(PROP_LEGENDLABEL, oldLegendLabel, legendLabel);
         refreshImage();
     }
+
+    /**
+     * return a 16x16 icon representing the renderer.  Subclasses that do not override this
+     * will have an empty icon displayed.
+     * @return
+     */
+    public Icon getListIcon() {
+        return new ImageIcon( new BufferedImage( 16, 16, BufferedImage.TYPE_INT_ARGB ) );
+    }
+
+    /**
+     * return a short label for the renderer.
+     * @return
+     */
+    public String getListLabel() {
+        StringBuffer l= new StringBuffer( getLegendLabel() );
+        if ( this.getDataSetDescriptor()!=null ) {
+            if ( l.length()>0 ) {
+                l.append( " ("+this.getDataSetDescriptor() +")" );
+            }
+        }
+        if ( l.length()==0 ) {
+            l.append( this.getClass().getName() );
+        }
+        return l.toString();
+    }
+
 
     /**
      * Utility field used by bound properties.
