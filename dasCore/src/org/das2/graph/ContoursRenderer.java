@@ -47,7 +47,7 @@ import org.w3c.dom.Element;
  * Renderer for making contour plots
  * @author jbf
  */
-public class ContoursRenderer extends Renderer implements Displayable {
+public class ContoursRenderer extends Renderer {
 
     /** Creates a new instance of ContoursRenderer */
     public ContoursRenderer() {
@@ -190,7 +190,11 @@ public class ContoursRenderer extends Renderer implements Displayable {
     }
 
     public Icon getListIcon() {
-        return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/contoursRenderer.png"));
+        return new ImageIcon(ContoursRenderer.class.getResource("/images/icons/contoursRenderer.png"));
+    }
+
+    public String getListLabel() {
+        return "" + ( getLegendLabel().length()> 0 ? getLegendLabel() +" " : "contours" );
     }
 
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
@@ -415,11 +419,6 @@ public class ContoursRenderer extends Renderer implements Displayable {
         update();
         propertyChangeSupport.firePropertyChange("color", oldColor, color);
     }
-
-    public String getListLabel() {
-        return "Contours Renderer";
-    }
-
 
     private boolean simplifyPaths = true;
 
