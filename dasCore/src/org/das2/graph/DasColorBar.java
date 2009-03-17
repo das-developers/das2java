@@ -230,7 +230,7 @@ public class DasColorBar extends DasAxis {
         
         element.setAttribute("label", getLabel());
         element.setAttribute("log", Boolean.toString(isLog()));
-        element.setAttribute("tickLabelsVisible", Boolean.toString(areTickLabelsVisible()));
+        element.setAttribute("tickLabelsVisible", Boolean.toString(isTickLabelsVisible()));
         element.setAttribute("oppositeAxisVisible", Boolean.toString(isOppositeAxisVisible()));
         element.setAttribute("animated", Boolean.toString(isAnimated()));
         element.setAttribute("orientation", orientationToString(getOrientation()));
