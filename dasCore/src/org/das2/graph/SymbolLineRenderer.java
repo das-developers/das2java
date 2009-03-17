@@ -23,7 +23,6 @@
 
 package org.das2.graph;
 
-import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorUtil;
 import org.das2.dataset.DataSet;
@@ -55,7 +54,7 @@ import org.das2.datum.Units;
  *
  * @author  jbf
  */
-public class SymbolLineRenderer extends Renderer implements Displayable {
+public class SymbolLineRenderer extends Renderer {
     
     private Psym psym = Psym.NONE;
     private double symSize = 3.0; // radius in pixels
@@ -207,7 +206,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     boolean updating=false;
-    
+
+    @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         /*
          *This was an experiment to see if updates were being performed on multiple threads.
@@ -228,7 +228,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         }
         
         DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).fine( "entering updatePlotImage" );
-        boolean histogram = this.histogram;
+        boolean histogram1 = this.histogram;
         VectorDataSet dataSet= (VectorDataSet)getDataSet();
         if (dataSet == null || dataSet.getXLength() == 0) {
             return;
@@ -296,7 +296,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
                     newPath.moveTo((float)i, (float)j);
                     skippedLast = false;
                 } else {
-                    if (histogram) {
+                    if (histogram1) {
                         double i1 = (i0 + i)/2;
                         newPath.lineTo((float)i1, (float)j0);
                         newPath.lineTo((float)i1, (float)j);
@@ -390,16 +390,14 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         lineWidth = f;
         refreshImage();
     }
-    
+
+    @Override
     protected void installRenderer() {
         if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
             DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
             DasPlot p= parent;
             mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
         }
-    }
-    
-    protected void uninstallRenderer() {
     }
     
     public static SymbolLineRenderer processLinePlotElement(Element element, DasPlot parent, FormBase form) {
@@ -420,6 +418,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         return renderer;
     }
     
+    @Override
     public Element getDOMElement(Document document) {
         
         Element element = document.createElement("lineplot");
@@ -457,11 +456,8 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             refreshImage();
         }
     }
-    
-    public String getListLabel() {
-        return String.valueOf( this.getDataSetDescriptor() );
-    }
-    
+
+    @Override
     public javax.swing.Icon getListIcon() {
         Image i= new BufferedImage(15,10,BufferedImage.TYPE_INT_ARGB);
         Graphics2D g= (Graphics2D)i.getGraphics();
@@ -482,6 +478,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         return new ImageIcon(i);
     }
 
+    @Override
     public boolean acceptContext(int x, int y) {
         return path!=null && path.intersects( x-5, y-5, 10, 10 );
     }
