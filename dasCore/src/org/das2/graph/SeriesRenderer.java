@@ -481,6 +481,7 @@ public class SeriesRenderer extends Renderer  {
         }
 
         public boolean acceptContext(Point2D.Double dp) {
+            if ( path1==null ) return false;
             Rectangle2D hitbox = new Rectangle2D.Double(dp.x-5, dp.y-5, 10f, 10f);
             double[] coords = new double[6];
             PathIterator it = path1.getPathIterator(null);
