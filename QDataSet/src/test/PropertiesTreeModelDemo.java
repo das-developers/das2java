@@ -31,7 +31,7 @@ public class PropertiesTreeModelDemo {
                 
         HashMap props= (HashMap) DataSetUtil.getProperties(ds);
         
-        TreeModel model= new PropertiesTreeModel(ds);
+        TreeModel model= new PropertiesTreeModel(ds,10);
         JTree tree= new JTree(model);
         
         JFrame frame= new JFrame();
