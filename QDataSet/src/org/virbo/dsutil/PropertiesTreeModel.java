@@ -26,8 +26,8 @@ public class PropertiesTreeModel extends DefaultTreeModel {
  
     MutableTreeNode mroot= (MutableTreeNode)root;
     
-    public PropertiesTreeModel( QDataSet ds ) {
-        this( null, ds );
+    public PropertiesTreeModel( QDataSet ds ,int valuesSizeLimit) {
+        this( null, ds ,valuesSizeLimit);
     }
     
     /**
@@ -35,7 +35,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
      * @param prefix String to prefix the root label.
      * @param ds the dataset source of the metadata.
      */
-    public PropertiesTreeModel( String prefix, QDataSet ds ) {
+    public PropertiesTreeModel( String prefix, QDataSet ds ,int valuesSizeLimit) {
         
         super( new DefaultMutableTreeNode( ( prefix==null ? "" : prefix ) + DataSetUtil.toString(ds) ) );
         this.ds = ds;
@@ -46,7 +46,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             Object value= properties.get(key);
             MutableTreeNode nextChild;
             if ( value instanceof QDataSet ) {
-                PropertiesTreeModel model= new PropertiesTreeModel( key + "=", (QDataSet)value);
+                PropertiesTreeModel model= new PropertiesTreeModel( key + "=", (QDataSet)value,valuesSizeLimit);
                 nextChild= (MutableTreeNode) model.getRoot();
             } else if ( value.getClass().isArray() ) {
                 value.getClass().getComponentType();
@@ -66,7 +66,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         }
         
         MutableTreeNode values= new DefaultMutableTreeNode("values");        
-        ValuesTreeModel.valuesTreeNode( "value(", values, ds );
+        ValuesTreeModel.valuesTreeNode( "value(", values, ds ,valuesSizeLimit);
         mroot.insert( values, mroot.getChildCount() );
     }
     
