@@ -202,7 +202,7 @@ public final class AutoHistogram {
         //checkTotal();
         }
 
-        if ( initialOutliers ) {
+        if ( initialOutliers && outliers.size()>0 ) {
             initialDist();
         }
         
