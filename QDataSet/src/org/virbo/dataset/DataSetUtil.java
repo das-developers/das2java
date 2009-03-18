@@ -700,6 +700,7 @@ public class DataSetUtil {
      * Iterate through the dataset, changing all points outside of validmin,
      * validmax and with zero weight to fill=-1e31.  VALID_MIN and VALID_MAX 
      * properties are cleared, and FILL_VALUE is set to -1e31.
+     * If the dataset is writable, then the dataset is modified.
      * 
      * @param ds rank N QUBE dataset.
      * @return ds with same geometry as ds.
@@ -719,8 +720,6 @@ public class DataSetUtil {
             }
         }
         wrds.putProperty(QDataSet.FILL_VALUE, fill);
-        wrds.putProperty(QDataSet.VALID_MIN, null);
-        wrds.putProperty(QDataSet.VALID_MAX, null);
         return wrds;
     }
 }
