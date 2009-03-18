@@ -319,6 +319,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     @Override
     public boolean acceptContext(int x, int y) {
+        if ( plotImage==null ) return false;
         x -= parent.getCacheImageBounds().getX();
         y -= parent.getCacheImageBounds().getY();
         int i0 = Math.max(x - 2, 0);
