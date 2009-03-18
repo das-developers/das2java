@@ -22,6 +22,7 @@ public class TagGenDataSet extends IndexGenDataSet {
         super( length );
         this.scale= scale;
         this.offset= offset;
+        putProperty( QDataSet.CADENCE, scale );
     }
     
     public double value(int i) {
