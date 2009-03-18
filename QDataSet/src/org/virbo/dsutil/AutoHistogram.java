@@ -134,6 +134,7 @@ public final class AutoHistogram {
      *   total, Integer, the number of points in the distribution.
      *   outliers, Map<Double,Integer>, outliers and the count of each outlier.
      * @param ds
+     * @param wds WeightsDataSet or null.
      * @return
      */
     public QDataSet doit(QDataSet ds, WeightsDataSet wds) {
