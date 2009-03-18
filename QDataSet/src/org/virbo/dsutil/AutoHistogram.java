@@ -96,11 +96,21 @@ public final class AutoHistogram {
     }
 
     private DDataSet asDataSet() {
-        DDataSet result = DDataSet.wrap(nn);
-        DDataSet totals = DDataSet.wrap(ss);
+        int nonZeroCount= nbin-zeroesLeft-zeroesRight+2;
+        int firstBin= zeroesLeft-1;
+        if ( firstBin<0 ) firstBin=0;
+        if ( nonZeroCount+firstBin>nbin ) nonZeroCount= nbin - firstBin;
+
+
+        double[] nn1= new double[nonZeroCount];
+        System.arraycopy( nn, firstBin, nn1, 0, nonZeroCount);
+        double[] ss1= new double[nonZeroCount];
+        System.arraycopy( ss, firstBin, ss1, 0, nonZeroCount);
+        DDataSet result = DDataSet.wrap(nn1);
+        DDataSet totals = DDataSet.wrap(ss1);
         totals.putProperty(QDataSet.NAME, "total");
         result.putProperty(QDataSet.PLANE_0, totals);
-        TagGenDataSet dep0 = new TagGenDataSet(nbin, binw / binwDenom, firstb);
+        TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom );
         dep0.putProperty(QDataSet.UNITS, units);
         result.putProperty(DDataSet.DEPEND_0, dep0);
         Map<String, Object> user = new HashMap<String, Object>();
@@ -143,6 +153,9 @@ public final class AutoHistogram {
             wds = DataSetUtil.weightsDataSet(ds);
         }
 
+        Units d1= (Units) ds.property( QDataSet.UNITS ) ;
+        if ( d1!=null ) units=d1;
+        
         DataSetIterator iter = new QubeDataSetIterator(ds);
 
         while (iter.hasNext()) {
