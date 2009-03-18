@@ -528,6 +528,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         boolean oldDrawLegendLabel = this.drawLegendLabel;
         this.drawLegendLabel = drawLegendLabel;
         propertyChangeSupport.firePropertyChange(PROP_DRAWLEGENDLABEL, oldDrawLegendLabel, drawLegendLabel);
+        refreshImage();
     }
 
     /**
