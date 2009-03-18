@@ -517,6 +517,19 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         refreshImage();
     }
 
+    protected boolean drawLegendLabel = false;
+    public static final String PROP_DRAWLEGENDLABEL = "drawLegendLabel";
+
+    public boolean isDrawLegendLabel() {
+        return drawLegendLabel;
+    }
+
+    public void setDrawLegendLabel(boolean drawLegendLabel) {
+        boolean oldDrawLegendLabel = this.drawLegendLabel;
+        this.drawLegendLabel = drawLegendLabel;
+        propertyChangeSupport.firePropertyChange(PROP_DRAWLEGENDLABEL, oldDrawLegendLabel, drawLegendLabel);
+    }
+
     /**
      * return a 16x16 icon representing the renderer.  Subclasses that do not override this
      * will have an empty icon displayed.
