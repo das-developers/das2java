@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.util.logging.Level;
 import org.das2.event.MouseModule;
 import org.das2.event.HorizontalRangeSelectorMouseModule;
 import org.das2.event.LengthDragRenderer;
@@ -79,6 +80,7 @@ import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.das2.DasException;
 import org.das2.DasNameException;
 import org.das2.DasPropertyException;
@@ -131,27 +133,27 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
             public void mousePressed(MouseEvent e) {
                 //if (e.getButton() == MouseEvent.BUTTON3) {
-                    if (editRendererMenuItem != null) {
-                        //TODO: check out SwingUtilities, I think this is wrong:
-                        int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
-                        editRendererMenuItem.setText("Renderer Properties");
-                        if (ir > -1) {
-                            editRendererMenuItem.setEnabled(true);
-                            Renderer r = (Renderer) renderers.get(ir);
-                            if (r instanceof Displayable) {
-                                Displayable d = (Displayable) r;
-                                editRendererMenuItem.setIcon(d.getListIcon());
-                            } else {
-                                editRendererMenuItem.setIcon(null);
-                            }
-                            setFocusRenderer(r);
+                if (editRendererMenuItem != null) {
+                    //TODO: check out SwingUtilities, I think this is wrong:
+                    int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
+                    editRendererMenuItem.setText("Renderer Properties");
+                    if (ir > -1) {
+                        editRendererMenuItem.setEnabled(true);
+                        Renderer r = (Renderer) renderers.get(ir);
+                        if (r instanceof Displayable) {
+                            Displayable d = (Displayable) r;
+                            editRendererMenuItem.setIcon(d.getListIcon());
                         } else {
-                            editRendererMenuItem.setEnabled(false);
                             editRendererMenuItem.setIcon(null);
-                            setFocusRenderer(null);
                         }
+                        setFocusRenderer(r);
+                    } else {
+                        editRendererMenuItem.setEnabled(false);
+                        editRendererMenuItem.setIcon(null);
+                        setFocusRenderer(null);
                     }
-                //}
+                }
+            //}
             }
         });
 
@@ -185,7 +187,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             addDefaultMouseModules();
         }
     }
-
     /**
      * returns the Renderer with the current focus.  Clicking on a trace sets the focus.
      */
@@ -237,14 +238,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         int iconColumnWidth = maxIconWidth + em / 4;
         mrect.width += iconColumnWidth;
         mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
-        boundRect.x= mrect.x;
+        boundRect.x = mrect.x;
 
         graphics.setColor(backColor);
-        graphics.fillRoundRect( mrect.x - em / 4 , mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+        graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
         graphics.setColor(getForeground());
-        graphics.drawRoundRect( mrect.x - em / 4 , mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+        graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
 
-        msgx = xAxis.getColumn().getDMaximum() - boundRect.width - em ;
+        msgx = xAxis.getColumn().getDMaximum() - boundRect.width - em;
         msgy = yAxis.getRow().getDMinimum() + em;
 
         for (int i = 0; i < legendElements.size(); i++) {
@@ -254,15 +255,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             mrect = gtr.getBounds();
             mrect.translate(msgx, msgy);
             gtr.draw(graphics, msgx, msgy);
-            Rectangle imgBounds= new Rectangle( msgx - (le.icon.getIconWidth() + em / 4), 
-                    msgy - (int) (mrect.getHeight() / 2 + le.icon.getIconHeight() / 2), 
-                    le.icon.getIconWidth(), le.icon.getIconHeight() );
-            graphics.drawImage( le.icon.getImage(), imgBounds.x, imgBounds.y, null );
+            Rectangle imgBounds = new Rectangle(msgx - (le.icon.getIconWidth() + em / 4),
+                    msgy - (int) (mrect.getHeight() / 2 + le.icon.getIconHeight() / 2),
+                    le.icon.getIconWidth(), le.icon.getIconHeight());
+            graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
             msgy += mrect.getHeight();
-            mrect.add( imgBounds );
-            le.bounds= mrect;
+            mrect.add(imgBounds);
+            le.bounds = mrect;
         }
-        
+
     }
 
     private void drawMessages(Graphics2D graphics) {
@@ -350,12 +351,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 logger.finest("rendering #" + i + ": " + rend);
                 rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
                 noneActive = false;
-                if ( rend.isDrawLegendLabel() ) {
-                    addToLegend( rend, (ImageIcon)rend.getListIcon(), 0, rend.getLegendLabel() );
+                if (rend.isDrawLegendLabel()) {
+                    addToLegend(rend, (ImageIcon) rend.getListIcon(), 0, rend.getLegendLabel());
                 }
             } else {
-                if ( rend.isDrawLegendLabel() ) {
-                    addToLegend( rend, (ImageIcon)rend.getListIcon(), 0, rend.getLegendLabel() +" (inactive)" );
+                if (rend.isDrawLegendLabel()) {
+                    addToLegend(rend, (ImageIcon) rend.getListIcon(), 0, rend.getLegendLabel() + " (inactive)");
                 }
             }
         }
@@ -387,15 +388,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
 
         for (int i = 0; legendElements != null && i < legendElements.size(); i++) {
-            LegendElement legendElement =  legendElements.get(i);
+            LegendElement legendElement = legendElements.get(i);
             if (legendElement.bounds.contains(x, y) && legendElement.renderer != null) {
-                int result = this.renderers.indexOf( legendElement.renderer  );
+                int result = this.renderers.indexOf(legendElement.renderer);
                 if (result != -1) {
                     return result;
                 }
             }
         }
-        
+
         for (int i = renderers.size() - 1; i >= 0; i--) {
             Renderer rend = (Renderer) renderers.get(i);
             if (rend.isActive() && rend.acceptContext(x, y)) {
@@ -638,6 +639,58 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         logger.finest(" using cacheImage with ricepaper to invalidate");
     }
 
+    /**
+     * reset the bounds for the cache image.  This is a rectangle indicating where
+     * the cache image is in the DasCanvas reference frame.  This should be
+     * called from a synchronized block that either recreates the cache image
+     * or calls invalidateCacheImage, so that the bounds and the image are consistent.
+     *
+     * @param printing the bounds should be set for printing, which currently disabled the overSize rendering.
+     *
+     */
+    private void resetCacheImageBounds(boolean printing) {
+        int x = getColumn().getDMinimum();
+        int y = getRow().getDMinimum();
+        if (overSize && !printing ) {
+            cacheImageBounds = new Rectangle();
+            cacheImageBounds.width = 16 * getWidth() / 10;
+            cacheImageBounds.height = getHeight();
+            cacheImageBounds.x = x - 3 * getWidth() / 10;
+            cacheImageBounds.y = y - 1;
+        } else {
+            cacheImageBounds = new Rectangle();
+            cacheImageBounds.width = getWidth();
+            cacheImageBounds.height = getHeight();
+            cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
+            cacheImageBounds.x = x - 1;
+            cacheImageBounds.y = y - 1;
+        }
+    }
+
+    /**
+     * we need to call each renderer's updatePlotImage method, otherwise we assume
+     * the session is interactive.
+     * @param g
+     */
+    @Override
+    protected void printComponent(Graphics g) {
+        resetCacheImageBounds(true);
+        for (int i = 0; i < renderers.size(); i++) {
+            Renderer rend = (Renderer) renderers.get(i);
+            if (rend.isActive()) {
+                logger.finest("updating renderer #" + i + ": " + rend);
+                try {
+                    rend.updatePlotImage(xAxis, yAxis, new NullProgressMonitor());
+                } catch (DasException ex) {
+                    Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        super.printComponent(g);  // this calls paintComponent
+        invalidateCacheImage();
+    }
+
+
     protected void paintComponent(Graphics graphics1) {
 
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
@@ -645,8 +698,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         //paintComponentCount++;
         logger.finer("entering DasPlot.paintComponent");
-        
-        if ( getCanvas().isPrintingThread() ) logger.fine("* printing thread *");
+
+        if (getCanvas().isPrintingThread()) {
+            logger.fine("* printing thread *");
+        }
 
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
@@ -662,7 +717,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             saveClip = null;
         }
 
-        logger.fine("DasPlot clip=" + graphics1.getClip() + " @ "+getX()+","+getY() );
+        logger.fine("DasPlot clip=" + graphics1.getClip() + " @ " + getX() + "," + getY());
 
         Rectangle clip = graphics1.getClipBounds();
         if (clip != null && (clip.y + getY()) >= (y + ySize)) {
@@ -670,12 +725,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             return;
         }
 
-        boolean disableImageCache= false;
-        
+        boolean disableImageCache = false;
+
         Graphics2D graphics = (Graphics2D) graphics1;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
-        if (cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache ) {
+        if (cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache) {
 
             Graphics2D atGraphics = (Graphics2D) graphics.create();
 
@@ -685,11 +740,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 paintInvalidScreen(atGraphics, at);
 
             } else {
-                String atDesc;
-                NumberFormat nf = new DecimalFormat("0.00");
-                atDesc = GraphUtil.getATScaleTranslateString(at);
 
                 if (!at.isIdentity()) {
+                    String atDesc;
+                    atDesc = GraphUtil.getATScaleTranslateString(at);
                     logger.finest(" using cacheImage w/AT " + atDesc);
                     atGraphics.transform(at);
                 } else {
@@ -704,8 +758,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 //clip.translate( getX(), getY() );
                 //atGraphics.setClip(clip);
                 atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
-                //atGraphics.setClip(null);
-                //return;
+                    //atGraphics.setClip(null);
+                    //return;
+                    //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
+            //atGraphics.setClip(null);
+            //return;
             //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
 
             }
@@ -716,31 +773,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
             synchronized (this) {
                 Graphics2D plotGraphics;
-                if ( getCanvas().isPrintingThread() || disableImageCache ) {
+                if (getCanvas().isPrintingThread() || disableImageCache) {
                     plotGraphics = (Graphics2D) graphics.create(x - 1, y - 1, xSize + 2, ySize + 2);
-                    cacheImageBounds = new Rectangle();
-                    cacheImageBounds.width = getWidth();
-                    cacheImageBounds.height = getHeight();
-                    cacheImageBounds.x = x - 1;
-                    cacheImageBounds.y = y - 1;
+                    resetCacheImageBounds(true);
                     logger.finest(" printing thread, drawing");
                 } else {
-                    if (overSize) {
-                        cacheImageBounds = new Rectangle();
-                        cacheImageBounds.width = 16 * getWidth() / 10;
-			cacheImageBounds.height = getHeight();
-                        cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-                        cacheImageBounds.x = x - 3 * getWidth() / 10;
-			cacheImageBounds.y = y - 1;
-
-                    } else {
-                        cacheImageBounds = new Rectangle();
-                        cacheImageBounds.width = getWidth();
-                        cacheImageBounds.height = getHeight();
-                        cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-                        cacheImageBounds.x = x - 1;
-                        cacheImageBounds.y = y - 1;
-                    }
+                    resetCacheImageBounds(false);
+                    cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
                     plotGraphics = (Graphics2D) cacheImage.getGraphics();
                     plotGraphics.setBackground(getBackground());
                     plotGraphics.setColor(getForeground());
@@ -757,13 +796,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
                 drawCacheImage(plotGraphics);
 
-                //if (overSize) {
-                //    postMessage(null, "Over size on", DasPlot.INFO, null, null);
-                //}
+            //if (overSize) {
+            //    postMessage(null, "Over size on", DasPlot.INFO, null, null);
+            //}
             }
 
 
-            if ( !disableImageCache && !getCanvas().isPrintingThread() ) {
+            if (!disableImageCache && !getCanvas().isPrintingThread()) {
                 cacheImageValid = true;
                 //clip.y= Math.max( clip.y, getRow().getDMinimum() );
                 //clip.translate( getX(), getY() );
@@ -771,7 +810,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 graphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
                 //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
                 //graphics.setClip(null);
-                
+
                 xmemento = xAxis.getMemento();
                 ymemento = yAxis.getMemento();
 
@@ -794,7 +833,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             gtr.draw(graphics, (float) titleX, (float) titleY);
         }
 
-        Font font0= graphics.getFont();
+        Font font0 = graphics.getFont();
         // --- draw messages ---
         if (messages.size() > 0) {
             drawMessages(graphics);
@@ -899,7 +938,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @param message String message to display.  
      */
     public void addToLegend(Renderer renderer, ImageIcon icon, int pos, String message) {
-        legendElements.add(new LegendElement( icon, renderer, message ));
+        legendElements.add(new LegendElement(icon, renderer, message));
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
@@ -944,7 +983,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 bounds.height += titleHeight;
             }
             // TODO check bounds.height<10
-            logger.fine("DasPlot setBounds "+bounds);
+            logger.fine("DasPlot setBounds " + bounds);
             setBounds(bounds);
         }
     }
@@ -1068,7 +1107,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         renderers.remove(rend);
         rend.parent = null;
         invalidateCacheImage();
-        
+
     }
 
     public static DasPlot createDummyPlot() {
