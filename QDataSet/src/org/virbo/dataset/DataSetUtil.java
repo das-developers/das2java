@@ -36,12 +36,12 @@ public class DataSetUtil {
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
-
             public double value(int i) {
                 return i * cadence + start;
             }
         };
         result.putProperty(QDataSet.CADENCE, Double.valueOf(cadence));
+        if ( cadence<0 ) result.putProperty( QDataSet.MONOTONIC, Boolean.FALSE );
         return result;
     }
 
