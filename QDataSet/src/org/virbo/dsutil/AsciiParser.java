@@ -55,6 +55,10 @@ public class AsciiParser {
     final static String decimalRegex = numberPart;
     int skipLines;
     boolean skipColumnHeader = false;
+    /**
+     * regular expression identifying the end of the header, or null.
+     */
+    String headerDelimiter1 = null;
     int recordCountLimit = Integer.MAX_VALUE;
     int fieldCount;
     public final static Pattern NAME_COLON_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\:\\s*(.+)\\s*");
@@ -74,15 +78,15 @@ public class AsciiParser {
     }
 
     /**
-     * configure the parser to split on a delimRegex.  For example,
-     *   " +"    one or more spaces
-     *   "\t"    tab
-     *   "\\s*"  whitespace
-     *   ","    comma
-     * see DELIM_COMMA, DELIM_WHITESPACE, etc.
+     * returns true if the line is a header or comment.
+     * @param iline the line number in the file, starting with 0.
+     * @param lastLine the last line read.
+     * @param thisLine the line we are testing.
+     * @param recCount the number of records successfully read.
+     * @return true if the line is a header line.
      */
-    public RecordParser setDelimParser(String filename, String delimRegex) throws IOException {
-        return setDelimParser(new FileReader(filename), delimRegex);
+    private final boolean isHeader(int iline, String lastLine, String thisLine, int recCount) {
+        return (iline < skipLines || (headerDelimiter != null && recCount == 0 && (lastLine == null || !Pattern.compile(headerDelimiter).matcher(lastLine).find())) || (commentPrefix != null && thisLine.startsWith(commentPrefix)));
     }
 
     /**
@@ -94,14 +98,25 @@ public class AsciiParser {
      * @return the first line after skip lines and comment lines.
      */
     public String readFirstRecord(String filename) throws IOException {
-        BufferedReader reader = new LineNumberReader(new FileReader(filename));
+        return readFirstRecord(new BufferedReader(new FileReader(filename)));
+    }
+
+    /**
+     * return the first line of the freshly opened file.
+     * @param reader
+     * @return
+     * @throws java.io.IOException
+     */
+    public String readFirstRecord(BufferedReader reader) throws IOException {
 
         String line;
+        String lastLine = null;
 
         int iline = 0;
         line = reader.readLine();
 
-        while ( line != null && ( iline < skipLines || (commentPrefix != null && line.startsWith(commentPrefix)) ) ) {
+        while (line != null && isHeader(iline, lastLine, line, 0)) {
+            lastLine = line;
             line = reader.readLine();
             iline++;
         }
@@ -123,10 +138,12 @@ public class AsciiParser {
         BufferedReader reader = new LineNumberReader(new FileReader(filename));
 
         String line;
+        String lastLine = null;
 
         line = reader.readLine();
         int iline = 0;
-        while (iline < skipLines || (commentPrefix != null && line.startsWith(commentPrefix))) {
+        while (line != null && isHeader(iline, lastLine, line, 0)) {
+            lastLine = line;
             line = reader.readLine();
             iline++;
         }
@@ -170,9 +187,22 @@ public class AsciiParser {
     /**
      * The DelimParser splits each record into fields using a delimiter like ","
      * or "\\s+".
+     *
+     * @param filename filename to read in.
+     * @param delim the delimiter, such as "," or "\t" or "\s+"
+     * @return the record parser that will split each line into fields
+     * @throws java.io.IOException
+     */
+    public DelimParser setDelimParser(String filename, String delim) throws IOException {
+        return setDelimParser(new FileReader(filename), delim);
+    }
+
+    /**
+     * The DelimParser splits each record into fields using a delimiter like ","
+     * or "\\s+".
      * @param in
-     * @param delimRegex
-     * @return
+     * @param delimRegex the delimiter, such as "," or "\t" or "\s+"
+     * @return the record parser that will split each line into fields
      * @throws java.io.IOException
      */
     public DelimParser setDelimParser(Reader in, String delimRegex) throws IOException {
@@ -181,10 +211,7 @@ public class AsciiParser {
 
         String line;
 
-        line = reader.readLine();
-        for (int i = 0; i < skipLines; i++) {
-            line = reader.readLine();
-        }
+        line = readFirstRecord(reader);
         reader.close();
 
         DelimParser result = createDelimParser(line, delimRegex);
@@ -243,10 +270,7 @@ public class AsciiParser {
 
         String line;
 
-        line = reader.readLine();
-        for (int i = 0; i < skipLines; i++) {
-            line = reader.readLine();
-        }
+        line = readFirstRecord(reader);
         reader.close();
 
         int[] columnOffsets;
@@ -414,14 +438,26 @@ public class AsciiParser {
     public void setCommentPrefix(String comment) {
         this.commentPrefix = comment;
     }
+    protected String headerDelimiter = null;
+    public static final String PROP_HEADERDELIMITER = "headerDelimiter";
+
+    public String getHeaderDelimiter() {
+        return headerDelimiter;
+    }
+
+    public void setHeaderDelimiter(String headerDelimiter) {
+        String oldHeaderDelimiter = this.headerDelimiter;
+        this.headerDelimiter = headerDelimiter;
+        propertyChangeSupport.firePropertyChange(PROP_HEADERDELIMITER, oldHeaderDelimiter, headerDelimiter);
+    }
 
     /**
      * Parse the stream using the current settings.
      */
     public WritableDataSet readStream(Reader in, ProgressMonitor mon) throws IOException {
-        return readStream( in, null, mon );
+        return readStream(in, null, mon);
     }
-    
+
     /**
      * read in the stream, including the first record if non-null.
      * @param in
@@ -431,9 +467,11 @@ public class AsciiParser {
      * @return
      * @throws java.io.IOException
      */
-    public WritableDataSet readStream( Reader in, String firstRecord, ProgressMonitor mon) throws IOException {
+    public WritableDataSet readStream(Reader in, String firstRecord, ProgressMonitor mon) throws IOException {
         BufferedReader reader = new BufferedReader(in);
-        String line;
+        String line = null;
+        String lastLine = null;
+
         int iline = 0;
         int irec = 0;
 
@@ -443,73 +481,78 @@ public class AsciiParser {
         builder.setFillValue(fillValue);
         builder.setValidMax(validMax);
         builder.setValidMin(validMin);
-        
+
         long bytesRead = 0;
 
         StringBuffer headerBuffer = new StringBuffer();
-        
+
         int skipInt = skipLines + (skipColumnHeader ? 1 : 0);
 
-        if ( firstRecord!=null ) {
-            line= firstRecord;
-            firstRecord= null;
+        lastLine = line;
+        if (firstRecord != null) {
+            line = firstRecord;
+            firstRecord = null;
         } else {
-            line= reader.readLine();
+            line = reader.readLine();
         }
-        
+
         Matcher m;
-        while ( line != null ) {
+        while (line != null) {
             bytesRead += line.length() + 1; // +1 is for end-of-line
             iline++;
 
-            if ( irec == this.recordCountLimit || mon.isCancelled() ) {
+            if (irec == this.recordCountLimit || mon.isCancelled()) {
                 break;
             }
-            
+
             mon.setTaskProgress(bytesRead);
-            if (iline % 100 == 0) {
+            if (iline % 100 == 0) { // decimate to avoid excessive String work
                 mon.setProgressMessage("reading line " + iline);
             }
-            try {
-                if (iline <= skipInt || (commentPrefix != null && line.startsWith(commentPrefix))) {
-                    if ((commentPrefix != null && line.startsWith(commentPrefix))) {
-                        line = line.substring(commentPrefix.length());
-                    }
-                    if (propertyPattern != null && (m = propertyPattern.matcher(line)).matches()) {
-                        builder.putProperty(m.group(1).trim(), m.group(2).trim());
-                    } else {
-                        if (keepFileHeader) {
-                            headerBuffer.append(line).append("\n");
-                        }
-                    }
-                    continue;
-                }
-                
-                if (firstRecord == null) {
-                    firstRecord = line;
-                }
-                
-                // *** here's where we parse each record ***
-                if (recordParser.tryParseRecord(line, irec, builder)) {
-                    irec++;
-                    builder.nextRecord();
 
-                } else {
-                    //System.out.println(line);
+            if (isHeader(iline, lastLine, line, irec)) {
+                if ((commentPrefix != null && line.startsWith(commentPrefix))) {
+                    line = line.substring(commentPrefix.length());
                 }
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
+                if (propertyPattern != null && (m = propertyPattern.matcher(line)).matches()) {
+                    builder.putProperty(m.group(1).trim(), m.group(2).trim());
+                } else {
+                    if (keepFileHeader) {
+                        headerBuffer.append(line).append("\n");
+                    }
+                }
+                
+            } else {
+                try {
+
+                    if (firstRecord == null) {
+                        firstRecord = line;
+                    }
+
+                    // *** here's where we parse each record ***
+                    if (recordParser.tryParseRecord(line, irec, builder)) {
+                        irec++;
+                        builder.nextRecord();
+
+                    } else {
+                        //System.out.println(line);
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
             }
-            
-            line= reader.readLine();
+
+            lastLine = line;
+            line = reader.readLine();
         }
-        
+
         mon.finished();
 
-        String header= headerBuffer.toString();
-        builder.putProperty( PROPERTY_FILE_HEADER, header );
-        builder.putProperty( PROPERTY_FIRST_RECORD, firstRecord );
-        builder.putProperty( QDataSet.USER_PROPERTIES, new HashMap(builder.properties) );
+        String header = headerBuffer.toString();
+        builder.putProperty(PROPERTY_FILE_HEADER, header);
+        builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
+        builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
 
         return builder.getDataSet();
     }
@@ -575,18 +618,17 @@ public class AsciiParser {
      * @param regex regular expression like \\s+
      * @return string array containing the fields.
      */
-    private static final String[] split( String string, String regex ) {
-        String[] ss= string.trim().split(regex);
-        if ( string.endsWith(regex) ) {
-            String[] ss1= new String[ss.length+1];
-            System.arraycopy( ss, 0, ss1, 0, ss.length );
-            ss1[ss1.length-1]= "";
-            ss= ss1;
+    private static final String[] split(String string, String regex) {
+        String[] ss = string.trim().split(regex);
+        if (string.endsWith(regex)) {
+            String[] ss1 = new String[ss.length + 1];
+            System.arraycopy(ss, 0, ss1, 0, ss.length);
+            ss1[ss1.length - 1] = "";
+            ss = ss1;
         }
         return ss;
     }
-    
-    
+
     /**
      * hide the nuances of java's split function.  When the string endswith the
      * regex, add an empty field.  Also, trim the string so leading and trailing
@@ -598,18 +640,17 @@ public class AsciiParser {
      * @param regex regular expression like \\s+
      * @return string array containing the fields.
      */
-    private static final String[] split( String string, Pattern delimPattern, String delimRegex ) {
-        String[] ss= delimPattern.split(string.trim());
-        if ( string.endsWith(delimRegex) ) {
-            String[] ss1= new String[ss.length+1];
-            System.arraycopy( ss, 0, ss1, 0, ss.length );
-            ss1[ss1.length-1]= "";
-            ss= ss1;
+    private static final String[] split(String string, Pattern delimPattern, String delimRegex) {
+        String[] ss = delimPattern.split(string.trim());
+        if (string.endsWith(delimRegex)) {
+            String[] ss1 = new String[ss.length + 1];
+            System.arraycopy(ss, 0, ss1, 0, ss.length);
+            ss1[ss1.length - 1] = "";
+            ss = ss1;
         }
         return ss;
     }
 
-    
     /**
      * create a delimeter-based record parser by splitting the line and counting
      * the number of fields.  If the line appears to contain column headings,
@@ -622,7 +663,7 @@ public class AsciiParser {
      */
     private DelimParser createDelimParser(String line, String fieldSep) {
 
-        String[] ss = split( line.trim(), fieldSep );
+        String[] ss = split(line.trim(), fieldSep);
 
         fieldCount = ss.length;
         fieldParsers = new FieldParser[fieldCount];
@@ -635,12 +676,14 @@ public class AsciiParser {
             units[i] = Units.dimensionless;
             fieldParsers[i] = DOUBLE_PARSER;
             Matcher m;
-            if ( ( m = COLUMN_HEADER_PATTERN.matcher(ss[i])).matches() ) {
+            if ((m = COLUMN_HEADER_PATTERN.matcher(ss[i])).matches()) {
                 fieldNames[i] = m.group(1).trim().replaceAll(" ", "_");
             // TODO: check for units too.
             // if ( m.groupCount() is 2) String u= m.group(2).trim()
             } else {
-                if ( isColumnHeaders ) logger.finest("first parsed line does not appear to be column header because of field #" + i + ": " + ss[i]);
+                if (isColumnHeaders) {
+                    logger.finest("first parsed line does not appear to be column header because of field #" + i + ": " + ss[i]);
+                }
                 isColumnHeaders = false;
             }
         }
@@ -698,9 +741,9 @@ public class AsciiParser {
             int failCount = 0;
             int ipos = 0;
 
-            String[] ss = line.trim().split( delimRegex, -2 );
+            String[] ss = line.trim().split(delimRegex, -2);
 
-            if ( ss.length != fieldCount ) {
+            if (ss.length != fieldCount) {
                 return false;
             }
 
@@ -725,7 +768,7 @@ public class AsciiParser {
         }
 
         public int fieldCount(String line) {
-            return fields( line ).length;
+            return fields(line).length;
         }
 
         public void setSkipField(int ifield, boolean skip) {
@@ -733,7 +776,7 @@ public class AsciiParser {
         }
 
         public String[] fields(String line) {
-            String[] ss = line.split( delimRegex, -2 );
+            String[] ss = line.split(delimRegex, -2);
             return ss;
         }
     }
@@ -1049,7 +1092,6 @@ public class AsciiParser {
         this.fillValue = fillValue;
         propertyChangeSupport.firePropertyChange("fillValue", new Double(oldFillValue), new Double(fillValue));
     }
-    
     protected double validMin = Double.NEGATIVE_INFINITY;
     public static final String PROP_VALIDMIN = "validMin";
 
@@ -1062,7 +1104,6 @@ public class AsciiParser {
         this.validMin = validMin;
         propertyChangeSupport.firePropertyChange(PROP_VALIDMIN, oldValidMin, validMin);
     }
-    
     protected double validMax = Double.POSITIVE_INFINITY;
     public static final String PROP_VALIDMAX = "validMax";
 
@@ -1075,6 +1116,4 @@ public class AsciiParser {
         this.validMax = validMax;
         propertyChangeSupport.firePropertyChange(PROP_VALIDMAX, oldValidMax, validMax);
     }
-
-
 }
