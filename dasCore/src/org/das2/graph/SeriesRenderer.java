@@ -371,7 +371,7 @@ public class SeriesRenderer extends Renderer  {
             
 
             /* fuzz the xSampleWidth */
-            xSampleWidth = xSampleWidth * 1.10;
+            xSampleWidth = xSampleWidth * 1.20;
 
             double x = Double.NaN;
             double y = Double.NaN;
