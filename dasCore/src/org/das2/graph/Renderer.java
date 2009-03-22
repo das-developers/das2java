@@ -474,15 +474,15 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         this.overloading = overloading;
         update();
     }
-    /**
-     * Holds value of property active.
-     */
-    private boolean active = true;
+
 
     /**
-     * Getter for property active.
-     * @return Value of property active.
+     * display the renderer.  This is allows renderer to be disabled without removing them from the application.
      */
+    public static final String PROP_ACTIVE = "active";
+
+    private boolean active = true;
+
     public boolean isActive() {
         return this.active;
     }
