@@ -587,9 +587,20 @@ public class AsciiParser {
          * return the string for each field.  This is useful
          * for discovery, and is not used in the bulk parsing.
          * @param line
+         * @deprecated, use splitRecord instead
          * @return
          */
         String[] fields(String line);
+
+        /**
+         * attempts to extract fields from the record, returning true if
+         * the record could be split.
+         * @param line
+         * @param fields array to store the fields.  fieldCount() should be used
+         * to determine the length of the array.
+         * @return true if the line is a record that can be split into fields.
+         */
+        boolean splitRecord( String line, String[] fields );
     }
 
     public static interface FieldParser {
@@ -750,9 +761,8 @@ public class AsciiParser {
             int failCount = 0;
             int ipos = 0;
 
-            String[] ss = line.trim().split(delimRegex, -2);
-
-            if (ss.length != fieldCount) {
+            String[] ss = new String[fieldCount];
+            if ( !splitRecord(line, ss ) ) {
                 return false;
             }
 
@@ -785,8 +795,18 @@ public class AsciiParser {
         }
 
         public String[] fields(String line) {
-            String[] ss = line.split(delimRegex, -2);
+            String[] ss = line.trim().split(delimRegex, -2);
             return ss;
+        }
+
+        public boolean splitRecord(String line, String[] fields) {
+            String[] ss = line.trim().split(delimRegex, -2);
+            if ( ss.length==fieldCount ) {
+                System.arraycopy( ss, 0, fields, 0, fieldCount );
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -848,6 +868,19 @@ public class AsciiParser {
                 fields[i] = m.group(i + 1);
             }
             return fields;
+        }
+
+        public boolean splitRecord( String line, String[] fields ) {
+            Matcher m;
+            m = recordPattern.matcher(line);
+            if ( m.matches() ) {
+                for (int i = 0; i < fieldCount; i++) {
+                    fields[i] = m.group(i + 1);
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -922,6 +955,17 @@ public class AsciiParser {
                 result[i] = line.substring(columnOffsets[i], columnOffsets[i] + columnWidths[i]);
             }
             return result;
+        }
+
+        public boolean splitRecord(String line, String[] fields) {
+            if ( line.length() >= columnOffsets[fieldCount-1] + columnWidths[fieldCount-1] ) {
+                for (int i = 0; i < fieldCount; i++) {
+                    fields[i] = line.substring(columnOffsets[i], columnOffsets[i] + columnWidths[i]);
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
