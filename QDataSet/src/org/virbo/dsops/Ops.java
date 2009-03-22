@@ -334,7 +334,7 @@ public class Ops {
             }
             it1.putValue(result, w > 0 ? s : fill);
         }
-
+        sliceProperties( dim, ds, result );
         return result;
     }
 
