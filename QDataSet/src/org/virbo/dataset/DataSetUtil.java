@@ -320,6 +320,10 @@ public class DataSetUtil {
             }
         }
 
+        if ( ipeak==0 && hist.value(1)>peakv/2 ) {
+            return null;  // this is characteristic to log spacing.
+        }
+
         double ss=0;
         double nn=0;
 
