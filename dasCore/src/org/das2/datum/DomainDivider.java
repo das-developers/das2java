@@ -1,13 +1,14 @@
 package org.das2.datum;
 
 /**
- * Divides a given range of input values into useful intervals  This can be
+ * Divides a given range of input values into useful intervals.  This can be
  * used, for example, to determine the locations of tick marks on an axis.
  * Implementations will vary their behavior based on a number of factors including
  * the type of data in question.
  * <p>
  * Note that the intervals need not be uniformly sized.  For example, this would
- * be the case when dividing a time interval into months.
+ * be the case when dividing a time interval into months, or into log spaced
+ * intervals.
  * <p>
  * Implemenations should have protected constructors so factory methods in
  * <code>DomainDividerUtil</code> can access them.
@@ -46,7 +47,8 @@ public interface DomainDivider {
 
     /**
      * Compute the number of intervals produced by this <code>DomainDivider</code>
-     * on the given range.
+     * on the given range.  This allows the DomainDivider to indicate the number
+     * of intervals (e.g. a zillion) without having to enumerate them.
      * @param min
      * @param max
      * @return
