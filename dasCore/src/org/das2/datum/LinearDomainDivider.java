@@ -71,8 +71,8 @@ public class LinearDomainDivider implements DomainDivider {
         long nb = boundaryCount(min,max);
         //this limit is kind of arbitrary, but we need something
         //should it be a different exception? sublclass?
-        if (nb > 1024)
-            throw new IndexOutOfBoundsException("LinearDomainDivider: too many divisions requested");
+        if (nb > MAX_BOUNDARIES )
+            throw new IllegalArgumentException("LinearDomainDivider: too many divisions requested ("+boundaryCount(min, max)+")");
         double[] values = new double[(int)nb];
         double intervalSize = Math.pow(incSignificand, incExponent);
 
@@ -92,8 +92,8 @@ public class LinearDomainDivider implements DomainDivider {
 
     public long boundaryCount(Datum min, Datum max) {
         double intervalSize = Math.pow(incSignificand, incExponent);
-        long mmin = (long)Math.floor(min.doubleValue()/intervalSize);
-        long mmax = (long)Math.ceil(max.doubleValue()/intervalSize);
+        long mmin = (long)Math.ceil(min.doubleValue()/intervalSize);
+        long mmax = (long)Math.floor(max.doubleValue()/intervalSize);
 
         return mmax - mmin + 1;
     }
