@@ -303,8 +303,10 @@ public class GrannyTextRenderer {
         Stack saveStack = new Stack();
         
         for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].charAt(0) == '!') {
-                switch (tokens[i].charAt(1)) {
+            String str = tokens[i];
+            if ( !str.equals("!!") && str.charAt(0) == '!') {
+                if ( str.length()==1 ) break;
+                switch (str.charAt(1)) {
                     case 'A':
                     case 'a':
                         current.sub= SUB_A;
@@ -424,18 +426,19 @@ public class GrannyTextRenderer {
                         break;
                     default:break;
                 }
+                if ( str.equals("!!") ) str= "!";
                 if (draw) {
                     g.setFont(font);
-                    g.drawString(tokens[i], current.x, y);
-                    current.x += g.getFontMetrics(font).stringWidth(tokens[i]);
+                    g.drawString(str, current.x, y);
+                    current.x += g.getFontMetrics(font).stringWidth(str);
                     //bounds.translate((int)ix,(int)iy);
                     //g.draw(bounds);  //useful for debugging
                     //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
                 } else {
                     FontMetrics fm= ig.getFontMetrics(font);
                     bounds.add(current.x, y+fm.getDescent());
-                    bounds.add(current.x+fm.stringWidth(tokens[i]),y-fm.getAscent() ); // removed -5.0 pixels
-                    current.x += ig.getFontMetrics(font).stringWidth(tokens[i]);
+                    bounds.add(current.x+fm.stringWidth(str),y-fm.getAscent() ); // removed -5.0 pixels
+                    current.x += ig.getFontMetrics(font).stringWidth(str);
                 }
             }
         } // for (int i = 0; i < tokens.length; i++)
@@ -453,6 +456,7 @@ public class GrannyTextRenderer {
             begin = end;
             if (str.charAt(begin) == '!') {
                 end = begin + 2;
+                if ( end>=str.length() ) end= str.length();
             } else {
                 end = str.indexOf('!', begin);
                 if (end == -1) end = str.length();
