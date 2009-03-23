@@ -36,7 +36,9 @@ public interface DomainDivider {
      * @return the new DomainDivider object
      */
     public DomainDivider finerDivider(boolean superset);
-   
+
+    public final int MAX_BOUNDARIES=1000000;
+    
     /**
      * Returns the boundaries between intervals on the given data range.
      * @param min
