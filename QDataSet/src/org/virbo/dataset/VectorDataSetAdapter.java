@@ -67,14 +67,9 @@ public class VectorDataSetAdapter implements VectorDataSet {
             properties.put( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
         }
         
-        Double cadence= (Double) x.property( QDataSet.CADENCE );
+        RankZeroDataSet cadence= (RankZeroDataSet) x.property( QDataSet.CADENCE );
         if ( cadence!=null ) {
-            Datum dcadence;
-            if ( "log".equals( x.property(QDataSet.SCALE_TYPE) ) ) {
-                dcadence= Units.logERatio.createDatum(cadence);
-            } else {
-                dcadence= xunits.getOffsetUnits().createDatum( cadence.doubleValue() );
-            }
+            Datum dcadence= DataSetUtil.asDatum(cadence);
             properties.put( org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence );
         }
                 

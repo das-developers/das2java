@@ -33,6 +33,16 @@ import org.virbo.dataset.WeightsDataSet;
  */
 public final class AutoHistogram {
 
+    public static final String USER_PROP_BIN_START = "binStart";
+    public static final String USER_PROP_BIN_WIDTH = "binWidth";
+    public static final String USER_PROP_INVALID_COUNT = "invalidCount";
+    public static final String USER_PROP_OUTLIERS = "outliers";
+
+    /**
+     * Long, total number of valid points.
+     */
+    public static final String USER_PROP_TOTAL = "total";
+    
     public final int BIN_COUNT = 100;
     private final int INITIAL_BINW = 1;
     private final double INITIAL_BINW_DENOM = 1E30;
@@ -114,11 +124,11 @@ public final class AutoHistogram {
         dep0.putProperty(QDataSet.UNITS, units);
         result.putProperty(DDataSet.DEPEND_0, dep0);
         Map<String, Object> user = new HashMap<String, Object>();
-        user.put("binStart", firstb);
-        user.put("binWidth", binw / binwDenom);
-        user.put("total", total);
-        user.put("outliers", outliers);
-        user.put("invalid", invalidCount);
+        user.put( USER_PROP_BIN_START,firstb);
+        user.put( USER_PROP_BIN_WIDTH, binw / binwDenom);
+        user.put( USER_PROP_TOTAL,total);
+        user.put( USER_PROP_OUTLIERS,outliers);
+        user.put( USER_PROP_INVALID_COUNT,invalidCount);
         int outlierCount = 0;
         for (int i : outliers.values()) {
             outlierCount += i;

@@ -415,7 +415,7 @@ public class DataSetOps {
         tags.putProperty( QDataSet.TITLE, ds.property(QDataSet.TITLE) );
         tags.putProperty( QDataSet.TYPICAL_MAX, ds.property(QDataSet.TYPICAL_MAX) );
         tags.putProperty( QDataSet.TYPICAL_MIN, ds.property(QDataSet.TYPICAL_MIN) );
-        tags.putProperty( QDataSet.CADENCE, binsize );
+        tags.putProperty( QDataSet.CADENCE, DRank0DataSet.create(binsize) );
         
         final int[] hits = new int[n];
         int maxFreq= 0;

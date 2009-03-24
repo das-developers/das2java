@@ -64,10 +64,12 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             }
             mroot.insert( nextChild, mroot.getChildCount() ); 
         }
-        
-        MutableTreeNode values= new DefaultMutableTreeNode("values");        
-        ValuesTreeModel.valuesTreeNode( "value(", values, ds ,valuesSizeLimit);
-        mroot.insert( values, mroot.getChildCount() );
+
+        if ( ds.rank()>0 ) {
+            MutableTreeNode values= new DefaultMutableTreeNode("values");
+            ValuesTreeModel.valuesTreeNode( "value(", values, ds ,valuesSizeLimit);
+            mroot.insert( values, mroot.getChildCount() );
+        }
     }
     
     

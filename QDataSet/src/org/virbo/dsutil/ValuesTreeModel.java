@@ -13,6 +13,7 @@ import javax.swing.tree.TreeNode;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dsops.Ops;
 
 /**
@@ -109,7 +110,10 @@ public class ValuesTreeModel extends DefaultTreeModel {
         Units depu= dep0==null ? Units.dimensionless : (Units) dep0.property(QDataSet.UNITS);
         if ( depu==null ) depu= Units.dimensionless;
 
-        if ( ds.rank()==1 ) {
+        if ( ds.rank()==0 ) {
+            String sval= DataSetUtil.asDatum((RankZeroDataSet)ds).toString();
+            aroot.insert(  new DefaultMutableTreeNode( prefix+")="+sval), aroot.getChildCount() );
+        } else if ( ds.rank()==1 ) {
             Units units= (Units) ds.property(QDataSet.UNITS);
             if ( units==null ) units= Units.dimensionless;
             for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {

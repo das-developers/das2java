@@ -23,12 +23,14 @@ import java.util.Random;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetAdapter;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
@@ -1378,7 +1380,7 @@ public class Ops {
             }
         }
 
-        builder.putProperty(QDataSet.CADENCE, 1.0);
+        builder.putProperty(QDataSet.CADENCE, DataSetUtil.asDataSet(1.0) );
 
         return builder.getDataSet();
     }
@@ -1448,10 +1450,10 @@ public class Ops {
         }
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-        Double cadence = dep0 == null ? 1.0 : DataSetUtil.guessCadenceNew(dep0,null);
+        RankZeroDataSet cadence = dep0 == null ? DRank0DataSet.create(1.0) : DataSetUtil.guessCadenceNew(dep0,null);
         if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
 
-        double[] tags = FFTUtil.getFrequencyDomainTags(cadence, ds.length());
+        double[] tags = FFTUtil.getFrequencyDomainTags(cadence.value(), ds.length());
         result.putProperty(QDataSet.DEPEND_0, DDataSet.wrap(tags));
 
         EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");

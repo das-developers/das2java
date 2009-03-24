@@ -74,25 +74,15 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
             properties.put(org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
         }
         
-        Double cadence= (Double) x.property( QDataSet.CADENCE,0 );
+        RankZeroDataSet cadence= (RankZeroDataSet) x.property( QDataSet.CADENCE,0 );
         if ( cadence!=null ) {
-            Datum dcadence;
-            if ( "log".equals( x.property(QDataSet.SCALE_TYPE,0) ) ) {
-                dcadence= Units.logERatio.createDatum(cadence);
-            } else {
-                dcadence= xunits.getOffsetUnits().createDatum( cadence.doubleValue() );
-            }
+            Datum dcadence= DataSetUtil.asDatum(cadence);
             properties.put( org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence );
         }
                 
-        cadence = (Double) y.property(QDataSet.CADENCE,0);
+        cadence = (RankZeroDataSet) y.property(QDataSet.CADENCE,0);
         if ( cadence!=null ) {
-            Datum dcadence;
-            if ( "log".equals( y.property(QDataSet.SCALE_TYPE,0) ) ) {
-                dcadence= Units.logERatio.createDatum(cadence);
-            } else {
-                dcadence= xunits.getOffsetUnits().createDatum( cadence.doubleValue() );
-            }
+            Datum dcadence= DataSetUtil.asDatum(cadence);
             properties.put( org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, dcadence );
         }
 

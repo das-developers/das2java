@@ -144,7 +144,7 @@ public interface QDataSet {
     public final static String WEIGHTS_PLANE="WEIGHTS";
     
     /**
-     * Double, the expected distance between successive measurements where it is valid to make inferences about the data.
+     * RankZeroDataSet, the expected distance between successive measurements where it is valid to make inferences about the data.
      * For example, interpolation is disallowed for points 1.5*CADENCE apart.
      * This property only makes sense with a tags dataset.
      */

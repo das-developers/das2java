@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.das2.datum.Datum;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
 
@@ -40,7 +41,7 @@ public class DataSetUtil {
                 return i * cadence + start;
             }
         };
-        result.putProperty(QDataSet.CADENCE, Double.valueOf(cadence));
+        result.putProperty( QDataSet.CADENCE, DRank0DataSet.create(cadence) );
         if ( cadence<0 ) result.putProperty( QDataSet.MONOTONIC, Boolean.FALSE );
         return result;
     }
@@ -244,9 +245,20 @@ public class DataSetUtil {
     }*/
     public static String toString(QDataSet ds) {
 
+        Units u= (Units)ds.property(QDataSet.UNITS);
+        if ( u==null ) u= Units.dimensionless;
+
         String name = (String) ds.property(QDataSet.NAME);
         if (name == null) {
             name = "dataSet";
+        }
+
+        if ( ds.rank()==0 ) {
+            if ( name.equals("dataSet") ) {
+                return String.valueOf( DataSetUtil.asDatum((RankZeroDataSet)ds) );
+            } else {
+                return name + "=" + DataSetUtil.asDatum((RankZeroDataSet)ds) ;
+            }
         }
 
         String qubeStr = DataSetUtil.isQube(ds) ? "" : "*";
@@ -275,22 +287,28 @@ public class DataSetUtil {
             dimStr.append("," + depNames[2] + ds.length(0, 0) + qubeStr);
         }
 
-        Units u= (Units)ds.property(QDataSet.UNITS);
-        if ( u==null ) u= Units.dimensionless;
         String su = String.valueOf(u);
         if ( su.equals("")) {
             su = "dimensionless";
         }
         
-        if ( ds.rank()>0 ) {
-            return name + "[" + dimStr.toString() + "] (" + su + ")";
-        } else {
-            return name + "=" + u.createDatum(((RankZeroDataSet)ds).value());
-        }
+        return name + "[" + dimStr.toString() + "] (" + su + ")";
+       
     }
 
-    public static Double guessCadenceNew( QDataSet xds, QDataSet yds) {
-        Double d= (Double) xds.property( QDataSet.CADENCE );
+    /**
+     * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
+     * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
+     * @param xds
+     * @param yds
+     * @return null or the cadence in a rank 0 dataset.  The following may be
+     *    properties of the result:
+     *    SCALE_TYPE  may be "log"
+     *    UNITS       will be ratiometric unit when the SCALE_TYPE is log, and
+     *       will be the offset unit for interval units like Units.t2000.
+     */
+    public static RankZeroDataSet guessCadenceNew( QDataSet xds, QDataSet yds) {
+        RankZeroDataSet d= (RankZeroDataSet) xds.property( QDataSet.CADENCE );
         if ( d!=null ) {
             return d;
         }
@@ -303,25 +321,56 @@ public class DataSetUtil {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
 
-        double cadence = Double.MAX_VALUE;
-
-        if ( xds.length()<2 ) return cadence;
+        if ( xds.length()<2 ) return null;
 
         AutoHistogram ah= new AutoHistogram();
-        QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds));
+        QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
+
+        long total= (Long)( ((Map<String,Object>)hist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
 
         int ipeak=0;
         int peakv=(int) hist.value(0);
 
+        int imedian=-1;
+        int t=0;
+
         for ( int i=0; i<hist.length(); i++ ) {
+            t+= hist.value(i);
             if ( hist.value(i)>peakv ) {
                 ipeak=i;
                 peakv= (int) hist.value(i);
             }
+            if ( imedian==-1 && t>total/2 ) {
+                imedian= i;
+            }
         }
 
-        if ( ipeak==0 && hist.value(1)>peakv/2 ) {
-            return null;  // this is characteristic to log spacing.
+        boolean log= false;
+        if ( ipeak==0 ) {
+            ah= new AutoHistogram();
+            QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
+            int lpeak=0;
+            int lpeakv=(int) loghist.value(0);
+            int lmedian=-1;
+            t=0;
+
+            for ( int i=0; i<loghist.length(); i++ ) {
+                t+= loghist.value(i);
+                if ( loghist.value(i)>lpeakv ) {
+                    lpeak=i;
+                    lpeakv= (int) loghist.value(i);
+                }
+                if ( lmedian==-1 && t>total/2 ) {
+                    lmedian= i;
+                }
+            }
+
+            if ( lpeak>0 && (1.*lmedian/loghist.length() > 1.*imedian/hist.length() ) ) {
+                hist= loghist;
+                ipeak= lpeak;
+                peakv= lpeakv;
+                log= true;
+            }
         }
 
         double ss=0;
@@ -347,8 +396,19 @@ public class DataSetUtil {
             }
         }
 
-        return ss/nn;
+        if ( log ) {
+            MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
+            result.putProperty( QDataSet.UNITS, Units.logERatio );
+            result.putProperty( QDataSet.SCALE_TYPE, "log" );
+            return (RankZeroDataSet)result;
+        } else {
+            Units u= (Units) xds.property( QDataSet.UNITS );
 
+            MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
+            result.putProperty( QDataSet.UNITS, u.getOffsetUnits() );
+        
+            return (RankZeroDataSet)result;
+        }
     }
 
 
@@ -360,14 +420,19 @@ public class DataSetUtil {
      * as the ratiometric spacing in natural log space.  
      * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
      * Math.log( xds.value(1) / xds.value(0) )
-     * 
+     *
+     * @deprecated  use guessCadenceNew which is more robust.
      * @return double in the units of xds's units.getOffsetUnits(), or null if
      * no cadence is detected.
      */
     public static Double guessCadence(QDataSet xds, QDataSet yds) {
-        Double d= (Double) xds.property( QDataSet.CADENCE );
+        RankZeroDataSet d= (RankZeroDataSet) xds.property( QDataSet.CADENCE );
         if ( d!=null ) {
-            return d;
+            if ( "log".equals(xds.property(QDataSet.SCALE_TYPE)) ) {
+                return DataSetUtil.asDatum(d).doubleValue(Units.logERatio);
+            } else {
+                return d.value();
+            }
         }
         
         if (yds == null) {
@@ -726,5 +791,40 @@ public class DataSetUtil {
         wrds.putProperty(QDataSet.FILL_VALUE, fill);
         return wrds;
     }
+
+    /**
+     * get the value of the rank 0 dataset in the specified units.
+     * For example, value( ds, Units.km )
+     * @param ds
+     * @param tu target units
+     * @return the double in target units.
+     */
+    public static double value( RankZeroDataSet ds, Units tu ) {
+        Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u==null ) {
+            return ds.value();
+        } else {
+            return u.convertDoubleTo(tu, ds.value() );
+        }
+    }
+
+    public static Datum asDatum( RankZeroDataSet ds ) {
+        Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u==null ) {
+            return Units.dimensionless.createDatum(ds.value());
+        } else {
+            return u.createDatum(ds.value());
+        }
+    }
+
+    public static RankZeroDataSet asDataSet( double d ) {
+        return DRank0DataSet.create(d);
+    }
+
+    public static RankZeroDataSet asDataSet( Datum d ) {
+        return DRank0DataSet.create(d);
+    }
+
 }
+
 

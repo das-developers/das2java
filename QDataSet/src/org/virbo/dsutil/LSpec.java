@@ -11,6 +11,7 @@ package org.virbo.dsutil;
 
 import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.QDataSet;
 
 /**
@@ -174,7 +175,7 @@ public class LSpec {
             }
             xtags.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
             xtags.putProperty( QDataSet.MONOTONIC, org.virbo.dataset.DataSetUtil.isMonotonic(dep0) );
-            xtags.putProperty( QDataSet.CADENCE, 1.5 * guessCadence(xtags,2) );
+            xtags.putProperty( QDataSet.CADENCE, DRank0DataSet.create( 1.5 * guessCadence(xtags,2) ) );
         }
         
         result.putProperty( "sweeps", sweeps );
