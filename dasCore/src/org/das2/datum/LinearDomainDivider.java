@@ -74,24 +74,22 @@ public class LinearDomainDivider implements DomainDivider {
         if (nb > MAX_BOUNDARIES )
             throw new IllegalArgumentException("LinearDomainDivider: too many divisions requested ("+boundaryCount(min, max)+")");
         double[] values = new double[(int)nb];
-        double intervalSize = Math.pow(incSignificand, incExponent);
+        double intervalSize = incSignificand * Math.pow(10, incExponent);
 
         double v = Math.ceil(min.doubleValue()/intervalSize);
-        for (int i=0 ; i < nb ; ++i) {
-            values[i] = v;
-            v += intervalSize;
-        }
+        for (int i=0 ; i < nb ; ++i)
+            values[i] = v + i  * intervalSize;
         return DatumVector.newDatumVector(values, min.getUnits());
     }
 
     public DatumRange rangeContaining(Datum v) {
-        double intervalSize = Math.pow(incSignificand, incExponent);
+        double intervalSize = incSignificand * Math.pow(10, incExponent);
         double min = Math.floor(v.doubleValue()/intervalSize);
         return new DatumRange(min, min + intervalSize, v.getUnits());
     }
 
     public long boundaryCount(Datum min, Datum max) {
-        double intervalSize = Math.pow(incSignificand, incExponent);
+        double intervalSize = incSignificand * Math.pow(10, incExponent);
         long mmin = (long)Math.ceil(min.doubleValue()/intervalSize);
         long mmax = (long)Math.floor(max.doubleValue()/intervalSize);
 
