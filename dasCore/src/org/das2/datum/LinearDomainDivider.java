@@ -76,7 +76,7 @@ public class LinearDomainDivider implements DomainDivider {
         double[] values = new double[(int)nb];
         double intervalSize = Math.pow(incSignificand, incExponent);
 
-        double v = Math.floor(min.doubleValue()/intervalSize);
+        double v = Math.ceil(min.doubleValue()/intervalSize);
         for (int i=0 ; i < nb ; ++i) {
             values[i] = v;
             v += intervalSize;
