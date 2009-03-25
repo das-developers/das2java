@@ -8,7 +8,6 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 public class TreeTableModel extends AbstractTableModel implements TableModel {
@@ -21,10 +20,10 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
         this.root = root;
         this.tree = tree;
         tree.addTreeExpansionListener(new TreeTableTreeListener());
-        TreeModelListener treeModelListener= new TreeTableTreeModelListener();
         tree.getModel().addTreeModelListener(new TreeTableTreeModelListener());
     }
     
+    @Override
     public Class getColumnClass(int columnIndex) {
         return root.getColumnClass(columnIndex);
     }
@@ -33,6 +32,7 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
         return root.getColumnCount();
     }
     
+    @Override
     public String getColumnName(int columnIndex) {
         return root.getColumnName(columnIndex);
     }

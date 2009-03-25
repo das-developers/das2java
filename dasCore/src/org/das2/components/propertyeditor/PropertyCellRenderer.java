@@ -43,7 +43,10 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         boolean writable = table == null || isWritable(table, row);
         setEnabled(writable);
         Component c;
-        if (value instanceof java.awt.Color) {
+        if ( value==PropertyEditor.MULTIPLE ) {
+            setText("multi-value");
+            c= this;
+        } else if (value instanceof java.awt.Color) {
             c = colorRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         } else if (value instanceof Boolean) {
             booleanRenderer.setSelected(((Boolean)value).booleanValue());

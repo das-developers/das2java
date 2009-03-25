@@ -30,7 +30,7 @@ import javax.swing.tree.TreeNode;
  * @author  eew
  */
 public interface TreeTableNode extends TreeNode {
-    
+
     boolean isCellEditable(int columnIndex);
     Object getValueAt(int columnIndex);
     void setValueAt(Object value, int columnIndex);

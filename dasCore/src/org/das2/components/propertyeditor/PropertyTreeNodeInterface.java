@@ -22,6 +22,8 @@ public interface PropertyTreeNodeInterface extends TreeNode, TreeTableNode {
     
     boolean isDirty();
 
+    // this should really be called revert, since it reads the value of the object into
+    // the node.  This is the action that is taken when the "refresh" button is pressed.
     void refresh();
 
     void setTreeModel(DefaultTreeModel treeModel);

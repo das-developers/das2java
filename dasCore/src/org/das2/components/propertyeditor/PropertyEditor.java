@@ -78,6 +78,8 @@ import org.xml.sax.SAXException;
 public class PropertyEditor extends JComponent {
 
     static final Set editableTypes;
+    public final static Object MULTIPLE= new Object();
+
     
 
     static {
@@ -162,6 +164,11 @@ public class PropertyEditor extends JComponent {
     }
 
     public static PropertyEditor createPeersEditor(Object leader, Object[] peers) {
+        Class leaderClass= leader.getClass();
+        for ( int i=0; i<peers.length; i++ ) {
+            if ( !leaderClass.isInstance(peers[i]) )
+                throw new IllegalArgumentException( "children are not instances of leader class" );
+        }
         PropertyTreeNode[] peerNodes = new PropertyTreeNode[peers.length];
         for (int i = 0; i < peers.length; i++) {
             peerNodes[i] = new PropertyTreeNode(peers[i]);

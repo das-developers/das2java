@@ -18,8 +18,10 @@ import javax.swing.tree.TreeNode;
 public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
 
     PeerPropertyTreeNode parent;
+    PeerPropertyTreeNode[] children = null;
     PropertyTreeNode leader;
     PropertyTreeNode[] peers;
+    private DefaultTreeModel treeModel;
 
     public PeerPropertyTreeNode(PeerPropertyTreeNode parent, PropertyTreeNode leader, PropertyTreeNode[] peers) {
         this.parent = parent;
@@ -46,13 +48,26 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
         return leader.getAllowsChildren();
     }
 
-    public TreeNode getChildAt(int childIndex) {
-        // TODO: handle tree structure change
-        PropertyTreeNode[] peerChildren = new PropertyTreeNode[peers.length];
-        for (int i = 0; i < peers.length; i++) {
-            peerChildren[i] = (PropertyTreeNode) peers[i].getChildAt(childIndex);
+    private synchronized void maybeCreateChildren() {
+        if (children == null) {
+            children = new PeerPropertyTreeNode[leader.getChildCount()];
+            for (int childIndex = 0; childIndex < children.length; childIndex++) {
+                // TODO: handle tree structure change
+                PropertyTreeNode[] peerChildren = new PropertyTreeNode[peers.length];
+                for (int i = 0; i < peers.length; i++) {
+                    peerChildren[i] = (PropertyTreeNode) peers[i].getChildAt(childIndex);
+                }
+                PeerPropertyTreeNode child =
+                        new PeerPropertyTreeNode(this, (PropertyTreeNode) leader.getChildAt(childIndex), peerChildren);
+                child.treeModel = treeModel;
+                children[childIndex] = child;
+            }
         }
-        return new PeerPropertyTreeNode(this, (PropertyTreeNode) leader.getChildAt(childIndex), peerChildren);
+    }
+
+    public TreeNode getChildAt(int childIndex) {
+        maybeCreateChildren();
+        return children[childIndex];
     }
 
     public int getChildCount() {
@@ -76,7 +91,13 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
     }
 
     public int getIndex(TreeNode node) {
-        return leader.getIndex(node);
+        maybeCreateChildren();
+        for (int i = 0; i < getChildCount(); i++) {
+            if (node == children[i]) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public TreeNode getParent() {
@@ -112,6 +133,9 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
 
     public void refresh() {
         leader.refresh();
+        for (int i = 0; i < peers.length; i++) {
+            peers[i].refresh();
+        }
     }
 
     public void setValueAt(Object value, int column) {
@@ -122,15 +146,20 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
                 case 0:
                     throw new IllegalArgumentException("Cell is not editable");
                 case 1:
-                    setValue(value);
+                    if (value != PropertyEditor.MULTIPLE) {
+                        setValue(value);
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("No such column: " + column);
             }
         }
+        treeModel.nodeStructureChanged( this );
+        //treeModel.nodeChanged(this); //TODO why not this?
     }
 
     public void setTreeModel(DefaultTreeModel treeModel) {
+        this.treeModel = treeModel;
         for (int i = 0; i < peers.length; i++) {
             peers[i].setTreeModel(treeModel);
         }
@@ -156,7 +185,7 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
                 }
             }
         }
-        return value;
+        return warn ? PropertyEditor.MULTIPLE : value;
     }
 
     public void flush() {
@@ -176,8 +205,10 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
 
     public void setValue(Object value) {
         for (int i = 0; i < peers.length; i++) {
+            System.err.println(value);
             peers[i].setValue(value);
         }
         leader.setValue(value);
+        treeModel.nodeChanged(this);
     }
 }

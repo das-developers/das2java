@@ -16,6 +16,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.util.EventObject;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -64,9 +65,14 @@ public class PropertyEditorAdapter implements TableCellEditor {
         editor = getEditor(pd);
         if (editor == null) {
             cancelCellEditing();
+            return new JLabel();
         }
         else {
-            editor.setValue(value);
+            if ( value==org.das2.components.propertyeditor.PropertyEditor.MULTIPLE ) {
+                editor.setValue(((PeerPropertyTreeNode)node).leader.getValueAt(1));
+            } else {
+                editor.setValue(value);
+            }
         }
         
         if (editor instanceof TableCellEditor) {
@@ -121,6 +127,7 @@ public class PropertyEditorAdapter implements TableCellEditor {
     }
 
     public boolean stopCellEditing() {
+        if (state == null) return false;
         boolean stopped = state.stop();
         if (stopped) {
             fireEditingStopped();
@@ -157,7 +164,7 @@ public class PropertyEditorAdapter implements TableCellEditor {
     
     private static interface EditorState {
         void cancel();
-        boolean stop();
+        boolean stop(); //TODO: document me--return value is rarely used
         Component getEditorComponent(JTable table, boolean selected, int rowIndex, int columnIndex);
     }
     
