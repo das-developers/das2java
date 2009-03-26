@@ -228,12 +228,7 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
             if (dirty) {
                 DasLogger.getLogger( DasLogger.DASML_LOG).fine("flushing property "+absPropertyName()+"="+value );
                 Method writeMethod = propertyDescriptor.getWriteMethod();
-                try {
-                    writeMethod.invoke(parent.value, new Object[]{value});
-                } catch (IllegalArgumentException illegalArgumentException) {
-                    System.err.println("here illegal");
-
-                }
+                writeMethod.invoke(parent.value, new Object[]{value});
                 dirty = false;
             }
             if (childDirty) {

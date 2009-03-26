@@ -154,8 +154,8 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
                     throw new IllegalArgumentException("No such column: " + column);
             }
         }
-        treeModel.nodeStructureChanged( this );
-        //treeModel.nodeChanged(this); //TODO why not this?
+        //treeModel.nodeStructureChanged( this );
+        treeModel.nodeChanged(this); //TODO why not this?
     }
 
     public void setTreeModel(DefaultTreeModel treeModel) {
@@ -205,7 +205,6 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
 
     public void setValue(Object value) {
         for (int i = 0; i < peers.length; i++) {
-            System.err.println(value);
             peers[i].setValue(value);
         }
         leader.setValue(value);
