@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.das2.datum.Datum;
+import org.das2.datum.UnitsUtil;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
 
@@ -345,8 +346,11 @@ public class DataSetUtil {
             }
         }
 
+        Units xunits= (Units) xds.property( QDataSet.UNITS );
+        if ( xunits==null ) xunits= Units.dimensionless;
+
         boolean log= false;
-        if ( ipeak==0 ) {
+        if ( ipeak==0 && UnitsUtil.isRatioMeasurement(xunits) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             int lpeak=0;
@@ -402,10 +406,8 @@ public class DataSetUtil {
             result.putProperty( QDataSet.SCALE_TYPE, "log" );
             return (RankZeroDataSet)result;
         } else {
-            Units u= (Units) xds.property( QDataSet.UNITS );
-
             MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
-            result.putProperty( QDataSet.UNITS, u.getOffsetUnits() );
+            result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
         
             return (RankZeroDataSet)result;
         }
