@@ -89,12 +89,17 @@ public class TreeTableModel extends AbstractTableModel implements TableModel {
     private class TreeTableTreeModelListener implements TreeModelListener {
         
         public void treeNodesChanged(TreeModelEvent e) {
-            TreePath path = new TreePath(e.getPath());
-            int row = tree.getRowForPath(path);
-            TreeTableNode node = (TreeTableNode)path.getLastPathComponent();
-            int count = node.getChildCount();
-            if (row != -1 && tree.isExpanded(row)) {
-                TreeTableModel.this.fireTableRowsUpdated(row + 1, row + count);
+            TreePath path = e.getTreePath();
+            int minRow = Integer.MAX_VALUE;
+            int maxRow = Integer.MIN_VALUE;
+            for (Object child : e.getChildren()) {
+                TreePath childPath = path.pathByAddingChild(child);
+                int row = tree.getRowForPath(childPath);
+                if ( row>-1 && row>maxRow ) maxRow= row;
+                if ( row>-1 && row<minRow ) minRow= row;
+            }
+            if ( minRow<=maxRow ) {
+                TreeTableModel.this.fireTableRowsUpdated( minRow, maxRow );
             }
         }
         
