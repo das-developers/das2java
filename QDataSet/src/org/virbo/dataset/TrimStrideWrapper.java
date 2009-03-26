@@ -72,5 +72,20 @@ public class TrimStrideWrapper extends AbstractDataSet {
     public int length() {
         return len[0];
     }
+
+    @Override
+    public Object property(String name) {
+        if ( name.startsWith("PLANE_" ) ) {
+            QDataSet plane= (QDataSet) ds.property(name);
+            if ( plane==null ) return null;
+            TrimStrideWrapper wrap= new TrimStrideWrapper(plane);
+            wrap.setTrim(0, offset[0], len[0], stride[0] );
+            return wrap;
+        } else {
+            return super.property(name);
+        }
+    }
+
+
     
 }
