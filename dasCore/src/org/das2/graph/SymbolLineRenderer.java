@@ -48,6 +48,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 
 
 /**
@@ -259,7 +260,11 @@ public class SymbolLineRenderer extends Renderer {
             double xSampleWidth;
             if (dataSet.getProperty("xTagWidth") != null) {
                 Datum xSampleWidthDatum = (Datum)dataSet.getProperty("xTagWidth");
-                xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
+                if ( UnitsUtil.isRatiometric(xSampleWidthDatum.getUnits()) ) {
+                    xSampleWidth = Double.MAX_VALUE;
+                } else {
+                    xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
+                }
             } else {
                 //Try to load the legacy sample-width property.
                 String xSampleWidthString = (String)dataSet.getProperty("x_sample_width");
