@@ -350,7 +350,10 @@ public class DataSetUtil {
         if ( xunits==null ) xunits= Units.dimensionless;
 
         boolean log= false;
-        if ( ipeak==0 && hist.length()>10 && UnitsUtil.isRatioMeasurement(xunits) ) {
+        double firstBin= (Double)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START);
+        double binWidth= (Double)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH);
+        firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
+        if ( ipeak==0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             int lpeak=0;
