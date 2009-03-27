@@ -17,9 +17,13 @@ import java.util.logging.*;
  * @author Jeremy
  */
 public class DasLogger {
-    
+    public static boolean DISABLE_RELOAD= true;
+
     public static void reload() throws IOException {
         try {
+
+            if ( DISABLE_RELOAD ) return;
+
             java.net.URL logConfigURL;
             
             File local;
