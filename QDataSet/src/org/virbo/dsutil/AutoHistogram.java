@@ -6,6 +6,7 @@ package org.virbo.dsutil;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,8 +52,9 @@ public final class AutoHistogram {
     double binw;
     double binwDenom;
     double firstb;
-    double[] ss;
-    double[] nn;
+    double[] ss; // accumulator for the mean
+    double[] vv; // accumulator for the variance
+    double[] nn; // count in each bin
     int zeroesRight;
     int zeroesLeft;
     DataSetBuilder timer;
@@ -76,6 +78,7 @@ public final class AutoHistogram {
         binwDenom = INITIAL_BINW_DENOM;
         firstb = INITIAL_FIRST_BIN;
         ss = new double[nbin];
+        vv = new double[nbin];
         nn = new double[nbin];
         zeroesRight = nbin / 2;
         zeroesLeft = nbin / 2;
@@ -90,6 +93,8 @@ public final class AutoHistogram {
 
     /**
      * add the value to the distribution, updateing zeroesLeft and zeroesRight.
+     * See http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Weighted_incremental_algorithm
+     * vv is "S" in wikipedia  Variance = S * n / ((n-1) * sumweight). Std Dev= sqrt(Variance)
      * @param ibin
      * @param d
      */
@@ -100,12 +105,19 @@ public final class AutoHistogram {
         if (ibin >= nbin - zeroesRight) {
             zeroesRight = nbin - ibin - 1;
         }
-        nn[ibin] += count;
-        ss[ibin] += d * count;
+        double delta= d - ss[ibin];
+        double temp= count + nn[ibin];
+        vv[ibin] += nn[ibin] * count * ( delta * delta ) / temp;
+        ss[ibin] += ( d-ss[ibin] ) * count / temp;
+        nn[ibin] = temp;
         total += count;
     }
 
-    private DDataSet asDataSet() {
+    /**
+     * get the histogram of the data accumulated thus far.
+     * @return
+     */
+    public DDataSet getHistogram() {
         int nonZeroCount= nbin-zeroesLeft-zeroesRight+2;
         int firstBin= zeroesLeft-1;
         if ( firstBin<0 ) firstBin=0;
@@ -116,10 +128,18 @@ public final class AutoHistogram {
         System.arraycopy( nn, firstBin, nn1, 0, nonZeroCount);
         double[] ss1= new double[nonZeroCount];
         System.arraycopy( ss, firstBin, ss1, 0, nonZeroCount);
+        double[] vv1= new double[nonZeroCount];
+        System.arraycopy( vv, firstBin, vv1, 0, nonZeroCount);
+        for ( int i=0; i<vv1.length; i++ ) {
+            if ( nn1[i]>0 ) vv1[i]= Math.sqrt( vv1[i] / nn1[i] );
+        }
         DDataSet result = DDataSet.wrap(nn1);
-        DDataSet totals = DDataSet.wrap(ss1);
-        totals.putProperty(QDataSet.NAME, "total");
-        result.putProperty(QDataSet.PLANE_0, totals);
+        DDataSet means = DDataSet.wrap(ss1);
+        DDataSet stddevs= DDataSet.wrap(vv1);
+        means.putProperty(QDataSet.NAME, "means");
+        stddevs.putProperty(QDataSet.NAME, "stddevs");
+        result.putProperty(QDataSet.PLANE_0, means);
+        result.putProperty("PLANE_1", stddevs);
         TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom );
         dep0.putProperty(QDataSet.UNITS, units);
         result.putProperty(DDataSet.DEPEND_0, dep0);
@@ -138,6 +158,10 @@ public final class AutoHistogram {
         return result;
     }
 
+     public QDataSet doit( QDataSet ds ) {
+         return doit( ds, null );
+     }
+     
     //public QDataSet getTiming() {
     //    return timer.getDataSet();
     //}
@@ -230,7 +254,7 @@ public final class AutoHistogram {
             initialDist();
         }
         
-        DDataSet result = asDataSet();
+        DDataSet result = getHistogram();
 
         return result;
     }
@@ -296,7 +320,7 @@ public final class AutoHistogram {
         zeroesLeft= ibin;
         zeroesRight= nbin-ibin-1; // allow invalid state because checkOutliers will fix it.
         addToDistribution( ibin, closestA, count );
-        
+
         checkOutliers();
     }
 
@@ -349,6 +373,36 @@ public final class AutoHistogram {
             throw new IllegalArgumentException("hello!");
         }
     }
+
+    private void debugDump() {
+
+
+        DecimalFormat df= new DecimalFormat(" 00000");
+        DecimalFormat nf= new DecimalFormat("00.000");
+
+        System.err.println("-----------------------------") ;
+
+        long total1 = 0;
+        for ( int i=0; i<20; i++ ) {
+            double d1= nn[i];
+            System.err.print( " "+ df.format(d1) );
+        }
+        System.err.println();
+
+        for ( int i=0; i<20; i++ ) {
+            double d1= ss[i];
+            System.err.print( " "+nf.format(d1) );
+        }
+        System.err.println();
+
+        for ( int i=0; i<20; i++ ) {
+            double d1= vv[i];
+            System.err.print( " "+nf.format(d1) );
+        }
+        System.err.println();
+
+    }
+
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -370,11 +424,13 @@ public final class AutoHistogram {
         checkTotal();
         System.arraycopy(ss, shift, ss, 0, nbin - shift - zeroesRight);
         System.arraycopy(nn, shift, nn, 0, nbin - shift - zeroesRight);
+        System.arraycopy(vv, shift, vv, 0, nbin - shift - zeroesRight);
         zeroesRight += shift;
         zeroesLeft -= shift;
         ibin -= shift;
         Arrays.fill(ss, nbin - zeroesRight, nbin, 0.);
         Arrays.fill(nn, nbin - zeroesRight, nbin, 0.);
+        Arrays.fill(vv, nbin - zeroesRight, nbin, 0.);
         this.firstb += binw * shift / binwDenom;
         checkTotal();
         return ibin;
@@ -386,11 +442,13 @@ public final class AutoHistogram {
         checkTotal();
         System.arraycopy(ss, zeroesLeft, ss, shift + zeroesLeft, nbin - zeroesLeft - shift);
         System.arraycopy(nn, zeroesLeft, nn, shift + zeroesLeft, nbin - zeroesLeft - shift);
+        System.arraycopy(vv, zeroesLeft, vv, shift + zeroesLeft, nbin - zeroesLeft - shift);
         zeroesLeft += shift;
         zeroesRight -= shift;
         ibin += shift;
         Arrays.fill(ss, 0, zeroesLeft, 0.);
         Arrays.fill(nn, 0, zeroesLeft, 0.);
+        Arrays.fill(vv, 0, zeroesLeft, 0 );
         this.firstb -= binw * shift / binwDenom;
         checkTotal();
         return ibin;
@@ -433,12 +491,34 @@ public final class AutoHistogram {
             }
         }
         for (int i = 0; i < nbin / factor; i++) {
-            ss[i] = ss[i * factor];
             nn[i] = nn[i * factor];
+            double[] oldMeans= new double[factor];
+            double[] oldWeights= new double[factor];
+            oldMeans[0]= ss[i*factor];
+            oldWeights[0]= nn[i*factor];
+            ss[i] = ss[i * factor] * nn[i*factor];
             for (int j = 1; j < factor; j++) {
                 int idx = i * factor + j;
-                ss[i] += ss[idx];
+                oldMeans[j]= ss[idx];
+                oldWeights[j]= nn[idx];
+                ss[i] += ss[idx] * nn[idx];
                 nn[i] += nn[idx];
+            }
+            if ( nn[i]>0 ) {
+                ss[i] /= nn[i];
+            }
+            // move the correct mean of the bin to the incorrect mean of the factor bins
+            for ( int j=0; j<factor; j++ ) {
+                vv[i*factor+j] = vv[i * factor+j] + oldWeights[j] * Math.pow( oldMeans[j] - ss[i], 2 );
+            }
+            // combine the variances with a weighted average
+            vv[i]= vv[i*factor] * oldWeights[0];
+            for ( int j=1; j<factor; j++ ) {
+                int idx = i * factor + j;
+                vv[i] += vv[idx] * oldWeights[j];
+            }
+            if ( nn[i]>0 ) {
+                vv[i] /= nn[i];
             }
         }
         int nnew = (nbin - nbin / factor);
@@ -475,15 +555,16 @@ public final class AutoHistogram {
         }
         int lbin = nbin - 1; //last bin
         for (int i = 0; i < nbin / factor; i++) {
-            ss[lbin - i] = ss[lbin - i * factor];
+            ss[lbin - i] = ss[lbin - i * factor] * nn[lbin - i * factor];
             nn[lbin - i] = nn[lbin - i * factor];
             for (int j = 1; j < factor; j++) {
                 int idx = lbin - i * factor - j;
                 if (idx != lbin) {
-                    ss[lbin - i] += ss[idx];
+                    ss[lbin - i] += ss[idx] * nn[idx];
                     nn[lbin - i] += nn[idx];
                 }
             }
+            ss[i] /= nn[i];
         }
         int nnew = nbin - nbin / factor;
         Arrays.fill(ss, 0, nnew, 0.);
