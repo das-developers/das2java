@@ -1112,12 +1112,7 @@ public class Ops {
      * @return
      */
     public static QDataSet randomn(long seed, int len0) {
-        int size = len0;
-        double[] back = new double[size];
-        Random r = new Random(seed);
-        for (int i = 0; i < size; i++) {
-            back[i] = r.nextGaussian();
-        }
+        double[] back = randomnBack(seed, len0);
         return DDataSet.wrap(back, 1, len0, 1, 1);
     }
 
@@ -1129,12 +1124,7 @@ public class Ops {
      * @return
      */
     public static QDataSet randomn(long seed, int len0, int len1) {
-        int size = len0 * len1;
-        double[] back = new double[size];
-        Random r = new Random(seed);
-        for (int i = 0; i < size; i++) {
-            back[i] = r.nextGaussian();
-        }
+        double[] back = randomnBack(seed, len0 * len1 );
         return DDataSet.wrap(back, 2, len0, len1, 1);
     }
 
@@ -1147,14 +1137,65 @@ public class Ops {
      * @return
      */
     public static QDataSet randomn(long seed, int len0, int len1, int len2) {
-        int size = len0 * len1 * len2;
+        double[] back = randomnBack(seed, len0 * len1 * len2 );
+        return DDataSet.wrap(back, 3, len0, len1, len2);
+    }
+
+    private static double[] randomnBack( long seed, int size ) {
         double[] back = new double[size];
         Random r = new Random(seed);
         for (int i = 0; i < size; i++) {
             back[i] = r.nextGaussian();
         }
+        return back;
+    }
+
+    private static double[] randomuBack( long seed, int size ) {
+        double[] back = new double[size];
+        Random r = new Random(seed);
+        for (int i = 0; i < size; i++) {
+            back[i] = r.nextDouble();
+        }
+        return back;
+    }
+
+    /**
+     * returns a rank 1 dataset of random numbers of a uniform distribution.
+     * System.currentTimeMillis() may be used for the seed.
+     * @param seed
+     * @param len0
+     * @return
+     */
+    public static QDataSet randomu(long seed, int len0) {
+        double[] back = randomuBack(seed, len0);
+        return DDataSet.wrap(back, 1, len0, 1, 1);
+    }
+
+    /**
+     * returns a rank 2 dataset of random numbers of a uniform distribution.
+     * @param seed
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static QDataSet randomu(long seed, int len0, int len1) {
+        double[] back = randomuBack(seed, len0 * len1 );
+        return DDataSet.wrap(back, 2, len0, len1, 1);
+    }
+
+    /**
+     * returns a rank 3 dataset of random numbers of a uniform distribution.
+     * @param seed
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return
+     */
+    public static QDataSet randomu(long seed, int len0, int len1, int len2) {
+        double[] back = randomuBack(seed, len0 * len1 * len2 );
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
+
 
     /**
      * element-wise sin.
@@ -1171,7 +1212,7 @@ public class Ops {
     }
 
     /**
-     * element-wise sin.
+     * element-wise arcsin.
      * @param ds
      * @return
      */
@@ -1199,7 +1240,7 @@ public class Ops {
     }
 
     /**
-     * element-wise acos.
+     * element-wise arccos.
      * @param ds
      * @return
      */
