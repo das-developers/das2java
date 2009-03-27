@@ -350,7 +350,7 @@ public class DataSetUtil {
         if ( xunits==null ) xunits= Units.dimensionless;
 
         boolean log= false;
-        if ( ipeak==0 && UnitsUtil.isRatioMeasurement(xunits) ) {
+        if ( ipeak==0 && hist.length()>10 && UnitsUtil.isRatioMeasurement(xunits) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             int lpeak=0;
@@ -384,7 +384,7 @@ public class DataSetUtil {
 
         for ( int i=ipeak; i>=0; i-- ) {
             if ( hist.value(i)>(peakv/4) ) {
-                ss+= sss.value(i);
+                ss+= sss.value(i) * hist.value(i);
                 nn+= hist.value(i);
             } else {
                 break;
@@ -393,7 +393,7 @@ public class DataSetUtil {
 
         for ( int i=ipeak+1; i<hist.length(); i++ ) {
             if ( hist.value(i)>(peakv/4) ) {
-                ss+= sss.value(i);
+                ss+= sss.value(i) * hist.value(i);
                 nn+= hist.value(i);
             } else {
                 break;
