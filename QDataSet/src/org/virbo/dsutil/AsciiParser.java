@@ -91,7 +91,7 @@ public class AsciiParser {
      * @param recCount the number of records successfully read.
      * @return true if the line is a header line.
      */
-    private final boolean isHeader(int iline, String lastLine, String thisLine, int recCount) {
+    public final boolean isHeader(int iline, String lastLine, String thisLine, int recCount) {
         return (iline < skipLines || (headerDelimiter != null && recCount == 0 && (lastLine == null || !Pattern.compile(headerDelimiter).matcher(lastLine).find())) || (commentPrefix != null && thisLine.startsWith(commentPrefix)));
     }
 
