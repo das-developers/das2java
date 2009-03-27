@@ -37,6 +37,7 @@ import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.VectorDataSetAdapter;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
+import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.DataSetBuilder;
 
@@ -1472,6 +1473,41 @@ public class Ops {
     }
 
     /**
+     * returns the power spectrum of the waveform.  Positive frequencies
+     * are returned for DEPEND_0, and square of the magnitude is returned for
+     * the values.
+     * 
+     * @param ds
+     * @return 
+     */
+    public static QDataSet fftPower( QDataSet ds ) {
+        GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
+        Units u = (Units) ds.property(QDataSet.UNITS);
+        if (u == null) {
+            u = Units.dimensionless;
+        }
+        ComplexArray.Double ca = FFTUtil.fft( fft, VectorDataSetAdapter.create(ds), u );
+
+
+        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        RankZeroDataSet cadence = dep0 == null ? DRank0DataSet.create(1.0) : DataSetUtil.guessCadenceNew(dep0,null);
+        if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
+
+        double[] xtags = FFTUtil.getFrequencyDomainTags( 1./cadence.value(), ds.length());
+        double binsize=  2 * xtags[ xtags.length/2 ] / ds.length();
+
+        DDataSet result = DDataSet.createRank1(ds.length()/2);
+        DDataSet resultDep0 = DDataSet.createRank1(ds.length()/2);
+        for (int i = 0; i < ds.length()/2; i++) {
+            result.putValue(i, (i==0?1:4)*ComplexArray.magnitude2(ca,i) / binsize );
+            resultDep0.putValue( i, xtags[i] );
+        }
+
+        result.putProperty(QDataSet.DEPEND_0, resultDep0);
+        return result;
+
+    }
+    /**
      * Performs an FFT on the provided rank 1 dataset.  A rank 2 dataset of 
      * complex numbers is returned.
      * @param ds a rank 1 dataset.
@@ -1494,7 +1530,7 @@ public class Ops {
         RankZeroDataSet cadence = dep0 == null ? DRank0DataSet.create(1.0) : DataSetUtil.guessCadenceNew(dep0,null);
         if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
 
-        double[] tags = FFTUtil.getFrequencyDomainTags(cadence.value(), ds.length());
+        double[] tags = FFTUtil.getFrequencyDomainTags(1./cadence.value(), ds.length());
         result.putProperty(QDataSet.DEPEND_0, DDataSet.wrap(tags));
 
         EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");
@@ -1611,6 +1647,16 @@ public class Ops {
             return histogram( ds, range.value(0), range.value(1), width/binCount );
         }
         
+    }
+
+    /**
+     * use one pass auto-scaling histogram
+     * @param ds
+     * @return
+     */
+    public static QDataSet autoHistogram( QDataSet ds ) {
+        AutoHistogram ah= new AutoHistogram();
+        return ah.doit(ds);
     }
 
     /**
