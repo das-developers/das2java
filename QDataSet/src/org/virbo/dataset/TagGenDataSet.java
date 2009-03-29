@@ -9,6 +9,8 @@
 
 package org.virbo.dataset;
 
+import org.das2.datum.Units;
+
 /**
  *
  * @author jbf
@@ -16,13 +18,19 @@ package org.virbo.dataset;
 public class TagGenDataSet extends IndexGenDataSet {
     
     double scale, offset;
-    
-    /** Creates a new instance of TagGenDataSet */
+
     public TagGenDataSet( int length, double scale, double offset ) {
+        this( length, scale, offset, null );
+    }
+    
+    public TagGenDataSet( int length, double scale, double offset, Units units ) {
         super( length );
         this.scale= scale;
         this.offset= offset;
-        putProperty( QDataSet.CADENCE, DRank0DataSet.create(scale) );
+        if ( units!=null ) {
+            putProperty( QDataSet.CADENCE, DRank0DataSet.create(scale, units.getOffsetUnits() ) );
+            putProperty( QDataSet.UNITS, units );
+        }
     }
     
     public double value(int i) {
