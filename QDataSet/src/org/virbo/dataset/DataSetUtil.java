@@ -48,6 +48,28 @@ public class DataSetUtil {
     }
 
     /**
+     * creates a dataset with the given cadence, start and length.  QDataSet.CADENCE
+     * will be set based on the units specified.  Do not change the units of the
+     * result without updating cadence as well.
+     */
+    public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence, Units units ) {
+        IndexGenDataSet result = new IndexGenDataSet(n) {
+            public double value(int i) {
+                return i * cadence + start;
+            }
+        };
+        if ( units!=null ) {
+            result.putProperty( QDataSet.CADENCE, DRank0DataSet.create(cadence,units.getOffsetUnits()) );
+            result.putProperty( QDataSet.UNITS, units );
+        } else {
+            result.putProperty( QDataSet.CADENCE, DRank0DataSet.create(cadence) );
+        }
+        
+        if ( cadence<0 ) result.putProperty( QDataSet.MONOTONIC, Boolean.FALSE );
+        return result;
+    }
+
+    /**
      * creates a dataset with the given cadence, start and length.
      */
     public static MutablePropertyDataSet replicateDataSet(int n, final double value) {
@@ -677,7 +699,7 @@ public class DataSetUtil {
      * @return
      */
     public static String statsString(QDataSet ds) {
-        QDataSet stats = DataSetOps.moment(ds);
+        RankZeroDataSet stats = DataSetOps.moment(ds);
         return "" + stats.value(0) + "+/-" + stats.property("stddev") + " N=" + stats.property("validCount");
     }
 
@@ -822,11 +844,11 @@ public class DataSetUtil {
         }
     }
 
-    public static RankZeroDataSet asDataSet( double d ) {
+    public static DRank0DataSet asDataSet( double d ) {
         return DRank0DataSet.create(d);
     }
 
-    public static RankZeroDataSet asDataSet( Datum d ) {
+    public static DRank0DataSet asDataSet( Datum d ) {
         return DRank0DataSet.create(d);
     }
 

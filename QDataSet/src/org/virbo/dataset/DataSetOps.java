@@ -407,7 +407,7 @@ public class DataSetOps {
      */
     public static QDataSet histogram(QDataSet ds, final double min, final double max, final double binsize) {
         int n = (int) Math.ceil((max - min) / binsize);
-        MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize);
+        MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize, (Units)ds.property(QDataSet.UNITS) );
         
         tags.putProperty( QDataSet.NAME, ds.property(QDataSet.NAME) );
         tags.putProperty( QDataSet.LABEL, ds.property(QDataSet.LABEL) );
@@ -449,10 +449,12 @@ public class DataSetOps {
     /**
      * performs the moment (mean,variance,etc) on the dataset.
      * @param ds rank N QDataSet.
-     * @return QDataSet rank 1 dataset with one tag, the mean.  Properties
-     *   contain other stats.
+     * @return rank 0 dataset of the mean.  Properties contain other stats:
+     *   stddev, RankZeroDataSet
+     *   validCount, Integer, the number valid measurements
+     *   invalidCount, Integer, the number of invalid measurements
      */
-    public static QDataSet moment(QDataSet ds) {
+    public static RankZeroDataSet moment(QDataSet ds) {
 
         double[] moment = new double[2];
 
@@ -490,6 +492,7 @@ public class DataSetOps {
         if (validCount > 0) {
             iter= new QubeDataSetIterator(ds);
             while (iter.hasNext()) {
+                iter.next(); 
                 double d = iter.getValue(ds);
                 double w = iter.getValue(wds);
                 if ( w>0.0 ) {
@@ -515,12 +518,13 @@ public class DataSetOps {
             moment[0] = u.getFillDouble();
         }
 
-        DDataSet result = DDataSet.createRank1(1);
-        result.putValue(0, moment[0]);
-        result.putProperty("stddev", moment[1]);
+        DRank0DataSet result = DataSetUtil.asDataSet(moment[0]);
+        result.putProperty( QDataSet.UNITS, u );
+        DRank0DataSet stddevds= DataSetUtil.asDataSet(moment[1]);
+        stddevds.putProperty( QDataSet.UNITS, u.getOffsetUnits() );
+        result.putProperty("stddev", stddevds );
         result.putProperty("validCount", validCount);
         result.putProperty("invalidCount", invalidCount);
-        result.putProperty("rank", ds.rank());
 
         return result;
     }
