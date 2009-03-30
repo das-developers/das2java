@@ -76,7 +76,7 @@ public class LinearDomainDivider implements DomainDivider {
         double[] values = new double[(int)nb];
         double intervalSize = incSignificand * Math.pow(10, incExponent);
 
-        double v = Math.ceil(min.doubleValue()/intervalSize);
+        double v = Math.ceil(min.doubleValue()/intervalSize) * intervalSize;
         for (int i=0 ; i < nb ; ++i)
             values[i] = v + i  * intervalSize;
         return DatumVector.newDatumVector(values, min.getUnits());
