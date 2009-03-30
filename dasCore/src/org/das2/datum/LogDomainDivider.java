@@ -15,8 +15,7 @@ public class LogDomainDivider implements DomainDivider {
     }
 
     protected LogDomainDivider(int logBase) {
-        this.logBase = logBase;
-        expDivider = new LinearDomainDivider();
+        this(logBase, new LinearDomainDivider());
     }
 
     // for use by finerDivider and coarserDivider
@@ -36,7 +35,7 @@ public class LogDomainDivider implements DomainDivider {
     public DatumVector boundaries(Datum min, Datum max) {
         long nb = boundaryCount(min, max);
         if (nb > MAX_BOUNDARIES )
-            throw new IllegalArgumentException("LogDomainDivider: too many divisions requested ("+boundaryCount(min, max)+")");
+            throw new IllegalArgumentException("too many divisions requested ("+ nb +")");
 
         double logmin = Math.log10(min.doubleValue());
         double logmax = Math.log10(max.doubleValue());
@@ -67,7 +66,7 @@ public class LogDomainDivider implements DomainDivider {
             throw new IllegalArgumentException("LogDomainDivider: input range cannot contain zero");
 
         double logmin = Math.log10(min.doubleValue());
-        double logmax = Math.log10(min.doubleValue());
+        double logmax = Math.log10(max.doubleValue());
 
         if(logBase != 10) {  //convert to appropriate base
             // remember logX(n) = log10(n) / log10(X)
@@ -87,5 +86,20 @@ public class LogDomainDivider implements DomainDivider {
 
         return new DatumRange(rangeMin, rangeMax, v.getUnits());
     }
+
+    public static void main(String[] args) {
+        DomainDivider div = new LogDomainDivider();
+        DatumRange dr = DatumRangeUtil.newDimensionless(0.2, 1000);
+        System.err.println(div.boundaryCount(dr.min(), dr.max()));
+        System.err.println(div.boundaries(dr.min(), dr.max()));
+        System.err.println(div.rangeContaining(dr.min()));
+        DomainDivider div2 = div.coarserDivider(false);
+        System.err.println(div2.boundaryCount(dr.min(), dr.max()));
+        System.err.println(div2.boundaries(dr.min(), dr.max()));
+        div2 = div.finerDivider(false);
+        System.err.println(div2.boundaryCount(dr.min(), dr.max()));
+        System.err.println(div2.boundaries(dr.min(), dr.max()));        
+}
+
 
 }

@@ -96,4 +96,18 @@ public class LinearDomainDivider implements DomainDivider {
         return mmax - mmin + 1;
     }
 
+    public static void main(String[] args) {
+        DomainDivider div = new LinearDomainDivider();
+        DatumRange dr = DatumRangeUtil.newDimensionless(0.2, 1000);
+        System.err.println(div.boundaryCount(dr.min(), dr.max()));
+        System.err.println(div.boundaries(dr.min(), dr.max()));
+        System.err.println(div.rangeContaining(dr.min()));
+        DomainDivider div2 = div.coarserDivider(false);
+        System.err.println(div2.boundaryCount(dr.min(), dr.max()));
+        System.err.println(div2.boundaries(dr.min(), dr.max()));
+        div2 = div.finerDivider(false);
+        System.err.println(div2.boundaryCount(dr.min(), dr.max()));
+        System.err.println(div2.boundaries(dr.min(), dr.max()));
+    }
+
 }
