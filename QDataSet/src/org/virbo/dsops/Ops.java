@@ -105,29 +105,34 @@ public class Ops {
      * @param op
      * @return
      */
-    public static final MutablePropertyDataSet applyBinaryOp(QDataSet ds1, QDataSet ds2, BinaryOp op) {
-        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
+    public static final MutablePropertyDataSet applyBinaryOp( QDataSet ds1, QDataSet ds2, BinaryOp op ) {
 
-        QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
-        QubeDataSetIterator it2 = new QubeDataSetIterator(ds2);
-        Units u1 = (Units) ds1.property(QDataSet.UNITS);
-        Units u2 = (Units) ds2.property(QDataSet.UNITS);
-        WeightsDataSet w1= DataSetUtil.weightsDataSet(ds1);
-        WeightsDataSet w2= DataSetUtil.weightsDataSet(ds2);
+        QDataSet[] operands= new QDataSet[2];
+
+        WritableDataSet result = CoerceUtil.coerce( ds1, ds2, true, operands );
+
+        QubeDataSetIterator it1 = new QubeDataSetIterator( operands[0] );
+        QubeDataSetIterator it2 = new QubeDataSetIterator( operands[1] );
+
+        WeightsDataSet w1= DataSetUtil.weightsDataSet(operands[0]);
+        WeightsDataSet w2= DataSetUtil.weightsDataSet(operands[1]);
+
         double fill= -1e38;
         while (it1.hasNext()) {
             it1.next();
             it2.next();
-            double d1 = it1.getValue(ds1);
-            double d2 = it2.getValue(ds2);
+            double d1 = it1.getValue(operands[0]);
+            double d2 = it2.getValue(operands[1]);
             double w= it1.getValue(w1) * it2.getValue(w2);
             it1.putValue(result, w==0 ? fill : op.op(d1, d2));
         }
+
         Map<String, Object> m1 = DataSetUtil.getProperties(ds1);
         Map<String, Object> m2 = DataSetUtil.getProperties(ds2);
         Map<String, Object> m3 = equalProperties(m1, m2);
         DataSetUtil.putProperties(m3, result);
         result.putProperty( QDataSet.FILL_VALUE, fill );
+        
         return result;
     }
 
