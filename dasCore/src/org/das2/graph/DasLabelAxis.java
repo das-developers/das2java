@@ -241,10 +241,10 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
     protected void paintHorizontalAxis(java.awt.Graphics2D g) {
         boolean bottomTicks = (getOrientation() == BOTTOM || isOppositeAxisVisible());
-        boolean bottomTickLabels = (getOrientation() == BOTTOM && areTickLabelsVisible());
+        boolean bottomTickLabels = (getOrientation() == BOTTOM && isTickLabelsVisible());
         boolean bottomLabel = (getOrientation() == BOTTOM && !axisLabel.equals(""));
         boolean topTicks = (getOrientation() == TOP || isOppositeAxisVisible());
-        boolean topTickLabels = (getOrientation() == TOP && areTickLabelsVisible());
+        boolean topTickLabels = (getOrientation() == TOP && isTickLabelsVisible());
         boolean topLabel = (getOrientation() == TOP && !axisLabel.equals(""));
 
         int topPosition = getRow().getDMinimum() - 1;
@@ -323,10 +323,10 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
     protected void paintVerticalAxis(java.awt.Graphics2D g) {
         boolean leftTicks = (getOrientation() == LEFT || isOppositeAxisVisible());
-        boolean leftTickLabels = (getOrientation() == LEFT && areTickLabelsVisible());
+        boolean leftTickLabels = (getOrientation() == LEFT && isTickLabelsVisible());
         boolean leftLabel = (getOrientation() == LEFT && !axisLabel.equals(""));
         boolean rightTicks = (getOrientation() == RIGHT || isOppositeAxisVisible());
-        boolean rightTickLabels = (getOrientation() == RIGHT && areTickLabelsVisible());
+        boolean rightTickLabels = (getOrientation() == RIGHT && isTickLabelsVisible());
         boolean rightLabel = (getOrientation() == RIGHT && !axisLabel.equals(""));
 
         int leftPosition = getColumn().getDMinimum() - 1;
