@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * @author jbf
  */
-public final class DDataSet extends AbstractDataSet implements WritableDataSet {
+public final class DDataSet extends AbstractDataSet implements WritableDataSet, RankZeroDataSet {
 
     double[] back;
     int rank;
@@ -48,7 +48,9 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
      * @return DDataSet
      */
     public static DDataSet create(int[] qube) {
-        if (qube.length == 1) {
+        if ( qube.length==0 ) {
+            return new DDataSet( 0, 1, 1, 1 );
+        } else if (qube.length == 1) {
             return DDataSet.createRank1(qube[0]);
         } else if (qube.length == 2) {
             return DDataSet.createRank2(qube[0], qube[1]);
@@ -109,6 +111,10 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
         return len2;
     }
 
+    public double value() {
+        return back[0];
+    }
+
     public double value(int i0) {
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
@@ -143,6 +149,10 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet {
             }
         }
         return back[i0 * len1 * len2 + i1 * len2 + i2];
+    }
+
+    public void putValue(double value) {
+        back[0]= value;
     }
 
     public void putValue(int i0, double value) {

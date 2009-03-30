@@ -52,6 +52,8 @@ public abstract class WeightsDataSet implements QDataSet {
         return ds.rank();
     }
 
+    public abstract double value();
+
     public abstract double value(int i);
 
     public abstract double value(int i0, int i1);
@@ -92,6 +94,10 @@ public abstract class WeightsDataSet implements QDataSet {
             return v == fill || Double.isNaN(v) || v > vmax || v < vmin ? 0.0 : 1.0;
         }
 
+        public double value() {
+            return weight(ds.value());
+        }
+
         public double value(int i) {
             return weight(ds.value(i));
         }
@@ -113,6 +119,10 @@ public abstract class WeightsDataSet implements QDataSet {
         
         public final double weight(double v) {
             return v == fill || Double.isNaN(v) ? 0.0 : 1.0;
+        }
+
+        public double value() {
+            return weight(ds.value());
         }
 
         public double value(int i) {
@@ -137,6 +147,10 @@ public abstract class WeightsDataSet implements QDataSet {
             return Double.isNaN(v) ? 0.0 : 1.0;
         }
 
+        public double value() {
+            return weight(ds.value());
+        }
+
         public double value(int i) {
             return weight(ds.value(i));
         }
@@ -157,6 +171,10 @@ public abstract class WeightsDataSet implements QDataSet {
         
         private final double weight(double v) {
             return 1.0;
+        }
+
+        public double value() {
+            return weight(ds.value());
         }
 
         public double value(int i) {

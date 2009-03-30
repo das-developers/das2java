@@ -9,9 +9,6 @@
 
 package org.virbo.dataset;
 
-import org.das2.datum.Datum;
-import org.das2.datum.Units;
-
 /**
  *   
  * Mutable datasets warning: No dataset should be mutable once it is accessible to the
@@ -21,6 +18,7 @@ import org.das2.datum.Units;
  * @author jbf
  */
 public interface WritableDataSet extends MutablePropertyDataSet {
+    void putValue( double d );
     void putValue( int i0, double d );
     void putValue( int i0, int i1, double d );
     void putValue( int i0, int i1, int i2, double d );

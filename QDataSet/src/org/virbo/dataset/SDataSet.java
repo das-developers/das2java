@@ -96,6 +96,10 @@ public final class SDataSet extends AbstractDataSet implements WritableDataSet {
         return len2;
     }
 
+    public double value() {
+        return back[ 0 ];
+    }
+
     public double value(int i0) {
         return back[ i0 ];
     }    
@@ -108,6 +112,10 @@ public final class SDataSet extends AbstractDataSet implements WritableDataSet {
         return back[ i0 * len1 * len2 + i1 *len2 + i2 ];
     }    
 
+    public void putValue( double value ) {
+        back[0]= (short)value;
+    }
+    
     public void putValue( int i0, double value ) {
         back[ i0 ]= (short)value;
     }

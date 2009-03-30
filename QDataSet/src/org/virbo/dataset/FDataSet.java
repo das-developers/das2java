@@ -50,7 +50,9 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
      * @return FDataSet
      */
     public static FDataSet create(int[] qube) {
-        if (qube.length == 1) {
+        if (qube.length == 0) {
+            return new FDataSet( 0, 1, 1, 1 );
+        } else if ( qube.length==1 ) {
             return FDataSet.createRank1(qube[0]);
         } else if (qube.length == 2) {
             return FDataSet.createRank2(qube[0], qube[1]);
@@ -114,6 +116,10 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
         return len2;
     }
 
+    public double value() {
+        return back[0];
+    }
+
     public double value(int i0) {
         return back[ i0 ];
     }    
@@ -126,6 +132,10 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
         return back[ i0 * len1 * len2 + i1 *len2 + i2 ];
     }    
 
+    public void putValue( double value ) {
+        back[0]= (float)value;
+    }
+    
     public void putValue( int i0, double value ) {
         back[ i0 ]= (float)value;
     }

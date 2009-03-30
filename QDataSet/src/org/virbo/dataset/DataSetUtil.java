@@ -594,10 +594,10 @@ public class DataSetUtil {
     public static int[] qubeDims(QDataSet ds) {
         if (ds.rank() > 4) {
             throw new IllegalArgumentException("rank limit");
-        }
-        if (ds.rank() == 1) {
+        } else if (ds.rank() == 1) {
             return new int[]{ds.length()};  // rank 1 datasets are trivially qubes
-
+        } else if ( ds.rank()== 0 ) {
+            return new int[]{};  // rank 0 datasets are trivially qubes
         }
         Boolean q = (Boolean) ds.property(QDataSet.QUBE);
         if (q == null || q.equals(Boolean.FALSE)) {
@@ -628,6 +628,9 @@ public class DataSetUtil {
     public static void addQube(MutablePropertyDataSet ds) throws IllegalArgumentException {
         int[] qube = null;
         switch (ds.rank()) {
+            case 0:
+                break; // don't bother adding this property to rank 0 datasets.
+
             case 1:
                 break; // don't bother adding this property to rank 1 datasets.
 
@@ -842,6 +845,10 @@ public class DataSetUtil {
         } else {
             return u.createDatum(ds.value());
         }
+    }
+
+    public static DRank0DataSet asDataSet( double d, Units u ) {
+        return DRank0DataSet.create(d,u);
     }
 
     public static DRank0DataSet asDataSet( double d ) {

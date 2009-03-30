@@ -211,6 +211,13 @@ public interface QDataSet {
     int rank();
     
     /**
+     * rank 0 accessor.
+     * @throws IllegalArgumentException if the dataset is not rank 0.
+     * @return
+     */
+    double value();
+
+    /**
      * rank 1 accessor.  
      * @throws IllegalArgumentException if the dataset is not rank 1.
      */
