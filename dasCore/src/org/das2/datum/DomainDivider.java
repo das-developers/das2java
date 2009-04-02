@@ -22,7 +22,8 @@ public interface DomainDivider {
      * parameter is true, the interval boundaries of the new divider are
      * guaranteed to align with (some) interval boundaries of the existing one.
      * In other words, the existing divider will subdivide the new one.
-     * @param superset true to force boundary alignment with the calling <code>DomainDivider</code>
+     * @param superset true to force boundary alignment with the calling <code>DomainDivider</code>.
+     *   For a given range, the boundaries will be aligned.
      * @return the new DomainDivider object
      */
     public DomainDivider coarserDivider(boolean superset);
@@ -33,6 +34,7 @@ public interface DomainDivider {
      * guaranteed to align with (some) intervalues of the new one.  In other
      * words, the new divider will subdivide the existing one.
      * @param superset true to force boundary alignment with the calling <code>DomainDivider</code>
+     *     For a given range, the boundaries will be aligned.
      * @return the new DomainDivider object
      */
     public DomainDivider finerDivider(boolean superset);
