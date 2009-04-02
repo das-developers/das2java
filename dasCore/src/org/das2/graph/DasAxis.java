@@ -1286,6 +1286,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** paints the axis component.  The tickV's and bounds should be calculated at this point */
     protected void paintComponent(Graphics graphics) {
         logger.fine("enter DasAxis.paintComponent");
+
+        if ( getCanvas().isValueAdjusting() ) return;
+        
         /* This was code was keeping axes from being printed on PC's
         Shape saveClip = null;
         if (getCanvas().isPrintingThread()) {
