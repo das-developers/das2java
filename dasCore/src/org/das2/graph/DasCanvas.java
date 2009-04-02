@@ -76,6 +76,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -113,6 +114,8 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.filechooser.FileFilter;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.system.ChangesSupport;
+import org.das2.system.MutatorLock;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -347,7 +350,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private int printing = 0;
     List devicePositionList = new ArrayList();
     org.das2.util.DnDSupport dndSupport;
-    DasCanvasStateSupport stateSupport;
+    ChangesSupport stateSupport;
+
     /** The set of Threads that are currently printing this canvas.
      * This set is used to determine of certain operations that are only
      * appropriate in printing situations should occur.
@@ -381,7 +385,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
         CanvasAction.currentCanvas = this;
-        stateSupport = new DasCanvasStateSupport(this);
+        stateSupport = new ChangesSupport(null,this);
+        stateSupport.addPropertyChangeListener( new PropertyChangeListener() {
+            public void propertyChange( PropertyChangeEvent e ) {
+                if ( Boolean.FALSE.equals(e.getNewValue()) ) {
+                    setOpaque(true);
+                    repaint();
+                } else {
+                    setOpaque(false);
+                }
+            }
+        });
     }
 
     private MouseInputAdapter createMouseInputAdapter() {
@@ -499,6 +513,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      */
     protected void paintComponent(Graphics g1) {
         logger.fine("entering DasCanvas.paintComponent");
+
+        if ( stateSupport.isValueAdjusting() ) {
+            logger.fine("value is adjusting, returning");
+            return;
+        }
 
         Graphics2D g = (Graphics2D) g1;
 
@@ -2241,5 +2260,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
 
     public boolean isPendingChanges() {
         return stateSupport.isPendingChanges();
+    }
+
+    public MutatorLock mutatorLock() {
+        return stateSupport.mutatorLock();
+    }
+
+    public boolean isValueAdjusting() {
+        return stateSupport.isValueAdjusting();
     }
 }
