@@ -2063,8 +2063,7 @@ public class Ops {
      * Join two rank N datasets to make a rank N+1 dataset, with the first dimension
      * having two elements.  This is the anti-slice operator.  
      * 
-     * Soon: Alternatively, 
-     * if one dataset is rank N+1 and the other is rank N, then the rank N dataset is
+     * If the first dataset is rank N+1 JoinDataset and the other is rank N, then the rank N dataset is
      * added to the rank N+1 dataset.
      * 
      * This is underimplemented right now, and can only join two rank N datasets
