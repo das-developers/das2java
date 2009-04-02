@@ -11,6 +11,7 @@
  */
 package org.das2.graph;
 
+import javax.swing.Icon;
 import org.das2.dataset.WritableTableDataSet;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.TableDataSet;
@@ -27,6 +28,7 @@ import java.awt.geom.*;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import javax.swing.ImageIcon;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.NoDataInIntervalException;
 
@@ -50,6 +52,37 @@ public class ImageVectorDataSetRenderer extends Renderer {
     public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {
         super(dsd);
     }
+
+    @Override
+    public Icon getListIcon() {
+        BufferedImage i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) i.getGraphics();
+
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        if ( parent!=null ) g.setBackground(parent.getBackground());
+
+        // leave transparent if not white
+        if (color.equals(Color.white)) {
+            g.setColor(Color.GRAY);
+        } else {
+            g.setColor(new Color(0, 0, 0, 0));
+        }
+
+        g.fillRect(0, 0, 15, 10);
+
+        g.setColor(color);
+
+        Stroke stroke0 = g.getStroke();
+        g.setStroke( new BasicStroke( 0.5f ) );
+        g.drawLine( 2, 3, 13, 7 );
+        g.setStroke(stroke0);
+
+        i.setRGB( 7, 5, color.getRGB() );
+
+        return new ImageIcon(i);
+
+    }
+
 
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         if ( ds==null ) {
