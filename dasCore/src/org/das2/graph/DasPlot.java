@@ -56,8 +56,6 @@ import org.das2.datum.DatumVector;
 import org.das2.graph.dnd.TransferableRenderer;
 import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import javax.swing.event.MouseInputAdapter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -80,7 +78,6 @@ import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import org.das2.DasException;
 import org.das2.DasNameException;
 import org.das2.DasPropertyException;
@@ -693,6 +690,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
     protected void paintComponent(Graphics graphics1) {
 
+        if ( getCanvas().isValueAdjusting() ) return;
+        
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
