@@ -40,7 +40,8 @@ public interface DomainDivider {
     public final int MAX_BOUNDARIES=1000000;
     
     /**
-     * Returns the boundaries between intervals on the given data range.
+     * Returns the boundaries between intervals on the given data range. When
+     * min or max lay on a boundary, it should be returned.
      * @param min
      * @param max
      * @return a <code>DatumVector</code> containing the boundary values
@@ -50,7 +51,8 @@ public interface DomainDivider {
     /**
      * Compute the number of intervals produced by this <code>DomainDivider</code>
      * on the given range.  This allows the DomainDivider to indicate the number
-     * of intervals (e.g. a zillion) without having to enumerate them.
+     * of intervals (e.g. a zillion) without having to enumerate them.  When
+     * min or max lay on a boundary, it should be counted.
      * @param min
      * @param max
      * @return
