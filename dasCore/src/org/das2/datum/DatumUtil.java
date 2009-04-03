@@ -252,7 +252,7 @@ public final class DatumUtil {
         else if (secondsPerStep < 86400. ) {
             return TimeDatumFormatter.HOURS;
         }
-        else if ( secondsPerStep < 28*86400.0 ) {
+        else if ( secondsPerStep < 31*86400.0 ) {
             return TimeDatumFormatter.DAYS;
         }
         else if ( secondsPerStep < 31557600.0 ) {
