@@ -153,6 +153,8 @@ public interface QDataSet {
     /**
      * QDataSet of rank 0 or correlated plane that limits accuracy.  Integration
      * intervals should be indicated here, as well as measurement uncertainty.
+     * TODO: break this into BIN_PLUS and ERROR_PLUS to distinguish between
+     * errors and integration intervals, or introduce "BINS" type dimension.
      */
     public final static String DELTA_PLUS="DELTA_PLUS";
     
