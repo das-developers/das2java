@@ -39,13 +39,23 @@ public class TableDataSetAdapter implements TableDataSet {
             }
             if (!DataSetUtil.isMonotonic(xds)) {
                 QDataSet sort = DataSetOps.sort(xds);
+                RankZeroDataSet cadence= (RankZeroDataSet) xds.property(QDataSet.CADENCE);
                 z = DataSetOps.applyIndex(z, 0, sort, false);
                 xds = DataSetOps.applyIndex(xds, 0, sort, false);
+                if ( cadence!=null && cadence.value()<0 ) {
+                    cadence= DataSetUtil.asDataSet( DataSetUtil.asDatum(cadence).multiply(-1) );
+                    ((WritableDataSet)xds).putProperty(QDataSet.CADENCE, cadence);
+                }
             }
             if (!DataSetUtil.isMonotonic(yds)) {
                 QDataSet sort = DataSetOps.sort(yds);
+                RankZeroDataSet cadence= (RankZeroDataSet) yds.property(QDataSet.CADENCE);
                 z = DataSetOps.applyIndex(z, 1, sort, false);
                 yds = DataSetOps.applyIndex(yds, 0, sort, false);
+                if ( cadence!=null && cadence.value()<0 ) {
+                    cadence= DataSetUtil.asDataSet( DataSetUtil.asDatum(cadence).multiply(-1) );
+                    ((WritableDataSet)yds).putProperty(QDataSet.CADENCE, cadence);
+                }
             }
             return new TableDataSetAdapter(z, xds, yds);
         } else if (z.rank() == 3) {
