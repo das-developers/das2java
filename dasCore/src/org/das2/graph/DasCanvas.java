@@ -710,7 +710,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         try {
             logger.fine("Encoding image into png");
             encoder.write((BufferedImage) image, out);
-            logger.info("write png file " + filename);
+            logger.fine("write png file " + filename);
         } catch (IOException ioe) {
         } finally {
             try {
@@ -725,7 +725,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public void writeToPDF(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "org.das2.util.awt.PdfGraphicsOutput");
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).info("write pdf file " + filename);
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("write pdf file " + filename);
         } catch (NoClassDefFoundError cnfe) {
             DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
         } catch (ClassNotFoundException cnfe) {
@@ -768,7 +768,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public void writeToSVG(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "org.das2.util.awt.SvgGraphicsOutput");
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).info("write svg file " + filename);
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("write svg file " + filename);
         } catch (ClassNotFoundException cnfe) {
             DasExceptionHandler.handle(new RuntimeException("SVG output is not available", cnfe));
         } catch (InstantiationException ie) {

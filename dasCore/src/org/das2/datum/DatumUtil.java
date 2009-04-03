@@ -274,7 +274,7 @@ public final class DatumUtil {
         Units units;
         double value;
         if ( ss.length==1 ) {
-            units= Units.dimensionless;
+                units= Units.dimensionless;
         } else {
             try {
                 units= Units.getByName(ss[1]);

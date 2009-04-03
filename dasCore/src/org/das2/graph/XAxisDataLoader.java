@@ -140,7 +140,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                 parent.repaint( 0, 0, parent.getWidth(), parent.getHeight() );
                 
                 //if ( renderer.isOverloading() ) loadRange= loadRange.rescale(-1,2);
-                logger.info("request data from dsd: "+loadRange+" @ "+resolution);
+                logger.fine("request data from dsd: "+loadRange+" @ "+resolution);
                 
                 currentRequest= new Request( progressMonitor, xAxis.getMemento(), yAxis.getMemento() );
                 

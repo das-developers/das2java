@@ -363,7 +363,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         if (renderers.size() == 0) {
             postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
-            logger.info("dasPlot has no renderers");
+            logger.fine("dasPlot has no renderers");
         } else if (noneActive) {
             postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
         }
@@ -544,7 +544,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      */
     public void setYAxis(DasAxis yAxis) {
         Object oldValue = this.yAxis;
-        logger.info("setYAxis(" + yAxis.getName() + "), removes " + this.yAxis);
+        logger.fine("setYAxis(" + yAxis.getName() + "), removes " + this.yAxis);
         Container parent = getParent();
         if (this.yAxis != null) {
             DasProperties.getLogger().fine("setYAxis upsets the dmia");
@@ -1086,7 +1086,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public void addRenderer(Renderer rend) {
-        logger.info("addRenderer(" + rend + ")");
+        logger.fine("addRenderer(" + rend + ")");
         if (rend.parent != null) {
             rend.parent.removeRenderer(rend);
         }

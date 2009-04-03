@@ -478,7 +478,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             this.xValue= tds.getXTagDatum(i);
             topPlot.setTitle( "" +  xValue );
             
-            logger.info("doDigitize");
+            logger.fine("doDigitize");
             fit= doDigitize( tds, i );
             if ( fit!=null ) {
                 levelRenderer.setDataSet( fit.digitizedDataSet );
