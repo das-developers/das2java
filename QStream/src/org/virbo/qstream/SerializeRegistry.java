@@ -12,6 +12,7 @@ import org.das2.dataset.CacheTag;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.util.ClassMap;
+import org.virbo.dataset.RankZeroDataSet;
 
 /**
  *
@@ -27,6 +28,7 @@ public class SerializeRegistry {
         register( String.class, new StringSerializeDelegate() );
         register( CacheTag.class, new CacheTagSerializeDelegate() );
         register( AbstractMap.class, new MapSerializeDelegate() );
+        register( RankZeroDataSet.class, new Rank0DataSetSerializeDelegate() );
         DefaultSerializeDelegate.registerDelegates();
     }
     
@@ -36,6 +38,11 @@ public class SerializeRegistry {
         sdelegates.put(sd.typeId(clas), sd);
     }
     
+    /**
+     * returns a delegate or null if the class is not supported.
+     * @param clas
+     * @return
+     */
     public static SerializeDelegate getDelegate( Class clas ) {
         return delegates.get(clas);
     }

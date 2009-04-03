@@ -24,6 +24,7 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
+import org.virbo.dataset.RankZeroDataSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -146,9 +147,16 @@ public class SimpleStreamFormatter {
             Object value = props.get(name);
             Element prop = document.createElement("property");
             if (value instanceof QDataSet) {
+                QDataSet qds = (QDataSet) value;
                 prop.setAttribute("name", name);
-                prop.setAttribute("type", "qdataset");
-                prop.setAttribute("value", nameFor((QDataSet) value));
+                if (qds.rank() == 0) {
+                    SerializeDelegate r0d= (SerializeDelegate) SerializeRegistry.getByName("rank0dataset");
+                    prop.setAttribute("type", "rank0dataset");
+                    prop.setAttribute("value", r0d.format(value) );
+                } else {
+                    prop.setAttribute("type", "qdataset");
+                    prop.setAttribute("value", nameFor((QDataSet) value));
+                }
 
             } else {
                 SerializeDelegate sd = SerializeRegistry.getDelegate(value.getClass());
@@ -196,7 +204,7 @@ public class SimpleStreamFormatter {
             }
         } else {
             values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length));
-            if ( packetDescriptor.isValuesInDescriptor() ) {
+            if (packetDescriptor.isValuesInDescriptor()) {
                 String s = "";
                 for (int i = 0; i < ds.length(); i++) {
                     s += "," + ds.value(i);
@@ -316,7 +324,9 @@ public class SimpleStreamFormatter {
         PacketDescriptor packetDescriptor = new PacketDescriptor();
         packetDescriptor.setStream(stream);
         packetDescriptor.setStreamRank(streamRank);
-        if ( valuesInDescriptor ) packetDescriptor.setValuesInDescriptor(true);
+        if (valuesInDescriptor) {
+            packetDescriptor.setValuesInDescriptor(true);
+        }
 
         Document document = sd.newDocument(packetDescriptor);
 
@@ -404,10 +414,10 @@ public class SimpleStreamFormatter {
                     QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
                     if (depi != null) {
                         PacketDescriptor pd;
-                        
-                        boolean valuesInDescriptor= depi.rank()==1 && depi.length() < 6;
+
+                        boolean valuesInDescriptor = depi.rank() == 1 && depi.length() < 6;
                         pd = doPacketDescriptor(sd, depi, false, valuesInDescriptor, 1);
-                        
+
                         sd.addDescriptor(pd);
 
                         depPackets.add(pd);
@@ -418,7 +428,9 @@ public class SimpleStreamFormatter {
                 sd.send(mainPd, out);
 
                 for (PacketDescriptor deppd : depPackets) {
-                    if ( !deppd.isValuesInDescriptor() ) formatPackets(out, sd, deppd);
+                    if (!deppd.isValuesInDescriptor()) {
+                        formatPackets(out, sd, deppd);
+                    }
                 }
 
                 formatPackets(out, sd, mainPd);
