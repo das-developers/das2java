@@ -18,10 +18,12 @@ import java.util.TreeMap;
 import org.das2.datum.Units;
 import org.das2.util.DasMath;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
+import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.TagGenDataSet;
 import org.virbo.dataset.WeightsDataSet;
 
@@ -52,8 +54,8 @@ public final class AutoHistogram {
     double binw;
     double binwDenom;
     double firstb;
-    double[] ss; // accumulator for the mean
-    double[] vv; // accumulator for the variance
+    double[] ss; // accumulator for the mean normalized
+    double[] vv; // accumulator for the variance (stddev**2) unnormalized
     double[] nn; // count in each bin
     int zeroesRight;
     int zeroesLeft;
@@ -105,12 +107,15 @@ public final class AutoHistogram {
         if (ibin >= nbin - zeroesRight) {
             zeroesRight = nbin - ibin - 1;
         }
-        double delta= d - ss[ibin];
-        double temp= count + nn[ibin];
-        vv[ibin] += nn[ibin] * count * ( delta * delta ) / temp;
-        ss[ibin] += ( d-ss[ibin] ) * count / temp;
-        nn[ibin] = temp;
-        total += count;
+        for ( int i=0; i<count; i++ ) {
+            nn[ibin] ++;
+            double muj= ss[ibin];
+            double delta= d - ss[ibin];
+            ss[ibin] = ss[ibin] + delta / nn[ibin];
+            double j= nn[ibin]-1;
+            if (j>0) vv[ibin] = ( 1-1./j ) * vv[ibin] + ( j+1 ) * Math.pow( ss[ibin]-muj, 2 );
+            total ++;
+        }
     }
 
     /**
@@ -131,17 +136,21 @@ public final class AutoHistogram {
         double[] vv1= new double[nonZeroCount];
         System.arraycopy( vv, firstBin, vv1, 0, nonZeroCount);
         for ( int i=0; i<vv1.length; i++ ) {
-            if ( nn1[i]>0 ) vv1[i]= Math.sqrt( vv1[i] / nn1[i] );
+            if ( nn1[i]>0 ) vv1[i]= Math.sqrt( vv1[i] );
         }
         DDataSet result = DDataSet.wrap(nn1);
         DDataSet means = DDataSet.wrap(ss1);
+        if ( units!=null ) means.putProperty(QDataSet.UNITS, units);
         DDataSet stddevs= DDataSet.wrap(vv1);
+        if ( units!=null ) stddevs.putProperty(QDataSet.UNITS,units.getOffsetUnits());
         means.putProperty(QDataSet.NAME, "means");
         stddevs.putProperty(QDataSet.NAME, "stddevs");
         result.putProperty(QDataSet.PLANE_0, means);
+        result.putProperty("means",means);
         result.putProperty("PLANE_1", stddevs);
-        TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom );
-        dep0.putProperty(QDataSet.UNITS, units);
+        result.putProperty("stddevs", stddevs );
+        
+        TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom, units );
         result.putProperty(DDataSet.DEPEND_0, dep0);
         Map<String, Object> user = new HashMap<String, Object>();
         user.put( USER_PROP_BIN_START,firstb);
@@ -219,7 +228,7 @@ public final class AutoHistogram {
                 if (ibin + zeroesRight >= 0) { // shift hist to the left
                     int shift = (int) Math.ceil((zeroesRight + (-ibin)) / 2.);
                     ibin = shiftRight(ibin, shift);
-                } else if (ibin < nbin * 3) {
+                } else if (ibin < ( nbin * -3 ) ) {
                     putOutlier(d);
                     reduceOutliers(Math.max(30, total / 100));
                     continue;
@@ -239,7 +248,7 @@ public final class AutoHistogram {
                     continue;
                 } else {
                     while (ibin >= nbin) {
-                        ibin = rescaleLeft(ibin);
+                        ibin = rescaleLeft(ibin,true);
                     }
                 }
 
@@ -313,6 +322,7 @@ public final class AutoHistogram {
             binw = DasMath.exp10(Math.floor(DasMath.log10(binw)));
             binwDenom = 1.0;
         }
+        
         firstb = Math.floor(closestA * binwDenom / binw) * binw / binwDenom;
 
         int count= outliers.remove(closestA);
@@ -348,11 +358,11 @@ public final class AutoHistogram {
             double d1 = firstb + binw / binwDenom * (nbin - zeroesRight);
             SortedMap<Double, Integer> tailmap = outliers.tailMap(d1);
             if (headmap.size() == 0) {
-                rescaleLeft(0);
+                rescaleLeft(0,true);
             } else if (tailmap.size() == 0) {
                 rescaleRight(0);
             } else if (d0 - headmap.lastKey() > tailmap.firstKey() - d1) {
-                rescaleLeft(0);
+                rescaleLeft(0,true);
             } else {
                 rescaleRight(0);
             }
@@ -370,7 +380,12 @@ public final class AutoHistogram {
             total1 += d1;
         }
         if (total != total1) {
-            throw new IllegalArgumentException("hello!");
+            throw new IllegalArgumentException("total check fails");
+        }
+        for ( double d1: vv ) {
+            if ( Double.isNaN(d1) ) {
+                throw new IllegalArgumentException("nan in variance");
+            }
         }
     }
 
@@ -474,11 +489,28 @@ public final class AutoHistogram {
     }
 
     /**
-     * first bin has same start, but is ten times wider
+     * last bin has same end, but is ten times wider
      * @param ibin
      * @return
      */
-    private final int rescaleLeft(int ibin) {
+    private final int rescaleRight( int ibin ) {
+        int factor = nextFactor();
+        ibin= rescaleLeft(ibin,false);
+        try {
+            ibin= shiftRight( ibin, nbin*(factor-1)/factor );
+        } catch ( ArrayIndexOutOfBoundsException ex ) {
+            ibin= shiftRight( ibin, nbin*(factor-1)/factor );
+        }
+        checkOutliers();
+        return ibin;
+    }
+
+    /**
+     * first bin has same start, but bin width is nextFactor() wider.
+     * @param ibin
+     * @return
+     */
+    private final int rescaleLeft(int ibin,boolean checkOutliers) {
         int factor = nextFactor();
         //System.err.println("rescaleLeft to " + binw / binwDenom + "*" + factor);
         checkTotal();
@@ -494,13 +526,16 @@ public final class AutoHistogram {
             nn[i] = nn[i * factor];
             double[] oldMeans= new double[factor];
             double[] oldWeights= new double[factor];
+            double[] oldVariances= new double[factor];
             oldMeans[0]= ss[i*factor];
             oldWeights[0]= nn[i*factor];
+            oldVariances[0]= vv[i*factor];
             ss[i] = ss[i * factor] * nn[i*factor];
             for (int j = 1; j < factor; j++) {
                 int idx = i * factor + j;
                 oldMeans[j]= ss[idx];
                 oldWeights[j]= nn[idx];
+                oldVariances[j]= vv[idx];
                 ss[i] += ss[idx] * nn[idx];
                 nn[i] += nn[idx];
             }
@@ -509,18 +544,26 @@ public final class AutoHistogram {
             }
             // move the correct mean of the bin to the incorrect mean of the factor bins
             for ( int j=0; j<factor; j++ ) {
-                vv[i*factor+j] = vv[i * factor+j] + oldWeights[j] * Math.pow( oldMeans[j] - ss[i], 2 );
+                if ( oldWeights[j]>0 ) {
+                    oldVariances[j] = ( oldWeights[j] * oldVariances[j]
+                        + oldWeights[j] * Math.pow( oldMeans[j] - ss[i], 2 ) ) / oldWeights[j];
+                } else {
+                    oldVariances[j] = 0.0;
+                }
             }
+
             // combine the variances with a weighted average
-            vv[i]= vv[i*factor] * oldWeights[0];
+            vv[i]= oldVariances[0] * oldWeights[0];
+
             for ( int j=1; j<factor; j++ ) {
-                int idx = i * factor + j;
-                vv[i] += vv[idx] * oldWeights[j];
+                vv[i] += oldVariances[j] * oldWeights[j];
             }
             if ( nn[i]>0 ) {
                 vv[i] /= nn[i];
             }
+
         }
+        
         int nnew = (nbin - nbin / factor);
         Arrays.fill(ss, nbin / factor, nbin, 0.);
         Arrays.fill(nn, nbin / factor, nbin, 0.);
@@ -533,53 +576,67 @@ public final class AutoHistogram {
         zeroesLeft = zeroesLeft / factor;
         zeroesRight = zeroesRight / factor + nnew;
         checkTotal();
-        checkOutliers();
+        if ( checkOutliers ) checkOutliers();
         return ibin;
     }
 
     /**
-     * last bin has same end, but is ten times wider
-     * @param ibin
+     * returns the mean of the dataset that has been histogrammed.
+     * @param hist
      * @return
      */
-    private final int rescaleRight(int ibin) {
-        int factor = nextFactor();
-        //System.err.println("rescaleRight to " + binw / binwDenom + "*" + factor);
-        checkTotal();
-        // how many bins must we shift to get a nice initial bin?
-        int shift = (int) Math.round(DasMath.modp(firstb, (binw * factor / binwDenom)) / (binw / binwDenom));
-        if (shift > 0) {
-            if (shift < zeroesLeft) {
-                ibin = shiftLeft(ibin, shift);
-            }
+    public static RankZeroDataSet mean( QDataSet hist ) {
+        double SS= 0;
+        double NN= 0;
+        QDataSet means= (QDataSet) hist.property("means");
+
+        for ( int i=0; i<hist.length(); i++ ) {
+            SS+= means.value(i) * hist.value(i);
+            NN+= hist.value(i);
         }
-        int lbin = nbin - 1; //last bin
-        for (int i = 0; i < nbin / factor; i++) {
-            ss[lbin - i] = ss[lbin - i * factor] * nn[lbin - i * factor];
-            nn[lbin - i] = nn[lbin - i * factor];
-            for (int j = 1; j < factor; j++) {
-                int idx = lbin - i * factor - j;
-                if (idx != lbin) {
-                    ss[lbin - i] += ss[idx] * nn[idx];
-                    nn[lbin - i] += nn[idx];
-                }
-            }
-            ss[i] /= nn[i];
+        DRank0DataSet ds= DataSetUtil.asDataSet(SS/NN);
+        ds.putProperty( QDataSet.UNITS, ((QDataSet)hist.property(QDataSet.DEPEND_0)).property(QDataSet.UNITS) );
+        return ds;
+    }
+
+    /**
+     * returns the mean of the dataset that has been histogrammed.
+     * @param hist a rank 1 dataset with each bin containing the count in each bin.  DEPEND_0 are the labels for
+     *     each bin.  The property "means" returns a rank 1 dataset containing the means for each bin.  The
+     *     property "stddevs" contains the standard deviation within each bin.
+     * @return rank 0 dataset (a Datum) whose value is the mean, and the property("stddev") contains the standard deviation
+     */
+    public static RankZeroDataSet moments( QDataSet hist ) {
+        double[] vvs= new double[hist.length()];
+        double mean= mean( hist ).value();
+
+        QDataSet stddevs= (QDataSet) hist.property("stddevs");
+        QDataSet means= (QDataSet) hist.property("means");
+
+        for ( int i=0; i<stddevs.length(); i++ ) {
+            double var=  Math.pow( stddevs.value(i),2 ) ;
+            vvs[i]= ( hist.value(i)-1 ) * var + hist.value(i) * Math.pow( means.value(i) - mean, 2 );
         }
-        int nnew = nbin - nbin / factor;
-        Arrays.fill(ss, 0, nnew, 0.);
-        Arrays.fill(nn, 0, nnew, 0.);
-        firstb = firstb - nnew * binw;
-        if (binwDenom > 1.0) {
-            binwDenom = binwDenom / factor;
-        } else {
-            binw = binw * factor;
+
+        double VV= 0;
+        long total= (Long)( ((Map)hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_TOTAL) );
+
+        for ( int i=0; i<hist.length(); i++ ) {
+            VV+= vvs[i];
         }
-        ibin = nbin - (int) Math.ceil((nbin - ibin) / factor);
-        zeroesRight = zeroesRight / factor;
-        zeroesLeft = zeroesLeft / factor + nnew;
-        checkTotal();
-        checkOutliers();
-        return ibin;
+
+        double stddev= Math.sqrt(VV/(total-1));
+
+        Units u= (Units)((QDataSet)hist.property(QDataSet.DEPEND_0)).property(QDataSet.UNITS);
+
+        DRank0DataSet result = DataSetUtil.asDataSet(mean);
+        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        DRank0DataSet stddevds= DataSetUtil.asDataSet(stddev);
+        if ( u!=null ) stddevds.putProperty( QDataSet.UNITS, u.getOffsetUnits() );
+        result.putProperty("stddev", stddevds );
+        result.putProperty("validCount", total );
+        result.putProperty("invalidCount", ((Map)hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_INVALID_COUNT) );
+
+        return result;
     }
 }
