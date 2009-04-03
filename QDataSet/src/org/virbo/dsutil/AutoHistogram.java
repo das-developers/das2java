@@ -545,22 +545,22 @@ public final class AutoHistogram {
             // move the correct mean of the bin to the incorrect mean of the factor bins
             for ( int j=0; j<factor; j++ ) {
                 if ( oldWeights[j]>0 ) {
-                    oldVariances[j] = ( oldWeights[j] * oldVariances[j]
-                        + oldWeights[j] * Math.pow( oldMeans[j] - ss[i], 2 ) ) / oldWeights[j];
+                    oldVariances[j] = ( ( oldWeights[j]-1 ) * oldVariances[j]
+                        + oldWeights[j] * Math.pow( oldMeans[j] - ss[i], 2 ) );
                 } else {
                     oldVariances[j] = 0.0;
                 }
             }
 
             // combine the variances with a weighted average
-            vv[i]= oldVariances[0] * oldWeights[0];
+            vv[i]= oldVariances[0];
 
             for ( int j=1; j<factor; j++ ) {
-                vv[i] += oldVariances[j] * oldWeights[j];
+                vv[i] += oldVariances[j];
             }
-            if ( nn[i]>0 ) {
-                vv[i] /= nn[i];
-            }
+            if ( nn[i]>1 ) {
+                vv[i] /= ( nn[i]-1 );
+            } 
 
         }
         
