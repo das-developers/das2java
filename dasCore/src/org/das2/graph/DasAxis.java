@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.beans.PropertyChangeSupport;
 import org.das2.event.MouseModule;
 import org.das2.event.TimeRangeSelectionEvent;
 import org.das2.event.TimeRangeSelectionListener;
@@ -76,6 +77,7 @@ import org.das2.system.DasLogger;
 import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.datum.DomainDivider;
+import org.das2.datum.DomainDividerUtil;
 import org.das2.util.Entities;
 
 /** 
@@ -130,7 +132,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * if non-null, try to use this formatter.
      */
     private DatumFormatter userDatumFormatter = null;
-
 
     /**
      * until we switch to java 1.5, use this lock object instead of
@@ -1084,46 +1085,116 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return bounds;
     }
 
-    private boolean hasLabelCollisions( DatumVector major ) {
-        String[] granny = datumFormatter.axisFormat(major, getDatumRange());
+    private boolean hasLabelCollisions(DatumVector major,DatumFormatter df) {
+        if (major.getLength() < 2) {
+            return false;
+        }
+        String[] granny = df.axisFormat(major, getDatumRange());
         GrannyTextRenderer idlt = new GrannyTextRenderer();
         Rectangle[] bounds = new Rectangle[granny.length];
         for (int i = 0; i < granny.length; i++) {
             idlt.setString(this.getTickLabelFont(), granny[i]);
-            Rectangle bound= idlt.getBounds();
-            if ( isHorizontal() ) {
-                bound.translate( (int) transform(major.get(i) ),0 );
+            Rectangle bound = idlt.getBounds();
+            if (isHorizontal()) {
+                bound.translate((int) transform(major.get(i)), 0);
+                bound.width += getEmSize();
             } else {
-                bound.translate( 0, (int) transform(major.get(i) ));
+                bound.translate(0, (int) transform(major.get(i)));
+                bound.height += getEmSize()/2;
             }
-            bounds[i]= bound;
+            bounds[i] = bound;
         }
-        Rectangle bound= bounds[0];
-        boolean intersects= false;
-        for ( int i=1; i<bounds.length; i++ ) {
-            if ( bounds[i].intersects(bound) ) intersects= true;
-            bound= bounds[i];
+        Rectangle bound = bounds[0];
+        boolean intersects = false;
+        for (int i = 1; i < bounds.length; i++) {
+            if (bounds[i].intersects(bound)) {
+                intersects = true;
+            }
+            bound = bounds[i];
         }
         return intersects;
     }
 
-    private void updateTickVDomainDivider() {
-        DatumRange dr= getDatumRange();
-        DatumVector major= majorTicksDomainDivider.boundaries(dr.min(), dr.max() );
-
-        while ( major.getLength()<2 ) {
-            majorTicksDomainDivider= majorTicksDomainDivider.finerDivider(false);
-            major= majorTicksDomainDivider.boundaries(dr.min(), dr.max() );
+    private boolean hasTickCollisions(DatumVector minor) {
+        DatumRange range= getDatumRange();
+        if (minor.getLength() < 2) {
+            return false;
         }
+        int x0 = (int) transform(minor.get(0));
+        boolean intersects = false;
+        for (int i = 1; !intersects && i < minor.getLength(); i++) {
+            int x1 = (int) transform(minor.get(i));
+            if ( x1<10000 ) {
+                if (Math.abs(x0 - x1) < 10) {
+                    intersects = true;
+                }
+                x0= x1;
+            }
+        }
+        return intersects;
+    }
 
-        while ( hasLabelCollisions( major ) ) {  //TODO: be smarter about when we check for collisions.
+    private void updateDomainDivider() {
+        DatumRange dr = getDatumRange();
+
+        majorTicksDomainDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), isLog() );
+
+        while ( majorTicksDomainDivider.boundaryCount(dr.min(), dr.max() ) > 100 ) {
             majorTicksDomainDivider= majorTicksDomainDivider.coarserDivider(false);
-            major= majorTicksDomainDivider.boundaries(dr.min(), dr.max() );
         }
 
-        DatumVector minor= majorTicksDomainDivider.finerDivider(true).boundaries(dr.min(), dr.max() );
+        DatumVector major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
+        DatumVector major1 = majorTicksDomainDivider.finerDivider(false).boundaries(dr.min(), dr.max());
 
-        this.tickV= TickVDescriptor.newTickVDescriptor(major, minor);
+        DatumFormatter df;
+        df = DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
+        while ( !hasLabelCollisions(major1,df)) {
+            majorTicksDomainDivider = majorTicksDomainDivider.finerDivider(false);
+            df = DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
+            major= major1;
+            major1 = majorTicksDomainDivider.finerDivider(false).boundaries(dr.min(), dr.max());
+        }
+
+        while ( hasLabelCollisions(major,df)) {
+            majorTicksDomainDivider = majorTicksDomainDivider.coarserDivider(false);
+            df = DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
+            major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
+        }
+
+        while (major.getLength() < 2) {
+            majorTicksDomainDivider = majorTicksDomainDivider.finerDivider(false);
+            major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
+            df = DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
+        }
+
+        DomainDivider minorTickDivider=  majorTicksDomainDivider;
+        DatumVector minor = major;
+        DatumVector minor1 = minorTickDivider.finerDivider(true).boundaries(dr.min(), dr.max());
+        while ( ! hasTickCollisions(minor1) ) {
+            minorTickDivider= minorTickDivider.finerDivider(true);
+            minor= minor1;
+            minor1= minorTickDivider.finerDivider(true).boundaries(dr.min(), dr.max());
+        }
+        minorTickDivider.boundaries(dr.min(), dr.max());
+        this.minorTicksDomainDivider= minorTickDivider;
+
+        this.tickV = TickVDescriptor.newTickVDescriptor(major, minor);
+        dividerDatumFormatter= DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
+
+        datumFormatter = resolveFormatter(tickV);
+
+    }
+
+    private void updateTickVDomainDivider() {
+        DatumRange dr = getDatumRange();
+        DatumVector major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
+        DatumVector minor = minorTicksDomainDivider.boundaries(dr.min(), dr.max());
+
+        this.tickV = TickVDescriptor.newTickVDescriptor(major, minor);
+        this.tickV.datumFormatter= dividerDatumFormatter;
+
+        datumFormatter = resolveFormatter(tickV);
+
     }
 
     private void updateTickVTime() {
@@ -1222,6 +1293,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public synchronized void updateTickV() {
         if (!valueIsAdjusting()) {
+            if ( useDomainDivider ) {
+                updateDomainDivider();
+            } else {
+                this.majorTicksDomainDivider= null;
+            }
             if (autoTickV) {
                 TickVDescriptor oldTicks = this.tickV;
                 if (majorTicksDomainDivider != null) {
@@ -1238,8 +1314,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
             }
         } else {
-            if ( autoTickV ) {
-              if (majorTicksDomainDivider != null) {
+            if (autoTickV) {
+                if (majorTicksDomainDivider != null) {
                     updateTickVDomainDivider();
                 }
             }
@@ -1287,8 +1363,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected void paintComponent(Graphics graphics) {
         logger.fine("enter DasAxis.paintComponent");
 
-        if ( getCanvas().isValueAdjusting() ) return;
-        
+        if (getCanvas().isValueAdjusting()) {
+            return;
+        }
+
         /* This was code was keeping axes from being printed on PC's
         Shape saveClip = null;
         if (getCanvas().isPrintingThread()) {
@@ -3324,6 +3402,34 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         repaint();
         firePropertyChange(PROP_FLIPLABEL, oldFlipLabel, flipLabel);
     }
+
+    /** the formatter identified to work with the divider */
+    protected DatumFormatter dividerDatumFormatter = null;
+    public static final String PROP_DIVIDERDATUMFORMATTER = "dividerDatumFormatter";
+
+    public DatumFormatter getDividerDatumFormatter() {
+        return dividerDatumFormatter;
+    }
+
+    public void setDividerDatumFormatter(DatumFormatter dividerDatumFormatter) {
+        DatumFormatter oldDividerDatumFormatter = this.dividerDatumFormatter;
+        this.dividerDatumFormatter = dividerDatumFormatter;
+        firePropertyChange(PROP_DIVIDERDATUMFORMATTER, oldDividerDatumFormatter, dividerDatumFormatter);
+    }
+
+    protected DomainDivider minorTicksDomainDivider = null;
+    public static final String PROP_MINORTICKSDOMAINDIVIDER = "minorTicksDomainDivider";
+
+    public DomainDivider getMinorTicksDomainDivider() {
+        return minorTicksDomainDivider;
+    }
+
+    public void setMinorTicksDomainDivider(DomainDivider minorTicksDomainDivider) {
+        DomainDivider oldMinorTicksDomainDivider = this.minorTicksDomainDivider;
+        this.minorTicksDomainDivider = minorTicksDomainDivider;
+        firePropertyChange(PROP_MINORTICKSDOMAINDIVIDER, oldMinorTicksDomainDivider, minorTicksDomainDivider);
+    }
+
     protected DomainDivider majorTicksDomainDivider = null;
     public static final String PROP_MAJORTICKSDOMAINDIVIDER = "majorTicksDomainDivider";
 
@@ -3336,6 +3442,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         this.majorTicksDomainDivider = majorTicksDomainDivider;
         firePropertyChange(PROP_MAJORTICKSDOMAINDIVIDER, oldMajorTicksDomainDivider, majorTicksDomainDivider);
     }
+
+    protected boolean useDomainDivider = false;
+    public static final String PROP_USEDOMAINDIVIDER = "useDomainDivider";
+
+    public boolean isUseDomainDivider() {
+        return useDomainDivider;
+    }
+
+    public void setUseDomainDivider(boolean useDomainDivider) {
+        boolean oldUseDomainDivider = this.useDomainDivider;
+        this.useDomainDivider = useDomainDivider;
+        firePropertyChange(PROP_USEDOMAINDIVIDER, oldUseDomainDivider, useDomainDivider);
+    }
+
 
     /**
      * set a hint at the format string.  Examples include:
