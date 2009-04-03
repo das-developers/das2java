@@ -49,8 +49,19 @@ public final class TimeUtil {
     public static int daysInMonth(int month, int year) {
         return daysInMonth[isLeapYear(year)?1:0][month];
     }
-    
+
+    /**
+     * @deprecated use julianDay instead.
+     */
     public static int julday( int month, int day, int year ) {
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                275 * month / 9 + day + 1721029;
+        return jd;
+    }
+
+    public static int julianDay( int year, int month, int day ) {
+        if ( year<1800 ) throw new IllegalArgumentException("year must be more than 1800");
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
