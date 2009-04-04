@@ -746,7 +746,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     logger.finest(" using cacheImage w/AT " + atDesc);
                     atGraphics.transform(at);
                 } else {
-                    logger.finest(" using cacheImage");
+                    logger.finest(" using cacheImage " + cacheImageBounds +  " " + xmemento + " " + ymemento );
                 }
 
                 //int reduceHeight=  getRow().getDMinimum() - clip.y;
@@ -813,9 +813,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 xmemento = xAxis.getMemento();
                 ymemento = yAxis.getMemento();
 
-                DatumRange dr = new DatumRange(xAxis.getDataRange().getMinimum(),
-                        xAxis.getDataRange().getMaximum(), xAxis.getDataRange().getUnits());
-                logger.finest("recalc cacheImage, xmemento=" + xmemento + " dr=" + dr);
+                logger.finest("recalc cacheImage, xmemento=" + xmemento + " ymemento=" + ymemento );
             }
         }
 
@@ -1557,6 +1555,24 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         this.overSize = overSize;
         invalidateCacheImage();
         firePropertyChange(PROP_OVERSIZE, oldOverSize, overSize);
+    }
+
+    /**
+     * returns the rectange that renderers should paint so that when they
+     * are asked to render, they have everything pre-rendered.  This is
+     * the same as the axis bounds them oversize is turned off.
+     * 
+     * @return
+     */
+    protected Rectangle getUpdateImageBounds() {
+        int x = getColumn().getDMinimum();
+        int y = getRow().getDMinimum();
+        cacheImageBounds = new Rectangle();
+        cacheImageBounds.width = 16 * getWidth() / 10;
+        cacheImageBounds.height = getHeight();
+        cacheImageBounds.x = x - 3 * getWidth() / 10;
+        cacheImageBounds.y = y - 1;
+        return cacheImageBounds;
     }
 
     /**
