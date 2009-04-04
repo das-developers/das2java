@@ -446,7 +446,7 @@ public class ArgumentList {
             sb.append(args[i]);
             sb.append(" ");
         }
-        logger.info("args: "+sb.toString());
+        logger.finer("args: "+sb.toString());
         int iposition=0;
         
         for ( int i=0; i<args.length; i++ ) {
