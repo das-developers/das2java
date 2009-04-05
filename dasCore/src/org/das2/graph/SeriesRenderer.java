@@ -873,7 +873,7 @@ public class SeriesRenderer extends Renderer  {
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
             if (parent.isOverSize()) {
-                Rectangle plotBounds = parent.getCacheImageBounds();
+                Rectangle plotBounds = parent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
                     visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
                 }
