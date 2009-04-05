@@ -1125,7 +1125,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for (int i = 1; !intersects && i < minor.getLength(); i++) {
             int x1 = (int) transform(minor.get(i));
             if ( x1<10000 ) {
-                if (Math.abs(x0 - x1) < 10) {
+                if (Math.abs(x0 - x1) < 7) {
                     intersects = true;
                 }
                 x0= x1;
@@ -1925,9 +1925,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //return getAffineTransform(memento.range, false, at);
 
         double dmin0, dmax0;
-
         dmin0 = transform(memento.range.min());
         dmax0 = transform(memento.range.max());
+
+        double scale2 = (0. + getMemento().dmin - getMemento().dmax) / (memento.dmin - memento.dmax);
+        double trans2 = -1 * memento.dmin * scale2 + getMemento().dmin;
+
+        if ( dmin0==10000 || dmin0==-10000 | dmax0==10000 | dmax0==10000 ) {
+            System.err.println("unable to create transform");
+        }
 
         if (!(isHorizontal() ^ flipped)) {
             double tmp = dmin0;
@@ -1938,11 +1944,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (!isHorizontal()) {
             double dmin1 = getRow().getDMinimum();
             double dmax1 = getRow().getDMaximum();
+
             double scaley = (dmin0 - dmax0) / (dmin1 - dmax1);
             double transy = -1 * dmin1 * scaley + dmin0;
             at.translate(0., transy);
             at.scale(1., scaley);
-
+            at.translate(0., trans2 );
+            at.scale(1., scale2 );
         } else {
             double dmin1 = getColumn().getDMinimum();
             double dmax1 = getColumn().getDMaximum();
@@ -1951,6 +1959,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             double transx = -1 * dmin1 * scalex + dmin0;
             at.translate(transx, 0);
             at.scale(scalex, 1.);
+            at.translate( trans2, 0. );
+            at.scale( scale2, 1. );
 
         }
 
