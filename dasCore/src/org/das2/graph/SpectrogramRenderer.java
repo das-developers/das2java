@@ -312,7 +312,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     }
 
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
+    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
         logger.finer("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
         reportCount();
@@ -323,7 +323,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 synchronized (lockObject) {
 
-                    Rectangle plotImageBounds2= parent.getCacheImageBounds();
+                    Rectangle plotImageBounds2= parent.getUpdateImageBounds();
 
                     if ( raster != null 
                             && xmemento != null && ymemento != null 
@@ -395,7 +395,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         imageXRange = xAxis.getDatumRange();
                         imageYRange = yAxis.getDatumRange();
 
-                        logger.fine("rebinning to pixel resolution");
+                        logger.fine("rebinning to pixel resolution: "+ xRebinDescriptor + "  " + yRebinDescriptor );
+                        logger.fine("rebinning to pixel resolution: "+ plotImageBounds2 );
 
                         DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
 
@@ -408,6 +409,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         xmemento = xAxis.getMemento();
                         ymemento = yAxis.getMemento();
                         cmemento = colorBar.getMemento();
+
+                        logger.fine("rebinning to pixel resolution: "+ xmemento + "  " + ymemento );
 
                         raster = transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped());
                         rasterWidth = plotImageBounds2.width;
