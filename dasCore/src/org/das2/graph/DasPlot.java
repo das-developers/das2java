@@ -729,7 +729,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         Graphics2D graphics = (Graphics2D) graphics1;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
-        if (cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache) {
+
+        boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
+        if ( useCacheImage ) {
 
             Graphics2D atGraphics = (Graphics2D) graphics.create();
 
@@ -739,13 +741,13 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 paintInvalidScreen(atGraphics, at);
 
             } else {
-
-                if (!at.isIdentity()) {
-                    String atDesc;
+                String atDesc;
+                if (!at.isIdentity()) {    
                     atDesc = GraphUtil.getATScaleTranslateString(at);
                     logger.finest(" using cacheImage w/AT " + atDesc);
                     atGraphics.transform(at);
                 } else {
+                    atDesc= "identity";
                     logger.finest(" using cacheImage " + cacheImageBounds +  " " + xmemento + " " + ymemento );
                 }
 
@@ -764,11 +766,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             //return;
             //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
 
-            }
+                    }
 
             atGraphics.dispose();
 
-        } else {
+        } else {  // don't useCacheImage
 
             synchronized (this) {
                 Graphics2D plotGraphics;
@@ -778,7 +780,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     logger.finest(" printing thread, drawing");
                 } else {
                     resetCacheImageBounds(false);
-                    cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
+                    cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height,
+                            BufferedImage.TYPE_4BYTE_ABGR);
                     plotGraphics = (Graphics2D) cacheImage.getGraphics();
                     plotGraphics.setBackground(getBackground());
                     plotGraphics.setColor(getForeground());
@@ -801,7 +804,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
 
 
-            if (!disableImageCache && !getCanvas().isPrintingThread()) {
+            if ( !disableImageCache && !getCanvas().isPrintingThread() ) {
                 cacheImageValid = true;
                 //clip.y= Math.max( clip.y, getRow().getDMinimum() );
                 //clip.translate( getX(), getY() );
