@@ -271,15 +271,10 @@ public class StreamTool {
             while ( (bytesRead = stream.read(struct.bigBuffer)) >= 0 || struct.bigBuffer.position()!=0 ) {
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
-                System.err.println("d2s bytesRead="+bytesRead+" total="+totalBytesRead );
                 
                 totalBytesRead += bytesRead;
-                //System.err.println("d2s bytesRead="+bytesRead+" total="+totalBytesRead );
-                //if ( totalBytesRead>318260 ) {
-                //  System.err.println("here");
-                //}
                 while (getChunk(struct)) {
-                    // this block is empty
+                    // this block is intentionally empty
                 }
                 struct.bigBuffer.compact();
             }
@@ -393,7 +388,7 @@ public class StreamTool {
                 if (struct.bigBuffer.get(bpos) == '>') {
                     break;
                 } else {
-                    System.err.println((char) struct.bigBuffer.get(bpos));
+                    //System.err.println((char) struct.bigBuffer.get(bpos));
                 }
             }
             for (; i < bufOffset + struct.bigBuffer.position(); i++) {
@@ -533,7 +528,7 @@ public class StreamTool {
             byte[] bytes = new byte[xml.limit() - xml.position()];
             xml.get(bytes);
             xml.position(pos);
-            System.err.println(new String(bytes));
+            //System.err.println(new String(bytes));
         }
         ByteBufferInputStream bbin = new ByteBufferInputStream(xml);
         InputStreamReader isr = new InputStreamReader(bbin);
@@ -580,7 +575,7 @@ public class StreamTool {
             // Ed's nice trick for finding the implementation
             String name = serializer.getClass().getSimpleName();
             java.net.URL u = serializer.getClass().getResource(name+".class");
-            System.err.println(u);
+            //System.err.println(u);
             e.printStackTrace();
         }
         serializer.write(document, output);
