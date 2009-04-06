@@ -710,7 +710,7 @@ public class DataSetUtil {
      * returns true if the dataset is valid, false otherwise.  If problems is
      * non-null, then problems will be indicated here.
      * @param ds rank N dataset.
-     * @param problems insert problem descriptions here
+     * @param problems insert problem descriptions here, if null then ignore
      * @return true if the dataset is valid, false otherwise
      */
     public static boolean validate(QDataSet ds, List<String> problems) {
