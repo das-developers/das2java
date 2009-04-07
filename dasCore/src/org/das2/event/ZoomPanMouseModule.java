@@ -23,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.das2.datum.DomainDivider;
 import org.das2.graph.DasDevicePosition;
 
 /**
@@ -32,9 +33,10 @@ import org.das2.graph.DasDevicePosition;
 public class ZoomPanMouseModule extends MouseModule {
 
     DasAxis xAxis;
-    DasAxis yAxis;
     DasAxis.Lock xAxisLock;
+    DasAxis yAxis;
     DasAxis.Lock yAxisLock;
+
     Point p0;
     DatumRange xAxisRange0;
     DatumRange yAxisRange0;
@@ -54,11 +56,29 @@ public class ZoomPanMouseModule extends MouseModule {
         return axis != null && (UnitsUtil.isIntervalMeasurement(axis.getUnits()) || UnitsUtil.isRatioMeasurement(axis.getUnits()));
     }
 
+    /**
+     * round to the nearest nice interval by looking for a DomainDivider in the axis.
+     * 
+     * @param xAxis
+     * @param dr
+     * @return
+     */
+    private DatumRange maybeRound(DasAxis xAxis, DatumRange dr) {
+        DomainDivider div= xAxis.getMinorTicksDomainDivider();
+        if ( div!=null ) {
+            div= div.finerDivider(false).finerDivider(false);
+            DatumRange minDr= div.rangeContaining(dr.min());
+            DatumRange maxDr= div.rangeContaining(dr.max());
+            Datum min= minDr.normalize(dr.min()) < 0.5 ? minDr.min() : minDr.max();
+            Datum max= maxDr.normalize(dr.max()) < 0.5 ? maxDr.min() : maxDr.max();
+            DatumRange drRound= new DatumRange( min, max );
+            dr= drRound;
+        }
+        return dr;
+    }
+
     private enum Pos {
         _null, beyondMin, min, middle, max, beyondMax
-    
-    
-    
     };
 
     private Pos position(DasDevicePosition ddp, int pos, int threshold) {
@@ -154,6 +174,7 @@ public class ZoomPanMouseModule extends MouseModule {
                     dr = DatumRangeUtil.rescale(dr, nmin+xshift, nmax+xshift);
                 }
             }
+            dr= maybeRound( xAxis, dr );
             xAxis.setDatumRange(dr);
         }
         if (axisIsAdjustable(yAxis)) {
@@ -166,6 +187,7 @@ public class ZoomPanMouseModule extends MouseModule {
                     dr = DatumRangeUtil.rescale(dr, nmin+yshift, nmax+yshift);
                 }
             }
+            dr= maybeRound( yAxis, dr );
             yAxis.setDatumRange(dr);
         }
 
@@ -182,7 +204,7 @@ public class ZoomPanMouseModule extends MouseModule {
             yAxisLock.unlock();
             yAxisLock = null;
         }
-        doPan(e, false);
+        doPan(e);
         parent.getCanvas().getGlassPane().setCursor(null);
     }
 
@@ -201,7 +223,7 @@ public class ZoomPanMouseModule extends MouseModule {
         return ticks.enclosingRange(dr, true);
     }
 
-    private void doPan(final MouseEvent e, boolean round) {
+    private void doPan(final MouseEvent e) {
         Point p2 = e.getPoint();
         if (axisIsAdjustable(xAxis)) {
             DatumRange dr;
@@ -212,9 +234,7 @@ public class ZoomPanMouseModule extends MouseModule {
                 Datum delta = xAxis.invTransform(p0.getX()).subtract(xAxis.invTransform(p2.getX()));
                 dr = new DatumRange(xAxisRange0.min().add(delta), xAxisRange0.max().add(delta));
             }
-            if (round) {
-                dr = doRound(dr, xAxis);
-            }
+            dr= maybeRound( xAxis, dr );
             xAxis.setDatumRange(dr);
         }
         if (axisIsAdjustable(yAxis)) {
@@ -226,16 +246,14 @@ public class ZoomPanMouseModule extends MouseModule {
                 Datum ydelta = yAxis.invTransform(p0.getY()).subtract(yAxis.invTransform(p2.getY()));
                 dr = new DatumRange(yAxisRange0.min().add(ydelta), yAxisRange0.max().add(ydelta));
             }
-            if (round) {
-                dr = doRound(dr, yAxis);
-            }
+            dr= maybeRound( yAxis, dr );
             yAxis.setDatumRange(dr);
         }
     }
 
     public void mouseDragged(MouseEvent e) {
         super.mouseDragged(e);
-        doPan(e, false);
+        doPan(e);
     }
 
     public void mousePressed(MouseEvent e) {
