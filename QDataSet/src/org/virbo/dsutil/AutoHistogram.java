@@ -29,8 +29,11 @@ import org.virbo.dataset.WeightsDataSet;
 
 /**
  * Self-configuring histogram dynamically adjusts range and bin size as data
- * is added.  Introduced to support automatic cadence algorithm, should be
- * generally useful in data discovery.
+ * is added.  Also it tries to identify outlier points, which are available
+ * as a Map<Double,Integer> going from value to number observed.  Also for
+ * each bin, we keep track of a running mean and variance, which are useful for
+ * identifying continuous bins and total moments.  Introduced to support
+ * automatic cadence algorithm, should be generally useful in data discovery.
  *
  * @author jbf
  */
@@ -65,6 +68,8 @@ public final class AutoHistogram {
     boolean initialOutliers;
     long invalidCount;
     Units units;
+    int rescaleCount;  // number of times we rescaled, useful for debugging.
+
     /**
      * list of outliers and thier count.  When we rescale, we see if any outliers can be added to the distribution.
      */
@@ -89,6 +94,7 @@ public final class AutoHistogram {
         outliers = new TreeMap<Double, Integer>();
         invalidCount = 0;
         units = null;
+        rescaleCount= 0;
     //timer = new DataSetBuilder(1, 1000000);
     //t0 = System.currentTimeMillis();
     }
@@ -382,9 +388,13 @@ public final class AutoHistogram {
         if (total != total1) {
             throw new IllegalArgumentException("total check fails");
         }
-        for ( double d1: vv ) {
+        for ( int i=0; i<vv.length; i++ ) {
+            double d1= vv[i];
             if ( Double.isNaN(d1) ) {
                 throw new IllegalArgumentException("nan in variance");
+            }
+            if ( nn[i]<2 && vv[i]>0 ) {
+                throw new IllegalArgumentException("non-zero variance in less than two bins in bin #"+i );
             }
         }
     }
@@ -511,6 +521,7 @@ public final class AutoHistogram {
      * @return
      */
     private final int rescaleLeft(int ibin,boolean checkOutliers) {
+        rescaleCount++;
         int factor = nextFactor();
         //System.err.println("rescaleLeft to " + binw / binwDenom + "*" + factor);
         checkTotal();
@@ -567,6 +578,8 @@ public final class AutoHistogram {
         int nnew = (nbin - nbin / factor);
         Arrays.fill(ss, nbin / factor, nbin, 0.);
         Arrays.fill(nn, nbin / factor, nbin, 0.);
+        Arrays.fill(vv, nbin / factor, nbin, 0.);
+
         if (binwDenom > 1.0) {
             binwDenom = binwDenom / factor;
         } else {
@@ -616,6 +629,9 @@ public final class AutoHistogram {
         for ( int i=0; i<stddevs.length(); i++ ) {
             double var=  Math.pow( stddevs.value(i),2 ) ;
             vvs[i]= ( hist.value(i)-1 ) * var + hist.value(i) * Math.pow( means.value(i) - mean, 2 );
+            if ( vvs[i]<0 ) {
+                System.err.println("helpjelp");
+            }
         }
 
         double VV= 0;
