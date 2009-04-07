@@ -718,6 +718,35 @@ public class DataSetUtil {
         return validate(ds, problems, 0);
     }
 
+    /**
+     * return the total number of values in the dataset.  For qubes this is the product
+     * of the dimension lengths, for other datasets we create a dataset of lengths
+     * and total all the elements.
+     * @param ds
+     * @return the number of values in the dataset.
+     */
+    public static int totalLength(QDataSet ds) {
+        if ( ds.rank()==0 ) return 1;
+        int[] qube= DataSetUtil.qubeDims(ds);
+        qube= null;
+        if ( qube==null ) {
+            LengthsDataSet lds= new LengthsDataSet(ds);
+            QubeDataSetIterator it= new QubeDataSetIterator(lds);
+            int total= 0;
+            while ( it.hasNext() ) {
+                it.next();
+                total+= it.getValue(lds);
+            }
+            return total;
+        } else {
+            int total= qube[0];
+            for ( int i=1; i<qube.length; i++ ) {
+                total*= qube[i];
+            }
+            return total;
+        }
+    }
+
     private static boolean validate(QDataSet ds, List<String> problems, int dimOffset) {
         QDataSet dep = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep != null) {
