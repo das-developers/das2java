@@ -22,7 +22,6 @@
  */
 package org.das2.graph;
 
-import java.beans.PropertyChangeSupport;
 import org.das2.event.MouseModule;
 import org.das2.event.TimeRangeSelectionEvent;
 import org.das2.event.TimeRangeSelectionListener;
@@ -78,7 +77,6 @@ import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
-import org.das2.util.Entities;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
