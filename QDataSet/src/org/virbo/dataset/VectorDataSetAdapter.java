@@ -52,10 +52,15 @@ public class VectorDataSetAdapter implements VectorDataSet {
         planes.put( "", y );
         
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
-            QDataSet pds= (QDataSet) y.property( "PLANE_"+i);
+            String name= "PLANE_"+i;
+            QDataSet pds= (QDataSet) y.property( name );
             if ( pds!=null ) {
-                String name= "PLANE_"+i;
-                if ( pds.property(QDataSet.NAME )!=null ) name= (String)pds.property(QDataSet.NAME );
+                if ( i==0 ) {
+                    planes.put( name, pds ); // kludge for colorScatter
+                }
+                if ( pds.property(QDataSet.NAME )!=null ) {
+                    name= (String)pds.property(QDataSet.NAME );
+                }
                 planes.put( name, pds );
             } else {
                 break;
