@@ -724,10 +724,12 @@ public class SeriesRenderer extends Renderer  {
 
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
+        DasPlot lparent= this.parent;
+
         logger.fine( "ds: "+this.ds+",  drawing indeces "+this.firstIndex+" to "+this.lastIndex );
-        if ( parent==null ) return;
+        if ( lparent==null ) return;
         if ( this.ds == null && lastException != null) {
-            parent.postException(this, lastException);
+            lparent.postException(this, lastException);
             return;
         }
 
@@ -740,13 +742,13 @@ public class SeriesRenderer extends Renderer  {
 
         if (dataSet == null) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
-            parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
         }
 
         if (dataSet.getXLength() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
-            parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
+            lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
             return;
         }
 
@@ -764,13 +766,13 @@ public class SeriesRenderer extends Renderer  {
         plottable = plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
 
         if (!plottable) {
-            parent.postMessage( this, "data set units cannot convert to axis units", DasPlot.WARNING, null, null );
+            lparent.postMessage( this, "data set units cannot convert to axis units", DasPlot.WARNING, null, null );
             return;
         }
 
         logger.fine("rendering points: " + lastIndex + "  " + firstIndex);
         if (lastIndex == firstIndex) {
-            parent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+            lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
 
         logger.fine("render data set " + dataSet);
@@ -805,7 +807,7 @@ public class SeriesRenderer extends Renderer  {
                         
                         String label = String.valueOf(tds.getYTagDatum(0, j)).trim();
                         
-                        parent.addToLegend( this, (ImageIcon)GraphUtil.colorIcon( extraConnectorElements[j].color, 5, 5 ), j, label );
+                        lparent.addToLegend( this, (ImageIcon)GraphUtil.colorIcon( extraConnectorElements[j].color, 5, 5 ), j, label );
                     }
                 }
             }
@@ -831,7 +833,7 @@ public class SeriesRenderer extends Renderer  {
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
             if ( count==0 ) {
-                parent.postMessage( this, "no valid points", DasPlot.INFO, null, null );
+                lparent.postMessage( this, "no valid points", DasPlot.INFO, null, null );
             }
             mon.finished();
         }
@@ -847,11 +849,11 @@ public class SeriesRenderer extends Renderer  {
         lastUpdateMillis = milli;
 
         if (dataSetClipped) {
-            parent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
+            lparent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
 
         if ( lastIndex - firstIndex < 2 ) {
-            parent.postMessage(this, "less than two points visible", DasPlot.INFO, null, null);
+            lparent.postMessage(this, "less than two points visible", DasPlot.INFO, null, null);
         }
 
     }

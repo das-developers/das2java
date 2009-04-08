@@ -368,12 +368,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
             public void run() {
                 logger.fine("update plot image");
+                DasPlot lparent= parent;
                 try {
-                    if (parent != null) { // TODO: make synchronized, but this is non-trivial since deadlock.
+                    if (lparent != null) { // TODO: make synchronized, but this is non-trivial since deadlock.
                         final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
-                        updatePlotImage(parent.getXAxis(), parent.getYAxis(), progressPanel);
-                        xmemento = parent.getXAxis().getMemento();
-                        ymemento = parent.getYAxis().getMemento();
+                        updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
+                        xmemento = lparent.getXAxis().getMemento();
+                        ymemento = lparent.getYAxis().getMemento();
                         renderException = null;
                     } else {
                         return;
@@ -387,8 +388,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     logger.warning("exception: " + re);
                     re.printStackTrace();
                     renderException = re;
-                    parent.invalidateCacheImage();
-                    parent.repaint();
+                    if ( lparent!=null ) {
+                        lparent.invalidateCacheImage();
+                        lparent.repaint();
+                    }
                     throw re;
                 } finally {
                     // this code used to call finished() on the progressPanel
@@ -396,8 +399,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
                 logger.fine("invalidate parent cacheImage and repaint");
 
-                parent.invalidateCacheImage();
-                parent.repaint();
+                lparent.invalidateCacheImage();
+                lparent.repaint();
             }
         };
 

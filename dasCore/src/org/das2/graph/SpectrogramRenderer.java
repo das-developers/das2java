@@ -316,6 +316,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         logger.finer("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
         reportCount();
+        DasPlot lparent= getParent();
         try {
             try {
 
@@ -323,7 +324,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 synchronized (lockObject) {
 
-                    Rectangle plotImageBounds2= parent.getUpdateImageBounds();
+                    Rectangle plotImageBounds2= lparent.getUpdateImageBounds();
 
                     if ( raster != null 
                             && xmemento != null && ymemento != null 
@@ -336,7 +337,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         
                     } else {
 
-                        if (getParent() == null || plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
+                        if (lparent == null || plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
                             logger.finest("canvas not useable!!!");
                             return;
                         }
@@ -348,7 +349,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             rebinDataSet = null;
                             imageXRange = null;
                             imageYRange = null;
-                            getParent().repaint();
+                            lparent.repaint();
                             return;
 
                         }
@@ -360,7 +361,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             rebinDataSet = null;
                             imageXRange = null;
                             imageYRange = null;
-                            getParent().repaint();
+                            lparent.repaint();
                             return;
                         }
 
@@ -445,7 +446,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 imageXRange = null;
                 imageYRange = null;
                 if (this.getLastException() == null) setException(ex);
-                getParent().repaint();
+                lparent.repaint();
                 return;
             }
 
@@ -455,7 +456,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             lastException = e;
             plotImage = null;
         } finally {
-            getParent().repaint();
+            lparent.repaint();
         }
     }
 
