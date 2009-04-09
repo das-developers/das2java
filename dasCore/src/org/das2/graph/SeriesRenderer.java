@@ -25,7 +25,6 @@ package org.das2.graph;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasProperties;
-import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetUtil;
 import org.das2.dataset.TableDataSet;
@@ -862,6 +861,7 @@ public class SeriesRenderer extends Renderer  {
      * updates firstIndex and lastIndex that point to the part of
      * the data that is plottable.  The plottable part is the part that 
      * might be visible while limiting the number of plotted points.
+     * //TODO: bug 0000354: warning message bubble about all data before or after visible range
      */
     private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
 
