@@ -25,7 +25,7 @@ package org.das2.util.filesystem;
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
-import java.util.logging.Level;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
@@ -61,14 +61,23 @@ public abstract class FileSystem  {
     public static FileSystem create(URL root) throws FileSystemOfflineException {
         return create(root, new NullProgressMonitor());
     }
+
+    private static final Map<URL,FileSystem> instances= new HashMap<URL,FileSystem>();
+
     /**
      * Creates a FileSystem by parsing the URL and creating the correct FS type.
      * Presently, file, http, and ftp are supported.  If the URL contains a folder
      * ending in .zip and a FileSystemFactory is registered as handling .zip, then
      * The zip file will be transferred and the zip file mounted.
      */
-    public static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException {
+    public synchronized static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException {
         logger.fine("create filesystem "+root);
+
+        FileSystem result= instances.get(root);
+        if ( result!=null ) {
+            return result;
+        }
+
         FileSystemFactory factory;
         if ( root.getPath().contains(".zip") && registry.containsKey("zip") ) {
             try {
@@ -83,9 +92,9 @@ public abstract class FileSystem  {
                 factory = (FileSystemFactory) registry.get("zip");
                 FileSystem zipfs = factory.createFileSystem(localZipFile.toURI().toURL());
                 if ( subdir.equals("") || subdir.equals("/") ) {
-                    return zipfs;
+                    result= zipfs;
                 } else {
-                    return new SubFileSystem(zipfs, subdir);
+                    result= new SubFileSystem(zipfs, subdir);
                 }
             } catch (IOException ex) {
                 throw new FileSystemOfflineException(ex);
@@ -96,8 +105,12 @@ public abstract class FileSystem  {
         if ( factory==null ) {
             throw new IllegalArgumentException( "unsupported protocol: "+root );
         } else {
-            return factory.createFileSystem(root);
+            result= factory.createFileSystem(root);
         }
+        
+        instances.put(root, result);
+        
+        return result;
     }
     
     public static FileSystemSettings settings() {
