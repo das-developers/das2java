@@ -726,16 +726,28 @@ public class DatumRangeUtil {
         
     }
     
+    /**
+     * parse the string into a DatumRange with time location units.
+     * @throws ParseException when the string cannot be parsed.
+     * @param s
+     * @return
+     */
     public static DatumRange parseTimeRange( String string ) throws ParseException {
         return new TimeRangeParser().parse(string);
     }
     
-    
+
+    /**
+     * parse the string into a DatumRange with time location units.
+     * @throws IllegalArgumentException when the string cannot be parsed.
+     * @param s
+     * @return
+     */
     public static DatumRange parseTimeRangeValid( String s ) {
         try {
             return parseTimeRange(s);
         } catch ( ParseException e ) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
     }
     
