@@ -125,65 +125,71 @@ public abstract class WebFileSystem extends FileSystem {
      * @param filename
      * @throws java.lang.RuntimeException
      */
-    private void waitForDownload(ProgressMonitor monitor, ProgressMonitor mon, final String filename) throws RuntimeException {
+    private void waitForDownload( ProgressMonitor monitor, final String filename ) {
 
-        monitor.setProgressMessage("Waiting for file to download");
-        while (mon != null) {
-            while (!mon.isStarted()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                }
+        monitor.setProgressMessage("waiting for file to download");
+        
+        ProgressMonitor downloadMonitor = (ProgressMonitor) downloads.get(filename);
+
+        monitor.started();
+
+        while (downloadMonitor != null) {
+
+            // in case downloadMonitor switched from indeterminate to determinate
+            monitor.setTaskSize( downloadMonitor.getTaskSize() );
+
+            // this monitor can tell the downloading monitor to cancel.
+            if (monitor.isCancelled()) {
+                downloadMonitor.cancel();
             }
-            monitor.setTaskSize(mon.getTaskSize());
-            monitor.started();
 
-            while (mon != null) {
-                // this monitor can tell the downloading monitor to cancel.
-                if (monitor.isCancelled()) {
-                    mon.cancel();
-                }
+            // echo what the download monitor is reporting.
+            monitor.setTaskProgress(downloadMonitor.getTaskProgress());
 
-                // echo what the download monitor is reporting.
-                monitor.setTaskProgress(mon.getTaskProgress());
-
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                mon = (ProgressMonitor) downloads.get(filename);
+            try {
+                downloads.wait(100); // wait 100ms, then proceed to support progress information
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-            logger.finest("waiting for download");
+            downloadMonitor = (ProgressMonitor) downloads.get(filename);
+            
         }
+        
         monitor.finished();
     }
 
     /**
-     * Request lock to download file.  If you get the lock, then you should download
-     * the file.  If null is returned, then another thread has downloaded the 
-     * file this thread can return.
+     * Request lock to download file.  If this thread gets the lock, then it
+     * should download the file and call  mutatorLock.unlock() when the
+     * download is complete.   If another thread is downloading the file, this
+     * will block until the download is complete, and null will be returned to
+     * indicate that the file has already been downloaded.
      * 
-     * @param filename
-     * @param mon
+     * @param filename the filename with in the filesystem.
+     * @param f the File which will be the local copy.
+     * @param mon a monitor for the download.  If a MutatorLock is returned, then
+     *    the monitor is not touched, but other threads may use it to keep track
+     *    of the download progress.
+     * @throws FileNotFoundException if the file wasn't found after another thread loaded the file.
      * @return MutatorLock.  The client should call mutatorLock.unlock() when the download is complete
      */
     protected MutatorLock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
-        logger.finer( "" + Thread.currentThread().getName() + " wants download lock for "+filename + " wfs impl " + this.hashCode() );
-        System.err.println( "" + Thread.currentThread().getName() + " wants download lock for "+filename + " wfs impl " + this.hashCode() );
+        logger.finer("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
+        System.err.println("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
         synchronized (downloads) {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
             if (mon != null) { // the webfilesystem is already loading this file, so wait.
-                logger.fine("another thread is downloading "+filename+", waiting...");
-                waitForDownload(monitor, mon, filename);
+                logger.fine("another thread is downloading " + filename + ", waiting...");
+                waitForDownload( monitor, filename );
                 if (f.exists()) {
                     return null;
                 } else {
                     throw new FileNotFoundException("expected to find " + f);
                 }
             } else {
-                logger.fine("this thread will download "+filename+".");
+                logger.fine("this thread will download " + filename + ".");
                 downloads.put(filename, monitor);
+                monitor.started();  // this is necessary for the other monitors
 
                 return new MutatorLock() {
 
@@ -191,7 +197,10 @@ public abstract class WebFileSystem extends FileSystem {
                     }
 
                     public void unlock() {
-                        downloads.remove(filename);
+                        synchronized (downloads) {
+                            downloads.remove(filename);
+                            downloads.notifyAll();
+                        }
                     }
                 };
 
