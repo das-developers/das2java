@@ -38,6 +38,7 @@ import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
+import org.das2.system.MutatorLock;
 
 /**
  *
@@ -46,12 +47,6 @@ import java.util.regex.*;
 public class HttpFileSystem extends WebFileSystem {
 
     private HashMap listings;
-    private static HashMap instances = new HashMap();
-    /**
-     * Keep track of active downloads.  This handles, for example, the case
-     * where the same file is requested several times by different threads.
-     */
-    private HashMap downloads = new HashMap();
     private String userPass;
 
     /** Creates a new instance of WebFileSystem */
@@ -60,103 +55,61 @@ public class HttpFileSystem extends WebFileSystem {
         listings = new HashMap();
     }
 
-    public static synchronized HttpFileSystem createHttpFileSystem( URL root ) throws FileSystemOfflineException {
-        if (instances.containsKey(root.toString())) {
-            logger.finer("reusing " + root);
-            return (HttpFileSystem) instances.get(root.toString());
-        } else {
-            try {
-                // verify URL is valid and accessible
-                HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
-                urlc.setRequestMethod("HEAD");
-                if (root.getUserInfo() != null) {
-                    String encode = Base64.encodeBytes(root.getUserInfo().getBytes());
-                    // xerces String encode= new String( Base64.encode(root.getUserInfo().getBytes()) );
-                    urlc.setRequestProperty("Authorization", "Basic " + encode);
-                }
-                
-                boolean offline= true;
-                urlc.connect();
-                if ( urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode()!=HttpURLConnection.HTTP_FORBIDDEN ) {
-                    if ( FileSystem.settings().isAllowOffline() ) {
-                        logger.info("remote filesystem is offline, allowing access to local cache.");
-                    } else {
-                        throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
-                    }
-                } else {
-                    offline= false;
-                }
-                
-                File local;
-                
-                if ( DasApplication.hasAllPermission() ) {
-                    local = localRoot(root);
-                    logger.finer("initializing httpfs " + root + " at " + local);
-                } else {
-                    local= null;
-                    logger.finer("initializing httpfs " + root + " in applet mode" );
-                }
-                HttpFileSystem result = new HttpFileSystem(root, local);
-                result.offline= offline;
-                
-                instances.put(root.toString(), result);
-                return result;
-                
-            } catch (FileSystemOfflineException e) {
-                throw e;
-            } catch (IOException e) {
-                throw new FileSystemOfflineException(e);
+    public static synchronized HttpFileSystem createHttpFileSystem(URL root) throws FileSystemOfflineException {
+        try {
+            // verify URL is valid and accessible
+            HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
+            urlc.setRequestMethod("HEAD");
+            if (root.getUserInfo() != null) {
+                String encode = Base64.encodeBytes(root.getUserInfo().getBytes());
+                urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
+
+            boolean offline = true;
+            urlc.connect();
+            if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
+                if (FileSystem.settings().isAllowOffline()) {
+                    logger.info("remote filesystem is offline, allowing access to local cache.");
+                } else {
+                    throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
+                }
+            } else {
+                offline = false;
+            }
+
+            File local;
+
+            if (DasApplication.hasAllPermission()) {
+                local = localRoot(root);
+                logger.finer("initializing httpfs " + root + " at " + local);
+            } else {
+                local = null;
+                logger.finer("initializing httpfs " + root + " in applet mode");
+            }
+            HttpFileSystem result = new HttpFileSystem(root, local);
+            result.offline = offline;
+
+            return result;
+
+        } catch (FileSystemOfflineException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new FileSystemOfflineException(e);
         }
+
     }
 
     protected void downloadFile(String filename, File f, File partFile, ProgressMonitor monitor) throws IOException {
 
-        logger.fine("downloadFile(" + filename + ")");
+        MutatorLock lock = getDownloadLock(filename, f, monitor);
 
-        boolean waitForAnother;
-        synchronized (downloads) {
-            ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
-            if (mon != null) { // the httpFS is already loading this file, so wait.
-
-                monitor.setProgressMessage("Waiting for file to download");
-                while (mon != null) {
-                    while (!mon.isStarted()) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                    monitor.setTaskSize(mon.getTaskSize());
-                    monitor.started();
-                    if (monitor.isCancelled()) {
-                        mon.cancel();
-                    }
-                    monitor.setTaskProgress(mon.getTaskProgress());
-                    try {
-                        downloads.wait(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    mon = (ProgressMonitor) downloads.get(filename);
-                    logger.finest("waiting for download");
-
-                }
-                monitor.finished();
-                if (f.exists()) {
-                    return;
-                } else {
-                    throw new FileNotFoundException("expected to find " + f);
-                }
-            } else {
-                downloads.put(filename, monitor);
-                waitForAnother = false;
-            }
+        if (lock == null) {
+            return;
         }
 
-        try {
-            logger.info("downloadFile " + filename);
+        logger.fine("downloadFile(" + filename + ")");
 
+        try {
             URL remoteURL = new URL(root.toString() + filename);
 
             URLConnection urlc = remoteURL.openConnection();
@@ -166,9 +119,9 @@ public class HttpFileSystem extends WebFileSystem {
             }
 
             HttpURLConnection hurlc = (HttpURLConnection) urlc;
-            if ( hurlc.getResponseCode()==404 ) {
+            if (hurlc.getResponseCode() == 404) {
                 logger.info("" + hurlc.getResponseCode() + " URL: " + remoteURL);
-                throw new FileNotFoundException("not found: "+remoteURL );
+                throw new FileNotFoundException("not found: " + remoteURL);
             } else if (hurlc.getResponseCode() != 200) {
                 logger.info("" + hurlc.getResponseCode() + " URL: " + remoteURL);
                 throw new IOException(hurlc.getResponseMessage());
@@ -212,10 +165,9 @@ public class HttpFileSystem extends WebFileSystem {
                 throw new IOException("couldn't create local file: " + f);
             }
         } finally {
-            synchronized (downloads) {
-                downloads.remove(filename);
-                downloads.notifyAll();
-            }
+
+            lock.unlock();
+
         }
     }
 
@@ -227,8 +179,8 @@ public class HttpFileSystem extends WebFileSystem {
      * @param f
      * @throws java.io.IOException
      */
-    protected Map<String,Object> getHeadMeta( String f ) throws IOException {
-        String realName= f;
+    protected Map<String, Object> getHeadMeta(String f) throws IOException {
+        String realName = f;
         boolean exists;
         try {
             URL ur = new URL(this.root, f);
@@ -238,10 +190,10 @@ public class HttpFileSystem extends WebFileSystem {
             connect.connect();
             HttpURLConnection.setFollowRedirects(true);
             // check for rename, which means we'll do another request
-            if ( connect.getResponseCode()==303 ) {
-                String surl= connect.getHeaderField("Location");
-                if ( surl.startsWith(root.toString()) ) {
-                    realName= surl.substring(root.toString().length());
+            if (connect.getResponseCode() == 303) {
+                String surl = connect.getHeaderField("Location");
+                if (surl.startsWith(root.toString())) {
+                    realName = surl.substring(root.toString().length());
                 }
                 connect.disconnect();
                 ur = new URL(this.root, realName);
@@ -249,29 +201,30 @@ public class HttpFileSystem extends WebFileSystem {
                 connect.setRequestMethod("HEAD");
                 connect.connect();
             }
-            exists= connect.getResponseCode()!=404; 
-            
-            Map<String,Object> result= new HashMap<String,Object>();
-            result.putAll( connect.getHeaderFields() );
+            exists = connect.getResponseCode() != 404;
+
+            Map<String, Object> result = new HashMap<String, Object>();
+            result.putAll(connect.getHeaderFields());
             connect.disconnect();
-            
+
             return result;
-            
+
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException(ex);
         }
-        
+
     }
-    
-    
+
     /** dumb method looks for / in parent directory's listing.  Since we have
      * to list the parent, then IOException can be thrown.
      * 
      */
     public boolean isDirectory(String filename) throws IOException {
 
-        if ( localRoot==null ) return filename.endsWith("/");
-        
+        if (localRoot == null) {
+            return filename.endsWith("/");
+        }
+
         File f = new File(localRoot, filename);
         if (f.exists()) {
             return f.isDirectory();
