@@ -37,8 +37,7 @@ public class TimeParser {
     int ndigits;
     String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b"};
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name",
-    };
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name",};
     int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3};
     int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1};
     int[] handlers;
@@ -105,7 +104,9 @@ public class TimeParser {
             }
 
             String timePart = exampleTime.substring(i + 1);
-            if ( timePart.endsWith("Z") ) timePart= timePart.substring(0,timePart.length()-1); // see below
+            if (timePart.endsWith("Z")) {
+                timePart = timePart.substring(0, timePart.length() - 1); // see below
+            }
             hasDelim = !timePart.matches("\\d+");
             delim = 0;
             if (hasDelim) {
@@ -133,7 +134,9 @@ public class TimeParser {
                 default:
                     throw new IllegalArgumentException("unable to identify time format for " + exampleTime);
             }
-            if ( timePart.endsWith("Z") ) time+= "Z";
+            if (timePart.endsWith("Z")) {
+                time += "Z";
+            }
             return date + dateTimeDelim + time;
 
         } else {
@@ -164,7 +167,7 @@ public class TimeParser {
         delim[0] = ss[0];
         for (int i = 1; i < ndigits; i++) {
             int pp = 0;
-            while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp)=='-' ) {
+            while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp) == '-') {
                 pp++;
             }
             if (pp > 0) {
@@ -178,8 +181,8 @@ public class TimeParser {
                 delim[i] = ss[i].substring(pp + 1);
             } else {
                 int endIndex = ss[i].indexOf('}', pp);
-                int comma= ss[i].indexOf(",",pp);
-                if (  comma!=-1 ) {
+                int comma = ss[i].indexOf(",", pp);
+                if (comma != -1) {
                     fc[i] = ss[i].substring(pp + 1, comma);
                 } else {
                     fc[i] = ss[i].substring(pp + 1, endIndex);
@@ -303,6 +306,7 @@ public class TimeParser {
      *  %M    2-digit minute
      *  %S     2-digit second
      *  %{milli}  3-digit milliseconds
+     *  %{ignore} skip this field
      *  </pre>
      *
      */
@@ -310,20 +314,6 @@ public class TimeParser {
         return new TimeParser(formatString, null);
     }
 
-    /**
-     *  This version allows for extension by specifying an external handler.
-     *
-     *  %3{fieldName}   2 characters are passed to the handler
-     *  %Y   4-digit year
-     *  %y    2-digit year
-     *  %m   month
-     *  %2m 2-digit month
-     *  %d    2-digit day
-     *  %H    2-digit hour
-     *  %M    2-digit minute
-     *  %S     2-digit second
-     *  %{milli}  3-digit milliseconds
-     */
     public static TimeParser create(String formatString, String fieldName, FieldHandler handler) {
         HashMap map = new HashMap();
         map.put(fieldName, handler);
@@ -364,21 +354,21 @@ public class TimeParser {
      * fractional part in the seconds.
      */
     public void resetSeconds() {
-        time.seconds= 0;
+        time.seconds = 0;
     }
-    
+
     /**
      * force the parser to look for delimiters
      */
     public void sloppyColumns() {
-        this.lengths[0]=-1;
-        for (int i=1; i<this.offsets.length; i++ ) {
-            this.offsets[i]=-1;
-            this.lengths[i]=-1;
-            //TODO: check for delims
+        this.lengths[0] = -1;
+        for (int i = 1; i < this.offsets.length; i++) {
+            this.offsets[i] = -1;
+            this.lengths[i] = -1;
+        //TODO: check for delims
         }
     }
-    
+
     public TimeParser parse(String timeString) throws ParseException {
         int offs = 0;
         int len = 0;
@@ -389,7 +379,7 @@ public class TimeParser {
         time.minute = 0;
         time.seconds = 0;
         time.micros = 0;
-        
+
         for (int idigit = 1; idigit < ndigits; idigit++) {
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
 
@@ -408,7 +398,9 @@ public class TimeParser {
                     }
                 } else {
                     int i = timeString.indexOf(this.delims[idigit], offs);
-                    if ( i==-1 ) throw new ParseException("expected delimiter \""+this.delims[idigit]+"\"",offs);
+                    if (i == -1) {
+                        throw new ParseException("expected delimiter \"" + this.delims[idigit] + "\"", offs);
+                    }
                     len = i - offs;
                 }
             }
@@ -468,68 +460,121 @@ public class TimeParser {
         return this;
     }
 
+    private static class FieldSpec {
+        String spec=null;  // unparsed spec
+        String fieldType= null;
+        int length= -1;
+        String params= null;
+    }
+
     /**
-     * set the digit with the integer part, and move the fractional part to the less significant digits.
+     * parse field specifications like:
+     *   %{milli;cadence=100}
+     *   %3{skip}
+     * @param spec
+     * @return
+     */
+    FieldSpec parseSpec(String spec) {
+        FieldSpec result= new FieldSpec();
+        int i0= spec.charAt(0)=='%' ? 1 : 0;
+        result.spec= spec.substring(i0);
+        int i1= i0;
+        while ( Character.isDigit(spec.charAt(i1)) ) i1++;
+        if ( i1>i0 ) {
+            result.length= Integer.parseInt(spec.substring(i0,i1));
+            i0= i1;
+        }
+        int isemi = spec.indexOf(';',i0);
+        int ibrace = spec.indexOf('}',i0);
+        i1 = ibrace;
+        if (isemi > -1 && isemi < ibrace) {
+            i1 = isemi;
+            result.params= spec.substring(isemi,ibrace);
+        } else {
+            result.params= "";
+        }
+        String fieldType = spec.substring(1, i1);
+        
+        result.fieldType= fieldType;
+        return result;
+        
+    }
+
+    /**
+     * set the digit with the integer part, and move the fractional part to the
+     * less significant digits.  Format should contain just one field,
+     * see setDigit( String format, int value ) to break up fields.
      * @param format
      * @param value
      */
-    public void setDigit( String format, double value ) {
-        if ( value<0 ) throw new IllegalArgumentException("value must not be negative");
+    public void setDigit(String format, double value) {
+        if (value < 0) {
+            throw new IllegalArgumentException("value must not be negative");
+        }
         String[] ss = format.split("%", -2);
-        if ( ss.length>2 ) throw new IllegalArgumentException("multiple fields not supported");
-        for (int i = ss.length-1; i > 0; i--) {
-            int digit= (int)value;
-            double fp= value-digit;
-            
-            switch ( ss[i].charAt(0) ) {
+        if (ss.length > 2) {
+            throw new IllegalArgumentException("multiple fields not supported");
+        }
+        for (int i = ss.length - 1; i > 0; i--) {
+            int digit = (int) value;
+            double fp = value - digit;
+
+            switch (ss[i].charAt(0)) {
                 case 'Y':
                     time.year = digit;
-                    if ( TimeUtil.isLeapYear(time.year) ) {
-                        time.seconds+= 366 * 24 * 3600 * fp;
+                    if (TimeUtil.isLeapYear(time.year)) {
+                        time.seconds += 366 * 24 * 3600 * fp;
                     } else {
-                        time.seconds+= 365 * 24 * 3600 * fp;
+                        time.seconds += 365 * 24 * 3600 * fp;
                     }
                     break;
                 case 'y':
                     time.year = digit < 58 ? 2000 + digit : 1900 + digit;
-                    if ( TimeUtil.isLeapYear(time.year) ) {
-                        time.seconds+= 366 * 24 * 3600 * fp;
+                    if (TimeUtil.isLeapYear(time.year)) {
+                        time.seconds += 366 * 24 * 3600 * fp;
                     } else {
-                        time.seconds+= 365 * 24 * 3600 * fp;
+                        time.seconds += 365 * 24 * 3600 * fp;
                     }
                     break;
                 case 'j':
                     time.month = 1;
                     time.day = digit;
-                    time.seconds+= 24 * 3600 * fp;
+                    time.seconds += 24 * 3600 * fp;
                     break;
                 case 'm':
                     time.month = digit;
-                    time.seconds+= TimeUtil.daysInMonth(time.month,time.year) * 24 * 3600 * fp;
+                    time.seconds += TimeUtil.daysInMonth(time.month, time.year) * 24 * 3600 * fp;
+                    break;
+                case 'b':  // someone else must parse the month name into 1..12.
+                    time.month = digit;
                     break;
                 case 'd':
                     time.day = digit;
-                    time.seconds+= 24 * 3600 * fp;
+                    time.seconds += 24 * 3600 * fp;
                     break;
                 case 'H':
                     time.hour = digit;
-                    time.seconds+= 3600 * fp;
+                    time.seconds += 3600 * fp;
                     break;
                 case 'M':
                     time.minute = digit;
-                    time.seconds+= 60 * fp;
+                    time.seconds += 60 * fp;
                     break;
                 case 'S':
                     time.seconds = digit + fp;
                     break;
                 case '{':
-                    if ( ss[i].substring(1).equals("milli}") ) {
+                    FieldSpec fs= parseSpec(ss[i]);
+                    
+                    if (fs.fieldType.equals("milli")) {
                         time.millis = digit;
                         time.micros += 1000 * fp;
-                        time.seconds += ( ( 1000*fp)-time.micros ) * 1e-6;
-                    } else if ( ss[i].substring(1).equals("micro}") ) {
+                        time.seconds += ((1000 * fp) - time.micros) * 1e-6;
+                    } else if (fs.fieldType.equals("micro")) {
                         time.micros = digit;
                         time.seconds += fp * 1e-6;
+                    } else if (fs.fieldType.equals("ignore")) {
+                        // do nothing
                     }
                     break;
                 default:
@@ -537,7 +582,7 @@ public class TimeParser {
             }
         }
     }
-    
+
     /**
      * Set the digit using the format code.  If multiple digits are found, then
      * the integer provided should be the misinterpreted integer.  For example,
@@ -549,64 +594,77 @@ public class TimeParser {
      */
     public TimeParser setDigit(String format, int value) {
         String[] ss = format.split("%", -2);
-        for (int i = ss.length-1; i > 0; i--) {
-            int mod=0;
+        for (int i = ss.length - 1; i > 0; i--) {
+            int mod = 0;
             int digit;
-            switch ( ss[i].charAt(0) ) {
+            switch (ss[i].charAt(0)) {
                 case 'Y':
-                    mod= 10000;
-                    digit= value % mod;
+                    mod = 10000;
+                    digit = value % mod;
                     time.year = digit;
                     break;
                 case 'y':
-                    mod=100;
-                    digit= value % mod;
+                    mod = 100;
+                    digit = value % mod;
                     time.year = digit < 58 ? 2000 + digit : 1900 + digit;
                     break;
                 case 'j':
-                    mod= 1000;
-                    digit= value % mod;
+                    mod = 1000;
+                    digit = value % mod;
                     time.month = 1;
                     time.day = digit;
                     break;
                 case 'm':
-                    mod=100;
-                    digit= value % mod;
+                    mod = 100;
+                    digit = value % mod;
                     time.month = digit;
                     break;
+                case 'b':  // someone else must parse the month name into two-digit month.
+                    mod = 100;
+                    digit = value % mod;
+                    time.month= digit;
                 case 'd':
-                    mod=100;
-                    digit= value % mod;
+                    mod = 100;
+                    digit = value % mod;
                     time.day = digit;
                     break;
                 case 'H':
-                    mod=100;
-                    digit= value % mod;
+                    mod = 100;
+                    digit = value % mod;
                     time.hour = digit;
                     break;
                 case 'M':
-                    mod=100;
-                    digit= value % mod;
+                    mod = 100;
+                    digit = value % mod;
                     time.minute = digit;
                     break;
                 case 'S':
-                    mod=100;
-                    digit= value % mod;
+                    mod = 100;
+                    digit = value % mod;
                     time.seconds = digit;
                     break;
                 case '{':
-                    mod=1000;
-                    digit= value % mod;
-                    if ( ss[i].substring(1).equals("milli}") ) {
-                        time.millis = digit;
+                    FieldSpec fs= parseSpec(ss[i]);
+                    if (fs.fieldType.equals("milli")) {
+                        mod = 1000;
+                    } else if ( fs.fieldType.equals("micros") ) {
+                        mod = 1000;
                     } else {
+                        mod= (int)Math.pow( 10, fs.length );
+                    }
+                    digit = value % mod;
+                    if ( fs.fieldType.equals("milli")) {
+                        time.millis = digit;
+                    } else if ( fs.fieldType.equals("micros")) {
                         time.micros = digit;
+                    } else if ( fs.fieldType.equals("ignore")) {
+                        // do nothing
                     }
                     break;
                 default:
                     throw new IllegalArgumentException("format code not supported");
             }
-            value= value / mod;
+            value = value / mod;
         }
         return this;
 
