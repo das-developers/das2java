@@ -21,7 +21,7 @@ public class DatumRange implements Comparable {
      */
     public DatumRange(Datum s1, Datum s2) {
         if ( s2.lt(s1) ) {
-            throw new IllegalArgumentException( "s2<s1: "+s2+"<"+s1 ) ;
+            throw new IllegalArgumentException( "min > max: "+s1+" > "+s2 + " width=" + ( s2.subtract(s1) ) ) ;
         }
         this.s1=s1;
         this.s2=s2;
