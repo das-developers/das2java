@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.util.TimeParser;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.WritableDataSet;
 
@@ -166,6 +167,50 @@ public class AsciiParser {
     }
 
     /**
+     * try to figure out how many lines to skip by looking for the line where
+     * the number of fields becomes stable.
+     * @param filename
+     * @param recParser
+     * @return
+     */
+    public int guessSkipLines( String filename, RecordParser recParser ) throws IOException {
+        BufferedReader reader = new LineNumberReader(new FileReader(filename));
+
+        String line;
+        String lastLine = null;
+
+        line = reader.readLine();
+        int iline = 0;
+        while (line != null && isHeader(iline, lastLine, line, 0)) {
+            lastLine = line;
+            line = reader.readLine();
+            iline++;
+        }
+
+        int currentFieldCount=-1;
+        int currentFirstRecord=iline;
+        int repeatCount=0;
+        while ( line != null ) {
+            int fc= recParser.fieldCount(line);
+            if ( fc!=currentFieldCount ) {
+                currentFieldCount=fc;
+                currentFirstRecord= iline;
+                repeatCount=1;
+            } else {
+                repeatCount++;
+            }
+            if ( repeatCount>50 ) {
+                return currentFirstRecord;
+            }
+            line = reader.readLine();
+        }
+
+        reader.close();
+
+        return currentFirstRecord;
+    }
+
+    /**
      * read in the first record, then guess the delimiter and possibly the column headers.
      * @param Reader pointed to the beginning of the file.
      * @return RecordParser object that can be queried.  (Strange interface.)
@@ -175,9 +220,13 @@ public class AsciiParser {
 
         String fieldSep = null;
 
-        if (line.indexOf("\t") != -1) {
+        int tabDelimFieldCount= line.split("\t",-2 ).length;
+        int commaDelimFieldCount= line.split( ",",-2 ).length;
+        int whitespaceDelimFieldCount= line.split("\\s+",-2 ).length;
+
+        if ( tabDelimFieldCount > 1) {  // always use tabs over others
             fieldSep = "\t";
-        } else if (line.indexOf(",") != -1) {
+        } else if ( commaDelimFieldCount > 1 && commaDelimFieldCount>= whitespaceDelimFieldCount/2 ) { //TODO: improve this
             fieldSep = ",";
         } else {
             fieldSep = "\\s+";
@@ -998,6 +1047,9 @@ public class AsciiParser {
     }
 
     public static void main(String[] args) throws Exception {
+
+        TimeParser tp= TimeParser.create( "%{ignore} %y %m %d %{ignore} %H" );
+        System.err.println( tp.parse("JF 09 12 02 xxx 04").getTimeDatum() );
 
         String file = "/media/mini/data.backup/examples/dat/2490lintest90005.raw";
 
