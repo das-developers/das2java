@@ -922,22 +922,26 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public void resize() {
         logger.fine("resize DasPlot");
         if (isDisplayable()) {
-            GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(getFont(), getTitle());
-
-            int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
-
+            Rectangle oldBounds= getBounds();
             Rectangle bounds = new Rectangle();
             bounds.x = getColumn().getDMinimum() - 1;
             bounds.y = getRow().getDMinimum() - 1;
             bounds.width = getColumn().getDMaximum() - bounds.x + 1;
             bounds.height = getRow().getDMaximum() - bounds.y + 1;
             if (!getTitle().equals("")) {
+                GrannyTextRenderer gtr = new GrannyTextRenderer();
+                gtr.setString(getFont(), getTitle());
+
+                int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
+
                 bounds.y -= titleHeight;
                 bounds.height += titleHeight;
             }
             // TODO check bounds.height<10
             logger.fine("DasPlot setBounds "+bounds);
+            if ( !oldBounds.equals(bounds) ) {
+                invalidateCacheImage();
+            }
             setBounds(bounds);
         }
     }
@@ -1407,7 +1411,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         repaintCount++;
     }
 
-    protected synchronized void invalidateCacheImage() {
+    public synchronized void invalidateCacheImage() {
         cacheImageValid = false;
         repaint();
     }
