@@ -12,8 +12,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
-import org.das2.datum.DatumUtil;
-import org.das2.datum.NumberUnits;
 import org.das2.datum.Units;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetUtil;
@@ -30,6 +28,7 @@ public class Rank0DataSetSerializeDelegate implements SerializeDelegate {
         RankZeroDataSet ds= (RankZeroDataSet)o;
         Map<String,Object> props= DataSetUtil.getProperties(ds);
         Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u==null ) u= Units.dimensionless;
         Datum d= DataSetUtil.asDatum((RankZeroDataSet)o);
         String svalue= d.getFormatter().format(d, u); // we'll provide units context
         if ( svalue.contains(" ") ) {
