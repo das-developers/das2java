@@ -15,6 +15,8 @@ import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.util.TimeParser;
@@ -209,6 +211,57 @@ public class AsciiParser {
 
         return currentFirstRecord;
     }
+
+    /**
+     * read in records, allowing for a header of non-records before
+     * guessing the delim parser.  This will return a reference to the
+     * DelimParser and set skipLines.
+     * @param filename
+     * @return the record parser to use, or null if no records are found.
+     */
+    public DelimParser guessSkipAndDelimParser( String filename ) throws IOException {
+        BufferedReader reader = new LineNumberReader( new FileReader(filename) );
+
+        String line;
+        String lastLine = null;
+
+        line = reader.readLine();
+        int iline = 0;
+
+        while (line != null && isHeader(iline, lastLine, line, 0)) {
+            lastLine = line;
+            line = reader.readLine();
+            iline++;
+        }
+
+        if ( line==null ) return null;
+
+        DelimParser p= guessDelimParser(line);
+        DataSetBuilder builder = null;
+
+        List<String> lines= new LinkedList<String>();
+
+        while ( line != null && p.tryParseRecord(line, 0, null) == false ) {
+            lines.add(line);
+            line = reader.readLine();
+            while ( lines.size()>5 ) {
+                lines.remove(0);
+            }
+            p= guessDelimParser(line);
+        }
+        
+        DelimParser result= p;
+        for ( int i=lines.size()-1; i>=0; i-- ) {
+            if ( p.fieldCount(lines.get(i))==p.fieldCount() ) {
+                result= createDelimParser( lines.get(i), p.getDelim() ); // set column names
+                break;
+            }
+        }
+        reader.close();
+        
+        return result;
+    }
+
 
     /**
      * read in the first record, then guess the delimiter and possibly the column headers.
@@ -808,6 +861,7 @@ public class AsciiParser {
             int j = 0;
             int okayCount = 0;
             int failCount = 0;
+            int tryCount= 0;
             int ipos = 0;
 
             String[] ss = new String[fieldCount];
@@ -816,10 +870,12 @@ public class AsciiParser {
             }
 
             for (j = 0; j < fieldCount; j++) {
+                tryCount++;
                 if (doParseField[j]) {
                     String parseable = ss[j];
                     try {
-                        builder.putValue(irec, j, fieldParsers[j].parseField(parseable, j));
+                        double d= fieldParsers[j].parseField(parseable, j);
+                        if ( builder!=null ) builder.putValue(irec, j, d );
                         okayCount++;
                     } catch (ParseException e) {
                         failCount++;
@@ -828,7 +884,9 @@ public class AsciiParser {
                     }
                 }
             }
-            return okayCount > 1 || failCount < 3;
+            // the record is parsable if there are two or more parsable fields.
+            // it is not parsable if no fields can be parsed.
+            return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
         }
 
         public int fieldCount() {
@@ -880,15 +938,14 @@ public class AsciiParser {
                     boolean allInvalid = true;
                     for (int i = 0; i < fieldCount; i++) {
                         try {
-                            double d = Double.parseDouble(m.group(i + 1));
+                            String parseable= m.group(i + 1);
+                            double d= fieldParsers[i].parseField(parseable, i);
+                            if ( builder!=null ) builder.putValue(irec, i, d );
                             allInvalid = false;
                         } catch (NumberFormatException e) {
                         }
                     }
                     if (!allInvalid) {
-                        for (int i = 0; i < fieldCount; i++) {
-                            builder.putValue(irec, i, units[i].parse(m.group(i + 1)).doubleValue(units[i]));
-                        }
                         return true;
                     } else {
                         return false;
@@ -958,16 +1015,16 @@ public class AsciiParser {
 
         public final boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
             boolean[] fails = new boolean[fieldCount];
+            int okayCount = 0;
             int failCount = 0;
+            int tryCount= 0;
 
             for (int i = 0; i < fieldCount; i++) {
-                // TODO: support for TimeLocationUnits.
+                tryCount++;
                 try {
-                    if (fieldParsers[i] == null) {
-                        System.err.println("here: " + i + "  " + fieldCount);
-                    }
                     double d = fieldParsers[i].parseField(line.substring(columnOffsets[i], columnOffsets[i] + columnWidths[i]), i);
-                    builder.putValue(irec, i, d);
+                    okayCount++;
+                    if ( builder!=null ) builder.putValue(irec, i, d);
                 } catch (NumberFormatException ex) {
                     failCount++;
                     fails[i] = true;
@@ -990,8 +1047,10 @@ public class AsciiParser {
                 }
                 System.err.println(new String(lineMarker));
             }
-
-            return true;
+            // the record is parsable if there are two or more parsable fields.
+            // it is not parsable if no fields can be parsed.
+            return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
+            
         }
 
         public int fieldCount(String line) {
