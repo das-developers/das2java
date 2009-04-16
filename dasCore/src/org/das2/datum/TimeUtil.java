@@ -937,7 +937,12 @@ public final class TimeUtil {
             } else throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
             
         } /* for all tokens */
-        
+
+
+        if ( want[YEAR] ) {
+            throw new java.text.ParseException("This doesn't appear to contain a year: '"+s+"'",0);
+        }
+
         if (month > 12) throw new java.text.ParseException("Month is greater than 12 in '"+s+"'",0);
         if (month > 0 && day_month <= 0) day_month = 1;
         
@@ -1006,6 +1011,8 @@ public final class TimeUtil {
     }
     
     public static void main(String[] args) throws Exception {
+        //System.out.println( "TimeUtil.parse="+TimeUtil.parseTime("1"));
+        System.out.println( "TimeUtil.parse="+TimeUtil.parseTime("2010"));
         System.out.println( TimeUtil.now() );
         System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 ));
         Datum x=create( "2000-1-1 0:00:33.45" );
