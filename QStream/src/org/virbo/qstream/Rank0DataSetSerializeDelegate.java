@@ -46,27 +46,32 @@ public class Rank0DataSetSerializeDelegate implements SerializeDelegate {
     }
 
     public Object parse(String typeId, String s) throws ParseException {
-        int i= s.indexOf(" ");
-        String svalue= s.substring(0,i);
-        String smeta= s.substring(i+1);
-        Pattern p= Pattern.compile("\\s*(\\S+)\\:([A-Z]+)=(\\S+)");
-        Matcher m= p.matcher(smeta);
-        Map<String,Object> props= new LinkedHashMap<String,Object>();
-        while ( m.find() ) {
-            String proptype= m.group(1);
-            String propname= m.group(2);
-            String propsvalue= m.group(3);
-            SerializeDelegate sd= SerializeRegistry.getByName(proptype);
-            Object value= sd.parse(proptype, propsvalue);
-            props.put(propname, value);
-        }
+        s = s.trim();
+        int i = s.indexOf(" ");
+        if (i == -1) {
+            return DataSetUtil.asDataSet(Double.parseDouble(s));
+        } else {
+            String svalue = s.substring(0, i);
+            String smeta = s.substring(i + 1);
+            Pattern p = Pattern.compile("\\s*(\\S+)\\:([A-Z]+)=(\\S+)");
+            Matcher m = p.matcher(smeta);
+            Map<String, Object> props = new LinkedHashMap<String, Object>();
+            while (m.find()) {
+                String proptype = m.group(1);
+                String propname = m.group(2);
+                String propsvalue = m.group(3);
+                SerializeDelegate sd = SerializeRegistry.getByName(proptype);
+                Object value = sd.parse(proptype, propsvalue);
+                props.put(propname, value);
+            }
         Units u= (Units) props.get(QDataSet.UNITS);
-        if ( u==null ) u= Units.dimensionless;
+            if ( u==null ) u= Units.dimensionless;
         DRank0DataSet result= DRank0DataSet.create(u.parse(svalue));
         for ( Entry<String,Object> e:props.entrySet() ) {
             result.putProperty( e.getKey(), e.getValue() );
+            }
+            return result;
         }
-        return result;
     }
 
     public String typeId(Class clas) {
