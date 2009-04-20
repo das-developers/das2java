@@ -240,7 +240,9 @@ public class AsciiParser {
 
         List<String> lines= new LinkedList<String>();
 
-        while ( iline<10000 && line != null && p.tryParseRecord(line, 0, null) == false ) {
+        int parseCount=0;
+
+        while ( iline<10000 && line != null && parseCount<3 ) {
             lines.add(line);
             line = reader.readLine();
             iline++;
@@ -248,6 +250,12 @@ public class AsciiParser {
                 lines.remove(0);
             }
             if ( line!=null ) p= guessDelimParser(line);
+            parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
+            for ( int i=0; i<lines.size(); i++ ) {
+                if ( p.tryParseRecord(lines.get(i), 0, null) ) {
+                    parseCount++;
+                }
+            }
         }
         
         DelimParser result= p;
