@@ -12,15 +12,19 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
@@ -42,28 +46,48 @@ import javax.swing.SwingUtilities;
  */
 public class TearoffTabbedPane extends JTabbedPane {
 
-    private void copyInputMap(JFrame parent, JFrame babySitter) {
+    int selectedTab;
+    Point dragStart;
+    JFrame draggingFrame;
+    JPopupMenu tearOffMenu = new JPopupMenu();
+    JPopupMenu dockMenu = new JPopupMenu();
+
+    private TearoffTabbedPane parentPane;
+
+    private TearoffTabbedPane rightPane = null;
+    private JFrame rightFrame = null;
+    private ComponentListener rightFrameListener;
+    private int rightOffset= 0;
+
+    HashMap<Component, TabDesc> tabs = new HashMap<Component, TabDesc>();
+    int lastSelected; /* keep track of selected index before context menu */
+
+    private static void copyInputMap(JFrame parent, JFrame babySitter) {
         Component c;
         JComponent parentc, babySitterC;
-        
-        c= parent.getContentPane();
-        if ( ! ( c instanceof JComponent ) ) {
+
+        c = parent.getContentPane();
+        if (!(c instanceof JComponent)) {
             return;
         }
-        parentc= (JComponent)c;
-        
-        c= babySitter.getContentPane();
-        if ( ! (c instanceof JComponent ) ) {
+        parentc = (JComponent) c;
+
+        c = babySitter.getContentPane();
+        if (!(c instanceof JComponent)) {
             return;
         }
-        babySitterC= (JComponent)c;
-        
-        InputMap m= parentc.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        if (m==null ) return;
-        babySitterC.setInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW, m );
-        ActionMap am= parentc.getActionMap();
-        if ( am==null ) return;
-        babySitterC.setActionMap( am );
+        babySitterC = (JComponent) c;
+
+        InputMap m = parentc.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        if (m == null) {
+            return;
+        }
+        babySitterC.setInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW, m);
+        ActionMap am = parentc.getActionMap();
+        if (am == null) {
+            return;
+        }
+        babySitterC.setActionMap(am);
     }
 
     class TabDesc {
@@ -73,30 +97,33 @@ public class TearoffTabbedPane extends JTabbedPane {
         String tip;
         int index;
         Container babysitter;
+        Component component;
 
         TabDesc(String title, Icon icon, Component component, String tip, int index) {
             this.title = title;
             this.icon = icon;
+            this.component = component;
             this.tip = tip;
             this.index = index;
             this.babysitter = null;
         }
     }
-    HashMap<Component,TabDesc> tabs = new HashMap<Component,TabDesc>();
-    int lastSelected; /* keep track of selected index before context menu */
-
 
     public TearoffTabbedPane() {
-        super();
-        MouseAdapter ma = getMouseAdapter();
-        addMouseListener(ma);
-        addMouseMotionListener(getMouseMotionListener());
+        this(null);
     }
-    
-    int selectedTab;
-    Point dragStart;
-    JFrame draggingFrame;
-    JPopupMenu tearOffMenu = new JPopupMenu();
+
+    private TearoffTabbedPane(TearoffTabbedPane parent) {
+        super();
+        if (parent == null) {
+            MouseAdapter ma = getParentMouseAdapter();
+            addMouseListener(ma);
+            addMouseMotionListener(getMouseMotionListener());
+        } else {
+            parentPane = parent;
+            addMouseListener(getChildMouseAdapter());
+        }
+    }
 
     private MouseMotionListener getMouseMotionListener() {
         return new MouseMotionListener() {
@@ -125,11 +152,85 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             public void mouseMoved(MouseEvent e) {
             }
-            
         };
     }
-    
-    private MouseAdapter getMouseAdapter() {
+
+    private void showPopupMenu(MouseEvent event) {
+        Component selectedComponent;
+        selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
+        if (selectedTab != -1) {
+            selectedComponent = TearoffTabbedPane.this.getComponentAt(selectedTab);
+            if (parentPane == null && tabs.get(selectedComponent) != null) {
+                tearOffMenu.show(TearoffTabbedPane.this, event.getX(), event.getY());
+            } else {
+                dockMenu.show(TearoffTabbedPane.this, event.getX(), event.getY());
+            }
+        }
+    }
+
+    private MouseAdapter getChildMouseAdapter() {
+        return new MouseAdapter() {
+
+            Component selectedComponent;
+
+
+            {
+                dockMenu.add(new JMenuItem(new AbstractAction("dock") {
+
+                    public void actionPerformed(ActionEvent event) {
+                        TabDesc desc = null;
+
+                        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
+                            Component key = (Component) i.next();
+                            TabDesc d = (TabDesc) tabs.get(key);
+                        }
+
+                        if (parentPane != null) {
+                            if ( getTabCount()==1 ) {
+                                SwingUtilities.getWindowAncestor(TearoffTabbedPane.this).dispose();
+                            } else {
+                                selectedComponent = getComponent(selectedTab);
+                                remove(selectedComponent);
+                                parentPane.dock(selectedComponent);
+                            }
+                        } else {
+                            if (desc.babysitter instanceof Window) {
+                                ((Window) desc.babysitter).dispose();
+                            }
+                            parentPane.dock(selectedComponent);
+                        }
+                        
+                    }
+                }));
+            }
+
+            public void mousePressed(MouseEvent event) {
+                selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
+                if (event.isPopupTrigger()) {
+                    showPopupMenu(event);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (dragStart != null && selectedTab != -1) {
+                    //JFrame f= TearoffTabbedPane.this.tearOffIntoFrame( selectedTab );
+                    //Point p= e.getPoint();
+                    //SwingUtilities.convertPointToScreen( p ,(Component) e.getSource() );
+                    //f.setLocation( p );
+                    setCursor(null);
+                    draggingFrame = null;
+                }
+                dragStart = null;
+                if (e.isPopupTrigger()) {
+                    showPopupMenu(e);
+                }
+            }
+        };
+
+    }
+
+    private MouseAdapter getParentMouseAdapter() {
         return new MouseAdapter() {
 
             {
@@ -139,10 +240,15 @@ public class TearoffTabbedPane extends JTabbedPane {
                         TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
                     }
                 }));
+                tearOffMenu.add(new JMenuItem(new AbstractAction("slide right") {
+
+                    public void actionPerformed(ActionEvent event) {
+                        TearoffTabbedPane.this.slideRight(selectedTab);
+                    }
+                }));
             }
             Component selectedComponent;
-            JPopupMenu dockMenu = new JPopupMenu();
-            
+
 
             {
                 dockMenu.add(new JMenuItem(new AbstractAction("show") {
@@ -159,10 +265,17 @@ public class TearoffTabbedPane extends JTabbedPane {
                                 break;
                             }
                         }
-                        JFrame babySitter = (JFrame) desc.babysitter;
-                        babySitter.setVisible(false);
-                        babySitter.setVisible(true);
-                        //babySitter.toFront();  // no effect on Linux/Gnome
+                        if (desc.babysitter instanceof Window) {
+                            Window babySitter = (Window) desc.babysitter;
+                            babySitter.setVisible(false);
+                            babySitter.setVisible(true);
+                        } else if ( desc.babysitter instanceof TearoffTabbedPane ) {
+                            Window parent= SwingUtilities.getWindowAncestor(babyComponent);
+                            parent.setVisible(false);
+                            parent.setVisible(true);
+                        }
+                        
+                    //babySitter.toFront();  // no effect on Linux/Gnome
                     }
                 }));
                 dockMenu.add(new JMenuItem(new AbstractAction("dock") {
@@ -183,6 +296,8 @@ public class TearoffTabbedPane extends JTabbedPane {
 
                         if (desc.babysitter instanceof Window) {
                             ((Window) desc.babysitter).dispose();
+                        } else if ( desc.babysitter instanceof TearoffTabbedPane ) {
+                            // do nothing
                         }
 
                         TearoffTabbedPane.this.dock(babyComponent);
@@ -192,19 +307,10 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             public void mousePressed(MouseEvent event) {
                 selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
-                if (event.getButton() == MouseEvent.BUTTON3) {
-                    selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
-                    if (selectedTab != -1) {
-                        selectedComponent = TearoffTabbedPane.this.getComponentAt(selectedTab);
-                        if (tabs.get(selectedComponent) != null) {
-                            tearOffMenu.show(TearoffTabbedPane.this, event.getX(), event.getY());
-                        } else {
-                            dockMenu.show(TearoffTabbedPane.this, event.getX(), event.getY());
-                        }
-                    }
+                if (event.isPopupTrigger()) {
+                    showPopupMenu(event);
                 }
             }
-
 
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -217,10 +323,17 @@ public class TearoffTabbedPane extends JTabbedPane {
                     draggingFrame = null;
                 }
                 dragStart = null;
+                if (e.isPopupTrigger()) {
+                    showPopupMenu(e);
+                }
             }
         };
     }
 
+    /**
+     * get a component to occupy the space when a tab is undocked.
+     * @return
+     */
     static Component getTornOffComponent() {
         JPanel tornOffComponent = new JPanel();
         tornOffComponent.setLayout(new BorderLayout());
@@ -240,33 +353,162 @@ public class TearoffTabbedPane extends JTabbedPane {
         setSelectedIndex(lastSelected);
     }
 
-    private class AbstractWindowListener implements WindowListener {
+    private final static Object STICK_LEFT= "left";
+    private final static Object STICK_RIGHT= "right";
 
-        public void windowOpened(WindowEvent e) {
-        }
+    /**
+     * get the listener that will keep the two JFrames close together
+     * @param panel1  component within the master frame.
+     * @param frame1  master frame that controls.
+     * @param panel2  component within the compliant frame
+     * @param frame2  compliant frame that follows.
+     * @param direction
+     * @return
+     */
+    public ComponentListener getFrameComponentListener(
+            final Component panel1, final Component frame1,
+            final Component panel2, final Component frame2, final Object direction ) {
 
-        public void windowClosing(WindowEvent e) {
-        }
+        return new ComponentListener() {
+            Component activeComponent;
+            long activeComponentTime=0;
 
-        public void windowClosed(WindowEvent e) {
-        }
+            public void componentResized(ComponentEvent e) {
+                long t= System.currentTimeMillis();
+                if ( ( t-activeComponentTime ) > 100 ) {
+                    activeComponent= e.getComponent();
+                }
+                if ( e.getComponent()==activeComponent ) {
+                    activeComponentTime= t;
+                    updateAttached( activeComponent, panel1, frame1, panel2, frame2, direction, true );
+                }
+            }
 
-        public void windowIconified(WindowEvent e) {
-        }
+            public void componentMoved(ComponentEvent e) {
+                long t= System.currentTimeMillis();
+                if ( ( t-activeComponentTime ) > 100 ) {
+                    activeComponent= e.getComponent();
+                }
+                if ( e.getComponent()==activeComponent ) {
+                    activeComponentTime= t;
+                    updateAttached( activeComponent, panel1, frame1, panel2, frame2, direction, false );
+                }
+            }
 
-        public void windowDeiconified(WindowEvent e) {
-        }
+            public void componentShown(ComponentEvent e) {
+            }
 
-        public void windowActivated(WindowEvent e) {
-        }
+            public void componentHidden(ComponentEvent e) {
+            }
+        };
+    }
 
-        public void windowDeactivated(WindowEvent e) {
+    private void updateAttached(
+            final Component active,
+            final Component panel1, final Component frame1,
+            final Component panel2, final Component frame2, Object direction, boolean updateSize ) {
+        Point p = SwingUtilities.convertPoint(panel1, 0, 0, frame1);
+        Point p2 = SwingUtilities.convertPoint(panel2, 0, 0, frame2);
+        Dimension s1= panel1.getSize();
+        Dimension frameSize1= frame1.getSize();
+        Dimension s2= panel2.getSize();
+        Dimension frameSize2= frame2.getSize();
+
+        if ( direction==STICK_RIGHT ) {
+            if ( active==frame1 ) {
+                if ( updateSize ) frame2.setSize( new Dimension( s1.width, s1.height + p2.y ) );
+                frame2.setLocation( frame1.getX() + frame1.getWidth() - p2.x + rightOffset, frame1.getY() + p.y - p2.y );
+            } else {
+                if ( false && updateSize ) {
+                    int frame1NotTabs= frameSize1.height-s1.height;
+                    System.err.println(frame1NotTabs);
+                    frame1.setSize( new Dimension( frameSize1.width, ( frameSize1.height-s1.height ) + s2.height ) );
+                }
+                int x= Math.max( frame1.getX(), frame2.getX()-frameSize1.width + p2.x );
+                rightOffset= frame2.getX()-s1.width - frame1.getX();
+                if ( rightOffset>0 ) rightOffset=0;
+                if ( rightOffset< -1*s1.width ) {
+                    x+= s1.width + rightOffset;
+                    rightOffset= -1 * s1.width;
+                }
+                frame1.setLocation( x, frame2.getY() - p.y + p2.y );
+            }
         }
+    }
+
+    private synchronized TearoffTabbedPane getRightTabbedPane() {
+        if (rightPane == null) {
+
+            final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+            rightPane = new TearoffTabbedPane(this);
+            rightFrame = new JFrame();
+
+            rightFrame.add(rightPane);
+
+            final WindowStateListener listener = new WindowStateListener() {
+
+                public void windowStateChanged(WindowEvent e) {
+                    rightFrame.setExtendedState(parent.getExtendedState());
+                }
+            };
+            parent.addWindowStateListener(listener);
+
+            rightFrame.addWindowListener(new WindowAdapter() {
+
+                public void windowClosing(WindowEvent e) {
+                    parent.removeWindowStateListener(listener);
+                    parent.removeComponentListener(rightFrameListener);
+
+                    for (Component c : new ArrayList<Component>(rightPane.tabs.keySet())) {
+                        TearoffTabbedPane.this.dock(c);
+                    }
+                    
+                    rightFrame = null;
+                    rightPane = null;
+                }
+            });
+
+            copyInputMap(parent, rightFrame);
+            rightFrameListener = getFrameComponentListener(this, parent, rightPane, rightFrame, STICK_RIGHT );
+            
+            parent.addComponentListener(rightFrameListener);
+            rightFrame.addComponentListener(rightFrameListener);
+
+            rightPane.setPreferredSize(this.getSize());
+
+            rightFrame.pack();
+            updateAttached( parent, this, parent, rightPane, rightFrame, STICK_RIGHT, true );
+
+            rightFrame.setVisible(true);
+            parent.toFront();
+
+        }
+        return rightPane;
+    }
+
+    protected void slideRight(int tabIndex) {
+        final Component c = getComponentAt(tabIndex);
+
+        setSelectedIndex(tabIndex);
+        c.setVisible(true);  // darwin bug297
+
+        TabDesc td = (TabDesc) tabs.get(c);
+        if (td == null) {
+            return;
+        }
+        final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        TearoffTabbedPane right = getRightTabbedPane();
+
+        tearOff(tabIndex, right);
+
+        right.add(td.title, c);
+        right.setSelectedIndex(right.getTabCount()-1);
+
     }
 
     protected JFrame tearOffIntoFrame(int tabIndex) {
         final Component c = getComponentAt(tabIndex);
-        // TODO: can get IllegalComponentStateException with random clicks. See bug297
         setSelectedIndex(tabIndex);
         c.setVisible(true);  // darwin bug297
         Point p = c.getLocationOnScreen();
@@ -277,6 +519,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         final JFrame babySitter = new JFrame(td.title);
         final WindowStateListener listener = new WindowStateListener() {
+
             public void windowStateChanged(WindowEvent e) {
                 babySitter.setExtendedState(parent.getExtendedState());
             }
@@ -285,16 +528,17 @@ public class TearoffTabbedPane extends JTabbedPane {
 
         p.translate(20, 20);
         babySitter.setLocation(p);
-        babySitter.addWindowListener(new AbstractWindowListener() {
+        babySitter.addWindowListener(new WindowAdapter() {
+
             public void windowClosing(WindowEvent e) {
                 parent.removeWindowStateListener(listener);
                 dock(c);
             }
         });
-        
-        copyInputMap( parent, babySitter );
-        
-        JTabbedPane pane = new JTabbedPane();
+
+        copyInputMap(parent, babySitter);
+
+        JTabbedPane pane = new TearoffTabbedPane(this);
         babySitter.getContentPane().add(pane);
 
         tearOff(tabIndex, babySitter);
@@ -318,51 +562,55 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     public void addTab(String title, Icon icon, Component component) {
         super.addTab(title, icon, component);
-        tabs.put(component, new TabDesc(title, icon, component, null, indexOfComponent(component)));
+        TabDesc td = new TabDesc(title, icon, component, null, indexOfComponent(component));
+        tabs.put(component, td);
     }
 
     public void addTab(String title, Component component) {
         super.addTab(title, component);
-        tabs.put(component, new TabDesc(title, null, component, null, indexOfComponent(component)));
+        TabDesc td = new TabDesc(title, null, component, null, indexOfComponent(component));
+        tabs.put(component, td);
     }
 
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
         super.insertTab(title, icon, component, tip, index);
-        tabs.put(component, new TabDesc(title, icon, component, tip, index));
+        TabDesc td = new TabDesc(title, icon, component, tip, index);
+        tabs.put(component, td);
     }
 
     public void addTab(String title, Icon icon, Component component, String tip) {
         super.addTab(title, icon, component, tip);
-        tabs.put(component, new TabDesc(title, icon, component, tip, indexOfComponent(component)));
+        TabDesc td = new TabDesc(title, icon, component, tip, indexOfComponent(component));
+        tabs.put(component, td);
     }
 
-    private Component getTabComponentByIndex( int index ) {
-        for ( Component key:tabs.keySet() ) {
-            TabDesc td= tabs.get(key);
-            if ( td.index==index ) {
+    private Component getTabComponentByIndex(int index) {
+        for (Component key : tabs.keySet()) {
+            TabDesc td = tabs.get(key);
+            if (td.index == index) {
                 return key;
             }
         }
         return null;
     }
 
-    private Component getTabComponentByTitle( String title ) {
-        for ( Component key:tabs.keySet() ) {
-            TabDesc td= tabs.get(key);
-            if ( td.title==title ) {
+    private Component getTabComponentByTitle(String title) {
+        for (Component key : tabs.keySet()) {
+            TabDesc td = tabs.get(key);
+            if (td.title == title) {
                 return key;
             }
         }
         return null;
     }
-    
+
     public void removeTabAt(int index) {
-        Component c= getTabComponentByIndex(index);
+        Component c = getTabComponentByIndex(index);
         super.removeTabAt(index);
-        TabDesc tab= tabs.get(c);
-        if ( tab.babysitter!=null ) { //perhaps better to dock it first
-            if ( tab.babysitter instanceof Window ) {
-                ((Window)tab.babysitter).dispose();
+        TabDesc tab = tabs.get(c);
+        if (tab.babysitter != null) { //perhaps better to dock it first
+            if (tab.babysitter instanceof Window) {
+                ((Window) tab.babysitter).dispose();
             }
         }
         tabs.remove(c);
