@@ -220,7 +220,7 @@ public class AsciiParser {
      * @return the record parser to use, or null if no records are found.
      */
     public DelimParser guessSkipAndDelimParser( String filename ) throws IOException {
-        BufferedReader reader = new LineNumberReader( new FileReader(filename) );
+        BufferedReader reader = new BufferedReader( new FileReader(filename) );
 
         String line;
         String lastLine = null;
@@ -237,17 +237,17 @@ public class AsciiParser {
         if ( line==null ) return null;
 
         DelimParser p= guessDelimParser(line);
-        DataSetBuilder builder = null;
 
         List<String> lines= new LinkedList<String>();
 
-        while ( line != null && p.tryParseRecord(line, 0, null) == false ) {
+        while ( iline<10000 && line != null && p.tryParseRecord(line, 0, null) == false ) {
             lines.add(line);
             line = reader.readLine();
+            iline++;
             while ( lines.size()>5 ) {
                 lines.remove(0);
             }
-            p= guessDelimParser(line);
+            if ( line!=null ) p= guessDelimParser(line);
         }
         
         DelimParser result= p;
@@ -389,6 +389,7 @@ public class AsciiParser {
         String[] ss = line.split(delim);
         columnOffsets = new int[ss.length];
         columnWidths = new int[ss.length - 1];
+        fieldCount= ss.length;
         fieldParsers = new FieldParser[ss.length - 1];
 
         boolean rightJustified = false;
@@ -994,6 +995,12 @@ public class AsciiParser {
         FixedColumnsParser result = new FixedColumnsParser(columnOffsets, columnWidths);
         this.recordParser = result;
         this.fieldParsers = parsers;
+        this.fieldNames= new String[ result.fieldCount ];
+        this.units= new Units[ result.fieldCount ];
+        for ( int i=0; i<result.fieldCount; i++ ) {
+            this.fieldNames[i]= "field"+i;
+            this.units[i]= Units.dimensionless;
+        }
         return result;
     }
 
