@@ -249,12 +249,14 @@ public class AsciiParser {
             while ( lines.size()>5 ) {
                 lines.remove(0);
             }
-            if ( line!=null ) p= guessDelimParser(line);
-            parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
-            for ( int i=0; i<lines.size(); i++ ) {
-                if ( p.tryParseRecord(lines.get(i), 0, null) ) {
-                    parseCount++;
-                }
+            if ( line!=null ) {
+            	p= guessDelimParser(line);
+            	parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
+            	for ( int i=0; i<lines.size(); i++ ) {
+            		if ( p.tryParseRecord(lines.get(i), 0, null) ) {
+            			parseCount++;
+            		}
+            	}
             }
         }
         
@@ -916,6 +918,7 @@ public class AsciiParser {
         }
 
         public boolean splitRecord(String line, String[] fields) {
+        	try {
             String[] ss = line.trim().split(delimRegex, -2);
             if ( ss.length==fieldCount ) {
                 System.arraycopy( ss, 0, fields, 0, fieldCount );
@@ -923,6 +926,9 @@ public class AsciiParser {
             } else {
                 return false;
             }
+        	} catch ( NullPointerException ex ) {
+        		throw ex;
+        	}
         }
     }
 
