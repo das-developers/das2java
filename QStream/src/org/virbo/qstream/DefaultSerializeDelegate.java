@@ -18,6 +18,15 @@ public abstract class DefaultSerializeDelegate implements SerializeDelegate {
         SerializeRegistry.register( java.lang.Double.class, new Double() );
         SerializeRegistry.register( java.lang.Short.class, new Short() );
         SerializeRegistry.register( java.lang.Byte.class, new Byte() );
+
+        SerializeRegistry.register( boolean.class, new Boolean() );
+        SerializeRegistry.register( int.class, new Integer() );
+        SerializeRegistry.register( long.class, new Long() );
+        SerializeRegistry.register( float.class, new Float() );
+        SerializeRegistry.register( double.class, new Double() );
+        SerializeRegistry.register( short.class, new Short() );
+        SerializeRegistry.register( byte.class, new Byte() );
+
     }
 
     public String format(Object o) {
