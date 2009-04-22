@@ -49,6 +49,12 @@ public class LocalFileSystem extends FileSystem {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
         String surl= root.toString();
+        if ( surl.contains("+") ) {
+        	surl= surl.replaceAll("\\+", " "); // Autoplot kludge
+        }
+        if ( surl.contains("%20") ) {
+        	surl= URLDecoder.decode(surl);
+        }
         if ( !surl.endsWith("/") ) surl+="/";
         String[] split= FileSystem.splitUrl( surl );
         
