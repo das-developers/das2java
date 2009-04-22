@@ -150,8 +150,12 @@ public class SeriesRenderer extends Renderer  {
                     g.drawImage(coloredPsyms[icolor], ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
                 }
             } else {
-                for (int i = 0; i < count; i++) {
-                    g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                try {
+                    for (int i = 0; i < count; i++) {
+                        g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                    }
+                } catch ( ArrayIndexOutOfBoundsException ex ) {
+                    ex.printStackTrace();
                 }
             }
 
@@ -748,6 +752,12 @@ public class SeriesRenderer extends Renderer  {
         if (dataSet.getXLength() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
             lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
+            return;
+        }
+
+        if ( psym== DefaultPlotSymbol.NONE && psymConnector==PsymConnector.NONE ) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("plot symbol and symbol connector are set to none");
+            lparent.postMessage(this, "plot symbol and symbol connector are set to none", DasPlot.INFO, null, null);
             return;
         }
 
