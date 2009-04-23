@@ -673,6 +673,13 @@ public final class TimeUtil {
         int[] digits;
     }
     
+    /**
+     * parse the time into a timestruct.
+     * @param s
+     * @see also createValid which creates a Datum.
+     * @return
+     * @throws java.text.ParseException
+     */
     public static final TimeStruct parseTime(String s) throws java.text.ParseException {
         int year, month, day_month, day_year, hour, minute;
         //String s;
