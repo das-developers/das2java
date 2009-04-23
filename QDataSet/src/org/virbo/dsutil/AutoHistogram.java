@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Units;
 import org.das2.util.DasMath;
 import org.virbo.dataset.DDataSet;
@@ -51,14 +53,12 @@ public final class AutoHistogram {
     private final int INITIAL_BINW = 1;
     private final double INITIAL_BINW_DENOM = 1E30;
     private final double INITIAL_FIRST_BIN = -1 * Double.MAX_VALUE;
-    private final double NEW_INITIAL_FIRST_BIN= Double.MAX_VALUE / INITIAL_BINW_DENOM;
-
+    private final double NEW_INITIAL_FIRST_BIN = Double.MAX_VALUE / INITIAL_BINW_DENOM;
     int nbin;
     double binw;      // numerator of binWidth
     double binwDenom; // denominator of binWidth.  Either this or binw will be 1.
     double firstb;
     double firstBin;  // left edge of the first bin, multiplied by binwDenom.  This is so firstBin is never fractional.
-
     double[] ss; // accumulator for the mean normalized
     double[] vv; // accumulator for the variance (stddev**2) unnormalized
     double[] nn; // count in each bin
@@ -76,6 +76,16 @@ public final class AutoHistogram {
      */
     SortedMap<Double, Integer> outliers;
 
+    private final static Logger logger= Logger.getLogger(AutoHistogram.class.getCanonicalName());
+
+    private final static void log( java.util.logging.Level level, String message ) {
+        if ( logger.isLoggable(level) ) logger.log( level, message);
+    }
+    //TODO: check to see if this gets in-lined by the compiler.
+    private final static void log( java.util.logging.Level level, String message, Object... args ) {
+        if ( logger.isLoggable(level) ) logger.log( level, String.format(message,args) );
+    }
+
     public AutoHistogram() {
         reset();
     }
@@ -85,7 +95,7 @@ public final class AutoHistogram {
         binw = INITIAL_BINW;
         binwDenom = INITIAL_BINW_DENOM;
         firstb = INITIAL_FIRST_BIN; //firstBin done
-        firstBin= NEW_INITIAL_FIRST_BIN;
+        firstBin = NEW_INITIAL_FIRST_BIN;
         ss = new double[nbin];
         vv = new double[nbin];
         nn = new double[nbin];
@@ -165,12 +175,12 @@ public final class AutoHistogram {
         result.putProperty("stddevs", stddevs);
 
         //TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom, units ); // firstBin done
-        TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binw / binwDenom, ( firstBin + binw * ifirstBin ) / binwDenom, units);
+        TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binw / binwDenom, (firstBin + binw * ifirstBin) / binwDenom, units);
 
         result.putProperty(DDataSet.DEPEND_0, dep0);
         Map<String, Object> user = new HashMap<String, Object>();
         //user.put(USER_PROP_BIN_START, firstb ); // firstBin done
-        user.put(USER_PROP_BIN_START, firstBin/ binwDenom );
+        user.put(USER_PROP_BIN_START, firstBin / binwDenom);
         user.put(USER_PROP_BIN_WIDTH, binw / binwDenom);
         user.put(USER_PROP_TOTAL, total);
         user.put(USER_PROP_OUTLIERS, outliers);
@@ -341,7 +351,7 @@ public final class AutoHistogram {
         }
 
         firstb = Math.floor(closestA * binwDenom / binw) * binw / binwDenom; //firstBin done
-        firstBin= Math.floor(closestA  * binwDenom / binw) * binw;  // TODO: this probably wrong.
+        firstBin = Math.floor(closestA * binwDenom / binw) * binw;  // TODO: this probably wrong.
 
         int count = outliers.remove(closestA);
         int ibin = binOf(closestA);
@@ -411,9 +421,9 @@ public final class AutoHistogram {
                 throw new IllegalArgumentException("non-zero variance in less than two bins in bin #" + i);
             }
         }
-        
-        if ( Math.abs( firstb - (firstBin/binwDenom) ) > binwDenom/1000 ) {
-            throw new IllegalArgumentException("binw denom" );
+
+        if (Math.abs(firstb - (firstBin / binwDenom)) > binwDenom / 1000) {
+            throw new IllegalArgumentException("binw denom");
         }
     }
 
@@ -458,11 +468,11 @@ public final class AutoHistogram {
 
     private final int binOf(double d) {
         //int ibin= (int) Math.floor((d - firstb) * binwDenom / binw); // firstBin done
-        return (int) Math.floor( (d * binwDenom - firstBin )  / binw);
+        return (int) Math.floor((d * binwDenom - firstBin) / binw);
     }
 
     private final int shiftLeft(int ibin, int shift) {
-        //System.err.printf("shiftLeft(%d)\n", shift);
+        if ( logger.isLoggable(java.util.logging.Level.FINEST) ) logger.finest( String.format("shiftLeft(%d)\n", shift) ) ;
         // shift hist to the left
         checkTotal();
         System.arraycopy(ss, shift, ss, 0, nbin - shift - zeroesRight);
@@ -480,33 +490,34 @@ public final class AutoHistogram {
         return ibin;
     }
 
-    private final int expandAndShiftRight( int ibin, int shift, int factor ) {
-        factor= factor*2; // TODO: kludge
+    private final int expandAndShiftRight(int ibin, int shift, int factor) {
+        log( Level.FINEST, "expandAndShiftRight(%d,%d,%d)\n", ibin, shift, factor );
+        factor = factor * 2; // TODO: kludge
         checkTotal();
-        int nbin1= (int) Math.ceil( (nbin + factor) / (1.*factor) ) * factor;
-        double[] nn1= new double[ nbin1 ];
-        double[] ss1= new double[ nbin1 ];
-        double[] vv1= new double[ nbin1 ];
-        System.arraycopy(ss, zeroesLeft, ss1, shift + zeroesLeft, nbin - zeroesLeft );
-        System.arraycopy(nn, zeroesLeft, nn1, shift + zeroesLeft, nbin - zeroesLeft );
-        System.arraycopy(vv, zeroesLeft, vv1, shift + zeroesLeft, nbin - zeroesLeft );
+        int nbin1 = (int) Math.ceil((nbin + factor) / (1. * factor)) * factor;
+        double[] nn1 = new double[nbin1];
+        double[] ss1 = new double[nbin1];
+        double[] vv1 = new double[nbin1];
+        System.arraycopy(ss, zeroesLeft, ss1, shift + zeroesLeft, nbin - zeroesLeft);
+        System.arraycopy(nn, zeroesLeft, nn1, shift + zeroesLeft, nbin - zeroesLeft);
+        System.arraycopy(vv, zeroesLeft, vv1, shift + zeroesLeft, nbin - zeroesLeft);
 
         zeroesLeft += shift;
         zeroesRight -= shift;
-        zeroesRight += nbin1-nbin;
+        zeroesRight += nbin1 - nbin;
         ibin += shift;
-        nbin= nbin1;
+        nbin = nbin1;
 
-        ss= ss1;
-        nn= nn1;
-        vv= vv1;
+        ss = ss1;
+        nn = nn1;
+        vv = vv1;
 
         Arrays.fill(ss, 0, zeroesLeft, 0.);
         Arrays.fill(nn, 0, zeroesLeft, 0.);
         Arrays.fill(vv, 0, zeroesLeft, 0.);
-        Arrays.fill(ss, nbin-zeroesRight, nbin, 0. );
-        Arrays.fill(nn, nbin-zeroesRight, nbin, 0. );
-        Arrays.fill(vv, nbin-zeroesRight, nbin, 0. );
+        Arrays.fill(ss, nbin - zeroesRight, nbin, 0.);
+        Arrays.fill(nn, nbin - zeroesRight, nbin, 0.);
+        Arrays.fill(vv, nbin - zeroesRight, nbin, 0.);
 
         this.firstb -= binw * shift / binwDenom; // firstBin done
         this.firstBin -= binw * shift;
@@ -515,7 +526,7 @@ public final class AutoHistogram {
     }
 
     private final int shiftRight(int ibin, int shift) {
-        //System.err.printf("shiftRight(%d)\n", shift);
+        log( Level.FINEST, "shiftRight(%d)\n", shift);
         // shift hist to the right
         checkTotal();
         System.arraycopy(ss, zeroesLeft, ss, shift + zeroesLeft, nbin - zeroesLeft - shift);
@@ -577,16 +588,20 @@ public final class AutoHistogram {
     private final int rescaleLeft(int ibin, boolean checkOutliers) {
         rescaleCount++;
         int factor = nextFactor();
-        //System.err.println("rescaleLeft to " + binw / binwDenom + "*" + factor);
+        log( Level.FINEST, "rescaleLeft to " + binw / binwDenom + "*" + factor);
         checkTotal();
         // how many bins must we shift to get a nice initial bin?
-        int shift = (int)Math.round( DasMath.modp(firstBin, (binw * factor)) / (binw) );
-        if (shift > 0) {
-            //shift = shift;
-            if (shift < zeroesRight) {
-                ibin = shiftRight(ibin, shift);
-            } else {
-                ibin = expandAndShiftRight( ibin, shift, factor );
+        int shift = (int) Math.round(DasMath.modp(firstBin, (binw * factor)) / (binw));
+        if (nbin % factor > 0) {
+            ibin = expandAndShiftRight(ibin, shift, factor);
+        } else {
+            if (shift > 0) {
+                //shift = shift;
+                if (shift < zeroesRight) {
+                    ibin = shiftRight(ibin, shift);
+                } else {
+                    ibin = expandAndShiftRight(ibin, shift, factor);
+                }
             }
         }
         for (int i = 0; i < nbin / factor; i++) {
@@ -685,9 +700,6 @@ public final class AutoHistogram {
         for (int i = 0; i < stddevs.length(); i++) {
             double var = Math.pow(stddevs.value(i), 2);
             vvs[i] = (hist.value(i) - 1) * var + hist.value(i) * Math.pow(means.value(i) - mean, 2);
-            if (vvs[i] < 0) {
-                System.err.println("helpjelp");
-            }
         }
 
         double VV = 0;
