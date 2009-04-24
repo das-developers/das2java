@@ -9,6 +9,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import org.das2.dataset.CacheTag;
+import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.util.ClassMap;
@@ -29,6 +30,7 @@ public class SerializeRegistry {
         register( CacheTag.class, new CacheTagSerializeDelegate() );
         register( AbstractMap.class, new MapSerializeDelegate() );
         register( RankZeroDataSet.class, new Rank0DataSetSerializeDelegate() );
+        register( DatumRange.class, new DatumRangeSerializeDelegate() );
         DefaultSerializeDelegate.registerDelegates();
     }
     
