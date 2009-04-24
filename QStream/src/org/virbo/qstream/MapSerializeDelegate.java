@@ -10,7 +10,6 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.logging.Level;
