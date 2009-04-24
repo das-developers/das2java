@@ -212,7 +212,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         em = (int) getEmSize();
 
         msgx = xAxis.getColumn().getDMiddle() + em;
-        msgy = yAxis.getRow().getDMinimum() + em;
+        msgy = yAxis.getRow().getDMinimum() + em/2;
 
         int maxIconWidth = 0;
         for (int i = 0; i < legendElements.size(); i++) {
@@ -220,15 +220,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
             mrect = gtr.getBounds();
-            mrect.translate(msgx, msgy);
             maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
-            mrect.height = Math.max(mrect.height, le.icon.getIconHeight());
+            int theheight = Math.max(mrect.height, le.icon.getIconHeight());
+            mrect.translate(msgx, msgy + (int) gtr.getAscent() );
+            mrect.height= theheight;
             if (boundRect == null) {
                 boundRect = mrect;
             } else {
                 boundRect.add(mrect);
             }
-            msgy += mrect.getHeight();
+            msgy += theheight;
         }
 
         mrect = new Rectangle(boundRect);
@@ -238,23 +239,29 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         boundRect.x = mrect.x;
 
         graphics.setColor(backColor);
-        graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+        graphics.fillRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
         graphics.setColor(getForeground());
-        graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
+        graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
 
         msgx = xAxis.getColumn().getDMaximum() - boundRect.width - em;
-        msgy = yAxis.getRow().getDMinimum() + em;
+        msgy = yAxis.getRow().getDMinimum() + em/2;
 
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
             mrect = gtr.getBounds();
-            mrect.translate(msgx, msgy);
-            gtr.draw(graphics, msgx, msgy);
-            Rectangle imgBounds = new Rectangle(msgx - (le.icon.getIconWidth() + em / 4),
-                    msgy - (int) (mrect.getHeight() / 2 + le.icon.getIconHeight() / 2),
-                    le.icon.getIconWidth(), le.icon.getIconHeight());
+            mrect.translate(msgx, msgy + (int) gtr.getAscent());
+            int theheight= Math.max(mrect.height, le.icon.getIconHeight());
+            int icony= theheight/2 - le.icon.getIconHeight() / 2;  // from top of rectangle
+            int texty= theheight/2 - (int)gtr.getHeight() / 2 + (int) gtr.getAscent();
+            gtr.draw( graphics, msgx, msgy + texty );
+            mrect.height = theheight;
+            Rectangle imgBounds = new Rectangle(
+                    msgx - (le.icon.getIconWidth() + em / 4),
+                    msgy + icony,
+                    le.icon.getIconWidth(), 
+                    le.icon.getIconHeight() );
             graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
             msgy += mrect.getHeight();
             mrect.add(imgBounds);
