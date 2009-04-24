@@ -6,9 +6,9 @@ package org.virbo.dsutil;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
@@ -40,7 +40,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         super( new DefaultMutableTreeNode( ( prefix==null ? "" : prefix ) + DataSetUtil.toString(ds) ) );
         this.ds = ds;
         
-        Map properties= DataSetUtil.getProperties(ds,new HashMap());
+        Map properties= DataSetUtil.getProperties(ds);
         
         for ( Object key: properties.keySet() ) {
             Object value= properties.get(key);
@@ -59,6 +59,8 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                     list.add("...");
                 }
                 nextChild= new DefaultMutableTreeNode(""+key+"="+list);
+            } else if ( Map.class.isAssignableFrom( value.getClass() ) ) {
+                nextChild= (MutableTreeNode) new MapTreeModel( key + " (map)", (Map)value ).getRoot();
             } else {
                 nextChild= new DefaultMutableTreeNode(""+key+"="+value);
             }
@@ -71,6 +73,17 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             mroot.insert( values, mroot.getChildCount() );
         }
     }
-    
+
+    class MapTreeModel extends DefaultTreeModel {
+        MapTreeModel( Object root, Map values ) {
+            super( new DefaultMutableTreeNode(root) );
+            MutableTreeNode mrt= ((MutableTreeNode)getRoot());
+            for ( Object o : values.entrySet() ) {
+                Entry val= (Entry)o;
+                mrt.insert( new DefaultMutableTreeNode(""+val.getKey()+"="+val.getValue() ),mrt.getChildCount() );
+            }
+        }
+
+    }
     
 }
