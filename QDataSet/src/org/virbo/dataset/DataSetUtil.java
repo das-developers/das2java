@@ -10,7 +10,6 @@ package org.virbo.dataset;
 
 import java.util.ArrayList;
 import org.das2.datum.Units;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -565,6 +564,7 @@ public class DataSetUtil {
      * Math.log( xds.value(1) / xds.value(0) )
      * 
      * result can be null, indicating that no cadence can be established.
+     * @deprecated use guessCadenceNew which is more robust.
      */
     public static Double guessCadence(QDataSet xds) {
         return guessCadence(xds, null);
