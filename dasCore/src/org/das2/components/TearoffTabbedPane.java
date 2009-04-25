@@ -27,6 +27,7 @@ import java.awt.event.WindowStateListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
@@ -58,6 +59,8 @@ public class TearoffTabbedPane extends JTabbedPane {
     private JFrame rightFrame = null;
     private ComponentListener rightFrameListener;
     private int rightOffset= 0;
+
+    private final static Logger logger= Logger.getLogger( TearoffTabbedPane.class.getCanonicalName() );
 
     HashMap<Component, TabDesc> tabs = new HashMap<Component, TabDesc>();
     int lastSelected; /* keep track of selected index before context menu */
@@ -487,7 +490,9 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
 
     protected void slideRight(int tabIndex) {
+
         final Component c = getComponentAt(tabIndex);
+        logger.finest("slideRight "+c);
 
         setSelectedIndex(tabIndex);
         c.setVisible(true);  // darwin bug297
@@ -509,6 +514,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     protected JFrame tearOffIntoFrame(int tabIndex) {
         final Component c = getComponentAt(tabIndex);
+        logger.finest("tearOffInfoFrame "+c);
         setSelectedIndex(tabIndex);
         c.setVisible(true);  // darwin bug297
         Point p = c.getLocationOnScreen();
@@ -551,6 +557,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
 
     public void dock(Component c) {
+        logger.finest("dock "+c);
         int selectedIndex = getSelectedIndex();
         TabDesc td = (TabDesc) tabs.get(c);
         int index = td.index;
@@ -608,12 +615,18 @@ public class TearoffTabbedPane extends JTabbedPane {
         Component c = getTabComponentByIndex(index);
         super.removeTabAt(index);
         TabDesc tab = tabs.get(c);
-        if (tab.babysitter != null) { //perhaps better to dock it first
-            if (tab.babysitter instanceof Window) {
-                ((Window) tab.babysitter).dispose();
+        if ( tab!=null ) {
+            if ( tab.babysitter != null ) { //perhaps better to dock it first
+                if (tab.babysitter instanceof Window) {
+                    ((Window) tab.babysitter).dispose();
+                }
             }
+            tabs.remove(c);
+        } else {
+            logger.fine("tabs didn't contain c, someone else removed it.");
+            //TODO: clean this up.
         }
-        tabs.remove(c);
+        
     }
 
     public void setSelectedIndex(int index) {
@@ -621,5 +634,6 @@ public class TearoffTabbedPane extends JTabbedPane {
             lastSelected = getSelectedIndex();
         }
         super.setSelectedIndex(index);
+        logger.finest("setSelectedIndex "+getSelectedComponent());
     }
 }
