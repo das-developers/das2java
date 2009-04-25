@@ -352,6 +352,7 @@ public class DataSetUtil {
 
         int ipeak=0;
         int peakv=(int) hist.value(0);
+        int hpeak=0; // highest observed non-trivial peak
 
         int imedian=-1;
         int t=0;
@@ -359,8 +360,11 @@ public class DataSetUtil {
         for ( int i=0; i<hist.length(); i++ ) {
             t+= hist.value(i);
             if ( hist.value(i)>peakv ) {
-                ipeak=i;
+                ipeak= i;
                 peakv= (int) hist.value(i);
+            }
+            if ( hist.value(i)>peakv/10  ) {
+                hpeak= i;
             }
             if ( imedian==-1 && t>total/2 ) {
                 imedian= i;
@@ -399,6 +403,9 @@ public class DataSetUtil {
                 peakv= lpeakv;
                 log= true;
             }
+        } else if ( peakv<10 ) { // loosen things up when there isn't much data.
+            ipeak= hpeak;
+            peakv= (int) hist.value(ipeak);
         }
 
         double ss=0;
