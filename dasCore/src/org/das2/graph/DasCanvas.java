@@ -144,7 +144,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private static final Paint PAINT_COLUMN = new Color(0xb2, 0xb2, 0xff, 0x92);
     private static final Paint PAINT_SELECTION = Color.GRAY;
     private static final Stroke STROKE_DASHED;
-    
+
 
     static {
         float thick = 3.0f;
@@ -185,7 +185,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             fileChooser.setFileFilter(getFileNameExtensionFilter("png files", "png"));
             Preferences prefs = Preferences.userNodeForPackage(DasCanvas.class);
             String savedir = prefs.get("savedir", null);
-            if (savedir != null) fileChooser.setCurrentDirectory(new File(savedir));
+            if (savedir != null)
+                fileChooser.setCurrentDirectory(new File(savedir));
             if (currentFile != null) fileChooser.setSelectedFile(currentFile);
             int choice = fileChooser.showSaveDialog(currentCanvas);
             if (choice == JFileChooser.APPROVE_OPTION) {
@@ -218,7 +219,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             fileChooser.setFileFilter(getFileNameExtensionFilter("svg files", "svg"));
             Preferences prefs = Preferences.userNodeForPackage(DasCanvas.class);
             String savedir = prefs.get("savedir", null);
-            if (savedir != null) fileChooser.setCurrentDirectory(new File(savedir));
+            if (savedir != null)
+                fileChooser.setCurrentDirectory(new File(savedir));
             if (currentFile != null) fileChooser.setSelectedFile(currentFile);
             int choice = fileChooser.showSaveDialog(currentCanvas);
             if (choice == JFileChooser.APPROVE_OPTION) {
@@ -251,7 +253,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             fileChooser.setFileFilter(getFileNameExtensionFilter("pdf files", "pdf"));
             Preferences prefs = Preferences.userNodeForPackage(DasCanvas.class);
             String savedir = prefs.get("savedir", null);
-            if (savedir != null) fileChooser.setCurrentDirectory(new File(savedir));
+            if (savedir != null)
+                fileChooser.setCurrentDirectory(new File(savedir));
             if (currentFile != null) fileChooser.setSelectedFile(currentFile);
             int choice = fileChooser.showDialog(currentCanvas, "Select File");
             if (choice == JFileChooser.APPROVE_OPTION) {
@@ -330,17 +333,27 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     };
 
-    public static Action[] getActions() {
-        return new Action[]{
-                    ABOUT_ACTION,
-                    REFRESH_ACTION,
-                    EDIT_DAS_PROPERTIES_ACTION,
-                    PRINT_ACTION,
-                    SAVE_AS_PNG_ACTION,
-                    SAVE_AS_SVG_ACTION,
-                    SAVE_AS_PDF_ACTION,
-                };
+    private static boolean disableActions = false;
+
+    public static void setDisableActions(boolean val) {
+        disableActions = val;
     }
+
+    public static Action[] getActions() {
+        if (disableActions) {
+            return new Action[0];
+        } else {
+            return new Action[]{
+                        ABOUT_ACTION,
+                        REFRESH_ACTION,
+                        EDIT_DAS_PROPERTIES_ACTION,
+                        PRINT_ACTION,
+                        SAVE_AS_PNG_ACTION,
+                        SAVE_AS_SVG_ACTION,
+                        SAVE_AS_PDF_ACTION,};
+        }
+    }
+
     private DasApplication application;
     private static final Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     private final GlassPane glassPane;
@@ -351,7 +364,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     List devicePositionList = new ArrayList();
     org.das2.util.DnDSupport dndSupport;
     ChangesSupport stateSupport;
-
     /** The set of Threads that are currently printing this canvas.
      * This set is used to determine of certain operations that are only
      * appropriate in printing situations should occur.
@@ -385,10 +397,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
         CanvasAction.currentCanvas = this;
-        stateSupport = new ChangesSupport(null,this);
-        stateSupport.addPropertyChangeListener( new PropertyChangeListener() {
-            public void propertyChange( PropertyChangeEvent e ) {
-                if ( Boolean.FALSE.equals(e.getNewValue()) ) {
+        stateSupport = new ChangesSupport(null, this);
+        stateSupport.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent e) {
+                if (Boolean.FALSE.equals(e.getNewValue())) {
                     setOpaque(true);
                     repaint();
                 } else {
@@ -514,7 +527,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     protected void paintComponent(Graphics g1) {
         logger.fine("entering DasCanvas.paintComponent");
 
-        if ( stateSupport.isValueAdjusting() ) {
+        if (stateSupport.isValueAdjusting()) {
             logger.fine("value is adjusting, returning");
             return;
         }
@@ -662,10 +675,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 Component c = getComponent(i);
                 if (c instanceof DasPlot) {
                     DasPlot p = (DasPlot) c;
-                    //logger.fine("    DasPlot.isDirty()=" + p.isDirty());
-                    //logger.fine("    DasPlot.getBounds()=" + p.getBounds());
-                    //System.err.println("    DasPlot.isDirty()=" + p.isDirty());
-                    //System.err.println("    DasPlot.getBounds()=" + p.getBounds());
+                //logger.fine("    DasPlot.isDirty()=" + p.isDirty());
+                //logger.fine("    DasPlot.getBounds()=" + p.getBounds());
+                //System.err.println("    DasPlot.isDirty()=" + p.isDirty());
+                //System.err.println("    DasPlot.getBounds()=" + p.getBounds());
                 }
             }
             super.print(g);
@@ -785,10 +798,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @return
      */
     public boolean isDirty() {
-        DasCanvasComponent[] cc= this.getCanvasComponents();
-        boolean result= false;
-        for ( int i=0; i<cc.length; i++ ) {
-             result= result | cc[i].isDirty();
+        DasCanvasComponent[] cc = this.getCanvasComponents();
+        boolean result = false;
+        for (int i = 0; i < cc.length; i++) {
+            result = result | cc[i].isDirty();
         }
         return result;
     }
@@ -878,7 +891,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @throws IllegalStateException if called from the event queue.
      */
     public void prepareForOutput(int width, int height) {
-        if (SwingUtilities.isEventDispatchThread()) throw new IllegalStateException("dasCanvas.prepareForOutput must not be called from event queue!");
+        if (SwingUtilities.isEventDispatchThread())
+            throw new IllegalStateException("dasCanvas.prepareForOutput must not be called from event queue!");
         setPreferredWidth(width);
         setPreferredHeight(height);
 
