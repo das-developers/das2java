@@ -12,6 +12,7 @@ import org.das2.datum.Datum;
 import org.das2.util.GrannyTextRenderer;
 import java.awt.*;
 import java.text.*;
+import org.das2.datum.InconvertibleUnitsException;
 
 /**
  *
@@ -48,8 +49,17 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         Datum rise= yaxis.invTransform(p2.y).subtract(yaxis.invTransform(p1.y));
             
         if ( !p1.equals(p2) ) {
-            Datum slope= rise.divide(run);            
-            setLabel( "m="+slope );
+            try {
+                Datum slope= rise.divide(run);
+                setLabel( "m="+slope );
+            } catch ( InconvertibleUnitsException ex ) {
+                double drise= rise.doubleValue(rise.getUnits());
+                double drun= run.doubleValue(run.getUnits());
+                double mag= drise/drun;
+                String units= "" + rise.getUnits() + " / " + run.getUnits();
+                setLabel( nf.format(mag) + " " + units );
+
+            }
         } else {
             setLabel( "" );
         }
