@@ -35,7 +35,7 @@ public class TrimStrideWrapper extends AbstractDataSet {
         this.offset[dim]= start == null ? 0 : start;
         this.stride[dim]= stride == null ? 1 : stride;
         int sstop= stop==null ? qube[dim] : stop;
-        this.len[dim]= ( sstop - this.offset[dim] ) / this.stride[dim];
+        this.len[dim]= (int)Math.ceil ( 1.*( sstop - this.offset[dim] ) / this.stride[dim] );
         QDataSet dep= (QDataSet) ds.property("DEPEND_"+dim);
         if ( dep!=null && dep.rank()==1 ) {
             TrimStrideWrapper depw= new TrimStrideWrapper( dep );
