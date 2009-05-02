@@ -11,6 +11,7 @@ package org.virbo.dataset;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,7 +20,7 @@ import java.util.Map;
  */
 public class JoinDataSet extends AbstractDataSet {
     
-    ArrayList<QDataSet> datasets;
+    List<QDataSet> datasets;
     /**
      * rank of the dataset.  Joined DataSets should have rank rank-1.
      */
@@ -78,5 +79,13 @@ public class JoinDataSet extends AbstractDataSet {
             return "JoinDataSet["+datasets.size()+" datasets: "+ datasets +" ]";
         }
     }
-    
+
+    public JoinDataSet trim( int imin, int imax ) {
+        datasets= datasets.subList(imin, imax);
+        return this;
+    }
+
+    public QDataSet slice( int idx ) {
+        return datasets.get(idx);
+    }
 }
