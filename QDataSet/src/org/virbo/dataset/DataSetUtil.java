@@ -350,6 +350,10 @@ public class DataSetUtil {
 
         long total= (Long)( ((Map<String,Object>)hist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
 
+        if ( total==0 ) {
+            return null;
+        }
+        
         int ipeak=0;
         int peakv=(int) hist.value(0);
         int hpeak=0; // highest observed non-trivial peak
