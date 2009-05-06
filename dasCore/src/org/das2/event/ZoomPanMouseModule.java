@@ -8,7 +8,6 @@
  */
 package org.das2.event;
 
-import java.awt.Component;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -21,7 +20,6 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.das2.datum.DomainDivider;
 import org.das2.graph.DasDevicePosition;
@@ -107,6 +105,7 @@ public class ZoomPanMouseModule extends MouseModule {
      *
      * @param e
      */
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         double nmin, nmax; 
         
@@ -194,6 +193,7 @@ public class ZoomPanMouseModule extends MouseModule {
         super.mouseWheelMoved(e);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         super.mouseReleased(e);
         if (xAxis != null) {
@@ -251,11 +251,13 @@ public class ZoomPanMouseModule extends MouseModule {
         }
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         super.mouseDragged(e);
         doPan(e);
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
         p0 = e.getPoint();
@@ -269,6 +271,6 @@ public class ZoomPanMouseModule extends MouseModule {
             yAxisLock = yAxis.mutatorLock();
             yAxisLock.lock();
         }
-        parent.getCanvas().getGlassPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
+        parent.getCanvas().getGlassPane().setCursor(new Cursor(Cursor.MOVE_CURSOR));
     }
 }
