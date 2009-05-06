@@ -86,6 +86,10 @@ public class DasRow extends DasDevicePosition {
         return new DasRow(getCanvas(),bottom+ptop*delta,bottom+pbottom*delta);
     }
     
+    /**
+     * return the height in points (pixels) of the row.
+     * @return
+     */
     public int getHeight() {
         return getDMaximum()-getDMinimum();
     }

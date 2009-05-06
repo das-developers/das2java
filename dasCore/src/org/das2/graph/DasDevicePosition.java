@@ -45,6 +45,9 @@ import org.das2.system.MutatorLock;
  */
 public abstract class DasDevicePosition implements Editable, java.io.Serializable {
     
+    public static final String PROP_DMAXIMUM = "dMaximum";
+    public static final String PROP_DMINIMUM = "dMinimum";
+    
     protected transient DasCanvas canvas;
     protected transient DasDevicePosition parent;
     
@@ -174,17 +177,14 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     public static String formatLayoutStr( DasDevicePosition pos, boolean min ) {
         StringBuffer buf= new StringBuffer();
-        DecimalFormat nf2= new DecimalFormat("0.00");
-        DecimalFormat nf1= new DecimalFormat("0.0");
-        DecimalFormat nf0= new DecimalFormat("0");
         if ( min ) {
-            if ( pos.getMinimum()!=0 ) buf.append( nf2.format(pos.getMinimum()*100 )+"%" );
-            if ( pos.getEmMinimum()!=0 ) buf.append( nf1.format(pos.getEmMinimum() )+"em" );
-            if ( pos.getPtMinimum()!=0 ) buf.append( nf0.format(pos.getPtMinimum()) + "pt" );
+            if ( pos.getMinimum()!=0 ) buf.append( String.format("%.2f%%", pos.getMinimum()*100 ) );
+            if ( pos.getEmMinimum()!=0 ) buf.append( String.format("%+.1fem", pos.getEmMinimum() ) );
+            if ( pos.getPtMinimum()!=0 ) buf.append( String.format("%+dpt", pos.getPtMinimum() ) );
         } else {
-            if ( pos.getMaximum()!=0 ) buf.append( nf2.format(pos.getMaximum()*100 )+"%" );
-            if ( pos.getEmMaximum()!=0 ) buf.append( nf1.format(pos.getEmMaximum() )+"em" );
-            if ( pos.getPtMaximum()!=0 ) buf.append( nf0.format(pos.getPtMaximum()) + "pt" );            
+            if ( pos.getMaximum()!=0 ) buf.append( String.format("%.2f%%", pos.getMaximum()*100 ) );
+            if ( pos.getEmMaximum()!=0 ) buf.append( String.format("%+.1fem", pos.getEmMaximum() ) );
+            if ( pos.getPtMaximum()!=0 ) buf.append( String.format("%+dpt", pos.getPtMaximum() ) );
         }
         if ( buf.length()==0 ) return "0%";
         return buf.toString();
@@ -255,8 +255,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         dMinimum= (int)( getParentMin() + minimum*getDeviceSize() + getEmSize() * emMinimum + ptMinimum );
         dMaximum= (int)( getParentMin() + maximum*getDeviceSize() + getEmSize() * emMaximum + ptMaximum );
         if ( dMaximum<=dMinimum ) dMaximum= dMinimum+1;
-        if ( dMinimum!=oldmin ) firePropertyChange( "dMinimum", oldmin, dMinimum );
-        if ( dMaximum!=oldmax ) firePropertyChange( "dMaximum", oldmax, dMaximum );
+        if ( dMinimum!=oldmin ) firePropertyChange(  PROP_DMINIMUM, oldmin ,dMinimum);
+        if ( dMaximum!=oldmax ) firePropertyChange(  PROP_DMAXIMUM, oldmax ,dMaximum);
         if ( dMinimum!=oldmin || dMaximum!=oldmax ) fireUpdate();
         canvas.repaint();
     }
@@ -338,7 +338,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
             revalidate();
         }
     }
-    
+
+
     /**
      * set the new pixel position of the bottom/right boundry.  em and pt offsets
      * are not modified, and the normal position is recalculated.
@@ -569,6 +570,42 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         int oldValue= this.ptMaximum;
         this.ptMaximum = ptMaximum;
         firePropertyChange("ptMaximum", oldValue, ptMaximum);
+        revalidate();
+    }
+
+    /**
+     * set all three as one atomic operation
+     * norm 0-1
+     * @param norm
+     * @param em
+     * @param pt
+     */
+    public void setMin( double norm, double em, int pt ) {
+        double[] old= new double[ ] { this.minimum, this.emMinimum, this.emMaximum };
+        this.minimum= norm;
+        this.emMinimum= em;
+        this.ptMinimum= pt;
+        firePropertyChange("ptMinimum", old[2], ptMinimum );
+        firePropertyChange("emMinimum", old[1], em );
+        firePropertyChange("minimum", old[0], norm );
+        revalidate();
+    }
+
+    /**
+     * set all three as one atomic operation
+     * norm 0-1
+     * @param norm
+     * @param em
+     * @param pt
+     */
+    public void setMax( double norm, double em, int pt ) {
+        double[] old= new double[ ] { this.maximum, this.emMaximum, this.emMaximum };
+        this.maximum= norm;
+        this.emMaximum= em;
+        this.ptMaximum= pt;
+        firePropertyChange("ptMaximum", old[2], ptMaximum );
+        firePropertyChange("emMaximum", old[1], em );
+        firePropertyChange("maximum", old[0], norm );
         revalidate();
     }
     
