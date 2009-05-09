@@ -81,6 +81,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     
     private byte[] raster;
     private int rasterWidth,  rasterHeight;
+    private int validCount;
+    
     DatumRange imageXRange;
     DatumRange imageYRange;
     DasAxis.Memento xmemento, ymemento, cmemento;
@@ -234,6 +236,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
                     } else if (getDataSet().getXLength() == 0) {
                         parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
+                    } else {
+                        TableDataSet ds= (TableDataSet)getDataSet();
+                        if ( !ds.getYUnits().isConvertableTo(yAxis.getUnits()) ) {
+                            parent.postMessage(this, "inconvertable yaxis units", DasPlot.INFO, null, null);
+                        }
+                        if ( !ds.getXUnits().isConvertableTo(xAxis.getUnits()) ) {
+                            parent.postMessage(this, "inconvertable xaxis units", DasPlot.INFO, null, null);
+                        }
                     }
                 }
             } else if (plotImage != null) {
@@ -255,6 +265,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 } else {
                     g2.drawImage(plotImage, x, y, getParent());
                 }
+                if ( validCount==0 ) {
+                     parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null);
+                }
             }
         }
     }
@@ -262,10 +275,27 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private boolean sliceRebinnedData = true;
 
     /**
+     * make the pixel array, possibly recycling the old map.
+     * @param rebinData
+     * @param pix
+     * @return
+     */
+    private static byte[] makePixMap( TableDataSet rebinData, byte[] pix ) {
+        logger.fine("converting to pixel map");
+        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
+        int itable = 0;
+        int ny = rebinData.getYLength(itable);
+        int nx = rebinData.tableEnd(itable) - rebinData.tableStart(itable);
+
+        pix = new byte[nx * ny];
+        return pix;
+    }
+
+    /**
      * transforms the simpleTableDataSet into a Raster byte array.  The rows of
      * the table are adjacent in the output byte array.
      */
-    private static byte[] transformSimpleTableDataSet(TableDataSet rebinData, DasColorBar cb, boolean flipY) {
+    private static int transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb, boolean flipY, byte[] pix ) {
 
         if (rebinData.tableCount() > 1) {
             throw new IllegalArgumentException("TableDataSet contains more than one table");
@@ -274,18 +304,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         int itable = 0;
         int ny = rebinData.getYLength(itable);
-        int h = ny;
         int nx = rebinData.tableEnd(itable) - rebinData.tableStart(itable);
-        int w = nx;
         int icolor;
 
         Units units = cb.getUnits();
-        int ncolor = cb.getType().getColorCount();
 
         TableDataSet weights = (TableDataSet) rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
 
-        byte[] pix = new byte[nx * ny];
         Arrays.fill(pix, (byte) cb.getFillColorIndex());
+
+        int validCount= 0;
 
         for (int i = rebinData.tableStart(itable); i < rebinData.tableEnd(itable); i++) {
             for (int j = 0; j < ny; j++) {
@@ -298,11 +326,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                     icolor = cb.indexColorTransform(rebinData.getDouble(i, j, units), units);
                     pix[index] = (byte) icolor;
+                    validCount++;
                 }
             }
         }
+        if ( validCount==0 ) {
+            logger.fine("dataset contains no valid data");
+        }
 
-        return pix;
+        return validCount;
     }
 
     private void reportCount() {
@@ -413,7 +445,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         logger.fine("rebinning to pixel resolution: "+ xmemento + "  " + ymemento );
 
-                        raster = transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped());
+                        raster = makePixMap( rebinDataSet, raster );
+                        validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), raster );
                         rasterWidth = plotImageBounds2.width;
                         rasterHeight = plotImageBounds2.height;
 
