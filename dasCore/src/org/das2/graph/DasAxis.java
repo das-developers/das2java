@@ -2047,6 +2047,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     public void resize() {
         resetTransform();
+        if ( getFont()==null ) {
+            return;
+        }
         Rectangle oldBounds = this.getBounds();
         setBounds(getAxisBounds());
         //setBounds(getAxisBoundsNew());
