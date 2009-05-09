@@ -8,12 +8,12 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.Units;
+import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.graph.DasCanvas;
-import org.das2.graph.DasColumn;
 import org.das2.graph.DasPlot;
-import org.das2.graph.DasRow;
 import org.das2.graph.GraphUtil;
 
 /**
@@ -49,14 +49,16 @@ public class PlotDemo {
 
         getContentPane().add(canvas, BorderLayout.CENTER );
 
-        DatumRange xrange= DatumRange.newDatumRange(0,10,Units.seconds);
-        //DatumRange xrange= DatumRangeUtil.parseTimeRangeValid("2009");
+        //DatumRange xrange= DatumRange.newDatumRange(0,10,Units.seconds);
+        DatumRange xrange= DatumRangeUtil.parseTimeRangeValid("2009");
         DatumRange yrange= DatumRange.newDatumRange(0.1,100, Units.dimensionless);
 
         DasPlot plot= GraphUtil.newDasPlot(canvas, xrange, yrange);
 
-        plot.getXAxis().setMajorTicksDomainDivider(DomainDividerUtil.getDomainDivider( xrange.min(), xrange.max() ) );
-
+        //plot.getXAxis().setMajorTicksDomainDivider(DomainDividerUtil.getDomainDivider( xrange.min(), xrange.max() ) );
+        //plot.getXAxis().setMajorTicksDomainDivider( DomainDividerUtil.getDomainDivider( xrange.min(), xrange.max() ) );
+        plot.getXAxis().setUseDomainDivider(true);
+        plot.getYAxis().setUseDomainDivider(true);
     }
 
     public static void main( String[] args ) {
