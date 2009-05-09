@@ -343,7 +343,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * @return the height of the component's font.
      */
     public double getEmSize() {
-        return getFont().getSize2D();
+        Font f= getFont();
+        return f==null ? 8 : f.getSize2D();
     }
     
     boolean dirty = true;
