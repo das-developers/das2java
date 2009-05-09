@@ -220,7 +220,7 @@ public class DatumRange implements Comparable {
      * returns the position within this, where 0. is the min(), and 1. is the max()
      * @param d a datum to normalize with respect to the range.
      * @return a double indicating the normalized datum.
-     * @deprecated. Use DatumRangeUtil.normalize
+     * @deprecated Use DatumRangeUtil.normalize
      */
     public double normalize( Datum d ) {
         return d.subtract(s1).divide(width()).doubleValue(Units.dimensionless);
