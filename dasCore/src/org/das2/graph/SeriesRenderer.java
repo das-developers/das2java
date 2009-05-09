@@ -763,25 +763,31 @@ public class SeriesRenderer extends Renderer  {
 
         TableDataSet tds = null;
         VectorDataSet vds = null;
-        boolean plottable = false;
+        boolean yaxisUnitsOkay = false;
 
         if (dataSet instanceof VectorDataSet) {
             vds = (VectorDataSet) dataSet;
-            plottable = dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
+            yaxisUnitsOkay = dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
         } else if (dataSet instanceof TableDataSet) {
             tds = (TableDataSet) dataSet;
-            plottable = tds.getZUnits().isConvertableTo(yAxis.getUnits());
+            yaxisUnitsOkay = tds.getZUnits().isConvertableTo(yAxis.getUnits());
         }
-        plottable = plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
 
-        if (!plottable) {
-            lparent.postMessage( this, "data set units cannot convert to axis units", DasPlot.WARNING, null, null );
+        if (!yaxisUnitsOkay) {
+            lparent.postMessage( this, "inconvertable yaxis units", DasPlot.INFO, null, null );
             return;
         }
 
+        if ( !dataSet.getXUnits().isConvertableTo(xAxis.getUnits()) ) {
+            lparent.postMessage( this, "inconvertable xaxis units", DasPlot.INFO, null, null );
+            return;
+        }
+
+        int messageCount= 0;
+
         logger.fine("rendering points: " + lastIndex + "  " + firstIndex);
         if (lastIndex == firstIndex) {
-            lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+            if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
 
         logger.fine("render data set " + dataSet);
@@ -842,7 +848,7 @@ public class SeriesRenderer extends Renderer  {
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
             if ( count==0 ) {
-                lparent.postMessage( this, "no valid points", DasPlot.INFO, null, null );
+               if ( messageCount++==0) lparent.postMessage( this, "no valid points", DasPlot.INFO, null, null );
             }
             mon.finished();
         }
@@ -862,7 +868,7 @@ public class SeriesRenderer extends Renderer  {
         }
 
         if ( lastIndex - firstIndex < 2 ) {
-            lparent.postMessage(this, "less than two points visible", DasPlot.INFO, null, null);
+            if ( messageCount++==0) lparent.postMessage(this, "less than two points visible", DasPlot.INFO, null, null);
         }
 
     }
