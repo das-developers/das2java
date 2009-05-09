@@ -1,0 +1,14 @@
+ds= randn( 20,30,40 )
+print ds
+from org.virbo.dataset import LengthsDataSet, DataSetUtil, JoinDataSet
+print LengthsDataSet(ds)
+print DataSetUtil.valueCount(ds)
+
+ds= JoinDataSet(2)
+ds.join( findgen(34 ) )
+ds.join(  findgen(23 ) )
+ds.join(  findgen(32 ) )
+ds.join(  findgen(33 ) )
+
+print LengthsDataSet(ds)
+print DataSetUtil.valueCount(ds)
