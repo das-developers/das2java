@@ -376,7 +376,12 @@ public class FileStorageModel {
         }
         return null;
     }
-    
+
+
+    /**
+     * @param targetRange restrict search to range.  May be null, in which case all names are returned.
+     * @throws IOException if the filesystem cannot be listed.
+     */
     public String[] getNamesFor( final DatumRange targetRange ) throws IOException {
         return getNamesFor( targetRange, new NullProgressMonitor() );
     }
