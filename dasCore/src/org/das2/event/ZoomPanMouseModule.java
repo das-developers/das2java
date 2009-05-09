@@ -67,8 +67,8 @@ public class ZoomPanMouseModule extends MouseModule {
             div= div.finerDivider(false).finerDivider(false);
             DatumRange minDr= div.rangeContaining(dr.min());
             DatumRange maxDr= div.rangeContaining(dr.max());
-            Datum min= minDr.normalize(dr.min()) < 0.5 ? minDr.min() : minDr.max();
-            Datum max= maxDr.normalize(dr.max()) < 0.5 ? maxDr.min() : maxDr.max();
+            Datum min= DatumRangeUtil.normalize( minDr, dr.min() ) < 0.5 ? minDr.min() : minDr.max();
+            Datum max= DatumRangeUtil.normalize( maxDr, dr.max() ) < 0.5 ? maxDr.min() : maxDr.max();
             DatumRange drRound= new DatumRange( min, max );
             dr= drRound;
         }
