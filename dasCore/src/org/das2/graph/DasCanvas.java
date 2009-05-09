@@ -68,7 +68,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -76,7 +75,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -104,7 +102,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.LookAndFeel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -896,7 +893,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setPreferredWidth(width);
         setPreferredHeight(height);
 
-        if ("true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
+        if ( ! this.isShowing() ) { //"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
             this.addNotify();
             logger.finer("setSize(" + getPreferredSize() + ")");
             this.setSize(getPreferredSize());
