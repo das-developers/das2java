@@ -57,7 +57,7 @@ public class DataRange implements Cloneable {
      * maximum, possibly with log applied 
      */
     private double maximum;
-    
+
     /**
      * storage for values of temporary invalid states during state transition.
      */
@@ -146,7 +146,7 @@ public class DataRange implements Cloneable {
         if (this.log==log) return;
         boolean oldLog = this.log;
         if (log) {
-            if (minimum<=0. || maximum <=0.) {
+            if ( !valueIsAdjusting() && ( minimum<=0. || maximum <=0. ) ) {
                 if ( maximum<=0 ) {
                     double oldMax= maximum;
                     maximum=100;
