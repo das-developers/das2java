@@ -15,7 +15,7 @@ import java.util.logging.LogRecord;
  */
 public class TimerConsoleFormatter extends Formatter {
 
-    long t0;
+    long t0= System.currentTimeMillis();
     DecimalFormat nf;
     String lastLoggerName;
     String resetMessage;
@@ -24,7 +24,7 @@ public class TimerConsoleFormatter extends Formatter {
         
         final String message = rec.getMessage();
         //if ( lastLoggerName==null || lastLoggerName!=rec.getLoggerName() ) {
-        if (message != null && message.contains(resetMessage)) {
+        if (message != null && resetMessage!=null && message.contains(resetMessage)) {
             lastLoggerName = rec.getLoggerName();
             t0 = System.currentTimeMillis();
         }
