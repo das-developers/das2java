@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.das2.datum.Datum;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
@@ -863,6 +864,33 @@ public class DataSetUtil {
     }
 
     /**
+     * convert the dataset to the given units.
+     * @param ds
+     * @param u
+     * @return
+     */
+    public static QDataSet convertTo( QDataSet ds, Units u ) {
+        Units su= (Units) ds.property(QDataSet.UNITS);
+        if ( su==null ) su= Units.dimensionless;
+        UnitsConverter uc= su.getConverter(u);
+        DDataSet result = DDataSet.copy(ds);  // assumes ds is QUBE right now...
+        QubeDataSetIterator it= new QubeDataSetIterator(ds);
+        while ( it.hasNext() ) {
+            it.next();
+            it.putValue( result, uc.convert( it.getValue(ds)) );
+        }
+        Double vmin= (Double) ds.property(QDataSet.VALID_MIN);
+        if ( vmin!=null ) result.putProperty( QDataSet.VALID_MIN, uc.convert(vmin));
+        Double vmax= (Double) ds.property(QDataSet.VALID_MAX);
+        if ( vmax!=null ) result.putProperty( QDataSet.VALID_MAX, uc.convert(vmax));
+        Double fill= (Double) ds.property(QDataSet.FILL_VALUE);
+        if ( fill!=null ) result.putProperty( QDataSet.FILL_VALUE, uc.convert(fill));
+
+        return result;
+    }
+
+
+    /**
      * get the value of the rank 0 dataset in the specified units.
      * For example, value( ds, Units.km )
      * @param ds
@@ -898,7 +926,34 @@ public class DataSetUtil {
     public static DRank0DataSet asDataSet( Datum d ) {
         return DRank0DataSet.create(d);
     }
-
+    
+    /**
+     * convert java arrays into QDataSets.
+     * @param arr
+     * @return
+     */
+    public static QDataSet asDataSet(Object arr) {
+        if ( arr.getClass().isArray() ) {
+            Class c=  arr.getClass().getComponentType();
+            if ( c==double.class ) {
+                return DDataSet.wrap((double[])arr);
+            } else if ( c==float.class ) {
+                return FDataSet.wrap((float[])arr);
+            } else if ( c==long.class ) {
+                return LDataSet.wrap((long[])arr);
+            } else if ( c==int.class ) {
+                return IDataSet.wrap((int[])arr);
+            } else if ( c==short.class ) {
+                return SDataSet.wrap((short[])arr);
+            } else if ( c==byte.class ) {
+                return BDataSet.wrap((byte[])arr);
+            } else {
+                throw new IllegalArgumentException("unsupported type: "+arr.getClass());
+            }
+        } else {
+            throw new IllegalArgumentException("unsupported type: "+arr.getClass());
+        }
+    }
 }
 
 
