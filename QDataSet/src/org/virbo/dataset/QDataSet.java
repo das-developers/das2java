@@ -82,12 +82,12 @@ public interface QDataSet {
     public final static String UNITS="UNITS";
 
     /**
-     * Double, Double value to be considered fill (invalid) data.
+     * type Number, value to be considered fill (invalid) data.
      */
     public final static String FILL_VALUE="FILL_VALUE";
         
     /**
-     * type double.  Range bounding measurements to be considered valid.  Lower
+     * type Number.  Range bounding measurements to be considered valid.  Lower
      * and Upper bounds are inclusive.  FILL_VALUE should be used to make the 
      * lower bound or upper bound exclusive.  Note DatumRange contains logic is
      * exclusive on the upper bound.
@@ -95,7 +95,7 @@ public interface QDataSet {
     public final static String VALID_MIN="VALID_MIN";
     
     /**
-     * type double.  Range bounding measurements to be considered valid.  Lower
+     * type Number.  Range bounding measurements to be considered valid.  Lower
      * and Upper bounds are inclusive.  FILL_VALUE should be used to make the 
      * lower bound or upper bound exclusive.  Note DatumRange contains logic is
      * exclusive on the upper bound.
@@ -103,13 +103,13 @@ public interface QDataSet {
     public final static String VALID_MAX="VALID_MAX";
         
     /**
-     * type double.  Range used to discover datasets.  This should be a reasonable representation
+     * type Number.  Range used to discover datasets.  This should be a reasonable representation
      * of the expected dynamic range of the dataset.
      */    
     public final static String TYPICAL_MIN="TYPICAL_MIN";
 
     /**
-     * type double.  Range used to discover datasets.  This should be a reasonable representation
+     * type Number.  Range used to discover datasets.  This should be a reasonable representation
      * of the expected dynamic range of the dataset.
      */    
     public final static String TYPICAL_MAX="TYPICAL_MAX";
@@ -131,7 +131,8 @@ public interface QDataSet {
     
     /**
      * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Also, the data must not contain 
-     * invalid values.  Generally this will be used with tags datasets.
+     * invalid values.  Generally this will be used with tags datasets.  Negative CADENCE implies
+     * monotonic decreasing.
      */
     public final static String MONOTONIC="MONOTONIC";
             

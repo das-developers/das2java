@@ -41,7 +41,7 @@ public class BinAverage {
         if (u == null) {
             u = Units.dimensionless;
         }
-        double fill = (Double) wds.property(QDataSet.FILL_VALUE);
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
         DDataSet result = DDataSet.createRank1(newTags0.length());
         DDataSet weights = DDataSet.createRank1(newTags0.length());
@@ -88,7 +88,7 @@ public class BinAverage {
 
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
-        double fill = (Double) wds.property(QDataSet.FILL_VALUE);
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
         DDataSet result = DDataSet.createRank2(newTags0.length(), newTags1.length());
         DDataSet weights = DDataSet.createRank2(newTags0.length(), newTags1.length());
@@ -221,7 +221,7 @@ public class BinAverage {
         DDataSet result = sums;
         //DDataSet resultVar= sums2;
         
-        double fill = (Double) wds.property(QDataSet.FILL_VALUE);
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         for (int i = 0; i < nn; i++) {
             if (weights.value(i) > 0) {
                 double s= result.value(i);
@@ -257,7 +257,7 @@ public class BinAverage {
 
         int n0 = l0 / binSize0;
 
-        double fill = (Double) wds.property(QDataSet.FILL_VALUE);
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
         for (int i0 = 0; i0 < n0; i0++) {
             int j0= i0 * binSize0;
@@ -301,7 +301,7 @@ public class BinAverage {
         int n0 = l0 / binSize0;
         int n1 = l1 / binSize1;
 
-        double fill = (Double) wds.property( QDataSet.FILL_VALUE );
+        double fill = ((Number) wds.property( QDataSet.FILL_VALUE )).doubleValue();
 
         for (int i0 = 0; i0 < n0; i0++) {
             for (int i1 = 0; i1 < n1; i1++) {

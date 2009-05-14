@@ -380,8 +380,8 @@ public class DataSetUtil {
         if ( xunits==null ) xunits= Units.dimensionless;
 
         boolean log= false;
-        double firstBin= (Double)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START);
-        double binWidth= (Double)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH);
+        double firstBin= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START)).doubleValue();
+        double binWidth= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
         firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
         if ( ipeak==0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
             ah= new AutoHistogram();
@@ -815,14 +815,14 @@ public class DataSetUtil {
     public static WeightsDataSet weightsDataSet(final QDataSet ds) {
         WeightsDataSet result = (WeightsDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
         if (result == null) {
-            Double validMin = (Double) ds.property(QDataSet.VALID_MIN);
+            Number validMin = (Number) ds.property(QDataSet.VALID_MIN);
             if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
-            Double validMax = (Double) ds.property(QDataSet.VALID_MAX);
+            Number validMax = (Number) ds.property(QDataSet.VALID_MAX);
             if (validMax == null) validMax = Double.POSITIVE_INFINITY;
             Units u = (Units) ds.property(QDataSet.UNITS);
-            Double ofill = (Double) ds.property(QDataSet.FILL_VALUE);
+            Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
             double fill = (ofill == null ? Double.NaN : ofill.doubleValue());
-            boolean check = (validMin > -1 * Double.MAX_VALUE || validMax < Double.MAX_VALUE || !(Double.isNaN(fill)));
+            boolean check = (validMin.doubleValue() > -1 * Double.MAX_VALUE || validMax.doubleValue() < Double.MAX_VALUE || !(Double.isNaN(fill)));
             if (check) {
                 result = new WeightsDataSet.ValidRangeFillFinite(ds);
             } else {
@@ -879,11 +879,11 @@ public class DataSetUtil {
             it.next();
             it.putValue( result, uc.convert( it.getValue(ds)) );
         }
-        Double vmin= (Double) ds.property(QDataSet.VALID_MIN);
+        Number vmin= (Number) ds.property(QDataSet.VALID_MIN);
         if ( vmin!=null ) result.putProperty( QDataSet.VALID_MIN, uc.convert(vmin));
-        Double vmax= (Double) ds.property(QDataSet.VALID_MAX);
+        Number vmax= (Number) ds.property(QDataSet.VALID_MAX);
         if ( vmax!=null ) result.putProperty( QDataSet.VALID_MAX, uc.convert(vmax));
-        Double fill= (Double) ds.property(QDataSet.FILL_VALUE);
+        Number fill= (Number) ds.property(QDataSet.FILL_VALUE);
         if ( fill!=null ) result.putProperty( QDataSet.FILL_VALUE, uc.convert(fill));
 
         return result;

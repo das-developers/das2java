@@ -281,7 +281,7 @@ public class Ops {
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result = DDataSet.create(newQube);
         QubeDataSetIterator it1 = new QubeDataSetIterator(result);
-        double fill = (Double) wds.property(QDataSet.FILL_VALUE);
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         double[] store = new double[2];
         while (it1.hasNext()) {
             it1.next();
@@ -321,7 +321,7 @@ public class Ops {
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result = DDataSet.create(newQube);
         QubeDataSetIterator it1 = new QubeDataSetIterator(result);
-        double fill = (Double) wds.property(QDataSet.FILL_VALUE);
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         while (it1.hasNext()) {
             it1.next();
             int n = ds.length(dim);
@@ -1598,7 +1598,7 @@ public class Ops {
             }
         }
         if ( count==0 ) {  // no valid data!
-            double fill= (Double)w.property(QDataSet.FILL_VALUE);
+            double fill= ((Number)w.property(QDataSet.FILL_VALUE)).doubleValue();
             result[0] = fill;
             result[1] = fill;
         }
