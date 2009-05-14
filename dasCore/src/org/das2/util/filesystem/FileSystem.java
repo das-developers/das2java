@@ -105,7 +105,9 @@ public abstract class FileSystem  {
         if ( factory==null ) {
             throw new IllegalArgumentException( "unsupported protocol: "+root );
         } else {
-            result= factory.createFileSystem(root);
+            if ( result==null ) { // if we didn't create it in the zip file part
+                result= factory.createFileSystem(root);
+            }
         }
         
         instances.put(root, result);
