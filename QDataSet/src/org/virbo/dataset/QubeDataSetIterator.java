@@ -67,20 +67,20 @@ public class QubeDataSetIterator implements DataSetIterator {
 
     public static class StartStopStepIteratorFactory implements DimensionIteratorFactory {
 
-        Integer start;
-        Integer stop;
-        Integer step;
+        Number start;
+        Number stop;
+        Number step;
 
-        public StartStopStepIteratorFactory(Integer start, Integer stop, Integer step) {
+        public StartStopStepIteratorFactory(Number start, Number stop, Number step) {
             this.start = start;
             this.stop = stop;
             this.step = step;
         }
 
         public DimensionIterator newIterator(int length) {
-            int start1 = start == null ? 0 : start;
-            int stop1 = stop == null ? length : stop;
-            int step1 = step == null ? 1 : step;
+            int start1 = start == null ? 0 : start.intValue();
+            int stop1 = stop == null ? length : stop.intValue();
+            int step1 = step == null ? 1 : step.intValue();
             if (start1 < 0) {
                 start1 = length + start1;
             }
