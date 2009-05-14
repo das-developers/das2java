@@ -411,5 +411,12 @@ public class DasApplication {
         }
         return exceptionHandler;
     }
-    
+
+    /**
+     * explicitly set the ExceptionHandler that will handle runtime exceptions
+     * @param h
+     */
+    public void setExceptionHandler( ExceptionHandler h ) {
+        this.exceptionHandler= h;
+    }
 }
