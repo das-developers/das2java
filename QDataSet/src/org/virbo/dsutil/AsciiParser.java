@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.util.TimeParser;
@@ -759,27 +760,6 @@ public class AsciiParser {
         return ss;
     }
 
-    /**
-     * hide the nuances of java's split function.  When the string endswith the
-     * regex, add an empty field.  Also, trim the string so leading and trailing
-     * whitespace is not treated as a delimiter.
-     * 
-     * no longer used because String.split( delim, -2 ) has the same effect.
-     * 
-     * @param string
-     * @param regex regular expression like \\s+
-     * @return string array containing the fields.
-     */
-    private static final String[] split(String string, Pattern delimPattern, String delimRegex) {
-        String[] ss = delimPattern.split(string.trim());
-        if (string.endsWith(delimRegex)) {
-            String[] ss1 = new String[ss.length + 1];
-            System.arraycopy(ss, 0, ss1, 0, ss.length);
-            ss1[ss1.length - 1] = "";
-            ss = ss1;
-        }
-        return ss;
-    }
 
     /**
      * create a delimeter-based record parser by splitting the line and counting
@@ -913,22 +893,81 @@ public class AsciiParser {
         }
 
         public String[] fields(String line) {
-            String[] ss = line.trim().split(delimRegex, -2);
+            String[] many= new String[1000];
+            splitRecord(line, many);
+            int count=0;
+            for ( int i=0; i<many.length; i++ ) {
+                if ( many[i]==null ) {
+                    count=i;
+                    break;
+                }
+            }
+            String[] ss= new String[count];
+            System.arraycopy( many, 0, ss, 0, count );
+            
             return ss;
         }
 
-        public boolean splitRecord(String line, String[] fields) {
-        	try {
-            String[] ss = line.trim().split(delimRegex, -2);
-            if ( ss.length==fieldCount ) {
-                System.arraycopy( ss, 0, fields, 0, fieldCount );
-                return true;
-            } else {
-                return false;
+        public boolean splitRecord(String input, String[] fields) {
+
+            int index = 0;
+            int ifield = 0;
+
+            Matcher m = delimPattern.matcher(input);
+
+            char quote='"';
+            int len= input.length();
+            
+            int index0= index;
+            int qend=-1; // end of the quoted
+            while ( ifield<fields.length && index<len ) {
+                while ( index<len && Character.isWhitespace( input.charAt(index) ) ) index++;
+                if ( index==len ) break;
+                int i1;
+                if ( input.charAt(index)==quote ) { // find closing quote
+                    index= index+1;
+                    index0= index;
+                    i1= input.indexOf(quote,index);
+                    if ( i1==-1 ) throw new IllegalArgumentException("unclosed quote");
+                    while ( i1+1<input.length() && input.charAt(i1+1)==quote ) {
+                        i1= input.indexOf(quote,i1+2);
+                        if ( i1==-1 ) throw new IllegalArgumentException("unclosed quote");
+                    }
+                    index= i1+1;
+                    qend= i1;
+
+                    if ( index==len ) {
+                        fields[ifield]= input.substring(index0,qend);
+                        ifield++;
+                    }
+                } else {
+                    if ( m.find(index) ) {
+                        index= m.start();
+                        if ( qend==-1 ) {
+                            fields[ifield]= input.substring(index0, index);
+                        } else {
+                            fields[ifield]= input.substring(index0, qend).replaceAll("\"\"", "\"");
+                            qend=-1;
+                        }
+                        index= m.end();
+                        index0= index;
+                        ifield++;
+                    } else if ( ifield==fields.length-1 ) {
+                        if ( qend==-1 ) {
+                            fields[ifield]= input.substring(index0);
+                        } else {
+                            fields[ifield]= input.substring(index0,qend);
+                        }
+                        ifield++;
+                        index=len;
+                    } else {
+                        fields[ifield]= input.substring(index0); // support fields() function
+                        return false;
+                    }
+                }
             }
-        	} catch ( NullPointerException ex ) {
-        		throw ex;
-        	}
+
+            return ( ifield == fields.length && index==len ) ;
         }
     }
 
@@ -1130,6 +1169,21 @@ public class AsciiParser {
 
         TimeParser tp= TimeParser.create( "%{ignore} %y %m %d %{ignore} %H" );
         System.err.println( tp.parse("JF 09 12 02 xxx 04").getTimeDatum() );
+
+        {
+            AsciiParser parser= AsciiParser.newParser(5);
+            DelimParser dp= parser.guessDelimParser("1,2,3,4,5");
+            String[] fields= new String[5];
+            boolean ok;
+            ok= dp.splitRecord( "1, 2 ,3,4,\"154\"", fields);
+            ok= dp.splitRecord( "1,2,3,4,5", fields);
+            ok= dp.splitRecord( "1,\"foo\",3,4,5", fields);
+            ok= dp.splitRecord( "1,\"fo,o\",3,4,5", fields);
+            ok= dp.splitRecord( "1, \"fo,o\" ,3,4,5", fields);
+            ok= dp.splitRecord( "1, \"he said \"\"boo\"\"!\" ,3,4,\"154\"", fields);
+            ok= dp.splitRecord( "1, 2 ,3,4,\"154\"", fields);
+            System.err.println("great stuff");
+        }
 
         String file = "/media/mini/data.backup/examples/dat/2490lintest90005.raw";
 
