@@ -77,8 +77,6 @@ public class AboutUtil {
 
             String jar = url.toString();
 
-            System.err.println(jar);
-
             int i = jar.indexOf(".jar");
             int i0 = jar.lastIndexOf("/", i - 1);
 
