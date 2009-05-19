@@ -66,6 +66,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.dataset.DataSetUtil;
 import org.w3c.dom.*;
 
 /**
@@ -266,7 +267,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     g2.drawImage(plotImage, x, y, getParent());
                 }
                 if ( validCount==0 ) {
-                     parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null);
+                    DatumRange xdr= DataSetUtil.xRange(ds);
+                    DatumRange ydr= DataSetUtil.yRange(ds);
+                    if ( xAxis.getDatumRange().intersects(xdr) && yAxis.getDatumRange().intersects(ydr) ) {
+                        parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null );
+                    } else {
+                        parent.postMessage(this, "dataset is outside of axis range", DasPlot.INFO, null, null );
+                    }
                 }
             }
         }
