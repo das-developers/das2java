@@ -10,9 +10,7 @@
 package org.virbo.dataset;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * create a higher rank dataset with dim 0 being a join dimension.
