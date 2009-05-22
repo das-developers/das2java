@@ -35,6 +35,9 @@ public class DataSetUtil {
 
     /**
      * creates a dataset with the given cadence, start and length.
+     * This is danger code, because the CADENCE must be reset if the UNITS are reset.
+     * use tagGenDataSet( int n, final double start, final double cadence, Units units ) if
+     * units are going to be specified.
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
