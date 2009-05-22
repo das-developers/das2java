@@ -82,6 +82,7 @@ public class AsciiParser {
     public static final String DELIM_TAB = "\t";
     public static final String DELIM_WHITESPACE = "\\s+";
     private static Logger logger = Logger.getLogger("virbo.dataset.asciiparser");
+    private static final int HEADER_LENGTH_LIMIT=1000;
 
     private AsciiParser(String[] fieldNames) {
         setRegexParser(fieldNames);
@@ -139,6 +140,8 @@ public class AsciiParser {
      * returns the first record that the record parser parses successfully.  The
      * recordParser should be set and configured enough to identify the fields.
      * If no records can be parsed, then null is returned.
+     *
+     * The first record should be in the first 1000 lines.
      * 
      * @param filename
      * @return the first parseable line, or null if no such line exists.
@@ -160,8 +163,9 @@ public class AsciiParser {
 
         DataSetBuilder builder = new DataSetBuilder(2, 100, recordParser.fieldCount(), 1);
 
-        while (line != null && this.recordParser.tryParseRecord(line, 0, builder) == false) {
+        while (line != null && iline<HEADER_LENGTH_LIMIT && this.recordParser.tryParseRecord(line, 0, builder) == false) {
             line = reader.readLine();
+            iline++;
         }
 
         reader.close();
@@ -243,7 +247,7 @@ public class AsciiParser {
 
         int parseCount=0;
 
-        while ( iline<10000 && line != null && parseCount<3 ) {
+        while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<3 ) {
             lines.add(line);
             line = reader.readLine();
             iline++;
