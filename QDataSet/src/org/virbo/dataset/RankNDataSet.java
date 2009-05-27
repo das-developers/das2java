@@ -12,4 +12,5 @@ package org.virbo.dataset;
  */
 public interface RankNDataSet {
     QDataSet slice( int dim );
+    int rank();
 }
