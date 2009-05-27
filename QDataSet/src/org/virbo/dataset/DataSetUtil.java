@@ -815,8 +815,8 @@ public class DataSetUtil {
      * For convenience, the property FILL_VALUE is set to the fill value used.
      * 
      */
-    public static WeightsDataSet weightsDataSet(final QDataSet ds) {
-        WeightsDataSet result = (WeightsDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
+    public static QDataSet weightsDataSet(final QDataSet ds) {
+        QDataSet result = (WeightsDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
         if (result == null) {
             Number validMin = (Number) ds.property(QDataSet.VALID_MIN);
             if (validMin == null) validMin = Double.NEGATIVE_INFINITY;

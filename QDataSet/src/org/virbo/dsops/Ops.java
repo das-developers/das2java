@@ -114,8 +114,8 @@ public class Ops {
         QubeDataSetIterator it1 = new QubeDataSetIterator( operands[0] );
         QubeDataSetIterator it2 = new QubeDataSetIterator( operands[1] );
 
-        WeightsDataSet w1= DataSetUtil.weightsDataSet(operands[0]);
-        WeightsDataSet w2= DataSetUtil.weightsDataSet(operands[1]);
+        QDataSet w1= DataSetUtil.weightsDataSet(operands[0]);
+        QDataSet w2= DataSetUtil.weightsDataSet(operands[1]);
 
         double fill= -1e38;
         while (it1.hasNext()) {
@@ -312,14 +312,14 @@ public class Ops {
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
-     * @param normalize return the average instead of the total.
      * @return
      */
     public static QDataSet total(QDataSet ds, int dim) {
         int[] qube = DataSetUtil.qubeDims(ds);
         int[] newQube = DataSetOps.removeElement(qube, dim);
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
-        DDataSet result = DDataSet.create(newQube);
+        DDataSet result= DDataSet.create(newQube);
+        DDataSet weights= DDataSet.create(newQube);
         QubeDataSetIterator it1 = new QubeDataSetIterator(result);
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         while (it1.hasNext()) {
@@ -341,8 +341,10 @@ public class Ops {
                 w += w1;
             }
             it1.putValue(result, w > 0 ? s : fill);
+            it1.putValue(weights, w );
         }
         sliceProperties( dim, ds, result );
+        result.putProperty(QDataSet.WEIGHTS_PLANE,weights);
         return result;
     }
 

@@ -217,7 +217,7 @@ public final class AutoHistogram {
      * @param wds WeightsDataSet or null.
      * @return
      */
-    public QDataSet doit(QDataSet ds, WeightsDataSet wds) {
+    public QDataSet doit(QDataSet ds, QDataSet wds) {
 
         if (wds == null) {
             wds = DataSetUtil.weightsDataSet(ds);
