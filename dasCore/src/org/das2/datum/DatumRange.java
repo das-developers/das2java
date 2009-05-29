@@ -24,10 +24,10 @@ public class DatumRange implements Comparable {
             throw new IllegalArgumentException( "min > max: "+s1+" > "+s2 + " width=" + ( s2.subtract(s1) ) ) ;
         }
         if ( s1.isFinite() && s1.isFill() ) {
-            throw new IllegalArgumentException( "s1 is fill" ) ;
+            //throw new IllegalArgumentException( "s1 is fill" ) ;
         }
         if ( s2.isFinite() && s2.isFill() ) {
-            throw new IllegalArgumentException( "s2 is fill" ) ;
+            //throw new IllegalArgumentException( "s2 is fill" ) ;
         }
         this.s1=s1;
         this.s2=s2;
