@@ -2068,6 +2068,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return Rectangle in the canvas coordinate frame.
      */
     protected synchronized Rectangle getLabelBounds(Rectangle bounds) {
+        if ( !this.getTickV().tickV.getUnits().isConvertableTo(getUnits() ) ) {
+            return bounds;
+        }
+
         String[] labels = tickFormatter(this.getTickV().tickV, getDatumRange());
 
         int majorTickLength = (int) getEmSize();
