@@ -56,7 +56,7 @@ public class DasProgressPanel implements ProgressMonitor {
     private boolean progressMessageDirty = false;
     private JLabel kbLabel;
     private JProgressBar progressBar;
-    private JFrame jframe = null;  // created when createFramed() is used.
+    private Window jframe = null;  // created when createFramed() is used.
     private boolean isCancelled = false;
     private JButton cancelButton;
     private int cancelCheckFailures = 0; // number of times client codes failed to check cancelled before setTaskProgress.
@@ -165,12 +165,35 @@ public class DasProgressPanel implements ProgressMonitor {
     public static DasProgressPanel createFramed(String label) {
         DasProgressPanel result;
         result = new DasProgressPanel(label);
-        result.jframe = new JFrame("Das Progress Monitor");
+        JFrame fr= new JFrame("Progress Monitor");
+        result.jframe = fr;
         result.initComponents();
-        result.jframe.getContentPane().add(result.thePanel);
+        fr.getContentPane().add(result.thePanel);
+        fr.pack();
+        fr.setVisible(false);
+        fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        return result;
+    }
+
+    /**
+     * creates a dialog object that follows a parent
+     * @param parent
+     * @param label
+     * @return
+     */
+    public static DasProgressPanel createFramed( Window parent, String label) {
+        DasProgressPanel result;
+        result = new DasProgressPanel(label);
+        if ( parent instanceof JFrame ) {
+            result.jframe = new JDialog((JFrame)parent,"Progress Monitor");
+        } else if ( parent instanceof Dialog ) {
+            result.jframe = new JDialog((Dialog)parent,"Progress Monitor");
+        }
+        result.initComponents();
+        result.jframe.add(result.thePanel);
         result.jframe.pack();
+        result.jframe.setLocationRelativeTo(parent);
         result.jframe.setVisible(false);
-        result.jframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         return result;
     }
 
