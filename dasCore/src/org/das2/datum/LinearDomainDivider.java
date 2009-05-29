@@ -69,10 +69,8 @@ public class LinearDomainDivider implements DomainDivider {
 
     public DatumVector boundaries(Datum min, Datum max) {
         long nb = boundaryCount(min,max);
-        //this limit is kind of arbitrary, but we need something
-        //should it be a different exception? sublclass?
         if (nb > MAX_BOUNDARIES )
-            throw new IllegalArgumentException("LinearDomainDivider: too many divisions requested ("+boundaryCount(min, max)+")");
+            throw new IllegalArgumentException("too many divisions requested ("+boundaryCount(min, max)+")");
         double[] values = new double[(int)nb];
         double intervalSize = incSignificand * Math.pow(10, incExponent);
 
@@ -98,7 +96,7 @@ public class LinearDomainDivider implements DomainDivider {
 
     public static void main(String[] args) {
         DomainDivider div = new LinearDomainDivider();
-        DatumRange dr = DatumRangeUtil.newDimensionless(0.2, 1000);
+        DatumRange dr = DatumRangeUtil.newDimensionless(0.1,0.9);
         System.err.println(div.boundaryCount(dr.min(), dr.max()));
         System.err.println(div.boundaries(dr.min(), dr.max()));
         System.err.println(div.rangeContaining(dr.min()));

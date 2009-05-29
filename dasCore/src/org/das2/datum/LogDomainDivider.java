@@ -1,5 +1,7 @@
 package org.das2.datum;
 
+// TODO: remove support for bases other than 10.  If needed, we can later
+// add LnDomainDivider and/or BinaryDomainDivider
 /**
  * A <code>DomainDivider</code> to divide a range into logarithmically equal
  * segments.  By default, it uses base 10, but can use any integer base.  Natural
@@ -29,6 +31,7 @@ public class LogDomainDivider implements DomainDivider {
     }
 
     public DomainDivider finerDivider(boolean superset) {
+        // Should update to return a LogLinDomainDivider instead of fractional powers
         return new LogDomainDivider(logBase, expDivider.finerDivider(superset));
     }
 
