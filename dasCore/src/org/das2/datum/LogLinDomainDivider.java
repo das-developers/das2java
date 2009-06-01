@@ -1,7 +1,6 @@
 package org.das2.datum;
 
 /**
- * NOT READY FOR USE.
  * A DomainDivider which divides logarithmically (base 10), with linear subdivisions.
  * It provides divisions such as 1,2,3,4,5,6,7,8,9,10,20,30,40,50.....
  * @author ed
@@ -36,7 +35,50 @@ public class LogLinDomainDivider implements DomainDivider {
         long nb = boundaryCount(min,max);
         if (nb > MAX_BOUNDARIES )
             throw new IllegalArgumentException("too many divisions requested ("+boundaryCount(min, max)+")");
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        DomainDivider logDivider = new LogDomainDivider();
+        DatumVector logBoundaries = logDivider.boundaries(min, max);
+        int numLogBoundaries = logBoundaries.getLength();
+        double result[] = new double[(int)nb];
+        int index = 0;
+
+        /* There's some code repetition between this and boundaryCount below */
+        if (numLogBoundaries > 1) {
+            // Range spans more than 2 decades, so adjust linear division per decade
+            // First get divisions from min to first log boundary
+            double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
+            Datum mmin = min.divide(decadeOffset);
+            Datum mmax = logBoundaries.get(0).divide(decadeOffset);
+            double[] bounds = decadeDivider.boundaries(mmin, mmax).toDoubleArray(mmin.getUnits());
+            // We don't store the last value because it will get included as we step through decades next.
+            for (int i = 0; i < bounds.length-1; i++)
+                result[index++] = bounds[i] * decadeOffset;
+
+            // Now step through full decades.  We skip the last value in each decade
+            // because it would get repeated as the first value of the next
+            bounds = decadeDivider.boundaries(Datum.create(1), Datum.create(10)).toDoubleArray(Units.dimensionless);
+            for (int dec = 0; dec < numLogBoundaries-1; dec++) {
+                decadeOffset = logBoundaries.get(dec).doubleValue();
+                for (int i = 0; i < bounds.length-1; i++)
+                    result[index++] = bounds[i] * decadeOffset;
+            }
+
+            // Lastly get divisions from last log boundary to max
+            decadeOffset = logBoundaries.get(numLogBoundaries-1).doubleValue();
+            mmin = logBoundaries.get(numLogBoundaries-1).divide(decadeOffset);
+            mmax = max.divide(decadeOffset);
+            bounds = decadeDivider.boundaries(mmin, mmax).toDoubleArray(mmax.getUnits());
+            for (int i = 0; i < bounds.length; i++)
+                result[index++] = bounds[i] * decadeOffset;
+
+            return DatumVector.newDatumVector(result, min.getUnits());
+        } else {
+            // Range only spans 1 or 2 decades so just divide linearly
+            double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
+            Datum mmin = min.divide(decadeOffset);
+            Datum mmax = max.divide(decadeOffset);
+            return decadeDivider.boundaries(mmin, mmax);
+        }
     }
 
     public long boundaryCount(Datum min, Datum max) {
@@ -74,12 +116,25 @@ public class LogLinDomainDivider implements DomainDivider {
     }
 
     public DatumRange rangeContaining(Datum v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        DomainDivider logDivider = new LogDomainDivider();
+        DatumRange decade = logDivider.rangeContaining(v);
+        double decadeOffset = decade.min().doubleValue();
+
+        Datum mmin = decade.min().divide(decadeOffset);
+        Datum mmax = decade.max().divide(decadeOffset);
+        DatumRange range = decadeDivider.rangeContaining(v.divide(decadeOffset));
+
+        return new DatumRange(range.min().multiply(decadeOffset), range.max().multiply(decadeOffset));
     }
 
     public static void main(String[] args) {
         DomainDivider d = new LogLinDomainDivider();
-        DatumRange dr = DatumRangeUtil.newDimensionless(7.9, 201);
+        DatumRange dr = DatumRangeUtil.newDimensionless(7.9, 218);
         System.err.println(d.boundaryCount(dr.min(), dr.max()));
+        DatumVector dv = d.boundaries(dr.min(), dr.max());
+        for (int i = 0; i < dv.getLength(); i++)
+            System.err.print(dv.get(i).doubleValue() + ", ");
+        System.err.println();
+        System.err.println(d.rangeContaining(Datum.create(8)));
     }
 }
