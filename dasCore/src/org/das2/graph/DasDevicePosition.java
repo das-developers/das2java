@@ -47,6 +47,12 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     public static final String PROP_DMAXIMUM = "dMaximum";
     public static final String PROP_DMINIMUM = "dMinimum";
+    public static final String PROP_EMMAXIMUM = "emMaximum";
+    public static final String PROP_EMMINIMUM = "emMinimum";
+    public static final String PROP_MAXIMUM = "maximum";
+    public static final String PROP_MINIMUM = "minimum";
+    public static final String PROP_PTMAXIMUM = "ptMaximum";
+    public static final String PROP_PTMINIMUM = "ptMinimum";
     
     protected transient DasCanvas canvas;
     protected transient DasDevicePosition parent;
@@ -308,10 +314,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.maximum = Math.max(maximum, maximum);
         revalidate();
         if (oldMin != this.minimum) {
-            firePropertyChange("minimum", oldMin, this.minimum);
+            firePropertyChange( PROP_MINIMUM, oldMin, this.minimum);
         }
         if (oldMax != this.maximum) {
-            firePropertyChange("maximum", oldMax, this.maximum);
+            firePropertyChange( PROP_MAXIMUM, oldMax, this.maximum);
         }
     }
     
@@ -334,7 +340,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         } else {
             double oldValue = this.maximum;
             this.maximum = maximum;
-            firePropertyChange("maximum", oldValue, maximum);
+            firePropertyChange( PROP_MAXIMUM, oldValue, maximum);
             revalidate();
         }
     }
@@ -363,7 +369,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         } else {
             double oldValue = this.minimum;
             this.minimum = minimum;
-            firePropertyChange("minimum", oldValue, minimum);
+            firePropertyChange( PROP_MINIMUM, oldValue, minimum);
             revalidate();
         }
     }
@@ -517,7 +523,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public void setEmMinimum(double emMinimum) {
         double oldValue= this.emMinimum;
         this.emMinimum = emMinimum;
-        firePropertyChange("emMinimum", oldValue, emMinimum);
+        firePropertyChange( PROP_EMMINIMUM, oldValue, emMinimum);
         revalidate();
     }
     
@@ -533,7 +539,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public void setEmMaximum(double emMaximum) {
         double oldValue= this.emMaximum;
         this.emMaximum = emMaximum;
-        firePropertyChange("emMaximum", oldValue, emMaximum);
+        firePropertyChange( PROP_EMMAXIMUM, oldValue, emMaximum);
         revalidate();
     }
     
@@ -550,7 +556,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public void setPtMinimum(int ptMinimum) {
         int oldValue= this.ptMinimum;
         this.ptMinimum = ptMinimum;
-        firePropertyChange("ptMinimum", oldValue, ptMinimum);
+        firePropertyChange( PROP_PTMINIMUM, oldValue, ptMinimum);
         revalidate();
     }
     
@@ -569,7 +575,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public void setPtMaximum(int ptMaximum) {
         int oldValue= this.ptMaximum;
         this.ptMaximum = ptMaximum;
-        firePropertyChange("ptMaximum", oldValue, ptMaximum);
+        firePropertyChange( PROP_PTMAXIMUM, oldValue, ptMaximum);
         revalidate();
     }
 
@@ -585,9 +591,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.minimum= norm;
         this.emMinimum= em;
         this.ptMinimum= pt;
-        firePropertyChange("ptMinimum", old[2], ptMinimum );
-        firePropertyChange("emMinimum", old[1], em );
-        firePropertyChange("minimum", old[0], norm );
+        firePropertyChange(PROP_PTMINIMUM, old[2], ptMinimum );
+        firePropertyChange(PROP_EMMINIMUM, old[1], em );
+        firePropertyChange(PROP_MINIMUM, old[0], norm );
         revalidate();
     }
 
@@ -603,9 +609,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.maximum= norm;
         this.emMaximum= em;
         this.ptMaximum= pt;
-        firePropertyChange("ptMaximum", old[2], ptMaximum );
-        firePropertyChange("emMaximum", old[1], em );
-        firePropertyChange("maximum", old[0], norm );
+        firePropertyChange(PROP_PTMAXIMUM, old[2], ptMaximum );
+        firePropertyChange(PROP_EMMAXIMUM, old[1], em );
+        firePropertyChange(PROP_MAXIMUM, old[0], norm );
         revalidate();
     }
     
