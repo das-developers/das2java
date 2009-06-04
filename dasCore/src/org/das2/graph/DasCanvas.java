@@ -1050,6 +1050,29 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setPreferredSize(pref);
         if (getParent() != null) ((JComponent) getParent()).revalidate();
     }
+
+
+    protected boolean scaleFonts = true;
+
+    /**
+     * The font used should be the base font scaled based on the canvas size.
+     * If this is false, then the canvas font is simply the base font.
+     */
+    public static final String PROP_SCALEFONTS = "scaleFonts";
+
+    public boolean isScaleFonts() {
+        return scaleFonts;
+    }
+
+    public void setScaleFonts(boolean scaleFonts) {
+        boolean oldScaleFonts = this.scaleFonts;
+        this.scaleFonts = scaleFonts;
+        setBaseFont(getBaseFont());
+        firePropertyChange(PROP_SCALEFONTS, oldScaleFonts, scaleFonts);
+    }
+
+    public static final String PROP_BASEFONT= "baseFont";
+
     private Font baseFont = null;
 
     /** TODO
@@ -1069,11 +1092,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      */
     public void setBaseFont(Font font) {
         Font oldFont = getFont();
+        Font oldBaseFont= baseFont;
         this.baseFont = font;
-        setFont(getFontForSize(getWidth(), getHeight()));
-        firePropertyChange("font", oldFont, getFont());
+        if ( scaleFonts ) {
+            setFont(getFontForSize(getWidth(), getHeight()));
+        } else {
+            setFont( font );
+        }
+        firePropertyChange("font", oldFont, getFont()); //TODO: really?
+        firePropertyChange("baseFont", oldBaseFont, this.baseFont );
         repaint();
     }
+    
     private static final int R_1024_X_768 = 1024 * 768;
     private static final int R_800_X_600 = 800 * 600;
     private static final int R_640_X_480 = 640 * 480;
@@ -1103,7 +1133,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         return new ComponentAdapter() {
 
             public void componentResized(ComponentEvent e) {
-                Font aFont = getFontForSize(getWidth(), getHeight());
+                Font aFont;
+                if ( scaleFonts ) {
+                    aFont= getFontForSize(getWidth(), getHeight());
+                } else {
+                    aFont= getBaseFont();
+                }
                 if (!aFont.equals(getFont())) {
                     setFont(aFont);
                 }
