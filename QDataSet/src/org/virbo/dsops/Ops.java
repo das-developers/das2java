@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Pattern;
+import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
@@ -155,12 +157,13 @@ public class Ops {
      * @return
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
+        MutablePropertyDataSet result = (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return d1 + d2;
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );
+        return result;
     }
 
     /**
@@ -183,10 +186,30 @@ public class Ops {
         }
         result.putProperty(QDataSet.NAME, null );
         result.putProperty(QDataSet.MONOTONIC, null );
-        
+        result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "-" ) );
         return result;
     }
 
+    /**
+     * maybe insert a label indicating the operation.
+     * @param ds1
+     * @param ds2
+     * @param opStr
+     */
+    private static String maybeLabelInfixOp( QDataSet ds1, QDataSet ds2, String opStr ) {
+        String label1= (String) ds1.property(QDataSet.LABEL);
+        String label2= (String) ds2.property(QDataSet.LABEL);
+        Pattern idpat= Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]*");
+        String l1Str= label1;
+        if ( l1Str!=null && ! idpat.matcher(l1Str).matches() ) l1Str= "("+l1Str+")";
+        String l2Str= label2;
+        if ( l2Str!=null && ! idpat.matcher(l2Str).matches() ) l2Str= "("+l2Str+")";
+        if ( l1Str!=null && l2Str!=null ) {
+            return l1Str + opStr + l2Str;
+        } else {
+            return null;
+        }
+    }
     /**
      * return a dataset with each element negated.
      * @param ds1
@@ -310,7 +333,7 @@ public class Ops {
      * reduce the dataset's rank by totalling all the elements along a dimension.
      * Only QUBEs are supported presently.
      * 
-     * @param ds rank N qube dataset.
+     * @param ds rank N qube dataset.  N=1,2,3,4
      * @param dim zero-based index number.
      * @return
      */
@@ -2059,6 +2082,56 @@ public class Ops {
             it1.putValue(result, v);
         }
         return result;
+    }
+
+    /**
+     * bundle the two datasets, adding if necessary a bundle dimension.  This
+     * will try to bundle on the second dimension, unlike join.  This will also
+     * isolate the semmantics of bundle dimensions as its introduced.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
+    public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1==null && ds2!=null ) {
+            BundleDataSet ds= new BundleDataSet( );
+            ds.bundle(ds2);
+            return ds;
+        } else if (ds1.rank() == ds2.rank()) {
+            BundleDataSet ds= new BundleDataSet( );
+            ds.bundle(ds1);
+            ds.bundle(ds2);
+            return ds;
+        } else if ( ds1 instanceof BundleDataSet && ds1.rank()-1==ds2.rank() ) {
+            ((BundleDataSet)ds1).bundle(ds2);
+            return ds1;
+        } else {
+            throw new IllegalArgumentException("not supported yet");
+        }
+
+    }
+
+    /**
+     * declare that the dataset is a dependent parameter of an independent parameter.
+     * This isolates the QDataSet semantics, and verifies correctness.
+     * @param ds
+     * @param dim dimension to declare dependence: 0,1,2.
+     * @param dep0
+     * @return
+     */
+    public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep0 ) {
+        MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable(ds);
+        if ( dim==0 ) {
+            if ( ds.length()!=dep0.length() ) throw new IllegalArgumentException("ds.length()!=dep0.length()");
+            mds.putProperty( QDataSet.DEPEND_0, dep0 );
+        } else if ( dim==1 ) {
+            if ( ds.length(0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0)!=dep0.length()");
+            mds.putProperty( QDataSet.DEPEND_1, dep0 );
+        } else if ( dim==2 ) {
+            if ( ds.length(0,0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0,0)!=dep0.length()");
+            mds.putProperty( QDataSet.DEPEND_2, dep0 );
+        }
+        return mds;
     }
 
     /**
