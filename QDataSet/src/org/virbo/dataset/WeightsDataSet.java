@@ -60,6 +60,8 @@ public abstract class WeightsDataSet implements QDataSet {
 
     public abstract double value(int i0, int i1, int i2);
 
+    public abstract double value(int i0, int i1, int i2, int i3);
+
     public Object property(String name) {
         return name.equals(QDataSet.FILL_VALUE) ? fill : null;
     }
@@ -69,6 +71,14 @@ public abstract class WeightsDataSet implements QDataSet {
     }
 
     public Object property(String name, int i0, int i1) {
+        return property(name);
+    }
+
+    public Object property(String name, int i0, int i1, int i2) {
+        return property(name);
+    }
+
+    public Object property(String name, int i0, int i1, int i2, int i3) {
         return property(name);
     }
 
@@ -82,6 +92,10 @@ public abstract class WeightsDataSet implements QDataSet {
 
     public int length(int i, int j) {
         return ds.length(i, j);
+    }
+
+    public int length(int i, int j, int k) {
+        return ds.length(i, j, k);
     }
     
     public static final class ValidRangeFillFinite extends WeightsDataSet {
@@ -110,6 +124,10 @@ public abstract class WeightsDataSet implements QDataSet {
             return weight(ds.value(i0, i1, i2));
         }
 
+        public double value(int i0, int i1, int i2, int i3) {
+            return weight(ds.value(i0, i1, i2, i3));
+        }
+
     }
     
     public static final class FillFinite extends WeightsDataSet {
@@ -135,7 +153,11 @@ public abstract class WeightsDataSet implements QDataSet {
 
         public double value(int i0, int i1, int i2) {
             return weight(ds.value(i0, i1, i2));
-        }        
+        }
+
+        public double value(int i0, int i1, int i2, int i3) {
+            return weight(ds.value(i0, i1, i2, i3));
+        }
     }
     
     public static final class Finite extends WeightsDataSet {
@@ -161,7 +183,11 @@ public abstract class WeightsDataSet implements QDataSet {
 
         public double value(int i0, int i1, int i2) {
             return weight(ds.value(i0, i1, i2));
-        }        
+        }
+
+        public double value(int i0, int i1, int i2, int i3) {
+            return weight(ds.value(i0, i1, i2, i3));
+        }
     }    
     
     public final class AllValid extends WeightsDataSet {
@@ -187,6 +213,10 @@ public abstract class WeightsDataSet implements QDataSet {
 
         public double value(int i0, int i1, int i2) {
             return weight(ds.value(i0, i1, i2));
-        }               
+        }
+
+        public double value(int i0, int i1, int i2, int i3) {
+            return weight(ds.value(i0, i1, i2, i3));
+        }
     }
 }

@@ -43,6 +43,10 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
+    public double value(int i0, int i1, int i2, int i3) {
+        throw new IllegalArgumentException("rank error, expected "+rank());
+    }
+
     public Object property(String name) {
         return properties.get(name);
     }
@@ -54,7 +58,15 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     public Object property(String name, int i0, int i1) {
         return properties.get(name);
     }
-    
+
+    public Object property(String name, int i0, int i1, int i2) {
+        return properties.get(name);
+    }
+
+    public Object property(String name, int i0, int i1, int i2, int i3) {
+        return properties.get(name);
+    }
+
     public void putProperty( String name, Object value ) {
         properties.put( name, value );
     }
@@ -64,6 +76,14 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
     
     public void putProperty( String name, int index1, int index2, Object value ) {
+        properties.put( name, value );
+    }
+
+    public void putProperty( String name, int index1, int index2, int index3, Object value) {
+        properties.put( name, value );
+    }
+
+    public void putProperty( String name, int index1, int index2, int index3, int index4, Object value) {
         properties.put( name, value );
     }
     
@@ -76,6 +96,10 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
 
     public int length(int i, int j) {
+        throw new IllegalArgumentException("rank error, expected "+rank());
+    }
+
+    public int length(int i, int j, int k) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
     

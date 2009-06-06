@@ -17,4 +17,6 @@ public interface MutablePropertyDataSet extends QDataSet {
     void putProperty( String name, Object value );
     void putProperty( String name, int index, Object value );
     void putProperty( String name, int index1, int index2, Object value );
+    void putProperty( String name, int index1, int index2, int index3, Object value );
+    void putProperty( String name, int index1, int index2, int index3, int index4, Object value );
 }

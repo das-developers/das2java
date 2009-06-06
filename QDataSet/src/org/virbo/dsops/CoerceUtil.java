@@ -139,6 +139,10 @@ public class CoerceUtil {
                 return ds.value();
             }
 
+            public double value(int i0, int i1, int i2, int i3) {
+                return ds.value();
+            }
+            
             public Object property(String name) {
                 return ds.property(name);
             }
@@ -148,6 +152,14 @@ public class CoerceUtil {
             }
 
             public Object property(String name, int i0, int i1) {
+                return ds.property(name);
+            }
+
+            public Object property(String name, int i0, int i1, int i2) {
+                return ds.property(name);
+            }
+
+            public Object property(String name, int i0, int i1, int i2, int i3) {
                 return ds.property(name);
             }
 
@@ -161,6 +173,10 @@ public class CoerceUtil {
 
             public int length(int i, int j) {
                 return ds2.length(i, j);
+            }
+
+            public int length(int i, int j, int k) {
+                return ds2.length(i, j, k);
             }
         };
     }
@@ -196,6 +212,10 @@ public class CoerceUtil {
                 return ds.value(i0);
             }
 
+            public double value(int i0, int i1, int i2, int i3) {
+                return ds.value(i0);
+            }
+
             public Object property(String name) {
                 return ds.property(name);
             }
@@ -205,6 +225,14 @@ public class CoerceUtil {
             }
 
             public Object property(String name, int i0, int i1) {
+                return ds.property(name, i0);
+            }
+
+            public Object property(String name, int i0, int i1, int i2) {
+                return ds.property(name, i0);
+            }
+
+            public Object property(String name, int i0, int i1, int i2, int i3) {
                 return ds.property(name, i0);
             }
 
@@ -218,6 +246,10 @@ public class CoerceUtil {
 
             public int length(int i, int j) {
                 return ds2.length(i, j);
+            }
+
+            public int length(int i, int j, int k) {
+                return ds2.length(i, j, k);
             }
         };
     }
@@ -252,6 +284,10 @@ public class CoerceUtil {
                 return ds.value(i0, i1);
             }
 
+            public double value(int i0, int i1, int i2, int i3) {
+                return ds.value(i0, i1);
+            }
+
             public Object property(String name) {
                 return ds.property(name);
             }
@@ -261,6 +297,14 @@ public class CoerceUtil {
             }
 
             public Object property(String name, int i0, int i1) {
+                return ds.property(name, i0, i1);
+            }
+
+            public Object property(String name, int i0, int i1, int i2) {
+                return ds.property(name, i0, i1);
+            }
+
+            public Object property(String name, int i0, int i1, int i2, int i3) {
                 return ds.property(name, i0, i1);
             }
 
@@ -274,6 +318,10 @@ public class CoerceUtil {
 
             public int length(int i, int j) {
                 return ds2.length(i, j);
+            }
+
+            public int length(int i, int j, int k) {
+                return ds2.length(i, j, k);
             }
         };
     }

@@ -74,7 +74,7 @@ public interface QDataSet {
      * RankNDataSet.
      * 
      */
-    public static int MAX_RANK=3;
+    public static int MAX_RANK=4;
     
     /**
      * type Units.  The dataset units, found in org.das2.units.Units.
@@ -234,10 +234,16 @@ public interface QDataSet {
     
     /**
      * rank 3 accessor.
-     * @throws IllegalArgumentException if the dataset is not rank 2.
+     * @throws IllegalArgumentException if the dataset is not rank 3.
      */
     double value( int i0, int  i1, int i2 );
-    
+
+    /**
+     * rank 4 accessor.
+     * @throws IllegalArgumentException if the dataset is not rank 4.
+     */
+
+    double value( int i0, int i1, int i2, int i3);
     /**
      * accessor for properties attached to the dataset.  See final static members
      * for example properties.
@@ -258,6 +264,10 @@ public interface QDataSet {
      * accessor.
      */        
     Object property( String name, int i0, int i1 );
+
+    Object property( String name, int i0, int i1, int i2);
+
+    Object property( String name, int i0, int i1, int i2, int i3);
     
     /**
      * return the length of the first dimension
@@ -273,5 +283,10 @@ public interface QDataSet {
      *return the length of the third dimension, for the ith element of the first dimension and jth element of the second dimension.
      */
     int length( int i, int j );
+
+    /**
+     *  return the length of the fourth dimension for the ith, jth and kth elements of the first three dimensions.
+     */
+    int length( int i, int j, int k);
         
 }
