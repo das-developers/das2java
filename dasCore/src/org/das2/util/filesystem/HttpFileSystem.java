@@ -47,7 +47,6 @@ import org.das2.system.MutatorLock;
 public class HttpFileSystem extends WebFileSystem {
 
     private HashMap listings;
-    private String userPass;
 
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URL root, File localRoot) {
@@ -60,14 +59,18 @@ public class HttpFileSystem extends WebFileSystem {
             // verify URL is valid and accessible
             HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
             urlc.setRequestMethod("HEAD");
-            if (root.getUserInfo() != null) {
-                String encode = Base64.encodeBytes(root.getUserInfo().getBytes());
+            String userInfo= KeyChain.getDefault().getUserInfo(root);
+            if ( userInfo != null) {
+                String encode = Base64.encodeBytes( userInfo.getBytes());
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
 
             boolean offline = true;
             urlc.connect();
             if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
+                if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                    // might be nice to modify URL so that credentials are used.
+                }
                 if (FileSystem.settings().isAllowOffline()) {
                     logger.info("remote filesystem is offline, allowing access to local cache.");
                 } else {
@@ -113,8 +116,9 @@ public class HttpFileSystem extends WebFileSystem {
             URL remoteURL = new URL(root.toString() + filename);
 
             URLConnection urlc = remoteURL.openConnection();
-            if (root.getUserInfo() != null) {
-                String encode = new String(Base64.encodeBytes(root.getUserInfo().getBytes()));
+            String userInfo= KeyChain.getDefault().getUserInfo(root);
+            if ( userInfo != null) {
+                String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
 
@@ -185,6 +189,11 @@ public class HttpFileSystem extends WebFileSystem {
         try {
             URL ur = new URL(this.root, f);
             HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
+            String userInfo= KeyChain.getDefault().getUserInfo(ur);
+            if ( userInfo != null) {
+                String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
+                connect.setRequestProperty("Authorization", "Basic " + encode);
+            }
             connect.setRequestMethod("HEAD");
             HttpURLConnection.setFollowRedirects(false);
             connect.connect();
