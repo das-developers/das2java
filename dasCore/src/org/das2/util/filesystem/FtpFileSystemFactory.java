@@ -36,7 +36,7 @@ public class FtpFileSystemFactory implements FileSystemFactory {
     }
 
     public FileSystem createFileSystem(URL root) throws FileSystem.FileSystemOfflineException {
-        return FTPFileSystem.create( root );
+        return new FTPFileSystem( root );
     }
     
 }
