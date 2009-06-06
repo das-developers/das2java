@@ -39,7 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * This original FtpFileSystem implementation is based on Java's FTP client.
+ * 
  * @author Jeremy
  */
 public class FTPFileSystem extends WebFileSystem {
