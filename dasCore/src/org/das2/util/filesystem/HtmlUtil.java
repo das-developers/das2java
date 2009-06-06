@@ -50,16 +50,19 @@ public class HtmlUtil {
         }
         
         ArrayList urlList= new ArrayList();
-        
+
+        String userInfo= KeyChain.getDefault().getUserInfo(url);
+
         long t0= System.currentTimeMillis();
         URLConnection urlConnection = url.openConnection();
+
         urlConnection.setAllowUserInteraction(false);
         
         int contentLength=10000;
         
         //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
-        if ( url.getUserInfo()!=null ) {
-            String encode= new String( Base64.encodeBytes(url.getUserInfo().getBytes()) );
+        if ( userInfo != null) {
+            String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
         InputStream urlStream = urlConnection.getInputStream();
