@@ -163,7 +163,8 @@ public abstract class WebFileSystem extends FileSystem {
      * should download the file and call  mutatorLock.unlock() when the
      * download is complete.   If another thread is downloading the file, this
      * will block until the download is complete, and null will be returned to
-     * indicate that the file has already been downloaded.
+     * indicate that the file has already been downloaded.  This must start the
+     * monitor when it gets the lock.
      * 
      * @param filename the filename with in the filesystem.
      * @param f the File which will be the local copy.
