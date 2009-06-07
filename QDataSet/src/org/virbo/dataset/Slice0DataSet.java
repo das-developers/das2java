@@ -17,7 +17,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
     int index;
 
     Slice0DataSet(QDataSet ds, int index) {
-        if ( ds.rank() > 3 ) {
+        if ( ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 2");
         }
         this.ds = ds;
@@ -25,7 +25,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         if ( DataSetUtil.isQube(ds) ) {
             putProperty( QDataSet.DEPEND_0, ds.property( QDataSet.DEPEND_1 ) );
             putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
-            putProperty( QDataSet.DEPEND_2, null );
+            putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
         } else {
             QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
             if ( dep0!=null && dep0.rank()>1 ) {
@@ -49,12 +49,20 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         return ds.rank() - 1;
     }
 
+    public double value() {
+        return ds.value(index);
+    }
+
     public double value(int i) {
         return ds.value(index,i);
     }
 
     public double value(int i0, int i1) {
         return ds.value(index, i0, i1);
+    }
+
+    public double value(int i0, int i1, int i2) {
+        return ds.value(index, i0, i1, i2 );
     }
 
     public Object property(String name) {
@@ -73,6 +81,22 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
     }
     
+    public Object property( String name, int i0, int i1 ) {
+        if (properties.containsKey(name)) {
+            return properties.get(name);
+        } else {
+            return ds.property(name,index,i0,i1);
+        }
+    }
+
+    public Object property( String name, int i0, int i1, int i2 ) {
+        if (properties.containsKey(name)) {
+            return properties.get(name);
+        } else {
+            return ds.property(name,index,i0,i1,i2);
+        }
+    }
+
     public int length() {
         return ds.length(index);
     }
@@ -81,12 +105,9 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         return ds.length(index,i0);        
     }
 
-    @Override
-    public int length(int i, int j) {
-        throw new IllegalArgumentException("rank limit");
-    }
-    
-    
+    public int length( int i0, int i1 ) {
+        return ds.length(index,i0,i1);
+    }    
     
     @Override
     public boolean equals(Object obj) {
@@ -102,10 +123,5 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
     @Override
     public int hashCode() {
         return ds.hashCode() + index;
-    }
-
-    public double value() {
-        if ( rank()!=0 ) throw new IllegalArgumentException("rank error");
-        return ds.value(index);
     }
 }
