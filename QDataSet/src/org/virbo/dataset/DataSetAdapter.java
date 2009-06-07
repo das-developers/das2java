@@ -35,9 +35,11 @@ public class DataSetAdapter {
             return VectorDataSetAdapter.create(ds);
         } else if ( ds.rank()==2 ) {
             return TableDataSetAdapter.create(ds);
+        } else if ( ds.rank()==3 ) {
+            return TableDataSetAdapter.create(ds);
         } else {
             throw new IllegalArgumentException("unsupported rank: "+ds.rank() );
-        }        
+        }
     }
     
     static class XTagsDataSet extends AbstractDataSet {
