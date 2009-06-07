@@ -300,6 +300,7 @@ public class Ops {
      */
     private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op) {
         int[] qube = DataSetUtil.qubeDims(ds);
+        if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
         int[] newQube = DataSetOps.removeElement(qube, dim);
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result = DDataSet.create(newQube);
