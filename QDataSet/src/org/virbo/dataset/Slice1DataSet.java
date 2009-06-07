@@ -18,7 +18,7 @@ public class Slice1DataSet extends AbstractDataSet {
     int index;
 
     Slice1DataSet( QDataSet ds, int index ) {
-        if (ds.rank() > 3 ) {
+        if (ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 3");
         }
         if ( ds.rank()<2 ) {
@@ -28,7 +28,8 @@ public class Slice1DataSet extends AbstractDataSet {
         this.index = index;
 
         putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_2) );
-        
+        putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
+
         QDataSet plane0= (QDataSet) ds.property( QDataSet.PLANE_0 );
         if ( plane0!=null ) {
             if ( plane0.rank()<2 ) {
@@ -51,6 +52,10 @@ public class Slice1DataSet extends AbstractDataSet {
         return ds.value(i0, index, i1);
     }
 
+    public double value(int i0, int i1, int i2) {
+        return ds.value(i0, index, i1, i2 );
+    }
+
     public Object property(String name) {
         if (properties.containsKey(name)) {
             return properties.get(name);
@@ -58,6 +63,8 @@ public class Slice1DataSet extends AbstractDataSet {
             return ds.property(name);
         }
     }
+
+    //TODO: consider higher-rank properties
 
     public int length() {
         return ds.length();
@@ -68,6 +75,9 @@ public class Slice1DataSet extends AbstractDataSet {
         return ds.length( i, index );
     }
     
+    public int length(int i0,int i1) {
+        return ds.length( i0, index, i1 );
+    }
     
     @Override
     public boolean equals(Object obj) {
