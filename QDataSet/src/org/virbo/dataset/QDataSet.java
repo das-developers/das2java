@@ -58,6 +58,12 @@ public interface QDataSet {
     public final static String DEPEND_2="DEPEND_2";
     
     /**
+     * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
+     * The tags for the DataSet's 3nd index are identified by this tags dataset.
+     */
+    public final static String DEPEND_3="DEPEND_3";
+
+    /**
      * type QDataSet. Correllated plane of data.  An additional dependent DataSet that is correllated by the first index.  
      * Note "0" is just a count, and does not refer to the 0th index.  All correllated datasets must be 
      * correllated by the first index.  TODO: what about two rank 2 datasets?
