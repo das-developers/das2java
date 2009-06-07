@@ -312,7 +312,9 @@ public class DataSetUtil {
         if (ds.rank() > 2) {
             dimStr.append("," + depNames[2] + ds.length(0, 0) + qubeStr);
         }
-
+        if (ds.rank() > 3) {
+            dimStr.append("," + depNames[3] + ds.length(0, 0, 0) + qubeStr);
+        }
         String su = String.valueOf(u);
         if ( su.equals("")) {
             su = "dimensionless";
@@ -624,9 +626,11 @@ public class DataSetUtil {
             qube[1] = ds.length(0);
             if (ds.rank() > 2) {
                 qube[2] = ds.length(0, 0);
-                if (ds.rank() > 3) { // TODO: generalize to rank N
-
-                    qube[3] = ((RankNDataSet) ds).slice(0).length(0, 0);
+                if (ds.rank() > 3) {
+                    qube[3] = ds.length(0, 0, 0);
+                    if (ds.rank() > 4) { // TODO: generalize to rank N
+                        throw new IllegalArgumentException("rank limit");
+                    }
                 }
             }
         }
@@ -669,6 +673,26 @@ public class DataSetUtil {
                         for (int j = 1; j < ds.length(0); j++) {
                             if (ds.length(i, j) != ds.length(0, 0)) {
                                 throw new IllegalArgumentException("dataset is not a qube");
+                            }
+                        }
+                    }
+                }
+                break;
+            case 4:
+                qube = new int[]{ds.length(), ds.length(0), ds.length(0, 0),  ds.length(0,0,0) };
+                if (ds.length() > 0 && ds.length(0) > 0 && ds.length(0,0)>0 ) {
+                    for (int i = 1; i < ds.length(); i++) {
+                        if (ds.length(i) != ds.length(0)) {
+                            throw new IllegalArgumentException("dataset is not a qube");
+                        }
+                        for (int j = 1; j < ds.length(0); j++) {
+                            if (ds.length(i, j) != ds.length(0, 0)) {
+                                throw new IllegalArgumentException("dataset is not a qube");
+                            }
+                            for (int k = 1; k < ds.length(0,0); k++) {
+                                if (ds.length(i, j, k) != ds.length(0, 0, 0)) {
+                                    throw new IllegalArgumentException("dataset is not a qube");
+                                }
                             }
                         }
                     }
