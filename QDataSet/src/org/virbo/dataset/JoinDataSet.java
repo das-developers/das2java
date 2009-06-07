@@ -42,6 +42,10 @@ public class JoinDataSet extends AbstractDataSet {
         return rank;
     }
 
+    public double value(int i0) {
+        return datasets.get(i0).value();
+    }
+
     public double value(int i0, int i1) {
         return datasets.get(i0).value(i1);
     }
@@ -50,12 +54,24 @@ public class JoinDataSet extends AbstractDataSet {
         return datasets.get(i0).value(i1,i2);
     }
 
+    public double value(int i0, int i1, int i2, int i3 ) {
+        return datasets.get(i0).value(i1,i2,i3);
+    }
+
     public Object property(String name, int i0) {
         return datasets.get(i0).property(name);
     }
 
     public Object property(String name, int i0, int i1) {
         return datasets.get(i0).property(name,i1);
+    }
+
+    public Object property(String name, int i0, int i1, int i2 ) {
+        return datasets.get(i0).property(name,i1,i2);
+    }
+
+    public Object property(String name, int i0, int i1, int i2, int i3 ) {
+        return datasets.get(i0).property(name,i1,i2,i3);
     }
 
     public int length() {
@@ -69,7 +85,11 @@ public class JoinDataSet extends AbstractDataSet {
     public int length(int i0, int i1) {
         return datasets.get(i0).length(i1);
     }
-    
+
+    public int length(int i0, int i1, int i2 ) {
+        return datasets.get(i0).length(i1,i2);
+    }
+
     public String toString() {
         if ( datasets.size()>4 ) {
             return "JoinDataSet["+datasets.size()+" datasets: "+ datasets.get(0)+", "+datasets.get(1)+", ...]";
