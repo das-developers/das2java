@@ -182,8 +182,8 @@ public class QubeDataSetIterator implements DataSetIterator {
             return new SingletonIterator(index);
         }
     }
-    private DimensionIterator[] it = new DimensionIterator[3];
-    private DimensionIteratorFactory[] fit = new DimensionIteratorFactory[3];
+    private DimensionIterator[] it = new DimensionIterator[4];
+    private DimensionIteratorFactory[] fit = new DimensionIteratorFactory[4];
     private int rank;
     private int[] qube;
     private QDataSet ds;
@@ -236,12 +236,20 @@ public class QubeDataSetIterator implements DataSetIterator {
         } else if (ds.rank() == 1) {
             throw new IllegalArgumentException("can't slice rank 1");
         } else if (ds.rank() == 2) {
-            result = new QubeDataSetIterator(ds, new DimensionIteratorFactory[]{new SingletonIteratorFactory(sliceIndex), new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1)});
+            result = new QubeDataSetIterator(ds, 
+                    new DimensionIteratorFactory[]{new SingletonIteratorFactory(sliceIndex),
+                    new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1)});
         } else if (ds.rank() == 3) {
             result = new QubeDataSetIterator(ds,
                     new DimensionIteratorFactory[]{new SingletonIteratorFactory(sliceIndex),
                         new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1),
                         new StartStopStepIteratorFactory(0, null, 1),});
+        } else if (ds.rank() == 4) {
+            result = new QubeDataSetIterator( ds,
+                    new DimensionIteratorFactory[]{new SingletonIteratorFactory(sliceIndex),
+                        new StartStopStepIteratorFactory(0, ds.length(sliceIndex), 1),
+                        new StartStopStepIteratorFactory(0, null, 1),
+                        new StartStopStepIteratorFactory(0, null, 1), } );
         } else {
             throw new IllegalArgumentException("rank limit");
         }
@@ -288,6 +296,9 @@ public class QubeDataSetIterator implements DataSetIterator {
                     break;
                 case 2:
                     result = ds.length(Math.max(0, index(0)), Math.max(0, index(1)));
+                    break;
+                case 3:
+                    result = ds.length(Math.max(0, index(0)), Math.max(0, index(1)), Math.max(0, index(2)));
                     break;
                 default:
                     throw new IllegalArgumentException("dimension not supported: " + idim);
@@ -392,6 +403,8 @@ public class QubeDataSetIterator implements DataSetIterator {
                 return ds.value(index(0), index(1));
             case 3:
                 return ds.value(index(0), index(1), index(2));
+            case 4:
+                return ds.value(index(0), index(1), index(2), index(3) );
             default:
                 throw new IllegalArgumentException("rank limit");
         }
