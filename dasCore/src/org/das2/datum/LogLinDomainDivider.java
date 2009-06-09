@@ -136,5 +136,7 @@ public class LogLinDomainDivider implements DomainDivider {
             System.err.print(dv.get(i).doubleValue() + ", ");
         System.err.println();
         System.err.println(d.rangeContaining(Datum.create(8)));
+
+        System.err.println(d.coarserDivider(true).coarserDivider(true).boundaries(dr.min(), dr.max()));
     }
 }
