@@ -23,12 +23,14 @@ import org.das2.util.DasExceptionHandler;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -74,13 +76,17 @@ public class DisplayDataMouseModule extends MouseModule {
     @Override
     public void mouseRangeSelected(MouseDragEvent e0) {
 
+       MouseBoxEvent e = (MouseBoxEvent) e0;
+        if ( Point.distance( e.getXMaximum(), e.getYMinimum(), e.getXMaximum(), e.getYMaximum() ) < 5 ) {
+            return;
+        }
+       
         maybeCreateFrame();
         myFrame.setVisible(true);
 
-        MouseBoxEvent e = (MouseBoxEvent) e0;
-
         DatumRange xrange;
         DatumRange yrange;
+
 
         if (plot.getXAxis().isFlipped()) {
             xrange = new DatumRange(plot.getXAxis().invTransform(e.getXMaximum()), plot.getXAxis().invTransform(e.getXMinimum()));
