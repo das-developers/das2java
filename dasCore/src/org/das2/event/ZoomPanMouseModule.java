@@ -70,6 +70,12 @@ public class ZoomPanMouseModule extends MouseModule {
             Datum min= DatumRangeUtil.normalize( minDr, dr.min() ) < 0.5 ? minDr.min() : minDr.max();
             Datum max= DatumRangeUtil.normalize( maxDr, dr.max() ) < 0.5 ? maxDr.min() : maxDr.max();
             DatumRange drRound= new DatumRange( min, max );
+
+            double d= DatumRangeUtil.normalize( dr, drRound.min() );
+            if ( d<-0.1 || d>0.1 ) {
+                System.err.printf( "in=%s  out=%s", dr, drRound );
+                System.err.printf( "in=%s  out=%s", dr, drRound );
+            }
             dr= drRound;
         }
         return dr;
