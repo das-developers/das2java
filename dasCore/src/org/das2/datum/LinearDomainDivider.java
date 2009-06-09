@@ -23,7 +23,6 @@ public class LinearDomainDivider implements DomainDivider {
 
     public DomainDivider coarserDivider(boolean superset) {
         int newSignificand, newExponent;
-
         if (incSignificand == 1) {
             newSignificand = 2;
             newExponent = incExponent;
@@ -82,7 +81,7 @@ public class LinearDomainDivider implements DomainDivider {
 
     public DatumRange rangeContaining(Datum v) {
         double intervalSize = incSignificand * Math.pow(10, incExponent);
-        double min = Math.floor(v.doubleValue()/intervalSize);
+        double min = Math.floor(v.doubleValue()/intervalSize) * intervalSize;
         return new DatumRange(min, min + intervalSize, v.getUnits());
     }
 
