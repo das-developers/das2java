@@ -1291,6 +1291,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public synchronized void updateTickV() {
         if (!valueIsAdjusting()) {
+            if ( getTickLabelFont()==null ) return;
             if ( useDomainDivider ) {
                 updateDomainDivider();
             } else {
