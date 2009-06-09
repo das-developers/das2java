@@ -68,9 +68,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         if (ddX != null && tds.getXLength() > 0) {
             double start = tds.getXTagDouble(0, ddX.getUnits());
             double end = tds.getXTagDouble(tds.getXLength() - 1, ddX.getUnits());
-            if (start > ddX.end) {
+            if (start > ddX.binStop(ddX.numberOfBins()-1).doubleValue(ddX.getUnits()) ) {
                 throw new NoDataInIntervalException("data starts after range");
-            } else if (end < ddX.start) {
+            } else if (end < ddX.binStart(0).doubleValue(ddX.getUnits())) {
                 throw new NoDataInIntervalException("data ends before range");
             }
         }
