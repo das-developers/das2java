@@ -238,7 +238,12 @@ public class RebinDescriptor {
     }
     
     public String toString() {
-        return "["+units.createDatum(start)+" - "+units.createDatum(end)+" in "+nBin+" bins "+(isLog?"Log":"")+"]";
+        if ( isLog() ) {
+            return "["+units.createDatum(Math.exp(start))+" - "+units.createDatum(Math.exp(end))+" in "+nBin+" bins "+(isLog?"Log":"")+"]";
+        } else {
+            return "["+units.createDatum(start)+" - "+units.createDatum(end)+" in "+nBin+" bins "+(isLog?"Log":"")+"]";
+        }
+        
     }
     
 }
