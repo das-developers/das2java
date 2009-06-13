@@ -391,6 +391,8 @@ public class DataSetUtil {
         if ( ipeak==0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
+            // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
+            long ltotal= (Long)( ((Map<String,Object>)loghist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
             int lpeak=0;
             int lpeakv=(int) loghist.value(0);
             int lmedian=-1;
@@ -402,7 +404,7 @@ public class DataSetUtil {
                     lpeak=i;
                     lpeakv= (int) loghist.value(i);
                 }
-                if ( lmedian==-1 && t>total/2 ) {
+                if ( lmedian==-1 && t>ltotal/2 ) {
                     lmedian= i;
                 }
             }
