@@ -919,13 +919,15 @@ public class AsciiParser {
 
             Matcher m = delimPattern.matcher(input);
 
+            boolean tabDelim= delimPattern.pattern().equals("\t");
+
             char quote='"';
             int len= input.length();
             
             int index0= index;
             int qend=-1; // end of the quoted
             while ( ifield<fields.length && index<len ) {
-                while ( index<len && Character.isWhitespace( input.charAt(index) ) ) index++;
+                while ( index<len && ( !tabDelim && Character.isWhitespace( input.charAt(index) ) ) ) index++;
                 if ( index==len ) break;
                 int i1;
                 if ( input.charAt(index)==quote ) { // find closing quote
