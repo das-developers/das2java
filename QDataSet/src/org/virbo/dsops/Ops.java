@@ -2123,13 +2123,13 @@ public class Ops {
     public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep0 ) {
         MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable(ds);
         if ( dim==0 ) {
-            if ( ds.length()!=dep0.length() ) throw new IllegalArgumentException("ds.length()!=dep0.length()");
+            if ( dep0!=null && ds.length()!=dep0.length() ) throw new IllegalArgumentException("ds.length()!=dep0.length()");
             mds.putProperty( QDataSet.DEPEND_0, dep0 );
         } else if ( dim==1 ) {
-            if ( ds.length(0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0)!=dep0.length()");
+            if ( dep0!=null && ds.length(0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0)!=dep0.length()");
             mds.putProperty( QDataSet.DEPEND_1, dep0 );
         } else if ( dim==2 ) {
-            if ( ds.length(0,0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0,0)!=dep0.length()");
+            if ( dep0!=null && ds.length(0,0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0,0)!=dep0.length()");
             mds.putProperty( QDataSet.DEPEND_2, dep0 );
         }
         return mds;
