@@ -139,7 +139,7 @@ public class WebFileObject extends FileObject {
     }
 
     public boolean exists() {
-        if (localFile.exists()) {
+        if ( localFile!=null && localFile.exists()) { // applet support
             return true;
         } else {
             try {
