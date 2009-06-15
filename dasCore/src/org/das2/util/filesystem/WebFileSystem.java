@@ -95,8 +95,14 @@ public abstract class WebFileSystem extends FileSystem {
         super(root);
         this.localRoot = localRoot;
         if (localRoot == null) {
-            if (root.getProtocol().equals("http")) {
+            if ( root.getProtocol().equals("http")
+                    || root.getProtocol().equals("https" ) ) {
                 this.protocol = new AppletHttpProtocol();
+            }
+        } else {
+            if (root.getProtocol().equals("http")
+                    || root.getProtocol().equals("https" ) ) {
+                this.protocol = new DefaultHttpProtocol();
             }
         }
     }
