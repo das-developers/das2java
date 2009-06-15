@@ -205,7 +205,7 @@ public class DataSetBuilder {
                 DDataSet.copyElements( f1, 0, result, dsindex, f1.length() );
                 dsindex+= f1.length();
             }
-            DDataSet.copyElements( current, 0, result, dsindex, index );
+            DDataSet.copyElements( current, 0, result, dsindex, length-dsindex );
         } else {
             result= DDataSet.copy(current);
         }
