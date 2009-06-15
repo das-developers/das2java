@@ -842,7 +842,7 @@ public class DataSetUtil {
      * 
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
-        QDataSet result = (WeightsDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
+        QDataSet result = (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
         if (result == null) {
             Number validMin = (Number) ds.property(QDataSet.VALID_MIN);
             if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
