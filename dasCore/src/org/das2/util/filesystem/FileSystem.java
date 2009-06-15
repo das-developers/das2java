@@ -27,6 +27,9 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.das2.DasApplication;
+import org.das2.system.ExceptionHandler;
+import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -41,7 +44,7 @@ import org.das2.util.monitor.ProgressMonitor;
 
 
 public abstract class FileSystem  {
-    
+
     URL root;
     protected static Logger logger= Logger.getLogger(  "das2.filesystem" );
     
@@ -293,6 +296,24 @@ public abstract class FileSystem  {
         
         return result;
         
+    }
+
+    /**
+     * allow applications to specify their own exception handler.
+     */
+    
+    private static ExceptionHandler exceptionHandler= null;
+
+    public static synchronized ExceptionHandler getExceptionHandler() {
+        if ( exceptionHandler==null ) {
+            return DasApplication.getDefaultApplication().getExceptionHandler();
+        } else {
+            return exceptionHandler;
+        }
+    }
+
+    public static synchronized void setExceptionHandler( ExceptionHandler eh ) {
+        exceptionHandler= eh;
     }
     
     /**
