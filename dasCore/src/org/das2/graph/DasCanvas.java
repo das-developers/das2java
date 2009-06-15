@@ -88,6 +88,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -150,6 +151,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         float[] dash = new float[]{thick * 4.0f, thick * 4.0f};
         STROKE_DASHED = new BasicStroke(thick, cap, join, thick, dash, 0.0f);
     }
+
+    private List<Painter> topDecorators= new LinkedList<Painter>();
+    private List<Painter> bottomDecorators= new LinkedList<Painter>();
 
     /* Canvas actions */
     protected static abstract class CanvasAction extends AbstractAction {
@@ -408,6 +412,24 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         });
     }
 
+    public void addTopDecorator(Painter painter) {
+        this.topDecorators.add( painter );
+        repaint();
+    }
+    public void removeTopDecorator(Painter painter) {
+        this.topDecorators.remove( painter );
+        repaint();
+    }
+    public void addBottomDecorator(Painter painter) {
+        this.bottomDecorators.add( painter );
+        repaint();
+    }
+    public void removeBottomDecorator(Painter painter) {
+        this.bottomDecorators.remove( painter );
+        repaint();
+    }
+
+    
     private MouseInputAdapter createMouseInputAdapter() {
         return new MouseInputAdapter() {
 
@@ -531,6 +553,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
 
         Graphics2D g = (Graphics2D) g1;
 
+        for ( Painter p : bottomDecorators ) p.paint(g);
+
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 textAntiAlias ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
 
@@ -569,6 +593,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 g.setFont(oldFont);
             }
         }
+
+        for ( Painter p : topDecorators ) p.paint(g);
+        
     }
 
     /** Prints the canvas, scaling and possibly rotating it to improve fit.
