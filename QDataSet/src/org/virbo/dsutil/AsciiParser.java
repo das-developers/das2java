@@ -641,7 +641,7 @@ public class AsciiParser {
                 if (propertyPattern != null && (m = propertyPattern.matcher(line)).matches()) {
                     builder.putProperty(m.group(1).trim(), m.group(2).trim());
                 } else {
-                    if (keepFileHeader) {
+                    if (keepFileHeader && iline<HEADER_LENGTH_LIMIT) {
                         headerBuffer.append(line).append("\n");
                     }
                 }
