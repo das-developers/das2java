@@ -138,11 +138,12 @@ public class AverageTableRebinner implements DataSetRebinner {
             if (xTagWidth == null) {
                 xTagWidth = DataSetUtil.guessXTagWidth(tds);
             }
-            double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
+            //double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
             Datum yTagWidth = (Datum) ds.getProperty("yTagWidth");
 
             if (ddX != null) {
-                fillInterpolateX(rebinData, rebinWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, interpolateType);
+                //fillInterpolateX(rebinData, rebinWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, interpolateType);
+                fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
             }
             if (ddY != null) {
                 /* Note the yTagMin,yTagMax code doesn't work here, because of the 
@@ -417,6 +418,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
+                                       //    final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType
     static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, double[] xTagMin, double[] xTagMax, final double xSampleWidth, Interpolate interpolateType) {
 
         final int nx = xTags.length;
@@ -467,7 +469,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             if (interpolateType == Interpolate.NearestNeighbor) {
 
                 for (int i = 0; i < nx; i++) {
-                    if (Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTags[i] - xTagMin[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagMax[i2[i]] - xTags[i])) < xSampleWidth / 2) {
+                    if ( i1[i] > -1 && i2[i] > -1 && (xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5 ) {
 
                         int idx = -1;
                         if (i1[i] == -1) {
@@ -502,6 +504,143 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
     }
+
+    static void fillInterpolateXNew(final double[][] data, final double[][] weights, RebinDescriptor ddX, Datum xTagWidth, Interpolate interpolateType) {
+
+        final int ny = data[0].length;
+        final int nx = ddX.numberOfBins();
+        final int[] i1 = new int[nx];
+        final int[] i2 = new int[nx];
+        final double[] xTagTemp = new double[ddX.numberOfBins()];
+        double a1;
+        double a2;
+
+        final double[] xTags = ddX.binCenters();
+        final Units yTagUnits = ddX.getUnits();
+        final boolean log = ddX.isLog();
+
+        if (log) {
+            for (int i = 0; i < nx; i++) {
+                xTagTemp[i] = Math.log(xTags[i]);
+            }
+        } else {
+            for (int i = 0; i < nx; i++) {
+                xTagTemp[i] = xTags[i];
+            }
+        }
+
+        double xSampleWidth;
+        double fudge = 1.5;
+        if (interpolateType == Interpolate.NearestNeighbor) {
+            fudge = 1.1;
+        }
+        if (xTagWidth == null) {
+            double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
+            xSampleWidth = d;
+        } else {
+            if (UnitsUtil.isRatiometric(xTagWidth.getUnits())) {
+                double p = xTagWidth.doubleValue(Units.logERatio);
+                xSampleWidth = p * fudge;
+            } else {
+                double d = xTagWidth.doubleValue(yTagUnits.getOffsetUnits());
+                xSampleWidth = d * fudge;
+            }
+        }
+
+        for (int j = 0; j < ny; j++) {
+            int ii1 = -1;
+            int ii2 = -1;
+            for (int i = 0; i < nx; i++) {
+                if (weights[i][j] > 0. && ii1 == (i - 1)) { // ho hum another valid point
+
+                    i1[i] = -1;
+                    i2[i] = -1;
+                    ii1 = i;
+                } else if (weights[i][j] > 0. && ii1 == -1) { // first valid point
+
+                    i1[i] = -1;
+                    i2[i] = -1;
+                    ii1 = i;
+                    if (interpolateType == Interpolate.NearestNeighbor) {
+                        for (int iii = 0; iii < i; iii++) {
+                            i2[iii] = ii1;
+                        }
+                    }
+                } else if (weights[i][j] > 0. && ii1 < (i - 1)) { // bracketed a gap, interpolate
+
+                    if ((ii1 > -1)) {   // need restriction on Y gap size
+
+                        i1[i] = -1;
+                        i2[i] = -1;
+                        ii2 = i;
+                        for (int iii = i - 1; iii >= ii1; iii--) {
+                            i1[iii] = ii1;
+                            i2[iii] = ii2;
+                        }
+                        ii1 = i;
+                    }
+                } else {
+                    i1[i] = -1;
+                    i2[i] = -1;
+                }
+            }
+            if (interpolateType == Interpolate.NearestNeighbor && ii1 > -1) {
+                for (int iii = ii1; iii < nx; iii++) {
+                    i1[iii] = ii1;
+                }
+            }
+            if (interpolateType == Interpolate.NearestNeighbor) {
+                for (int i = 0; i < nx; i++) {
+                    boolean doInterp;
+                    if ( i1[i]!= -1 && i2[i] != -1) {
+                        doInterp= ( xTagTemp[i2[i]]-xTagTemp[i1[i]] ) < xSampleWidth*2;
+                    } else {
+                        //kludge for bug 000321
+                        //doInterp= Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i] - xTagTemp[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i2[i]] - xTagTemp[i])) < xSampleWidth / 2;
+                        if ( i1[i]==-1 && i2[i]==-1 ) {
+                            doInterp= false;
+                        } else if ( i1[i]==-1 ) {
+                            doInterp= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
+                        } else {
+                            doInterp= ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
+                        }
+                        //doInterp= ((i1[i] != -1) && ((xTagTemp[i2[i]] - xTagTemp[i1[i]]) < xSampleWidth || i2[i] - i1[i] == 2));
+                    }
+                    if ( doInterp ) {
+                        int idx;
+                        if (i1[i] == -1) {
+                            idx = i2[i];
+                        } else if (i2[i] == -1) {
+                            idx = i1[i];
+                        } else {
+                            a2 = ((xTagTemp[i] - xTagTemp[i1[i]]) / (xTagTemp[i2[i]] - xTagTemp[i1[i]]));
+                            if (a2 < 0.5) {
+                                idx = i1[i];
+                            } else {
+                                idx = i2[i];
+                            }
+                        }
+                        data[i][j] = data[idx][j];
+                        weights[i][j] = weights[idx][j];
+
+                    }
+
+                }
+            } else {
+                for (int i = 0; i < nx; i++) {
+                    if ((i1[i] != -1) && ((xTagTemp[i2[i]] - xTagTemp[i1[i]]) < xSampleWidth || i2[i] - i1[i] == 2)) { //kludge for bug 000321
+
+                        a2 = ((xTagTemp[i] - xTagTemp[i1[i]]) / (xTagTemp[i2[i]] - xTagTemp[i1[i]]));
+                        a1 = 1. - a2;
+                        data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
+                        weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
+
+                    }
+                }
+            }
+        }
+    }
+
 
     static void fillInterpolateY(final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType) {
 
@@ -614,9 +753,6 @@ public class AverageTableRebinner implements DataSetRebinner {
                         weights[i][j] = weights[i][idx];
 
                     }
-                        if ( i==1 && j==34 ) {
-                            int jkk=0;                            
-                        }
                     
                 }
             } else {
