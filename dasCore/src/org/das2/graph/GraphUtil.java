@@ -77,11 +77,21 @@ public class GraphUtil {
         return form;
     }
 
-    public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, boolean histogram) {
-        return getPath(xAxis, yAxis, new XTagsVectorDataSet(xds), xds, histogram);
+    public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, boolean histogram, boolean clip ) {
+        return getPath(xAxis, yAxis, new XTagsVectorDataSet(xds), xds, histogram, clip );
     }
 
-    public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, VectorDataSet yds, boolean histogram) {
+    /**
+     *
+     * @param xAxis
+     * @param yAxis
+     * @param xds
+     * @param yds
+     * @param histogram histogram (stair-step) mode
+     * @param clip limit path to what's visible for each axis.
+     * @return
+     */
+    public static GeneralPath getPath( DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, VectorDataSet yds, boolean histogram, boolean clip ) {
 
         GeneralPath newPath = new GeneralPath();
 
@@ -123,39 +133,47 @@ public class GraphUtil {
         }
 
         double t0 = -Double.MAX_VALUE;
-        double x0 = -Double.MAX_VALUE;
-        double y0 = -Double.MAX_VALUE;
         double i0 = -Double.MAX_VALUE;
         double j0 = -Double.MAX_VALUE;
+        boolean v0= false;  // last point was visible
         boolean skippedLast = true;
         int n = xds.getXLength();
+
+        DatumRange xdr= xAxis.getDatumRange();
+        DatumRange ydr= yAxis.getDatumRange();
+
+        DasColumn col= yAxis.getColumn();
+        Rectangle rclip= clip ? DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() ) : null;
+
         for (int index = 0; index < n; index++) {
             double t = xds.getXTagDouble(index, xUnits);
-            double x = xds.getDouble(index, yUnits);
+            double x = xds.getDouble(index, xUnits);
             double y = yds.getDouble(index, yUnits);
             double i = xAxis.transform(x, xUnits);
             double j = yAxis.transform(y, yUnits);
+            boolean v= rclip==null || rclip.contains( i,j);
             if (yUnits.isFill(y) || Double.isNaN(y)) {
                 skippedLast = true;
             } else if (skippedLast || (t - t0) > xSampleWidth) {
                 newPath.moveTo((float) i, (float) j);
                 skippedLast = false;
             } else {
-                if (histogram) {
-                    double i1 = (i0 + i) / 2;
-                    newPath.lineTo((float) i1, (float) j0);
-                    newPath.lineTo((float) i1, (float) j);
-                    newPath.lineTo((float) i, (float) j);
-                } else {
-                    newPath.lineTo((float) i, (float) j);
+                if ( v||v0 ) {
+                    if (histogram) {
+                        double i1 = (i0 + i) / 2;
+                        newPath.lineTo((float) i1, (float) j0);
+                        newPath.lineTo((float) i1, (float) j);
+                        newPath.lineTo((float) i, (float) j);
+                    } else {
+                        newPath.lineTo((float) i, (float) j);
+                    }
                 }
                 skippedLast = false;
             }
             t0 = t;
-            x0 = x;
-            y0 = y;
             i0 = i;
             j0 = j;
+            v0= v;
         }
         return newPath;
 
@@ -356,17 +374,19 @@ public class GraphUtil {
         return result;
     }
 
+    public static GeneralPath reducePath(PathIterator it, GeneralPath result) {
+        return reducePath( it, result, 1 );
+    }
     /**
      * Returns the input GeneralPath filled with new points which will be rendered identically to the input path,
-     * but contains a minimal number of points.  Successive points occupying the same pixel are
-     * culled.
-     * TODO: bin average the points within a cell.  The descretization messes up the label orientation in contour plotting.
+     * but contains a minimal number of points.  We bin average the points within a cell, because descretization
+     * would mess up the label orientation in contour plotting.
      * @return a new GeneralPath which will be rendered identically to the input path,
      * but contains a minimal number of points.
      * @param it A path iterator with minute details that will be lost when rendering.
      * @param result A GeneralPath to put the result into.
      */
-    public static GeneralPath reducePath(PathIterator it, GeneralPath result) {
+    public static GeneralPath reducePath(PathIterator it, GeneralPath result, int res ) {
 
         float[] p = new float[6];
 
@@ -381,8 +401,8 @@ public class GraphUtil {
 
         int type0 = -999;
 
-        float xres = 1;
-        float yres = 1;
+        float xres = res;
+        float yres = res;
 
         String[] types = new String[]{"M", "L", "QUAD", "CUBIC", "CLOSE"};
 

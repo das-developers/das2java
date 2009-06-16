@@ -146,7 +146,7 @@ public class CurveRenderer extends Renderer {
         VectorDataSet xds= (VectorDataSet)dataSet.getPlanarView(xplane);
         VectorDataSet yds= (VectorDataSet)dataSet.getPlanarView(yplane);
         
-        path= GraphUtil.getPath( xAxis, yAxis, xds, yds, false );
+        path= GraphUtil.getPath( xAxis, yAxis, xds, yds, false, false );
     }
     
     /** Getter for property lineWidth.
