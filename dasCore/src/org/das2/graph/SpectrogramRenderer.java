@@ -78,6 +78,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private Object lockObject = new Object();
     private DasColorBar colorBar;
     private Image plotImage;
+    /**
+     * bounds of the image, in the canvas frame.  Note that this can be bigger than the canvas itsself, for example if overrendering is on.
+     */
     private Rectangle plotImageBounds;
     
     private byte[] raster;
@@ -241,6 +244,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
                     } else {
                         TableDataSet ds= (TableDataSet)getDataSet();
+                        if ( !ds.getZUnits().isConvertableTo(colorBar.getUnits()) ) {
+                            parent.postMessage(this, "inconvertable colorbar units", DasPlot.INFO, null, null);
+                        }
                         if ( !ds.getYUnits().isConvertableTo(yAxis.getUnits()) ) {
                             parent.postMessage(this, "inconvertable yaxis units", DasPlot.INFO, null, null);
                         }
@@ -408,16 +414,22 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         if (!this.ds.getXUnits().isConvertableTo(xAxis.getUnits())) {
                             logger.fine("dataset units are incompatable with x axis.");
+                            plotImage = null;
+                            plotImageBounds= null;
                             return;
                         }
 
                         if (!this.ds.getYUnits().isConvertableTo(yAxis.getUnits())) {
                             logger.fine("dataset units are incompatable with y axis.");
+                            plotImage = null;
+                            plotImageBounds= null;
                             return;
                         }
 
                         if (!((TableDataSet)this.ds).getZUnits().isConvertableTo(colorBar.getUnits()) ) {
                             logger.fine("dataset units are incompatable with colorbar.");
+                            plotImage = null;
+                            plotImageBounds= null;
                             return;                            
                         }
                         
@@ -477,6 +489,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                     plotImage = plotImage2;
                     plotImageBounds= plotImageBounds2;
+
+
+                    Rectangle rr= DasDevicePosition.toRectangle( parent.getRow(), parent.getColumn() );
+                    DatumRange xdr= DataSetUtil.xRange( this.ds );
+                    DatumRange ydr= DataSetUtil.yRange( this.ds );
+                    double[] yy= GraphUtil.transformRange( yAxis, ydr );
+                    double[] xx= GraphUtil.transformRange( xAxis, xdr );
+                    selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
 
                 }
             } catch (InconvertibleUnitsException ex) {
@@ -691,8 +711,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         this.print300dpi = print300dpi;
     }
 
+    private Shape selectionArea=null;
+    /**
+     * return the shape or null.
+     * @return
+     */
+    public Shape selectionArea() {
+        return selectionArea;
+    }
+
     public boolean acceptContext(int x, int y) {
-        return true;
+        return selectionArea().contains(x, y);
     }
     /**
      * Holds value of property fillColor.
