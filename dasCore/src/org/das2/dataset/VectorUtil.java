@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
+import org.das2.datum.UnitsConverter;
 
 /**
  *
@@ -265,4 +266,152 @@ public class VectorUtil {
         
         return builder.toVectorDataSet();
     }
+
+    /**
+     * return a converter for differences.  If dst units are specified,
+     * then explicitly this is the target.
+     * @param src
+     * @param dst
+     * @return
+     */
+    private static UnitsConverter getDifferencesConverter( Units unitsOut, Units unitsIn, Units dstUnits ) {
+        UnitsConverter xuc;
+        if ( dstUnits!=null ) {
+            xuc= unitsOut.getConverter( dstUnits );
+        } else {
+            xuc= unitsOut.getConverter( unitsIn.getOffsetUnits() );
+        }
+        return xuc;
+    }
+
+    /**
+     * produce a simpler version of the dataset by averaging adjecent data.
+     * code taken from org.das2.graph.GraphUtil.reducePath.  Adjecent points are
+     * averaged together until a point is found that is not in the bin, and then
+     * a new bin is started.  The bin's lower bounds are integer multiples
+     * of xLimit and yLimit.
+     *
+     * If yLimit is null, then averaging is done for all points in the x bin,
+     * regardless of how close they are in Y.  This is similarly true when
+     * xLimit is null.
+     *
+     * xLimit and yLimit are rank 0 datasets, so that they can indicate that binning
+     * should be done in log space rather than linear.  In this case, a SCALE_TYPE
+     * for the dataset should be "log" and its unit should be convertable to
+     * Units.logERatio (for example, Units.log10Ratio or Units.percentIncrease).
+     * Note when either is log, then averaging is done in the log space.
+     *
+     * @param ds
+     * @param start first index.
+     * @param end last (non-inclusive) index.
+     * @param xLimit the size of the bins or null to indicate no limit.
+     * @param yLimit the size of the bins or null to indicate no limit.
+     * @return
+     */
+    public static VectorDataSet reduce2D( VectorDataSet ds, int start, int finish, Datum xLimit, Datum yLimit ) {
+
+        double x0 = Float.MAX_VALUE;
+        double y0 = Float.MAX_VALUE;
+        double sx0 = 0;
+        double sy0 = 0;
+        double nn0 = 0;
+        double ax0 = Float.NaN;
+        double ay0 = Float.NaN;  // last averaged location
+
+        final Units xunits= ds.getXUnits();
+        final Units yunits= ds.getYUnits();
+
+        VectorDataSetBuilder builder= new VectorDataSetBuilder( ds.getXUnits(), ds.getYUnits() );
+        builder.addPlane( DataSet.PROPERTY_PLANE_WEIGHTS, Units.dimensionless );
+
+        Units dxunits= xLimit!=null ? xLimit.getUnits() : null;
+
+        boolean xlog= xLimit!=null && xLimit.getUnits().isConvertableTo( Units.logERatio );
+        boolean ylog= yLimit!=null && yLimit.getUnits().isConvertableTo( Units.logERatio );
+
+        UnitsConverter uc;
+        double dxLimit, dyLimit;
+        if ( xLimit!=null ) {
+            uc= getDifferencesConverter( xLimit.getUnits(), ds.getXUnits().getOffsetUnits(), xlog ? Units.logERatio : null );
+            dxLimit = uc.convert( xLimit.doubleValue(xLimit.getUnits()) );
+        } else {
+            dxLimit= Double.MAX_VALUE;
+        }
+        if ( yLimit!=null ) {
+            uc= getDifferencesConverter( yLimit.getUnits(), ds.getYUnits().getOffsetUnits(), ylog ? Units.logERatio : null );
+            dyLimit = uc.convert( yLimit.doubleValue(yLimit.getUnits()) );
+        } else {
+            dyLimit= Double.MAX_VALUE;
+        }
+
+        int points = 0;
+        int inCount = 0;
+
+        int i=start;
+
+        while ( i<finish ) {
+            inCount++;
+
+            double xx= ds.getXTagDouble(i,xunits);
+            double yy= ds.getDouble(i,yunits);
+            double ww= yunits.isFill( yy ) ? 0. : 1.;
+
+            if ( ww==0 ) {
+                i++;
+                continue;
+            }
+
+            double p0 = xlog ? Math.log(xx) : xx;
+            double p1 = ylog ? Math.log(yy) : yy;
+
+            double dx = p0 - x0;
+            double dy = p1 - y0;
+
+            if ( Math.abs(dx) < dxLimit && Math.abs(dy) < dyLimit) {
+                sx0 += p0;
+                sy0 += p1;
+                nn0 += ww;
+                i++;
+                continue;
+            }
+
+            if ( nn0>0 ) {
+                ax0 = sx0 / nn0;
+                ay0 = sy0 / nn0;
+
+                builder.insertY( xlog ? Math.exp(ax0) : ax0, ylog ? Math.exp(ay0) : ay0, DataSet.PROPERTY_PLANE_WEIGHTS, nn0 );
+                points++;
+            }
+
+            i++;
+
+            x0 = dxLimit * ( 0.5 + (int) Math.floor(p0/dxLimit) );
+            y0 = dyLimit * ( 0.5 + (int) Math.floor(p1/dyLimit) );
+            sx0 = p0;
+            sy0 = p1;
+            nn0 = ww;
+        }
+
+        if ( nn0>0 ) {
+            ax0 = sx0 / nn0;
+            ay0 = sy0 / nn0;
+
+            builder.insertY( xlog ? Math.exp(ax0) : ax0, ylog ? Math.exp(ay0) : ay0, DataSet.PROPERTY_PLANE_WEIGHTS, nn0 );
+            points++;
+        }
+
+        Map props= ds.getProperties();
+        builder.addProperties( props );
+        Datum xtw= (Datum) props.get(DataSet.PROPERTY_X_TAG_WIDTH);
+        if ( xtw!=null && dxunits!=null ) {
+            Datum nxtw= dxunits.createDatum(dxLimit);
+            if ( nxtw.gt(xtw) ) builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, nxtw );
+        }
+        builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, null );
+        VectorDataSet yds= builder.toVectorDataSet();
+
+        return yds;
+
+    }
+
 }
