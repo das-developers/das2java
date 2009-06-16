@@ -594,8 +594,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
 
-        for ( Painter p : topDecorators ) p.paint(g);
-        
     }
 
     /** Prints the canvas, scaling and possibly rotating it to improve fit.
@@ -1589,6 +1587,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
             if (dragRenderer != null) {
                 dragRenderer.renderDrag(g2, p1, p2);
+            }
+            for ( Painter p:getCanvas().topDecorators ) {
+                try {
+                    p.paint(g2);
+                } catch ( Exception e ) {
+                    e.printStackTrace();
+                }
             }
         }
 
