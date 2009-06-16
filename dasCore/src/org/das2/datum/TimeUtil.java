@@ -233,6 +233,7 @@ public final class TimeUtil {
     /**
      * return the the integer number of days that have elapsed since roughly Monday, January 1, 4713 BC.  Julian Day
      * is defined as starting at noon UT, here is is defined starting at midnight.
+     *
      * @param datum
      * @return
      */
@@ -240,7 +241,13 @@ public final class TimeUtil {
         double xx= datum.doubleValue(Units.mj1958);
         return (int)Math.floor( xx ) + 2436205;
     }
-    
+
+
+    public static int getJulianDay( long val, Units units ) {
+        UnitsConverter uc= units.getConverter(Units.mj1958);
+        return (int)Math.floor(uc.convert(val)) + 2436205;
+    }
+
     public static Datum toDatum( TimeStruct d ) {
         int year = (int)d.year;
         int month = (int)d.month;
@@ -295,11 +302,24 @@ public final class TimeUtil {
     public static TimeStruct toTimeStruct(Datum datum) {
         int hour, minute;
         double justMicroSeconds;
+
+        long microseconds;
+        long xx= (long)datum.doubleValue( Units.us2000 );
+        if (xx<0) {
+            xx= xx % 86400000000L;
+            if (xx==0) {
+                microseconds= 0;
+            } else {
+                microseconds= 86400000000L+xx;
+            }
+        } else {
+            microseconds= xx % 86400000000L;
+        }
         
-        double microseconds= getMicroSecondsSinceMidnight(datum);
-        Datum sansMicros= datum.subtract(microseconds,Units.microseconds);
-        
-        int jd= getJulianDay(sansMicros);
+        long sansMicros= xx - microseconds;
+
+        int jd= getJulianDay(sansMicros,Units.us2000);
+
         if ( jd<0 ) {
             throw new IllegalArgumentException("julian day is negative.");
         }
