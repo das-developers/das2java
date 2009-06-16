@@ -44,6 +44,7 @@ import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
@@ -55,6 +56,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.das2.dataset.VectorUtil;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import org.w3c.dom.Document;
@@ -68,7 +70,7 @@ import org.w3c.dom.Element;
  * 
  * @author  jbf
  */
-public class SeriesRenderer extends Renderer  {
+public class SeriesRenderer extends Renderer {
 
     private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
     private double symSize = 3.0; // radius in pixels
@@ -106,6 +108,7 @@ public class SeriesRenderer extends Renderer  {
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
     PsymConnectorRenderElement[] extraConnectorElements;
     PsymRenderElement psymsElement = new PsymRenderElement();
+    Shape selectionArea;
     public static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
     public static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
     public static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
@@ -338,7 +341,6 @@ public class SeriesRenderer extends Renderer  {
         private GeneralPath path1;
         private Color color;  // override default color
 
-
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             if (path1 == null) {
                 return 0;
@@ -371,7 +373,7 @@ public class SeriesRenderer extends Renderer  {
                 xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
                 logStep= false;
             }
-            
+
 
             /* fuzz the xSampleWidth */
             xSampleWidth = xSampleWidth * 1.20;
@@ -489,11 +491,11 @@ public class SeriesRenderer extends Renderer  {
             double[] coords = new double[6];
             PathIterator it = path1.getPathIterator(null);
             it.currentSegment(coords);
-            
+
             double x1 = coords[0];
             double y1 = coords[1];
             it.next();
-            
+
             while (!it.isDone()) {
                 int segType = it.currentSegment(coords);
                 // don't test against SEG_MOVETO; we shouldn't have any others
@@ -544,7 +546,7 @@ public class SeriesRenderer extends Renderer  {
             } else {
                 xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
             }
-            
+
             /* fuzz the xSampleWidth */
             xSampleWidth = xSampleWidth * 1.10;
 
@@ -819,9 +821,9 @@ public class SeriesRenderer extends Renderer  {
                     if (extraConnectorElements[j] != null) {  // thread race
 
                         extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
-                        
+
                         String label = String.valueOf(tds.getYTagDatum(0, j)).trim();
-                        
+
                         lparent.addToLegend( this, (ImageIcon)GraphUtil.colorIcon( extraConnectorElements[j].color, 5, 5 ), j, label );
                     }
                 }
@@ -956,7 +958,7 @@ public class SeriesRenderer extends Renderer  {
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         logger.fine("enter updatePlotImage");
-        
+
         updating = true;
 
         updateImageCount++;
@@ -982,7 +984,7 @@ public class SeriesRenderer extends Renderer  {
             logger.fine("dataset was empty");
             return;
         }
-        
+
         TableDataSet tds = null;
         VectorDataSet vds = null;
         boolean plottable = false;
@@ -1019,6 +1021,7 @@ public class SeriesRenderer extends Renderer  {
 
             errorElement.update(xAxis, yAxis, vds, monitor);
             psymsElement.update(xAxis, yAxis, vds, monitor);
+            selectionArea= calcSelectionArea( xAxis, yAxis, vds );
 
         } else if (tds != null) {
             extraConnectorElements = new PsymConnectorRenderElement[tds.getYLength(0)];
@@ -1040,9 +1043,10 @@ public class SeriesRenderer extends Renderer  {
 
                 }
                 extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
+                if ( i==0 ) selectionArea= calcSelectionArea( xAxis, yAxis, vds );
             }
         }
-
+        
         if (getParent() != null) {
             getParent().repaint();
         }
@@ -1054,6 +1058,37 @@ public class SeriesRenderer extends Renderer  {
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
 
         setUpdatesPointsPerMillisecond(dppms);
+    }
+
+    private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, VectorDataSet ds ) {
+
+        Datum widthx;
+        if (xaxis.isLog()) {
+            widthx = Units.logERatio.createDatum(Math.log(xaxis.getDataMaximum(xaxis.getUnits()) - xaxis.getDataMinimum(xaxis.getUnits())));
+        } else {
+            widthx = xaxis.getDatumRange().width();
+        }
+        Datum widthy;
+        if (yaxis.isLog()) {
+            widthy = Units.logERatio.createDatum(Math.log(yaxis.getDataMaximum(yaxis.getUnits()) - yaxis.getDataMinimum(yaxis.getUnits())));
+        } else {
+            widthy = yaxis.getDatumRange().width();
+        }
+
+        int fi= firstIndex;
+        int li= lastIndex;
+
+        DatumRange dr= xaxis.getDatumRange();
+        
+        VectorDataSet reduce = VectorUtil.reduce2D( ds, firstIndex, lastIndex, widthx.divide(xaxis.getColumn().getWidth()/5),
+                widthy.divide(yaxis.getRow().getHeight()/5) );
+
+        GeneralPath path = GraphUtil.getPath(xaxis, yaxis, reduce, histogram, true );
+
+        Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape(path);
+
+        return s;
+
     }
 
     protected void installRenderer() {
@@ -1488,7 +1523,17 @@ public class SeriesRenderer extends Renderer  {
         updatePsym();
         refreshImage();
     }
-    
+
+    /**
+     * like accept context, but provides a shape to indicate selection.  This
+     * should be roughly the same as the locus of points where acceptContext is
+     * true.
+     * @return
+     */
+    public Shape selectionArea() {
+        return selectionArea;
+    }
+
     @Override
     public boolean acceptContext(int x, int y) {
         boolean accept = false;
@@ -1556,7 +1601,7 @@ public class SeriesRenderer extends Renderer  {
     public void setUpdatesPointsPerMillisecond(double newupdatesPointsPerMillisecond) {
         //double oldupdatesPointsPerMillisecond = updatesPointsPerMillisecond;
         this.updatesPointsPerMillisecond = newupdatesPointsPerMillisecond;
-        //propertyChangeSupport.firePropertyChange(PROP_UPDATESPOINTSPERMILLISECOND, oldupdatesPointsPerMillisecond, newupdatesPointsPerMillisecond);
+    //propertyChangeSupport.firePropertyChange(PROP_UPDATESPOINTSPERMILLISECOND, oldupdatesPointsPerMillisecond, newupdatesPointsPerMillisecond);
     }
     private double renderPointsPerMillisecond;
     public static final String PROP_RENDERPOINTSPERMILLISECOND = "renderPointsPerMillisecond";
@@ -1568,7 +1613,7 @@ public class SeriesRenderer extends Renderer  {
     public void setRenderPointsPerMillisecond(double newrenderPointsPerMillisecond) {
         //double oldrenderPointsPerMillisecond = renderPointsPerMillisecond;
         this.renderPointsPerMillisecond = newrenderPointsPerMillisecond;
-        //propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
+    //propertyChangeSupport.firePropertyChange(PROP_RENDERPOINTSPERMILLISECOND, oldrenderPointsPerMillisecond, newrenderPointsPerMillisecond);
     }
 
     public int getFirstIndex() {
