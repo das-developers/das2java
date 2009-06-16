@@ -17,12 +17,11 @@ import java.util.Map;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
- * This is the old way that uses subclasses of WebFileObject.  This should
- * go away.
+ * This http protocal uses the local cache.
  *
  * @author jbf
  */
-public class DefaultWebProtocol implements WebProtocol {
+public class DefaultHttpProtocol implements WebProtocol {
 
     public InputStream getInputStream(WebFileObject fo, ProgressMonitor mon) throws IOException {
         if (fo.isFolder) {
