@@ -41,17 +41,24 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     private final static int ARR_MICROS = 7;
 
     /**
+     * years and seconds divider, which should be used if non-null.
+     */
+    private LinearDomainDivider ysDivider;
+
+
+    /**
      *
      * @param significand multiplier for digit.
      * @param digit ordinal ARR_YEAR, ARR_MONTH, etc.
      */
-    private OrdinalTimeDomainDivider(int significand, int digit) {
+    private OrdinalTimeDomainDivider(int significand, int digit, LinearDomainDivider secondsDivider ) {
         this.significand = significand;
         this.digit = digit;
+        this.ysDivider= secondsDivider;
     }
 
     protected OrdinalTimeDomainDivider() {
-        this(1, TimeUtil.HOUR - 1);
+        this(1, TimeUtil.HOUR - 1, null );
     }
 
     /**
@@ -109,6 +116,14 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     public DomainDivider finerDivider(boolean superset) {
         int newSignificand;
         int newDigit = digit;
+        if ( ysDivider!=null ) {
+            if ( digit==ARR_YEAR && ( ysDivider.getSignificand()>1 || ysDivider.getExponent()>0 ) ) {
+                return new OrdinalTimeDomainDivider( significand, digit, (LinearDomainDivider)ysDivider.finerDivider(superset) );
+            } else if ( digit==ARR_SECOND ) {
+                return new OrdinalTimeDomainDivider( significand, digit, (LinearDomainDivider)ysDivider.finerDivider(superset) );
+            }
+        }
+
         List<Integer> factors = FACTORS[digit];
         int i = factors.indexOf(significand);
         do {
@@ -126,7 +141,11 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             }
         } while (superset && significand % newSignificand > 0);
 
-        return new OrdinalTimeDomainDivider(newSignificand, newDigit);
+        if ( newDigit==ARR_SECOND && newSignificand==1. ) {
+            return new OrdinalTimeDomainDivider(newSignificand, newDigit, new LinearDomainDivider() ); //TODO: this assumes 1e0
+        } else {
+            return new OrdinalTimeDomainDivider(newSignificand, newDigit, null );
+        }
     }
 
     public DomainDivider coarserDivider(boolean superset) {
@@ -134,13 +153,22 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         int newDigit = digit;
         List<Integer> factors = FACTORS[digit];
         int i = factors.indexOf(significand);
+        if ( ysDivider!=null ) {
+            if ( digit==ARR_SECOND && ysDivider.getExponent()<0 ) {
+                return new OrdinalTimeDomainDivider( significand, digit, (LinearDomainDivider)ysDivider.coarserDivider(superset) );
+            } else if ( digit==ARR_YEAR ) {
+                return new OrdinalTimeDomainDivider( significand, digit, (LinearDomainDivider)ysDivider.coarserDivider(superset) );
+            }
+        }
         do {
             i = i + 1;
             if (i == factors.size()) {
                 newDigit = digit - 1;
                 newSignificand = 1;
                 if ( digit==ARR_DAY && superset ) {
-                    throw new IllegalArgumentException("not supported.");
+                    newDigit = digit - 1;
+                    newSignificand = 1;
+                    // This breaks the superset contract.  Where will this haunt us?
                 } else {
                     newDigit = digit - 1;
                     newSignificand = 1;
@@ -150,8 +178,11 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
                 newSignificand = factors.get(i);
             }
         } while (superset && newSignificand % significand > 0);
-
-        return new OrdinalTimeDomainDivider(newSignificand, newDigit);
+        if ( newDigit==ARR_YEAR && newSignificand==1. ) {
+            return new OrdinalTimeDomainDivider(newSignificand, newDigit, new LinearDomainDivider() ); //TODO: this assumes 1e0
+        } else {
+            return new OrdinalTimeDomainDivider(newSignificand, newDigit, null );
+        }
     }
 
     /**
@@ -223,6 +254,24 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     }
 
     public DatumVector boundaries(Datum min, Datum max) {
+        if ( digit==ARR_SECOND && ysDivider!=null ) {
+            Datum t= Units.t2000.createDatum(0);
+            DatumVector secs= ysDivider.boundaries(min.subtract(t).convertTo(Units.seconds), max.subtract(t).convertTo(Units.seconds) );
+            return secs.add(t);
+        }
+        if ( digit==ARR_YEAR && ysDivider!=null ) {
+            int yearMin = TimeUtil.toTimeStruct(min).year;
+            int yearMax = TimeUtil.toTimeStruct(max).year;
+            Units u= Units.dimensionless;
+            DatumVector years= ysDivider.boundaries( u.createDatum(yearMin), u.createDatum(yearMax) );
+            Units out= min.getUnits();
+            double[] tickV = years.toDoubleArray(Units.dimensionless);
+            for (int i = 0; i < tickV.length; i++) {
+                int iyear = (int) tickV[i];
+                tickV[i] = TimeUtil.convert(iyear, 1, 1, 0, 0, 0, (TimeLocationUnits) out );
+            }
+            return DatumVector.newDatumVector(tickV,out);
+        }
         if (digit == ARR_DAY) {
             long nb = boundaryCount(min, max);
             if (nb > MAX_BOUNDARIES) {
@@ -258,6 +307,17 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     }
 
     public long boundaryCount(Datum min, Datum max) {
+        if ( digit==ARR_SECOND && ysDivider!=null ) {
+            Datum t= Units.t2000.createDatum(0);
+            return ysDivider.boundaryCount( min.subtract(t).convertTo(Units.seconds), max.subtract(t).convertTo(Units.seconds) );
+        }
+        if ( digit==ARR_YEAR && ysDivider!=null ) {
+            int yearMin = TimeUtil.toTimeStruct(min).year;
+            int yearMax = TimeUtil.toTimeStruct(max).year;
+            Units u= Units.dimensionless;
+            return ysDivider.boundaryCount( u.createDatum(yearMin), u.createDatum(yearMax) );
+        }
+
         int[] tmin = ceil(TimeUtil.toTimeArray(min), significand, digit);
         int[] tmax = floor(TimeUtil.toTimeArray(max), significand, digit);
 
@@ -287,6 +347,21 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     }
 
     public DatumRange rangeContaining(Datum v) {
+        if ( digit==ARR_SECOND && ysDivider!=null ) {
+            Datum t= Units.t2000.createDatum(0);
+            DatumRange r= ysDivider.rangeContaining( v.subtract(t).convertTo(Units.seconds) );
+            return new DatumRange( t.add(r.min()), t.add(r.max()) );
+        }
+        if ( digit==ARR_YEAR && ysDivider!=null ) {
+            Datum t= Units.t2000.createDatum(0);
+            int yearMin = TimeUtil.toTimeStruct(v).year;
+            DatumRange r= ysDivider.rangeContaining( Units.dimensionless.createDatum(yearMin) );
+            double tmin, tmax;
+            TimeLocationUnits out= (TimeLocationUnits) v.getUnits();
+            tmin = TimeUtil.convert((int)r.min().doubleValue(), 1, 1, 0, 0, 0, out );
+            tmax = TimeUtil.convert((int)r.max().doubleValue(), 1, 1, 0, 0, 0, out );
+            return new DatumRange( tmin, tmax, out );
+        }
         int[] tarr = floor(TimeUtil.toTimeArray(v), significand, digit);
         Datum dstart = TimeUtil.toDatum(tarr);
         tarr[digit] = tarr[digit] + significand;
@@ -295,11 +370,31 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     }
 
     public String toString() {
-        return "OTDomainDivider by " + significand + " " + TimeUtil.TimeDigit.fromOrdinal(digit + 1);
+        if ( ysDivider!=null ) {
+            return "OTDomainDivider delegate offset to "+ysDivider + " "+ TimeUtil.TimeDigit.fromOrdinal(digit + 1) ;
+        } else {
+            return "OTDomainDivider by " + significand + " " + TimeUtil.TimeDigit.fromOrdinal(digit + 1);
+        }
     }
 
     public DatumFormatter getFormatter( DatumRange range ) {
-        return TimeDatumFormatter.formatterForScale( digit+1, range);
+        if ( ysDivider!=null ) {
+            if ( digit==ARR_SECOND ) {
+                if ( ysDivider.getExponent()<-6 ) {
+                    return TimeDatumFormatter.NANOSECONDS;
+                } else if ( ysDivider.getExponent()<-3 ) {
+                    return TimeDatumFormatter.MICROSECONDS;
+                } else if ( ysDivider.getExponent()<0 ) {
+                    return TimeDatumFormatter.MILLISECONDS;
+                } else {
+                    return TimeDatumFormatter.SECONDS;
+                }
+            } else {
+                return TimeDatumFormatter.YEARS;
+            }
+        } else {
+            return TimeDatumFormatter.formatterForScale( digit+1, range);
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -318,10 +413,23 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         System.err.println(div.rangeContaining(dr.min()));
         System.err.println(div.coarserDivider(false).boundaryCount(dr.min(), dr.max()));
         System.err.println(div.finerDivider(false).boundaryCount(dr.min(), dr.max()));
-        div = new OrdinalTimeDomainDivider(1000, ARR_YEAR);
+        div = new OrdinalTimeDomainDivider(1000, ARR_YEAR,null);
         for (int i = 0; i < 100; i++) {
             System.err.println(div);
             div = div.finerDivider(false);
         }
+        for (int i = 0; i < 100; i++) {
+            div = div.coarserDivider(false);
+            System.err.println(div);
+        }
+        for (int i = 0; i < 30; i++) {
+            System.err.println(div);
+            div = div.finerDivider(true);
+        }
+        for (int i = 0; i < 30; i++) {
+            div = div.coarserDivider(true);
+            System.err.println(div);
+        }
+
     }
 }
