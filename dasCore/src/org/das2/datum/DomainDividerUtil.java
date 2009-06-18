@@ -1,6 +1,10 @@
 package org.das2.datum;
 
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.DefaultDatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 
@@ -10,11 +14,13 @@ import org.das2.datum.format.TimeDatumFormatter;
  */
 public final class DomainDividerUtil {
     // Still need to decide what all should be in here.
-    
+
     public static DomainDivider getDomainDivider(Datum min, Datum max, boolean log) {
         // Look at supplied min/max units and make a guess at the appropriate divider
-        if ( UnitsUtil.isTimeLocation( min.getUnits() ) ) {
+        if (UnitsUtil.isTimeLocation(min.getUnits())) {
             return new OrdinalTimeDomainDivider();
+        } else if ( log ) {
+            return new LogLinDomainDivider();
         } else {
             return new LinearDomainDivider();
         }
@@ -22,6 +28,28 @@ public final class DomainDividerUtil {
 
     public static DomainDivider getDomainDivider(Datum min, Datum max) {
         return getDomainDivider(min, max, false);
+    }
+
+    private static String exp(int power) {
+        StringBuffer buffer = new StringBuffer(power + 4);
+        for (int i = 0; i < power - 1; i++) {
+            buffer.append('#');
+        }
+        buffer.append("0.#E0");
+        return buffer.toString();
+    }
+    private static final String zeros100 = "0.00000000000000000000" + "0000000000000000000000000000000000000000" + "0000000000000000000000000000000000000000";
+
+    private static String zeros(int count) {
+        if (count < 0) return "0";
+        else if (count <= 100) return zeros100.substring(0, count + 2);
+        else {
+            StringBuffer buff = new StringBuffer(count + 2).append("0.");
+            for (int index = 0; index < count; index++) {
+                buff.append('0');
+            }
+            return buff.toString();
+        }
     }
 
     /**
@@ -32,16 +60,65 @@ public final class DomainDividerUtil {
      * @param max
      * @return
      */
-    public static DatumFormatter getDatumFormatter( DomainDivider div, DatumRange range ) {
-        if ( div instanceof OrdinalTimeDomainDivider ) {
-            return DatumUtil.bestTimeFormatter( range.min(), range.max(),
-                    (int)div.boundaryCount( range.min(), range.max() ) - 1 );
-        } else if ( div instanceof LogDomainDivider ) {
-            return DatumUtil.limitLogResolutionFormatter( range.min(), range.max(),
-                    (int)div.boundaryCount( range.min(), range.max() ) - 1 );
+    public static DatumFormatter getDatumFormatter(DomainDivider div, DatumRange range) {
+        if (div instanceof OrdinalTimeDomainDivider) {
+            OrdinalTimeDomainDivider otdiv = (OrdinalTimeDomainDivider) div;
+            return otdiv.getFormatter(range);
+        } else if (div instanceof LogLinDomainDivider) {
+            LogLinDomainDivider lldiv = (LogLinDomainDivider) div;
+            int nFraction = lldiv.sigFigs();
+            String format = exp(nFraction);
+            DatumFormatterFactory factory = range.getUnits().getDatumFormatterFactory();
+            try {
+                return factory.newFormatter(format);
+            } catch (ParseException ex) {
+                throw new RuntimeException(ex); // sorry, user, please report this.
+            }
         } else {
-            return DatumUtil.bestFormatter( range.min(), range.max(),
-                    (int)div.boundaryCount( range.min(), range.max() ) - 1 );
+            LinearDomainDivider ldiv = (LinearDomainDivider) div;
+            String format;
+            if (ldiv.getExponent() < 0) {
+                format = zeros(-1 * ldiv.getExponent());
+            } else {
+                format = "0";
+            }
+
+            DatumFormatterFactory factory = range.getUnits().getDatumFormatterFactory();
+            try {
+                return factory.newFormatter(format);
+            } catch (ParseException ex) {
+                throw new RuntimeException(ex); // sorry, user, please report this.
+            }
+        }
+    }
+
+    public static void main(String[] args) throws ParseException {
+        if (false) {
+            DomainDivider ldd = new LinearDomainDivider();
+            for (int i = 0; i < 10; i++) {
+                ldd = ldd.finerDivider(false);
+            }
+            DatumRange range = new DatumRange(1000, 1001, Units.dimensionless);
+            DatumFormatter df = getDatumFormatter(ldd, range);
+            DatumVector dv = ldd.boundaries(range.min(), range.max());
+            for (int i = 0; i < dv.getLength(); i++) {
+                System.err.println(df.format(dv.get(i)));
+            }
+        }
+        if (true) {
+            System.err.println(""+TimeUtil.isLeapYear(2000)); // initialize class to define time ordinals
+            DomainDivider ldd = new OrdinalTimeDomainDivider();
+            for (int i = 0; i < 13; i++) {
+                ldd = ldd.finerDivider(false);
+            }
+            ldd.toString();
+            DatumRange range = DatumRangeUtil.parseTimeRange("2009-001T00:00 to 00:01");
+
+            DatumFormatter df = getDatumFormatter(ldd, range);
+            DatumVector dv = ldd.boundaries(range.min(), range.max());
+            for (int i = 0; i < dv.getLength(); i++) {
+                System.err.println(df.format(dv.get(i)));
+            }
         }
     }
 }
