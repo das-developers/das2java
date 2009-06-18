@@ -6,19 +6,19 @@ package org.das2.datum;
  * @author ed
  */
 public class LogLinDomainDivider implements DomainDivider {
-    private DomainDivider decadeDivider;
+    private LinearDomainDivider decadeDivider;
     //private long divsPerDecade;
 
     protected LogLinDomainDivider() {
         this(new LinearDomainDivider());
     }
 
-    private LogLinDomainDivider(DomainDivider decadeDivider) {
+    private LogLinDomainDivider(LinearDomainDivider decadeDivider) {
         this.decadeDivider = decadeDivider;
     }
 
     public DomainDivider coarserDivider(boolean superset) {
-        DomainDivider d = decadeDivider.coarserDivider(superset);
+        LinearDomainDivider d = (LinearDomainDivider) decadeDivider.coarserDivider(superset);
         if  (d.boundaryCount(Datum.create(0.0), Datum.create(1.0)) < 1) {
             return new LogDomainDivider();
         }
@@ -28,7 +28,7 @@ public class LogLinDomainDivider implements DomainDivider {
 
     public DomainDivider finerDivider(boolean superset) {
         // Make the linear subidivision finer.
-        return new LogLinDomainDivider(decadeDivider.finerDivider(superset));
+        return new LogLinDomainDivider((LinearDomainDivider)decadeDivider.finerDivider(superset));
     }
 
     public DatumVector boundaries(Datum min, Datum max) {
@@ -125,6 +125,15 @@ public class LogLinDomainDivider implements DomainDivider {
         DatumRange range = decadeDivider.rangeContaining(v.divide(decadeOffset));
 
         return new DatumRange(range.min().multiply(decadeOffset), range.max().multiply(decadeOffset));
+    }
+
+    /**
+     * return the number of decimal places used.  For example,
+     *  ..., 0.8e0, 0.9e0, 1.1e1, 1.2e1, 1.3e1, ... yeilds 2.
+     * @return
+     */
+    protected int sigFigs() {
+        return 0-decadeDivider.getExponent();
     }
 
     public static void main(String[] args) {
