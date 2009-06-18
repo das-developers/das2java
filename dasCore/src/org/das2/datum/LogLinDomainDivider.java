@@ -136,6 +136,10 @@ public class LogLinDomainDivider implements DomainDivider {
         return 0-decadeDivider.getExponent();
     }
 
+    public String toString() {
+        return "loglin decadeDivider="+decadeDivider;
+    }
+
     public static void main(String[] args) {
         DomainDivider d = new LogLinDomainDivider();
         DatumRange dr = DatumRangeUtil.newDimensionless(7.9, 218);
@@ -147,5 +151,18 @@ public class LogLinDomainDivider implements DomainDivider {
         System.err.println(d.rangeContaining(Datum.create(8)));
 
         System.err.println(d.coarserDivider(true).coarserDivider(true).boundaries(dr.min(), dr.max()));
+        System.err.println(d.finerDivider(true).finerDivider(true).boundaries(dr.min(), dr.max()));
+
+        d= d.finerDivider(true);
+        d= d.finerDivider(true);
+        
+        for ( int i=0; i<10; i++ ) {
+            d= d.coarserDivider(false);
+            System.err.println(d);
+        }
+        for ( int i=0; i<10; i++ ) {
+            d= d.finerDivider(false);
+            System.err.println(d);
+        }
     }
 }
