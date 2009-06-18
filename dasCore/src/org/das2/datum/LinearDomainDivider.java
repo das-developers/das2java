@@ -93,6 +93,28 @@ public class LinearDomainDivider implements DomainDivider {
         return mmax - mmin + 1;
     }
 
+    /**
+     * protected to provide access to other dividers that delegate to this,
+     * and to support formatter.
+     * @return
+     */
+    protected int getSignificand() {
+        return incSignificand;
+    }
+
+    /**
+     * protected to provide access to other dividers that delegate to this,
+     * and to support formatter.
+     * @return
+     */
+    protected int getExponent() {
+        return incExponent;
+    }
+
+    public String toString() {
+        return "ldd "+incSignificand+"E"+incExponent;
+    }
+
     public static void main(String[] args) {
         DomainDivider div = new LinearDomainDivider();
         DatumRange dr = DatumRangeUtil.newDimensionless(0.1,0.9);
