@@ -7,24 +7,28 @@ package org.das2.datum;
  */
 public class LogDomainDivider implements DomainDivider {
 
-    private final DomainDivider expDivider;
+    private final LinearDomainDivider expDivider;
 
     protected LogDomainDivider() {
         this(new LinearDomainDivider());
     }
 
     // for use by finerDivider and coarserDivider
-    private LogDomainDivider(DomainDivider expDivider) {
+    private LogDomainDivider(LinearDomainDivider expDivider) {
         this.expDivider = expDivider;
     }
 
     public DomainDivider coarserDivider(boolean superset) {
-        return new LogDomainDivider(expDivider.coarserDivider(superset));
+        return new LogDomainDivider((LinearDomainDivider)expDivider.coarserDivider(superset));
     }
 
     public DomainDivider finerDivider(boolean superset) {
-        // Should update to return a LogLinDomainDivider instead of fractional powers
-        return new LogDomainDivider(expDivider.finerDivider(superset));
+        if ( expDivider.getSignificand()==1 && expDivider.getExponent()==0 ) {
+            return new LogLinDomainDivider();
+        } else {
+            // Should update to return a LogLinDomainDivider instead of fractional powers
+            return new LogDomainDivider((LinearDomainDivider)expDivider.finerDivider(superset));
+        }
     }
 
     public DatumVector boundaries(Datum min, Datum max) {
