@@ -319,19 +319,19 @@ public final class TimeUtil {
         double justMicroSeconds;
 
         long microseconds;
-        long xx= (long)datum.doubleValue( Units.us2000 );
-        if (xx<0) {
-            xx= xx % 86400000000L;
+        long lus2000= (long)datum.doubleValue( Units.us2000 );
+        if (lus2000<0) {
+            long xx= lus2000 % 86400000000L;
             if (xx==0) {
                 microseconds= 0;
             } else {
                 microseconds= 86400000000L+xx;
             }
         } else {
-            microseconds= xx % 86400000000L;
+            microseconds= lus2000 % 86400000000L;
         }
         
-        long sansMicros= xx - microseconds;
+        long sansMicros= lus2000 - microseconds;
 
         int jd= getJulianDay(sansMicros,Units.us2000);
 
