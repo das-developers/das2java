@@ -106,7 +106,7 @@ public class DataSetUtil {
      */
     public static Datum guessXTagWidth( DataSet table ) {
         if ( table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH)!=null ) return (Datum)table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
-        if ( table.getXLength()>2 ) {
+        if ( table.getXLength()>1 ) {
             Units units= table.getXUnits();
             double min= table.getXTagDouble(1,units) - table.getXTagDouble( 0,units) ;
             for ( int i=2; i<table.getXLength(); i++ ) {
