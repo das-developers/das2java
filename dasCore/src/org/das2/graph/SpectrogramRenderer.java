@@ -721,7 +721,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     public boolean acceptContext(int x, int y) {
-        return selectionArea().contains(x, y);
+        return selectionArea!=null && selectionArea.contains(x, y);
     }
     /**
      * Holds value of property fillColor.
