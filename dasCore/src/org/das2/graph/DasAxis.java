@@ -1185,14 +1185,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     private void updateTickVDomainDivider() {
         DatumRange dr = getDatumRange();
-        DatumVector major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
-        DatumVector minor = minorTicksDomainDivider.boundaries(dr.min(), dr.max());
 
-        this.tickV = TickVDescriptor.newTickVDescriptor(major, minor);
-        this.tickV.datumFormatter= dividerDatumFormatter;
+        try {
+            DatumVector major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
+            DatumVector minor = minorTicksDomainDivider.boundaries(dr.min(), dr.max());
 
-        datumFormatter = resolveFormatter(tickV);
+            this.tickV = TickVDescriptor.newTickVDescriptor(major, minor);
+            this.tickV.datumFormatter= dividerDatumFormatter;
 
+            datumFormatter = resolveFormatter(tickV);
+        } catch ( InconvertibleUnitsException ex ) {
+            // it's okay to do nothing.
+        }
     }
 
     private void updateTickVTime() {
