@@ -156,7 +156,7 @@ public class GraphUtil {
                 skippedLast = true;
             } else if (skippedLast || (t - t0) > xSampleWidth) {
                 newPath.moveTo((float) i, (float) j);
-                skippedLast = false;
+                skippedLast = !v;
             } else {
                 if ( v||v0 ) {
                     if (histogram) {
