@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
 import org.das2.datum.DomainDivider;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.graph.DasDevicePosition;
 
 /**
@@ -64,19 +65,23 @@ public class ZoomPanMouseModule extends MouseModule {
     private DatumRange maybeRound(DasAxis xAxis, DatumRange dr) {
         DomainDivider div= xAxis.getMinorTicksDomainDivider();
         if ( div!=null ) {
-            div= div.finerDivider(false).finerDivider(false);
-            DatumRange minDr= div.rangeContaining(dr.min());
-            DatumRange maxDr= div.rangeContaining(dr.max());
-            Datum min= DatumRangeUtil.normalize( minDr, dr.min() ) < 0.5 ? minDr.min() : minDr.max();
-            Datum max= DatumRangeUtil.normalize( maxDr, dr.max() ) < 0.5 ? maxDr.min() : maxDr.max();
-            DatumRange drRound= new DatumRange( min, max );
+            try {
+                div= div.finerDivider(false).finerDivider(false);
+                DatumRange minDr= div.rangeContaining(dr.min());
+                DatumRange maxDr= div.rangeContaining(dr.max());
+                Datum min= DatumRangeUtil.normalize( minDr, dr.min() ) < 0.5 ? minDr.min() : minDr.max();
+                Datum max= DatumRangeUtil.normalize( maxDr, dr.max() ) < 0.5 ? maxDr.min() : maxDr.max();
+                DatumRange drRound= new DatumRange( min, max );
 
-            double d= DatumRangeUtil.normalize( dr, drRound.min() );
-            if ( d<-0.1 || d>0.1 ) {
-                System.err.printf( "in=%s  out=%s", dr, drRound );
-                System.err.printf( "in=%s  out=%s", dr, drRound );
+                double d= DatumRangeUtil.normalize( dr, drRound.min() );
+                if ( d<-0.1 || d>0.1 ) {
+                    System.err.printf( "in=%s  out=%s", dr, drRound );
+                    System.err.printf( "in=%s  out=%s", dr, drRound );
+                }
+                dr= drRound;
+            } catch ( InconvertibleUnitsException ex ) {
+                // it's okay to do nothing, this is a transient state
             }
-            dr= drRound;
         }
         return dr;
     }
