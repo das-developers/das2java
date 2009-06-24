@@ -199,6 +199,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         } /*else {
             throw new IllegalArgumentException("null row is not allowed for the meantime");
         }*/
+        if ( getRow()!=DasRow.NULL && getColumn()!=DasColumn.NULL ) resize();
         firePropertyChange("row", oldValue, r);
     }
     
@@ -221,6 +222,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         } /*else {
             throw new IllegalArgumentException("null column is not allowed for the meantime");
         }*/
+        if ( getRow()!=DasRow.NULL && getColumn()!=DasColumn.NULL ) resize();
         firePropertyChange("column", oldValue, c);
     }
     
