@@ -17,6 +17,7 @@ import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.event.ZoomOutMouseModule;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
 
@@ -345,11 +346,25 @@ public class DataSetUtil {
         }
         assert (xds.length() == yds.length());
 
-        if ( yds.rank()>1 ) { //TODO: check for fill columns.
+        if ( yds.rank()>1 ) { //TODO: check for fill columns.  Note the fill check was to support a flakey dataset.
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
 
         if ( xds.length()<2 ) return null;
+
+        // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
+        // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
+        // number in a ever increasing sequence.
+        double sp= xds.value(1) / xds.value(0);
+        double everIncreasing= Math.max(0,sp);
+        for ( int i=2; everIncreasing>0 && i<xds.length(); i++ ) {
+            double sp1= xds.value(i) / xds.value(i-1);
+            if ( sp1>1.0 ) {
+                everIncreasing= xds.value(i)/xds.value(0);
+            } else {
+                everIncreasing= 0;
+            }
+        }
 
         AutoHistogram ah= new AutoHistogram();
         QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
@@ -362,10 +377,13 @@ public class DataSetUtil {
         
         int ipeak=0;
         int peakv=(int) hist.value(0);
-        int hpeak=0; // highest observed non-trivial peak
+        int linHighestPeak=0; // highest observed non-trivial peak
 
-        int imedian=-1;
+        int linMedian=-1;
         int t=0;
+
+        double mean= AutoHistogram.mean( hist ).value();
+        int imean= AutoHistogram.binOf( hist, mean );
 
         for ( int i=0; i<hist.length(); i++ ) {
             t+= hist.value(i);
@@ -374,10 +392,17 @@ public class DataSetUtil {
                 peakv= (int) hist.value(i);
             }
             if ( hist.value(i)>peakv/10  ) {
-                hpeak= i;
+                linHighestPeak= i;
             }
-            if ( imedian==-1 && t>total/2 ) {
-                imedian= i;
+            if ( linMedian==-1 && t>total/2 ) {
+                linMedian= i;
+            }
+        }
+        int linLowestPeak=0;
+        for ( int i=0; i<hist.length(); i++ ) {
+            if ( hist.value(i)>peakv/10 ) {
+                linLowestPeak=i;
+                break;
             }
         }
 
@@ -393,37 +418,59 @@ public class DataSetUtil {
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
             long ltotal= (Long)( ((Map<String,Object>)loghist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
-            int lpeak=0;
-            int lpeakv=(int) loghist.value(0);
-            int lmedian=-1;
+            int logPeak=0;
+            int logPeakv=(int) loghist.value(0);
+            int logMedian=-1;
+            int logHighestPeak=0;
             t=0;
 
+            mean= AutoHistogram.mean(loghist).value();
+            int lmean= AutoHistogram.binOf( loghist, mean );
             for ( int i=0; i<loghist.length(); i++ ) {
                 t+= loghist.value(i);
-                if ( loghist.value(i)>lpeakv ) {
-                    lpeak=i;
-                    lpeakv= (int) loghist.value(i);
+                if ( loghist.value(i)>logPeakv ) {
+                    logPeak=i;
+                    logPeakv= (int) loghist.value(i);
                 }
-                if ( lmedian==-1 && t>ltotal/2 ) {
-                    lmedian= i;
+                if ( loghist.value(i)>logPeakv/100  ) { // be loosy-goosey with log.
+                   logHighestPeak= i;
+                }
+                if ( logMedian==-1 && t>ltotal/2 ) {
+                    logMedian= i;
+                }
+            }
+            int logLowestPeak=0;
+            for ( int i=0; i<hist.length(); i++ ) {
+                if ( loghist.value(i)>logPeakv/10 ) {
+                    logLowestPeak=i;
+                    break;
                 }
             }
 
-            if ( lpeak>0 && (1.*lmedian/loghist.length() > 1.*imedian/hist.length() ) ) {
+            int highestPeak= linHighestPeak;
+
+            if ( everIncreasing>100 || ( logPeak>0 && (1.*logMedian/loghist.length() > 1.*linMedian/hist.length() ) ) ) {
                 hist= loghist;
-                ipeak= lpeak;
-                peakv= lpeakv;
+                ipeak= logPeak;
+                peakv= logPeakv;
+                highestPeak= logHighestPeak;
                 log= true;
             }
-        } else if ( peakv<10 ) { // loosen things up when there isn't much data.
-            ipeak= hpeak;
+
+            if ( peakv<20 ) {
+                ipeak= highestPeak;
+                peakv= (int) hist.value(ipeak);
+            }
+
+        } else if ( peakv<20 ) { // loosen things up when there isn't much data.
+            ipeak= linHighestPeak;
             peakv= (int) hist.value(ipeak);
         }
 
         double ss=0;
         double nn=0;
 
-        QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 );
+        QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); // DANGER--don't change PLANE_0!
 
         for ( int i=ipeak; i>=0; i-- ) {
             if ( hist.value(i)>(peakv/4) ) {
