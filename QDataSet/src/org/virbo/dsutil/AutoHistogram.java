@@ -194,6 +194,21 @@ public final class AutoHistogram {
         return result;
     }
 
+    /**
+     * convenient method for getting the bin location of a value from a completed
+     * histogram's metadata.  Note this is inefficient since it must do HashMap
+     * lookups to get the bin width and bin start, so use this carefully.
+     * @param hist
+     * @param d
+     * @return the index of the bin for the point.
+     */
+    public static int binOf( QDataSet hist, double d ) {
+        Map<String, Object> user = (Map<String, Object>) hist.property( QDataSet.USER_PROPERTIES );
+        double binw= (Double)user.get( USER_PROP_BIN_WIDTH );
+        double firstBin= (Double)user.get( USER_PROP_BIN_START );
+        return (int) Math.floor( ( d -firstBin ) / binw );
+    }
+
     public QDataSet doit(QDataSet ds) {
         return doit(ds, null);
     }
@@ -290,6 +305,10 @@ public final class AutoHistogram {
             initialDist();
         }
 
+        if ( outliers.size()>total ) {
+            initialRedist();
+        }
+
         DDataSet result = getHistogram();
 
         return result;
@@ -332,7 +351,7 @@ public final class AutoHistogram {
         double closestB = Double.NaN;
         double closestDist = Double.MAX_VALUE;
         for (Double d : outliers.keySet()) {
-            double dist = d - lastD;
+            double dist = Math.abs( d - lastD ); // note the outliers are sorted, but this is to be explicit.
             if (dist > 0 && dist < closestDist) {
                 closestA = lastD;
                 closestB = d;
@@ -360,6 +379,39 @@ public final class AutoHistogram {
         addToDistribution(ibin, closestA, count);
 
         checkOutliers();
+    }
+
+    /**
+     * we have a distribution that results in more outliers than data.  Recalculate
+     * the bin width until there are fewer outliers than data.
+     * This asserts that the closest outlier is actually part of the distribution.
+     */
+    private void initialRedist() {
+
+        double distCenter= firstb + binw / binwDenom * ( zeroesLeft + ( nbin-zeroesRight-zeroesLeft ) / 2 );
+        double closestA = outliers.firstKey();
+        double lastD = closestA;
+        double closestDist = Double.MAX_VALUE;
+
+        for (Double d : outliers.keySet()) {
+            double dist = Math.abs( d - distCenter );
+            if (dist > 0 && dist < closestDist) {
+                closestA = lastD;
+                closestDist = dist;
+            }
+            lastD = d;
+        }
+
+        // grow the distribution bins until we include this point.
+        int ibin = binOf(closestA);
+        while ( ibin<0 ) {
+            ibin= rescaleRight(ibin);
+        }
+        while ( ibin>nbin ) {
+            ibin= rescaleLeft(ibin,false);
+        }
+        checkOutliers();
+
     }
 
     /**
@@ -564,7 +616,7 @@ public final class AutoHistogram {
     }
 
     /**
-     * last bin has same end, but is ten times wider
+     * last bin has same end, but is ten times wider, and then shift.
      * @param ibin
      * @return
      */
@@ -682,6 +734,7 @@ public final class AutoHistogram {
         ds.putProperty(QDataSet.UNITS, ((QDataSet) hist.property(QDataSet.DEPEND_0)).property(QDataSet.UNITS));
         return ds;
     }
+
 
     /**
      * returns the mean of the dataset that has been histogrammed.
