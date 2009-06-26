@@ -24,7 +24,6 @@ package org.das2.components.propertyeditor;
 
 import org.das2.components.treetable.TreeTableCellRenderer;
 import org.das2.components.treetable.TreeTableModel;
-import org.das2.dasml.SerializeUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.graph.DasCanvas;
@@ -39,14 +38,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,20 +46,8 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 //import org.apache.xml.serialize.OutputFormat;
 //import org.apache.xml.serialize.XMLSerializer;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * This class implements a Hierarchical property editor
@@ -219,7 +198,7 @@ public class PropertyEditor extends JComponent {
         };
     }
 
-    private Action createSaveAction(final Object bean) {
+/*    private Action createSaveAction(final Object bean) {
         return new AbstractAction("Save") {
 
             public void actionPerformed(ActionEvent ev) {
@@ -314,7 +293,7 @@ public class PropertyEditor extends JComponent {
             }
         };
     }
-
+*/
     private Action getEditSelectedAction() {
         return new AbstractAction("Edit Selected") {
 
@@ -346,10 +325,10 @@ public class PropertyEditor extends JComponent {
     private void initButtonPanel(boolean saveLoadButton) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         if (saveLoadButton) {
-            JButton saveButton = new JButton(createSaveAction(this.bean));
-            buttonPanel.add(saveButton);
-            JButton loadButton = new JButton(createLoadAction(this.bean));
-            buttonPanel.add(loadButton);
+            //JButton saveButton = new JButton(createSaveAction(this.bean));
+            //buttonPanel.add(saveButton);
+            //JButton loadButton = new JButton(createLoadAction(this.bean));
+            //buttonPanel.add(loadButton);
         }
         final JButton apply = new JButton("Apply Changes");
         closeButton = new JButton("Dismiss");
