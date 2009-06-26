@@ -337,10 +337,17 @@ public class DataSetUtil {
      *       will be the offset unit for interval units like Units.t2000.
      */
     public static RankZeroDataSet guessCadenceNew( QDataSet xds, QDataSet yds) {
-        RankZeroDataSet d= (RankZeroDataSet) xds.property( QDataSet.CADENCE );
-        if ( d!=null ) {
-            return d;
+        Object o= xds.property( QDataSet.CADENCE );
+        Units u= (Units) xds.property( QDataSet.UNITS );
+
+        if ( o!=null ) {
+            if ( o instanceof RankZeroDataSet ) {
+                return (RankZeroDataSet) o;
+            } else {
+                return DataSetUtil.asDataSet( ((Number)o).doubleValue(), u.getOffsetUnits() );
+            }
         }
+
         if (yds == null) {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
