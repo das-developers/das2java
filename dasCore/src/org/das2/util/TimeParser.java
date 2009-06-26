@@ -149,6 +149,10 @@ public class TimeParser {
         this.fieldHandlers = fieldHandlers;
         this.formatString = formatString;
 
+        if ( formatString.contains("$") && !formatString.contains("%") ) {
+            formatString= formatString.replaceAll("\\$", "%");
+        }
+        
         String[] ss = formatString.split("%");
         fc = new String[ss.length];
         String[] delim = new String[ss.length + 1];
