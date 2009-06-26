@@ -9,7 +9,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.Units;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.graph.DasCanvas;
