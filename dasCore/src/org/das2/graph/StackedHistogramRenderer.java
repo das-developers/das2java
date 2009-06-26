@@ -39,9 +39,6 @@ import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetUtil;
 import org.das2.datum.LocationUnits;
 import org.das2.datum.DatumRange;
-import org.das2.dasml.FormBase;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.DasException;
@@ -58,9 +55,7 @@ import java.awt.geom.*;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.beans.*;
-import java.text.*;
 import javax.swing.*;
-import org.w3c.dom.*;
 
 /**
  *
