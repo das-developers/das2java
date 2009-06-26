@@ -38,7 +38,6 @@ import org.das2.dataset.TableDataSet;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.TableUtil;
 import org.das2.dataset.VectorDataSet;
-import org.das2.NameContext;
 import org.das2.DasApplication;
 import org.das2.CancelledOperationException;
 import org.das2.DasProperties;
@@ -50,17 +49,12 @@ import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.Datum;
-import org.das2.dasml.FormBase;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.graph.dnd.TransferableRenderer;
 import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;
 import javax.swing.event.MouseInputAdapter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,8 +73,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasException;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
 
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
@@ -1140,212 +1132,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return (Renderer[]) renderers.toArray(new Renderer[0]);
     }
 
-    public static DasPlot processPlotElement(Element element, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, DasException, java.text.ParseException {
-        String name = element.getAttribute("name");
-
-        DasRow row = (DasRow) form.checkValue(element.getAttribute("row"), DasRow.class, "<row>");
-        DasColumn column = (DasColumn) form.checkValue(element.getAttribute("column"), DasColumn.class, "<column>");
-
-        DasAxis xAxis = null;
-        DasAxis yAxis = null;
-        DasColorBar colorbar = null;
-
-        //Get the axes
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node instanceof Element) {
-                if (node.getNodeName().equals("xAxis")) {
-                    xAxis = processXAxisElement((Element) node, row, column, form);
-                } else if (node.getNodeName().equals("yAxis")) {
-                    yAxis = processYAxisElement((Element) node, row, column, form);
-                } else if (node.getNodeName().equals("zAxis")) {
-                    colorbar = processZAxisElement((Element) node, row, column, form);
-                }
-
-            }
-        }
-
-        if (xAxis == null) {
-            xAxis = (DasAxis) form.checkValue(element.getAttribute("xAxis"), DasAxis.class, "<axis> or <timeaxis>");
-        }
-        if (yAxis == null) {
-            yAxis = (DasAxis) form.checkValue(element.getAttribute("yAxis"), DasAxis.class, "<axis> or <timeaxis>");
-        }
-
-        DasPlot plot = new DasPlot(xAxis, yAxis);
-
-        if (element.getNodeName().equals("spectrogram")) {
-            SpectrogramRenderer rend = new SpectrogramRenderer(null, colorbar);
-            plot.addRenderer(rend);
-        }
-
-        plot.setTitle(element.getAttribute("title"));
-        plot.setDasName(name);
-        plot.setRow(row);
-        plot.setColumn(column);
-        DasApplication app = form.getDasApplication();
-        NameContext nc = app.getNameContext();
-        nc.put(name, plot);
-
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node instanceof Element) {
-                if (node.getNodeName().equals("renderers")) {
-                    processRenderersElement((Element) node, plot, form);
-                }
-            }
-        }
-
-        return plot;
-    }
-
-    private static DasAxis processXAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, DasException, java.text.ParseException {
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node instanceof Element) {
-                Element e = (Element) node;
-                if (node.getNodeName().equals("axis")) {
-                    DasAxis axis = DasAxis.processAxisElement(e, form);
-                    if (!axis.isHorizontal()) {
-                        axis.setOrientation(DasAxis.HORIZONTAL);
-                    }
-                    return axis;
-                } else if (node.getNodeName().equals("timeaxis")) {
-                    DasAxis axis = DasAxis.processTimeaxisElement(e, form);
-                    if (!axis.isHorizontal()) {
-                        axis.setOrientation(DasAxis.HORIZONTAL);
-                    }
-                    return axis;
-                } else if (node.getNodeName().equals("attachedaxis")) {
-                    DasAxis axis = DasAxis.processAttachedaxisElement(e, form);
-                    if (!axis.isHorizontal()) {
-                        axis.setOrientation(DasAxis.HORIZONTAL);
-                    }
-                    return axis;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static DasAxis processYAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node instanceof Element) {
-                Element e = (Element) node;
-                if (node.getNodeName().equals("axis")) {
-                    DasAxis axis = DasAxis.processAxisElement(e, form);
-                    if (axis.isHorizontal()) {
-                        axis.setOrientation(DasAxis.VERTICAL);
-                    }
-                    return axis;
-                } else if (node.getNodeName().equals("timeaxis")) {
-                    DasAxis axis = DasAxis.processTimeaxisElement(e, form);
-                    if (axis.isHorizontal()) {
-                        axis.setOrientation(DasAxis.VERTICAL);
-                    }
-                    return axis;
-                } else if (node.getNodeName().equals("attachedaxis")) {
-                    DasAxis axis = DasAxis.processAttachedaxisElement(e, form);
-                    if (axis.isHorizontal()) {
-                        axis.setOrientation(DasAxis.VERTICAL);
-                    }
-                    return axis;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static DasColorBar processZAxisElement(Element element, DasRow row, DasColumn column, FormBase form) throws DasPropertyException, DasNameException, DasException, java.text.ParseException {
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node instanceof Element) {
-                if (node.getNodeName().equals("colorbar")) {
-                    return DasColorBar.processColorbarElement((Element) node, form);
-                }
-            }
-        }
-        return null;
-    }
-
-    private static void processRenderersElement(Element element, DasPlot parent, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, org.das2.DasException, java.text.ParseException {
-        NodeList children = element.getChildNodes();
-        for (int index = 0; index < children.getLength(); index++) {
-            Node node = children.item(index);
-            if (node instanceof Element) {
-                if (node.getNodeName().equals("spectrogram")) {
-                    parent.addRenderer(SpectrogramRenderer.processSpectrogramElement((Element) node, parent, form));
-                } else if (node.getNodeName().equals("lineplot")) {
-                    parent.addRenderer(SymbolLineRenderer.processLinePlotElement((Element) node, parent, form));
-                }
-            }
-        }
-    }
-
-    public Element getDOMElement(Document document) {
-
-        Element element = document.createElement("plot");
-        element.setAttribute("name", getDasName());
-        element.setAttribute("row", getRow().getDasName());
-        element.setAttribute("column", getColumn().getDasName());
-        element.setAttribute("title", getTitle());
-
-        Element xAxisChild = document.createElement("xAxis");
-        Element xAxisElement = getXAxis().getDOMElement(document);
-        xAxisElement.removeAttribute("orientation");
-        if (xAxisElement.getAttribute("row").equals(getRow().getDasName())) {
-            xAxisElement.removeAttribute("row");
-        }
-        if (xAxisElement.getAttribute("column").equals(getColumn().getDasName())) {
-            xAxisElement.removeAttribute("column");
-        }
-        xAxisChild.appendChild(xAxisElement);
-        element.appendChild(xAxisChild);
-
-        Element yAxisChild = document.createElement("yAxis");
-        Element yAxisElement = getYAxis().getDOMElement(document);
-        yAxisElement.removeAttribute("orientation");
-        if (yAxisElement.getAttribute("row").equals(getRow().getDasName())) {
-            yAxisElement.removeAttribute("row");
-        }
-        if (yAxisElement.getAttribute("column").equals(getColumn().getDasName())) {
-            yAxisElement.removeAttribute("column");
-        }
-        yAxisChild.appendChild(yAxisElement);
-        element.appendChild(yAxisChild);
-
-        Renderer[] renderers = getRenderers();
-        if (renderers.length > 0) {
-            Element renderersChild = document.createElement("renderers");
-            for (int index = 0; index < renderers.length; index++) {
-                renderersChild.appendChild(renderers[index].getDOMElement(document));
-            }
-            element.appendChild(renderersChild);
-        }
-        return element;
-    }
-
-    public static DasPlot createNamedPlot(String name) {
-        DasAxis xAxis = DasAxis.createNamedAxis(null);
-        xAxis.setOrientation(DasAxis.BOTTOM);
-        DasAxis yAxis = DasAxis.createNamedAxis(null);
-        yAxis.setOrientation(DasAxis.LEFT);
-        DasPlot plot = new DasPlot(xAxis, yAxis);
-        if (name == null) {
-            name = "plot_" + Integer.toHexString(System.identityHashCode(plot));
-        }
-        try {
-            plot.setDasName(name);
-        } catch (org.das2.DasNameException dne) {
-            org.das2.util.DasExceptionHandler.handle(dne);
-        }
-        return plot;
-    }
 
     private class PlotDnDSupport extends org.das2.util.DnDSupport {
 

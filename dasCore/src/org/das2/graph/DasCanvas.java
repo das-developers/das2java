@@ -23,14 +23,8 @@
 package org.das2.graph;
 
 import org.das2.DasApplication;
-import org.das2.DasException;
 import org.das2.DasNameException;
 import org.das2.DasProperties;
-import org.das2.DasPropertyException;
-import org.das2.NameContext;
-import org.das2.dasml.FormBase;
-import org.das2.dasml.FormComponent;
-import org.das2.dasml.ParsedExpressionException;
 import org.das2.event.DragRenderer;
 import org.das2.graph.dnd.TransferableCanvasComponent;
 import org.das2.system.DasLogger;
@@ -87,10 +81,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -114,15 +106,11 @@ import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.system.ChangesSupport;
 import org.das2.system.MutatorLock;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
  * @author eew
  */
-public class DasCanvas extends JLayeredPane implements Printable, Editable, FormComponent, Scrollable {
+public class DasCanvas extends JLayeredPane implements Printable, Editable, Scrollable {
 
     /** Default drawing layer of the JLayeredPane */
     public static final Integer DEFAULT_LAYER = JLayeredPane.DEFAULT_LAYER;
@@ -310,6 +298,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
     };
+
+    /**
+     * returns a list of all the rows and columns on the canvas.
+     * @return
+     */
+    public List devicePositionList() {
+        return Collections.unmodifiableList(devicePositionList);
+    }
 
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
@@ -1171,167 +1167,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         };
     }
 
-    /** TODO
-     * @return
-     * @param document
-     */
-    public Element getDOMElement(Document document) {
-        Element element = document.createElement("canvas");
-        Dimension size = getPreferredSize();
-        element.setAttribute("name", getDasName());
-        element.setAttribute("width", Integer.toString(size.width));
-        element.setAttribute("height", Integer.toString(size.height));
-
-        for (int index = 0; index < devicePositionList.size(); index++) {
-            Object obj = devicePositionList.get(index);
-            if (obj instanceof DasRow) {
-                DasRow row = (DasRow) obj;
-                element.appendChild(row.getDOMElement(document));
-            } else if (obj instanceof DasColumn) {
-                DasColumn column = (DasColumn) obj;
-                element.appendChild(column.getDOMElement(document));
-            }
-        }
-
-        Component[] components = getComponents();
-        Map elementMap = new LinkedHashMap();
-
-        //THREE PASS ALGORITHM.
-        //1.  Process all DasAxis components.
-        //    Add all <axis>, <timeaxis>, <attachedaxis> elements to elementList.
-        //2.  Process all DasColorBar components.
-        //    Remove all <axis> elements that correspond to axis property of colorbars.
-        //    Add all <colorbar> elements to elementList.
-        //3.  Process all DasSpectrogramPlot and DasPlot components.
-        //    Remove all <axis>, <attachedaxis>, <timeaxis>, and <colorbar> elements
-        //        that correspond to xAxis, yAxis, and colorbar properties of
-        //        plots spectrograms and spectrogram renderers.
-        //    Add all <plot> <spectrogram> elements to elementList.
-
-        for (int index = 0; index < components.length; index++) {
-            if (components[index] instanceof DasAxis) {
-                DasAxis axis = (DasAxis) components[index];
-                elementMap.put(axis.getDasName(), axis.getDOMElement(document));
-            }
-        }
-        for (int index = 0; index < components.length; index++) {
-            if (components[index] instanceof DasColorBar) {
-                DasColorBar colorbar = (DasColorBar) components[index];
-                elementMap.put(colorbar.getDasName(), colorbar.getDOMElement(document));
-            }
-        }
-        for (int index = 0; index < components.length; index++) {
-            if (components[index] instanceof DasPlot) {
-                DasPlot plot = (DasPlot) components[index];
-                elementMap.remove(plot.getXAxis().getDasName());
-                elementMap.remove(plot.getYAxis().getDasName());
-                Renderer[] renderers = plot.getRenderers();
-                for (int i = 0; i < renderers.length; i++) {
-                    if (renderers[i] instanceof SpectrogramRenderer) {
-                        SpectrogramRenderer spectrogram = (SpectrogramRenderer) renderers[i];
-                        elementMap.remove(spectrogram.getColorBar().getDasName());
-                    }
-                }
-                elementMap.put(plot.getDasName(), plot.getDOMElement(document));
-            }
-        }
-
-        for (Iterator iterator = elementMap.values().iterator(); iterator.hasNext();) {
-            Element e = (Element) iterator.next();
-            if (e != null) {
-                element.appendChild(e);
-            }
-        }
-        return element;
-    }
-
-    /** Process a <code>&lt;canvas&gt;</code> element.
-     *
-     * @param form
-     * @param element The DOM tree node that represents the element
-     * @throws DasPropertyException
-     * @throws DasNameException
-     * @throws ParsedExpressionException
-     * @return
-     */
-    public static DasCanvas processCanvasElement(Element element, FormBase form)
-            throws DasPropertyException, DasNameException, DasException, ParsedExpressionException, java.text.ParseException {
-        try {
-            Logger log = DasLogger.getLogger(DasLogger.DASML_LOG);
-
-            String name = element.getAttribute("name");
-            int width = Integer.parseInt(element.getAttribute("width"));
-            int height = Integer.parseInt(element.getAttribute("height"));
-
-            DasApplication app = form.getDasApplication();
-            NameContext nc = app.getNameContext();
-
-            DasCanvas canvas = new DasCanvas(width, height);
-
-            NodeList children = element.getChildNodes();
-            int childCount = children.getLength();
-            for (int index = 0; index < childCount; index++) {
-                Node node = children.item(index);
-                log.fine("node=" + node.getNodeName());
-                if (node instanceof Element) {
-                    String tagName = node.getNodeName();
-                    if (tagName.equals("row")) {
-                        DasRow row = DasRow.processRowElement((Element) node, canvas, form);
-                    } else if (tagName.equals("column")) {
-                        DasColumn column = DasColumn.processColumnElement((Element) node, canvas, form);
-                    } else if (tagName.equals("axis")) {
-                        DasAxis axis = DasAxis.processAxisElement((Element) node, form);
-                        canvas.add(axis);
-                    } else if (tagName.equals("timeaxis")) {
-                        DasAxis timeaxis = DasAxis.processTimeaxisElement((Element) node, form);
-                        canvas.add(timeaxis);
-                    } else if (tagName.equals("attachedaxis")) {
-                        DasAxis attachedaxis = DasAxis.processAttachedaxisElement((Element) node, form);
-                        canvas.add(attachedaxis);
-                    } else if (tagName.equals("colorbar")) {
-                        DasColorBar colorbar = DasColorBar.processColorbarElement((Element) node, form);
-                        canvas.add(colorbar);
-                    } else if (tagName.equals("plot")) {
-                        DasPlot plot = DasPlot.processPlotElement((Element) node, form);
-                        canvas.add(plot);
-                    } else if (tagName.equals("spectrogram")) {
-                        DasPlot plot = DasPlot.processPlotElement((Element) node, form);
-                        canvas.add(plot);
-                    }
-
-                }
-            }
-            canvas.setDasName(name);
-            nc.put(name, canvas);
-
-            return canvas;
-        } catch (org.das2.DasPropertyException dpe) {
-            if (!element.getAttribute("name").equals("")) {
-                dpe.setObjectName(element.getAttribute("name"));
-            }
-            throw dpe;
-        }
-    }
-
-    /**
-     * @param name
-     * @param width
-     * @param height
-     * @return DasCanvas with a name.
-     */
-    public static DasCanvas createFormCanvas(String name, int width, int height) {
-        DasCanvas canvas = new DasCanvas(width, height);
-        if (name == null) {
-            name = "canvas_" + Integer.toHexString(System.identityHashCode(canvas));
-        }
-        try {
-            canvas.setDasName(name);
-        } catch (org.das2.DasNameException dne) {
-            org.das2.util.DasExceptionHandler.handle(dne);
-        }
-        return canvas;
-    }
-
     /** Returns the DasCanvasComponent that contains the (x, y) location.
      * If there is no component at that location, this method
      * returns <CODE>null</CODE>
@@ -1848,16 +1683,25 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
 
-    /** TODO
-     * @return
+    /**
+     * @param name
+     * @param width
+     * @param height
+     * @return DasCanvas with a name.
      */
-    public FormBase getForm() {
-        Component parent = getParent();
-        if (parent instanceof FormComponent) {
-            return ((FormComponent) parent).getForm();
+    public static DasCanvas createFormCanvas(String name, int width, int height) {
+        DasCanvas canvas = new DasCanvas(width, height);
+        if (name == null) {
+            name = "canvas_" + Integer.toHexString(System.identityHashCode(canvas));
         }
-        return null;
+        try {
+            canvas.setDasName(name);
+        } catch (org.das2.DasNameException dne) {
+            org.das2.util.DasExceptionHandler.handle(dne);
+        }
+        return canvas;
     }
+
 
     /** TODO
      * @return
@@ -1928,105 +1772,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         this.firePropertyChange("name", oldName, name);
     }
 
-    public void deregisterComponent() {
-        DasApplication app = getDasApplication();
-        if (app != null) {
-            NameContext nc = app.getNameContext();
-            for (Iterator i = devicePositionList.iterator(); i.hasNext();) {
-                DasDevicePosition dp = (DasDevicePosition) i.next();
-                try {
-                    if (nc.get(dp.getDasName()) == dp) {
-                        nc.remove(dp.getDasName());
-                    }
-                } catch (DasPropertyException dpe) {
-                    //This exception would only occur due to some invalid state.
-                    //So, wrap it and toss it.
-                    IllegalStateException se = new IllegalStateException(dpe.toString());
-                    se.initCause(dpe);
-                    throw se;
-                } catch (java.lang.reflect.InvocationTargetException ite) {
-                    //This exception would only occur due to some invalid state.
-                    //So, wrap it and toss it.
-                    IllegalStateException se = new IllegalStateException(ite.toString());
-                    se.initCause(ite);
-                    throw se;
-                }
-            }
-            for (int index = 0; index < getComponentCount(); index++) {
-                Component c = getComponent(index);
-                if (c instanceof DasCanvasComponent) {
-                    DasCanvasComponent cc = (DasCanvasComponent) c;
-                    try {
-                        if (nc.get(cc.getDasName()) == cc) {
-                            nc.remove(cc.getDasName());
-                        }
-                    } catch (DasPropertyException dpe) {
-                        //This exception would only occur due to some invalid state.
-                        //So, wrap it and toss it.
-                        IllegalStateException se = new IllegalStateException(dpe.toString());
-                        se.initCause(dpe);
-                        throw se;
-                    } catch (java.lang.reflect.InvocationTargetException ite) {
-                        //This exception would only occur due to some invalid state.
-                        //So, wrap it and toss it.
-                        IllegalStateException se = new IllegalStateException(ite.toString());
-                        se.initCause(ite);
-                        throw se;
-                    }
-                }
-            }
-            try {
-                if (nc.get(getDasName()) == this) {
-                    nc.remove(getDasName());
-                }
-            } catch (DasPropertyException dpe) {
-                //This exception would only occur due to some invalid state.
-                //So, wrap it and toss it.
-                IllegalStateException se = new IllegalStateException(dpe.toString());
-                se.initCause(dpe);
-                throw se;
-            } catch (java.lang.reflect.InvocationTargetException ite) {
-                //This exception would only occur due to some invalid state.
-                //So, wrap it and toss it.
-                IllegalStateException se = new IllegalStateException(ite.toString());
-                se.initCause(ite);
-                throw se;
-            }
-        }
-    }
-
     public DasApplication getDasApplication() {
-        Container p = getParent();
-        if (p instanceof FormComponent) {
-            return ((FormComponent) p).getDasApplication();
-        } else {
-            return null;
-        }
+        return getApplication();
     }
 
-    public void registerComponent() throws org.das2.DasException {
-        try {
-            DasApplication app = getDasApplication();
-            if (app != null) {
-                NameContext nc = app.getNameContext();
-                for (Iterator i = devicePositionList.iterator(); i.hasNext();) {
-                    DasDevicePosition dp = (DasDevicePosition) i.next();
-                    nc.put(dp.getDasName(), dp);
-                }
-                for (int index = 0; index < getComponentCount(); index++) {
-                    Component c = getComponent(index);
-                    if (c instanceof DasCanvasComponent) {
-                        DasCanvasComponent cc = (DasCanvasComponent) c;
-                        nc.put(cc.getDasName(), cc);
-                    }
-                }
-                nc.put(getDasName(), this);
-            }
-        } catch (DasNameException dne) {
-            deregisterComponent();
-            throw dne;
-        }
-    }
 
     public DasCanvasComponent getCanvasComponents(int index) {
         return (DasCanvasComponent) getComponent(index + 1);

@@ -23,13 +23,7 @@
 
 package org.das2.graph;
 
-import org.das2.NameContext;
-import org.das2.DasApplication;
-import org.das2.DasException;
-import org.das2.dasml.FormBase;
 import java.text.ParseException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -107,31 +101,7 @@ public class DasRow extends DasDevicePosition {
     public DasRow createAttachedRow(double ptop, double pbottom) {
         return new DasRow(null,this,ptop,pbottom,0,0,0,0);
     }
-        
-    /** Process a <code>&lt;row&gt;</code> element.
-     *
-     * @param element The DOM tree node that represents the element
-     */
-    static DasRow processRowElement(Element element, DasCanvas canvas, FormBase form) throws DasException {
-        String name = element.getAttribute("name");
-        double minimum = Double.parseDouble(element.getAttribute("minimum"));
-        double maximum = Double.parseDouble(element.getAttribute("maximum"));
-        DasRow row =  new DasRow(canvas, minimum, maximum);
-        row.setDasName(name);
-        DasApplication app = form.getDasApplication();
-        NameContext nc = app.getNameContext();
-        nc.put(name, row);
-        return row;
-    }
-    
-    public Element getDOMElement(Document document) {
-        Element element = document.createElement("row");
-        element.setAttribute("name", getDasName());
-        element.setAttribute("minimum", Double.toString(getMinimum()));
-        element.setAttribute("maximum", Double.toString(getMaximum()));
-        return element;
-    }
-    
+            
     /**
      * return the device location of the top of the row.  
      * @return

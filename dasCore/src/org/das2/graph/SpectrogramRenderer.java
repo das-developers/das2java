@@ -39,17 +39,13 @@ import org.das2.dataset.RebinDescriptor;
 import org.das2.dataset.DataSet;
 import org.das2.DasApplication;
 import org.das2.DasException;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
 import org.das2.components.HorizontalSpectrogramSlicer;
 import org.das2.components.VerticalSpectrogramAverager;
 import org.das2.components.VerticalSpectrogramSlicer;
-import org.das2.dasml.FormBase;
 import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
-import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.Graphics;
@@ -61,13 +57,11 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.DataSetUtil;
-import org.w3c.dom.*;
 
 /**
  *
@@ -563,68 +557,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
-    public static SpectrogramRenderer processSpectrogramElement(
-            Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
-        String dataSetID = element.getAttribute("dataSetID");
-        DasColorBar colorbar = null;
-
-        NodeList children = element.getChildNodes();
-        for (int index = 0; index < children.getLength(); index++) {
-            Node node = children.item(index);
-            if (node instanceof Element && node.getNodeName().equals("zAxis")) {
-                colorbar = processZAxisElement((Element) node, form);
-            }
-        }
-
-        if (colorbar == null) {
-            try {
-                colorbar = (DasColorBar) form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
-            } catch (DasPropertyException dpe) {
-                dpe.setPropertyName("colorbar");
-                throw dpe;
-            }
-        }
-
-        SpectrogramRenderer renderer = new SpectrogramRenderer(parent, null, colorbar);
-        try {
-            renderer.setDataSetID(dataSetID);
-        } catch (DasException de) {
-            DasExceptionHandler.handle(de);
-        }
-        return renderer;
-    }
-
-    private static DasColorBar processZAxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException, ParseException {
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node instanceof Element) {
-                if (node.getNodeName().equals("colorbar")) {
-                    return DasColorBar.processColorbarElement((Element) node, form);
-                }
-            }
-        }
-        return null;
-    }
-
-    public Element getDOMElement(Document document) {
-
-        Element element = document.createElement("spectrogram");
-        element.setAttribute("dataSetID", getDataSetID());
-
-        Element zAxisChild = document.createElement("zAxis");
-        Element zAxisElement = getColorBar().getDOMElement(document);
-        if (zAxisElement.getAttribute("row").equals(getParent().getRow().getDasName())) {
-            zAxisElement.removeAttribute("row");
-        }
-        if (zAxisElement.getAttribute("column").equals(getParent().getColumn().getDasName())) {
-            zAxisElement.removeAttribute("column");
-        }
-        zAxisChild.appendChild(zAxisElement);
-        element.appendChild(zAxisChild);
-
-        return element;
-    }
 
     /** Getter for property rebinner.
      * @return Value of property rebinner.

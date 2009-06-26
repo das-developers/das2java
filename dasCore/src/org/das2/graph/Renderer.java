@@ -45,7 +45,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Displayable;
-import org.w3c.dom.*;
 
 public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
 
@@ -463,10 +462,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         // override me
     }
 
-    protected Element getDOMElement(Document document) {
-        // override me
-        return null;
-    }
     private boolean overloading = false;
 
     public boolean isOverloading() {

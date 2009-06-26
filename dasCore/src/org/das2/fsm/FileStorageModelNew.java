@@ -99,6 +99,13 @@ public class FileStorageModelNew {
         return getNamesFor( targetRange, new NullProgressMonitor() );
     }
 
+    /**
+     * return the names in the range, or all names if the range is null.
+     * @param targetRange range limit, or null.
+     * @param monitor
+     * @return
+     * @throws java.io.IOException
+     */
     public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
 
         String listRegex;
@@ -137,7 +144,7 @@ public class FileStorageModelNew {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
                 try { 
-                    if ( getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
+                    if ( targetRange==null || getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
                 } catch ( IllegalArgumentException e ) {
                     logger.fine("ignoring file "+ff);
                 }

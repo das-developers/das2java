@@ -352,7 +352,7 @@ public class FormBase extends JTabbedPane implements FormComponent {
             Class[] parameterTypes = method.getParameterTypes();
             Object[] argValues = new Object[args.length];
             for (int i = 0; i < parameterTypes.length; i++) {
-                argValues[i] = application.getNameContext().parseValue(args[i], parameterTypes[i]);
+                argValues[i] = Processor.parseValue(application.getNameContext(),args[i], parameterTypes[i]);
             }
             return method.invoke(o, argValues);
         }

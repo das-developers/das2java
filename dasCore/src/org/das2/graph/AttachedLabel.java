@@ -24,27 +24,9 @@
 package org.das2.graph;
 
 import org.das2.util.GrannyTextRenderer;
-import org.das2.DasApplication;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
-import org.das2.NameContext;
-import org.das2.dasml.FormBase;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 
-import javax.swing.border.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import java.awt.geom.GeneralPath;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.*;
-import javax.swing.*;
-import java.util.*;
-import java.util.List;
-import java.util.regex.*;
 
 /**
  * A canvas component for labeling things that is positioned just outside of a row,column box.

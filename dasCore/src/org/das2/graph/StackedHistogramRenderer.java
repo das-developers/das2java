@@ -436,27 +436,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     public void setSliceRebinnedData(boolean sliceRebinnedData) {
         this.sliceRebinnedData = sliceRebinnedData;
     }
-    
-    public Element getDOMElement(Document document) {
         
-        Element element = document.createElement("stackedHistogram");
-        element.setAttribute("zAxis", zAxis.getDasName() );
-        element.setAttribute("dataSetID", getDataSetID() );
-        return element;
-    }
-    
-    public static Renderer processStackedHistogramElement(Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
-        String dataSetID = element.getAttribute("dataSetID");
-        
-        Renderer renderer = new StackedHistogramRenderer( parent, (DataSetDescriptor)null, (DasAxis)null, (DasLabelAxis)parent.getYAxis() );
-        try {
-            renderer.setDataSetID(dataSetID);
-        } catch (DasException de) {
-            DasExceptionHandler.handle(de);
-        }
-        return renderer;
-    }
-    
     public String getListLabel() {
         return "stacked histogram";
     }

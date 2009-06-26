@@ -278,13 +278,13 @@ public class CommandBlock {
         }
         
         public void execute(FormBase form)throws org.das2.DasException, DataFormatException, ParsedExpressionException, InvocationTargetException {
-            Matcher refMatcher = org.das2.NameContext.refPattern.matcher(test);
+            Matcher refMatcher = Processor.refPattern.matcher(test);
             Object value;
             if (refMatcher.matches()) {
                 value = form.getDasApplication().getNameContext().get(refMatcher.group(1));
             }
             else {
-                value = form.getDasApplication().getNameContext().parseValue(test, boolean.class);
+                value = Processor.parseValue( form.getDasApplication().getNameContext(),test, boolean.class);
             }
             Boolean bool;
             if (value instanceof Boolean) {

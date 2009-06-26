@@ -37,6 +37,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.io.StringWriter;
+import org.das2.dasml.Processor;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
@@ -86,7 +87,7 @@ public class TransferableCanvas implements Transferable {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 Document document = builder.newDocument();
-                document.appendChild(canvas.getDOMElement(document));
+                document.appendChild( Processor.getDOMElement( canvas,document));
                 StringWriter writer = new StringWriter();
 
 				DOMImplementationLS ls = (DOMImplementationLS)

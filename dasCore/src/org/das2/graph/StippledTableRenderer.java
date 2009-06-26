@@ -33,7 +33,6 @@ import org.das2.util.DasMath;
 import org.das2.DasException;
 import org.das2.DasNameException;
 import org.das2.DasPropertyException;
-import org.das2.dasml.FormBase;
 import org.das2.datum.Units;
 import org.das2.util.DasDie;
 import org.das2.util.DasExceptionHandler;
@@ -201,53 +200,6 @@ public class StippledTableRenderer extends Renderer {
     protected void uninstallRenderer() {
     }
     
-    public static SpectrogramRenderer processSpectrogramElement(Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
-        String dataSetID = element.getAttribute("dataSetID");
-        DasColorBar colorbar = null;
-        
-        NodeList children = element.getChildNodes();
-        for (int index = 0; index < children.getLength(); index++) {
-            Node node = children.item(index);
-            if (node instanceof Element && node.getNodeName().equals("zAxis")) {
-                colorbar = processZAxisElement((Element)node, form);
-            }
-        }
-        
-        if (colorbar == null) {
-            try {
-                colorbar = (DasColorBar)form.checkValue(element.getAttribute("colorbar"), DasColorBar.class, "<colorbar>");
-            } catch (DasPropertyException dpe) {
-                dpe.setPropertyName("colorbar");
-                throw dpe;
-            }
-        }
-        
-        SpectrogramRenderer renderer = new SpectrogramRenderer(null, colorbar);
-        try {
-            renderer.setDataSetID(dataSetID);
-        } catch (DasException de) {
-            DasExceptionHandler.handle(de);
-        }
-        return renderer;
-    }
-    
-    private static DasColorBar processZAxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException, ParseException {
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node instanceof Element) {
-            }
-        }
-        return null;
-    }
-    
-    public Element getDOMElement(Document document) {
-        
-        Element element = document.createElement("stippledTable");
-        element.setAttribute("dataSetID", getDataSetID());
-        
-        return element;
-    }
     
     /** Getter for property sliceRebinnedData.
      * @return Value of property sliceRebinnedData.

@@ -23,11 +23,7 @@
 
 package org.das2;
 
-import org.das2.datum.Datum;
-import org.das2.datum.TimeUtil;
 import org.das2.beans.BeansUtil;
-import org.das2.dasml.ParsedExpression;
-import org.das2.dasml.ParsedExpressionException;
 
 import java.beans.*;
 import java.lang.ref.WeakReference;
@@ -35,7 +31,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,10 +52,6 @@ public class NameContext {
     public static final Pattern SIMPLE_NAME = Pattern.compile(SIMPLE_NAME_STRING);
     public static final Pattern INDEXED_NAME = Pattern.compile(INDEXED_NAME_STRING);
     public static final Pattern QUALIFIED_NAME = Pattern.compile(QUALIFIED_NAME_STRING);
-    public static final Pattern refPattern = Pattern.compile("\\$\\{([^\\}]+)\\}");
-    public static final Pattern intPattern = Pattern.compile("-?(0|[1-9][0-9]*)");
-    public static final Pattern floatPattern = Pattern.compile("-?[0-9]*(\\.[0-9]*)?([eE]-?[0-9]+)?");
-    
     
     private Map nameMap;
     private Map propertyMap;
@@ -109,7 +100,7 @@ public class NameContext {
         }
     }
     
-    public void set(String name, Object value) throws InvocationTargetException, ParsedExpressionException, DasPropertyException, DasNameException {
+    public void set(String name, Object value) throws InvocationTargetException, DasPropertyException, DasNameException {
         if (name == null) {
             throw new NullPointerException("name");
         }
@@ -169,7 +160,7 @@ public class NameContext {
         }
     }
     
-    public void setPropertyValue(Object obj, String property, Object value) throws InvocationTargetException, ParsedExpressionException, DasPropertyException {
+    public void setPropertyValue(Object obj, String property, Object value) throws InvocationTargetException, DasPropertyException {
         try {
             Class type = obj.getClass();
             maybeLoadPropertiesForClass(type);
@@ -184,7 +175,9 @@ public class NameContext {
             }
             Class propertyType = pd.getPropertyType();
             if (value instanceof String) {
-                value = parseValue((String)value, propertyType);
+                throw new RuntimeException("not implemented");
+                //Class.forName("org.das2.dasml.Processor").getMethod("parseValue", NameContext.class, String.class, Class.class );
+                //value = Processor.parseValue(this,(String)value, propertyType);
             }
             if (!propertyType.isInstance(value)
             && !(propertyType == boolean.class && value instanceof Boolean)
@@ -204,7 +197,7 @@ public class NameContext {
         }
     }
     
-    public void setIndexedPropertyValue(Object obj, String property, int index, Object value) throws InvocationTargetException, ParsedExpressionException, DasPropertyException {
+    public void setIndexedPropertyValue(Object obj, String property, int index, Object value) throws InvocationTargetException, DasPropertyException {
         try {
             Class type = obj.getClass();
             maybeLoadPropertiesForClass(type);
@@ -223,7 +216,8 @@ public class NameContext {
             }
             Class propertyType = pd.getPropertyType();
             if (value instanceof String) {
-                value = parseValue((String)value, propertyType);
+                throw new RuntimeException("not implemented");
+                //value = Processor.parseValue(this,(String)value, propertyType);
             }
             if (!propertyType.isInstance(value)
             && !(propertyType == boolean.class && value instanceof Boolean)
@@ -272,93 +266,7 @@ public class NameContext {
         nameMap.remove(name);
     }
     
-    /**
-     * Parses the given <code>String</code> object in an attempt to
-     * produce the an object of the given type.
-     *
-     * @param valueString the given <code>String</code>
-     * @param type the given type
-     */
-    public Object parseValue(String valueString, Class type) throws org.das2.dasml.ParsedExpressionException, InvocationTargetException, DasPropertyException {
-        Object parsedValue;
-        valueString = replaceReferences(valueString);
-        if (type == String.class) {
-            return valueString;
-        }
-        else if (type == boolean.class || type == Boolean.class) {
-            if (valueString.equals("true")) return Boolean.TRUE;
-            if (valueString.equals("false")) return Boolean.FALSE;
-            ParsedExpression exp = new ParsedExpression(valueString);
-            Object o = exp.evaluate(this);
-            if (!(o instanceof Boolean)) throw new ParsedExpressionException("'" + valueString + "' does not evaluate to a boolean value");
-            return o;
-        }
-        else if (type == int.class || type == Integer.class) {
-            if (intPattern.matcher(valueString).matches()) {
-                return new Integer(valueString);
-            }
-            ParsedExpression exp = new ParsedExpression(valueString);
-            Object o = exp.evaluate(this);
-            if (!(o instanceof Number)) throw new ParsedExpressionException("'" + valueString + "' does not evaluate to a numeric value");
-            return (o instanceof Integer ? (Integer)o : new Integer(((Number)o).intValue()));
-        }
-        else if (type == long.class || type == Long.class) {
-            if (intPattern.matcher(valueString).matches()) {
-                parsedValue = new Long(valueString);
-            }
-            ParsedExpression exp = new ParsedExpression(valueString);
-            Object o = exp.evaluate(this);
-            if (!(o instanceof Number)) throw new ParsedExpressionException("'" + valueString + "' does not evaluate to a numeric value");
-            return new Long(((Number)o).longValue());
-        }
-        else if (type == float.class || type == Float.class) {
-            if (floatPattern.matcher(valueString).matches()) {
-                parsedValue = new Float(valueString);
-            }
-            ParsedExpression exp = new ParsedExpression(valueString);
-            Object o = exp.evaluate(this);
-            if (!(o instanceof Number)) throw new ParsedExpressionException("'" + valueString + "' does not evaluate to a numeric value");
-            return new Float(((Number)o).floatValue());
-        }
-        else if (type == double.class || type == Double.class) {
-            if (floatPattern.matcher(valueString).matches()) {
-                parsedValue = new Double(valueString);
-            }
-            ParsedExpression exp = new ParsedExpression(valueString);
-            Object o = exp.evaluate(this);
-            if (!(o instanceof Number)) throw new ParsedExpressionException("'" + valueString  + "' does not evaluate to a numeric value");
-            return (o instanceof Double ? (Double)o : new Double(((Number)o).doubleValue()));
-        }
-        else if (type == Datum.class) {
-            try {
-                return TimeUtil.create(valueString);
-            }
-            catch ( java.text.ParseException ex ) {
-                try {
-                    return Datum.create(Double.parseDouble(valueString));
-                }
-                catch (NumberFormatException iae) {
-                    throw new ParsedExpressionException(valueString + " cannot be parsed as a Datum");
-                }
-            }
-            
-        }
-        else {
-            throw new IllegalStateException(type.getName() + " is not a recognized type");
-        }
-    }
-    
-    protected String replaceReferences(String str) throws DasPropertyException, InvocationTargetException {
-        Matcher matcher = refPattern.matcher(str);
-        while (matcher.find()) {
-            String name = matcher.group(1).trim();
-            Object value = get(name);
-            str = matcher.replaceFirst(value.toString());
-            matcher.reset(str);
-        }
-        return str;
-    }
-    
+        
     public String toString() {
         return getClass().getName() + nameMap.keySet().toString();
     }

@@ -28,18 +28,12 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.TimeUtil;
-import org.das2.NameContext;
-import org.das2.DasApplication;
 import org.das2.components.propertyeditor.Enumeration;
-import org.das2.dasml.FormBase;
 import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.HorizontalSliceSelectionRenderer;
 import org.das2.event.MouseModule;
 import org.das2.event.MousePointSelectionEvent;
 import java.awt.image.IndexColorModel;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -164,93 +158,6 @@ public class DasColorBar extends DasAxis {
         return new DasColumn( null, column, 1.0, 1.0, 1, 2, 0, 0  );
     }
     
-    /** Process a <code>&lt;colorbar&gt;</code> element.
-     *
-     * @param element The DOM tree node that represents the element
-     */
-    static DasColorBar processColorbarElement(Element element, FormBase form) throws  org.das2.DasPropertyException,org.das2.DasNameException, java.text.ParseException {
-        String name = element.getAttribute("name");
-        boolean log = element.getAttribute("log").equals("true");
-        String unitStr = element.getAttribute("units");
-        if (unitStr == null) {
-            unitStr = "";
-        }
-        Datum dataMinimum;
-        Datum dataMaximum;
-        if (unitStr.equals("TIME")) {
-            String min = element.getAttribute("dataMinimum");
-            String max = element.getAttribute("dataMaximum");
-            dataMinimum = (min == null || min.equals("") ? TimeUtil.create("1979-02-26") : TimeUtil.create(min));
-            dataMaximum = (max == null || max.equals("") ? TimeUtil.create("1979-02-27") : TimeUtil.create(max));
-        } else {
-            Units units = Units.getByName(unitStr);
-            String min = element.getAttribute("dataMinimum");
-            String max = element.getAttribute("dataMaximum");
-            dataMinimum = (min == null || min.equals("") ? Datum.create(1.0, units) : Datum.create(Double.parseDouble(min), units));
-            dataMaximum = (max == null || max.equals("") ? Datum.create(10.0, units) : Datum.create(Double.parseDouble(max), units));
-        }
-        int orientation = parseOrientationString(element.getAttribute("orientation"));
-        
-        DasColorBar cb = new DasColorBar(dataMinimum, dataMaximum, orientation, log);
-        
-        String rowString = element.getAttribute("row");
-        if (!rowString.equals("")) {
-            DasRow row = (DasRow)form.checkValue(rowString, DasRow.class, "<row>");
-            cb.setRow(row);
-        }
-        String columnString = element.getAttribute("column");
-        if (!columnString.equals("")) {
-            DasColumn column = (DasColumn)form.checkValue(columnString, DasColumn.class, "<column>");
-            cb.setColumn(column);
-        }
-        
-        cb.setLabel(element.getAttribute("label"));
-        cb.setOppositeAxisVisible(!element.getAttribute("oppositeAxisVisible").equals("false"));
-        cb.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
-        cb.setType(DasColorBar.Type.parse(element.getAttribute(PROPERTY_TYPE)));
-        
-        cb.setDasName(name);
-        DasApplication app = form.getDasApplication();
-        NameContext nc = app.getNameContext();
-        nc.put(name, cb);
-        
-        return cb;
-    }
-    
-    public Element getDOMElement(Document document) {
-        Element element = document.createElement("colorbar");
-        String minimumStr = getDataMinimum().toString();
-        element.setAttribute("dataMinimum", minimumStr);
-        String maximumStr = getDataMaximum().toString();
-        element.setAttribute("dataMaximum", maximumStr);
-        
-        element.setAttribute("name", getDasName());
-        element.setAttribute("row", getRow().getDasName());
-        element.setAttribute("column", getColumn().getDasName());
-        
-        element.setAttribute("label", getLabel());
-        element.setAttribute("log", Boolean.toString(isLog()));
-        element.setAttribute("tickLabelsVisible", Boolean.toString(isTickLabelsVisible()));
-        element.setAttribute("oppositeAxisVisible", Boolean.toString(isOppositeAxisVisible()));
-        element.setAttribute("animated", Boolean.toString(isAnimated()));
-        element.setAttribute("orientation", orientationToString(getOrientation()));
-        element.setAttribute(PROPERTY_TYPE, getType().toString());
-        
-        return element;
-    }
-    
-    public static DasColorBar createNamedColorBar(String name) {
-        DasColorBar cb = new DasColorBar(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), false);
-        if (name == null) {
-            name = "colorbar_" + Integer.toHexString(System.identityHashCode(cb));
-        }
-        try {
-            cb.setDasName(name);
-        } catch (org.das2.DasNameException dne) {
-            org.das2.util.DasExceptionHandler.handle(dne);
-        }
-        return cb;
-    }
     
     public Shape getActiveRegion() {
         int x = (int)Math.round(getColumn().getDMinimum());

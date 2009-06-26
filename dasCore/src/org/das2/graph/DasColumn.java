@@ -23,13 +23,7 @@
 
 package org.das2.graph;
 
-import org.das2.NameContext;
-import org.das2.DasApplication;
-import org.das2.DasException;
-import org.das2.dasml.FormBase;
 import java.text.ParseException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -104,33 +98,7 @@ public class DasColumn extends DasDevicePosition {
     public DasColumn createAttachedColumn(double pleft, double pright) {
         return new DasColumn(null,this,pleft,pright,0,0,0,0);
     }
-    
-    /** Process a <code>&lt;column7gt;</code> element.
-     *
-     * @param element The DOM tree node that represents the element
-     */
-    static DasColumn processColumnElement(Element element, DasCanvas canvas, FormBase form) throws DasException {
-        String name = element.getAttribute("name");
-        double minimum
-                = Double.parseDouble(element.getAttribute("minimum"));
-        double maximum
-                = Double.parseDouble(element.getAttribute("maximum"));
-        DasColumn column = new DasColumn(canvas, minimum, maximum);
-        column.setDasName(name);
-        DasApplication app = form.getDasApplication();
-        NameContext nc = app.getNameContext();
-        nc.put(name, column);
-        return column;
-    }
-    
-    public Element getDOMElement(Document document) {
-        Element element = document.createElement("column");
-        element.setAttribute("name", getDasName());
-        element.setAttribute("minimum", Double.toString(getMinimum()));
-        element.setAttribute("maximum", Double.toString(getMaximum()));
-        return element;
-    }
-    
+        
     /**
      * return the left of the column.
      * @return

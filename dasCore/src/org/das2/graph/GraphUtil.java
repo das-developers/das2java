@@ -16,20 +16,13 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
-import org.das2.dasml.FormBase;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import javax.swing.*;
-import javax.xml.parsers.*;
 //import org.apache.xml.serialize.*;
-import org.w3c.dom.*;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
 
 /**
  *
@@ -47,35 +40,6 @@ public class GraphUtil {
         return result;
     }
 
-    public static void serializeCanvas(DasCanvas canvas, OutputStream out) {
-        try {
-            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            document.appendChild(canvas.getDOMElement(document));
-            StringWriter writer = new StringWriter();
-
-            DOMImplementationLS ls = (DOMImplementationLS) document.getImplementation().getFeature("LS", "3.0");
-            LSOutput output = ls.createLSOutput();
-            output.setEncoding("UTF-8");
-            output.setByteStream(out);
-            LSSerializer serializer = ls.createLSSerializer();
-            serializer.write(document, output);
-
-            /*
-            OutputFormat format = new OutputFormat(Method.XML, "UTF-8", true);
-            XMLSerializer serializer = new XMLSerializer(new OutputStreamWriter(out), format);
-            serializer.serialize(document);
-             */
-
-            out.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static JTabbedPane loadCanvas(InputStream in) throws Exception {
-        FormBase form = new FormBase(in, null, true);
-        return form;
-    }
 
     public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, boolean histogram, boolean clip ) {
         return getPath(xAxis, yAxis, new XTagsVectorDataSet(xds), xds, histogram, clip );

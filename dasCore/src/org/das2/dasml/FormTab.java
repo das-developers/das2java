@@ -154,7 +154,7 @@ public class FormTab extends FormContainer {
                 }
                 else if (tagName.equals("canvas")) {
                     try {
-                        org.das2.graph.DasCanvas canvas = org.das2.graph.DasCanvas.processCanvasElement((Element)node, form);
+                        org.das2.graph.DasCanvas canvas = Processor.processCanvasElement((Element)node, form);
                         canvas.setAlignmentX(horizontalComponentAlignment);
                         add(canvas);
                     }
@@ -201,7 +201,7 @@ public class FormTab extends FormContainer {
             }
             else if (comp instanceof org.das2.graph.DasCanvas) {
                 org.das2.graph.DasCanvas canvas = (org.das2.graph.DasCanvas)comp;
-                Element child = canvas.getDOMElement(document);
+                Element child = Processor.getDOMElement(canvas, document);
                 element.appendChild(child);
             }
         }

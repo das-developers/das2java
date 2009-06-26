@@ -53,6 +53,7 @@ import java.awt.dnd.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import org.das2.dasml.Processor;
 
 /**
  * A component that allows the user to create new objects and pass them to
@@ -221,18 +222,18 @@ public class Toolbox extends JTabbedPane {
             }
             else if (id.equals("plot")) {
                 return new TransferableCanvasComponent(
-                    DasPlot.createNamedPlot(null));
+                    Processor.createNamedPlot(null));
             }
             else if (id.equals("axis")) {
                 return new TransferableCanvasComponent(
-                    DasAxis.createNamedAxis(null));
+                    Processor.createNamedAxis(null));
             }
             else if (id.equals("time axis")) {
                 return new TransferableCanvasComponent(
-                    DasAxis.createNamedAxis(null));
+                    Processor.createNamedAxis(null));
             }
             else if (id.equals("spectrogram renderer")) {
-                DasColorBar cb = DasColorBar.createNamedColorBar(null);
+                DasColorBar cb = Processor.createNamedColorBar(null);
                 return new TransferableRenderer(
                     new SpectrogramRenderer(null, cb));
             }
@@ -241,8 +242,8 @@ public class Toolbox extends JTabbedPane {
                     new SymbolLineRenderer());
             }
             else if (id.equals("spectrogram plot")) {
-                DasPlot plot = DasPlot.createNamedPlot(null);
-                DasColorBar colorBar = DasColorBar.createNamedColorBar(
+                DasPlot plot = Processor.createNamedPlot(null);
+                DasColorBar colorBar = Processor.createNamedColorBar(
                     plot.getDasName() + "_colorbar");
                 SpectrogramRenderer renderer
                     = new SpectrogramRenderer(null, colorBar);

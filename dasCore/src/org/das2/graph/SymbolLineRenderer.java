@@ -35,14 +35,11 @@ import org.das2.DasApplication;
 import org.das2.DasProperties;
 import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
-import org.das2.dasml.FormBase;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.LengthDragRenderer;
 import org.das2.event.MouseModule;
 import java.awt.image.*;
 import javax.swing.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import java.awt.*;
 import java.awt.geom.*;
@@ -404,36 +401,7 @@ public class SymbolLineRenderer extends Renderer {
             mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer( p,p.getXAxis(),p.getYAxis()), "Length" ) );
         }
     }
-    
-    public static SymbolLineRenderer processLinePlotElement(Element element, DasPlot parent, FormBase form) {
-        String dataSetID = element.getAttribute("dataSetID");
-        Psym psym = Psym.parsePsym(element.getAttribute("psym"));
-        SymColor color = SymColor.parseSymColor(element.getAttribute("color"));
-        SymbolLineRenderer renderer = new SymbolLineRenderer( (VectorDataSet)null );
-        parent.addRenderer(renderer);
-        float lineWidth = Float.parseFloat(element.getAttribute("lineWidth"));
-        try {
-            renderer.setDataSetID(dataSetID);
-        } catch (org.das2.DasException de) {
-            org.das2.util.DasExceptionHandler.handle(de);
-        }
-        renderer.setPsym(psym);
-        renderer.setColor(color);
-        renderer.setLineWidth(lineWidth);
-        return renderer;
-    }
-    
-    @Override
-    public Element getDOMElement(Document document) {
         
-        Element element = document.createElement("lineplot");
-        element.setAttribute("dataSetID", getDataSetID());
-        element.setAttribute("psym", getPsym().toString());
-        element.setAttribute("color", getColor().toString());
-        
-        return element;
-    }
-    
     /** Getter for property antiAliased.
      * @return Value of property antiAliased.
      *

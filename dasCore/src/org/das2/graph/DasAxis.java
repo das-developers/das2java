@@ -44,24 +44,17 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeLocationUnits;
-import org.das2.datum.TimeUtil;
 import org.das2.DasProperties;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasMath;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.DasApplication;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
-import org.das2.NameContext;
-import org.das2.dasml.FormBase;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.border.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
@@ -74,7 +67,6 @@ import java.util.regex.*;
 
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
-import org.das2.DasException;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 
@@ -2722,125 +2714,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         super.uninstallComponent();
     }
 
-    /** Process an <code>&lt;axis&gt;</code> element.
-     *
-     * @param element The DOM tree node that represents the element
-     */
-    static DasAxis processAxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException, ParseException {
-        String name = element.getAttribute("name");
-        boolean log = element.getAttribute(PROP_LOG).equals("true");
-        Datum dataMinimum;
-        Datum dataMaximum;
-        if ("TIME".equals(element.getAttribute("units"))) {
-            String min = element.getAttribute("dataMinimum");
-            String max = element.getAttribute("dataMaximum");
-            dataMinimum = (min == null || min.equals("") ? TimeUtil.create("1979-02-26") : TimeUtil.create(min));
-            dataMaximum = (max == null || max.equals("") ? TimeUtil.create("1979-02-27") : TimeUtil.create(max));
-        } else {
-            String min = element.getAttribute("dataMinimum");
-            String max = element.getAttribute("dataMaximum");
-            dataMinimum = (min == null || min.equals("") ? Datum.create(1.0) : Datum.create(Double.parseDouble(min)));
-            dataMaximum = (max == null || max.equals("") ? Datum.create(10.0) : Datum.create(Double.parseDouble(max)));
-        }
-        int orientation = parseOrientationString(element.getAttribute("orientation"));
-        DasAxis axis = new DasAxis(dataMinimum, dataMaximum, orientation, log);
-        String rowString = element.getAttribute("row");
-        if (!rowString.equals("")) {
-            DasRow row = (DasRow) form.checkValue(rowString, DasRow.class, "<row>");
-            axis.setRow(row);
-        }
-        String columnString = element.getAttribute("column");
-        if (!columnString.equals("")) {
-            DasColumn column = (DasColumn) form.checkValue(columnString, DasColumn.class, "<column>");
-            axis.setColumn(column);
-        }
 
-        axis.setLabel(element.getAttribute(PROP_LABEL));
-        axis.setOppositeAxisVisible(!element.getAttribute(PROP_OPPOSITE_AXIS_VISIBLE).equals("false"));
-        axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
-
-        axis.setDasName(name);
-        DasApplication app = form.getDasApplication();
-        NameContext nc = app.getNameContext();
-        nc.put(name, axis);
-
-        return axis;
-    }
-
-    /** TODO
-     * @param i
-     * @return
-     */
-    protected static String orientationToString(int i) {
-        switch (i) {
-            case TOP:
-                return "top";
-            case BOTTOM:
-                return "bottom";
-            case LEFT:
-                return "left";
-            case RIGHT:
-                return "right";
-            default:
-                throw new IllegalStateException("invalid orienation: " + i);
-        }
-    }
-
-    /** TODO
-     * @param orientationString
-     * @return
-     */
-    protected static int parseOrientationString(String orientationString) {
-        if (orientationString.equals("horizontal")) {
-            return HORIZONTAL;
-        } else if (orientationString.equals("vertical")) {
-            return VERTICAL;
-        } else if (orientationString.equals("left")) {
-            return LEFT;
-        } else if (orientationString.equals("right")) {
-            return RIGHT;
-        } else if (orientationString.equals("top")) {
-            return TOP;
-        } else if (orientationString.equals("bottom")) {
-            return BOTTOM;
-        } else {
-            throw new IllegalArgumentException("Invalid orientation: " + orientationString);
-        }
-    }
-
-    /** TODO
-     * @param document
-     * @return
-     */
-    public Element getDOMElement(Document document) {
-        Element element;
-        if (this.isAttached()) {
-            element = document.createElement("attachedaxis");
-        } else {
-            element = document.createElement("axis");
-        }
-        if (this.isAttached()) {
-            element.setAttribute("ref", this.getMasterAxis().getDasName());
-        } else {
-            String minimumStr = getDataMinimum().toString();
-            element.setAttribute("dataMinimum", minimumStr);
-            String maximumStr = getDataMaximum().toString();
-            element.setAttribute("dataMaximum", maximumStr);
-        }
-
-        element.setAttribute("name", getDasName());
-        element.setAttribute("row", getRow().getDasName());
-        element.setAttribute("column", getColumn().getDasName());
-
-        element.setAttribute(PROP_LABEL, getLabel());
-        element.setAttribute(PROP_LOG, Boolean.toString(isLog()));
-        element.setAttribute("tickLabelsVisible", Boolean.toString(areTickLabelsVisible()));
-        element.setAttribute(PROP_OPPOSITE_AXIS_VISIBLE, Boolean.toString(isOppositeAxisVisible()));
-        element.setAttribute("animated", Boolean.toString(isAnimated()));
-        element.setAttribute("orientation", orientationToString(getOrientation()));
-
-        return element;
-    }
 
     public DasAxis createAttachedAxis() {
         return new DasAxis(this.dataRange, this.getOrientation());
@@ -2856,62 +2730,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return new DasAxis(this.dataRange, orientation);
     }
 
-    /** Process a <code>&lt;attachedaxis&gt;</code> element.
-     *
-     * @param element The DOM tree node that represents the element
-     */
-    static DasAxis processAttachedaxisElement(Element element, FormBase form) throws DasPropertyException, DasNameException {
-        String name = element.getAttribute("name");
-        DasAxis ref = (DasAxis) form.checkValue(element.getAttribute("ref"), DasAxis.class, "<attachedaxis>");
-        int orientation = (element.getAttribute("orientation").equals("horizontal") ? HORIZONTAL : DasAxis.VERTICAL);
-
-        DasAxis axis = ref.createAttachedAxis(orientation);
-
-        String rowString = element.getAttribute("row");
-        if (!rowString.equals("")) {
-            DasRow row = (DasRow) form.checkValue(rowString, DasRow.class, "<row>");
-            axis.setRow(row);
-        }
-        String columnString = element.getAttribute("column");
-        if (!columnString.equals("")) {
-            DasColumn column = (DasColumn) form.checkValue(columnString, DasColumn.class, "<column>");
-            axis.setColumn(column);
-        }
-
-        axis.setDataPath(element.getAttribute("dataPath"));
-        axis.setDrawTca(element.getAttribute("showTca").equals("true"));
-        axis.setLabel(element.getAttribute(PROP_LABEL));
-        axis.setOppositeAxisVisible(!element.getAttribute(PROP_OPPOSITE_AXIS_VISIBLE).equals("false"));
-        axis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
-
-        axis.setDasName(name);
-        DasApplication app = form.getDasApplication();
-        NameContext nc = app.getNameContext();
-        nc.put(name, axis);
-
-        return axis;
-    }
 
     public void setPlot(DasPlot p) {
         dasPlot = p;
     }
 
-    /** TODO
-     * @param name
-     * @return
-     */
-    public static DasAxis createNamedAxis(String name) {
-        DasAxis axis = new DasAxis(Datum.create(1.0, Units.dimensionless), Datum.create(10.0, Units.dimensionless), DasAxis.HORIZONTAL);
-        if (name == null) {
-            name = "axis_" + Integer.toHexString(System.identityHashCode(axis));
-        }
-        try {
-            axis.setDasName(name);
-        } catch (DasNameException dne) {
-            DasExceptionHandler.handle(dne);
-        }
-        return axis;
-    }
 
     /** TODO */
     public void scanPrevious() {
@@ -3044,38 +2867,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    static DasAxis processTimeaxisElement(Element element, FormBase form) throws org.das2.DasPropertyException, org.das2.DasNameException, DasException, java.text.ParseException {
-        String name = element.getAttribute("name");
-        Datum timeMinimum = TimeUtil.create(element.getAttribute("timeMinimum"));
-        Datum timeMaximum = TimeUtil.create(element.getAttribute("timeMaximum"));
-        int orientation = parseOrientationString(element.getAttribute("orientation"));
-
-        DasAxis timeaxis = new DasAxis(timeMinimum, timeMaximum, orientation);
-
-        String rowString = element.getAttribute("row");
-        if (!rowString.equals("")) {
-            DasRow row = (DasRow) form.checkValue(rowString, DasRow.class, "<row>");
-            timeaxis.setRow(row);
-        }
-        String columnString = element.getAttribute("column");
-        if (!columnString.equals("")) {
-            DasColumn column = (DasColumn) form.checkValue(columnString, DasColumn.class, "<column>");
-            timeaxis.setColumn(column);
-        }
-
-        timeaxis.setDataPath(element.getAttribute("dataPath"));
-        timeaxis.setDrawTca(element.getAttribute("showTca").equals("true"));
-        timeaxis.setLabel(element.getAttribute(PROP_LABEL));
-        timeaxis.setOppositeAxisVisible(!element.getAttribute(PROP_OPPOSITE_AXIS_VISIBLE).equals("false"));
-        timeaxis.setTickLabelsVisible(!element.getAttribute("tickLabelsVisible").equals("false"));
-
-        timeaxis.setDasName(name);
-        DasApplication app = form.getDasApplication();
-        NameContext nc = app.getNameContext();
-        nc.put(name, timeaxis);
-
-        return timeaxis;
-    }
     private static final java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\([eEfF]\\d+.\\d+\\)");
 
     private static String format(double d, String f) {

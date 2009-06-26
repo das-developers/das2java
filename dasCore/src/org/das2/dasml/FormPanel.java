@@ -140,7 +140,7 @@ public class FormPanel extends FormContainer implements Editable, FormComponent 
                     add(new FormRadioButtonGroup((Element)node, form));
                 }
                 else if (tagName.equals("canvas")) {
-                    DasCanvas canvas = DasCanvas.processCanvasElement((Element)node, form);
+                    org.das2.graph.DasCanvas canvas = Processor.processCanvasElement((Element)node, form);
                     add(canvas);
                 }
                 else {
@@ -169,7 +169,7 @@ public class FormPanel extends FormContainer implements Editable, FormComponent 
             }
             else if (comp instanceof DasCanvas) {
                 DasCanvas canvas = (DasCanvas)comp;
-                Element child = canvas.getDOMElement(document);
+                Element child = Processor.getDOMElement( canvas,document);
                 element.appendChild(child);
             }
         }

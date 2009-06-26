@@ -121,7 +121,7 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
             }
             else if (node instanceof Element && node.getNodeName().equals("canvas")) {
                 try {
-                    org.das2.graph.DasCanvas canvas = org.das2.graph.DasCanvas.processCanvasElement((Element)node, form);
+                    org.das2.graph.DasCanvas canvas = Processor.processCanvasElement((Element)node, form);
                     add(canvas);
                 } catch ( java.text.ParseException ex ) {
                     DasExceptionHandler.handle(ex);
@@ -167,7 +167,7 @@ public class FormWindow extends FormContainer implements Editable, FormComponent
             }
             else if (comp instanceof org.das2.graph.DasCanvas) {
                 org.das2.graph.DasCanvas child = (org.das2.graph.DasCanvas)comp;
-                element.appendChild(child.getDOMElement(document));
+                element.appendChild( Processor.getDOMElement( child, document));
             }
         }
         return element;

@@ -548,7 +548,8 @@ public abstract class FormContainer extends JPanel implements Editable, FormComp
                     return new FormRadioButtonGroup(element, getForm());
                 }
                 else if (tag.equals("canvas")) {
-                    return DasCanvas.processCanvasElement(element, getForm());
+                    org.das2.graph.DasCanvas canvas = Processor.processCanvasElement(element, getForm() );
+                    add(canvas);
                 }
                 else if (tag.equals("choice")) {
                     return new FormChoice(element, getForm());
