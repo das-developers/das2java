@@ -13,8 +13,6 @@ import org.das2.dataset.DataSetConsumer;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumRangeUtil;
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 /**
@@ -24,10 +22,8 @@ import javax.swing.*;
 public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     
     DatumRange xrange, yrange;
-    JDialog dialog;
     JLabel xrangeLabel, yrangeLabel;
     JCheckBox autoUpdateCB, constrainProportionsCB;
-    BoxZoomDialog bzdialog;
     
     boolean autoUpdate= true;
     boolean constrainProportions= false;
@@ -37,58 +33,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
         super( parent, consumer, xAxis, yAxis );
         setLabel("Box Zoom");
     }
-    
-    JDialog getDialog() {
-        if ( dialog==null ) {
-            dialog= new JDialog( (Frame)null );
-            dialog.setLocationRelativeTo( parent );
-            
-            Container content= dialog.getContentPane();
-            bzdialog= new BoxZoomDialog( this );
-            content.add( bzdialog );
-            
-            dialog.pack();
-        }
         
-        bzdialog.setAutoBoxZoom( autoUpdate );
-        bzdialog.setDisablePopup( popupDisabled );
-        bzdialog.setConstrainProportions( constrainProportions );
-        
-        if ( !popupDisabled || !autoUpdate ) dialog.setVisible(true);
-        
-        return dialog;
-    }
-    
-    protected void guiChanged() {
-        autoUpdate= bzdialog.isAutoBoxZoom(  );
-        popupDisabled= bzdialog.isDisablePopup( );
-        constrainProportions = bzdialog.isConstrainProportions( );
-    }
-    
-    Action getZoomYAction() {
-        return new AbstractAction("<html><center>z<br>o<br>o<br>m<br>Y</center></html>") {
-            public void actionPerformed( ActionEvent e ) {
-                if ( yrange!=null ) yAxis.setDatumRange(yrange);
-            }
-        };
-    }
-    
-    Action getZoomXAction() {
-        return new AbstractAction("zoom X") {
-            public void actionPerformed( ActionEvent e ) {
-                if ( xrange!=null ) xAxis.setDatumRange(xrange);
-            }
-        };
-    }
-    
-    Action getZoomBoxAction() {
-        return new AbstractAction("<html><center>Zoom<br>Box</center></html>") {
-            public void actionPerformed( ActionEvent e ) {
-                zoomBox();
-            }
-        };
-    }
-    
     protected void zoomBox() {
         if ( yrange!=null ) yAxis.setDatumRange(yrange);
         if ( xrange!=null ) xAxis.setDatumRange(xrange);
@@ -123,13 +68,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                 yrange= GraphUtil.invTransformRange(  yAxis, e.getYMaximum(), e.getYMinimum() );
             }
             
-            if ( ! autoUpdate ) {
-                getDialog();
-                bzdialog.setXRange( xrange.toString() );
-                bzdialog.setYRange(yrange.toString());
-            } else {
-                zoomBox();
-            }
+            zoomBox();
             
         } else if ( e0.isGesture() ) {
             if ( e0.getGesture()==Gesture.ZOOMOUT ) {
@@ -159,7 +98,6 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
      * @param autoUpdate New value of property autoUpdate.
      */
     public void setAutoUpdate(boolean autoUpdate) {
-        if ( bzdialog!=null ) bzdialog.setAutoBoxZoom( autoUpdate );
         this.autoUpdate = autoUpdate;
     }
     
@@ -176,34 +114,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
      * @param constrainProportions New value of property constrainProportions.
      */
     public void setConstrainProportions(boolean constrainProportions) {
-        if ( bzdialog!=null ) bzdialog.setConstrainProportions(constrainProportions);
         this.constrainProportions = constrainProportions;
     }
-    
-    /**
-     * Holds value of property popupDisabled.
-     */
-    private boolean popupDisabled;
-    
-    /**
-     * Getter for property popupDisabled.
-     * @return Value of property popupDisabled.
-     */
-    public boolean isPopupDisabled() {
-        return this.popupDisabled;
-    }
-    
-    /**
-     * Setter for property popupDisabled.
-     * @param popupDisabled New value of property popupDisabled.
-     */
-    public void setPopupDisabled(boolean popupDisabled) {
-         if ( bzdialog!=null ) bzdialog.setDisablePopup(popupDisabled);
-        this.popupDisabled = popupDisabled;
-    }
-    
-    
-    
-    
-    
+        
 }
