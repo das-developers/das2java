@@ -56,7 +56,8 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
 
         public int length() {
-            return (stop - start) / step;
+            int remainder= (stop - start) % step;
+            return (stop - start) / step + ( remainder>0 ? 1 :0 );
         }
 
         @Override
