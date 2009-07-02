@@ -26,7 +26,6 @@ public class LogDomainDivider implements DomainDivider {
         if ( expDivider.getSignificand()==1 && expDivider.getExponent()==0 ) {
             return new LogLinDomainDivider();
         } else {
-            // Should update to return a LogLinDomainDivider instead of fractional powers
             return new LogDomainDivider((LinearDomainDivider)expDivider.finerDivider(superset));
         }
     }
@@ -75,6 +74,11 @@ public class LogDomainDivider implements DomainDivider {
         double rangeMax = Math.pow(10, exponentRange.max().doubleValue());
 
         return new DatumRange(rangeMin, rangeMax, v.getUnits());
+    }
+
+    @Override
+    public String toString() {
+        return "log decadeDivider= " + expDivider;
     }
 
     public static void main(String[] args) {

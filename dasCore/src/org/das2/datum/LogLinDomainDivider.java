@@ -19,7 +19,7 @@ public class LogLinDomainDivider implements DomainDivider {
 
     public DomainDivider coarserDivider(boolean superset) {
         LinearDomainDivider d = (LinearDomainDivider) decadeDivider.coarserDivider(superset);
-        if  (d.boundaryCount(Datum.create(0.0), Datum.create(1.0)) < 1) {
+        if  (d.boundaryCount(Datum.create(1.0), Datum.create(10.0 )) < 1) {
             return new LogDomainDivider();
         }
         else
@@ -33,6 +33,7 @@ public class LogLinDomainDivider implements DomainDivider {
 
     public DatumVector boundaries(Datum min, Datum max) {
         long nb = boundaryCount(min,max);
+        //System.err.println("LogLinDomainDivider boundaries " +nb);
         if (nb > MAX_BOUNDARIES )
             throw new IllegalArgumentException("too many divisions requested ("+boundaryCount(min, max)+")");
 
@@ -77,6 +78,7 @@ public class LogLinDomainDivider implements DomainDivider {
             double decadeOffset = Math.pow(10, Math.floor(Math.log10(min.doubleValue())));
             Datum mmin = min.divide(decadeOffset);
             Datum mmax = max.divide(decadeOffset);
+            System.err.println(decadeDivider.boundaryCount(mmin, mmax) + ": " +min.doubleValue() + "  " + max.doubleValue());
             return decadeDivider.boundaries(mmin, mmax);
         }
     }
@@ -111,6 +113,7 @@ public class LogLinDomainDivider implements DomainDivider {
             Datum mmin = min.divide(decadeOffset);
             Datum mmax = max.divide(decadeOffset);
             bc = decadeDivider.boundaryCount(mmin, mmax);
+            //System.err.println("LogLin linear subdivs: " + bc);
         }
         return bc;
     }
@@ -120,8 +123,8 @@ public class LogLinDomainDivider implements DomainDivider {
         DatumRange decade = logDivider.rangeContaining(v);
         double decadeOffset = decade.min().doubleValue();
 
-        Datum mmin = decade.min().divide(decadeOffset);
-        Datum mmax = decade.max().divide(decadeOffset);
+        //Datum mmin = decade.min().divide(decadeOffset);
+        //Datum mmax = decade.max().divide(decadeOffset);
         DatumRange range = decadeDivider.rangeContaining(v.divide(decadeOffset));
 
         return new DatumRange(range.min().multiply(decadeOffset), range.max().multiply(decadeOffset));
@@ -136,6 +139,7 @@ public class LogLinDomainDivider implements DomainDivider {
         return 0-decadeDivider.getExponent();
     }
 
+    @Override
     public String toString() {
         return "loglin decadeDivider="+decadeDivider;
     }
@@ -148,7 +152,7 @@ public class LogLinDomainDivider implements DomainDivider {
         for (int i = 0; i < dv.getLength(); i++)
             System.err.print(dv.get(i).doubleValue() + ", ");
         System.err.println();
-        System.err.println(d.rangeContaining(Datum.create(8)));
+        System.err.println(d.rangeContaining(Datum.create(27.3)));
 
         System.err.println(d.coarserDivider(true).coarserDivider(true).boundaries(dr.min(), dr.max()));
         System.err.println(d.finerDivider(true).finerDivider(true).boundaries(dr.min(), dr.max()));

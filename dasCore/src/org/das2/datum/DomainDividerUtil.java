@@ -20,7 +20,7 @@ public final class DomainDividerUtil {
         if (UnitsUtil.isTimeLocation(min.getUnits())) {
             return new OrdinalTimeDomainDivider();
         } else if ( log ) {
-            return new LogLinDomainDivider();
+            return new LogDomainDivider();
         } else {
             return new LinearDomainDivider();
         }
@@ -68,6 +68,15 @@ public final class DomainDividerUtil {
             LogLinDomainDivider lldiv = (LogLinDomainDivider) div;
             int nFraction = lldiv.sigFigs();
             String format = exp(nFraction);
+            DatumFormatterFactory factory = range.getUnits().getDatumFormatterFactory();
+            try {
+                return factory.newFormatter(format);
+            } catch (ParseException ex) {
+                throw new RuntimeException(ex); // sorry, user, please report this.
+            }
+        } else if (div instanceof LogDomainDivider) {
+            // Labels should just be 10^x
+            String format = "0.#E0";
             DatumFormatterFactory factory = range.getUnits().getDatumFormatterFactory();
             try {
                 return factory.newFormatter(format);
