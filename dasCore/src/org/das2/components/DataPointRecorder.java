@@ -788,6 +788,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         modified =
                 true;
         updateStatus();
+        updateClients();
     }
 
     public void addDataPoint(Datum x, Datum y, Map planes) {
