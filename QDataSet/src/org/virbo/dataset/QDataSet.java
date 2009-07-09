@@ -47,7 +47,8 @@ public interface QDataSet {
      * it's probably safe to assume there will be problems with this for datasets where DEPEND_1 is dependent on the 0th index.
      * The legacy das2 DataSet API had the abstraction of tables, and this may be replaced by a bundling dimension or metadata
      * that indicates where DEPEND_1 changes.  For now, correct codes should should assume that this changes with each 0th index 
-     * value, and a helper method should be introduced that finds the geometry changes.
+     * value, and a helper method should be introduced that finds the geometry changes.  A depend dimension corresponds to one
+     * physical dimension.
      */
     public final static String DEPEND_1="DEPEND_1";
     
@@ -62,6 +63,27 @@ public interface QDataSet {
      * The tags for the DataSet's 3nd index are identified by this tags dataset.
      */
     public final static String DEPEND_3="DEPEND_3";
+
+    /**
+     * type QDataSet.  This dataset describes how the columns should be split up
+     * into separate parameters.  This rank 2 dataset has a length that is equal to the number
+     * of bundled datasets.  The values(i,*) are the qube dimensions of the dataset,
+     * except for the first dimension.  When all the bundled datasets are rank 1, then
+     * length(*) will be equal to zero.  property(*,UNITS) will yield the unit for each
+     * dataset.  Bundle dimensions generally add one physical dimension for each
+     * bundled dataset.  property(*,DEPEND_0) is special, because it may return a string
+     * rather than a QDataSet.  This string should refer to one of the bundled datasets.
+     * In fact any property that returns a QDataSet may return a string referring to
+     * another dataset in the bundle.
+     */
+    public final static String BUNDLE_1="BUNDLE_1";
+
+    /**
+     * type String.  This comma-delimited list of keywords that describe the boundary
+     * type for each column.  For example, "min,max" or "c95min,mean,c95max"  A bins dimension
+     * doesn't add a physical dimension.
+     */
+    public final static String BINS_1="BINS_1";
 
     /**
      * type QDataSet. Correllated plane of data.  An additional dependent DataSet that is correllated by the first index.  
