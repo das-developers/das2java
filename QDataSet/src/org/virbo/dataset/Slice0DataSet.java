@@ -29,9 +29,11 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         } else {
             QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
             if ( dep0!=null && dep0.rank()>1 ) {
-                putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));
+                putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));  //DEPEND_0 rank>1
             } else {
-                putProperty( QDataSet.DEPEND_0, null );
+                if ( ds.property(QDataSet.DEPEND_0,index)==null ) { // bundle dataset
+                    putProperty( QDataSet.DEPEND_0, null );
+                }
             }
         }
         
