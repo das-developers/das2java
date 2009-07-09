@@ -36,7 +36,6 @@ public class BundleDataSet extends AbstractDataSet {
     int len0;
     
     /** Creates a new instance of BundleDataSet
-     * @param rank The rank of the BundleDataSet.  Each dataset bundled dataset must have rank <tt>rank</tt>-1.
      * 
      */
     public BundleDataSet( ) {
