@@ -72,7 +72,7 @@ public class SimpleStreamFormatter {
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet ds1= DataSetOps.slice0(ds, i);
                 Element props = doProperties(document, ds1);
-                props.setAttribute("index", String.valueOf(i) );
+                props.setAttribute("index", String.valueOf(i) ); 
                 qdatasetElement.appendChild(props);
             }
         } else {
