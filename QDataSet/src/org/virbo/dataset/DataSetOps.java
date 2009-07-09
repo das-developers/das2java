@@ -11,6 +11,7 @@ package org.virbo.dataset;
 import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
 
 /**
  * Useful operations for QDataSets
@@ -535,4 +536,62 @@ public class DataSetOps {
     public static QDataSet transpose2(QDataSet ds) {
         return new TransposeRank2DataSet(ds);
     }
+
+    /**
+     * Extract a bundled dataset from a bundle of datasets.  The input should
+     * be a rank 2 dataset with the property BUNDLE_1 set to a bundle descriptor
+     * dataset.  See BundleDataSet for more semantics.
+     *
+     * @param aThis
+     * @param ib index of the dataset to extract.
+     * @return
+     */
+    public static QDataSet unbundle(QDataSet bundleDs, int ib) {
+        QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+        String[] names= new String[bundle1.length()];
+        int[] offsets= new int[bundle1.length()];
+        int[] lens= new int[bundle1.length()];
+
+        int idx=0;
+        for ( int j=0; j<bundle1.length(); j++ ) {
+            names[j]= (String) bundle1.property( QDataSet.NAME, j );
+            offsets[j]= idx;
+            int n= 1;
+            for (int k = 0; k < bundle1.length(j); k++) {
+                 n *= bundle1.value(j, k);
+            }
+            lens[j]= n;
+            idx+= n;
+        }
+
+        int j= ib;
+        int n= lens[j];
+
+        if ( bundle1.length(j)==0 ) {
+            MutablePropertyDataSet result= DataSetOps.slice1(bundleDs,offsets[j]);
+            return result;
+        } else if ( bundle1.length(j)==1 ) {
+            TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
+            result.setTrim( 1, offsets[j], offsets[j]+lens[j], 1 );
+            Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle1,j) );
+            DataSetUtil.putProperties( props, result );
+            String[] testProps= new String[] { QDataSet.DEPEND_0, QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.PLANE_0 };
+            for ( int i=0; i<testProps.length; i++ ) {
+                String prop= testProps[i];
+                Object dep0= result.property(prop);
+                if ( dep0!=null ) {
+                    if ( dep0 instanceof String ) {
+                        idx= Arrays.asList(names).indexOf(dep0);
+                        if ( idx==-1 ) throw new IllegalArgumentException("unable to find DEPEND_0 reference to \""+dep0+"\"");
+                        result.putProperty( prop, unbundle(bundleDs,idx) );
+                    }
+                }
+            }
+            return result;
+        } else {
+            throw new IllegalArgumentException("rank limit: >2 not supported");
+        }
+
+    }
+
 }
