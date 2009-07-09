@@ -78,13 +78,13 @@ public class VectorDataSetAdapter implements VectorDataSet {
             properties.put( org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence );
         }
                 
-        if ( y.property(QDataSet.FILL_VALUE) !=null 
-                || y.property(QDataSet.VALID_MIN) !=null  
+        if ( y.property(QDataSet.FILL_VALUE) !=null
+                || y.property(QDataSet.VALID_MIN) !=null
                 || y.property(QDataSet.VALID_MAX) !=null ) {
-            y= DataSetUtil.canonizeFill(y);
+            this.y= DataSetUtil.canonizeFill(y);
         }
         
-        QDataSet dp= (QDataSet) y.property( QDataSet.DELTA_PLUS ) ;
+        QDataSet dp= (QDataSet) this.y.property( QDataSet.DELTA_PLUS ) ;
         if ( dp!=null ) {
             if ( dp.property(QDataSet.UNITS)==null ) {
                 dp= DDataSet.copy(dp);
@@ -93,7 +93,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
             planes.put( "Y_DELTA_PLUS", dp );
         }
         
-       dp= (QDataSet) y.property( QDataSet.DELTA_MINUS ) ;
+       dp= (QDataSet) this.y.property( QDataSet.DELTA_MINUS ) ;
         if ( dp!=null ) {
             if ( dp.property(QDataSet.UNITS)==null ) {
                 dp= DDataSet.copy(dp);

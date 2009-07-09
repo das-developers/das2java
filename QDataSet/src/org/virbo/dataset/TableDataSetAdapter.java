@@ -145,7 +145,7 @@ public class TableDataSetAdapter implements TableDataSet {
         }
 
         if (z.property(QDataSet.FILL_VALUE) != null || z.property(QDataSet.VALID_MIN) != null || z.property(QDataSet.VALID_MAX) != null) {
-            z = DataSetUtil.canonizeFill(z);
+            this.z = DataSetUtil.canonizeFill(z);
         }
     }
 
