@@ -381,9 +381,14 @@ public final class TimeUtil {
         double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 ) + seconds / 86400. );
         return Datum.create( us2000, Units.us2000 );
     }
-    
+
+    /**
+     * return the leap year for years 1901-2099.
+     * @param year
+     * @return
+     */
     public static boolean isLeapYear( int year ) {
-        return (year % 4)==0;
+        return (year % 4)==0 && ( year%400==0 || year%100!=0 );
     }
     
     /**
@@ -1054,6 +1059,12 @@ public final class TimeUtil {
     
     public static void main(String[] args) throws Exception {
         //System.out.println( "TimeUtil.parse="+TimeUtil.parseTime("1"));
+        System.out.println(""+isLeapYear(1900) );
+        System.out.println(""+isLeapYear(2000) );
+        System.out.println(""+isLeapYear(1996) );
+        System.out.println(""+isLeapYear(1999) );
+        System.out.println(""+isLeapYear(2100) );
+
         System.out.println( "TimeUtil.parse="+TimeUtil.parseTime("2010"));
         System.out.println( TimeUtil.now() );
         System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 ));
