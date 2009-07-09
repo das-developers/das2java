@@ -68,74 +68,102 @@ public class SimpleStreamFormatter {
 
         qdatasetElement.setAttribute("rank", "" + (ds.rank() + (streamRank - 1)));
 
-        Element props = doProperties(document, ds);
-        qdatasetElement.appendChild(props);
+        if ( isBundleDescriptor(ds) ) {
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= DataSetOps.slice0(ds, i);
+                Element props = doProperties(document, ds1);
+                props.setAttribute("index", String.valueOf(i) );
+                qdatasetElement.appendChild(props);
+            }
+        } else {
+            Element props = doProperties(document, ds);
+            qdatasetElement.appendChild(props);
+        }
 
         PlaneDescriptor planeDescriptor = new PlaneDescriptor();
 
         planeDescriptor.setRank(ds.rank());
         int[] qube = DataSetUtil.qubeDims(ds);
-        if (pd.isStream()) {
-            planeDescriptor.setQube(Util.subArray(qube, 1, qube.length - 1));
-        } else {
-            planeDescriptor.setQube(qube);
+        if ( !pd.valuesInDescriptor ) {
+            if (pd.isStream()) {
+                planeDescriptor.setQube(Util.subArray(qube, 1, qube.length - 1));
+            } else {
+                planeDescriptor.setQube(qube);
+            }
         }
         planeDescriptor.setDs(ds);
         planeDescriptor.setName(nameFor(ds));
 
         Units u = (Units) ds.property(QDataSet.UNITS);
 
-        if (asciiTypes) {
-            double min = Double.POSITIVE_INFINITY;
-            double max = Double.NEGATIVE_INFINITY;
-            double absMin = Double.MAX_VALUE;
-            QubeDataSetIterator it = new QubeDataSetIterator(ds);
-            while (it.hasNext()) {
-                it.next();
-                double d = it.getValue(ds);
-                if (d < min) {
-                    min = d;
-                }
-                final double dd = Math.abs(d);
-                if (dd > 0 && dd < absMin) {
-                    absMin = dd;
-                }
-                if (d > max) {
-                    max = d;
-                }
-            }
-
-            if (u instanceof EnumerationUnits) {
-                planeDescriptor.setType(new AsciiIntegerTransferType(10));
-            } else if (u instanceof TimeLocationUnits) {
-                planeDescriptor.setType(new AsciiTimeTransferType(24, u));
-            } else {
-                if (min > -10000 && max < 10000 && absMin > 0.0001) {
-                    planeDescriptor.setType(new AsciiTransferType(10, false));
-                } else {
-                    if (absMin > 1e-100 && max < 1e100) {
-                        planeDescriptor.setType(new AsciiTransferType(10, true));
-                    } else {
-                        planeDescriptor.setType(new AsciiTransferType(12, true));
+        if ( !pd.isValuesInDescriptor() ) {
+            if (asciiTypes) {
+                double min = Double.POSITIVE_INFINITY;
+                double max = Double.NEGATIVE_INFINITY;
+                double absMin = Double.MAX_VALUE;
+                QubeDataSetIterator it = new QubeDataSetIterator(ds);
+                while (it.hasNext()) {
+                    it.next();
+                    double d = it.getValue(ds);
+                    if (d < min) {
+                        min = d;
+                    }
+                    final double dd = Math.abs(d);
+                    if (dd > 0 && dd < absMin) {
+                        absMin = dd;
+                    }
+                    if (d > max) {
+                        max = d;
                     }
                 }
-            }
-        } else {
-            if (u instanceof EnumerationUnits) {
-                planeDescriptor.setType(new IntegerTransferType());
-            } else if (u instanceof TimeLocationUnits) {
-                planeDescriptor.setType(new DoubleTransferType());
+
+                if (u instanceof EnumerationUnits) {
+                    planeDescriptor.setType(new AsciiIntegerTransferType(10));
+                } else if (u instanceof TimeLocationUnits) {
+                    planeDescriptor.setType(new AsciiTimeTransferType(24, u));
+                } else {
+                    if (min > -10000 && max < 10000 && absMin > 0.0001) {
+                        planeDescriptor.setType(new AsciiTransferType(10, false));
+                    } else {
+                        if (absMin > 1e-100 && max < 1e100) {
+                            planeDescriptor.setType(new AsciiTransferType(10, true));
+                        } else {
+                            planeDescriptor.setType(new AsciiTransferType(12, true));
+                        }
+                    }
+                }
             } else {
-                planeDescriptor.setType(new FloatTransferType());
+                if (u instanceof EnumerationUnits) {
+                    planeDescriptor.setType(new IntegerTransferType());
+                } else if (u instanceof TimeLocationUnits) {
+                    planeDescriptor.setType(new DoubleTransferType());
+                } else {
+                    planeDescriptor.setType(new FloatTransferType());
+                }
             }
         }
-
-        Element values = doValues(document, pd, planeDescriptor, ds);
-        qdatasetElement.appendChild(values);
+        if ( pd.isValuesInDescriptor() && ds.rank()==2 ) {
+            for ( int i=0; i<ds.length(); i++ ) {
+                Element values = doValues(document, pd, planeDescriptor, DataSetOps.slice0(ds, i) );
+                values.setAttribute( "index", String.valueOf(i) );
+                qdatasetElement.appendChild(values);
+            }
+        } else {
+            Element values = doValues(document, pd, planeDescriptor, ds);
+            qdatasetElement.appendChild(values);
+        }
 
         planeDescriptor.setDomElement(qdatasetElement);
 
         return planeDescriptor;
+    }
+
+    private boolean isBundleDescriptor( QDataSet ds ) {
+        if ( ds.property(QDataSet.NAME,0)!=ds.property(QDataSet.NAME) ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private Element doProperties(Document document, QDataSet ds) {
@@ -192,18 +220,24 @@ public class SimpleStreamFormatter {
 
     }
 
-    private Element doValues(Document document, PacketDescriptor packetDescriptor, PlaneDescriptor planeDescriptor, QDataSet ds) {
+    private Element doValues( Document document, PacketDescriptor packetDescriptor, PlaneDescriptor planeDescriptor, QDataSet ds ) {
         Element values = document.createElement("values");
-        values.setAttribute("encoding", planeDescriptor.getType().name());
-        int[] qubeDims = DataSetUtil.qubeDims(ds);
+        int[] qubeDims=null;
+        if ( !packetDescriptor.isValuesInDescriptor() ) {
+            values.setAttribute("encoding", planeDescriptor.getType().name());
+            qubeDims = DataSetUtil.qubeDims(ds);
+        }
+        
         if (packetDescriptor.isStream()) {
             if (ds.rank() > 1) {
-                values.setAttribute("length", Util.encodeArray(qubeDims, 1, qubeDims.length - 1));
+                values.setAttribute("length", Util.encodeArray(qubeDims, 1, qubeDims.length - 1)); // must be a qube for stream.
             } else {
                 values.setAttribute("length", "");
             }
         } else {
-            values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length));
+            if ( qubeDims!=null ) {
+                values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length));
+            }
             if (packetDescriptor.isValuesInDescriptor()) {
                 String s = "";
                 for (int i = 0; i < ds.length(); i++) {
@@ -315,9 +349,53 @@ public class SimpleStreamFormatter {
         return name;
     }
 
+    PacketDescriptor doPacketDescriptorNonQube( StreamDescriptor sd, QDataSet ds,
+            boolean stream, boolean valuesInDescriptor, int streamRank )
+            throws ParserConfigurationException {
+
+        PacketDescriptor packetDescriptor = new PacketDescriptor();
+        packetDescriptor.setStream(stream);
+        packetDescriptor.setStreamRank(streamRank);
+        if (valuesInDescriptor) {
+            packetDescriptor.setValuesInDescriptor(true);
+        }
+
+        Document document = sd.newDocument(packetDescriptor);
+
+        Element packetElement = getPacketElement(document);
+
+        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if (dep0 != null) {
+            PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, dep0, streamRank);
+            packetDescriptor.addPlane(planeDescriptor);
+            packetElement.appendChild(planeDescriptor.getDomElement());
+        }
+
+        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
+            QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
+            if (plane0 != null) {
+                PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, plane0, streamRank);
+                packetDescriptor.addPlane(planeDescriptor);
+                packetElement.appendChild(planeDescriptor.getDomElement());
+            } else {
+                break;
+            }
+        }
+
+        PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, ds, streamRank);
+        packetDescriptor.addPlane(planeDescriptor);
+
+        packetElement.appendChild(planeDescriptor.getDomElement());
+
+        packetDescriptor.setDomElement(packetElement);
+
+        return packetDescriptor;
+
+    }
+
     PacketDescriptor doPacketDescriptor(StreamDescriptor sd, QDataSet ds, boolean stream, boolean valuesInDescriptor, int streamRank) throws ParserConfigurationException {
 
-        if (DataSetUtil.isQube(ds) == false) {
+        if ( !valuesInDescriptor && DataSetUtil.isQube(ds) == false ) {
             throw new IllegalArgumentException("must be qube!");
         }
 
@@ -415,7 +493,33 @@ public class SimpleStreamFormatter {
                     if (depi != null) {
                         PacketDescriptor pd;
 
-                        boolean valuesInDescriptor = depi.rank() == 1 && depi.length() < 6;
+                        boolean valuesInDescriptor = true; // because it's a non-qube
+                        pd = doPacketDescriptor(sd, depi, false, valuesInDescriptor, 1);
+
+                        sd.addDescriptor(pd);
+
+                        depPackets.add(pd);
+                        sd.send(pd, out);
+                    }
+                }
+
+                // check for BUNDLE_1 datasets that need to be sent out first.
+                for (int i = 1; i < 2; i++) {
+                    QDataSet depi = (QDataSet) packetDs.property("BUNDLE_" + i);
+                    if (depi != null) {
+                        PacketDescriptor pd;
+
+                        for ( int j=0; j<depi.length(); j++ ) {
+                            QDataSet dep1= (QDataSet) depi.property(QDataSet.DEPEND_1, j );
+                            if ( dep1!=null ) {
+                                pd = doPacketDescriptor(sd, dep1, false, true, 1);
+                                sd.addDescriptor(pd);
+                                depPackets.add(pd);
+                                sd.send(pd, out);
+                            }
+                        }
+                        
+                        boolean valuesInDescriptor = true;
                         pd = doPacketDescriptor(sd, depi, false, valuesInDescriptor, 1);
 
                         sd.addDescriptor(pd);
