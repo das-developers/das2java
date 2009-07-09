@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * create a higher rank dataset with dim 0 being a join dimension.
+ * create a higher rank dataset with dim 0 being a join dimension.  Join implies
+ * that the joined datasets occupy the same physical dimension.
  * @author jbf
  */
 public class JoinDataSet extends AbstractDataSet {
@@ -32,7 +33,12 @@ public class JoinDataSet extends AbstractDataSet {
         this.rank= rank;
         datasets= new ArrayList<QDataSet>();
     }
-    
+
+    /**
+     * add the dataset to this set of joined datasets.
+     * @param ds rank N-1 dataset where N is the rank of this JoinDataSet.
+     * @throws IllegalArgumentException if the dataset rank is not consistent with the other datasets.
+     */
     public void join( QDataSet ds ) {
         if ( ds.rank()!=this.rank-1 ) throw new IllegalArgumentException("dataset rank must be "+(this.rank-1));
         datasets.add( ds );
