@@ -215,10 +215,24 @@ public class DataSetUtil {
     public static Map<String, Object> getProperties(QDataSet ds, Map def) {
         Map result = def;
 
-        for (int i = 0; i < ds.rank(); i++) {
+        for (int i = 0; i <= ds.rank(); i++) {
             Object dep = ds.property("DEPEND_" + i);
             if (dep != null) {
                 result.put("DEPEND_" + i, dep);
+            }
+        }
+
+        for (int i = 0; i <= ds.rank(); i++) {
+            Object dep = ds.property("BUNDLE_" + i);
+            if (dep != null) {
+                result.put("BUNDLE_" + i, dep);
+            }
+        }
+
+        for (int i = 0; i <= ds.rank(); i++) {
+            Object dep = ds.property("BINS_" + i);
+            if (dep != null) {
+                result.put("BINS_" + i, dep);
             }
         }
 
