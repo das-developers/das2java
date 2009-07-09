@@ -1,7 +1,7 @@
 /*
- * JoinDataSet.java
+ * BundleDataSet.java
  *
- * Created on April 27, 2007, 10:52 AM
+ * Copied from JoinDataSet in June 2009
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -15,13 +15,18 @@ import java.util.List;
 /**
  * create a higher rank dataset with dim 1 being a bundle dimension.  Each
  * dataset must have the same length.
+ *
+ * Note this was created before BUNDLE_1 and bundle descriptor datasets were
+ * introduced, so this code is suspect.  TODO: review and ensure compatibility
+ * with updates to bundle dataset semantics.
+ *
  * @author jbf
  */
 public class BundleDataSet extends AbstractDataSet {
     
     List<QDataSet> datasets;
     /**
-     * rank of the dataset.  Joined DataSets should have rank rank-1.
+     * rank of the dataset.
      */
     int rank;
 
@@ -30,15 +35,22 @@ public class BundleDataSet extends AbstractDataSet {
      */
     int len0;
     
-    /** Creates a new instance of JoinDataSet 
-     * @param rank The rank of the JoinDataSet.  Each dataset joined must have rank <tt>rank</tt>-1.
+    /** Creates a new instance of BundleDataSet
+     * @param rank The rank of the BundleDataSet.  Each dataset bundled dataset must have rank <tt>rank</tt>-1.
      * 
      */
     public BundleDataSet( ) {
         this.rank= 2;
         datasets= new ArrayList<QDataSet>();
     }
-    
+
+    /**
+     * add the dataset to the bundle of datasets.  Currently this implementation only supports rank 1 datasets, but
+     * the QDataSet spec allows for qube datasets of any rank>0 to be bundled.  This limitation will be removed
+     * in a future version.
+     * 
+     * @param ds
+     */
     public void bundle( QDataSet ds ) {
         if ( ds.rank()!=this.rank-1 ) throw new IllegalArgumentException("only rank 1 supported for now.");
         if ( datasets.size()>0 ) {
