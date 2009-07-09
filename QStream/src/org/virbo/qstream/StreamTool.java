@@ -52,6 +52,7 @@ import org.xml.sax.SAXParseException;
 public class StreamTool {
 
     ByteOrder byteOrder;
+    private static final int PACKET_LENGTH_LIMIT=100000;
 
     /** Creates a new instance of StreamTool */
     public StreamTool() {
@@ -70,15 +71,9 @@ public class StreamTool {
         ArrayList list = new ArrayList();
 
         int bytesMatched = 0;
-        int matchIndex = 0;
-
-        int streamIndex = 0;  // offset in bytes from the beginning of the stream
 
         int index = 0;
         boolean notDone = true;
-
-        int unreadOffset = -99999;
-        int unreadLength = -99999;
 
         int totalBytesRead = 0;
         int offset = 0;  // offset within byte[4096]
@@ -231,7 +226,7 @@ public class StreamTool {
     private static class ReadStreamStructure {
 
         private ReadableByteChannel stream;
-        private ByteBuffer bigBuffer = ByteBuffer.allocate(10000);
+        private ByteBuffer bigBuffer = ByteBuffer.allocate(PACKET_LENGTH_LIMIT);
         private byte[] four = new byte[4];
         private StreamHandler handler;
         private Map descriptors = new HashMap();
@@ -471,6 +466,7 @@ public class StreamTool {
             String key = asciiBytesToString(struct.four, 1, 2);
             PacketDescriptor pd = (PacketDescriptor) struct.descriptors.get(key);
             int contentLength = pd.sizeBytes();
+            if ( contentLength>PACKET_LENGTH_LIMIT ) throw new IllegalStateException("packet length bug would cause stream parser to hang (bug 0000348: streams with long packet lengths)");
             if (struct.bigBuffer.remaining() < contentLength) {
                 struct.bigBuffer.reset();
                 return false;
