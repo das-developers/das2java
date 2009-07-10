@@ -279,7 +279,7 @@ public class FileStorageModelNew {
      *    %{milli}  3-digit milliseconds
      *
      * @param root FileSystem source of the files.
-     * @param template describes how filenames are constructed.
+     * @param template describes how filenames are constructed.  This is converted to a regular expression and may contain regex elements without groups.
      * @return a newly-created FileStorageModelNew.
      */
     public static FileStorageModelNew create( FileSystem root, String template ) {
