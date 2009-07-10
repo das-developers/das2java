@@ -121,6 +121,7 @@ public class DataSetAdapter {
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
             properties.put( QDataSet.DEPEND_1, new YTagsDataSet( source ) );
+            properties.put( QDataSet.QUBE, Boolean.TRUE );
             properties.put( PROPERTY_SOURCE, source );
         }
         
