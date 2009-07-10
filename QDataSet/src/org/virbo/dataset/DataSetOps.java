@@ -115,6 +115,15 @@ public class DataSetOps {
         return result;
     }
 
+    /**
+     * reduce the number of elements in the dataset to the dim 0 indeces specified.
+     * This does not change the rank of the dataset.
+     *
+     * @param ds
+     * @param offset
+     * @param len
+     * @return
+     */
     public static MutablePropertyDataSet trim(final QDataSet ds, final int offset, final int len) {
 
         MutablePropertyDataSet result = new AbstractDataSet() {
