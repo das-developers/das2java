@@ -22,7 +22,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
         this.ds = ds;
         this.index = index;
-        if ( DataSetUtil.isQube(ds) ) {
+        if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 implies qube
             putProperty( QDataSet.DEPEND_0, ds.property( QDataSet.DEPEND_1 ) );
             putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
             putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
