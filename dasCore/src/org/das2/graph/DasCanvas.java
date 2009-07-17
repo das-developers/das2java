@@ -888,6 +888,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * validate or revalidate should probably do this.
      */
     public void resizeAllComponents() {
+        for ( int i=0; i<devicePositionList.size(); i++ ) {
+            ((DasDevicePosition)devicePositionList.get(i)).revalidate();
+        }
         for (int i = 0; i < getComponentCount(); i++) {
             Component c = getComponent(i);
             if (c instanceof DasCanvasComponent) {
