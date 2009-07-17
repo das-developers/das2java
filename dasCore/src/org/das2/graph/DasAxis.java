@@ -449,6 +449,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     public void setDatumRange(DatumRange dr) {
+        //System.err.println("setDatumRange("+dr+")");
         if (getUnits().isConvertableTo(dr.getUnits())) {
             this.setDataRange(dr.min(), dr.max());
         } else {
@@ -1179,6 +1180,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DatumRange dr = getDatumRange();
 
         try {
+            long nminor= minorTicksDomainDivider.boundaryCount( dr.min(), dr.max() );
+            while ( nminor>=DomainDivider.MAX_BOUNDARIES ) {
+                //TODO: what should we do here?  Transitional state?
+                return;
+            }
             DatumVector major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
             DatumVector minor = minorTicksDomainDivider.boundaries(dr.min(), dr.max());
 
