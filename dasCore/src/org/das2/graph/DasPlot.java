@@ -580,7 +580,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
     @Override
     protected void updateImmediately() {
-        paintImmediately(0, 0, getWidth(), getHeight());
+        //paintImmediately(0, 0, getWidth(), getHeight());
+        super.updateImmediately();
         logger.finer("DasPlot.updateImmediately");
         for (int i = 0; i < renderers.size(); i++) {
             Renderer rend = (Renderer) renderers.get(i);
@@ -688,7 +689,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
 
     protected void paintComponent(Graphics graphics1) {
-
+        //System.err.println("dasPlot.paintComponent "+ getDasName() );
         if ( getCanvas().isValueAdjusting() ) return;
         
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
