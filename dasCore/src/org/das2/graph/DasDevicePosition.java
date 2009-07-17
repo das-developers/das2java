@@ -255,7 +255,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * recalculates dMinimum and dMaximum becased on the new values, and checks for
      * correctness.  Note if dMaximum&lt;=dMinimum, we define dMaximum= dMinimum+1.
      */
-    private void revalidate() {
+    protected void revalidate() {
+        if ( parent!=null ) {
+            parent.revalidate();
+        }
         int oldmin= dMinimum;
         int oldmax= dMaximum;
         dMinimum= (int)( getParentMin() + minimum*getDeviceSize() + getEmSize() * emMinimum + ptMinimum );
