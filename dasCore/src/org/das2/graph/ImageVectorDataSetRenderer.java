@@ -265,14 +265,36 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         int[] raster = new int[h * w];
         int colorInt = color.getRGB() & 0x00ffffff;
-        for (int i = 0; i < w; i++) {
-            for (int j = 0; j < h; j++) {
-                int index = (i - 0) + (h - j - 1) * w;
-                // alpha=0 for transparent, alpha=255 for opaque
-                int alpha = 255 * (int) newHist.getDouble(i, j, Units.dimensionless) / saturationHitCount;
+        // Following code for scatter plot temporarily removed
+        // Need to add switch between scatter plot and envelope
+        /*for (int i = 0; i < w; i++) {
+        for (int j = 0; j < h; j++) {
+        int index = (i - 0) + (h - j - 1) * w;
+        // alpha=0 for transparent, alpha=255 for opaque
+        int alpha = 255 * (int) newHist.getDouble(i, j, Units.dimensionless) / saturationHitCount;
 
-                int icolor = (alpha << 24) | colorInt;
-                raster[index] = icolor;
+        int icolor = (alpha << 24) | colorInt;
+        raster[index] = icolor;
+        }
+        }*/
+
+        //show envelope
+        for (int i=0; i<w; i++) {
+            int ymin = -1;
+            int ymax = -1;
+            for (int j=0; j<h; j++) {
+                if (newHist.getDouble(i, j, Units.dimensionless) > 0) {
+                    if (ymin<0)
+                        ymin = j;
+                    ymax = j;
+                }
+            }
+            if (ymin >= 0) {
+                for (int j=ymin; j<ymax; j++) {
+                     int index = i + (h-j-1) * w;
+                     int icolor = (128 << 24) | colorInt;  // 50% alpha
+                     raster[index] = icolor;
+                }
             }
         }
 
