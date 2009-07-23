@@ -279,6 +279,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }*/
 
         //show envelope
+        int envelopeColor = ( 128 << 24) | colorInt;  // 50% alpha
+        if ( envelope==1 ) envelopeColor= ( 128/saturationHitCount << 24) | colorInt;  // 50% alpha
         for (int i=0; i<w; i++) {
             int ymin = -1;
             int ymax = -1;
@@ -292,8 +294,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if (ymin >= 0) {
                 for (int j=ymin; j<ymax; j++) {
                      int index = i + (h-j-1) * w;
-                     int icolor = (128 << 24) | colorInt;  // 50% alpha
-                     raster[index] = icolor;
+                     if ( !(envelope==2) && ( envelope==0 || newHist.getDouble(i, j, Units.dimensionless) > 0 ) ) {
+                         int alpha = 255 * (int) newHist.getDouble(i, j, Units.dimensionless) / saturationHitCount;
+                         raster[index] =  (alpha << 24) | colorInt;
+                     }  else {
+                        raster[index] = envelopeColor;
+                     }
                 }
             }
         }
@@ -370,6 +376,20 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     public Color getColor() {
         return color;
+    }
+
+    protected int envelope = 0;
+    public static final String PROP_ENVELOPE = "envelope";
+
+    public int getEnvelope() {
+        return envelope;
+    }
+
+    public void setEnvelope(int envelope) {
+        int oldEnvelope = this.envelope;
+        this.envelope = envelope;
+        refreshImage();
+        propertyChangeSupport.firePropertyChange(PROP_ENVELOPE, oldEnvelope, envelope);
     }
 
     @Override
