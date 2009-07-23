@@ -1078,6 +1078,8 @@ public class SeriesRenderer extends Renderer {
         int fi= firstIndex;
         int li= lastIndex;
 
+        if ( xaxis.getColumn().getWidth()==0 || yaxis.getRow().getHeight()==0 ) return null;
+        
         DatumRange dr= xaxis.getDatumRange();
         
         VectorDataSet reduce = VectorUtil.reduce2D( ds, firstIndex, lastIndex, widthx.divide(xaxis.getColumn().getWidth()/5),
