@@ -326,8 +326,8 @@ public class VectorUtil {
 
         Units dxunits= xLimit!=null ? xLimit.getUnits() : null;
 
-        boolean xlog= xLimit!=null && xLimit.getUnits().isConvertableTo( Units.logERatio );
-        boolean ylog= yLimit!=null && yLimit.getUnits().isConvertableTo( Units.logERatio );
+        boolean xlog= xLimit!=null && UnitsUtil.isRatiometric( xLimit.getUnits() );
+        boolean ylog= yLimit!=null && UnitsUtil.isRatiometric( yLimit.getUnits() );
 
         UnitsConverter uc;
         double dxLimit, dyLimit;
