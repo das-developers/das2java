@@ -512,8 +512,9 @@ public class TimeParser {
      * @param value
      */
     public void setDigit(String format, double value) {
+        if (format.equals("%{ignore}") ) return;
         if (value < 0) {
-            throw new IllegalArgumentException("value must not be negative");
+            throw new IllegalArgumentException("value must not be negative on field:"+format+" value:"+value );
         }
         String[] ss = format.split("%", -2);
         if (ss.length > 2) {
