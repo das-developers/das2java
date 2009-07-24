@@ -17,7 +17,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.util.TimeParser;
