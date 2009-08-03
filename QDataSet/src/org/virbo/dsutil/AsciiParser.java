@@ -51,13 +51,23 @@ public class AsciiParser {
 
     Pattern propertyPattern = null;
     String commentPrefix = "#";
+
+    /**
+     * a java identifier that can be used to identify the column.
+     */
     String[] fieldNames;
+    
     Units[] units;
 
     /** either the unit or depend 1 value associated with the column 
      * e.g. Density(cc**-3)  or  flux_C4(6.4)
      */
     String[] fieldUnits;
+
+    /**
+     * the presentation label for the column.
+     */
+    String[] fieldLabels;
 
     FieldParser[] fieldParsers;
     final static String numberPart = "[\\d\\.eE\\+\\-]+";
@@ -791,6 +801,7 @@ public class AsciiParser {
 
         this.units = new Units[fieldCount];
         fieldNames = new String[fieldCount];
+        fieldLabels= new String[fieldCount];
         fieldUnits= new String[fieldCount];
 
         boolean isColumnHeaders = true;
@@ -799,12 +810,14 @@ public class AsciiParser {
             fieldParsers[i] = DOUBLE_PARSER;
             Matcher m;
             if ((m = COLUMN_ID_HEADER_PATTERN.matcher(ss[i])).matches()) {
-                fieldNames[i] = m.group(1).trim().replaceAll(" ", "_");
+                fieldLabels[i] = m.group(1).trim();
+                fieldNames[i] = fieldLabels[i].replaceAll(" ", "_");
                 fieldUnits[i]= m.group(3);
                 if (fieldUnits[i]!=null) fieldUnits[i]= fieldUnits[i].trim();
             // TODO: check for units too.
             // if ( m.groupCount() is 2) String u= m.group(2).trim()
             } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() ) {
+                fieldLabels[i] = m.group(1).trim();
                 fieldNames[i] = "ch_"+m.group(1).trim().replaceAll("-", "_");
                 fieldUnits[i]= null;
             } else {
@@ -1163,6 +1176,22 @@ public class AsciiParser {
     public String[] getFieldNames() {
         return this.fieldNames;
     }
+
+    /**
+     * return the labels found for each each field.  If a label wasn't found,
+     * then the name is returned.
+     * @return
+     */
+    public String[] getFieldLabels() {
+        if ( fieldLabels==null ) {
+            fieldLabels= new String[fieldNames.length];
+        }
+        for ( int i=0; i<fieldLabels.length; i++ ) {
+            if ( fieldLabels[i]==null ) fieldLabels[i]= fieldNames[i];
+        }
+        return this.fieldLabels;
+    }
+
 
     /**
      * return the units that were associated with the field.  This might also be
