@@ -35,11 +35,11 @@ public class TimeParser {
     TimeStruct time;
     TimeStruct timeWidth;
     int ndigits;
-    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b"};
+    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", };
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name",};
-    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3};
-    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1};
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", };
+    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1 };
+    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1, -1, };
     int[] handlers;
     /**
      * set of custom handlers to allow for extension
@@ -456,9 +456,13 @@ public class TimeParser {
                 time.hour -= offset / 100;   // careful!
 
                 time.minute -= offset % 100;
-            } else if (handlers[idigit] == 13) {
+            } else if (handlers[idigit] == 12) {
+                //ignore
+            } else if (handlers[idigit] == 13) { // month name
                 time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
 
+            } else if (handlers[idigit] == 14) {
+                //ignore
             }
         }
         return this;
@@ -513,6 +517,7 @@ public class TimeParser {
      */
     public void setDigit(String format, double value) {
         if (format.equals("%{ignore}") ) return;
+        if (format.equals("%X") ) return;
         if (value < 0) {
             throw new IllegalArgumentException("value must not be negative on field:"+format+" value:"+value );
         }
@@ -648,6 +653,8 @@ public class TimeParser {
                     digit = value % mod;
                     time.seconds = digit;
                     break;
+                case 'X':
+                    break;
                 case '{':
                     FieldSpec fs= parseSpec(ss[i]);
                     if (fs.fieldType.equals("milli")) {
@@ -702,9 +709,6 @@ public class TimeParser {
             case 3:
                 time.month = digit;
                 break;
-            case 13:
-                time.month = digit;
-                break;
             case 4:
                 time.day = digit;
                 break;
@@ -723,6 +727,13 @@ public class TimeParser {
             case 9:
                 time.micros = digit;
                 break;
+            case 12:
+                break;  // ignore
+            case 13:
+                time.month = digit;
+                break;
+            case 14:
+                break;  // ignore
         }
         return this;
     }
@@ -838,11 +849,14 @@ public class TimeParser {
                 result.insert(offs, TimeUtil.monthNameAbbrev(timel.month));
                 offs += len;
 
+            } else if (handlers[idigit] == 12 || handlers[idigit]==14 ) { // ignore
+                throw new RuntimeException("cannot format spec containing ignore");
+
             } else if (handlers[idigit] == 100) {
                 throw new RuntimeException("Handlers not supported");
 
             } else if (handlers[idigit] == 10) {
-                throw new RuntimeException("AM/PM supported");
+                throw new RuntimeException("AM/PM not supported");
 
             } else if (handlers[idigit] == 11) {
                 throw new RuntimeException("Time Zones not supported");
