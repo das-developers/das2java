@@ -72,7 +72,15 @@ public class AsciiParser {
     int fieldCount;
     public final static Pattern NAME_COLON_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\:\\s*(.+)\\s*");
     public final static Pattern NAME_EQUAL_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\=\\s*(.+)\\s*");
-    public final static Pattern COLUMN_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z _0-9]*)(\\(([a-zA-Z_\\.0-9]*)\\))?\"?\\s*");
+    /**
+     * detect identifiers for columns.
+     */
+    private final static Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z _0-9]*)(\\(([a-zA-Z_\\.0-9]*)\\))?\"?\\s*");
+    /**
+     * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
+     */
+    private final static Pattern COLUMN_CHANNEL_HEADER_PATTERN = Pattern.compile("\\s*\"?((\\d*\\.?\\d*([eE]\\d+)?)\\-(\\d*\\.?\\d*([eE]\\d+)?))\"?\\s*");
+
     public final static String PROPERTY_FIELD_NAMES = "fieldNames";
     public static final String PROPERTY_FILE_HEADER = "fileHeader";
     public static final String PROPERTY_FIRST_RECORD = "firstRecord";
@@ -790,12 +798,15 @@ public class AsciiParser {
             units[i] = Units.dimensionless;
             fieldParsers[i] = DOUBLE_PARSER;
             Matcher m;
-            if ((m = COLUMN_HEADER_PATTERN.matcher(ss[i])).matches()) {
+            if ((m = COLUMN_ID_HEADER_PATTERN.matcher(ss[i])).matches()) {
                 fieldNames[i] = m.group(1).trim().replaceAll(" ", "_");
                 fieldUnits[i]= m.group(3);
                 if (fieldUnits[i]!=null) fieldUnits[i]= fieldUnits[i].trim();
             // TODO: check for units too.
             // if ( m.groupCount() is 2) String u= m.group(2).trim()
+            } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() ) {
+                fieldNames[i] = "ch_"+m.group(1).trim().replaceAll("-", "_");
+                fieldUnits[i]= null;
             } else {
                 if (isColumnHeaders) {
                     logger.finest("first parsed line does not appear to be column header because of field #" + i + ": " + ss[i]);
