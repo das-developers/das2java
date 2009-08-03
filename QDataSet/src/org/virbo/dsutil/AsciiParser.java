@@ -873,8 +873,10 @@ public class AsciiParser {
                         okayCount++;
                     } catch (ParseException e) {
                         failCount++;
+                        if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
                     } catch (NumberFormatException e) {
                         failCount++;
+                        if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
                     }
                 }
             }
