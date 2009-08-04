@@ -102,7 +102,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                 result = ss[0] + "00" + "E0";
             }
         }
-        return DefaultDatumFormatterFactory.getInstance().newFormatter(result);
+        try {
+            return DefaultDatumFormatterFactory.getInstance().newFormatter(result);
+        } catch ( IllegalArgumentException ex ) {
+            return nfz; //TODO: track this down.  It has something to do with logLinDomainDivider for colorbar.
+        }
     }
 
     private String getZString(TableDataSet tds, Datum x, Datum y, int[] ij) {
