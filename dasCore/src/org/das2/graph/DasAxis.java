@@ -1314,11 +1314,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
                 firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
             }
+            repaint();
         } else {
             if (autoTickV) {
                 if (majorTicksDomainDivider != null) {
                     updateTickVDomainDivider();
                 }
+                repaint();
             }
         }
 
