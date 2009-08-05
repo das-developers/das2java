@@ -3270,6 +3270,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setUseDomainDivider(boolean useDomainDivider) {
         boolean oldUseDomainDivider = this.useDomainDivider;
         this.useDomainDivider = useDomainDivider;
+        if ( oldUseDomainDivider!=useDomainDivider ) {
+            updateTickV();
+        }
         firePropertyChange(PROP_USEDOMAINDIVIDER, oldUseDomainDivider, useDomainDivider);
     }
 
