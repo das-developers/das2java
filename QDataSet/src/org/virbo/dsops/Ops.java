@@ -11,7 +11,6 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.math.fft.ComplexArray;
-import org.das2.math.fft.FFTUtil;
 import org.das2.math.fft.GeneralFFT;
 import org.das2.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
@@ -37,11 +36,11 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.VectorDataSetAdapter;
-import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.DataSetBuilder;
+import org.virbo.dsutil.FFTUtil;
 
 /**
  * A fairly complete set of operations for QDataSets.  Currently, most operations
@@ -1503,22 +1502,38 @@ public class Ops {
         return wds;
     }
 
+    private static QDataSet fftPowerRank2( QDataSet ds ) {
+        JoinDataSet result= new JoinDataSet(2);
+
+        for ( int i=0; i<ds.length(); i++ ) {
+            GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length(i));
+            QDataSet vds= FFTUtil.fftPower( fft, DataSetOps.slice0(ds, i) );
+
+            result.join(vds);
+        }
+        result.putProperty(QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0));
+        return result;
+
+    }
+
     /**
      * returns the power spectrum of the waveform.  Positive frequencies
      * are returned for DEPEND_0, and square of the magnitude is returned for
      * the values.
      * 
-     * @param ds
+     * @param ds rank 1 waveform or rank 2 array of waveforms
      * @return 
      */
     public static QDataSet fftPower( QDataSet ds ) {
+        if ( ds.rank()==2 ) {
+            return fftPowerRank2(ds);
+        }
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
         Units u = (Units) ds.property(QDataSet.UNITS);
         if (u == null) {
             u = Units.dimensionless;
         }
-        ComplexArray.Double ca = FFTUtil.fft( fft, VectorDataSetAdapter.create(ds), u );
-
+        ComplexArray.Double ca = FFTUtil.fft( fft, ds );
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         RankZeroDataSet cadence = dep0 == null ? DRank0DataSet.create(1.0) : DataSetUtil.guessCadenceNew(dep0,null);
@@ -1550,7 +1565,7 @@ public class Ops {
         if (u == null) {
             u = Units.dimensionless;
         }
-        ComplexArray.Double cc = FFTUtil.fft(fft, VectorDataSetAdapter.create(ds), u);
+        ComplexArray.Double cc = FFTUtil.fft(fft, ds);
         DDataSet result = DDataSet.createRank2(ds.length(), 2);
         for (int i = 0; i < ds.length(); i++) {
             result.putValue(i, 0, cc.getReal(i));
@@ -2123,13 +2138,16 @@ public class Ops {
     public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep0 ) {
         MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable(ds);
         if ( dim==0 ) {
-            if ( dep0!=null && ds.length()!=dep0.length() ) throw new IllegalArgumentException("ds.length()!=dep0.length()");
+            if ( dep0!=null && ds.length()!=dep0.length() ) 
+                throw new IllegalArgumentException(String.format("ds.length()!=dep.length() (%d!=%d)",ds.length(),dep0.length()));
             mds.putProperty( QDataSet.DEPEND_0, dep0 );
         } else if ( dim==1 ) {
-            if ( dep0!=null && ds.length(0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0)!=dep0.length()");
+            if ( dep0!=null && ds.length(0)!=dep0.length() ) 
+                throw new IllegalArgumentException(String.format("ds.length(0)!=dep.length() (%d!=%d)",ds.length(0),dep0.length()));
             mds.putProperty( QDataSet.DEPEND_1, dep0 );
         } else if ( dim==2 ) {
-            if ( dep0!=null && ds.length(0,0)!=dep0.length() ) throw new IllegalArgumentException("ds.length(0,0)!=dep0.length()");
+            if ( dep0!=null && ds.length(0,0)!=dep0.length() ) 
+                throw new IllegalArgumentException(String.format("ds.length(0,0)!=dep.length() (%d!=%d)",ds.length(0,0),dep0.length()));
             mds.putProperty( QDataSet.DEPEND_2, dep0 );
         }
         return mds;
