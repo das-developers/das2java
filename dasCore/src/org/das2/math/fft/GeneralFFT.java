@@ -123,4 +123,11 @@ public class GeneralFFT {
         complexFloatFFT.inverse( data );
     }
     
+    /**
+     * return the number of points in the fft.
+     * @return
+     */
+    public int size() {
+        return n;
+    }
 }
