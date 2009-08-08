@@ -253,7 +253,7 @@ public final class AutoHistogram {
                     continue;
                 }
             } catch ( IndexOutOfBoundsException ex ) {
-                // it would be nice if we could promote the exception to show iterator and also show cause.
+                //TODO: it would be nice if we could promote the exception to show iterator and also show cause.
                 System.err.println( "Index out of bounds: "+iter );
                 throw ex;
             }
