@@ -247,9 +247,15 @@ public final class AutoHistogram {
 
             iter.next();
 
-            if (iter.getValue(wds) == 0) {
-                invalidCount++;
-                continue;
+            try {
+                if (iter.getValue(wds) == 0) {
+                    invalidCount++;
+                    continue;
+                }
+            } catch ( IndexOutOfBoundsException ex ) {
+                // it would be nice if we could promote the exception to show iterator and also show cause.
+                System.err.println( "Index out of bounds: "+iter );
+                throw ex;
             }
 
             double d = iter.getValue(ds);
