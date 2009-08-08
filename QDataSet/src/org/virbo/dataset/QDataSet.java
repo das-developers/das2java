@@ -303,7 +303,9 @@ public interface QDataSet {
     int length( );
     
     /**
-     * return the length of the second dimension, for the ith element of the first dimension
+     * return the length of the second dimension, for the ith element of the first dimension.  Note
+     * if there are zero elements in the first dimension, but this is a QUBE, then this should not
+     * throw an IndexOutOfBoundsException.
      */
     int length( int i );
 
