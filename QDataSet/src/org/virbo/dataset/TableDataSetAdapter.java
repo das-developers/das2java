@@ -80,7 +80,7 @@ public class TableDataSetAdapter implements TableDataSet {
                     throw new IllegalArgumentException("x table must be monotonic");
                 }
                 if (!DataSetUtil.isMonotonic(yds)) {
-                    throw new IllegalArgumentException("x table must be monotonic");
+                    throw new IllegalArgumentException("y table must be monotonic");
                 }
                 if ( haveX ) {
                     xds.join( xds1 );

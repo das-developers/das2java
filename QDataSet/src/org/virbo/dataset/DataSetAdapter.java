@@ -24,7 +24,12 @@ public class DataSetAdapter {
         if ( ds instanceof VectorDataSet ) {
             return new Vector((VectorDataSet) ds);
         } else if ( ds instanceof TableDataSet ) {
-            return new Table((TableDataSet) ds);
+            TableDataSet tds= (TableDataSet) ds;
+            if ( tds.tableCount()<=1 ) {
+                return new Table(tds);
+            } else {
+                return new MultipleTable(tds);
+            }
         } else {
             throw new IllegalArgumentException("unsupported dataset type: "+ds.getClass().getName() );
         }
@@ -41,7 +46,33 @@ public class DataSetAdapter {
             throw new IllegalArgumentException("unsupported rank: "+ds.rank() );
         }
     }
-    
+
+    static class MultiTableXTagsDataSet extends AbstractDataSet {
+        org.das2.dataset.DataSet source;
+        int offset;
+        int length;
+        MultiTableXTagsDataSet( org.das2.dataset.DataSet source, int offset, int length ) {
+            this.source= source;
+            this.offset= offset;
+            this.length= length;
+            properties.put( QDataSet.UNITS, source.getXUnits() );
+            Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
+            if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
+        }
+
+        public int rank() {
+            return 1;
+        }
+
+        public double value(int i) {
+            return source.getXTagDouble( i+offset, source.getXUnits() );
+        }
+
+        public int length() {
+            return length;
+        }
+
+    }
     static class XTagsDataSet extends AbstractDataSet {
         org.das2.dataset.DataSet source;
         XTagsDataSet( org.das2.dataset.DataSet source ) {
@@ -92,7 +123,8 @@ public class DataSetAdapter {
     
     static class YTagsDataSet extends AbstractDataSet {
         TableDataSet source;
-        YTagsDataSet( TableDataSet source ) {
+        int table;
+        YTagsDataSet( TableDataSet source, int table ) {
             this.source= source;
             properties.put( QDataSet.UNITS, source.getYUnits() );
             
@@ -102,7 +134,7 @@ public class DataSetAdapter {
         }
         
         public double value(int i) {
-            return source.getYTagDouble( 0, i, source.getYUnits() );
+            return source.getYTagDouble( table, i, source.getYUnits() );
         }
         
         public int length() {
@@ -120,7 +152,7 @@ public class DataSetAdapter {
             this.source= source;
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
-            properties.put( QDataSet.DEPEND_1, new YTagsDataSet( source ) );
+            properties.put( QDataSet.DEPEND_1, new YTagsDataSet( source, 0 ) );
             properties.put( QDataSet.QUBE, Boolean.TRUE );
             properties.put( PROPERTY_SOURCE, source );
         }
@@ -142,5 +174,59 @@ public class DataSetAdapter {
         }
         
     }
-    
+
+    static class MultipleTable extends AbstractDataSet {
+        TableDataSet source;
+
+        MultipleTable( TableDataSet source ) {
+            super();
+
+            this.source= source;
+            properties.put( QDataSet.UNITS, source.getZUnits() );
+            properties.put( PROPERTY_SOURCE, source );
+        }
+
+        public int rank() {
+            return 3;
+        }
+
+        public int length() {
+            return source.tableCount();
+        }
+
+        public int length(int i) {
+            return source.tableEnd(i) - source.tableStart(i);
+        }
+
+        public int length(int i, int j) {
+            try {
+                return source.getYLength( i );
+            } catch ( IndexOutOfBoundsException ex ) {
+                throw ex;
+            }
+        }
+
+        public double value( int i, int j, int k ) {
+            int ts= source.tableStart(i);
+            try {
+                return source.getDouble( ts+j, k, source.getZUnits() );
+            } catch ( IndexOutOfBoundsException ex ) {
+                throw ex;
+            }
+        }
+
+        @Override
+        public Object property(String name, int i) {
+            if ( name.equals( QDataSet.DEPEND_0 ) ) {
+                return new MultiTableXTagsDataSet( source, source.tableStart(i), source.tableEnd(i)-source.tableStart(i) );
+            } else if ( name.equals( QDataSet.DEPEND_1 ) ) {
+                return new YTagsDataSet( source, i );
+            } else {
+                return super.property(name, i);
+            }
+        }
+
+
+
+    }
 }
