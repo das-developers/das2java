@@ -97,7 +97,7 @@ public class HttpFileSystem extends WebFileSystem {
         } catch (FileSystemOfflineException e) {
             throw e;
         } catch (IOException e) {
-            throw new FileSystemOfflineException(e);
+            throw new FileSystemOfflineException(e,root);
         }
 
     }
