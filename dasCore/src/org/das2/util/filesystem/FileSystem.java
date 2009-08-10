@@ -59,6 +59,10 @@ public abstract class FileSystem  {
             super( e.getMessage() );
             initCause(e);
         }
+        public FileSystemOfflineException( IOException e, URL root ) {
+            super( e.getMessage() + ": "+root );
+            initCause(e);
+        }
     }
     
     public static FileSystem create(URL root) throws FileSystemOfflineException {
