@@ -2138,8 +2138,9 @@ public class Ops {
     public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep0 ) {
         MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable(ds);
         if ( dim==0 ) {
-            if ( dep0!=null && ds.length()!=dep0.length() ) 
+            if ( dep0!=null && ds.length()!=dep0.length() ) {
                 throw new IllegalArgumentException(String.format("ds.length()!=dep.length() (%d!=%d)",ds.length(),dep0.length()));
+            }
             mds.putProperty( QDataSet.DEPEND_0, dep0 );
         } else if ( dim==1 ) {
             if ( dep0!=null && ds.length(0)!=dep0.length() ) 
