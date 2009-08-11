@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  *
  * @author jbf
  */
-public class MapSerializeDelegate implements SerializeDelegate, XMLSerialize {
+public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDelegate {
 
     public String format(Object o) {
         if (true) {
@@ -63,8 +63,8 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerialize {
             }
             Element child= doc.createElement("entry");
             child.setAttribute( "key", (String)e.getKey() );
-            if ( sd instanceof XMLSerialize ) {
-                child.appendChild( ((XMLSerialize)sd).xmlFormat(doc,oval) );
+            if ( sd instanceof XMLSerializeDelegate ) {
+                child.appendChild( ((XMLSerializeDelegate)sd).xmlFormat(doc,oval) );
             } else {
                 String sval= sd.format(oval);
                 child.setAttribute( "type", sd.typeId(oval.getClass()) );
@@ -91,8 +91,8 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerialize {
                 stype= eval.getTagName();
             }
             SerializeDelegate sd= SerializeRegistry.getByName(stype);
-            if ( sd instanceof XMLSerialize ) {
-                Object oval= ((XMLSerialize)sd).xmlParse(eval);
+            if ( sd instanceof XMLSerializeDelegate ) {
+                Object oval= ((XMLSerializeDelegate)sd).xmlParse(eval);
                 result.put( key, oval );
             } else {
                 String sval= child.getAttribute("value");

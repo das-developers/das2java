@@ -5,6 +5,9 @@
 
 package org.virbo.qstream;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 /**
  * Utility classes for formatting and parsing streams.
  * @author jbf
@@ -36,5 +39,23 @@ public class Util {
             result[i]= qube[i+off];
         }
         return result;
+    }
+
+    /**
+     * returns the single child element of a node, or throws IllegalArgumentException
+     * @param n
+     * @return
+     */
+    public static Element singletonChildElement( Element n ) {
+        NodeList nl= n.getChildNodes();
+        Element child= null;
+        for ( int i=0; i<nl.getLength(); i++ ) {
+            if ( nl.item(i).getNodeType()==Element.ELEMENT_NODE ) {
+                if ( child!=null ) throw new IllegalArgumentException("multiple child nodes found when just one was expected");
+                child= (Element) nl.item(i);
+            }
+        }
+        if ( child==null ) throw new IllegalArgumentException("no child nodes found when just one was expected");
+        return child;
     }
 }

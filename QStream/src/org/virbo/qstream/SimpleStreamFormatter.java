@@ -24,7 +24,6 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
-import org.virbo.dataset.RankZeroDataSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -193,8 +192,12 @@ public class SimpleStreamFormatter {
                 // TODO: just skip the property, or insert it as a string.
                 }
                 prop.setAttribute("name", name);
-                prop.setAttribute("type", sd.typeId(value.getClass()));
-                prop.setAttribute("value", sd.format(value));
+                if ( sd instanceof XMLSerializeDelegate ) {
+                    prop.appendChild( ((XMLSerializeDelegate)sd).xmlFormat(document,value) );
+                } else {
+                    prop.setAttribute("type", sd.typeId(value.getClass()));
+                    prop.setAttribute("value", sd.format(value));
+                }
             }
             properties.appendChild(prop);
         }

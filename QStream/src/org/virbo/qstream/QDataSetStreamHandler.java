@@ -158,8 +158,24 @@ public class QDataSetStreamHandler implements StreamHandler {
                 for (int j = 0; j < odims.getLength(); j++) {
                     Element n2 = (Element) odims.item(j);
                     String pname = n2.getAttribute("name");
-                    String svalue = n2.getAttribute("value");
-                    String stype = n2.getAttribute("type");
+                    if ( pname.equals(QDataSet.USER_PROPERTIES) ) {
+                        System.err.println("ehre");
+                    }
+                    String svalue;
+                    if ( n2.hasAttribute("value") ){
+                        svalue= n2.getAttribute("value");
+                    } else {
+                        svalue= n2.getTextContent();
+                    }
+                    Element evalue=null;
+
+                    String stype;
+                    if ( n2.hasAttribute("type") ) {
+                        stype = n2.getAttribute("type");
+                    } else {
+                        evalue= Util.singletonChildElement(n2);
+                        stype= evalue.getTagName();
+                    }
                     if (stype.equals("qdataset")) {
                         builder.putProperty(pname, svalue);
                     } else {
@@ -168,8 +184,14 @@ public class QDataSetStreamHandler implements StreamHandler {
                             Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"" + stype + "\"");
                             continue;
                         }
+                        Object oval;
                         try {
-                            builder.putProperty(pname, delegate.parse(stype, svalue));
+                            if ( evalue!=null && delegate instanceof XMLSerializeDelegate ) {
+                                oval= ((XMLSerializeDelegate)delegate).xmlParse(evalue);
+                            } else {
+                                oval= delegate.parse(stype, svalue);
+                            }
+                            builder.putProperty(pname, oval);
                         } catch (ParseException ex) {
                             Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
                         }
