@@ -25,16 +25,15 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     public ColumnColumnConnector( DasCanvas parent, DasPlot topPlot, DasRow topRow, DasPlot bottomPlot ) {
         super( );
         putClientProperty( JLayeredPane.LAYER_PROPERTY, DasCanvas.AXIS_LAYER );
+        this.topPlot= topPlot;
+        this.topRow= topRow;
+        this.bottomPlot= bottomPlot;
+        this.parent= parent;
         
         setForeground( Color.LIGHT_GRAY );
         setRow( topRow );
         setColumn( topPlot.getColumn() );
-        this.topPlot= topPlot;
-        this.topRow= topRow;
         if ( topRow==null ) topRow= topPlot.getRow();
-        this.bottomPlot= bottomPlot;
-        
-        this.parent= parent;
         topPlot.addPropertyChangeListener(this);
         topPlot.getXAxis().addPropertyChangeListener(this);
         topPlot.getYAxis().addPropertyChangeListener(this);
