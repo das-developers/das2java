@@ -615,9 +615,6 @@ public class DataSetOps {
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
 
-        s= new Scanner(c);
-
-        s.useDelimiter("[\\(\\),]");
         while ( s.hasNext() ) {
             String cmd= s.next();
             if ( cmd.startsWith("_s") ) {
@@ -635,5 +632,21 @@ public class DataSetOps {
             }
         }
         return fillDs;
+    }
+
+    public static boolean changesDimensions( String c, String c2 ) {
+        Scanner s= new Scanner( c );
+        s.useDelimiter("[\\(\\),]");
+        Scanner s2= new Scanner( c2 );
+        s2.useDelimiter("[\\(\\),]");
+        while ( s.hasNext() && s2.hasNext() ) {
+            String cmd= s.next();
+            if ( !s2.next().equals(cmd) ) return true;
+            if ( cmd.startsWith("_s") ) {
+                s.nextInt();
+                s2.nextInt();
+            }
+        }
+        return s.hasNext() || s2.hasNext();
     }
 }
