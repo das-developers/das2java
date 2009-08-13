@@ -14,10 +14,12 @@ import org.das2.math.fft.GeneralFFT;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.IndexGenDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.TagGenDataSet;
 import org.virbo.dsops.Ops;
 
 /**
@@ -112,12 +114,21 @@ public class FFTUtil {
         ComplexArray.Double ca= ComplexArray.newArray(yreal);
         fft.transform( ca );  //TODO: get rid of ComplexArray, which can be represented as QDataSet.
 
-        QDataSet xtags= getFrequencyDomainTags( (QDataSet) vds.property( QDataSet.DEPEND_0 ) );
+        QDataSet dep0= (QDataSet) vds.property( QDataSet.DEPEND_0 );
+        if ( dep0==null ) {
+            dep0= new IndexGenDataSet( vds.length() );
+        }
+
+        QDataSet xtags= getFrequencyDomainTags( dep0 );
 
         Units xUnits= (Units)xtags.property( QDataSet.UNITS );
-        UnitsConverter uc= xUnits.getConverter(Units.hertz);
-
-        double binsize=  2 * ( uc.convert( xtags.value( xtags.length()/2 ) ) ) / fft.size();
+        double binsize;
+        if ( xUnits.isConvertableTo(Units.hertz) ) {
+            UnitsConverter uc= xUnits.getConverter(Units.hertz);
+            binsize= 2 * ( uc.convert( xtags.value( xtags.length()/2 ) ) ) / fft.size();
+        } else {
+            binsize= 2 * ( xtags.value( xtags.length()/2 ) ) / fft.size();
+        }
 
         DDataSet result= DDataSet.createRank1(xtags.length()/2);
         DDataSet powTags= DDataSet.createRank1(xtags.length()/2);
