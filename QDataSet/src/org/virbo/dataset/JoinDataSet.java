@@ -11,6 +11,7 @@ package org.virbo.dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * create a higher rank dataset with dim 0 being a join dimension.  Join implies
@@ -109,7 +110,27 @@ public class JoinDataSet extends AbstractDataSet {
         return this;
     }
 
+    /**
+     * slice the dataset by returning the joined dataset at this index.  If the
+     * dataset is a MutablePropertiesDataSet, then add the properties of this
+     * join dataset to it. //TODO: danger
+     * @param idx
+     * @return
+     */
     public QDataSet slice( int idx ) {
-        return datasets.get(idx);
+        QDataSet result= datasets.get(idx);
+        if ( result instanceof MutablePropertyDataSet ) {
+            MutablePropertyDataSet mpds= (MutablePropertyDataSet)result;
+            for ( Entry<String,Object> e : properties.entrySet() ) {
+                if ( result.property( e.getKey()) == null ) {
+                    mpds.putProperty( e.getKey(), e.getValue() );
+                }
+                final Object dep1 = properties.get(QDataSet.DEPEND_1);
+                if ( dep1 !=null ) {
+                    mpds.putProperty( QDataSet.DEPEND_0,dep1);
+                }
+            }
+        }
+        return result;
     }
 }
