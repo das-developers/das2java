@@ -12,6 +12,7 @@ import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Useful operations for QDataSets
@@ -603,4 +604,36 @@ public class DataSetOps {
 
     }
 
+    /**
+     * see http://www.papco.org/wiki/index.php/DataReductionSpecs
+     * @param c
+     * @param fillDs
+     * @return
+     */
+    public static QDataSet sprocess(String c, QDataSet fillDs) {
+        int i=1;
+        Scanner s= new Scanner( c );
+        s.useDelimiter("[\\(\\),]");
+
+        s= new Scanner(c);
+
+        s.useDelimiter("[\\(\\),]");
+        while ( s.hasNext() ) {
+            String cmd= s.next();
+            if ( cmd.startsWith("_s") ) {
+                int dim= cmd.charAt(2)-'0';
+                int idx= s.nextInt();
+                if ( dim==0 ) {
+                    fillDs= slice0(fillDs, idx);
+                } else if ( dim==1 ) {
+                    fillDs= slice1(fillDs, idx);
+                } else if ( dim==2 ) {
+                    fillDs= slice2(fillDs, idx);
+                } else if ( dim==3 ) {
+                    throw new IllegalArgumentException("not supported yet");
+                }
+            }
+        }
+        return fillDs;
+    }
 }
