@@ -59,7 +59,7 @@ public class KeyChain {
         String storedUserInfo= keys.get(hash);
         if ( storedUserInfo!=null ) return storedUserInfo;
 
-        if ( ss[1].length()==0 || userInfo.equals("user:pass") ) {
+        if ( ss.length<2 || ss[1].length()==0 || userInfo.equals("user:pass") ) {
             if ( !DasApplication.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
                 JPanel panel= new JPanel();
                 panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
@@ -69,7 +69,7 @@ public class KeyChain {
                 panel.add( userTf );
                 panel.add( new JLabel("Password:") );
                 JPasswordField passTf= new JPasswordField();
-                if ( !ss[1].equals("pass") ) passTf.setText(ss[1]);
+                if ( ss.length>1 && !ss[1].equals("pass") ) passTf.setText(ss[1]);
                 panel.add( passTf );
                 if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_OPTION ) ) {
                     char[] pass= passTf.getPassword();
