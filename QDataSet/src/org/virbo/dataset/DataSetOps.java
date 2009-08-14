@@ -617,8 +617,8 @@ public class DataSetOps {
 
         while ( s.hasNext() ) {
             String cmd= s.next();
-            if ( cmd.startsWith("_s") ) {
-                int dim= cmd.charAt(2)-'0';
+            if ( cmd.startsWith("|slice") ) {
+                int dim= cmd.charAt(6)-'0';
                 int idx= s.nextInt();
                 if ( dim==0 ) {
                     fillDs= slice0(fillDs, idx);
@@ -635,7 +635,7 @@ public class DataSetOps {
     }
 
     public static boolean changesDimensions( String c, String c2 ) {
-        if ( ! c.startsWith("_") && !c2.startsWith("_") ) return false;  //TODO: kludge to avoid true when adding component child.
+        if ( ! c.startsWith("|") && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
         Scanner s2= new Scanner( c2 );
@@ -643,7 +643,7 @@ public class DataSetOps {
         while ( s.hasNext() && s2.hasNext() ) {
             String cmd= s.next();
             if ( !s2.next().equals(cmd) ) return true;
-            if ( cmd.startsWith("_s") ) {
+            if ( cmd.startsWith("|slice") ) {
                 s.nextInt();
                 s2.nextInt();
             }
