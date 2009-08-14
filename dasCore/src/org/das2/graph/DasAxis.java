@@ -116,6 +116,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setUserDatumFormatter(DatumFormatter userDatumFormatter) {
         this.userDatumFormatter = userDatumFormatter;
         updateTickV();
+        resize();
         repaint();
     }
     /**
