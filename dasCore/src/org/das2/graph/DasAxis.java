@@ -2142,7 +2142,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             bounds = getVerticalAxisBounds();
         }
-        if (getOrientation() == BOTTOM && areTickLabelsVisible()) {
+        if (getOrientation() == BOTTOM && isTickLabelsVisible()) {
             if (drawTca && tcaData != null && tcaData.length != 0) {
                 int DMin = getColumn().getDMinimum();
                 int DMax = getColumn().getDMaximum();
@@ -2172,15 +2172,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     bounds.width = maxX - minX;
                     blLabelRect.x = minX;
                     blLabelRect.width = maxX - minX;
-                }
-            }
-
-            for (int i = 0; i < tickV.tickV.getLength(); i++) {
-                if (false) { // this is unnecessary?  I think it's a kludge for multiline ticks...
-                    bounds.height += getTickLabelFont().getSize() + getLineSpacing();
-                    if (getTickDirection() == -1) {
-                        bounds.y -= getTickLabelFont().getSize() + getLineSpacing();
-                    }
                 }
             }
         }
