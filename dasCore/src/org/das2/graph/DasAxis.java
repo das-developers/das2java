@@ -3307,8 +3307,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DasDevicePosition pos;
         if (isHorizontal()) {
             pos = getColumn();
+            if ( pos==DasColumn.NULL) return;
         } else {
             pos = getRow();
+            if ( pos==DasRow.NULL) return;
         }
         double dmin = pos.getDMinimum();
         double dmax = pos.getDMaximum();
