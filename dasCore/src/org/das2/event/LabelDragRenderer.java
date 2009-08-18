@@ -239,7 +239,7 @@ public class LabelDragRenderer implements DragRenderer {
         if ( tooltip ) {
             if ( infoLabel==null ) infoLabel= new InfoLabel();
             Point p= (Point)p2.clone();
-            SwingUtilities.convertPointToScreen( p, parent );
+            SwingUtilities.convertPointToScreen( p, parent.getCanvas() );
             infoLabel.setText( label, p );
             result= new Rectangle[0];
         } else {
