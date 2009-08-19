@@ -1490,6 +1490,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     }
 
+    private String resolveAxisLabel() {
+        String result= axisLabel;
+        if ( result.contains("%{" ) ) {
+            result= result.replaceAll("%\\{UNITS\\}", getUnits().toString() );
+            result= result.replaceAll("%\\{RANGE\\}", getDatumRange().toString() );
+        }
+        return result;
+    }
+
     /** Paint the axis if it is horizontal  */
     protected void paintHorizontalAxis(Graphics2D g) {
         try {
@@ -1567,7 +1576,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
-                gtr.setString(g2, axisLabel);
+                String axislabel1= resolveAxisLabel();
+                gtr.setString(g2, axislabel1);
                 int titleWidth = (int) gtr.getWidth();
                 int baseline;
                 int leftEdge;
@@ -1669,7 +1679,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
-                gtr.setString(g2, axisLabel);
+                gtr.setString(g2, resolveAxisLabel() );
                 int titleWidth = (int) gtr.getWidth();
                 int baseline;
                 int leftEdge;
