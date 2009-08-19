@@ -173,6 +173,7 @@ public final class AutoHistogram {
         result.putProperty("means", means);
         result.putProperty("PLANE_1", stddevs);
         result.putProperty("stddevs", stddevs);
+        result.putProperty( QDataSet.RENDER_TYPE, "stairSteps" );  //TODO: consider schema id
 
         //TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom, units ); // firstBin done
         TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binw / binwDenom, (firstBin + binw * ifirstBin) / binwDenom, units);
