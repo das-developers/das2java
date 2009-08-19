@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Scanner;
+import org.virbo.dsops.Ops;
 
 /**
  * Useful operations for QDataSets
@@ -629,13 +630,15 @@ public class DataSetOps {
                 } else if ( dim==3 ) {
                     throw new IllegalArgumentException("not supported yet");
                 }
+            } else if ( cmd.startsWith("|autoHistogram") ) {
+                fillDs= Ops.autoHistogram(fillDs);
             }
         }
         return fillDs;
     }
 
     public static boolean changesDimensions( String c, String c2 ) {
-        if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
+        //if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
         Scanner s2= new Scanner( c2 );
