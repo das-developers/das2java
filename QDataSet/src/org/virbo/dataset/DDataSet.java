@@ -337,6 +337,10 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet, 
         int rank = ds.rank();
         DDataSet result;
         int len1,len2,len3;
+        if ( !DataSetUtil.isQube(ds) ) {
+            //throw new IllegalArgumentException("copy non-qube");
+            System.err.println("copy of non-qube to DDataSet, which must be qube");
+        }
         switch (rank) {
             case 1:
                 result = createRank1(ds.length());
