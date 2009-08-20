@@ -1516,6 +1516,18 @@ public class Ops {
 
     }
 
+    private static QDataSet fftPowerRank3( QDataSet ds ) {
+        JoinDataSet result= new JoinDataSet(3);
+
+        for ( int i=0; i<ds.length(); i++ ) {
+            QDataSet vds= fftPowerRank2( DataSetOps.slice0(ds, i) );
+            result.join(vds);
+        }
+        result.putProperty(QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0));
+        return result;
+
+    }
+
     /**
      * returns the power spectrum of the waveform.  Positive frequencies
      * are returned for DEPEND_0, and square of the magnitude is returned for
@@ -1528,6 +1540,10 @@ public class Ops {
         if ( ds.rank()==2 ) {
             return fftPowerRank2(ds);
         }
+        if ( ds.rank()==3 ) {
+            return fftPowerRank3(ds);
+        }
+
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
         Units u = (Units) ds.property(QDataSet.UNITS);
         if (u == null) {
