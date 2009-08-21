@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.beans.*;
 import java.util.*;
 import java.util.logging.Logger;
+import org.das2.graph.DigitalRenderer;
 
 /**
  *
@@ -72,6 +73,7 @@ public class BeansUtil {
             registerEditor(Psym.class, EnumerationEditor.class);
             registerEditor(PlotSymbol.class, EnumerationEditor.class);
             registerEditor(FillStyle.class, EnumerationEditor.class);
+            registerEditor(DigitalRenderer.Align.class, EnumerationEditor.class );
         // registerEditor(Rectangle.class, RectangleEditor.class);
         //registerEditor(DasServer.class, DasServerEditor.class);
         }
