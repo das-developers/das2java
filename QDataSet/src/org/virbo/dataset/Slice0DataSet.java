@@ -9,6 +9,8 @@ package org.virbo.dataset;
  * This is currently used to implement DataSetOps.slice0().
  * 
  * Slicing a rank 1 dataset results in a rank 0 dataset.
+ *
+ * Supports rank 2 depend_1 datasets.
  * @author jbf
  */
 public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
@@ -23,9 +25,15 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         this.ds = ds;
         this.index = index;
         if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 implies qube
-            putProperty( QDataSet.DEPEND_0, ds.property( QDataSet.DEPEND_1 ) );
+            QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+            if ( dep1!=null && dep1.rank()==2 ) {
+                putProperty( QDataSet.DEPEND_0, new Slice0DataSet( dep1, index ) );
+            } else {
+                putProperty( QDataSet.DEPEND_0, dep1 );
+            }
             putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
             putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
+
         } else {
             QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
             if ( dep0!=null && dep0.rank()>1 ) {
