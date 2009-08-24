@@ -103,7 +103,7 @@ public interface QDataSet {
      * a collapsed dimension.  In "Flux(Energy) @ Time=2009-03-16T11:19 UT", the Time=... comes from
      * a context property.  Note "0" is just a count, and does not refer to the 0th index.
      * A dataset can have any number of contexts:
-     * Temperature @ ( Time, Long, Lat ): 37 °F @ ( 2009-03-16T11:19 UT, 91.5331° West, 41.6579° North )
+     * Temperature @ ( Time, Long, Lat ): 37 deg F @ ( 2009-03-16T11:19 UT, 91.5331 deg West, 41.6579 deg North )
      * Typically this will be a rank 0 dataset, but may also be a rank 1 dataset with a bins dimension.
      */
     public final static String CONTEXT_0= "CONTEXT_0";
