@@ -9,6 +9,7 @@
 package org.virbo.dataset;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import org.das2.datum.Units;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -17,7 +18,6 @@ import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
-import org.das2.event.ZoomOutMouseModule;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
 
@@ -194,9 +194,9 @@ public class DataSetUtil {
 
     public static String[] propertyNames() {
         return new String[]{
-                    QDataSet.UNITS, QDataSet.CADENCE,
+                    QDataSet.UNITS, QDataSet.FORMAT, QDataSet.CADENCE,
                     QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
-                    QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
+                    QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX, QDataSet.RENDER_TYPE,
                     QDataSet.VALID_MIN, QDataSet.VALID_MAX,
                     QDataSet.FILL_VALUE,
                     QDataSet.QUBE,
@@ -240,6 +240,15 @@ public class DataSetUtil {
             QDataSet plane = (QDataSet) ds.property("PLANE_" + i);
             if (plane != null) {
                 result.put("PLANE_" + i, plane);
+            } else {
+                break;
+            }
+        }
+
+        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
+            QDataSet cds = (QDataSet) ds.property("CONTEXT_" + i);
+            if (cds != null) {
+                result.put("CONTEXT_" + i, cds);
             } else {
                 break;
             }
@@ -781,6 +790,50 @@ public class DataSetUtil {
     }
 
     public static String format(QDataSet ds) {
+        if ( ds.property("BUNDLE_0")!=null ) {
+            StringBuffer result= new StringBuffer(); // for documenting context.
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet cds= DataSetOps.slice0(ds, i);
+                result.append( DataSetUtil.format(cds) );
+                if ( i<ds.length() ) result.append(", ");
+            }
+            return result.toString();
+        }
+        if ( ds.rank()==0 ) {
+            String name= (String) ds.property(QDataSet.NAME);
+            Units u= (Units) ds.property(QDataSet.UNITS);
+            String format= (String) ds.property( QDataSet.FORMAT );
+            StringBuffer result= new StringBuffer();
+            if ( name!=null ) {
+                result.append(name).append("=");
+            }
+            if ( format!=null ) {
+                if ( u!=null ) {
+                    if ( UnitsUtil.isTimeLocation(u) ) {
+                        double millis= u.convertDoubleTo(Units.t1970, ds.value() );
+                        Calendar cal= Calendar.getInstance();
+                        cal.setTimeInMillis( (long)millis ); // TODO: check how to specify to nanos.
+                        result.append( String.format(format,cal) );
+                    } else {
+                        result.append( String.format(format,ds.value()) );
+                        if ( u!=Units.dimensionless ) result.append( " " ).append(u.toString());
+                    }
+                } else {
+                    result.append( String.format(format,ds.value()) );
+                }
+            } else {
+                if ( u!=null ) {
+                    result.append( u.createDatum(ds.value()).toString() );
+                } else {
+                    result.append( ds.value() );
+                }
+            }
+            QDataSet context0= (QDataSet) ds.property("CONTEXT_0");
+            if ( context0!=null ) {
+                result.append(" @ " + format(context0) );
+            }
+            return result.toString();
+        }
         StringBuffer buf = new StringBuffer(ds.toString() + ":\n");
         if (ds.rank() == 1) {
             for (int i = 0; i < Math.min(40, ds.length()); i++) {
@@ -793,7 +846,7 @@ public class DataSetUtil {
         if (ds.rank() == 2) {
             for (int i = 0; i < Math.min(10, ds.length()); i++) {
                 for (int j = 0; j < Math.min(20, ds.length(i)); j++) {
-                    buf.append(" " + ds.value(i));
+                    buf.append(" " + ds.value(i,j));
                 }
                 if (ds.length() >= 40) {
                     buf.append(" ...");
@@ -1054,6 +1107,31 @@ public class DataSetUtil {
         } else {
             throw new IllegalArgumentException("unsupported type: "+arr.getClass());
         }
+    }
+
+    /**
+     * adds the rank 0 dataset (a Datum) to the dataset's properties, after all
+     * the other CONTEXT_<i> properties.
+     * @param ds
+     * @param cds
+     */
+    public static void addContext( MutablePropertyDataSet ds, QDataSet cds ) {
+        int idx=0;
+        while ( ds.property("CONTEXT_"+idx)!=null ) idx++;
+        ds.putProperty( "CONTEXT_"+idx, cds );
+    }
+
+    public static String contextAsString( QDataSet ds ) {
+        StringBuffer result= new StringBuffer();
+        QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
+        int idx=0;
+        while ( cds!=null ) {
+            result.append( DataSetUtil.format(cds) );
+            idx++;
+            cds= (QDataSet) ds.property( "CONTEXT_"+idx );
+            if ( cds!=null ) result.append(", ");
+        }
+        return result.toString();
     }
 }
 
