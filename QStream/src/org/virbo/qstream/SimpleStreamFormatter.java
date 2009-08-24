@@ -67,17 +67,25 @@ public class SimpleStreamFormatter {
 
         qdatasetElement.setAttribute("rank", "" + (ds.rank() + (streamRank - 1)));
 
-        if ( isBundleDescriptor(ds) ) {
-            for ( int i=0; i<ds.length(); i++ ) {
-                QDataSet ds1= DataSetOps.slice0(ds, i);
-                Element props = doProperties(document, ds1);
-                props.setAttribute("index", String.valueOf(i) ); 
-                qdatasetElement.appendChild(props);
+        if ( isBundle(ds) ) {
+            QDataSet bds;
+            if ( ds.rank()==1 ) {
+                bds= (QDataSet) ds.property("BUNDLE_0");
+            } else {
+                bds= (QDataSet) ds.property("BUNDLE_1");
             }
-        } else {
-            Element props = doProperties(document, ds);
-            qdatasetElement.appendChild(props);
-        }
+            // if we haven't already serialized a bundleDescriptor, then do legacy.
+            if ( bds==null ) {
+                for ( int i=0; i<ds.length(); i++ ) {
+                    QDataSet ds1= DataSetOps.slice0(ds, i);
+                    Element props = doProperties(document, ds1);
+                    props.setAttribute("index", String.valueOf(i) );
+                    qdatasetElement.appendChild(props);
+                }
+            }
+        } 
+        Element props = doProperties(document, ds);
+        qdatasetElement.appendChild(props);
 
         PlaneDescriptor planeDescriptor = new PlaneDescriptor();
 
@@ -157,7 +165,9 @@ public class SimpleStreamFormatter {
         return planeDescriptor;
     }
 
-    private boolean isBundleDescriptor( QDataSet ds ) {
+    private boolean isBundle( QDataSet ds ) {
+        if ( ds.property(QDataSet.BUNDLE_0) !=null ) return true;
+        if ( ds.property(QDataSet.BUNDLE_1) !=null ) return true;
         if ( ds.property(QDataSet.NAME,0)!=ds.property(QDataSet.NAME) ) {
             return true;
         } else {
@@ -441,6 +451,24 @@ public class SimpleStreamFormatter {
         return packetDescriptor;
     }
 
+    /**
+     * serialize the dataset to the output stream.  Presently most datasets can
+     * be serialized:
+     *   * rank 0
+     *   * rank 1
+     *   * rank 2 qubes
+     *   * array of rank 2 qubes
+     *   * rank 3 qubes
+     *   * bundle datasets.
+     * The design goal is that all datasets can be serialized using this formatter,
+     * however some schemas (e.g. high-rank non-qubes) will be inefficient.
+     *
+     * @param ds the dataset to serialize.
+     * @param osout
+     * @param asciiTypes use ascii format types so that the stream is completely ascii.
+     * @throws StreamException
+     * @throws IOException
+     */
     public void format(QDataSet ds, OutputStream osout, boolean asciiTypes) throws StreamException, IOException {
 
         try {
@@ -456,7 +484,7 @@ public class SimpleStreamFormatter {
             sd.send(sd, out);
 
             int packetDescriptorCount = 1;
-            int streamRank;
+            int streamRank; //TODO: describe this
             String dep0Name = null;
 
             if (DataSetUtil.isQube(ds)) {
@@ -479,7 +507,7 @@ public class SimpleStreamFormatter {
                     packetDs = ds;
                 } else {
                     packetDs = DataSetOps.slice0(ds, ipacket);
-                    names.put(packetDs, nameFor(ds));
+                    names.put(packetDs, nameFor(packetDs));
                     if (dep0Name != null) {
                         names.put((QDataSet) packetDs.property(QDataSet.DEPEND_0), dep0Name);
                     //TODO: Planes are still a problem
@@ -507,7 +535,7 @@ public class SimpleStreamFormatter {
                 }
 
                 // check for BUNDLE_1 datasets that need to be sent out first.
-                for (int i = 1; i < 2; i++) {
+                for (int i = 0; i < 2; i++) {
                     QDataSet depi = (QDataSet) packetDs.property("BUNDLE_" + i);
                     if (depi != null) {
                         PacketDescriptor pd;
