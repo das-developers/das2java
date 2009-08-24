@@ -622,16 +622,24 @@ public class DataSetOps {
                 int dim= cmd.charAt(6)-'0';
                 int idx= s.nextInt();
                 if ( dim==0 ) {
+                    if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
+                    if ( idx<0 ) idx=0;
                     fillDs= slice0(fillDs, idx);
                 } else if ( dim==1 ) {
+                    if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
+                    if ( idx<0 ) idx=0;
                     fillDs= slice1(fillDs, idx);
                 } else if ( dim==2 ) {
+                    if ( idx>=fillDs.length(0,0) ) idx=fillDs.length(0,0)-1;
+                    if ( idx<0 ) idx=0;
                     fillDs= slice2(fillDs, idx);
                 } else if ( dim==3 ) {
                     throw new IllegalArgumentException("not supported yet");
                 }
-            } else if ( cmd.startsWith("|autoHistogram") ) {
+            } else if ( cmd.equals("|autoHistogram") ) {
                 fillDs= Ops.autoHistogram(fillDs);
+            } else if ( cmd.equals("|transpose") ) {
+                fillDs= Ops.transpose(fillDs);
             }
         }
         return fillDs;
