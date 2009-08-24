@@ -139,9 +139,6 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
     }
 
     public Datum getYTagDatum(int table, int j) {
-        if (table > 0) {
-            throw new IllegalArgumentException("table>0");
-        }
         return yunits.createDatum(y.value(table,j));
     }
 
