@@ -24,17 +24,21 @@ public class SortDataSet extends AbstractDataSet {
             
     /**
      * creates the SortDataSet
-     * @param source rank N dataset.  Supports plane_0.
+     * @param source rank N dataset.  Supports plane_0.  Supports rank 2 Depend_1.
      * @param sort the indeces of the sort. 
      */
     public SortDataSet( QDataSet source, QDataSet sort ) {
         this.source= source;
         this.sort= sort;
         properties= new HashMap();
-        Object o= source.property( QDataSet.DEPEND_0 );
-        if ( o!=null ) properties.put( QDataSet.DEPEND_0, new SortDataSet( (QDataSet)o, sort ) );
-        o= source.property( QDataSet.PLANE_0 );
-        if ( o!=null ) properties.put( QDataSet.PLANE_0, new SortDataSet( (QDataSet)o, sort ) );
+        QDataSet dep0= (QDataSet) source.property( QDataSet.DEPEND_0 );
+        if ( dep0!=null ) properties.put( QDataSet.DEPEND_0, new SortDataSet( dep0, sort ) );
+        QDataSet p0= (QDataSet) source.property( QDataSet.PLANE_0 );
+        if ( p0!=null ) properties.put( QDataSet.PLANE_0, new SortDataSet( p0, sort ) );
+        QDataSet dep1= (QDataSet) source.property( QDataSet.DEPEND_1 );
+        if ( dep1!=null && dep1.rank()>1 ) {
+            properties.put( QDataSet.DEPEND_1, new SortDataSet( dep1, sort ) );
+        }
     }
 
     public int rank() {
