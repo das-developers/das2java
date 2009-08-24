@@ -76,10 +76,10 @@ public class TableDataSetAdapter implements TableDataSet {
                 if (yds1 == null) {
                     yds1 = new IndexGenDataSet( z.length(i0,0) );
                 }
-                if (!DataSetUtil.isMonotonic(xds)) {
+                if (!DataSetUtil.isMonotonic(xds1)) {
                     throw new IllegalArgumentException("x table must be monotonic");
                 }
-                if (!DataSetUtil.isMonotonic(yds)) {
+                if (!DataSetUtil.isMonotonic(yds1)) {
                     throw new IllegalArgumentException("y table must be monotonic");
                 }
                 if ( haveX ) {
