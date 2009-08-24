@@ -40,6 +40,8 @@ public class FFTUtil {
      */
     public static QDataSet window( QDataSet ds, int size ) {
         JoinDataSet jds= new JoinDataSet(2);
+        JoinDataSet dep1= new JoinDataSet(2);
+
         int idx=0;
         DDataSet ttags= DDataSet.createRank1( ds.length()/size );
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -47,18 +49,31 @@ public class FFTUtil {
             dep0= Ops.dindgen(ds.length());
         }
         ttags.putProperty( QDataSet.UNITS, SemanticOps.getUnits(dep0) );
-        DDataSet offsets= DDataSet.createRank1(size);
-        for ( int i=0; i<size; i++ ) {
-            offsets.putValue(i,dep0.value(i)-dep0.value(0));
-        }
-        offsets.putProperty( QDataSet.UNITS, SemanticOps.getUnits(dep0).getOffsetUnits() );
+
+        DDataSet offsets=null;
+        boolean qube= true;
         while ( idx+size<ds.length() ) {
+            DDataSet offsets1= DDataSet.createRank1(size);
+            for ( int i=0; i<size; i++ ) {
+                offsets1.putValue(i,dep0.value(idx+i)-dep0.value(idx));
+                if ( offsets!=null && offsets.value(i)!=offsets1.value(i) ) {
+                    qube= false;
+                }
+                offsets= offsets1;
+            }
+            offsets1.putProperty( QDataSet.UNITS, SemanticOps.getUnits(dep0).getOffsetUnits() );
+
             jds.join( DataSetOps.trim( ds, idx, size ) );
+            dep1.join( offsets1 );
             ttags.putValue(idx/size,dep0.value(idx));
             idx+=size;
         }
-        jds.putProperty(QDataSet.DEPEND_0, ttags);
-        jds.putProperty(QDataSet.DEPEND_1, offsets);
+        jds.putProperty(QDataSet.DEPEND_0, ttags );
+        if ( qube ) {
+            jds.putProperty(QDataSet.DEPEND_1, offsets );
+        } else {
+            jds.putProperty(QDataSet.DEPEND_1, dep1 );
+        }
 
         return jds;
     }
