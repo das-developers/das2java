@@ -27,8 +27,14 @@ public class Slice1DataSet extends AbstractDataSet {
         this.ds = ds;
         this.index = index;
 
+        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+
+        if ( dep1!=null && dep1.rank()==1 ) {
+            DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
+        }
         putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_2) );
         putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
+
 
         QDataSet plane0= (QDataSet) ds.property( QDataSet.PLANE_0 );
         if ( plane0!=null ) {
