@@ -10,7 +10,7 @@ package org.virbo.dataset;
  * 
  * Slicing a rank 1 dataset results in a rank 0 dataset.
  *
- * Supports rank 2 depend_1 datasets.
+ * Supports rank 2 depend_1 datasets.  Supports CONTEXT_0 property.
  * @author jbf
  */
 public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
@@ -24,8 +24,13 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
         this.ds = ds;
         this.index = index;
-        if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 implies qube
-            QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+        QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
+            throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
+        }
+        if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
+            if ( dep0!=null ) DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
             if ( dep1!=null && dep1.rank()==2 ) {
                 putProperty( QDataSet.DEPEND_0, new Slice0DataSet( dep1, index ) );
             } else {
@@ -35,9 +40,10 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
 
         } else {
-            QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
             if ( dep0!=null && dep0.rank()>1 ) {
                 putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));  //DEPEND_0 rank>1
+            } else if ( dep0!=null && dep0.rank()==1 ) {
+                if ( dep0!=null ) DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
             } else {
                 if ( ds.property(QDataSet.DEPEND_0,index)==null ) { // bundle dataset  //TODO: this needs more review
                     putProperty( QDataSet.DEPEND_0, null );
