@@ -79,6 +79,12 @@ public interface QDataSet {
     public final static String BUNDLE_1="BUNDLE_1";
 
     /**
+     * type QDataSet.  This dataset describes how the columns should be split up
+     * into separate parameters.  See BUNDLE_1.
+     */
+    public final static String BUNDLE_0="BUNDLE_0";
+    
+    /**
      * type String.  This comma-delimited list of keywords that describe the boundary
      * type for each column.  For example, "min,max" or "c95min,mean,c95max"  A bins dimension
      * doesn't add a physical dimension.
@@ -92,6 +98,15 @@ public interface QDataSet {
      */
     public final static String PLANE_0= "PLANE_0";
 
+    /**
+     * type QDataSet.  A dataset that stores the position of a slice or range in
+     * a collapsed dimension.  In "Flux(Energy) @ Time=2009-03-16T11:19 UT", the Time=... comes from
+     * a context property.  Note "0" is just a count, and does not refer to the 0th index.
+     * A dataset can have any number of contexts:
+     * Temperature @ ( Time, Long, Lat ): 37 °F @ ( 2009-03-16T11:19 UT, 91.5331° West, 41.6579° North )
+     * Typically this will be a rank 0 dataset, but may also be a rank 1 dataset with a bins dimension.
+     */
+    public final static String CONTEXT_0= "CONTEXT_0";
     /**
      * this is the maximum number of allowed planes.  This should be used to enumerates all the planes.
      */
@@ -108,6 +123,15 @@ public interface QDataSet {
      * type Units.  The dataset units, found in org.das2.units.Units.
      */
     public final static String UNITS="UNITS";
+
+    /**
+     * type String.  Java/C format string for formatting the values.  This
+     * should imply precision, and codes that serialize data can use this
+     * to correctly format the data.  Note Java 5 supports field specs like
+     * %tY-%tj, and these may be used for time data, as long as only these
+     * field types are in the string.
+     */
+    public final static String FORMAT="FORMAT";
 
     /**
      * type Number, value to be considered fill (invalid) data.
@@ -213,7 +237,9 @@ public interface QDataSet {
     
     /**
      * Boolean.TRUE indicates that the dataset is a "qube," meaning 
-     * that all dimensions have fixed length and certain optimizations and operators are allowed. 
+     * that all dimensions have fixed length and certain optimizations and 
+     * operators are allowed.  Note that when DEPEND_1 is a rank 1 dataset,
+     * this implies QUBE.  Likewise BUNDLE_1 is a qube.
      */
     public final static String QUBE="QUBE";
     
