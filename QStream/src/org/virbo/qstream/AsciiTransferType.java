@@ -23,15 +23,47 @@ public class AsciiTransferType extends TransferType {
 
     final int sizeBytes;
     private DecimalFormat formatter;
+    private String formatStr; // for debugging
     
     AsciiTransferType( int sizeBytes, boolean scientificNotation ) {
         this.sizeBytes = sizeBytes;
-        formatter = NumberFormatUtil.getDecimalFormat( getFormat(sizeBytes-1,scientificNotation) );
+        this.formatStr= getFormat(sizeBytes-1,scientificNotation);
+        formatter = NumberFormatUtil.getDecimalFormat( formatStr );
+    }
+
+    /**
+     * return a transfer type with the given number of decimal places.
+     * TODO: this is not in use and has little testing.
+     * @param sizeBytes
+     * @param scientificNotation
+     * @param decimals
+     */
+    AsciiTransferType( int sizeBytes, boolean scientificNotation, int decimals ) {
+        this.sizeBytes = sizeBytes;
+        if ( decimals==0 ) {
+            this.formatStr= "0";
+        } else {
+            String pounds="################";
+            this.formatStr= "0."+pounds.substring(0,decimals);
+        }
+        formatter = NumberFormatUtil.getDecimalFormat( formatStr );
     }
 
     private static String getFormat( int length, boolean sci ) {
-        if (length < 9 || sci==false ) {
-            return "0.#####";
+        if ( length<9 || sci==false ) {
+            if (length==9  ) {
+                return "0.###";
+            } else if ( length==8 ) {
+                return "0.##";
+            } else if ( length==7 ) {
+                return "0.#";
+            } else if ( length==6 ) {
+                return "0.";
+            } else if ( length<6 ) {
+                throw new IllegalArgumentException("length is too short: "+length);
+            } else {
+                return "0.####";
+            }
         } else {
             StringBuffer buffer = new StringBuffer(length);
             buffer.append("+0.");

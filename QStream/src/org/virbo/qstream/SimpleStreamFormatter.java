@@ -108,6 +108,7 @@ public class SimpleStreamFormatter {
                 double min = Double.POSITIVE_INFINITY;
                 double max = Double.NEGATIVE_INFINITY;
                 double absMin = Double.MAX_VALUE;
+                double maxFp= 0.;
                 QubeDataSetIterator it = new QubeDataSetIterator(ds);
                 while (it.hasNext()) {
                     it.next();
@@ -116,6 +117,8 @@ public class SimpleStreamFormatter {
                         min = d;
                     }
                     final double dd = Math.abs(d);
+                    final double fp = dd-(long)dd;
+                    if ( fp>maxFp ) maxFp= fp; // check for all ints, for now. //TODO: check for highest precision.
                     if (dd > 0 && dd < absMin) {
                         absMin = dd;
                     }
@@ -129,7 +132,9 @@ public class SimpleStreamFormatter {
                 } else if (u instanceof TimeLocationUnits) {
                     planeDescriptor.setType(new AsciiTimeTransferType(24, u));
                 } else {
-                    if (min > -10000 && max < 10000 && absMin > 0.0001) {
+                    if ( maxFp==0 ) {
+                        planeDescriptor.setType(new AsciiIntegerTransferType(10));
+                    } else if (min > -10000 && max < 10000 && absMin > 0.0001) {
                         planeDescriptor.setType(new AsciiTransferType(10, false));
                     } else {
                         if (absMin > 1e-100 && max < 1e100) {

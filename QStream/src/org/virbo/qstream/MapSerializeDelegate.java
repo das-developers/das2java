@@ -62,7 +62,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
                 continue;
             }
             Element child= doc.createElement("entry");
-            child.setAttribute( "key", (String)e.getKey() );
+            child.setAttribute( "key", String.valueOf(e.getKey()) );
             if ( sd instanceof XMLSerializeDelegate ) {
                 child.appendChild( ((XMLSerializeDelegate)sd).xmlFormat(doc,oval) );
             } else {
