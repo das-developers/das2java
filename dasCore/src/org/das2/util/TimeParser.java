@@ -152,7 +152,7 @@ public class TimeParser {
         if ( formatString.contains("$") && !formatString.contains("%") ) {
             formatString= formatString.replaceAll("\\$", "%");
         }
-        
+
         String[] ss = formatString.split("%");
         fc = new String[ss.length];
         String[] delim = new String[ss.length + 1];
@@ -180,11 +180,20 @@ public class TimeParser {
                 lengths[i] = 0; // determine later by field type
             }
 
-            if (ss[i].charAt(pp) != '{') {
+            if (ss[i].charAt(pp) != '{' && ss[i].charAt(pp)!='(' ) {
                 fc[i] = ss[i].substring(pp, pp + 1);
                 delim[i] = ss[i].substring(pp + 1);
-            } else {
+            } else if ( ss[i].charAt(pp) == '{') {
                 int endIndex = ss[i].indexOf('}', pp);
+                int comma = ss[i].indexOf(",", pp);
+                if (comma != -1) {
+                    fc[i] = ss[i].substring(pp + 1, comma);
+                } else {
+                    fc[i] = ss[i].substring(pp + 1, endIndex);
+                }
+                delim[i] = ss[i].substring(endIndex + 1);
+            } else if ( ss[i].charAt(pp) == '(') {
+                int endIndex = ss[i].indexOf(')', pp);
                 int comma = ss[i].indexOf(",", pp);
                 if (comma != -1) {
                     fc[i] = ss[i].substring(pp + 1, comma);
@@ -587,6 +596,20 @@ public class TimeParser {
                         // do nothing
                     }
                     break;
+                case '(':
+                    fs= parseSpec(ss[i]);
+                    
+                    if (fs.fieldType.equals("milli")) {
+                        time.millis = digit;
+                        time.micros += 1000 * fp;
+                        time.seconds += ((1000 * fp) - time.micros) * 1e-6;
+                    } else if (fs.fieldType.equals("micro")) {
+                        time.micros = digit;
+                        time.seconds += fp * 1e-6;
+                    } else if (fs.fieldType.equals("ignore")) {
+                        // do nothing
+                    }
+                    break;
                 default:
                     throw new IllegalArgumentException("format code not supported");
             }
@@ -657,6 +680,24 @@ public class TimeParser {
                     break;
                 case '{':
                     FieldSpec fs= parseSpec(ss[i]);
+                    if (fs.fieldType.equals("milli")) {
+                        mod = 1000;
+                    } else if ( fs.fieldType.equals("micros") ) {
+                        mod = 1000;
+                    } else {
+                        mod= (int)Math.pow( 10, fs.length );
+                    }
+                    digit = value % mod;
+                    if ( fs.fieldType.equals("milli")) {
+                        time.millis = digit;
+                    } else if ( fs.fieldType.equals("micros")) {
+                        time.micros = digit;
+                    } else if ( fs.fieldType.equals("ignore")) {
+                        // do nothing
+                    }
+                    break;
+                case '(':
+                    fs= parseSpec(ss[i]);
                     if (fs.fieldType.equals("milli")) {
                         mod = 1000;
                     } else if ( fs.fieldType.equals("micros") ) {
