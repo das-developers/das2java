@@ -1,0 +1,5 @@
+Bugfix: SeriesRenderer.PsymConnectorRenderElement.acceptContext now 
+works correctly (bug #0000346)
+--This line, and those below, will be ignored--
+
+M    src/org/das2/graph/SeriesRenderer.java
