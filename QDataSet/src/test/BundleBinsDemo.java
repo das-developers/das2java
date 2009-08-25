@@ -19,7 +19,7 @@ import org.virbo.dsops.Ops;
 public class BundleBinsDemo {
      public static QDataSet demo1() {
          final DDataSet result= DDataSet.createRank2(10,6);
-         Random r= new Random();
+         Random r= new Random(12345);
          for ( int i=0; i<result.length(); i++ ) {
              result.putValue(i,0,i*3600e6);
              result.putValue(i,1,(i+1)*3600e6);
