@@ -795,7 +795,7 @@ public class DataSetUtil {
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet cds= DataSetOps.slice0(ds, i);
                 result.append( DataSetUtil.format(cds) );
-                if ( i<ds.length() ) result.append(", ");
+                if ( i<ds.length()-1 ) result.append(", ");
             }
             return result.toString();
         }

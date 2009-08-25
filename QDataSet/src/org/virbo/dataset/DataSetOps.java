@@ -62,7 +62,7 @@ public class DataSetOps {
     }
 
     /**
-     * this strange dataset operator assumes a square or qube dataset
+     * slice dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
      */
@@ -71,52 +71,23 @@ public class DataSetOps {
     }
 
     /**
-     * this strange dataset operator assumes a square or qube dataset
+     * slice dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
      */
     public static MutablePropertyDataSet slice2(final QDataSet ds, final int index) {
-        if (ds.rank() != 3) {
-            throw new IllegalArgumentException("rank must = 3");
-        }
-
-        MutablePropertyDataSet result = new AbstractDataSet() {
-
-            public int rank() {
-                return ds.rank() - 1;
-            }
-
-            public double value(int i0, int i1) {
-                return ds.value(i0, i1, index);
-            }
-
-            public Object property(String name) {
-                if (properties.containsKey(name)) {
-                    return properties.get(name);
-                } else {
-                    return ds.property(name);
-                }
-            }
-
-            public Object property(String name, int i) {
-                Object p = properties.get(name);
-                return (p != null) ? p : ds.property(name, i);
-            }
-
-            public int length() {
-                return ds.length();
-            }
-
-            public int length(int i0) {
-                return ds.length(i0);
-            }
-        };
-
-        result.putProperty(QDataSet.DEPEND_2, null);
-
-        return result;
+        return new Slice2DataSet(ds, index);
     }
 
+    /**
+     * slice dataset operator assumes a qube dataset
+     * by picking the index-th element of dataset's second dimension, without
+     * regard to tags.
+     */
+    public static MutablePropertyDataSet slice3(final QDataSet ds, final int index) {
+        return new Slice3DataSet(ds, index);
+    }
+    
     /**
      * reduce the number of elements in the dataset to the dim 0 indeces specified.
      * This does not change the rank of the dataset.
@@ -634,7 +605,9 @@ public class DataSetOps {
                     if ( idx<0 ) idx=0;
                     fillDs= slice2(fillDs, idx);
                 } else if ( dim==3 ) {
-                    throw new IllegalArgumentException("not supported yet");
+                    if ( idx>=fillDs.length(0,0,0) ) idx=fillDs.length(0,0,0)-1;
+                    if ( idx<0 ) idx=0;
+                    fillDs= slice3(fillDs, idx);
                 }
             } else if ( cmd.equals("|autoHistogram") ) {
                 fillDs= Ops.autoHistogram(fillDs);

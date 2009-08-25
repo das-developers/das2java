@@ -52,9 +52,14 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
         
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
-            QDataSet plane0= (QDataSet) ds.property( "PLANE_"+i );
+            String prop= "PLANE_"+i;
+            QDataSet plane0= (QDataSet) ds.property( prop );
             if ( plane0!=null ) {
-                putProperty( "PLANE_"+i, new Slice0DataSet( plane0, index ) );
+                if ( plane0.rank()<1 ) {
+                    putProperty( prop, plane0 );
+                } else {
+                    putProperty( prop, new Slice0DataSet( plane0, index ) );
+                }
             } else {
                 break;
             }
