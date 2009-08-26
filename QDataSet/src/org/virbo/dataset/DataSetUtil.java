@@ -279,8 +279,16 @@ public class DataSetUtil {
      */
     public static void putProperties(Map<String, Object> properties, MutablePropertyDataSet ds) {
         for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
-            Map.Entry e = (Map.Entry) i.next();
-            ds.putProperty((String) e.getKey(), e.getValue());
+            Map.Entry<String,Object> e = (Map.Entry<String,Object>) i.next();
+            if ( e.getKey().startsWith("DEPEND_") && e.getValue() instanceof Map ) {
+                QDataSet dep= (QDataSet) ds.property(e.getKey());
+                if ( dep instanceof MutablePropertyDataSet ) {
+                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                    putProperties( (Map<String,Object>)e.getValue(), mdep );
+                }
+            } else {
+                ds.putProperty((String) e.getKey(), e.getValue());
+            }
         }
     }
 
@@ -351,8 +359,8 @@ public class DataSetUtil {
     /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
-     * @param xds
-     * @param yds
+     * @param xds the x tags.
+     * @param yds the y values, which if non-null is only used for fill values.
      * @return null or the cadence in a rank 0 dataset.  The following may be
      *    properties of the result:
      *    SCALE_TYPE  may be "log"
