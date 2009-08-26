@@ -206,8 +206,10 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
                 unitsButton.setVisible(false);
             } else {
                 unitsButton.setVisible(true);
-                unitsButton.setText(units.toString());
-                unitsButton.setToolTipText("units selection");
+                String unitsStr= units.toString();
+                if ( unitsStr.length()>10 ) unitsStr= unitsStr.substring(0,9)+"...";
+                unitsButton.setText(unitsStr);
+                unitsButton.setToolTipText(units.toString()); // don't abbreviate
             }
         }
         this.units = units;

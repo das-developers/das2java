@@ -40,6 +40,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
+import org.das2.datum.UnitsUtil;
 
 
 /**
@@ -111,7 +112,14 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         DatumRange oldValue = value;
         value = datumRange;
         Units u= datumRange.getUnits();
-        editor.setText( datumRange.toString() );
+        String text= datumRange.toString();
+        if ( !UnitsUtil.isTimeLocation(units) ) {
+            if ( text.endsWith( u.toString() ) && u.toString().length()>7 ) {
+                int n= text.length();
+                text= text.substring(0,n-u.toString().length());
+            }
+        }
+        editor.setText( text );
         setUnits(u);
         if (oldValue != value && oldValue != null && !oldValue.equals(value)) {
             firePropertyChange("value", oldValue, value);
@@ -176,8 +184,10 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
             unitsButton.setVisible(false);
         } else {
             unitsButton.setVisible(true);
-            unitsButton.setText(units.toString());
-            unitsButton.setToolTipText("units selection");
+            String unitsStr= units.toString();
+            if ( unitsStr.length()>10 ) unitsStr= unitsStr.substring(0,9)+"...";
+            unitsButton.setText(unitsStr);
+            unitsButton.setToolTipText(units.toString()); // don't abbreviate
         }
         this.units = units;
     }
