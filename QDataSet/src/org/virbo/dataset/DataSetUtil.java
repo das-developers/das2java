@@ -286,6 +286,24 @@ public class DataSetUtil {
                     MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
                     putProperties( (Map<String,Object>)e.getValue(), mdep );
                 }
+            } else if ( e.getKey().startsWith("PLANE_") && e.getValue() instanceof Map ) {
+                QDataSet dep= (QDataSet) ds.property(e.getKey());
+                if ( dep instanceof MutablePropertyDataSet ) {
+                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                    putProperties( (Map<String,Object>)e.getValue(), mdep );
+                }
+            } else if ( e.getKey().startsWith("BUNDLE_") && e.getValue() instanceof Map ) {
+                QDataSet dep= (QDataSet) ds.property(e.getKey());
+                if ( dep instanceof MutablePropertyDataSet ) {
+                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                    putProperties( (Map<String,Object>)e.getValue(), mdep );
+                }
+            } else if ( e.getKey().startsWith("CONTEXT_") && e.getValue() instanceof Map ) {
+                QDataSet dep= (QDataSet) ds.property(e.getKey());
+                if ( dep instanceof MutablePropertyDataSet ) {
+                    MutablePropertyDataSet mdep= (MutablePropertyDataSet)dep;
+                    putProperties( (Map<String,Object>)e.getValue(), mdep );
+                }
             } else {
                 ds.putProperty((String) e.getKey(), e.getValue());
             }
