@@ -52,13 +52,13 @@ public class AsciiTransferType extends TransferType {
     private static String getFormat( int length, boolean sci ) {
         if ( length<9 || sci==false ) {
             if (length==9  ) {
-                return "0.###";
+                return "0.####";
             } else if ( length==8 ) {
-                return "0.##";
+                return "0.###";
             } else if ( length==7 ) {
-                return "0.#";
+                return "0.##";
             } else if ( length==6 ) {
-                return "0.";
+                return "0.#";
             } else if ( length<6 ) {
                 throw new IllegalArgumentException("length is too short: "+length);
             } else {
