@@ -154,7 +154,17 @@ public class FFTUtil {
         result.putProperty( QDataSet.DEPEND_0, powTags );
         return result;
     }
-    
+
+    public static QDataSet getFrequencyDomainTagsForPower( QDataSet dep0 ) {
+        QDataSet xtags= getFrequencyDomainTags( dep0 );
+        Units xUnits= (Units)xtags.property( QDataSet.UNITS );
+        DDataSet powTags= DDataSet.createRank1(xtags.length()/2);
+        for ( int i=0; i<xtags.length()/2; i++ ) {
+            powTags.putValue(i,xtags.value(i));
+        }
+        return powTags;
+    }
+
     public static ComplexArray.Double fft( GeneralFFT fft, QDataSet vds ) {
         double [] yreal= new double[ vds.length() ];
         for ( int i=0; i<vds.length(); i++ ) yreal[i]= vds.value( i );
@@ -181,7 +191,7 @@ public class FFTUtil {
         return result;
     }
         
-    static QDataSet getFrequencyDomainTags( QDataSet timeDomainTags ) {
+    public static QDataSet getFrequencyDomainTags( QDataSet timeDomainTags ) {
         Units timeUnit= (Units) timeDomainTags.property( QDataSet.UNITS );
         if ( timeUnit==null ) timeUnit= Units.dimensionless;
         QDataSet x= timeDomainTags;

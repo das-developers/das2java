@@ -1511,6 +1511,13 @@ public class Ops {
 
             result.join(vds);
         }
+
+        QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        if ( dep1!=null && dep1.rank()==1 ) {
+            QDataSet ytags= FFTUtil.getFrequencyDomainTagsForPower( dep1 );
+            result.putProperty( QDataSet.DEPEND_1, ytags );
+        }
+
         result.putProperty(QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0));
         return result;
 
