@@ -75,7 +75,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
             r = vfsob.getContent().getInputStream();
         } catch (FileSystemException e) {
             // if possible, we should differentiate file not found error
-            throw new IOException(e);
+            throw new IOException(e.getMessage()); //TODO Use Java 6 to wrap exception
         }
         return r;
     }
