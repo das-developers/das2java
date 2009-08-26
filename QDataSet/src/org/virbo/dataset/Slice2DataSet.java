@@ -53,16 +53,12 @@ public class Slice2DataSet extends AbstractDataSet {
         return ds.rank() - 1;
     }
 
-    public double value(int i) {
-        return ds.value(i, index);
-    }
-
     public double value(int i0, int i1) {
-        return ds.value(i0, index, i1);
+        return ds.value(i0, i1, index );
     }
 
     public double value(int i0, int i1, int i2) {
-        return ds.value(i0, index, i1, i2 );
+        return ds.value(i0, i1, index, i2 );
     }
 
     public Object property(String name) {
@@ -79,7 +75,6 @@ public class Slice2DataSet extends AbstractDataSet {
         return ds.length();
     }
 
-    @Override
     public int length(int i) {
         return ds.length( i );
     }
