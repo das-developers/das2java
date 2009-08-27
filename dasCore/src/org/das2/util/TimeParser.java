@@ -18,6 +18,8 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * TimeParser designed to quickly parse strings with a specified format.  This parser has been
@@ -34,6 +36,8 @@ public class TimeParser {
     public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
     TimeStruct time;
     TimeStruct timeWidth;
+    TimeStruct context;
+
     int ndigits;
     String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", };
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
@@ -53,6 +57,7 @@ public class TimeParser {
     int[] lengths;
     String[] delims;
     String[] fc;
+    String[] qualifiers;
     String regex;
     String formatString;
     /**
@@ -155,6 +160,8 @@ public class TimeParser {
 
         String[] ss = formatString.split("%");
         fc = new String[ss.length];
+        qualifiers= new String[ss.length];
+        
         String[] delim = new String[ss.length + 1];
 
         ndigits = ss.length;
@@ -186,8 +193,11 @@ public class TimeParser {
             } else if ( ss[i].charAt(pp) == '{') {
                 int endIndex = ss[i].indexOf('}', pp);
                 int comma = ss[i].indexOf(",", pp);
+                int semi= ss[i].indexOf(";", pp );
+                if ( comma==-1 || semi>-1 && semi<comma ) comma= semi;
                 if (comma != -1) {
                     fc[i] = ss[i].substring(pp + 1, comma);
+                    qualifiers[i]= ss[i].substring(comma+1,endIndex);
                 } else {
                     fc[i] = ss[i].substring(pp + 1, endIndex);
                 }
@@ -195,8 +205,11 @@ public class TimeParser {
             } else if ( ss[i].charAt(pp) == '(') {
                 int endIndex = ss[i].indexOf(')', pp);
                 int comma = ss[i].indexOf(",", pp);
+                int semi= ss[i].indexOf(";", pp );
+                if ( comma==-1 || semi>-1 && semi<comma ) comma= semi;
                 if (comma != -1) {
                     fc[i] = ss[i].substring(pp + 1, comma);
+                    qualifiers[i]= ss[i].substring(comma+1,endIndex);
                 } else {
                     fc[i] = ss[i].substring(pp + 1, endIndex);
                 }
@@ -211,6 +224,17 @@ public class TimeParser {
         offsets[0] = pos;
 
         lsd = -1;
+        int lsdMult= 1;
+
+        context= new TimeStruct();
+        context.year = 0;
+        context.month = 1;
+        context.day = 1;
+        context.hour = 0;
+        context.minute = 0;
+        context.seconds = 0;
+        context.micros = 0;
+        
         for (int i = 1; i < ndigits; i++) {
             if (pos != -1) {
                 pos += delim[i - 1].length();
@@ -254,11 +278,43 @@ public class TimeParser {
                 }
             }
 
+            int resolution=1;
+
+            if ( qualifiers[i]!=null ) {
+                String[] ss2= qualifiers[i].split(";");
+                for ( int i2=0; i2<ss2.length; i2++ ) {
+                    String qual= ss2[i2];
+                    Pattern p= Pattern.compile("cadence=(\\d+)");
+                    Matcher m= p.matcher(qual);
+                    if ( m.matches() ) {
+                        resolution= Integer.parseInt( m.group(1) );
+                    }
+                    p= Pattern.compile("resolution=(\\d+)");
+                    m= p.matcher(qual);
+                    if ( m.matches() ) {
+                        resolution= Integer.parseInt( m.group(1) );
+                    }
+                    int idx= qual.indexOf("=");
+                    if ( idx==1 ) {
+                        String name= qual.substring(0,idx);
+                        String val= qual.substring(idx+1);
+                        //FieldHandler fh= (FieldHandler) fieldHandlers.get(name);
+                        //fh.handleValue( val, context, timeWidth );
+                        if ( name.equals("Y") ) context.year= Integer.parseInt(val);
+                        if ( name.equals("m") ) context.month= Integer.parseInt(val);
+                        if ( name.equals("d") ) context.day= Integer.parseInt(val);
+                        if ( name.equals("j") ) context.doy= Integer.parseInt(val);
+                    }
+                }
+            }
+
             if (handler < 100) {
                 if (precision[handler] > lsd) {
                     lsd = precision[handler];
+                    lsdMult= resolution;
                 }
             }
+
             String dots = ".........";
             if (lengths[i] == -1) {
                 regex.append("(.*)");
@@ -272,28 +328,28 @@ public class TimeParser {
         timeWidth = new TimeStruct();
         switch (lsd) {
             case 0:
-                timeWidth.year = 1;
+                timeWidth.year = lsdMult;
                 break;
             case 1:
-                timeWidth.month = 1;
+                timeWidth.month = lsdMult;
                 break;
             case 2:
-                timeWidth.day = 1;
+                timeWidth.day = lsdMult;
                 break;
             case 3:
-                timeWidth.hour = 1;
+                timeWidth.hour = lsdMult;
                 break;
             case 4:
-                timeWidth.minute = 1;
+                timeWidth.minute = lsdMult;
                 break;
             case 5:
-                timeWidth.seconds = 1;
+                timeWidth.seconds = lsdMult;
                 break;
             case 6:
-                timeWidth.millis = 1;
+                timeWidth.millis = lsdMult;
                 break;
             case 7:
-                timeWidth.micros = 1;
+                timeWidth.micros = lsdMult;
                 break;
             case 100: /* do nothing */ break;
         }
@@ -386,12 +442,13 @@ public class TimeParser {
         int offs = 0;
         int len = 0;
 
-        time.month = 1;
-        time.day = 1;
-        time.hour = 0;
-        time.minute = 0;
-        time.seconds = 0;
-        time.micros = 0;
+        time.year = context.year;
+        time.month = context.month;
+        time.day = context.day;
+        time.hour = context.hour;
+        time.minute = context.minute;
+        time.seconds = context.seconds;
+        time.micros = context.micros;
 
         for (int idigit = 1; idigit < ndigits; idigit++) {
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
@@ -882,8 +939,14 @@ public class TimeParser {
                     default:
                         throw new RuntimeException("shouldn't get here");
                 }
-                result.insert(offs, nf[len].format(digit));
-                offs += len;
+                if ( len<0 ) {
+                    String ss= String.valueOf(digit);
+                    result.insert(offs, ss);
+                    offs+= ss.length();
+                } else {
+                    result.insert(offs, nf[len].format(digit));
+                    offs += len;
+                }
 
             } else if (handlers[idigit] == 13) { // month names
 
