@@ -275,7 +275,9 @@ public class DataSetUtil {
     }
 
     /**
-     * copy all properties into the dataset by iterating through the map.
+     * copy all properties into the dataset by iterating through the map.  Properties
+     * that are equal to null are not copied, since null is equivalent to the
+     * property not found.
      */
     public static void putProperties(Map<String, Object> properties, MutablePropertyDataSet ds) {
         for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
@@ -305,7 +307,7 @@ public class DataSetUtil {
                     putProperties( (Map<String,Object>)e.getValue(), mdep );
                 }
             } else {
-                ds.putProperty((String) e.getKey(), e.getValue());
+                if ( e.getValue()!=null ) ds.putProperty((String) e.getKey(), e.getValue());
             }
         }
     }
