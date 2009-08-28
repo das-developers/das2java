@@ -90,12 +90,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             return;
         }
         if (!xAxis.getUnits().isConvertableTo(ds.getXUnits())) {
-            parent.postMessage(this, "inconvertable xaxis units", DasPlot.INFO, null, null);
+            parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
             return;
         }
 
         if (!yAxis.getUnits().isConvertableTo(ds.getYUnits())) {
-            parent.postMessage(this, "inconvertable yaxis units", DasPlot.INFO, null, null);
+            parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
             return;
         }
         Graphics2D g2 = (Graphics2D) g1;
@@ -323,12 +323,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             return;
         }
         if (!xAxis.getUnits().isConvertableTo(ds1.getXUnits())) {
-            parent.postMessage(this, "inconvertable xaxis units", DasPlot.INFO, null, null);
+            parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
             return;
         }
 
         if (!yAxis.getUnits().isConvertableTo(ds1.getYUnits())) {
-            parent.postMessage(this, "inconvertable yaxis units", DasPlot.INFO, null, null);
+            parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
             return;
         }
 
