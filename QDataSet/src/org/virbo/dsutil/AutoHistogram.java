@@ -27,7 +27,6 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.TagGenDataSet;
-import org.virbo.dataset.WeightsDataSet;
 
 /**
  * Self-configuring histogram dynamically adjusts range and bin size as data
@@ -439,6 +438,11 @@ public final class AutoHistogram {
      * the closest outliers
      */
     private void reduceOutliers(long limit) {
+        //int outlierCount=0;
+        //for ( Entry<Double,Integer> e: outliers.entrySet() ) {
+        //    outlierCount+= e.getValue();
+        //}
+        //while (outlierCount > limit) {
         while (outliers.size() > limit) {
             //double d0 = firstb + binw / binwDenom * (zeroesLeft); // firstBin done
             double d0 = firstBin / binwDenom + binw / binwDenom * (zeroesLeft);
@@ -456,6 +460,10 @@ public final class AutoHistogram {
                 rescaleRight(0);
             }
             checkOutliers();
+         //   outlierCount=0;
+         //   for ( Entry<Double,Integer> e: outliers.entrySet() ) {
+         //      outlierCount+= e.getValue();
+         //   }
         }
     }
 
