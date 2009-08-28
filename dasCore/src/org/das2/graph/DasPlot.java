@@ -696,7 +696,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
         //paintComponentCount++;
-        logger.finer("entering DasPlot.paintComponent");
+        logger.finest("entering DasPlot.paintComponent");
 
         if (getCanvas().isPrintingThread()) {
             logger.fine("* printing thread *");
@@ -716,7 +716,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             saveClip = null;
         }
 
-        logger.fine("DasPlot clip=" + graphics1.getClip() + " @ " + getX() + "," + getY());
+        logger.finest("DasPlot clip=" + graphics1.getClip() + " @ " + getX() + "," + getY());
 
         Rectangle clip = graphics1.getClipBounds();
         if (clip != null && (clip.y + getY()) >= (y + ySize)) {
@@ -966,7 +966,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public void resize() {
-        logger.fine("resize DasPlot");
+        logger.finer("resize DasPlot");
         if (isDisplayable()) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setString(getFont(), getTitle());
@@ -983,7 +983,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 bounds.height += titleHeight;
             }
             // TODO check bounds.height<10
-            logger.fine("DasPlot setBounds " + bounds);
+            logger.finer("DasPlot setBounds " + bounds);
             setBounds(bounds);
         }
     }
@@ -1205,6 +1205,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             DasRendererUpdateEvent e1 = (DasRendererUpdateEvent) existingEvent;
             DasRendererUpdateEvent e2 = (DasRendererUpdateEvent) newEvent;
             if (e1.getRenderer() == e2.getRenderer()) {
+                //don't log these because GUI-based log handler causes infinite loop.
+                //logger.fine("coalesce update events for renderer "+e1.getRenderer().getId() );
                 return existingEvent;
             } else {
                 return null;
