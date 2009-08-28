@@ -821,11 +821,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         if (!x.getUnits().isConvertableTo(unitsArray[0])) {
-            throw new RuntimeException("inconvertable units: " + x + " expected " + unitsArray[0]);
+            throw new RuntimeException("inconvertible units: " + x + " expected " + unitsArray[0]);
         }
 
         if (!y.getUnits().isConvertableTo(unitsArray[1])) {
-            throw new RuntimeException("inconvertable units: " + y + " expected " + unitsArray[1]);
+            throw new RuntimeException("inconvertible units: " + y + " expected " + unitsArray[1]);
         }
 
         insertInternal(new DataPoint(x, y, new LinkedHashMap(planes)));
