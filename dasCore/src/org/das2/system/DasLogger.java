@@ -114,7 +114,7 @@ public class DasLogger {
     /**
      * renderer's logger
      */
-    public static final LoggerId RENDERER_LOG= new LoggerId( "das2.graphics" );
+    public static final LoggerId RENDERER_LOG= new LoggerId( "das2.graphics.renderer" );
     
     /**
      * rebinning  and dataset operators
