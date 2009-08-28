@@ -285,7 +285,7 @@ public class ContoursRenderer extends Renderer {
                 
                 if ( currentPath!=null && simplifyPaths ) {
                     GeneralPath newPath= new GeneralPath();
-                    newPath= GraphUtil.reducePath( currentPath.getPathIterator(null), newPath );
+                    int points=GraphUtil.reducePath( currentPath.getPathIterator(null), newPath );
                     list.set( list.indexOf(currentPath), newPath );
                 }
                 
