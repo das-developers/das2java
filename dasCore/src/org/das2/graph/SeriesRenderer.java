@@ -85,9 +85,9 @@ public class SeriesRenderer extends Renderer {
     private Color color = Color.BLACK;
     private long lastUpdateMillis;
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
-    private int firstIndex;/* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
+    private int firstIndex=-1;/* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
 
-    private int lastIndex;/* the non-inclusive index of the last point drawn. */
+    private int lastIndex=-1;/* the non-inclusive index of the last point drawn. */
 
     boolean updating = false;
     private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
@@ -799,6 +799,10 @@ public class SeriesRenderer extends Renderer {
         int messageCount= 0;
 
         logger.fine("rendering points: " + lastIndex + "  " + firstIndex);
+        if ( lastIndex == -1 ) {
+            if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
+        }
+
         if (lastIndex == firstIndex) {
             if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
         }
@@ -969,7 +973,7 @@ public class SeriesRenderer extends Renderer {
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         logger.fine("enter updatePlotImage");
-
+System.err.println("enter updatePlotImage: "+getDataSet());
         updating = true;
 
         updateImageCount++;
@@ -1020,6 +1024,9 @@ public class SeriesRenderer extends Renderer {
         dataSetClipped = false;
 
 
+        firstIndex= -1;
+        lastIndex= -1;
+        
         if (vds != null) {
             updateFirstLast(xAxis, yAxis, vds);
 
