@@ -246,6 +246,7 @@ public class SeriesRenderer extends Renderer {
             y = dataSet.getDouble(index, yUnits);
             fx = (int) xAxis.transform(x, xUnits);
             fy = (int) yAxis.transform(y, yUnits);
+            int fx0=-99, fy0=-99; //last point.
 
             int i = 0;
             for (; index < lastIndex; index++) {
@@ -258,6 +259,9 @@ public class SeriesRenderer extends Renderer {
                 fy = (int) yAxis.transform(y, yUnits);
 
                 if (isValid) {
+                    if ( simplifyPaths ) {
+                        if ( fx==fx0 && fy==fy0 ) continue;
+                    }
                     ipsymsPath[i * 2] = fx;
                     ipsymsPath[i * 2 + 1] = fy;
                     if (colorByDataSet != null) {
@@ -265,6 +269,9 @@ public class SeriesRenderer extends Renderer {
                     }
                     i++;
                 }
+                fx0= fx;
+                fy0= fy;
+
             }
 
             count = i;
@@ -478,7 +485,9 @@ public class SeriesRenderer extends Renderer {
             if (!histogram && simplifyPaths && colorByDataSet == null) {
                 //j   System.err.println( "input: " );
                 //j   System.err.println( GraphUtil.describe( newPath, true) );
-                this.path1 = GraphUtil.reducePath(newPath.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+                this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex);
+                int count = GraphUtil.reducePath(newPath.getPathIterator(null), path1 );
+                logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
                 this.path1 = newPath;
             }
@@ -659,7 +668,9 @@ public class SeriesRenderer extends Renderer {
             this.fillToRefPath1 = fillPath;
 
             if (simplifyPaths) {
-                fillToRefPath1 = GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex));
+                fillToRefPath1 =new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex);
+                int count= GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), fillToRefPath1);
+                logger.fine( String.format("reduce path(fill) in=%d  out=%d\n", lastIndex-firstIndex, count ) );
             }
 
         }
@@ -776,12 +787,12 @@ public class SeriesRenderer extends Renderer {
         }
 
         if (!yaxisUnitsOkay) {
-            lparent.postMessage( this, "inconvertable yaxis units", DasPlot.INFO, null, null );
+            lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
             return;
         }
 
         if ( !dataSet.getXUnits().isConvertableTo(xAxis.getUnits()) ) {
-            lparent.postMessage( this, "inconvertable xaxis units", DasPlot.INFO, null, null );
+            lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
             return;
         }
 
@@ -1082,8 +1093,13 @@ public class SeriesRenderer extends Renderer {
         
         DatumRange dr= xaxis.getDatumRange();
         
-        VectorDataSet reduce = VectorUtil.reduce2D( ds, firstIndex, lastIndex, widthx.divide(xaxis.getColumn().getWidth()/5),
-                widthy.divide(yaxis.getRow().getHeight()/5) );
+        VectorDataSet reduce = VectorUtil.reduce2D( 
+                ds,
+                firstIndex,
+                Math.min( firstIndex+20000, lastIndex),
+                widthx.divide(xaxis.getColumn().getWidth()/5),
+                widthy.divide(yaxis.getRow().getHeight()/5)
+                );
 
         GeneralPath path = GraphUtil.getPath(xaxis, yaxis, reduce, histogram, true );
 
@@ -1148,6 +1164,16 @@ public class SeriesRenderer extends Renderer {
         return String.valueOf(this.getDataSetDescriptor());
     }
 
+    /**
+     * trigger render, but not updatePlotImage.
+     */
+    private void refreshRender() {
+        if ( parent!=null ) {
+            parent.invalidateCacheImage();
+            parent.repaint();
+        }
+    }
+    
 // ------- Begin Properties ---------------------------------------------  //
     public PsymConnector getPsymConnector() {
         return psymConnector;
@@ -1182,7 +1208,7 @@ public class SeriesRenderer extends Renderer {
             Object oldValue = this.psym;
             this.psym = (DefaultPlotSymbol) psym;
             updatePsym();
-            update();
+            refreshRender();
             propertyChangeSupport.firePropertyChange("psym", oldValue, psym);
         }
 
@@ -1204,7 +1230,7 @@ public class SeriesRenderer extends Renderer {
             this.symSize = symSize;
             setPsym(this.psym);
             updatePsym();
-            update();
+            refreshRender();
             propertyChangeSupport.firePropertyChange("symSize", new Double(old), new Double(symSize));
         }
 
@@ -1228,9 +1254,8 @@ public class SeriesRenderer extends Renderer {
         if (!this.color.equals(color)) {
             this.color = color;
             updatePsym();
-            refreshImage();
+            refreshRender();
             propertyChangeSupport.firePropertyChange("color", old, color);
-            updatePsym();
         }
 
     }
@@ -1244,7 +1269,7 @@ public class SeriesRenderer extends Renderer {
         if (this.lineWidth != f) {
             lineWidth = f;
             updatePsym();
-            refreshImage();
+            refreshRender();
             propertyChangeSupport.firePropertyChange("lineWidth", new Double(old), new Double(f));
         }
 
