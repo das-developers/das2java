@@ -1996,12 +1996,34 @@ public class Ops {
         if (ds.rank() > 1) {
             throw new IllegalArgumentException("only rank 1");
         }
-        TrimStrideWrapper d1 = new TrimStrideWrapper(ds);
-        d1.setTrim(0, 0, ds.length() - 1, 1);
-        TrimStrideWrapper d2 = new TrimStrideWrapper(ds);
-        d2.setTrim(0, 1, ds.length(), 1);
-        QDataSet result = Ops.subtract(d2, d1);
-        return result;
+        if ( true ) {
+            DDataSet result= DDataSet.createRank1( ds.length()-1 );
+            QDataSet w1= DataSetUtil.weightsDataSet(ds);
+            double fill= ((Number)w1.property( QDataSet.FILL_VALUE )).doubleValue();
+            for ( int i=0; i<result.length(); i++ ) {
+                if ( w1.value(i)>0 && w1.value(i+1)>0 ) {
+                    result.putValue(i, ds.value(i+1) - ds.value(i) );
+                } else {
+                    result.putValue(i,fill);
+                }
+            }
+            result.putProperty(QDataSet.FILL_VALUE, new Double(fill) );
+            Units u= (Units) ds.property(QDataSet.UNITS);
+            if ( u!=null ) result.putProperty(QDataSet.UNITS, u.getOffsetUnits() );
+            result.putProperty(QDataSet.NAME, null );
+            result.putProperty(QDataSet.MONOTONIC, null );
+            String label= (String) ds.property(QDataSet.LABEL);
+            if ( label!=null ) result.putProperty(QDataSet.LABEL, "diff("+label+")" );
+            
+            return result;
+        } else {
+            TrimStrideWrapper d1 = new TrimStrideWrapper(ds);
+            d1.setTrim(0, 0, ds.length() - 1, 1);
+            TrimStrideWrapper d2 = new TrimStrideWrapper(ds);
+            d2.setTrim(0, 1, ds.length(), 1);
+            QDataSet result = Ops.subtract(d2, d1);
+            return result;
+        }
     }
 
     /**
