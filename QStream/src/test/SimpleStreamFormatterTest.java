@@ -30,7 +30,8 @@ public class SimpleStreamFormatterTest {
 
     public static void main(String[] args) throws ParseException, StreamException, FileNotFoundException, IOException {
         //test6();
-        test7();
+        //test7();
+        testBundle();
     }
 
     private static QDataSet test1() throws ParseException, StreamException, IOException {
@@ -180,7 +181,14 @@ public class SimpleStreamFormatterTest {
         
         return result;
     }
-    
+
+    private static void testBundle() throws StreamException, FileNotFoundException, IOException {
+        QDataSet ds= BundleBinsDemo.demo1();
+        SimpleStreamFormatter format = new SimpleStreamFormatter();
+        format.format( ds, new FileOutputStream("testBundle.qds"), true );
+
+    }
+
     private static void funData( WritableDataSet ds, double start, double res, int seed, boolean mono ) {
         Random rand= new Random(seed);
         if ( !mono ) {
