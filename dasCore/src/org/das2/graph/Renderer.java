@@ -178,7 +178,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     public void setDataSet(DataSet ds) {
-        logger.finer("Renderer.setDataSet: " + ds);
+        logger.fine("Renderer.setDataSet: " + ds);
         DataSet oldDs = this.ds;
 
         if (oldDs != ds) {
@@ -190,7 +190,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     public void setException(Exception e) {
-        logger.finer("Renderer.setException: " + e);
+        logger.fine("Renderer.setException: " + e);
         Exception oldException = this.lastException;
         this.lastException = e;
         this.renderException = lastException;
