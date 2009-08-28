@@ -478,7 +478,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
 
     /**
-     * display the renderer.  This is allows renderer to be disabled without removing them from the application.
+     * display the renderer.  This is allows a renderer to be disabled without removing it from the application.
      */
     public static final String PROP_ACTIVE = "active";
 
@@ -488,15 +488,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.active;
     }
 
-    /**
-     * Setter for property active.
-     * @param active New value of property active.
-     */
     public void setActive(boolean active) {
         boolean oldValue = this.active;
         this.active = active;
+        if ( active ) update();
         propertyChangeSupport.firePropertyChange(PROPERTY_ACTIVE, oldValue, active);
-        update();
     }
 
      /**
