@@ -48,7 +48,7 @@ public class DatumRange implements Comparable {
      * included in the comparison, so that Tuesday.intersects(Wednesday)==false.
      * @param dr a valid datum range
      * @return true of the DatumRange overlaps this
-     * @throws InconvertableUnitsException if the units can not be reconciled.
+     * @throws InconvertibleUnitsException if the units can not be reconciled.
      */
     public boolean intersects(DatumRange dr) {
         return this.s2.gt( dr.s1 ) && this.s1.lt( dr.s2 );
