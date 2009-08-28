@@ -6,7 +6,8 @@
 package org.virbo.dataset;
 
 /**
- *
+ * Wraps rank N dataset to present a dataset with the same rank that is a subset of
+ * wrapped dataset.
  * @author jbf
  */
 public class TrimStrideWrapper extends AbstractDataSet {
@@ -31,11 +32,14 @@ public class TrimStrideWrapper extends AbstractDataSet {
         
     }
 
-    public void setTrim( int dim, Integer start, Integer stop, Integer stride ) {
-        this.offset[dim]= start == null ? 0 : start;
-        this.stride[dim]= stride == null ? 1 : stride;
-        int sstop= stop==null ? qube[dim] : stop;
-        this.len[dim]= (int)Math.ceil ( 1.*( sstop - this.offset[dim] ) / this.stride[dim] );
+    public void setTrim( int dim, Number start, Number stop, Number stride ) {
+        int sstart= start == null ? 0 : start.intValue();
+        this.stride[dim]= stride == null ? 1 : stride.intValue();
+        int sstop= stop==null ? qube[dim] : stop.intValue();
+        if ( sstop<0 ) sstop= qube[dim] + sstop;
+        if ( sstart<0 ) sstart= qube[dim] + sstart;
+        this.offset[dim]= sstart;
+        this.len[dim]= (int)Math.ceil ( 1.*( sstop - sstart ) / this.stride[dim] );
         QDataSet dep= (QDataSet) ds.property("DEPEND_"+dim);
         if ( dep!=null && dep.rank()==1 ) {
             TrimStrideWrapper depw= new TrimStrideWrapper( dep );
@@ -43,7 +47,7 @@ public class TrimStrideWrapper extends AbstractDataSet {
             putProperty( "DEPEND_"+dim, depw );
         }
     }
-    
+
     @Override
     public int rank() {
         return ds.rank();
