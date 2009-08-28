@@ -742,7 +742,9 @@ public class SeriesRenderer extends Renderer {
 
         DasPlot lparent= this.parent;
 
+        logger.fine("enter render: "+getDataSet());
         logger.fine( "ds: "+this.ds+",  drawing indeces "+this.firstIndex+" to "+this.lastIndex );
+        
         if ( lparent==null ) return;
         if ( this.ds == null && lastException != null) {
             lparent.postException(this, lastException);
@@ -972,8 +974,8 @@ public class SeriesRenderer extends Renderer {
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
-        logger.fine("enter updatePlotImage");
-System.err.println("enter updatePlotImage: "+getDataSet());
+        logger.fine("enter updatePlotImage: "+getDataSet());
+
         updating = true;
 
         updateImageCount++;
