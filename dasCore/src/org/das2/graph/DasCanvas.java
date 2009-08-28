@@ -540,10 +540,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param gl the Graphics object
      */
     protected void paintComponent(Graphics g1) {
-        logger.fine("entering DasCanvas.paintComponent");
+        logger.finest("entering DasCanvas.paintComponent");
 
         if (stateSupport.isValueAdjusting()) {
-            logger.fine("value is adjusting, returning");
+            logger.finest("value is adjusting, returning");
             return;
         }
 
