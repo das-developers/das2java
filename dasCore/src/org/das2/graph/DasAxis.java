@@ -1439,7 +1439,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 paintVerticalAxis(g);
             }
         } else {
-            //System.err.println("inconvertable units");
+            //System.err.println("inconvertible units");
         }
 
         Rectangle clip = g.getClipBounds();
