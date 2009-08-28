@@ -404,11 +404,11 @@ public class VectorUtil {
 
         Map props= ds.getProperties();
         builder.addProperties( props );
-        Datum xtw= (Datum) props.get(DataSet.PROPERTY_X_TAG_WIDTH);
-        if ( xtw!=null && dxunits!=null ) {
-            Datum nxtw= dxunits.createDatum(dxLimit);
-            if ( nxtw.gt(xtw) ) builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, nxtw );
-        }
+//        Datum xtw= (Datum) props.get(DataSet.PROPERTY_X_TAG_WIDTH);
+//        if ( xtw!=null && dxunits!=null ) {
+//            Datum nxtw= dxunits.createDatum(dxLimit);
+//            if ( nxtw.gt(xtw) ) builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, nxtw );
+//        }
         builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, null );
         VectorDataSet yds= builder.toVectorDataSet();
 
