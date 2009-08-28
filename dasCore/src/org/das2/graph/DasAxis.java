@@ -1365,7 +1365,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** paints the axis component.  The tickV's and bounds should be calculated at this point */
     protected void paintComponent(Graphics graphics) {
-        logger.fine("enter DasAxis.paintComponent");
+        logger.finest("enter DasAxis.paintComponent");
 
         if (getCanvas().isValueAdjusting()) {
             return;
@@ -1378,7 +1378,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         graphics.setClip(null);
         }
          */
-        logger.fine("DasAxis clip=" + graphics.getClip() + " @ " + getX() + "," + getY());
+        logger.finest("DasAxis clip=" + graphics.getClip() + " @ " + getX() + "," + getY());
 
         Graphics2D g = (Graphics2D) graphics.create();
         //g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
