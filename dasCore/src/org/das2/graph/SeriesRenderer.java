@@ -668,8 +668,9 @@ public class SeriesRenderer extends Renderer {
             this.fillToRefPath1 = fillPath;
 
             if (simplifyPaths) {
-                fillToRefPath1 =new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex);
-                int count= GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), fillToRefPath1);
+                GeneralPath newPath= new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex);
+                int count= GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), newPath );
+                fillToRefPath1= newPath;
                 logger.fine( String.format("reduce path(fill) in=%d  out=%d\n", lastIndex-firstIndex, count ) );
             }
 
