@@ -1996,7 +1996,7 @@ public class Ops {
         if (ds.rank() > 1) {
             throw new IllegalArgumentException("only rank 1");
         }
-        if ( true ) {
+        if ( false ) {
             DDataSet result= DDataSet.createRank1( ds.length()-1 );
             QDataSet w1= DataSetUtil.weightsDataSet(ds);
             double fill= ((Number)w1.property( QDataSet.FILL_VALUE )).doubleValue();
