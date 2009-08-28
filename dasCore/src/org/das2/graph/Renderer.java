@@ -184,8 +184,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
         if (oldDs != ds) {
             this.ds = ds;
-            //refresh();
-            update();
+            refresh();
+            //update();
             invalidateParentCacheImage();
             propertyChangeSupport.firePropertyChange(PROPERTY_DATASET, oldDs, ds);
         }
