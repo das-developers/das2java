@@ -86,7 +86,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * This is the exception to be rendered.  This is so if an exception occurs during drawing, then this will be drawn instead.
      */
     protected Exception renderException;
-    protected static Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+    protected static Logger logger = DasLogger.getLogger(DasLogger.RENDERER_LOG);
     private String PROPERTY_ACTIVE = "active";
     private String PROPERTY_DATASET = "dataSet";
 
@@ -178,12 +178,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     public void setDataSet(DataSet ds) {
-        logger.fine("Renderer.setDataSet: " + ds);
+        logger.fine("Renderer.setDataSet "+id+": " + ds);
+
         DataSet oldDs = this.ds;
 
         if (oldDs != ds) {
             this.ds = ds;
-            refresh();
+            //refresh();
+            update();
             invalidateParentCacheImage();
             propertyChangeSupport.firePropertyChange(PROPERTY_DATASET, oldDs, ds);
         }
@@ -197,7 +199,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         if (parent != null && oldException != e) {
             //parent.markDirty();
             //parent.update();
-            refresh();
+            update();
+            //refresh();
             invalidateParentCacheImage();
         }
     //refresh();
@@ -313,7 +316,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     public void update() {
         if (getParent() != null) getParent().repaint();
-        logger.fine("Renderer.update");
+        logger.fine("Renderer.update "+id);
         if (parent != null) {
             java.awt.EventQueue eventQueue =
                     Toolkit.getDefaultToolkit().getSystemEventQueue();
@@ -366,7 +369,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         Runnable run = new Runnable() {
 
             public void run() {
-                logger.fine("update plot image");
+                logger.fine("update plot image for "+id);
                 DasPlot lparent= parent;
                 try {
                     if (lparent != null) { // TODO: make synchronized, but this is non-trivial since deadlock.
@@ -403,7 +406,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             }
         };
 
-        boolean async = false;  // updating was done on the event thread...
+        boolean async = false;  // updating is done on the event thread...
         if (EventQueue.isDispatchThread()) {
             if (async) {
                 new Thread(run, "updatePlotImage").start();
@@ -527,6 +530,19 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         this.drawLegendLabel = drawLegendLabel;
         propertyChangeSupport.firePropertyChange(PROP_DRAWLEGENDLABEL, oldDrawLegendLabel, drawLegendLabel);
         refreshImage();
+    }
+
+    protected String id = "rend";
+    public static final String PROP_ID = "id";
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        String oldId = this.id;
+        this.id = id;
+        propertyChangeSupport.firePropertyChange(PROP_ID, oldId, id);
     }
 
     /**
