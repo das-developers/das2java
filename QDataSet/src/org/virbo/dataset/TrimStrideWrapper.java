@@ -36,7 +36,7 @@ public class TrimStrideWrapper extends AbstractDataSet {
         int sstart= start == null ? 0 : start.intValue();
         this.stride[dim]= stride == null ? 1 : stride.intValue();
         int sstop= stop==null ? qube[dim] : stop.intValue();
-        if ( sstop<0 ) sstop= qube[dim] + sstop;
+        if ( sstop<0 ) sstop= qube[dim] + sstop; 
         if ( sstart<0 ) sstart= qube[dim] + sstart;
         this.offset[dim]= sstart;
         this.len[dim]= (int)Math.ceil ( 1.*( sstop - sstart ) / this.stride[dim] );
