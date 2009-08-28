@@ -239,13 +239,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     } else {
                         TableDataSet ds= (TableDataSet)getDataSet();
                         if ( !ds.getZUnits().isConvertableTo(colorBar.getUnits()) ) {
-                            parent.postMessage(this, "inconvertable colorbar units", DasPlot.INFO, null, null);
+                            parent.postMessage(this, "inconvertible colorbar units", DasPlot.INFO, null, null);
                         }
                         if ( !ds.getYUnits().isConvertableTo(yAxis.getUnits()) ) {
-                            parent.postMessage(this, "inconvertable yaxis units", DasPlot.INFO, null, null);
+                            parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
                         }
                         if ( !ds.getXUnits().isConvertableTo(xAxis.getUnits()) ) {
-                            parent.postMessage(this, "inconvertable xaxis units", DasPlot.INFO, null, null);
+                            parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
                         }
                     }
                 }
@@ -494,7 +494,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 }
             } catch (InconvertibleUnitsException ex) {
-                logger.fine("inconvertable units, setting image to null");
+                logger.fine("inconvertible units, setting image to null");
                 ex.printStackTrace();
                 plotImage = null;
                 plotImageBounds= null;
