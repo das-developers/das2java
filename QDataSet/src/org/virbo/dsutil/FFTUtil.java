@@ -19,7 +19,6 @@ import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.TagGenDataSet;
 import org.virbo.dsops.Ops;
 
 /**
@@ -134,7 +133,7 @@ public class FFTUtil {
             dep0= new IndexGenDataSet( vds.length() );
         }
 
-        QDataSet xtags= getFrequencyDomainTags( dep0 );
+        QDataSet xtags= getFrequencyDomainTags( dep0 );//TODO: use tags for power to reduce code
 
         Units xUnits= (Units)xtags.property( QDataSet.UNITS );
         double binsize;
@@ -146,9 +145,8 @@ public class FFTUtil {
         }
 
         DDataSet result= DDataSet.createRank1(xtags.length()/2);
-        DDataSet powTags= DDataSet.createRank1(xtags.length()/2);
+        QDataSet powTags= getFrequencyDomainTagsForPower(dep0);
         for ( int i=0; i<xtags.length()/2; i++ ) {
-            powTags.putValue(i,xtags.value(i));
             result.putValue(i,(i==0?1:4)*ComplexArray.magnitude2(ca,i) / binsize );
         }
         result.putProperty( QDataSet.DEPEND_0, powTags );
@@ -162,6 +160,7 @@ public class FFTUtil {
         for ( int i=0; i<xtags.length()/2; i++ ) {
             powTags.putValue(i,xtags.value(i));
         }
+        powTags.putProperty( QDataSet.UNITS, xUnits );
         return powTags;
     }
 
@@ -200,13 +199,19 @@ public class FFTUtil {
         double T= x.value(1)-x.value(0);
         int n= x.length();
         int n21= n/2+1;
+        Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit.getOffsetUnits() );
+        if ( T>0.5 ) {
+            if ( frequencyUnit==Units.megaHertz ) {
+                frequencyUnit= Units.kiloHertz;
+                T= T/1000;
+            }
+        }
         for ( int i=0; i<n21; i++ ) {
             result[i]= i / ( n*T );
         }
         for ( int i=0; i<n21-2; i++ ) {
             result[i+n21]= (n21-n+i) / ( n*T );
         }
-        Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit.getOffsetUnits() );
         MutablePropertyDataSet r= DDataSet.wrap(result);
         r.putProperty( QDataSet.UNITS, frequencyUnit );
         return r;
