@@ -14,7 +14,6 @@ import org.das2.dataset.TableDataSet;
 import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import org.das2.datum.format.DatumFormatter;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -91,6 +90,15 @@ public class DigitalRenderer extends Renderer {
 
         Units u = ds.getYUnits();
         int count = 0;
+        
+        if ( ! ds.getXUnits().isConvertableTo(xAxis.getUnits() ) ) {
+            parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
+            return;
+        }
+        if ( ! ds.getYUnits().isConvertableTo(yAxis.getUnits() ) ) {
+            parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
+            return;
+        }
 
         for (int i = 0; i < ds.getXLength(); i++) {
             int ix = (int) xAxis.transform(ds.getXTagDatum(i));
@@ -129,6 +137,15 @@ public class DigitalRenderer extends Renderer {
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
         Units u = ds.getZUnits();
+
+        if ( ds.getXUnits().isConvertableTo(xAxis.getUnits() ) ) {
+            parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
+            return;
+        }
+        if ( ds.getYUnits().isConvertableTo(yAxis.getUnits() ) ) {
+            parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
+            return;
+        }
 
         int count = 0;
         for (int i = 0; i < ds.tableCount(); i++) {
