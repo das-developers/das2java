@@ -45,6 +45,9 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Displayable;
+import org.das2.dataset.DataSetUtil;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 
 public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
 
@@ -86,6 +89,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * This is the exception to be rendered.  This is so if an exception occurs during drawing, then this will be drawn instead.
      */
     protected Exception renderException;
+
+    /**
+     * keep track of first and last valid points of the dataset to simplify
+     * subclass code and allow them to check if there are any valid points.
+     */
+    protected int firstValidIndex=-1;
+    protected int lastValidIndex=-1;
+
     protected static Logger logger = DasLogger.getLogger(DasLogger.RENDERER_LOG);
     private String PROPERTY_ACTIVE = "active";
     private String PROPERTY_DATASET = "dataSet";
@@ -105,6 +116,39 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     public DasPlot getParent() {
         return this.parent;
+    }
+
+    /**
+     * find the first and last valid data points.  This is an inexpensive
+     * calculation which is only done when the dataset changes.  It improves
+     * update and render codes by allowing them to skip initial fill data
+     * and more accurately report the presence of off-screen valid data.
+     * preconditions: setDataSet is called with null or non-null dataset.
+     * postconditions: firstValid and lastValid are set.  In the case of a
+     * null dataset, firstValid and lastValid are set to 0.
+     */
+    private void updateFirstLastValid() {
+        if ( ds==null ) {
+            firstValidIndex=0;
+            lastValidIndex=0;
+            return;
+        } else {
+            if (ds instanceof TableDataSet) {
+                firstValidIndex= 0;
+                lastValidIndex= ds.getXLength();
+            } else {
+                VectorDataSet vds= (VectorDataSet)ds;
+                Units u= vds.getYUnits();
+                firstValidIndex= -1;
+                lastValidIndex= -1;
+                for ( int i=0; firstValidIndex==-1 && i<ds.getXLength(); i++ ) {
+                    if ( !u.isFill(i) ) firstValidIndex=i;
+                }
+                for ( int i=ds.getXLength()-1; lastValidIndex==-1 && i>=0; i-- ) {
+                    if ( !u.isFill(i) ) lastValidIndex=i;
+                }
+            }
+        }
     }
 
     protected void invalidateParentCacheImage() {
@@ -177,7 +221,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.lastException;
     }
 
-    public void setDataSet(DataSet ds) {
+    public synchronized void setDataSet(DataSet ds) {
         logger.fine("Renderer.setDataSet "+id+": " + ds);
 
         DataSet oldDs = this.ds;
@@ -186,6 +230,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             this.ds = ds;
             refresh();
             //update();
+            updateFirstLastValid();
             invalidateParentCacheImage();
             propertyChangeSupport.firePropertyChange(PROPERTY_DATASET, oldDs, ds);
         }
