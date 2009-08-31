@@ -739,11 +739,89 @@ public class SeriesRenderer extends Renderer {
         //}
     }
 
+    /**
+     * updates firstIndex and lastIndex that point to the part of
+     * the data that is plottable.  The plottable part is the part that
+     * might be visible while limiting the number of plotted points.
+     * //TODO: bug 0000354: warning message bubble about all data before or after visible range
+     */
+    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
+
+        Units xUnits = xAxis.getUnits();
+        Units yUnits = yAxis.getUnits();
+
+        int ixmax;
+        int ixmin;
+
+        Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        if (xMono != null && xMono.booleanValue()) {
+            DatumRange visibleRange = xAxis.getDatumRange();
+            if (parent.isOverSize()) {
+                Rectangle plotBounds = parent.getUpdateImageBounds();
+                if ( plotBounds!=null ) {
+                    visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
+                }
+
+            }
+            ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
+            ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
+
+        } else {
+            ixmin = 0;
+            ixmax = dataSet.getXLength();
+        }
+
+        Datum sw = DataSetUtil.guessXTagWidth(dataSet);
+        double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+
+        /* fuzz the xSampleWidth */
+        xSampleWidth = xSampleWidth * 1.10;
+
+        double x = Double.NaN;
+        double y = Double.NaN;
+
+        int index;
+
+        // find the first valid point, set x0, y0 //
+        for (index = ixmin; index < ixmax; index++) {
+            x = (double) dataSet.getXTagDouble(index, xUnits);
+            y = (double) dataSet.getDouble(index, yUnits);
+
+            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+            if (isValid) {
+                firstIndex = index;  // TODO: what if no valid points?
+
+                index++;
+                break;
+            }
+        }
+
+        // find the last valid point, minding the dataSetSizeLimit
+        int pointsPlotted = 0;
+        for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
+            y = dataSet.getDouble(index, yUnits);
+
+            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+
+            if (isValid) {
+                pointsPlotted++;
+            }
+        }
+
+        if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
+            dataSetClipped = true;
+        }
+
+        lastIndex = index;
+
+    }
+
+
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         DasPlot lparent= this.parent;
 
-        logger.fine("enter render: "+getDataSet());
+        logger.fine("enter "+id+".render: "+getDataSet());
         logger.fine( "ds: "+this.ds+",  drawing indeces "+this.firstIndex+" to "+this.lastIndex );
         
         if ( lparent==null ) return;
@@ -804,6 +882,9 @@ public class SeriesRenderer extends Renderer {
         logger.fine("rendering points: " + lastIndex + "  " + firstIndex);
         if ( lastIndex == -1 ) {
             if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
+            update(); //DANGER: this kludge is not well tested, and may cause problems.  It should be the case that another
+                      // update is posted that will resolve this problem, but somehow it's not happening when Autoplot adds a
+                      // bunch of panels.
         }
 
         if (lastIndex == firstIndex) {
@@ -893,89 +974,13 @@ public class SeriesRenderer extends Renderer {
 
     }
 
-    /**
-     * updates firstIndex and lastIndex that point to the part of
-     * the data that is plottable.  The plottable part is the part that 
-     * might be visible while limiting the number of plotted points.
-     * //TODO: bug 0000354: warning message bubble about all data before or after visible range
-     */
-    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
-
-        Units xUnits = xAxis.getUnits();
-        Units yUnits = yAxis.getUnits();
-
-        int ixmax;
-        int ixmin;
-
-        Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
-        if (xMono != null && xMono.booleanValue()) {
-            DatumRange visibleRange = xAxis.getDatumRange();
-            if (parent.isOverSize()) {
-                Rectangle plotBounds = parent.getUpdateImageBounds();
-                if ( plotBounds!=null ) {
-                    visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
-                }
-
-            }
-            ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-            ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
-
-        } else {
-            ixmin = 0;
-            ixmax = dataSet.getXLength();
-        }
-
-        Datum sw = DataSetUtil.guessXTagWidth(dataSet);
-        double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
-
-        /* fuzz the xSampleWidth */
-        xSampleWidth = xSampleWidth * 1.10;
-
-        double x = Double.NaN;
-        double y = Double.NaN;
-
-        int index;
-
-        // find the first valid point, set x0, y0 //
-        for (index = ixmin; index < ixmax; index++) {
-            x = (double) dataSet.getXTagDouble(index, xUnits);
-            y = (double) dataSet.getDouble(index, yUnits);
-
-            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-            if (isValid) {
-                firstIndex = index;  // TODO: what if no valid points?
-
-                index++;
-                break;
-            }
-        }
-
-        // find the last valid point, minding the dataSetSizeLimit
-        int pointsPlotted = 0;
-        for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-            y = dataSet.getDouble(index, yUnits);
-
-            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
-
-            if (isValid) {
-                pointsPlotted++;
-            }
-        }
-
-        if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
-            dataSetClipped = true;
-        }
-
-        lastIndex = index;
-
-    }
 
     /**
      * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
-        logger.fine("enter updatePlotImage: "+getDataSet());
+        logger.fine("enter "+id+".updatePlotImage: "+getDataSet());
 
         updating = true;
 
