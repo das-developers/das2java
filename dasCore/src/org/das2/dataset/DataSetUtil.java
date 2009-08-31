@@ -31,7 +31,13 @@ public class DataSetUtil {
             return new CacheTag( start, end, resolution );
         }
     }
-    
+
+    /**
+     * returns the xrange of the dataset.  This assumes that the xtags
+     * are monotonic.
+     * @param ds
+     * @return
+     */
     public static DatumRange xRange( DataSet ds ) {
         int n=ds.getXLength();
         return new DatumRange( ds.getXTagDatum(0), ds.getXTagDatum(n-1) );
