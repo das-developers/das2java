@@ -236,7 +236,8 @@ public class SeriesRenderer extends Renderer {
             double x, y;
             int fx, fy;
 
-            psymsPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
+            int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
+            psymsPath = new GeneralPath(GeneralPath.WIND_NON_ZERO,pathLengthApprox );
             ipsymsPath = new int[(lastIndex - firstIndex) * 2];
             colors = new int[lastIndex - firstIndex + 2];
 
@@ -368,7 +369,8 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
 
-            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
+            int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
+            GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth;
@@ -485,7 +487,7 @@ public class SeriesRenderer extends Renderer {
             if (!histogram && simplifyPaths && colorByDataSet == null) {
                 //j   System.err.println( "input: " );
                 //j   System.err.println( GraphUtil.describe( newPath, true) );
-                this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex);
+                this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count = GraphUtil.reducePath(newPath.getPathIterator(null), path1 );
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
@@ -546,7 +548,8 @@ public class SeriesRenderer extends Renderer {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
 
-            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, 110 * (lastIndex - firstIndex) / 100);
+            int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
+            GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth;
@@ -668,7 +671,7 @@ public class SeriesRenderer extends Renderer {
             this.fillToRefPath1 = fillPath;
 
             if (simplifyPaths) {
-                GeneralPath newPath= new GeneralPath(GeneralPath.WIND_NON_ZERO, lastIndex - firstIndex);
+                GeneralPath newPath= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count= GraphUtil.reducePath(fillToRefPath1.getPathIterator(null), newPath );
                 fillToRefPath1= newPath;
                 logger.fine( String.format("reduce path(fill) in=%d  out=%d\n", lastIndex-firstIndex, count ) );
@@ -794,6 +797,11 @@ public class SeriesRenderer extends Renderer {
                 index++;
                 break;
             }
+        }
+
+        if ( firstIndex==-1 ) { // no valid points
+            lastIndex= ixmax;
+            firstIndex= ixmax;
         }
 
         // find the last valid point, minding the dataSetSizeLimit
