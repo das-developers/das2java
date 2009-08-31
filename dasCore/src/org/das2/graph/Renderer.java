@@ -145,7 +145,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     if ( !u.isFill(i) ) firstValidIndex=i;
                 }
                 for ( int i=ds.getXLength()-1; lastValidIndex==-1 && i>=0; i-- ) {
-                    if ( !u.isFill(i) ) lastValidIndex=i;
+                    if ( !u.isFill(i) ) lastValidIndex=i+1;
                 }
             }
         }
