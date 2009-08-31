@@ -896,7 +896,9 @@ public class SeriesRenderer extends Renderer {
         }
 
         if (lastIndex == firstIndex) {
-            if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+            if ( firstValidIndex==lastValidIndex ) {
+                if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
+            }
         }
 
         logger.fine("render data set " + dataSet);
@@ -956,9 +958,6 @@ public class SeriesRenderer extends Renderer {
             int count= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
-            if ( count==0 ) {
-               if ( messageCount++==0) lparent.postMessage( this, "no valid points", DasPlot.INFO, null, null );
-            }
             mon.finished();
         }
 
@@ -977,7 +976,7 @@ public class SeriesRenderer extends Renderer {
         }
 
         if ( lastIndex - firstIndex < 2 ) {
-            if ( messageCount++==0) lparent.postMessage(this, "less than two points visible", DasPlot.INFO, null, null);
+            if ( messageCount++==0) lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
         }
 
     }
