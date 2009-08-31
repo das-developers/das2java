@@ -221,16 +221,18 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.lastException;
     }
 
-    public synchronized void setDataSet(DataSet ds) {
+    public void setDataSet(DataSet ds) {
         logger.fine("Renderer.setDataSet "+id+": " + ds);
 
         DataSet oldDs = this.ds;
 
         if (oldDs != ds) {
-            this.ds = ds;
+            synchronized(this) {
+                updateFirstLastValid();
+                this.ds = ds;
+            }
             refresh();
             //update();
-            updateFirstLastValid();
             invalidateParentCacheImage();
             propertyChangeSupport.firePropertyChange(PROPERTY_DATASET, oldDs, ds);
         }
