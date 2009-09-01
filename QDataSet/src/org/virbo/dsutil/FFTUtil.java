@@ -144,10 +144,10 @@ public class FFTUtil {
             binsize= 2 * ( xtags.value( xtags.length()/2 ) ) / fft.size();
         }
 
-        DDataSet result= DDataSet.createRank1(xtags.length()/2);
+        DDataSet result= DDataSet.createRank1(xtags.length()/2-1);
         QDataSet powTags= getFrequencyDomainTagsForPower(dep0);
-        for ( int i=0; i<xtags.length()/2; i++ ) {
-            result.putValue(i,(i==0?1:4)*ComplexArray.magnitude2(ca,i) / binsize );
+        for ( int i=1; i<xtags.length()/2; i++ ) {
+            result.putValue(i-1,4*ComplexArray.magnitude2(ca,i) / binsize );
         }
         result.putProperty( QDataSet.DEPEND_0, powTags );
         return result;
@@ -156,9 +156,9 @@ public class FFTUtil {
     public static QDataSet getFrequencyDomainTagsForPower( QDataSet dep0 ) {
         QDataSet xtags= getFrequencyDomainTags( dep0 );
         Units xUnits= (Units)xtags.property( QDataSet.UNITS );
-        DDataSet powTags= DDataSet.createRank1(xtags.length()/2);
-        for ( int i=0; i<xtags.length()/2; i++ ) {
-            powTags.putValue(i,xtags.value(i));
+        DDataSet powTags= DDataSet.createRank1(xtags.length()/2-1);
+        for ( int i=1; i<xtags.length()/2; i++ ) {
+            powTags.putValue(i-1,xtags.value(i));
         }
         powTags.putProperty( QDataSet.UNITS, xUnits );
         return powTags;
