@@ -49,13 +49,15 @@ public class HttpFileSystem extends WebFileSystem {
     private HashMap listings;
 
     /** Creates a new instance of WebFileSystem */
-    private HttpFileSystem(URL root, File localRoot) {
+    private HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
         listings = new HashMap();
     }
 
-    public static synchronized HttpFileSystem createHttpFileSystem(URL root) throws FileSystemOfflineException {
+    public static synchronized HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException {
         try {
+            URL root= rooturi.toURL();
+
             // verify URL is valid and accessible
             HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
             urlc.setRequestMethod("HEAD");
@@ -83,13 +85,13 @@ public class HttpFileSystem extends WebFileSystem {
             File local;
 
             if (DasApplication.hasAllPermission()) {
-                local = localRoot(root);
+                local = localRoot(rooturi);
                 logger.finer("initializing httpfs " + root + " at " + local);
             } else {
                 local = null;
                 logger.finer("initializing httpfs " + root + " in applet mode");
             }
-            HttpFileSystem result = new HttpFileSystem(root, local);
+            HttpFileSystem result = new HttpFileSystem(rooturi, local);
             result.offline = offline;
 
             return result;
@@ -97,7 +99,7 @@ public class HttpFileSystem extends WebFileSystem {
         } catch (FileSystemOfflineException e) {
             throw e;
         } catch (IOException e) {
-            throw new FileSystemOfflineException(e,root);
+            throw new FileSystemOfflineException(e,rooturi);
         }
 
     }
@@ -187,7 +189,7 @@ public class HttpFileSystem extends WebFileSystem {
         String realName = f;
         boolean exists;
         try {
-            URL ur = new URL(this.root, f);
+            URL ur = new URL(this.root.toURL(), f);
             HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
             String userInfo= KeyChain.getDefault().getUserInfo(ur);
             if ( userInfo != null) {
@@ -205,7 +207,7 @@ public class HttpFileSystem extends WebFileSystem {
                     realName = surl.substring(root.toString().length());
                 }
                 connect.disconnect();
-                ur = new URL(this.root, realName);
+                ur = new URL(this.root.toURL(), realName);
                 connect = (HttpURLConnection) ur.openConnection();
                 connect.setRequestMethod("HEAD");
                 connect.connect();

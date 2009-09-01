@@ -10,8 +10,7 @@
 package org.das2.fsm;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.URI;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.DasException;
 import org.das2.dataset.CacheTag;
@@ -24,7 +23,6 @@ import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.TimeParser;
-import java.net.URL;
 
 /**
  *
@@ -68,7 +66,7 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
     public static void main( String[] args ) throws Exception {
         
         FileSystem fs;
-        fs = FileSystem.create(new URL("http://www-pw.physics.uiowa.edu/~jbf/cluster/obtdata/"));
+        fs = FileSystem.create(new URI("http://www-pw.physics.uiowa.edu/~jbf/cluster/obtdata/"));
         
         TimeParser.FieldHandler hexHandler= new TimeParser.FieldHandler() {
             public void handleValue(String fieldContent, TimeUtil.TimeStruct startTime, TimeUtil.TimeStruct timeWidth) {

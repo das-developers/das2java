@@ -26,6 +26,7 @@ import java.io.*;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.DasApplication;
 import org.das2.system.ExceptionHandler;
@@ -45,7 +46,7 @@ import org.das2.util.monitor.ProgressMonitor;
 
 public abstract class FileSystem  {
 
-    URL root;
+    URI root;
     protected static Logger logger= Logger.getLogger(  "das2.filesystem" );
     
     public static class FileSystemOfflineException extends IOException {
@@ -59,25 +60,44 @@ public abstract class FileSystem  {
             super( e.getMessage() );
             initCause(e);
         }
-        public FileSystemOfflineException( IOException e, URL root ) {
+        public FileSystemOfflineException( IOException e, URI root ) {
             super( e.getMessage() + ": "+root );
             initCause(e);
         }
     }
     
-    public static FileSystem create(URL root) throws FileSystemOfflineException {
+    public static FileSystem create(URI root) throws FileSystemOfflineException {
         return create(root, new NullProgressMonitor());
     }
 
-    private static final Map<URL,FileSystem> instances= new HashMap<URL,FileSystem>();
+    private static final Map<URI,FileSystem> instances= new HashMap<URI,FileSystem>();
+
 
     /**
-     * Creates a FileSystem by parsing the URL and creating the correct FS type.
-     * Presently, file, http, and ftp are supported.  If the URL contains a folder
-     * ending in .zip and a FileSystemFactory is registered as handling .zip, then
-     * The zip file will be transferred and the zip file mounted.
+     *
+     * @param root
+     * @param mon
+     * @return
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws IllegalArgumentException if the url cannot be converted to a URI.
      */
     public synchronized static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException {
+        try {
+            return create(root.toURI(), mon);
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    /**
+     * Creates a FileSystem by parsing the URI and creating the correct FS type.
+     * Presently, file, http, and ftp are supported.  If the URI contains a folder
+     * ending in .zip and a FileSystemFactory is registered as handling .zip, then
+     * The zip file will be transferred and the zip file mounted.
+     *
+     * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
+     */
+    public synchronized static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException {
         logger.fine("create filesystem "+root);
 
         FileSystem result= instances.get(root);
@@ -91,29 +111,37 @@ public abstract class FileSystem  {
                 String surl= root.toString();
                 int i= surl.indexOf(".zip");
                 String[] ss= FileSystem.splitUrl( surl.substring(0,i+4) );
-                URL parent = new URL(ss[2]); //getparent
+                URI parent = new URI(ss[2]); //getparent
                 String zipname = ss[3].substring(ss[2].length());
                 String subdir = surl.substring(i+4);
                 FileSystem remote = FileSystem.create(parent);
                 File localZipFile = remote.getFileObject(zipname).getFile(mon);
                 factory = (FileSystemFactory) registry.get("zip");
-                FileSystem zipfs = factory.createFileSystem(localZipFile.toURI().toURL());
+                FileSystem zipfs = factory.createFileSystem(localZipFile.toURI());
                 if ( subdir.equals("") || subdir.equals("/") ) {
                     result= zipfs;
                 } else {
                     result= new SubFileSystem(zipfs, subdir);
                 }
+            } catch (URISyntaxException ex) {
+                //this shouldn't happen
+                throw new RuntimeException(ex);
             } catch (IOException ex) {
                 throw new FileSystemOfflineException(ex);
             }
         } else {
-            factory= (FileSystemFactory) registry.get(root.getProtocol());
+            factory= (FileSystemFactory) registry.get(root.getScheme());
         }
         if ( factory==null ) {
             throw new IllegalArgumentException( "unsupported protocol: "+root );
         } else {
             if ( result==null ) { // if we didn't create it in the zip file part
-                result= factory.createFileSystem(root);
+                try {
+                    // if we didn't create it in the zip file part
+                    result = factory.createFileSystem(root);
+                } catch (MalformedURLException ex) {
+                    throw new IllegalArgumentException(ex);
+                }
             }
         }
         
@@ -141,19 +169,20 @@ public abstract class FileSystem  {
         registry.put( proto, factory );
     }
     
-    protected FileSystem( URL root ) {
+    protected FileSystem( URI root ) {
         if ( !root.toString().endsWith("/" ) ) {
             String s= root.toString();
             try {
-                root= new URL( s+"/" );
-            } catch ( MalformedURLException e ) {
-                throw new RuntimeException(e);
+                root = new URI(s + "/");
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException(ex); // shouldn't happen
             }
         }
         this.root= root;
     }
     
-    public URL getRootURL() {
+    public URI getRootURI() {
         return root;
     }
     
@@ -231,11 +260,11 @@ public abstract class FileSystem  {
      * create a new filesystem that is a part of this filesystem, rooted at
      * directory.
      */
-    public FileSystem createFileSystem( String directory ) {
+    public FileSystem createFileSystem( String directory ) throws URISyntaxException {
         try {
-            return new SubFileSystem( this, toCanonicalFolderName(directory) );
-        } catch ( MalformedURLException e ) {
-            throw new IllegalArgumentException("invalid directory: "+directory);
+            return new SubFileSystem(this, toCanonicalFolderName(directory));
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex);
         }
     }
     

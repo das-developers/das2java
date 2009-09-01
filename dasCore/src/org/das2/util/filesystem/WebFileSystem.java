@@ -28,6 +28,8 @@ package org.das2.util.filesystem;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.net.*;
@@ -91,27 +93,27 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
     /** Creates a new instance of WebFileSystem */
-    protected WebFileSystem(URL root, File localRoot) {
+    protected WebFileSystem(URI root, File localRoot) {
         super(root);
         this.localRoot = localRoot;
         if (localRoot == null) {
-            if ( root.getProtocol().equals("http")
-                    || root.getProtocol().equals("https" ) ) {
+            if ( root.getScheme().equals("http")
+                    || root.getScheme().equals("https" ) ) {
                 this.protocol = new AppletHttpProtocol();
             }
         } else {
-            if (root.getProtocol().equals("http")
-                    || root.getProtocol().equals("https" ) ) {
+            if (root.getScheme().equals("http")
+                    || root.getScheme().equals("https" ) ) {
                 this.protocol = new DefaultHttpProtocol();
             }
         }
     }
 
-    static protected File localRoot(URL root) {
+    static protected File localRoot(URI root) {
 
         File local = FileSystem.settings().getLocalCacheDir();
 
-        String s = root.getProtocol() + "/" + root.getHost() + "/" + root.getFile();
+        String s = root.getScheme() + "/" + root.getHost() + "/" + root.getPath(); //TODO: check getPath
 
         local = new File(local, s);
 
@@ -264,6 +266,27 @@ public abstract class WebFileSystem extends FileSystem {
         }
     }
 
+    public URI getURI( String filename ) {
+        try {
+            filename = FileSystem.toCanonicalFilename(filename);
+            return new URI(root + filename.substring(1));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    /**
+     * return the root of the filesystem as a URL.
+     * @return the root of the filesystem as a URL.
+     */
+    public URL getRootURL() {
+        try {
+            return root.toURL();
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
     /**
      * return the name of the File within the FileSystem, where File is a local
      * file within the local copy of the filesystem.

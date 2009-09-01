@@ -7,7 +7,7 @@ package org.das2.util.filesystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import org.apache.commons.vfs.FileSystemException;
@@ -24,7 +24,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     private org.apache.commons.vfs.FileSystem vfsSystem;
     // We need to be more general than URL here, but superclass needs it.
     // Not sure how we'll handle this yet
-    private VFSFileSystem(URL root) throws IOException {
+    private VFSFileSystem(URI root) throws IOException {
         super(root);
         mgr = VFS.getManager();
     }

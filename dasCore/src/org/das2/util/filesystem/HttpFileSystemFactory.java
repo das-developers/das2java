@@ -21,27 +21,26 @@
  * Created on November 15, 2007, 9:28 AM
  *
  */
-
 package org.das2.util.filesystem;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import org.das2.DasApplication;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
-import java.net.URL;
 
 /**
  *
  * @author jbf
  */
 public class HttpFileSystemFactory implements FileSystemFactory {
-    
+
     /** Creates a new instance of HttpFileSystemFactory */
     public HttpFileSystemFactory() {
     }
 
-    public FileSystem createFileSystem(URL root) throws FileSystemOfflineException {
-        HttpFileSystem hfs= HttpFileSystem.createHttpFileSystem( root );   
-        if ( ! DasApplication.hasAllPermission() ) hfs.setAppletMode(true);
+    public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, MalformedURLException {
+        HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
+        if (!DasApplication.hasAllPermission()) hfs.setAppletMode(true);
         return hfs;
     }
-    
 }

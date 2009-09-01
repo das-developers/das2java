@@ -23,6 +23,8 @@
 
 package org.das2.util.filesystem;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.io.*;
 import java.net.*;
@@ -43,9 +45,9 @@ public class LocalFileSystem extends FileSystem {
      *   file://home/jbf
      * Also, on Windows, /c:/documents and settings/jbf/  is okay.
      */
-    protected LocalFileSystem(URL root) throws FileSystemOfflineException {
+    protected LocalFileSystem(URI root) throws FileSystemOfflineException {
         super( root );
-        if ( !("file".equals(root.getProtocol()) ) ) {
+        if ( !("file".equals(root.getScheme()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
         String surl= root.toString();
@@ -53,7 +55,11 @@ public class LocalFileSystem extends FileSystem {
         	surl= surl.replaceAll("\\+", " "); // Autoplot kludge
         }
         if ( surl.contains("%20") ) {
-        	surl= URLDecoder.decode(surl);
+            try {
+                surl = URLDecoder.decode(surl, "US-ASCII");
+            } catch (UnsupportedEncodingException ex) {
+                throw new RuntimeException(ex);
+            }
         }
         if ( !surl.endsWith("/") ) surl+="/";
         String[] split= FileSystem.splitUrl( surl );

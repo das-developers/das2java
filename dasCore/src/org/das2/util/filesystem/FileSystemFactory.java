@@ -23,13 +23,14 @@
 
 package org.das2.util.filesystem;
 
+import java.net.MalformedURLException;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
-import java.net.URL;
+import java.net.URI;
 
 /**
  * creates a new instance of a type of filesystem
  * @author jbf
  */
 public interface FileSystemFactory {
-    FileSystem createFileSystem( URL root ) throws FileSystemOfflineException;
+    FileSystem createFileSystem( URI root ) throws FileSystemOfflineException, MalformedURLException;
 }

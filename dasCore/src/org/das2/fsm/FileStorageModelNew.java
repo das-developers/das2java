@@ -18,6 +18,7 @@ import org.das2.util.monitor.SubTaskMonitor;
 import org.das2.util.TimeParser;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.*;
@@ -171,7 +172,7 @@ public class FileStorageModelNew {
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
-                    URL url= new URL( root.getRootURL(), names[i] );
+                    URI url= root.getRootURI().resolve(names[i]);  //TODO: test
                     fileSystems[i]= FileSystem.create( url );
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);

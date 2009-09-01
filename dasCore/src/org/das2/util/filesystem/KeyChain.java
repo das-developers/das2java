@@ -5,10 +5,13 @@
 
 package org.das2.util.filesystem;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -43,6 +46,14 @@ public class KeyChain {
     }
 
     private Map<String,String> keys= new HashMap<String,String>();
+
+    public String getUserInfo( URI uri ) {
+        try {
+            return getUserInfo(uri.toURL());
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     public String getUserInfo( URL url ) {
 

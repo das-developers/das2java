@@ -28,7 +28,6 @@ package org.das2.util.filesystem;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  *
@@ -39,7 +38,7 @@ public class SubFileSystem extends FileSystem {
     String dir;
     
     protected SubFileSystem( FileSystem parent, String dir ) throws MalformedURLException {
-        super( new URL( parent.getRootURL(), dir ) );
+        super( parent.getRootURI().resolve(dir) ); //TODO: check this
         this.parent= parent;
         this.dir= dir;
         
