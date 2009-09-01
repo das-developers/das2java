@@ -15,6 +15,9 @@ import org.das2.DasApplication;
  */
 public class FileSystemSettings {
 
+    /**
+     * this should only be called by FileSystem.  Use FileSystem.settings().
+     */
     protected FileSystemSettings() {
         File local;
         if ( !DasApplication.hasAllPermission() ) {
