@@ -184,7 +184,6 @@ public abstract class WebFileSystem extends FileSystem {
      */
     protected MutatorLock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
         logger.finer("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
-        System.err.println("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
         synchronized (downloads) {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
             if (mon != null) { // the webfilesystem is already loading this file, so wait.
