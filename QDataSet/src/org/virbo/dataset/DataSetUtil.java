@@ -722,6 +722,9 @@ public class DataSetUtil {
     public static int[] qubeDims(QDataSet ds) {
         if (ds.rank() > 4) {
             throw new IllegalArgumentException("rank limit");
+        } else if (ds.rank()==2 ) {  // rank 1 depend_1 implies qube.
+            QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+            if ( dep1!=null && dep1.rank()==1 ) return new int[] { ds.length(), dep1.length() };
         } else if (ds.rank() == 1) {
             return new int[]{ds.length()};  // rank 1 datasets are trivially qubes
         } else if ( ds.rank()== 0 ) {
