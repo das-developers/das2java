@@ -66,18 +66,30 @@ public abstract class FileSystem  {
         }
     }
     
-    public static FileSystem create(URI root) throws FileSystemOfflineException {
-        return create(root, new NullProgressMonitor());
-    }
-
     private static final Map<URI,FileSystem> instances= new HashMap<URI,FileSystem>();
 
+    /**
+     *
+     * @param root
+     * @deprecated use create( URI root ) instead.
+     * @return
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws IllegalArgumentException if the url cannot be converted to a URI.
+     */
+    public static FileSystem create(URL root) throws FileSystemOfflineException {
+        try {
+            return create( root.toURI(), new NullProgressMonitor() );
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
 
     /**
      *
      * @param root
      * @param mon
      * @return
+     * @deprecated use create( URI root, ProgressMonitor mon ) instead.
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
      */
@@ -87,6 +99,10 @@ public abstract class FileSystem  {
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex);
         }
+    }
+
+    public static FileSystem create(URI root) throws FileSystemOfflineException {
+        return create(root, new NullProgressMonitor());
     }
 
     /**
