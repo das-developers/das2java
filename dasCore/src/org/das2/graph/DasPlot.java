@@ -122,24 +122,26 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
             public void mousePressed(MouseEvent e) {
                 //if (e.getButton() == MouseEvent.BUTTON3) {
+                int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
+                Renderer r = null;
+                if ( ir>-1 ) {
+                    r= (Renderer) renderers.get(ir);
+                }
+                setFocusRenderer(r);
                 if (editRendererMenuItem != null) {
                     //TODO: check out SwingUtilities, I think this is wrong:
-                    int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
                     editRendererMenuItem.setText("Renderer Properties");
                     if (ir > -1) {
                         editRendererMenuItem.setEnabled(true);
-                        Renderer r = (Renderer) renderers.get(ir);
                         if (r instanceof Displayable) {
                             Displayable d = (Displayable) r;
                             editRendererMenuItem.setIcon(d.getListIcon());
                         } else {
                             editRendererMenuItem.setIcon(null);
                         }
-                        setFocusRenderer(r);
                     } else {
                         editRendererMenuItem.setEnabled(false);
                         editRendererMenuItem.setIcon(null);
-                        setFocusRenderer(null);
                     }
                 }
             //}
@@ -447,16 +449,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         x = new DisplayDataMouseModule(this);
         mouseAdapter.addMouseModule(x);
 
-        editRendererMenuItem = new JMenuItem(getEditAction());
-        getDasMouseInputAdapter().addMenuItem(editRendererMenuItem);
-
+        setEnableRenderPropertiesAction(true);
+        
         if (DasApplication.hasAllPermission()) {
             JMenuItem dumpMenuItem = new JMenuItem(DUMP_TO_FILE_ACTION);
             mouseAdapter.addMenuItem(dumpMenuItem);
         }
-
-
     }
+    
     public Action DUMP_TO_FILE_ACTION = new AbstractAction("Dump Data Set to File") {
 
         public void actionPerformed(ActionEvent e) {
@@ -852,6 +852,27 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (saveClip != null) {
             graphics1.setClip(saveClip);
         }
+    }
+
+    public void setEnableRenderPropertiesAction(boolean b) {
+        if ( b ) {
+            this.editRendererMenuItem=new JMenuItem(getEditAction());
+            getDasMouseInputAdapter().addMenuItem(editRendererMenuItem);
+        } else {
+            if ( this.editRendererMenuItem!=null ) {
+                getDasMouseInputAdapter().removeMenuItem(this.editRendererMenuItem.getText());
+            }
+            this.editRendererMenuItem=null;
+        }
+    }
+
+    /**
+     * property enableRenderPropertiesAction means right-clicking on a menu
+     * allows access to the renderer.
+     * @return
+     */
+    private boolean isEnableRenderPropertiesAction() {
+        return this.editRendererMenuItem!=null;
     }
 
     private class MessageDescriptor {
