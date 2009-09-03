@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.das2.util.filesystem;
 
 import java.io.File;
@@ -12,8 +8,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Date;
 import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileSystemManager;
-import org.apache.commons.vfs.VFS;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
@@ -26,25 +20,30 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 public class VFSFileObject extends org.das2.util.filesystem.FileObject {
 
-    private FileSystemManager mgr;
     private org.apache.commons.vfs.FileObject vfsob;
+    private VFSFileSystem vfsfs;
+    private boolean local = false;
+    private File localFile = null;
 
     /**
      * Create a das2 FileObject from the given VFS FileObject
-     * @param f
+     * 
      */
-    protected VFSFileObject(org.apache.commons.vfs.FileObject f) {
+    protected VFSFileObject(VFSFileSystem fs, org.apache.commons.vfs.FileObject f) {
+        vfsfs = fs;
         vfsob = f;
-        try {
-            mgr = VFS.getManager();
-        } catch (FileSystemException e) {
-            throw new RuntimeException(e);
-        }
 
+        // If the file system is local, the file is already available locally
+        if (vfsfs.isLocal()) {
+            local = true;
+        }
+        // localFile may not exist yet
+        localFile = new File(vfsfs.getLocalRoot(), vfsob.getName().getPath());
     }
 
     @Override
     public boolean canRead() {
+        // TODO: Modifiy this to check local cache first when appropriate
         boolean r;
         try {
             r = vfsob.isReadable();
@@ -62,8 +61,8 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         vfsKids = vfsob.getChildren();  //throws FileSystemException (extends IOException)
 
         kids = new FileObject[vfsKids.length];
-        for (int i=0; i<vfsKids.length; i++) {
-            kids[i] = new VFSFileObject(vfsKids[i]);
+        for (int i = 0; i < vfsKids.length; i++) {
+            kids[i] = new VFSFileObject(vfsfs, vfsKids[i]);
         }
         return kids;
     }
@@ -71,6 +70,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
     @Override
     public InputStream getInputStream(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         InputStream r;
+        //TODO: get the stream on the cached file, caching first if necessary
         try {
             r = vfsob.getContent().getInputStream();
         } catch (FileSystemException e) {
@@ -88,9 +88,23 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
 
     @Override
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
-        // For local files, just return a java.io.File
-        // For remote files, it will have to be downloaded and cached first
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (!local) {
+            // If it's a folder, ensure corresponding cache dir exists
+            if (vfsob.getType() == org.apache.commons.vfs.FileType.FOLDER) {
+                if (!localFile.exists()) {
+                    localFile.mkdirs();
+                }
+            } else {
+                // Download and cache remote file (including zip etc)
+                if (!localFile.getParentFile().exists()) {
+                    localFile.getParentFile().mkdirs();
+                }
+                File partfile = new File(localFile.toString() + ".part");
+                vfsfs.downloadFile(vfsob.getName().getPath(), localFile, partfile, monitor);
+            }
+            local = true;
+        }
+        return localFile;
     }
 
     @Override
@@ -102,7 +116,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
             throw new RuntimeException(e);
         }
 
-        return new VFSFileObject(vfsParent);
+        return new VFSFileObject(vfsfs, vfsParent);
     }
 
     @Override
@@ -111,7 +125,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         long size = -1;
         try {
             size = vfsob.getContent().getSize();
-        } catch(FileSystemException e) {
+        } catch (FileSystemException e) {
             e.printStackTrace();
         } finally {
             return size;
@@ -151,7 +165,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         boolean r;
         try {
             r = (vfsob.getParent() == null);
-        } catch(FileSystemException e) {
+        } catch (FileSystemException e) {
             throw new RuntimeException(e);
         }
         return r;
@@ -160,8 +174,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
     @Override
     public boolean isLocal() {
         // This will return true for local files OR if remote file is locally cached
-        // I *think* this information can be obtained from FilesCache
-        throw new UnsupportedOperationException("Not supported yet.");
+        return local;
     }
 
     @Override
@@ -169,7 +182,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         boolean r;
         try {
             r = vfsob.exists();
-        } catch(FileSystemException e) {
+        } catch (FileSystemException e) {
             throw new RuntimeException(e);
         }
         return r;
@@ -178,16 +191,17 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
     @Override
     public String getNameExt() {
         org.apache.commons.vfs.FileName fname = vfsob.getName();
-        return fname.getPath() + fname.getBaseName();
+        return fname.getPath();  //this includes the filename
     }
 
     @Override
     public Date lastModified() {
         // note that das2 says return new Date(0L) on error
+        // TODO: Check both cache and remote file?
         long when = 0;
         try {
             when = vfsob.getContent().getLastModifiedTime();
-        } catch(FileSystemException e) {
+        } catch (FileSystemException e) {
             e.printStackTrace();
         } finally {
             return new Date(when);
