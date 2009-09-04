@@ -14,10 +14,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
-import org.apache.commons.vfs.FileSystemOptions;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.VFS;
-import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
 import org.das2.system.MutatorLock;
 import org.das2.util.monitor.ProgressMonitor;
 
