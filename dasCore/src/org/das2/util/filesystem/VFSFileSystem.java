@@ -28,17 +28,23 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     private final FileSystemManager mgr;
     private org.apache.commons.vfs.FileSystem vfsSystem;
     private final File cacheRoot;
+    private final URI fsuri;
 
     private VFSFileSystem(URI root) throws IOException {
         super(root);
         mgr = VFS.getManager();
 
-        String subFolderName = "vfsCache/" + root.getScheme() + "/";
+        String subFolderName = "vfsCache/" + root.getScheme() + "/" + root.getHost() + root.getPath();
         cacheRoot = new File(settings().getLocalCacheDir(), subFolderName);
-        org.apache.commons.vfs.FileObject vfo;
-        vfo = mgr.resolveFile(root.toString());
-
+        
+        org.apache.commons.vfs.FileObject vfo = mgr.resolveFile(root.toString());
         vfsSystem = vfo.getFileSystem();
+
+        if (vfo.getType() == org.apache.commons.vfs.FileType.FOLDER) {
+            fsuri = URI.create(root.toString());
+        } else {
+            fsuri = URI.create(root.toString().substring(0, root.toString().lastIndexOf('/')+1 ));
+        }
     }
 
     public static synchronized VFSFileSystem createVFSFileSystem(URI root) throws FileSystemOfflineException {
@@ -71,6 +77,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     @Override
     public String[] listDirectory(String directory) throws IOException {
         // We'll let the VFS throw any necessary exceptions
+        directory = fsuri.toString() + directory;
         org.apache.commons.vfs.FileObject vfsob = mgr.resolveFile(directory);
         org.apache.commons.vfs.FileObject children[] = vfsob.getChildren();
 
@@ -251,7 +258,12 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         }
 
         try {
+            filename = fsuri.getPath() + filename;
             org.apache.commons.vfs.FileObject vfsob = vfsSystem.resolveFile(filename);
+
+            if(!vfsob.exists()) {
+                System.err.println("Uh oh! Attempt to download non-existent file via VFS.");
+            }
 
             long size = vfsob.getContent().getSize();
             monitor.setTaskSize(size);
