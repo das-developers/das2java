@@ -262,7 +262,8 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             org.apache.commons.vfs.FileObject vfsob = vfsSystem.resolveFile(filename);
 
             if(!vfsob.exists()) {
-                System.err.println("Uh oh! Attempt to download non-existent file via VFS.");
+                //System.err.println("Uh oh! Attempt to download non-existent file via VFS.");
+                throw new FileNotFoundException("attempt to download non-existent file");
             }
 
             long size = vfsob.getContent().getSize();
