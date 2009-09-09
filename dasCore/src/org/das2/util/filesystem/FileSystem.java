@@ -122,7 +122,7 @@ public abstract class FileSystem  {
         }
 
         FileSystemFactory factory;
-        if ( root.getPath().contains(".zip") && registry.containsKey("zip") ) {
+        if ( root.getPath()!=null && root.getPath().contains(".zip") && registry.containsKey("zip") ) {
             try {
                 String surl= root.toString();
                 int i= surl.indexOf(".zip");
