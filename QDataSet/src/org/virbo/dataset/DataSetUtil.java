@@ -1071,6 +1071,7 @@ public class DataSetUtil {
         Number fill= (Number) ds.property(QDataSet.FILL_VALUE);
         if ( fill!=null ) result.putProperty( QDataSet.FILL_VALUE, uc.convert(fill));
 
+        result.putProperty( QDataSet.UNITS, u );
         return result;
     }
 
