@@ -53,7 +53,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         try {
             return new VFSFileSystem(root);
         } catch (IOException e) {
-            throw new FileSystemOfflineException(e.getMessage());
+            throw new FileSystemOfflineException(e);  //slightly less ugly
         }
     }
 
