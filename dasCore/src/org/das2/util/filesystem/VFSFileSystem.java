@@ -74,6 +74,13 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         return (vfsob.getType() == FileType.FOLDER);
     }
 
+    /**
+     * return a list of files and folders in the directory.
+     * Conventionally, folders are identified with a trailing slash.
+     * @param directory
+     * @return
+     * @throws IOException
+     */
     @Override
     public String[] listDirectory(String directory) throws IOException {
         // We'll let the VFS throw any necessary exceptions
@@ -83,7 +90,11 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
 
         String r[] = new String[children.length];
         for (int i = 0; i < children.length; i++) {
-            r[i] = children[i].getName().getBaseName();
+            if ( children[i].getType()==FileType.FOLDER ) {
+                r[i]= children[i].getName().getBaseName() + "/";
+            } else {
+                r[i] = children[i].getName().getBaseName();
+            }
         }
 
         return r;
