@@ -900,7 +900,7 @@ public class DataSetUtil {
      */
     public static String statsString(QDataSet ds) {
         RankZeroDataSet stats = DataSetOps.moment(ds);
-        return "" + stats.value(0) + "+/-" + stats.property("stddev") + " N=" + stats.property("validCount");
+        return "" + stats.value() + "+/-" + stats.property("stddev") + " N=" + stats.property("validCount");
     }
 
     /**
