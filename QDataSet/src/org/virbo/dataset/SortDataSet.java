@@ -10,6 +10,7 @@
 package org.virbo.dataset;
 
 import java.util.HashMap;
+import org.virbo.dsops.Ops;
 
 /**
  * wraps QDataSet, rearranging the elements of the first index as specified
@@ -30,6 +31,12 @@ public class SortDataSet extends AbstractDataSet {
     public SortDataSet( QDataSet source, QDataSet sort ) {
         this.source= source;
         this.sort= sort;
+
+        QDataSet range= Ops.extent(sort);
+
+        if ( range.value(0)< 0 ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(0) );
+        if ( range.value(1)>= source.length() ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(1) );
+        
         properties= new HashMap();
         QDataSet dep0= (QDataSet) source.property( QDataSet.DEPEND_0 );
         if ( dep0!=null ) properties.put( QDataSet.DEPEND_0, new SortDataSet( dep0, sort ) );
