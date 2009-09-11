@@ -1626,10 +1626,11 @@ public class Ops {
 
     /**
      * returns a two element, rank 1 dataset containg the extent of the data.
+     * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.
      * The property QDataSet.SCALE_TYPE is set to lin or log.
-     * The property QDataSet.COUNT is set to the number of valid measurements.
+     * The property count is set to the number of valid measurements.
      * @param ds
-     * @return two element, rank 1 dataset.
+     * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds ) {
 
@@ -1670,6 +1671,8 @@ public class Ops {
         DDataSet qresult= DDataSet.wrap(result);
         qresult.putProperty( QDataSet.SCALE_TYPE, ds.property(QDataSet.SCALE_TYPE) );
         qresult.putProperty( "count", new Integer(count) );
+        qresult.putProperty( "BINS_0", "min,maxInclusive" );
+        
         return qresult;
         
     }
