@@ -192,7 +192,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     private int debugColorIndex = 0;
     private DasPlot dasPlot;
-    private JMenu favoritesMenu;
+    private JMenu bookmarksMenu;
     private JMenu backMenu;
     private static final Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
 
@@ -252,8 +252,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (!DasApplication.getDefaultApplication().isHeadless()) {
             backMenu = new JMenu("Back");
             mouseAdapter.addMenuItem(backMenu);
-            favoritesMenu = new JMenu("Favorites");
-            mouseAdapter.addMenuItem(favoritesMenu);
+            bookmarksMenu = new JMenu("Bookmarks");
+            mouseAdapter.addMenuItem(bookmarksMenu);
         }
         dataRangePropertyListener = createDataRangePropertyListener();
         setLayout(new AxisLayoutManager());
@@ -272,7 +272,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (DasApplication.getDefaultApplication().isHeadless()) {
             return;
         }
-        favoritesMenu.removeAll();
+        bookmarksMenu.removeAll();
         List favorites = dataRange.getFavorites();
         for (Iterator i = favorites.iterator(); i.hasNext();) {
             final DatumRange r = (DatumRange) i.next(); // copied code from addToFavorites
@@ -283,16 +283,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             };
             JMenuItem menuItem = new JMenuItem(action);
-            favoritesMenu.add(menuItem);
+            bookmarksMenu.add(menuItem);
         }
-        Action action = new AbstractAction("add to favorites") {
-
+        Action action = new AbstractAction("bookmark this range") {
             public void actionPerformed(ActionEvent e) {
                 DasAxis.this.addToFavorites(DasAxis.this.getDatumRange());
             }
         };
         JMenuItem addItem = new JMenuItem(action);
-        favoritesMenu.add(addItem);
+        bookmarksMenu.add(addItem);
     }
 
     private void copyHistory() {
