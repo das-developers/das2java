@@ -159,7 +159,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     Element n2 = (Element) odims.item(j);
                     String pname = n2.getAttribute("name");
                     if ( pname.equals(QDataSet.USER_PROPERTIES) ) {
-                        System.err.println("ehre");
+                        //System.err.println("ehre");
                     }
                     String svalue;
                     if ( n2.hasAttribute("value") ){
