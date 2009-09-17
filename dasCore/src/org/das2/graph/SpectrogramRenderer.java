@@ -215,7 +215,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         logger.finer("entering SpectrogramRenderer.render");
         Graphics2D g2 = (Graphics2D) g;
 
@@ -353,7 +353,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     }
 
-    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
+    public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
         logger.finer("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
         reportCount();
@@ -413,6 +413,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
+
+                        System.err.println("yunits="+this.ds.getYUnits()+"  axis="+yAxis.getUnits());
                         if (!this.ds.getYUnits().isConvertableTo(yAxis.getUnits())) {
                             logger.fine("dataset units are incompatable with y axis.");
                             plotImage = null;

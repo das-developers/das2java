@@ -221,7 +221,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.lastException;
     }
 
-    public void setDataSet(DataSet ds) {
+    public synchronized void setDataSet(DataSet ds) {
         logger.fine("Renderer.setDataSet "+id+": " + ds);
 
         DataSet oldDs = this.ds;
