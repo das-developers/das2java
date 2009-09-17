@@ -358,6 +358,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         updateImageCount++;
         reportCount();
         DasPlot lparent= getParent();
+
+        final DataSet fds= this.ds; // make a local copy for thread safety.
+
         try {
             try {
 
@@ -383,7 +386,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
-                        if (this.ds == null) {
+                        if (fds == null) {
                             logger.fine("got null dataset, setting image to null");
                             plotImage = null;
                             plotImageBounds= null;
@@ -395,7 +398,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         }
 
-                        if (this.ds.getXLength() == 0) {
+                        if (fds.getXLength() == 0) {
                             logger.fine("got empty dataset, setting image to null");
                             plotImage = null;
                             plotImageBounds= null;
@@ -406,7 +409,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
-                        if (!this.ds.getXUnits().isConvertableTo(xAxis.getUnits())) {
+                        if (!fds.getXUnits().isConvertableTo(xAxis.getUnits())) {
                             logger.fine("dataset units are incompatable with x axis.");
                             plotImage = null;
                             plotImageBounds= null;
@@ -414,15 +417,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
 
-                        System.err.println("yunits="+this.ds.getYUnits()+"  axis="+yAxis.getUnits());
-                        if (!this.ds.getYUnits().isConvertableTo(yAxis.getUnits())) {
+                        System.err.println("yunits="+fds.getYUnits()+"  axis="+yAxis.getUnits());
+                        if (!fds.getYUnits().isConvertableTo(yAxis.getUnits())) {
                             logger.fine("dataset units are incompatable with y axis.");
                             plotImage = null;
                             plotImageBounds= null;
                             return;
                         }
 
-                        if (!((TableDataSet)this.ds).getZUnits().isConvertableTo(colorBar.getUnits()) ) {
+                        if (!((TableDataSet)fds).getZUnits().isConvertableTo(colorBar.getUnits()) ) {
                             logger.fine("dataset units are incompatable with colorbar.");
                             plotImage = null;
                             plotImageBounds= null;
@@ -454,7 +457,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         t0 = System.currentTimeMillis();
 
-                        rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
+                        rebinDataSet = (TableDataSet) rebinner.rebin(fds, xRebinDescriptor, yRebinDescriptor);
 
                         xmemento = xAxis.getMemento();
                         ymemento = yAxis.getMemento();
@@ -488,8 +491,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
 
                     Rectangle rr= DasDevicePosition.toRectangle( parent.getRow(), parent.getColumn() );
-                    DatumRange xdr= DataSetUtil.xRange( this.ds );
-                    DatumRange ydr= DataSetUtil.yRange( this.ds );
+                    DatumRange xdr= DataSetUtil.xRange( fds );
+                    DatumRange ydr= DataSetUtil.yRange( fds );
                     double[] yy= GraphUtil.transformRange( yAxis, ydr );
                     double[] xx= GraphUtil.transformRange( xAxis, xdr );
                     selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
