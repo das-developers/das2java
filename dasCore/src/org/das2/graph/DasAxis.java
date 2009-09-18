@@ -330,10 +330,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setEnableHistory(boolean enableHistory) {
         boolean oldEnableHistory = this.enableHistory;
         this.enableHistory = enableHistory;
-        if ( !enableHistory ) {
-            getDasMouseInputAdapter().removeMenuItem(backMenu.getText());
-        } else {
-            getDasMouseInputAdapter().addMenuItem(backMenu);
+        if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
+            if ( !enableHistory ) {
+                getDasMouseInputAdapter().removeMenuItem(backMenu.getText());
+            } else {
+                getDasMouseInputAdapter().addMenuItem(backMenu);
+            }
         }
         firePropertyChange(PROP_ENABLEHISTORY, oldEnableHistory, enableHistory);
     }
