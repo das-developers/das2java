@@ -337,18 +337,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     public static Action[] getActions() {
-        if (disableActions) {
-            return new Action[0];
-        } else {
-            return new Action[]{
-                        ABOUT_ACTION,
-                        REFRESH_ACTION,
-                        EDIT_DAS_PROPERTIES_ACTION,
-                        PRINT_ACTION,
-                        SAVE_AS_PNG_ACTION,
-                        SAVE_AS_SVG_ACTION,
-                        SAVE_AS_PDF_ACTION,};
-        }
+        return new Action[]{
+                    ABOUT_ACTION,
+                    REFRESH_ACTION,
+                    EDIT_DAS_PROPERTIES_ACTION,
+                    PRINT_ACTION,
+                    SAVE_AS_PNG_ACTION,
+                    SAVE_AS_SVG_ACTION,
+                    SAVE_AS_PDF_ACTION,};
     }
 
     private DasApplication application;
@@ -447,10 +443,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         popup.addSeparator();
 
         Action[] actions = getActions();
-        for (int iaction = 0; iaction < actions.length; iaction++) {
-            JMenuItem item = new JMenuItem();
-            item.setAction(actions[iaction]);
-            popup.add(item);
+        if ( !disableActions ) {
+            for (int iaction = 0; iaction < actions.length; iaction++) {
+                JMenuItem item = new JMenuItem();
+                item.setAction(actions[iaction]);
+                popup.add(item);
+            }
         }
 
         popup.addSeparator();
