@@ -298,6 +298,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (DasApplication.getDefaultApplication().isHeadless()) {
             return;
         }
+        if ( enableHistory==false ) {
+            return;
+        }
         backMenu.removeAll();
         List history = dataRange.getHistory();
         int ii = 0;
@@ -315,6 +318,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             backMenu.add(menuItem);
             ii++;
         }
+    }
+
+    protected boolean enableHistory = true;
+    public static final String PROP_ENABLEHISTORY = "enableHistory";
+
+    public boolean isEnableHistory() {
+        return enableHistory;
+    }
+
+    public void setEnableHistory(boolean enableHistory) {
+        boolean oldEnableHistory = this.enableHistory;
+        this.enableHistory = enableHistory;
+        if ( !enableHistory ) {
+            getDasMouseInputAdapter().removeMenuItem(backMenu.getText());
+        } else {
+            getDasMouseInputAdapter().addMenuItem(backMenu);
+        }
+        firePropertyChange(PROP_ENABLEHISTORY, oldEnableHistory, enableHistory);
     }
 
     /* PRIVATE INITIALIZATION FUNCTIONS */
