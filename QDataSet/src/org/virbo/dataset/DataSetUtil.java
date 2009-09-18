@@ -424,6 +424,8 @@ public class DataSetUtil {
             }
         }
 
+        QDataSet extent= Ops.extent(xds);
+
         AutoHistogram ah= new AutoHistogram();
         QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
 
@@ -467,11 +469,12 @@ public class DataSetUtil {
         Units xunits= (Units) xds.property( QDataSet.UNITS );
         if ( xunits==null ) xunits= Units.dimensionless;
 
+        //TODO: we can use the range of the bins to exclude log option, such as 800000-800010.
         boolean log= false;
         double firstBin= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START)).doubleValue();
         double binWidth= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
         firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
-        if ( ipeak==0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
+        if ( ipeak==0 && extent.value(0)-mean < 0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
