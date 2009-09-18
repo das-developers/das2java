@@ -417,7 +417,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
 
-                        System.err.println("yunits="+fds.getYUnits()+"  axis="+yAxis.getUnits());
                         if (!fds.getYUnits().isConvertableTo(yAxis.getUnits())) {
                             logger.fine("dataset units are incompatable with y axis.");
                             plotImage = null;
@@ -431,6 +430,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             plotImageBounds= null;
                             return;                            
                         }
+                        //System.err.println("zunits="+((TableDataSet)fds).getZUnits()+"  colorbar="+colorBar.getUnits() );
                         
                         RebinDescriptor xRebinDescriptor;
                         xRebinDescriptor = new RebinDescriptor(
@@ -466,7 +466,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         logger.fine("rebinning to pixel resolution: "+ xmemento + "  " + ymemento );
 
                         raster = makePixMap( rebinDataSet, raster );
-                        validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), raster );
+
+                        try {
+                            validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), raster );
+                        } catch ( InconvertibleUnitsException ex ) {
+                            System.err.println("zunits="+((TableDataSet)fds).getZUnits()+"  colorbar="+colorBar.getUnits() );
+                            return;
+                        }
+
                         rasterWidth = plotImageBounds2.width;
                         rasterHeight = plotImageBounds2.height;
 
