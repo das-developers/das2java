@@ -113,7 +113,9 @@ public class LocalFileObject extends FileObject {
     }
 
     public File getFile(org.das2.util.monitor.ProgressMonitor monitor) throws FileNotFoundException {
-        if ( !localFile.exists() ) throw new FileNotFoundException("file not found: "+localFile);
+        if ( !localFile.exists() ) {
+            throw new FileNotFoundException("file not found: "+localFile);
+        }
         return localFile;
     }
 
