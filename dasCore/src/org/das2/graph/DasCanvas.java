@@ -140,6 +140,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         STROKE_DASHED = new BasicStroke(thick, cap, join, thick, dash, 0.0f);
     }
 
+    /**
+     * return the canvas that has the focus.
+     * @return
+     */
+    public static DasCanvas getFocusCanvas() {
+        return CanvasAction.currentCanvas;
+    }
+
     private List<Painter> topDecorators= new LinkedList<Painter>();
     private List<Painter> bottomDecorators= new LinkedList<Painter>();
 
@@ -337,7 +345,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     public static Action[] getActions() {
-        return new Action[]{
+        if ( disableActions ) {
+            return new Action[0];
+        } else {
+            return new Action[]{
                     ABOUT_ACTION,
                     REFRESH_ACTION,
                     EDIT_DAS_PROPERTIES_ACTION,
@@ -345,6 +356,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                     SAVE_AS_PNG_ACTION,
                     SAVE_AS_SVG_ACTION,
                     SAVE_AS_PDF_ACTION,};
+        }
     }
 
     private DasApplication application;
