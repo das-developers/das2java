@@ -1007,7 +1007,11 @@ public class DatumRangeUtil {
      * @return a double indicating the normalized datum.
      */
     public static double normalize( DatumRange dr, Datum d ) {
-        return d.subtract(dr.min()).divide(dr.width()).doubleValue(Units.dimensionless);
+        Units u= dr.getUnits();
+        double d0= dr.min().doubleValue( u );
+        double d1= dr.max().doubleValue( u );
+        double dd= d.doubleValue( u );
+        return (dd-d0) / ( d1-d0 );
     }
     
     /**
