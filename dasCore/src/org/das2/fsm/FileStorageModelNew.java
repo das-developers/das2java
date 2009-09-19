@@ -205,7 +205,15 @@ public class FileStorageModelNew {
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
             }
         }
-        
+
+        Collections.sort( list, new Comparator() {
+            public int compare( Object o1, Object o2 ) {
+                DatumRange dr1= getRangeFor( (String)o1 );
+                DatumRange dr2= getRangeFor( (String)o2 );
+                return dr1.compareTo( dr2 );
+            }
+        } );
+
         monitor.finished();
         return (String[])list.toArray(new String[list.size()]);
     }
