@@ -64,12 +64,13 @@ import javax.swing.ImageIcon;
 import org.das2.dataset.DataSetUtil;
 
 /**
- *
+ * Renderer for spectrograms.  A setting for rebinning data controls how data is binned into pixel space,
+ * for example by nearest neighbor or interpolation.
  * @author  jbf
  */
 public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, org.das2.components.propertyeditor.Displayable {
 
-    private Object lockObject = new Object();
+    final private Object lockObject = new Object();
     private DasColorBar colorBar;
     private Image plotImage;
     /**
@@ -359,6 +360,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         reportCount();
         DasPlot lparent= getParent();
 
+        if (lparent==null ) return;
+        
         final DataSet fds= this.ds; // make a local copy for thread safety.
 
         try {
@@ -381,7 +384,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         
                     } else {
 
-                        if (lparent == null || plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
+                        if ( plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
                             logger.finest("canvas not useable!!!");
                             return;
                         }
