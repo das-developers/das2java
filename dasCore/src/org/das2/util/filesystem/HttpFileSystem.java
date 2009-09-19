@@ -60,6 +60,8 @@ public class HttpFileSystem extends WebFileSystem {
 
             // verify URL is valid and accessible
             HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
+            urlc.setConnectTimeout(3000);
+
             urlc.setRequestMethod("HEAD");
             String userInfo= KeyChain.getDefault().getUserInfo(root);
             if ( userInfo != null) {
