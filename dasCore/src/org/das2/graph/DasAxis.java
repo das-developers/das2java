@@ -1461,7 +1461,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 paintVerticalAxis(g);
             }
         } else {
-            //System.err.println("inconvertible units");
+            if ( getCanvas().isPrintingThread() ) {
+                System.err.println("inconvertible units on printing thread!");
+                
+            }
         }
 
         Rectangle clip = g.getClipBounds();
@@ -2711,7 +2714,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     protected void updateImmediately() {
         super.updateImmediately();
-        logger.finer("" + getDatumRange() + " " + isLog());
+        logger.finer("updateImmadiately" + getDatumRange() + " " + isLog());
         resetTransform();
         updateTickV();
     }
