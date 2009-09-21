@@ -927,7 +927,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         setPreferredWidth(width);
         setPreferredHeight(height);
 
-        if ( ! this.isShowing() ) { //"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
+        if ( ! this.isShowing() || "true".equals(DasApplication.getProperty("java.awt.headless", "false")) ) {
             this.addNotify();
             logger.finer("setSize(" + getPreferredSize() + ")");
             this.setSize(getPreferredSize());
