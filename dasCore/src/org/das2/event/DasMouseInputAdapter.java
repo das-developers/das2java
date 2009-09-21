@@ -381,24 +381,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         // mouse modules go here
         popup.addSeparator();
 
-        if ( ! disableCanvasActions ) {
-            Action[] canvasActions = DasCanvas.getActions();
-            for (int iaction = 0; iaction < canvasActions.length; iaction++) {
-                JMenuItem item = new JMenuItem();
-                item.setAction(canvasActions[iaction]);
-                popup.add(item);
-            }
+        Action[] canvasActions = DasCanvas.getActions();
+        for (int iaction = 0; iaction < canvasActions.length; iaction++) {
+            JMenuItem item = new JMenuItem();
+            item.setAction(canvasActions[iaction]);
+            popup.add(item);
         }
 
         return numInsert;
     }
-
-    private static boolean disableCanvasActions = false;
-
-    public static void setDisableActions(boolean val) {
-        disableCanvasActions = val;
-    }
-
 
     private ActionListener createPopupMenuListener() {
         return new ActionListener() {
