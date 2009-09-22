@@ -379,7 +379,7 @@ public class DataSetUtil {
     /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
-     * @param xds the x tags.
+     * @param xds the x tags, which may not contain fill values for non-null result.
      * @param yds the y values, which if non-null is only used for fill values.
      * @return null or the cadence in a rank 0 dataset.  The following may be
      *    properties of the result:
@@ -410,15 +410,44 @@ public class DataSetUtil {
 
         if ( xds.length()<2 ) return null;
 
+        // Do initial scans of the data to check for monotonic decreasing and "ever increasing" spacing.
+        double sp; // spacing between two measurements.
+        double monoMag; // -1 if mono decreasing, 0 if not monotonic, 1 if mono increasing.
+
+        QDataSet wds= DataSetUtil.weightsDataSet(xds);
+
         // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
         // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
         // number in a ever increasing sequence.
-        double sp= xds.value(1) / xds.value(0);
+        boolean monoDecreasing= true;
+        boolean monoIncreasing= true;
+        boolean xHasFill= false;
+        for ( int i=1; i<xds.length(); i++ ) {
+            if ( wds.value(i)==0 || wds.value(i-1)==0 ) xHasFill= true;
+            sp= xds.value(i) - xds.value(i-1);
+            monoDecreasing= sp < 0.;
+            monoIncreasing= sp > 0.;
+        }
+        if ( monoIncreasing ) {
+            monoMag= 1;
+        } else if ( monoDecreasing ) {
+            monoMag= -1;
+        } else {
+            monoMag= 0;
+        }
+        
+        // don't allow datasets with fill in x to be considered.  
+        if ( xHasFill ) return null;
+
+        // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
+        // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
+        // number in a ever increasing sequence.
+        sp= monoMag * xds.value(1) / xds.value(0);
         double everIncreasing= Math.max(0,sp);
         for ( int i=2; everIncreasing>0 && i<xds.length(); i++ ) {
-            double sp1= xds.value(i) / xds.value(i-1);
+            double sp1= monoMag *xds.value(i) / xds.value(i-1);
             if ( sp1>1.0 ) {
-                everIncreasing= xds.value(i)/xds.value(0);
+                everIncreasing= monoMag * xds.value(i)/xds.value(0);
             } else {
                 everIncreasing= 0;
             }
@@ -427,6 +456,10 @@ public class DataSetUtil {
         QDataSet extent= Ops.extent(xds);
 
         AutoHistogram ah= new AutoHistogram();
+        QDataSet diffs=  Ops.diff(xds);
+        if ( monoDecreasing ) {
+            diffs= Ops.multiply( diffs, asDataSet(-1) );
+        }
         QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
 
         long total= (Long)( ((Map<String,Object>)hist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
@@ -469,12 +502,12 @@ public class DataSetUtil {
         Units xunits= (Units) xds.property( QDataSet.UNITS );
         if ( xunits==null ) xunits= Units.dimensionless;
 
-        //TODO: we can use the range of the bins to exclude log option, such as 800000-800010.
+        // we use the range of the bins to exclude log option, such as 800000-800010.
         boolean log= false;
         double firstBin= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START)).doubleValue();
         double binWidth= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
         firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
-        if ( ipeak==0 && extent.value(0)-mean < 0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
+        if ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
