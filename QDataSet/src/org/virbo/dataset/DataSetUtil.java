@@ -396,6 +396,7 @@ public class DataSetUtil {
                 return (RankZeroDataSet) o;
             } else {
                 return DataSetUtil.asDataSet( ((Number)o).doubleValue(), u.getOffsetUnits() );
+                //TODO: This legacy behavior should be removed.
             }
         }
 
@@ -453,6 +454,8 @@ public class DataSetUtil {
             }
         }
 
+        boolean logScaleType = "log".equals( xds.property(QDataSet.SCALE_TYPE) );
+
         QDataSet extent= Ops.extent(xds);
 
         AutoHistogram ah= new AutoHistogram();
@@ -507,7 +510,8 @@ public class DataSetUtil {
         double firstBin= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START)).doubleValue();
         double binWidth= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
         firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
-        if ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && firstBin<=0. && UnitsUtil.isRatioMeasurement(xunits) ) {
+        if ( UnitsUtil.isRatioMeasurement(xunits) && 
+                ( logScaleType || ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && firstBin<=0. ) ) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
