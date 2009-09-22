@@ -424,7 +424,10 @@ public class DataSetUtil {
         boolean monoIncreasing= true;
         boolean xHasFill= false;
         for ( int i=1; i<xds.length(); i++ ) {
-            if ( wds.value(i)==0 || wds.value(i-1)==0 ) xHasFill= true;
+            if ( wds.value(i)==0 || wds.value(i-1)==0 ) {
+                xHasFill= true;
+                continue;
+            }
             sp= xds.value(i) - xds.value(i-1);
             monoDecreasing= sp < 0.;
             monoIncreasing= sp > 0.;
@@ -438,7 +441,7 @@ public class DataSetUtil {
         }
         
         // don't allow datasets with fill in x to be considered.  
-        if ( xHasFill ) return null;
+        if ( xHasFill && monoMag==0 ) return null;
 
         // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
         // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
@@ -446,6 +449,9 @@ public class DataSetUtil {
         sp= monoMag * xds.value(1) / xds.value(0);
         double everIncreasing= Math.max(0,sp);
         for ( int i=2; everIncreasing>0 && i<xds.length(); i++ ) {
+            if ( wds.value(i)==0 || wds.value(i-1)==0 ) {
+                continue;
+            }
             double sp1= monoMag *xds.value(i) / xds.value(i-1);
             if ( sp1>1.0 ) {
                 everIncreasing= monoMag * xds.value(i)/xds.value(0);
