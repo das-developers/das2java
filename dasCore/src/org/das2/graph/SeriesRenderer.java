@@ -774,12 +774,6 @@ public class SeriesRenderer extends Renderer {
             ixmax = dataSet.getXLength();
         }
 
-        Datum sw = DataSetUtil.guessXTagWidth(dataSet);
-        double xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
-
-        /* fuzz the xSampleWidth */
-        xSampleWidth = xSampleWidth * 1.10;
-
         double x = Double.NaN;
         double y = Double.NaN;
 
