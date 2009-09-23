@@ -448,9 +448,15 @@ public class DataSetUtil {
         // number in a ever increasing sequence.
         sp= monoMag * xds.value(1) / xds.value(0);
         double everIncreasing= Math.max(0,sp);
+        if ( xds.value(1)<=0 || xds.value(0)<=0 ) {
+            everIncreasing= 0;
+        }
         for ( int i=2; everIncreasing>0 && i<xds.length(); i++ ) {
             if ( wds.value(i)==0 || wds.value(i-1)==0 ) {
                 continue;
+            }
+            if ( xds.value(i)<=0 || xds.value(i-1)<=0 ) {
+                everIncreasing= 0;
             }
             double sp1= monoMag *xds.value(i) / xds.value(i-1);
             if ( sp1>1.0 ) {
