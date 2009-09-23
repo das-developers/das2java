@@ -364,7 +364,10 @@ public class VectorUtil {
             double p0 = xlog ? Math.log(xx) : xx;
             double p1 = ylog ? Math.log(yy) : yy;
 
-            if ( Double.isNaN(p0) || Double.isNaN(p1) ) continue;
+            if ( Double.isNaN(p0) || Double.isNaN(p1) ) {
+                i++;
+                continue;
+            }
             
             double dx = p0 - x0;
             double dy = p1 - y0;
