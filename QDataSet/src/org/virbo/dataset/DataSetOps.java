@@ -609,15 +609,28 @@ public class DataSetOps {
                     if ( idx<0 ) idx=0;
                     fillDs= slice3(fillDs, idx);
                 }
+            } else if ( cmd.startsWith("|collapse") ) {
+                int dim= cmd.charAt(9)-'0';
+                fillDs= Ops.reduceMean(fillDs,dim);
             } else if ( cmd.equals("|autoHistogram") ) {
                 fillDs= Ops.autoHistogram(fillDs);
             } else if ( cmd.equals("|transpose") ) {
                 fillDs= Ops.transpose(fillDs);
+            } else if ( cmd.startsWith("|fftWindow" ) ) {
+                int size= s.nextInt();
+                fillDs= Ops.fftWindow(fillDs, size);
             }
         }
         return fillDs;
     }
 
+    /**
+     * indicate if the operators change dimensions of the dataset.  Often
+     * this will result in true when the dimensions do not change, this is the better way to err.
+     * @param c process string like "slice0(0)"
+     * @param c2 process string like "slice0(0)|slice1(0)"
+     * @return
+     */
     public static boolean changesDimensions( String c, String c2 ) {
         //if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
         Scanner s= new Scanner( c );
