@@ -446,13 +446,11 @@ public class DataSetUtil {
         // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
         // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
         // number in a ever increasing sequence.
-        sp= xds.value(1) / xds.value(0);
-        double everIncreasing= Math.max(0,sp);
+        sp= monoMag * ( xds.value(1) - xds.value(0) );
+        double everIncreasing= xds.value(1) / xds.value(0);
         double sp0= sp;
         if ( xds.value(1)<=0 || xds.value(0)<=0 ) {
             everIncreasing= 0;
-        } else {
-            if ( monoMag==-1 ) everIncreasing = 1/sp;
         }
         for ( int i=2; everIncreasing>0 && i<xds.length(); i++ ) {
             if ( wds.value(i)==0 || wds.value(i-1)==0 ) {
@@ -462,14 +460,15 @@ public class DataSetUtil {
                 everIncreasing= 0;
                 continue;
             }
-            double sp1= xds.value(i) / xds.value(i-1);
-            if ( monoMag==-1 ) sp1 = 1/sp1;
-            if ( sp1>1.0 && sp1>sp0/2 ) {
-                everIncreasing= monoMag * xds.value(i)/xds.value(0);
+            double sp1= monoMag * ( xds.value(i) - xds.value(i-1) );
+            if ( sp1 > sp0*1.00001  ) {
+                everIncreasing= xds.value(i)/xds.value(0);
+                sp0= sp1;
             } else {
                 everIncreasing= 0;
             }
         }
+        if ( everIncreasing>0 && monoMag==-1 ) everIncreasing= 1/everIncreasing;
 
         boolean logScaleType = "log".equals( xds.property(QDataSet.SCALE_TYPE) );
 
