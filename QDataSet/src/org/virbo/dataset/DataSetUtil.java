@@ -443,29 +443,32 @@ public class DataSetUtil {
         // don't allow datasets with fill in x to be considered.  
         if ( xHasFill && monoMag==0 ) return null;
 
-        // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
-        // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
-        // number in a ever increasing sequence.
-        sp= monoMag * ( xds.value(1) - xds.value(0) );
-        double everIncreasing= xds.value(1) / xds.value(0);
-        double sp0= sp;
-        if ( xds.value(1)<=0 || xds.value(0)<=0 ) {
-            everIncreasing= 0;
-        }
-        for ( int i=2; everIncreasing>0 && i<xds.length(); i++ ) {
-            if ( wds.value(i)==0 || wds.value(i-1)==0 ) {
-                continue;
-            }
-            if ( xds.value(i)<=0 || xds.value(i-1)<=0 ) {
+        double everIncreasing= 0.;
+        if ( xds.length()>2 ) {
+            // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
+            // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
+            // number in a ever increasing sequence.  Allow for one repeated length (POLAR/Hydra Energies)
+            sp= monoMag * ( xds.value(2) - xds.value(0) );
+            everIncreasing= xds.value(2) / xds.value(0);
+            double sp0= sp;
+            if ( xds.value(2)<=0 || xds.value(0)<=0 || xds.value(1)>(xds.value(0)+xds.value(2)) ) {
                 everIncreasing= 0;
-                continue;
             }
-            double sp1= monoMag * ( xds.value(i) - xds.value(i-1) );
-            if ( sp1 > sp0*1.00001  ) {
-                everIncreasing= xds.value(i)/xds.value(0);
-                sp0= sp1;
-            } else {
-                everIncreasing= 0;
+            for ( int i=3; everIncreasing>0 && i<xds.length(); i++ ) {
+                if ( wds.value(i)==0 || wds.value(i-2)==0 ) {
+                    continue;
+                }
+                if ( xds.value(i)<=0 || xds.value(i-2)<=0 ) {
+                    everIncreasing= 0;
+                    continue;
+                }
+                double sp1= monoMag * ( xds.value(i) - xds.value(i-2) );
+                if ( sp1 > sp0*1.00001  ) {
+                    everIncreasing= xds.value(i)/xds.value(0);
+                    sp0= sp1;
+                } else {
+                    everIncreasing= 0;
+                }
             }
         }
         if ( everIncreasing>0 && monoMag==-1 ) everIncreasing= 1/everIncreasing;
