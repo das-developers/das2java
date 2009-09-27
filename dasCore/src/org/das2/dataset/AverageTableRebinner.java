@@ -418,6 +418,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
+    //still used by AveragePeakTableRebinner
                                        //    final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType
     static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, double[] xTagMin, double[] xTagMax, final double xSampleWidth, Interpolate interpolateType) {
 
