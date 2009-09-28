@@ -880,12 +880,26 @@ public class DataSetUtil {
     }
 
     public static String format(QDataSet ds) {
-        if ( ds.property("BUNDLE_0")!=null ) {
+        if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
             StringBuffer result= new StringBuffer(); // for documenting context.
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet cds= DataSetOps.slice0(ds, i);
                 result.append( DataSetUtil.format(cds) );
                 if ( i<ds.length()-1 ) result.append(", ");
+            }
+            return result.toString();
+        } else if ( ds.property(QDataSet.BINS_0)!=null && ds.rank()==1) {
+            StringBuffer result= new StringBuffer();
+            Units u= (Units) ds.property(QDataSet.UNITS);
+            if ( u==null ) u= Units.dimensionless;
+            String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
+            if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
+            for ( int i=0; i<ds.length(); i++ ) {
+                result.append( ss[i]+"="+u.createDatum(ds.value(i)) );
+                if ( i<ds.length()-1 ) result.append(", ");
+            }
+            if ( ds.property(QDataSet.SCALE_TYPE)!=null ) {
+                result.append("SCALE_TYPE="+ds.property(QDataSet.SCALE_TYPE) );
             }
             return result.toString();
         }
