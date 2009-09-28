@@ -92,6 +92,13 @@ public interface QDataSet {
     public final static String BINS_1="BINS_1";
 
     /**
+     * type String.  This comma-delimited list of keywords that describe the boundary
+     * type for each column.  For example, "min,max" or "c95min,mean,c95max"  A bins dimension
+     * doesn't add a physical dimension.
+     */
+    public final static String BINS_0="BINS_0";
+
+    /**
      * type QDataSet. Correllated plane of data.  An additional dependent DataSet that is correllated by the first index.  
      * Note "0" is just a count, and does not refer to the 0th index.  All correllated datasets must be 
      * correllated by the first index.  TODO: what about two rank 2 datasets?
@@ -251,6 +258,28 @@ public interface QDataSet {
      */
     public final static String COORDINATE_FRAME="COORDINATE_FRAME";
     
+    /**
+     * Map<String,Object> representing additional properties used by client codes.  No
+     * interpretation is done of these properties, but they are passed around as much
+     * as possible.  METADATA_MODEL is a string identifying the metadata model,
+     * a scheme for the metadata tree, such as ISTP_CDF or SPASE.
+     */
+    public final static String METADATA="METADATA";
+
+    /**
+     * a scheme for the metadata tree, such as ISTP or SPASE.  This should identify
+     * a node's type when the node is present, but should not require that the node
+     * be present.  When a required node is missing, this should be treated as if
+     * none of the metadata is available.  This logic is to support aggregating
+     * metadata.
+     */
+    public final static String METADATA_MODEL="METADATA_MODEL";
+
+    public final static String VALUE_METADATA_MODEL_ISTP="ISTP-CDF";
+    
+    public final static String VALUE_METADATA_MODEL_SPASE="SPASE";
+
+
     /**
      * Map<String,Object> representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
