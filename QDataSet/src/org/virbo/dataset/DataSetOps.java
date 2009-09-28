@@ -609,11 +609,27 @@ public class DataSetOps {
                     if ( idx<0 ) idx=0;
                     fillDs= slice3(fillDs, idx);
                 }
+            } else if ( cmd.equals("|nop") ) {
+                //fillDs= fillDs;
+            } else if ( cmd.equals("|diff") ) {
+                fillDs= Ops.diff(fillDs);
+            } else if ( cmd.equals("|log10") ) {
+                fillDs= Ops.log10(fillDs);
+            } else if ( cmd.equals("|exp10") ) {
+                fillDs= Ops.exp10(fillDs);
             } else if ( cmd.startsWith("|collapse") ) {
                 int dim= cmd.charAt(9)-'0';
                 fillDs= Ops.reduceMean(fillDs,dim);
             } else if ( cmd.equals("|autoHistogram") ) {
                 fillDs= Ops.autoHistogram(fillDs);
+            } else if ( cmd.equals("|logHistogram") ) {
+                fillDs= Ops.autoHistogram(Ops.log10(fillDs));
+                MutablePropertyDataSet dep0= DDataSet.copy( (QDataSet) fillDs.property(QDataSet.DEPEND_0));
+                QDataSet cadence= (QDataSet) dep0.property( QDataSet.CADENCE );
+                dep0= (MutablePropertyDataSet) Ops.pow( Ops.replicate(10,dep0.length()), dep0 );
+                dep0.putProperty( QDataSet.SCALE_TYPE, "log" );
+                dep0.putProperty( QDataSet.CADENCE, cadence );
+                ((MutablePropertyDataSet)fillDs).putProperty( QDataSet.DEPEND_0, dep0 );
             } else if ( cmd.equals("|transpose") ) {
                 fillDs= Ops.transpose(fillDs);
             } else if ( cmd.startsWith("|fftWindow" ) ) {
