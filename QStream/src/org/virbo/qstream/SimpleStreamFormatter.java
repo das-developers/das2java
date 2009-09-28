@@ -132,7 +132,7 @@ public class SimpleStreamFormatter {
                 } else if (u instanceof TimeLocationUnits) {
                     planeDescriptor.setType(new AsciiTimeTransferType(24, u));
                 } else {
-                    if ( maxFp==0 ) {
+                    if ( maxFp==0 && max<1e8 ) {
                         planeDescriptor.setType(new AsciiIntegerTransferType(10));
                     } else if (min > -10000 && max < 10000 && absMin > 0.0001) {
                         planeDescriptor.setType(new AsciiTransferType(10, false));
