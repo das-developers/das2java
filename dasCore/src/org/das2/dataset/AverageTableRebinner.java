@@ -598,12 +598,19 @@ public class AverageTableRebinner implements DataSetRebinner {
                     } else {
                         //kludge for bug 000321
                         //doInterp= Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i] - xTagTemp[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i2[i]] - xTagTemp[i])) < xSampleWidth / 2;
+                        //kludge for bug 000321
                         if ( i1[i]==-1 && i2[i]==-1 ) {
                             doInterp= false;
-                        } else if ( i1[i]==-1 ) {
-                            doInterp= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
                         } else {
-                            doInterp= ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
+                            if ( ddX.isLog() && !UnitsUtil.isRatiometric(xTagWidth.getUnits()) ) {
+                                doInterp= false;
+                            } else {
+                                if ( i1[i]==-1 ) {
+                                    doInterp= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
+                                } else {
+                                    doInterp= ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
+                                }
+                            }
                         }
                         //doInterp= ((i1[i] != -1) && ((xTagTemp[i2[i]] - xTagTemp[i1[i]]) < xSampleWidth || i2[i] - i1[i] == 2));
                     }
@@ -734,7 +741,15 @@ public class AverageTableRebinner implements DataSetRebinner {
                         doInterp= ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2;
                     } else {
                         //kludge for bug 000321
-                        doInterp= Math.min(i1[j] == -1 ? Double.MAX_VALUE : (yTagTemp[j] - yTagTemp[i1[j]]), i2[j] == -1 ? Double.MAX_VALUE : (yTagTemp[i2[j]] - yTagTemp[j])) < ySampleWidth / 2;
+                        if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
+                            doInterp= false;
+                        } else {
+                            if ( i1[i]==-1 ) {
+                                doInterp= ( yTagTemp[i2[i]] - yTagTemp[i] ) < ySampleWidth/2;
+                            } else {
+                                doInterp= ( yTagTemp[i] - yTagTemp[i1[i]] ) < ySampleWidth/2;
+                            }
+                        }
                     }
                     if ( doInterp ) { 
                         int idx;
