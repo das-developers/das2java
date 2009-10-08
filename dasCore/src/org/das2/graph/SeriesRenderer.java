@@ -243,10 +243,13 @@ public class SeriesRenderer extends Renderer {
 
             int index = firstIndex;
 
-            x = dataSet.getXTagDouble(index, xUnits);
-            y = dataSet.getDouble(index, yUnits);
-            fx = (int) xAxis.transform(x, xUnits);
-            fy = (int) yAxis.transform(y, yUnits);
+            if ( index<lastIndex ) {
+                x = dataSet.getXTagDouble(index, xUnits);
+                y = dataSet.getDouble(index, yUnits);
+                fx = (int) xAxis.transform(x, xUnits);
+                fy = (int) yAxis.transform(y, yUnits);
+            }
+            
             int fx0=-99, fy0=-99; //last point.
 
             int i = 0;
