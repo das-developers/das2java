@@ -79,6 +79,7 @@ public class Ops {
         m.put( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
         m.put( QDataSet.DEPEND_1, ds1.property(QDataSet.DEPEND_1) );
         m.put( QDataSet.DEPEND_2, ds1.property(QDataSet.DEPEND_2) );
+        m.put( QDataSet.DEPEND_3, ds1.property(QDataSet.DEPEND_3) );
         DataSetUtil.putProperties( m, result );
         return result;
     }
