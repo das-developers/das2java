@@ -27,6 +27,7 @@ import org.das2.util.DasExceptionHandler;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Logger;
+import org.das2.DasApplication;
 
 /** Utility class for synchronous execution.
  * This class maintains a pool of threads that are used to execute arbitrary
@@ -213,8 +214,13 @@ public final class RequestProcessor {
                     }
                     catch (Throwable t) {
                         logger.fine("uncaught exception "+t);
-                        DasExceptionHandler.handleUncaught(t);
                         //Clear interrupted status (if set)
+                        ExceptionHandler eh= DasApplication.getDefaultApplication().getExceptionHandler();
+                        if ( eh==null ) {
+                            DasExceptionHandler.handleUncaught(t);
+                        } else {
+                            eh.handleUncaught(t);
+                        }
                         Thread.interrupted();
                     }
                 }
