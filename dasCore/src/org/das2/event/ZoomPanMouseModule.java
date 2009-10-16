@@ -66,7 +66,12 @@ public class ZoomPanMouseModule extends MouseModule {
         DomainDivider div= xAxis.getMinorTicksDomainDivider();
         if ( div!=null ) {
             try {
-                div= div.finerDivider(false).finerDivider(false);
+                int px= 999;
+                while ( px>2 ) {
+                    div= div.finerDivider(false);
+                    DatumRange minDr= div.rangeContaining(dr.min());
+                    px= (int)Math.abs( xAxis.transform(minDr.max()) - xAxis.transform(minDr.min()) );
+                }
                 DatumRange minDr= div.rangeContaining(dr.min());
                 DatumRange maxDr= div.rangeContaining(dr.max());
                 Datum min= DatumRangeUtil.normalize( minDr, dr.min() ) < 0.5 ? minDr.min() : minDr.max();
