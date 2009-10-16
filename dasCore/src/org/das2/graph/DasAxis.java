@@ -523,6 +523,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (dataRange.isLog()) {
             min = DasMath.log10(minimum.doubleValue(getUnits()));
             max = DasMath.log10(maximum.doubleValue(getUnits()));
+            if ( minimum.doubleValue(getUnits())==0 ) {
+                min= max/1000;
+            }
         } else {
             min = minimum.doubleValue(getUnits());
             max = maximum.doubleValue(getUnits());
@@ -1129,23 +1132,33 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return intersects;
     }
 
+    /**
+     * indicate if the ticks are packed too closely.  Several consecutive
+     * ticks must be with 4 pixels for the test to fail so that log spacing
+     * is tolerated.
+     *
+     * @param minor
+     * @return
+     */
     private boolean hasTickCollisions(DatumVector minor) {
         DatumRange range= getDatumRange();
         if (minor.getLength() < 2) {
             return false;
         }
         int x0 = (int) transform(minor.get(0));
-        boolean intersects = false;
-        for (int i = 1; !intersects && i < minor.getLength(); i++) {
+        int intersects = 0;
+        for (int i = 1; intersects<7 && i < minor.getLength(); i++) {
             int x1 = (int) transform(minor.get(i));
             if ( x1<10000 ) {
-                if (Math.abs(x0 - x1) < 7) {
-                    intersects = true;
+                if (Math.abs(x0 - x1) < 7 ) {
+                    intersects++;
+                } else {
+                    intersects= 0;
                 }
                 x0= x1;
             }
         }
-        return intersects;
+        return intersects>=7;
     }
 
     private void updateDomainDivider() {
