@@ -523,7 +523,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (dataRange.isLog()) {
             min = DasMath.log10(minimum.doubleValue(getUnits()));
             max = DasMath.log10(maximum.doubleValue(getUnits()));
-            if ( minimum.doubleValue(getUnits())==0 ) {
+            if ( minimum.doubleValue(getUnits())==0 ) {  // avoid log zero
                 min= max/1000;
             }
         } else {
