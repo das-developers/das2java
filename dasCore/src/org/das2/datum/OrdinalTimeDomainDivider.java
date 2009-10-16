@@ -209,7 +209,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
      */
     private static int[] ceil(int[] tarr, int significand, int digit) {
         int d0 = tarr[digit] - ZEROONE[digit];
-        int ceil = d0 % significand == 0 ? 0 : 1;
+        int ceil = d0 % significand == 0 ? 0 : 1; // ceil==0 means digit is at the boundary, ceil=1 means we'll round up.
         for (int i = digit + 1; i < N_DIGITS; i++) {
             if (tarr[i] > ZEROONE[i]) {
                 ceil = 1;
@@ -281,6 +281,8 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             Units units = min.getUnits();
 
             int[] tmin = ceil( TimeUtil.toTimeArray(min), 1, digit );
+            tmin = ceil( tmin, significand, digit );
+
             for (int i = 0; i < nb; i++) {
                 values[i] = TimeUtil.toDatum(tmin).doubleValue(units);
                 tmin[digit]+= significand;
