@@ -1147,10 +1147,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         int x0 = (int) transform(minor.get(0));
         int intersects = 0;
-        for (int i = 1; intersects<7 && i < minor.getLength(); i++) {
+        for (int i = 1; intersects<8 && i < minor.getLength(); i++) {
             int x1 = (int) transform(minor.get(i));
             if ( x1<10000 ) {
-                if (Math.abs(x0 - x1) < 7 ) {
+                if (Math.abs(x0 - x1) < 6 ) {
                     intersects++;
                 } else {
                     intersects= 0;
@@ -1158,7 +1158,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 x0= x1;
             }
         }
-        return intersects>=7;
+        return intersects>=8;
     }
 
     private void updateDomainDivider() {
