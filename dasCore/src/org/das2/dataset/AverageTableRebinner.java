@@ -744,10 +744,12 @@ public class AverageTableRebinner implements DataSetRebinner {
                         if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
                             doInterp= false;
                         } else {
-                            if ( i1[i]==-1 ) {
-                                doInterp= ( yTagTemp[i2[i]] - yTagTemp[i] ) < ySampleWidth/2;
+                            if ( i1[j]==-1 && i2[j]==-1 ) {
+                                doInterp= false;
+                            } else if ( i1[j]==-1 ) {
+                                doInterp= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth/2;
                             } else {
-                                doInterp= ( yTagTemp[i] - yTagTemp[i1[i]] ) < ySampleWidth/2;
+                                doInterp= ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth/2;
                             }
                         }
                     }
