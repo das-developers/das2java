@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dsops.Ops;
@@ -888,6 +889,18 @@ public class DataSetUtil {
                 if ( i<ds.length()-1 ) result.append(", ");
             }
             return result.toString();
+        } else if ( "min,max".equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
+            StringBuffer result= new StringBuffer();
+            Units u= (Units) ds.property(QDataSet.UNITS);
+            if ( u==null ) u= Units.dimensionless;
+            result.append( new DatumRange( ds.value(0), ds.value(1), u ).toString() );
+
+            String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
+            if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
+            for ( int i=0; i<ds.length(); i++ ) {
+                result.append( ss[i]+"="+u.createDatum(ds.value(i)) );
+                if ( i<ds.length()-1 ) result.append(", ");
+            }
         } else if ( ds.property(QDataSet.BINS_0)!=null && ds.rank()==1) {
             StringBuffer result= new StringBuffer();
             Units u= (Units) ds.property(QDataSet.UNITS);
