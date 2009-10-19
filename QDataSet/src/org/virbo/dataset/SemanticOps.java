@@ -114,9 +114,15 @@ public class SemanticOps {
             result= Units.getByName(units);
             return result;
         } catch ( IllegalArgumentException ex ) {
-            String[] ss= units.split("since");
+            String[] ss= units.split("since");            
             Units offsetUnits= lookupTimeLengthUnit(ss[0]);
-            Datum datum= TimeUtil.create(ss[1]);
+            Datum datum;
+
+            if ( ss[1].equals(" 1-1-1 00:00:00" ) ) { // make this into something that won't crash.
+                //datum= Units.mj1958.createDatum(-714779);
+                ss[1]= "1901-01-01 00:00:00"; // /media/mini/data.backup/examples/netcdf/sst.ltm.1961-1990.nc
+            }
+            datum= TimeUtil.create(ss[1]);
             String canonicalName = "" + offsetUnits + " since "+ datum;
             Basis basis= new Basis( "since "+ datum, "since "+ datum, Basis.since2000, datum.doubleValue(Units.us2000), Units.us2000.getOffsetUnits() );
             result= new TimeLocationUnits( canonicalName, canonicalName, offsetUnits, basis );
