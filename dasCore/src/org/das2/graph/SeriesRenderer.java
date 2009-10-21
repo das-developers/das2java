@@ -57,6 +57,8 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
+import org.das2.dataset.WeightsTableDataSet;
+import org.das2.dataset.WeightsVectorDataSet;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import org.w3c.dom.Document;
@@ -252,12 +254,14 @@ public class SeriesRenderer extends Renderer {
             
             int fx0=-99, fy0=-99; //last point.
 
+            VectorDataSet wds= WeightsVectorDataSet.create(dataSet);
+
             int i = 0;
             for (; index < lastIndex; index++) {
                 x = dataSet.getXTagDouble(index, xUnits);
                 y = dataSet.getDouble(index, yUnits);
 
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+                final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
 
                 fx = (int) xAxis.transform(x, xUnits);
                 fy = (int) yAxis.transform(y, yUnits);
@@ -366,7 +370,8 @@ public class SeriesRenderer extends Renderer {
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
-
+            VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
+            
             if ( lastIndex-firstIndex==0 ) {
                 this.path1= null;
                 return;
@@ -434,7 +439,7 @@ public class SeriesRenderer extends Renderer {
                 x = dataSet.getXTagDouble(index, xUnits);
                 y = dataSet.getDouble(index, yUnits);
 
-                final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+                final boolean isValid = wds.getDouble( index, Units.dimensionless )>0 && xUnits.isValid(x);
 
                 fx = (float) xAxis.transform(x, xUnits);
                 fy = (float) yAxis.transform(y, yUnits);
@@ -759,6 +764,8 @@ public class SeriesRenderer extends Renderer {
         int ixmax;
         int ixmin;
 
+        VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
+
         Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
@@ -787,7 +794,7 @@ public class SeriesRenderer extends Renderer {
             x = (double) dataSet.getXTagDouble(index, xUnits);
             y = (double) dataSet.getDouble(index, yUnits);
 
-            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+            final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
             if (isValid) {
                 firstIndex = index;  // TODO: what if no valid points?
 
@@ -806,7 +813,7 @@ public class SeriesRenderer extends Renderer {
         for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
             y = dataSet.getDouble(index, yUnits);
 
-            final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+            final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
 
             if (isValid) {
                 pointsPlotted++;
@@ -1327,26 +1334,7 @@ public class SeriesRenderer extends Renderer {
         }
 
     }
-    /**
-     * Holds value of property selected.
-     */
-    private boolean selected;
 
-    /**
-     * Getter for property selected.
-     * @return Value of property selected.
-     */
-    public boolean isSelected() {
-        return this.selected;
-    }
-
-    /**
-     * Setter for property selected.
-     * @param selected New value of property selected.
-     */
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
     /**
      * Holds value of property fillColor.
      */
