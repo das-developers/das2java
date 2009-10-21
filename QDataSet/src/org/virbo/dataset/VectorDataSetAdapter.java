@@ -81,7 +81,9 @@ public class VectorDataSetAdapter implements VectorDataSet {
         if ( y.property(QDataSet.FILL_VALUE) !=null
                 || y.property(QDataSet.VALID_MIN) !=null
                 || y.property(QDataSet.VALID_MAX) !=null ) {
-            this.y= DataSetUtil.canonizeFill(y);
+            QDataSet wds= DataSetUtil.weightsDataSet(y);
+            planes.put( org.das2.dataset.DataSet.PROPERTY_PLANE_WEIGHTS, wds );
+            //this.y= DataSetUtil.canonizeFill(y);
         }
         
         QDataSet dp= (QDataSet) this.y.property( QDataSet.DELTA_PLUS ) ;
