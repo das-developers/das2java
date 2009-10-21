@@ -316,24 +316,25 @@ public final class TimeUtil {
      */
     public static TimeStruct toTimeStruct(Datum datum) {
         int hour, minute;
-        double justMicroSeconds;
+        double justNanoSeconds;
 
         long microseconds;
-        long lus2000= (long)datum.doubleValue( Units.us2000 );
-        if (lus2000<0) {
-            long xx= lus2000 % 86400000000L;
+        long nanoseconds;
+        long lns2000= (long)(1000*datum.doubleValue( Units.us2000 ));
+        if (lns2000<0) {
+            long xx= lns2000 % 86400000000000L;
             if (xx==0) {
-                microseconds= 0;
+                nanoseconds= 0;
             } else {
-                microseconds= 86400000000L+xx;
+                nanoseconds= 86400000000000L+xx;
             }
         } else {
-            microseconds= lus2000 % 86400000000L;
+            nanoseconds= lns2000 % 86400000000000L;
         }
         
-        long sansMicros= lus2000 - microseconds;
+        long sansNanos= lns2000 - nanoseconds;
 
-        int jd= getJulianDay(sansMicros,Units.us2000);
+        int jd= getJulianDay(sansNanos/1000,Units.us2000);
 
         if ( jd<0 ) {
             throw new IllegalArgumentException("julian day is negative.");
@@ -341,14 +342,14 @@ public final class TimeUtil {
         
         TimeStruct result= julianToGregorian( jd );
         
-        hour = (int)(microseconds/3600.0e6);
-        minute = (int)((microseconds - hour*3600.0e6)/60.0e6);
-        justMicroSeconds = microseconds - hour*3600.0e6 - minute*60.0e6;
+        hour = (int)(nanoseconds/3600.0e9);
+        minute = (int)((nanoseconds - hour*3600.0e9)/60.0e9);
+        justNanoSeconds = nanoseconds - hour*3600.0e9 - minute*60.0e9;
         
         result.doy = dayOfYear(result.month, result.day, result.year);
         result.hour= hour;
         result.minute= minute;
-        result.seconds= justMicroSeconds / 1e6;
+        result.seconds= justNanoSeconds / 1e9;
         
         return result;
     }
