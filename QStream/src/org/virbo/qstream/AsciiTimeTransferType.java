@@ -31,7 +31,19 @@ class AsciiTimeTransferType extends AsciiTransferType {
     public AsciiTimeTransferType(int sizeBytes, Units units) {
         super(sizeBytes,false);
         this.units = units;
-        this.formatter = TimeDatumFormatter.DEFAULT;
+        try {
+            if ( sizeBytes<=24 ) {
+                this.formatter = TimeDatumFormatter.DEFAULT;
+            } else if ( sizeBytes<=27 ) {
+                this.formatter = new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z')");
+            } else if ( sizeBytes<=30 ) {
+                this.formatter = new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z')");
+            } else {
+                this.formatter = new TimeDatumFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSSSS'Z')");
+            }
+        } catch ( ParseException ex ) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
