@@ -5,6 +5,8 @@
 package org.virbo.dataset;
 
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Basis;
 import org.das2.datum.Datum;
 import org.das2.datum.NumberUnits;
@@ -64,7 +66,13 @@ public class SemanticOps {
         try {
             result= Units.getByName(sunits);
         } catch ( IllegalArgumentException ex ) {
-            if ( sunits.equals("sec") ) {   // begin, giant table of kludges
+            if ( sunits.contains(" since ") ) {
+                try {
+                    result = lookupTimeUnits(sunits);
+                } catch (ParseException ex1) {
+                    result= new NumberUnits( sunits );
+                }
+            } else if ( sunits.equals("sec") ) {   // begin, giant table of kludges
                 result= Units.seconds;
             } else if ( sunits.equals("msec") ) {  // CDF
                 result= Units.milliseconds;
