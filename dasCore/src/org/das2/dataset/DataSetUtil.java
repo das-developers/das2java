@@ -460,4 +460,16 @@ public class DataSetUtil {
             return newPlanes;
         }
     }
+
+    public static DataSet getWeightsDataSet( DataSet ds ) {
+        DataSet wds= ds.getPlanarView( DataSet.PROPERTY_PLANE_WEIGHTS );
+        if ( wds!=null ) {
+            return wds;
+        }
+        if ( ds instanceof TableDataSet ) {
+            return WeightsTableDataSet.create(  (TableDataSet)ds );
+        } else {
+            return WeightsVectorDataSet.create( (VectorDataSet)ds );
+        }
+    }
 }
