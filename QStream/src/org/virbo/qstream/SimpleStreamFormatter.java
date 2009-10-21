@@ -24,6 +24,8 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
+import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -51,6 +53,36 @@ public class SimpleStreamFormatter {
         return packet;
     }
     Map<QDataSet, String> names = new HashMap<QDataSet, String>();
+
+    /**
+     * pick a time formatter so that resolution is not reduced noticably 
+     * in formatting.
+     * @param ds
+     * @return
+     */
+    private AsciiTimeTransferType getTT( QDataSet ds ) {
+        QDataSet cad= DataSetUtil.guessCadenceNew( ds, null );
+        Units u= SemanticOps.getUnits(ds);
+        if ( cad==null ) {
+            return new AsciiTimeTransferType(24, u); // millis
+        } else {
+            double seconds= DataSetUtil.asDatum((RankZeroDataSet)cad).doubleValue( Units.seconds );
+            if ( seconds>=60 && seconds%60 <0.1 ) {
+                return new AsciiTimeTransferType(17, u); // HH:MM
+            } else if ( seconds>=1 && seconds%1 <0.001 ) {
+                return new AsciiTimeTransferType(20, u); // HH:MM:SS
+            }
+            double micros= DataSetUtil.asDatum((RankZeroDataSet)cad).doubleValue( Units.microseconds );
+            if ( micros>=1000 && micros%1000 < 0.1 ) {
+                return new AsciiTimeTransferType(24, u); // HH:MM:SS.mmm
+            } else if ( micros>=1 && micros%1 < 0.001 ) {
+                return new AsciiTimeTransferType(27, u); // HH:MM:SS.mmmmmm
+            } else {
+                return new AsciiTimeTransferType(30, u); // HH:MM:SS.mmmmmmmmm
+            }
+        }
+
+    }
 
     /**
      * 
@@ -130,7 +162,8 @@ public class SimpleStreamFormatter {
                 if (u instanceof EnumerationUnits) {
                     planeDescriptor.setType(new AsciiIntegerTransferType(10));
                 } else if (u instanceof TimeLocationUnits) {
-                    planeDescriptor.setType(new AsciiTimeTransferType(24, u));
+                    AsciiTimeTransferType att= getTT(ds);
+                    planeDescriptor.setType(att);
                 } else {
                     if ( maxFp==0 && max<1e8 ) {
                         planeDescriptor.setType(new AsciiIntegerTransferType(10));
