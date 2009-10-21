@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.util.TimeParser;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 
 /**
@@ -1341,7 +1342,11 @@ public class AsciiParser {
      * @return Value of the property at <CODE>index</CODE>.
      */
     public Units getUnits(int index) {
-        return this.units[index];
+        if ( this.units[index]==Units.dimensionless && this.fieldUnits[index]!=null && this.fieldUnits[index].length()>0 ) {
+            return SemanticOps.lookupUnits( this.fieldUnits[index] );
+        } else {
+            return this.units[index];
+        }
     }
 
     /**
