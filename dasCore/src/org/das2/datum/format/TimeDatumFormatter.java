@@ -321,7 +321,7 @@ public class TimeDatumFormatter extends DatumFormatter {
         int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
-        int seconds = (int)Math.round(ts.seconds * maxScale) / maxScale;
+        int seconds = (int)( (long)Math.round(ts.seconds * maxScale) / maxScale );
         double fracSeconds = ts.seconds - seconds;
         ts.seconds= seconds;
         ts.micros= (int)(fracSeconds * 1e6);
