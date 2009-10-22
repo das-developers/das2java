@@ -1121,6 +1121,20 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         invalidateCacheImage();
     }
 
+    public void addRenderer(int index, Renderer rend) {
+        logger.fine("addRenderer(" + index + "," + rend + ")");
+        if (rend.parent != null) {
+            rend.parent.removeRenderer(rend);
+        }
+        renderers.add(index,rend);
+        rend.parent = this;
+        if (getCanvas() != null) {
+            rend.installRenderer();
+        }
+        rend.update();
+        invalidateCacheImage();
+    }
+
     public void removeRenderer(Renderer rend) {
         if (getCanvas() != null) {
             rend.uninstallRenderer();
