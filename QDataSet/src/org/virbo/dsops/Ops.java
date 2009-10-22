@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
+import org.das2.dataset.test.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -1245,6 +1246,16 @@ public class Ops {
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
 
+    /**
+     * rank 2 dataset for demos.
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static QDataSet ripples( int len0, int len1 ) {
+        TableDataSet tds= new RipplesDataSet( len0/10., len1/10., len1/20., len0/2., len1/2., len1/10., len0, len1 );
+        return DataSetAdapter.create(tds);
+    }
 
     /**
      * element-wise sin.
