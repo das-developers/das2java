@@ -381,7 +381,8 @@ public class DataSetUtil {
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
      * @param xds the x tags, which may not contain fill values for non-null result.
-     * @param yds the y values, which if non-null is only used for fill values.
+     * @param yds the y values, which if non-null is only used for fill values.  This
+     *   is only used if it is rank 1.
      * @return null or the cadence in a rank 0 dataset.  The following may be
      *    properties of the result:
      *    SCALE_TYPE  may be "log"
@@ -491,6 +492,11 @@ public class DataSetUtil {
             return null;
         }
         
+        // if the ratio of successive numbers is always increasing this is a strong
+        // hint that ratiometric spacing is more appropriate.  If non-zero, then
+        // this is the ratio of the first to the last number.
+        final int everIncreasingLimit = total < 10 ? 25 : 100;
+
         int ipeak=0;
         int peakv=(int) hist.value(0);
         int linHighestPeak=0; // highest observed non-trivial peak
@@ -530,8 +536,9 @@ public class DataSetUtil {
         double firstBin= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START)).doubleValue();
         double binWidth= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
         firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
+
         if ( UnitsUtil.isRatioMeasurement(xunits) && 
-                ( logScaleType || everIncreasing>100 || ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && firstBin<=0. ) ) ) {
+                ( logScaleType || everIncreasing>everIncreasingLimit || ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && ( total<10 || firstBin<=0. ) ) ) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
@@ -567,7 +574,7 @@ public class DataSetUtil {
 
             int highestPeak= linHighestPeak;
 
-            if ( everIncreasing>100 || ( logPeak>0 && (1.*logMedian/loghist.length() > 1.*linMedian/hist.length() ) ) ) {
+            if ( everIncreasing>everIncreasingLimit || ( logPeak>0 && (1.*logMedian/loghist.length() > 1.*linMedian/hist.length() ) ) ) {
                 hist= loghist;
                 ipeak= logPeak;
                 peakv= logPeakv;
@@ -890,6 +897,18 @@ public class DataSetUtil {
             }
             return result.toString();
         } else if ( "min,max".equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
+            StringBuffer result= new StringBuffer();
+            Units u= (Units) ds.property(QDataSet.UNITS);
+            if ( u==null ) u= Units.dimensionless;
+            result.append( new DatumRange( ds.value(0), ds.value(1), u ).toString() );
+
+            String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
+            if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
+            for ( int i=0; i<ds.length(); i++ ) {
+                result.append( ss[i]+"="+u.createDatum(ds.value(i)) );
+                if ( i<ds.length()-1 ) result.append(", ");
+            }
+        } else if ( "min,maxInclusive".equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
             StringBuffer result= new StringBuffer();
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
