@@ -16,7 +16,6 @@ import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
-import org.das2.util.TimeParser;
 import org.virbo.dataset.QDataSet;
 
 /**
