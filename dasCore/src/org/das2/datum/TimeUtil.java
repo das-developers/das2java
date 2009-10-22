@@ -306,53 +306,105 @@ public final class TimeUtil {
         result.day= D;
         return result;
     }
-    
-    
+
     /**
      * splits the time location datum into y,m,d,etc components.  Note that
      * seconds is a double, and micros will be 0.
      * @param datum with time location units.
      * @return TimeStruct containing the time components.
      */
-    public static TimeStruct toTimeStruct(Datum datum) {
-        int hour, minute;
-        double justNanoSeconds;
+    public static TimeStruct toTimeStruct( Datum datum ) {
+        Units u= datum.getUnits();
+        double d= datum.doubleValue(u);
+        int mjd1958= (int)datum.doubleValue( Units.mj1958 );
+        double midnight= Units.mj1958.convertDoubleTo( u, mjd1958 );
+        double sinceMidnight= d-midnight;
 
-        long microseconds;
-        long nanoseconds;
-        long lns2000= (long)(1000*datum.doubleValue( Units.us2000 ));
-        if (lns2000<0) {
-            long xx= lns2000 % 86400000000000L;
-            if (xx==0) {
-                nanoseconds= 0;
-            } else {
-                nanoseconds= 86400000000000L+xx;
-            }
-        } else {
-            nanoseconds= lns2000 % 86400000000000L;
-        }
-        
-        long sansNanos= lns2000 - nanoseconds;
-
-        int jd= getJulianDay(sansNanos/1000,Units.us2000);
+        int jd= 2436205 + mjd1958;
+        double nanoseconds= u.getOffsetUnits().convertDoubleTo( Units.nanoseconds, sinceMidnight );
 
         if ( jd<0 ) {
             throw new IllegalArgumentException("julian day is negative.");
         }
-        
+
+        if ( nanoseconds<0 ) {
+            jd= jd-1;
+            nanoseconds += 86400e9; // no leap
+        }
+
+        if ( nanoseconds>=86400e9 ) {
+            jd= jd+1;
+            nanoseconds -= 86400e9; // no leap
+        }
+
         TimeStruct result= julianToGregorian( jd );
-        
-        hour = (int)(nanoseconds/3600.0e9);
-        minute = (int)((nanoseconds - hour*3600.0e9)/60.0e9);
-        justNanoSeconds = nanoseconds - hour*3600.0e9 - minute*60.0e9;
-        
+
+        int hour = (int)(nanoseconds/3600.0e9);
+        int minute = (int)((nanoseconds - hour*3600.0e9)/60.0e9);
+        double justNanoSeconds = nanoseconds - hour*3600.0e9 - minute*60.0e9;
+
         result.doy = dayOfYear(result.month, result.day, result.year);
         result.hour= hour;
         result.minute= minute;
         result.seconds= justNanoSeconds / 1e9;
-        
+
         return result;
     }
+
+    /**
+     * splits the time location datum into y,m,d,etc components.  Note that
+     * seconds is a double, and micros will be 0.
+     * @param datum with time location units.
+     * @return TimeStruct containing the time components.
+     */
+//    public static TimeStruct toTimeStruct(Datum datum) {
+//        int hour, minute;
+//        int jdOffset=0;
+//        double justNanoSeconds;
+//
+//        Units u= Units.us2000;
+//
+//        double microseconds= datum.doubleValue( Units.us2000 );
+//
+//        if ( microseconds<-6.31152E14 ) {
+//            u= Units.us1980;
+//            microseconds= datum.doubleValue( u );
+//        }
+//
+//        long nanoseconds;
+//        long lns2000= (long)(1000*microseconds);
+//        if (lns2000<0) {
+//            long xx= lns2000 % 86400000000000L;
+//            if (xx==0) {
+//                nanoseconds= 0;
+//            } else {
+//                nanoseconds= 86400000000000L+xx;
+//            }
+//        } else {
+//            nanoseconds= lns2000 % 86400000000000L;
+//        }
+//
+//        long sansNanos= lns2000 - nanoseconds;
+//
+//        int jd= getJulianDay(sansNanos/1000,u);
+//
+//        if ( jd<0 ) {
+//            throw new IllegalArgumentException("julian day is negative.");
+//        }
+//
+//        TimeStruct result= julianToGregorian( jd );
+//
+//        hour = (int)(nanoseconds/3600.0e9);
+//        minute = (int)((nanoseconds - hour*3600.0e9)/60.0e9);
+//        justNanoSeconds = nanoseconds - hour*3600.0e9 - minute*60.0e9;
+//
+//        result.doy = dayOfYear(result.month, result.day, result.year);
+//        result.hour= hour;
+//        result.minute= minute;
+//        result.seconds= justNanoSeconds / 1e9;
+//
+//        return result;
+//    }
     
     /**
      * returns int[] { year, month, day, hour, minute, second, millis, micros }
@@ -1080,6 +1132,25 @@ public final class TimeUtil {
         for ( int i=0; i<44; i++ ) {
             System.out.println(tf.format(x)+"\t"+(long)x.doubleValue(Units.us2000));
             x= TimeUtil.prev(SECOND,x);
+        }
+
+        Units[] uu= new Units[] { Units.cdfEpoch, Units.us1980, Units.us2000, Units.mj1958 };
+
+        for ( int i=0; i<uu.length; i++ ) {
+            Units u= uu[i];
+            for ( int j=0; j<10000; j++ ) {
+                Datum d= u.createDatum(j);
+                String s= d.toString();
+                ts= null;
+                ts= toTimeStruct(d);
+                Datum d1= TimeUtil.toDatum(ts);
+                if ( !d1.equals(d) ) {
+                    if ( d1.subtract(d).doubleValue(Units.microseconds)< 0.000001 ) continue;
+                    System.err.println( d1.subtract(d) );
+                    System.err.println( ""+i+" "+j+": " +d + " "+d1 +" "+ ts );
+                    ts= toTimeStruct(d);
+                }
+            }
         }
     }
     
