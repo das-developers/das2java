@@ -311,8 +311,15 @@ public final class AutoHistogram {
             initialDist();
         }
 
-        if ( outliers.size()>total ) {
+        int limit=10;
+        while ( limit>=0 && ( outliers.size()>total ) ) {
             initialRedist();
+            limit--;
+        }
+
+        while ( limit>=0 && ( outliers.size()>total/10 ) ) {
+            initialRedist();
+            limit--;
         }
 
         DDataSet result = getHistogram();
