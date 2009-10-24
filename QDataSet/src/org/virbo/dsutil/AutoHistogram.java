@@ -22,7 +22,9 @@ import org.das2.util.DasMath;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetIterator;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
@@ -175,7 +177,8 @@ public final class AutoHistogram {
         result.putProperty( QDataSet.RENDER_TYPE, "stairSteps" );  //TODO: consider schema id
 
         //TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom, units ); // firstBin done
-        TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binw / binwDenom, (firstBin + binw * ifirstBin) / binwDenom, units);
+        double binWidth= binw / binwDenom;
+        TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binWidth, ( firstBin + binw * ( ifirstBin + 0.5 ) ) / binwDenom, units); // bin centers
 
         result.putProperty(DDataSet.DEPEND_0, dep0);
         Map<String, Object> user = new HashMap<String, Object>();
@@ -797,5 +800,159 @@ public final class AutoHistogram {
         result.putProperty("invalidCount", ((Map) hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_INVALID_COUNT));
 
         return result;
+    }
+
+    /**
+     * return a list of all the peaks in the histogram.  A peak is defined as a
+     * local maximum, then including the adjacent bins consistent with the peak
+     * population, and not belonging to another peak.  
+     * @param hist
+     * @return QDataSet covarient with hist.
+     */
+    public static QDataSet peakIds( QDataSet hist ) {
+        IDataSet peakId= IDataSet.createRank1(hist.length());
+        peakId.putProperty( QDataSet.DEPEND_0, hist.property(QDataSet.DEPEND_0 ) );
+        int ipeak=1;
+        int n= hist.length();
+
+        if ( n<3 ) {
+            throw new IllegalArgumentException("histogram has too few bins");
+        }
+
+        QDataSet means= (QDataSet) ( hist.property("means") );
+        QDataSet stddevs= (QDataSet) ( hist.property("stddevs") );
+        QDataSet bins= (QDataSet) hist.property( QDataSet.DEPEND_0 );
+        double binw= bins.value(1)- bins.value(0);
+
+        for ( int i=0; i<n-2; i++ ) { // a peak is a local max, or the tail end of a plateau.
+            if ( (i<2 || hist.value(i-2)<=hist.value(i) )
+                   && ( i<1 || hist.value(i-1)<=hist.value(i) )
+                   && ( i>n-2 || hist.value(i)>hist.value(i+1) )
+                   && ( i>n-1 || hist.value(i)>hist.value(i+2) ) ) {
+                peakId.putValue(i,ipeak);
+                ipeak++;
+            }
+        }
+
+        // move the peakId down along plateau
+        for ( int i=n-1; i>=1; i-- ) {
+            if ( hist.value(i-1)==hist.value(i) && peakId.value(i)!=0 ) {
+                if ( hist.value(i-1)>5 ) {
+                    if ( means.value(i-1) + 2 * stddevs.value(i-1) > ( bins.value(i)-binw/2) ) {
+                        peakId.putValue(i-1,peakId.value(i));
+                    } else {
+                        peakId.putValue( i-1,ipeak );
+                        ipeak++;
+                    }
+                } else {
+                    peakId.putValue(i-1,peakId.value(i));
+                }
+            }
+        }
+
+        // expand peaks to the left.
+        for ( int i=1; i<n; i++ ) {
+            if ( peakId.value(i)>0 ) {
+                int j=i-1;
+                double peakHeight= hist.value(i);
+                while ( j>=0 && peakId.value(j)==0 && hist.value(j)>peakHeight/2 && ( means.value(j) + 2 * stddevs.value(j) > ( bins.value(j+1)-binw/2) ) ) {
+                    peakId.putValue( j, peakId.value(i) );
+                    j--;
+                }
+            }
+        }
+
+        // expand peaks to the right.
+        for ( int i=n-2; i>=0; i-- ) {
+            if ( peakId.value(i)>0 ) {
+                int j=i+1;
+                double peakHeight= hist.value(i);
+                while ( j<n && peakId.value(j)==0 && hist.value(j)>peakHeight/2 && ( means.value(j) - 2 * stddevs.value(j) < ( bins.value(j-1)+binw/2) ) ) {
+                    peakId.putValue( j, peakId.value(i) );
+                    j++;
+                }
+            }
+        }
+
+        return peakId; //TODO
+
+    }
+
+    /**
+     * return a list of all the peaks in the histogram.  See peakIds to see
+     * how peaks are identified.  Once the bins of a peak
+     * have been identified, then the mean and stddev of each peak is returned.
+     * Note the stddev typically reads low, probably because the tails have been removed.
+     * @return QDataSet rank 1 dataset with length equal to the number of identified peaks
+     */
+    public static QDataSet peaks( QDataSet hist ) {
+        QDataSet peakIds= peakIds(hist);
+        QDataSet stddevs = (QDataSet) hist.property("stddevs");
+        QDataSet means = (QDataSet) hist.property("means");
+
+        int maxPeak=0;
+
+        for ( int i=0; i<peakIds.length(); i++ ) {
+            if ( peakIds.value(i)> maxPeak ) {
+                maxPeak= (int) peakIds.value(i);
+            }
+        }
+
+        int npeak= maxPeak;
+
+        double[] vvs = new double[hist.length()];
+        double[] SS= new double[hist.length()];
+        double[] NN= new double[hist.length()];
+
+        for (int i = 0; i < hist.length(); i++) {
+            int ipeak= (int) (peakIds.value(i) - 1);
+            if ( ipeak>=0 ) {
+                SS[ipeak] += means.value(i) * hist.value(i);
+                NN[ipeak] += hist.value(i);
+            }
+        }
+
+        double[] mean= new double[npeak];
+
+        for ( int ipeak=0; ipeak<npeak; ipeak++ ) {
+            mean[ipeak]= SS[ipeak]/NN[ipeak];
+        }
+
+        for (int i = 0; i < stddevs.length(); i++) {
+            double var = Math.pow(stddevs.value(i), 2);
+            int ipeak= (int) (peakIds.value(i) - 1);
+            if ( ipeak>=0 ) {
+                vvs[i] = (hist.value(i) - 1) * var + hist.value(i) * Math.pow(means.value(i) - mean[ipeak], 2);
+            }
+        }
+
+        double[] VV = new double[npeak];
+        int[] nbin= new int[npeak];
+
+        for (int i = 0; i < hist.length(); i++) {
+            int ipeak= (int) (peakIds.value(i) - 1);
+            if ( ipeak>=0 ) {
+                VV[ipeak] += vvs[i];
+                nbin[ipeak] += 1;
+            }
+        }
+
+        double[] stddev= new double[npeak];
+
+        for ( int ipeak=0; ipeak<npeak; ipeak++ ) {
+            stddev[ipeak]= Math.sqrt(VV[ipeak] / (NN[ipeak] - 1));
+        }
+
+        Units u = (Units) ((QDataSet) hist.property(QDataSet.DEPEND_0)).property(QDataSet.UNITS);
+
+        DDataSet result= DDataSet.wrap( mean );
+        if (u != null) result.putProperty(QDataSet.UNITS, u);
+        DDataSet stddevds= DDataSet.wrap( stddev );
+        if (u != null) stddevds.putProperty( QDataSet.UNITS, u.getOffsetUnits() );
+        result.putProperty( QDataSet.DELTA_PLUS, stddevds );
+        result.putProperty( QDataSet.DELTA_MINUS, stddevds );
+
+        return result;
+
     }
 }
