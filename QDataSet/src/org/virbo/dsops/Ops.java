@@ -557,7 +557,7 @@ public class Ops {
     }
 
     /**
-     * element-wise natural logarythm.
+     * element-wise natural logarithm.
      * @param ds
      * @return
      */
@@ -571,7 +571,7 @@ public class Ops {
     }
 
     /**
-     * element-wise base 10 logarythm.
+     * element-wise base 10 logarithm.
      * @param ds
      * @return
      */
