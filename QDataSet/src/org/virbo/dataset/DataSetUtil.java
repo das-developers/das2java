@@ -206,6 +206,7 @@ public class DataSetUtil {
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
                     QDataSet.USER_PROPERTIES,
+                    QDataSet.METADATA, QDataSet.METADATA_MODEL,
                 };
     }
 
@@ -375,6 +376,121 @@ public class DataSetUtil {
         
         return name + "[" + dimStr.toString() + "] (" + su + ")";
        
+    }
+
+    /**
+     * returns the first valid point found in a dataset, or null if
+     * no such point is found.
+     * @param ds non-bundle dataset.
+     * @return rank zero dataset containing the first valid point, or null.
+     */
+    public static QDataSet firstValidPoint( QDataSet ds ) {
+        Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u==null ) {
+            u= Units.dimensionless;
+        }
+
+        double offset= u.getFillDouble();
+
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        DataSetIterator iter= new QubeDataSetIterator(ds);
+
+        while( iter.hasNext() ) {
+            iter.next();
+            double w= iter.getValue(wds);
+            if ( w>0 ) {
+                offset= iter.getValue(ds);
+                break;
+            }
+        }
+
+        if ( offset==u.getFillDouble() ) {
+            return null;
+        } else {
+            return DataSetUtil.asDataSet(offset, u);
+        }
+
+    }
+
+    /**
+     * return just the valid points of the dataset.
+     * @param ds
+     * @return
+     */
+   public static QDataSet validPoints( QDataSet ds ) {
+        Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u==null ) {
+            u= Units.dimensionless;
+        }
+
+        double offset= u.getFillDouble();
+
+        int lenmax= DataSetUtil.totalLength(ds);
+
+        DDataSet result= DDataSet.createRank1(lenmax);
+        int i=0;
+
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        DataSetIterator iter= new QubeDataSetIterator(ds);
+
+        while( iter.hasNext() ) {
+            iter.next();
+            double w= iter.getValue(wds);
+            if ( w>0 ) {
+                result.putValue( i, iter.getValue(ds) );
+                i=i+1;
+            }
+        }
+
+        for ( String s: propertyNames() ) {
+            result.putProperty( s, ds.property(s) );
+        }
+
+        return result;
+
+    }
+
+   public static QDataSet gcd( QDataSet ds, QDataSet d ) {
+        QDataSet r, hist, peaks;
+
+        do {
+
+            r= Ops.mod( ds, d );
+            hist= Ops.autoHistogram(r);
+
+            peaks= AutoHistogram.peaks(hist);
+
+            int nonZeroPeakIndex= ( peaks.value(0) - ((QDataSet)peaks.property(QDataSet.DELTA_MINUS)).value(0) < 0.0 ) ? 1 : 0;
+            int lastNonZeroPeakIndex= peaks.length()-1;
+            double top= d.value();
+            if ( d.property(QDataSet.DELTA_MINUS)!=null ) {
+                top-= ((QDataSet)d.property(QDataSet.DELTA_MINUS)).value();
+            }
+            while ( lastNonZeroPeakIndex>=0 && ( peaks.value(lastNonZeroPeakIndex) - top > 0 ) ) {
+                lastNonZeroPeakIndex--;
+            }
+
+            if ( nonZeroPeakIndex >= peaks.length() ) {
+                break;
+            } else {
+                d= DataSetOps.slice0( peaks, nonZeroPeakIndex );
+            }
+
+        } while ( true );
+
+        return d;
+   }
+
+    /**
+     * return the unit for which all elements in the dataset are 
+     * integer multiples plus some offset.
+     * @param ds
+     * @return
+     */
+    public static QDataSet gcd( QDataSet ds ) {
+        QDataSet ds1= validPoints(ds);
+        double guess= ds1.value(0);
+        return gcd( ds, DataSetOps.slice0(ds,0) );
     }
 
     /**
@@ -1270,6 +1386,7 @@ public class DataSetUtil {
         }
         return result.toString();
     }
+
 }
 
 
