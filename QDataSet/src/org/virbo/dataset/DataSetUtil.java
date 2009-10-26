@@ -450,7 +450,17 @@ public class DataSetUtil {
 
     }
 
-   public static QDataSet gcd( QDataSet ds, QDataSet d ) {
+    /**
+     * return the unit for which all elements in the dataset are
+     * integer multiples of the result.
+     * @param ds
+     * @param d first factor for the dataset, error is used to detect non-zero significance.
+     * @param limit the resolution for which data is considered equal, and this
+     * limit should be greater than numerical precision.
+     * @throws IllegalArgumentException if there is no valid data.
+     * @return
+     */
+   public static QDataSet gcd( QDataSet ds, QDataSet d, QDataSet limit ) {
         QDataSet r, hist, peaks;
 
         do {
@@ -460,17 +470,20 @@ public class DataSetUtil {
 
             peaks= AutoHistogram.peaks(hist);
 
-            int nonZeroPeakIndex= ( peaks.value(0) - ((QDataSet)peaks.property(QDataSet.DELTA_MINUS)).value(0) < 0.0 ) ? 1 : 0;
+            // stop is stopping condition tolerance.
+            double stop= ( d.property(QDataSet.DELTA_MINUS)!=null ) ?  ((QDataSet)d.property(QDataSet.DELTA_MINUS)).value() : 0.0;
+            stop= Math.max( stop, DataSetUtil.value( (RankZeroDataSet)limit, (Units)peaks.property(QDataSet.UNITS) ));
+            double top= d.value() - stop;
+
+            int nonZeroPeakIndex= ( peaks.value(0) - stop < 0.0 ) ? 1 : 0;
             int lastNonZeroPeakIndex= peaks.length()-1;
-            double top= d.value();
-            if ( d.property(QDataSet.DELTA_MINUS)!=null ) {
-                top-= ((QDataSet)d.property(QDataSet.DELTA_MINUS)).value();
-            }
-            while ( lastNonZeroPeakIndex>=0 && ( peaks.value(lastNonZeroPeakIndex) - top > 0 ) ) {
+
+            
+            while ( lastNonZeroPeakIndex>=0 && ( peaks.value(lastNonZeroPeakIndex) > top ) ) {
                 lastNonZeroPeakIndex--;
             }
 
-            if ( nonZeroPeakIndex >= peaks.length() ) {
+            if ( lastNonZeroPeakIndex < nonZeroPeakIndex ) {
                 break;
             } else {
                 d= DataSetOps.slice0( peaks, nonZeroPeakIndex );
@@ -485,12 +498,17 @@ public class DataSetUtil {
      * return the unit for which all elements in the dataset are 
      * integer multiples plus some offset.
      * @param ds
+     * @param limit the resolution for which data is considered equal.  The result
+     * will be an integer multiple of this.
+     * @throws IllegalArgumentException if there is no valid data.
      * @return
      */
-    public static QDataSet gcd( QDataSet ds ) {
+    public static QDataSet gcd( QDataSet ds, QDataSet limit ) {
         QDataSet ds1= validPoints(ds);
-        double guess= ds1.value(0);
-        return gcd( ds, DataSetOps.slice0(ds,0) );
+        if ( ds1.length()==0 ) throw new IllegalArgumentException("no valid points");
+        if ( ds1.length()==1 ) return DataSetOps.slice0( ds, 0 );
+        QDataSet guess= DataSetOps.slice0( ds, 1 );
+        return gcd( ds, guess, limit );
     }
 
     /**
@@ -1306,7 +1324,7 @@ public class DataSetUtil {
      */
     public static double value( RankZeroDataSet ds, Units tu ) {
         Units u= (Units) ds.property(QDataSet.UNITS);
-        if ( u==null ) {
+        if ( tu==null && u==null ) {
             return ds.value();
         } else {
             return u.convertDoubleTo(tu, ds.value() );
