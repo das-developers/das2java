@@ -178,8 +178,8 @@ public final class AutoHistogram {
 
         //TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom, units ); // firstBin done
         double binWidth= binw / binwDenom;
-        //TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binWidth, ( firstBin + binw * ( ifirstBin + 0.5 ) ) / binwDenom, units); // bin centers
-TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binWidth, ( firstBin + binw * ( ifirstBin  ) ) / binwDenom, units); // bin centers
+        TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binWidth, ( firstBin + binw * ( ifirstBin + 0.5 ) ) / binwDenom, units); // bin centers
+        //TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binWidth, ( firstBin + binw * ( ifirstBin  ) ) / binwDenom, units); // bin starts
 
         result.putProperty(DDataSet.DEPEND_0, dep0);
         Map<String, Object> user = new HashMap<String, Object>();
