@@ -19,13 +19,16 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -55,31 +58,59 @@ public class SimpleStreamFormatter {
     Map<QDataSet, String> names = new HashMap<QDataSet, String>();
 
     /**
+     * 
+     * @param ds rank 0 dataset of time.
+     * @return the number of characters needed to represent: 17,20,24,27,30.
+     */
+    private int timeDigits( QDataSet ds ) {
+        Units u= SemanticOps.getUnits(ds);
+        double micros;
+        if ( UnitsUtil.isTimeLocation(u) ) {
+            micros= TimeUtil.getMicroSecondsSinceMidnight( DataSetUtil.asDatum((RankZeroDataSet)ds) );
+        } else {
+            micros= DataSetUtil.value( (RankZeroDataSet)ds, Units.microseconds );
+        }
+        
+        if ( micros==0 || ( micros>=60e6 && micros%60e6 <0.1 ) ) {
+            return 17; // HH:MM
+        } else if ( micros>=1e6 && micros%1e6 <0.001 ) {
+            return 20; // HH:MM:SS
+        } else if ( micros>=1000 && micros%1000 < 0.1 ) {
+            return 24; // HH:MM:SS.mmm
+        } else if ( micros>=1 && micros%1 < 0.001 ) {
+            return 27; // HH:MM:SS.mmmmmm
+        } else {
+            return 30; // HH:MM:SS.mmmmmmmmm
+        }
+
+    }
+
+    /**
      * pick a time formatter so that resolution is not reduced noticably 
      * in formatting.
      * @param ds
      * @return
      */
     private AsciiTimeTransferType getTT( QDataSet ds ) {
-        QDataSet cad= DataSetUtil.guessCadenceNew( ds, null );
+        
         Units u= SemanticOps.getUnits(ds);
-        if ( cad==null ) {
-            return new AsciiTimeTransferType(24, u); // millis
+
+        int timeDigits= timeDigits( DataSetOps.slice0(ds,0) );
+
+        //TODO: same thing but with gcd added, use max of the two.
+        QDataSet gcd= null;
+        try {
+            QDataSet diffs= Ops.subtract( ds, DataSetOps.slice0(ds,0) );
+            gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet( 1, Units.picoseconds ) );
+        } catch ( IllegalArgumentException ex ) {
+            gcd= null;
+        }
+
+        if ( gcd==null ) {
+            return new AsciiTimeTransferType(timeDigits, u); // millis
         } else {
-            double seconds= DataSetUtil.asDatum((RankZeroDataSet)cad).doubleValue( Units.seconds );
-            if ( seconds>=60 && seconds%60 <0.1 ) {
-                return new AsciiTimeTransferType(17, u); // HH:MM
-            } else if ( seconds>=1 && seconds%1 <0.001 ) {
-                return new AsciiTimeTransferType(20, u); // HH:MM:SS
-            }
-            double micros= DataSetUtil.asDatum((RankZeroDataSet)cad).doubleValue( Units.microseconds );
-            if ( micros>=1000 && micros%1000 < 0.1 ) {
-                return new AsciiTimeTransferType(24, u); // HH:MM:SS.mmm
-            } else if ( micros>=1 && micros%1 < 0.001 ) {
-                return new AsciiTimeTransferType(27, u); // HH:MM:SS.mmmmmm
-            } else {
-                return new AsciiTimeTransferType(30, u); // HH:MM:SS.mmmmmmmmm
-            }
+            int timeDigitsGcd= timeDigits( gcd );
+            return new AsciiTimeTransferType( Math.max( timeDigits, timeDigitsGcd ), u );
         }
 
     }
