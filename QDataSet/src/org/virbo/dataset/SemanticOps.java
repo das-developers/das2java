@@ -23,6 +23,12 @@ import org.das2.datum.UnitsConverter.ScaleOffset;
  */
 public class SemanticOps {
 
+    /**
+     * returns the units found in the UNITS property of the dataset,
+     * or Units.dimensionless if it is not found.
+     * @param ds
+     * @return
+     */
     public final static Units getUnits(QDataSet ds) {
         Units u = (Units) ds.property(QDataSet.UNITS);
         return u == null ? Units.dimensionless : u;
