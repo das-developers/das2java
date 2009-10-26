@@ -824,6 +824,9 @@ public final class AutoHistogram {
         QDataSet bins= (QDataSet) hist.property( QDataSet.DEPEND_0 );
         double binw= bins.value(1)- bins.value(0);
 
+        // seed the peaks by finding local maximums of 5-point groups.  Also,
+        // identify valley bottoms.
+        // 0= undetermined, >0 peak, -1= valley.
         for ( int i=0; i<n-2; i++ ) { // a peak is a local max, or the tail end of a plateau.
             if ( (i<2 || hist.value(i-2)<=hist.value(i) )
                    && ( i<1 || hist.value(i-1)<=hist.value(i) )
@@ -831,6 +834,11 @@ public final class AutoHistogram {
                    && ( i>n-1 || hist.value(i)>hist.value(i+2) ) ) {
                 peakId.putValue(i,ipeak);
                 ipeak++;
+            } else if ( (i<2 || hist.value(i-2)>hist.value(i) )
+                   && ( i<1 || hist.value(i-1)>hist.value(i) )
+                   && ( i>n-2 || hist.value(i)<=hist.value(i+1) )
+                   && ( i>n-1 || hist.value(i)<=hist.value(i+2) ) ) {
+                peakId.putValue(i,-1);
             }
         }
 
@@ -855,7 +863,7 @@ public final class AutoHistogram {
             if ( peakId.value(i)>0 ) {
                 int j=i-1;
                 double peakHeight= hist.value(i);
-                while ( j>=0 && peakId.value(j)==0 && hist.value(j)>peakHeight/2 && ( means.value(j) + 2 * stddevs.value(j) > ( bins.value(j+1)-binw/2) ) ) {
+                while ( j>=0 && peakId.value(j)==0 && hist.value(j)>peakHeight/10 && ( means.value(j) + 2 * stddevs.value(j) > ( bins.value(j+1)-binw/2) ) ) {
                     peakId.putValue( j, peakId.value(i) );
                     j--;
                 }
@@ -867,7 +875,7 @@ public final class AutoHistogram {
             if ( peakId.value(i)>0 ) {
                 int j=i+1;
                 double peakHeight= hist.value(i);
-                while ( j<n && peakId.value(j)==0 && hist.value(j)>peakHeight/2 && ( means.value(j) - 2 * stddevs.value(j) < ( bins.value(j-1)+binw/2) ) ) {
+                while ( j<n && peakId.value(j)==0 && hist.value(j)>peakHeight/10 && ( means.value(j) - 2 * stddevs.value(j) < ( bins.value(j-1)+binw/2) ) ) {
                     peakId.putValue( j, peakId.value(i) );
                     j++;
                 }
