@@ -968,4 +968,16 @@ public class TimeParser {
         }
         return result.toString().trim();
     }
+
+    @Override
+    public String toString() {
+        StringBuffer result= new StringBuffer();
+        for ( int i=0;i<this.fc.length; i++ ) {
+            if ( this.fc[i]!=null ) result.append( "%"+this.fc[i] );
+            result.append( this.delims[i] );
+        }
+        return result.toString();
+    }
+
+
 }
