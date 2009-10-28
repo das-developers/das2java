@@ -283,16 +283,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( envelope==1 ) envelopeColor= ( 128/saturationHitCount << 24) | colorInt;  // 50% alpha
         for (int i=0; i<w; i++) {
             int ymin = -1;
-            int ymax = -1;
+            int ymax = -1; //ymax is inclusive
             for (int j=0; j<h; j++) {
                 if (newHist.getDouble(i, j, Units.dimensionless) > 0) {
-                    if (ymin<0)
-                        ymin = j;
+                    if (ymin<0) ymin = j;
                     ymax = j;
                 }
             }
             if (ymin >= 0) {
-                for (int j=ymin; j<ymax; j++) {
+                for (int j=ymin; j<=ymax; j++) {
                      int index = i + (h-j-1) * w;
                      if ( !(envelope==2) && ( envelope==0 || newHist.getDouble(i, j, Units.dimensionless) > 0 ) ) {
                          int alpha = 255 * (int) newHist.getDouble(i, j, Units.dimensionless) / saturationHitCount;
