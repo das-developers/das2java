@@ -1936,7 +1936,7 @@ public class Ops {
     }
 
     /**
-     * interpolate values from rank 1 dataset vv using fractional indeces 
+     * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.
      * 
      * @param vv rank 2 dataset.
