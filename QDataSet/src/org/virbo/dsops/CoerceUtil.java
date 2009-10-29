@@ -144,7 +144,11 @@ public class CoerceUtil {
             }
             
             public Object property(String name) {
-                return ds.property(name);
+                if ( name.equals(QDataSet.QUBE) ) {
+                    return ds2.property(name);
+                } else {
+                    return ds.property(name);
+                }
             }
 
             public Object property(String name, int i) {
@@ -217,7 +221,12 @@ public class CoerceUtil {
             }
 
             public Object property(String name) {
-                return ds.property(name);
+                if ( name.equals(QDataSet.QUBE) ) {
+                    return ds2.property(name);
+                } else {
+                    return ds.property(name);
+                }
+
             }
 
             public Object property(String name, int i) {
@@ -289,7 +298,12 @@ public class CoerceUtil {
             }
 
             public Object property(String name) {
-                return ds.property(name);
+                if ( name.equals(QDataSet.QUBE) ) {
+                    return ds2.property(name);
+                } else {
+                    return ds.property(name);
+                }
+
             }
 
             public Object property(String name, int i) {
