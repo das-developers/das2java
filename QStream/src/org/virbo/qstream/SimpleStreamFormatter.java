@@ -170,8 +170,9 @@ public class SimpleStreamFormatter {
             if (asciiTypes) {
                 double min = Double.POSITIVE_INFINITY;
                 double max = Double.NEGATIVE_INFINITY;
-                double absMin = Double.MAX_VALUE;
-                double maxFp= 0.;
+                double absMin = Double.MAX_VALUE; // smallest non-zero number.
+                double maxFp= 0.;                 // biggest fractional part.
+                double minFp= 1.;                 // smallest non-zero fractional part.
                 QubeDataSetIterator it = new QubeDataSetIterator(ds);
                 while (it.hasNext()) {
                     it.next();
@@ -182,6 +183,7 @@ public class SimpleStreamFormatter {
                     final double dd = Math.abs(d);
                     final double fp = dd-(long)dd;
                     if ( fp>maxFp ) maxFp= fp; // check for all ints, for now. //TODO: check for highest precision.
+                    if ( fp>0 && fp<minFp ) minFp= fp;
                     if (dd > 0 && dd < absMin) {
                         absMin = dd;
                     }
@@ -196,9 +198,14 @@ public class SimpleStreamFormatter {
                     AsciiTimeTransferType att= getTT(ds);
                     planeDescriptor.setType(att);
                 } else {
-                    if ( maxFp==0 && max<1e8 ) {
+                    //QDataSet diffs= Ops.subtract( ds, DataSetOps.slice0(ds,0) );
+                    //QDataSet gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet(absMin/100) );
+
+                    if ( maxFp==0 && min>-1e8 && max<1e8 ) {
                         planeDescriptor.setType(new AsciiIntegerTransferType(10));
                     } else if (min > -10000 && max < 10000 && absMin > 0.0001) {
+                        planeDescriptor.setType(new AsciiTransferType(10, false));
+                    } else if ( min > -100000 && max < 100000 && minFp==0.5 && maxFp==0.5 ) {
                         planeDescriptor.setType(new AsciiTransferType(10, false));
                     } else {
                         if (absMin > 1e-100 && max < 1e100) {
