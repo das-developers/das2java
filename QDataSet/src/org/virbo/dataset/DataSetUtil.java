@@ -217,6 +217,24 @@ public class DataSetUtil {
     }
 
     /**
+     * return the list of properties that pertain to the dimension that dataset
+     * values exist.  These are the properties that survive through most operations.
+     * For example, if you flattened the dataset, what properties 
+     * would still exist?  These are not structural properties like DEPEND_0,
+     * BUNDLE_1, etc.
+     * @return
+     */
+    public static String[] dimensionProperties() {
+        return new String[]{
+            QDataSet.UNITS, QDataSet.FORMAT, QDataSet.SCALE_TYPE,
+            QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
+            QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
+            QDataSet.RENDER_TYPE,
+            QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
+        };
+    }
+
+    /**
      * gets all the properties of the dataset.  This is a shallow
      * copy of properties.
      */
