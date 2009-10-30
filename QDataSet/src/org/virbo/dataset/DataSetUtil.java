@@ -193,6 +193,12 @@ public class DataSetUtil {
         return result;
     }
 
+    public static Object getUserProperty( QDataSet ds, String name ) {
+        Map<String,Object> userProps= (Map<String, Object>) ds.property(QDataSet.USER_PROPERTIES);
+        if ( userProps==null ) return null;
+        return userProps.get(name);
+    }
+
     public static String[] propertyNames() {
         return new String[]{
                     QDataSet.UNITS, QDataSet.FORMAT, QDataSet.CADENCE,
