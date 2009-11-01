@@ -46,6 +46,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -897,6 +899,14 @@ public class SeriesRenderer extends Renderer {
             update(); //DANGER: this kludge is not well tested, and may cause problems.  It should be the case that another
                       // update is posted that will resolve this problem, but somehow it's not happening when Autoplot adds a
                       // bunch of panels.
+            System.err.println("need to update first/last bit");
+            javax.swing.Timer t= new javax.swing.Timer( 200, new ActionListener() {
+                public void actionPerformed( ActionEvent e ) {
+                    update();
+                }
+            } );
+            t.setRepeats(false);
+            t.restart();
         }
 
         if (lastIndex == firstIndex) {
@@ -1082,6 +1092,8 @@ public class SeriesRenderer extends Renderer {
                 extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
                 if ( i==0 ) selectionArea= calcSelectionArea( xAxis, yAxis, vds );
             }
+        } else {
+            System.err.println("both tds and vds are null");
         }
         
         if (getParent() != null) {
