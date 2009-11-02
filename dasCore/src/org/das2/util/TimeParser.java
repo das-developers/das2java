@@ -438,6 +438,14 @@ public class TimeParser {
         }
     }
 
+    /**
+     * attempt to parse the string.  The parser itsself is returned so that
+     * so expressions can be chained like so:
+     *    parser.parse("2009-jan").getTimeRange()
+     * @param timeString
+     * @return the TimeParser, call getTimeRange or getTime to get result.
+     * @throws ParseException
+     */
     public TimeParser parse(String timeString) throws ParseException {
         int offs = 0;
         int len = 0;
@@ -474,62 +482,72 @@ public class TimeParser {
                     len = i - offs;
                 }
             }
-            if (handlers[idigit] < 10) {
-                int digit = Integer.parseInt(timeString.substring(offs, offs + len).trim());
-                switch (handlers[idigit]) {
-                    case 0:
-                        time.year = digit;
-                        break;
-                    case 1:
-                        time.year = digit < 58 ? 2000 + digit : 1900 + digit;
-                        break;
-                    case 2:
-                        time.month = 1;
-                        time.day = digit;
-                        break;
-                    case 3:
-                        time.month = digit;
-                        break;
-                    case 4:
-                        time.day = digit;
-                        break;
-                    case 5:
-                        time.hour = digit;
-                        break;
-                    case 6:
-                        time.minute = digit;
-                        break;
-                    case 7:
-                        time.seconds = digit;
-                        break;
-                    case 8:
-                        time.millis = digit;
-                        break;
-                    case 9:
-                        time.micros = digit;
-                        break;
-                }
-            } else if (handlers[idigit] == 100) {
-                FieldHandler handler = (FieldHandler) fieldHandlers.get(fc[idigit]);
-                handler.handleValue(timeString.substring(offs, offs + len), time, timeWidth);
-            } else if (handlers[idigit] == 10) {
-                char ch = timeString.charAt(offs);
-                if (ch == 'P' || ch == 'p') {
-                    time.hour += 12;
-                }
-            } else if (handlers[idigit] == 11) {
-                int offset = Integer.parseInt(timeString.substring(offs, offs + len));
-                time.hour -= offset / 100;   // careful!
 
-                time.minute -= offset % 100;
-            } else if (handlers[idigit] == 12) {
-                //ignore
-            } else if (handlers[idigit] == 13) { // month name
-                time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
+            String field= timeString.substring(offs, offs + len).trim();
+            try {
 
-            } else if (handlers[idigit] == 14) {
-                //ignore
+                if (handlers[idigit] < 10) {
+                    int digit;
+                        digit= Integer.parseInt(field);
+                    switch (handlers[idigit]) {
+                        case 0:
+                            time.year = digit;
+                            break;
+                        case 1:
+                            time.year = digit < 58 ? 2000 + digit : 1900 + digit;
+                            break;
+                        case 2:
+                            time.month = 1;
+                            time.day = digit;
+                            break;
+                        case 3:
+                            time.month = digit;
+                            break;
+                        case 4:
+                            time.day = digit;
+                            break;
+                        case 5:
+                            time.hour = digit;
+                            break;
+                        case 6:
+                            time.minute = digit;
+                            break;
+                        case 7:
+                            time.seconds = digit;
+                            break;
+                        case 8:
+                            time.millis = digit;
+                            break;
+                        case 9:
+                            time.micros = digit;
+                            break;
+                    }
+                } else if (handlers[idigit] == 100) {
+                    FieldHandler handler = (FieldHandler) fieldHandlers.get(fc[idigit]);
+                    handler.handleValue(timeString.substring(offs, offs + len), time, timeWidth);
+                } else if (handlers[idigit] == 10) {
+                    char ch = timeString.charAt(offs);
+                    if (ch == 'P' || ch == 'p') {
+                        time.hour += 12;
+                    }
+                } else if (handlers[idigit] == 11) {
+                    int offset;
+                    offset= Integer.parseInt(timeString.substring(offs, offs + len));
+                    time.hour -= offset / 100;   // careful!
+
+                    time.minute -= offset % 100;
+                } else if (handlers[idigit] == 12) {
+                    //ignore
+                } else if (handlers[idigit] == 13) { // month name
+                    time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
+
+                } else if (handlers[idigit] == 14) {
+                    //ignore
+                }
+            } catch ( NumberFormatException ex ) {
+                throw new ParseException( String.format( "fail to parse digit number %d: %s", idigit, field ), offs );
             }
+
         }
         return this;
     }
