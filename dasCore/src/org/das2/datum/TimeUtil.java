@@ -687,7 +687,11 @@ public final class TimeUtil {
         
         Datum result= toDatum(t);
         if ( result.equals(datum) ) {
-            return prev(step, datum.subtract( 500, Units.microseconds )); //TODO: yuck!
+            Datum d= datum.subtract( 500, Units.milliseconds );
+            if ( d.equals(result) ) {
+                throw new IllegalStateException("aborting to avoid stack overflow!");
+            }
+            return prev(step,d ); //TODO: yuck!
         } else {
             return result;
         }
