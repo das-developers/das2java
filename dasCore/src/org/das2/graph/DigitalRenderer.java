@@ -10,9 +10,14 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
+import org.das2.DasException;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetUtil;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.WeightsVectorDataSet;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.monitor.ProgressMonitor;
@@ -65,6 +70,102 @@ public class DigitalRenderer extends Renderer {
         return selectionArea;
     }
 
+    protected int dataSetSizeLimit = 10000;
+    public static final String PROP_DATASETSIZELIMIT = "dataSetSizeLimit";
+
+    public int getDataSetSizeLimit() {
+        return dataSetSizeLimit;
+    }
+
+    public void setDataSetSizeLimit(int dataSetSizeLimit) {
+        int oldDataSetSizeLimit = this.dataSetSizeLimit;
+        this.dataSetSizeLimit = dataSetSizeLimit;
+        propertyChangeSupport.firePropertyChange(PROP_DATASETSIZELIMIT, oldDataSetSizeLimit, dataSetSizeLimit);
+    }
+
+    private int firstIndex=-1, lastIndex=-1;
+    private boolean dataSetClipped= false;
+
+    /**
+     * updates firstIndex and lastIndex that point to the part of
+     * the data that is plottable.  The plottable part is the part that
+     * might be visible while limiting the number of plotted points.
+     * //TODO: bug 0000354: warning message bubble about all data before or after visible range
+     */
+    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
+
+        Units xUnits = xAxis.getUnits();
+        Units yUnits = yAxis.getUnits();
+
+        int ixmax;
+        int ixmin;
+
+        VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
+
+        Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        if (xMono != null && xMono.booleanValue()) {
+            DatumRange visibleRange = xAxis.getDatumRange();
+            if (parent.isOverSize()) {
+                Rectangle plotBounds = parent.getUpdateImageBounds();
+                if ( plotBounds!=null ) {
+                    visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
+                }
+
+            }
+            ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
+            ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
+
+        } else {
+            ixmin = 0;
+            ixmax = dataSet.getXLength();
+        }
+
+        double x = Double.NaN;
+        double y = Double.NaN;
+
+        int index;
+
+        // find the first valid point, set x0, y0 //
+        for (index = ixmin; index < ixmax; index++) {
+            x = (double) dataSet.getXTagDouble(index, xUnits);
+            y = (double) dataSet.getDouble(index, yUnits);
+
+            final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
+            if (isValid) {
+                firstIndex = index;  // TODO: what if no valid points?
+
+                index++;
+                break;
+            }
+        }
+
+        if ( firstIndex==-1 ) { // no valid points
+            lastIndex= ixmax;
+            firstIndex= ixmax;
+        }
+
+        // find the last valid point, minding the dataSetSizeLimit
+        int pointsPlotted = 0;
+        for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
+            y = dataSet.getDouble(index, yUnits);
+
+            final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
+
+            if (isValid) {
+                pointsPlotted++;
+            }
+        }
+
+        if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
+            dataSetClipped = true;
+        } else {
+            dataSetClipped = false;
+        }
+
+        lastIndex = index;
+
+    }
+
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         g.setColor(color);
@@ -100,7 +201,7 @@ public class DigitalRenderer extends Renderer {
             return;
         }
 
-        for (int i = 0; i < ds.getXLength(); i++) {
+        for (int i = firstIndex; i < lastIndex; i++) {
             int ix = (int) xAxis.transform(ds.getXTagDatum(i));
 
             Datum d = ds.getDatum(i);
@@ -115,8 +216,8 @@ public class DigitalRenderer extends Renderer {
             Rectangle r = gtr.getBounds();
             r.translate(ix, iy);
             shape.append(r, false);
-            if (count++ > 10000) {
-                if ( getParent()!=null ) getParent().postMessage(this, "10000 data point limit reached", DasPlot.WARNING, null, null);
+            if ( dataSetClipped ) {
+                if ( getParent()!=null ) getParent().postMessage(this, "" + dataSetSizeLimit + " data point limit reached", DasPlot.WARNING, null, null);
                 return;
             }
 
@@ -176,4 +277,13 @@ public class DigitalRenderer extends Renderer {
     public boolean acceptContext(int x, int y) {
         return true;
     }
+
+    @Override
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
+        if ( getDataSet() instanceof VectorDataSet ) {
+            updateFirstLast( xAxis, yAxis, (VectorDataSet)getDataSet() );
+        }
+    }
+
+
 }
