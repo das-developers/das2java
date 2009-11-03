@@ -59,7 +59,6 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
-import org.das2.dataset.WeightsTableDataSet;
 import org.das2.dataset.WeightsVectorDataSet;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
