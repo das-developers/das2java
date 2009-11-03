@@ -4,21 +4,14 @@
  */
 package org.virbo.dsutil;
 
-import java.util.Enumeration;
 import javax.swing.JFrame;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import org.das2.datum.Units;
-import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
 import test.BundleBinsDemo;
 
 /**
@@ -36,7 +29,7 @@ public class QDataSetTableModel extends AbstractTableModel {
     Units[] units;
     String[] labels;
 
-    QDataSetTableModel(QDataSet ds) {
+    public QDataSetTableModel(QDataSet ds) {
         this.ds = ds;
         this.dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         dep0Offset = dep0 == null ? 0 : 1;
