@@ -116,7 +116,7 @@ public class DigitalRenderer extends Renderer {
             r.translate(ix, iy);
             shape.append(r, false);
             if (count++ > 10000) {
-                getParent().postMessage(this, "10000 data point limit reached", DasPlot.WARNING, null, null);
+                if ( getParent()!=null ) getParent().postMessage(this, "10000 data point limit reached", DasPlot.WARNING, null, null);
                 return;
             }
 
@@ -163,7 +163,7 @@ public class DigitalRenderer extends Renderer {
                     r.translate(ix, iy);
                     shape.append(r, false);
                     if (count++ > 10000) {
-                        getParent().postMessage(this, "10000 data point limit reached", DasPlot.WARNING, null, null);
+                        if ( getParent()!=null ) getParent().postMessage(this, "10000 data point limit reached", DasPlot.WARNING, null, null);
                         return;
                     }
                 }
