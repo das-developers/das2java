@@ -1072,7 +1072,6 @@ public class DatumRangeUtil {
     public static List<DatumRange> intersection( List<DatumRange> bounds, List<DatumRange> elements, boolean remove ) {
 
         int is= 0;
-        int ic= 0;
         int ns= bounds.size();
         int cs= elements.size();
 
