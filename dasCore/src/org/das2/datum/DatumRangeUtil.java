@@ -393,7 +393,10 @@ public class DatumRangeUtil {
             
             this.string= stringIn+" ";
             this.ipos= 0;
-            
+
+            if ( stringIn.length()==0 ) {
+                throw new ParseException("empty string",0);
+            }
             ArrayList beforeToUnresolved= new ArrayList();
             ArrayList afterToUnresolved= new ArrayList();
             
@@ -1082,7 +1085,8 @@ public class DatumRangeUtil {
         DatumRange lastAdded= null;
 
         DatumRange bounds1 = bounds.get(is);
-        for ( int i=0; i<elements.size(); i++ ) {
+        int i=0;
+        while ( i<elements.size() ) {
             while ( is<ns && bounds.get(is).max().le( elements.get(i).min() ) ) is++;
             if ( is==ns ) break;
             while ( i<cs && elements.get(i).max().le( bounds.get(is).min() )) i++;
@@ -1097,7 +1101,8 @@ public class DatumRangeUtil {
                         lastAdded= bounds1;
                     }
                 }
-                if ( i>0 ) i--;
+                if ( lastAdded==bounds.get(is) ) is++;
+                if ( i>0 ) i--; // the last one might contain part of the next bound.
             }
         }
         if ( remove ) elements.removeAll(contained);
