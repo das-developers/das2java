@@ -1062,17 +1062,19 @@ public class DatumRangeUtil {
     /**
      * return the elements of src that intersect with elements of the list contains.
      * Both src and dst should be sorted lists that do not contain overlaps.
-     * @param src sorted list of non-overlapping ranges.
+     * @param bounds sorted list of non-overlapping ranges.
      * @param contains sorted list of non-overlapping ranges.  If remove is true, then
      *   the elements intersecting are removed and the result will contain non-overlapping elements.
+     * @param remove if true, remove intersecting elements from the elements list, leaving the elements that
+     *   did not intersect with any of the ranges in bounds.
      * @return list of elements of src that overlap with elements of contains.
      */
-    public static List<DatumRange> intersection( List<DatumRange> src, List<DatumRange> dst, boolean remove ) {
+    public static List<DatumRange> intersection( List<DatumRange> bounds, List<DatumRange> elements, boolean remove ) {
 
         int is= 0;
         int ic= 0;
-        int ns= src.size();
-        int cs= dst.size();
+        int ns= bounds.size();
+        int cs= elements.size();
 
         List<DatumRange> result= new ArrayList();
 
@@ -1080,26 +1082,26 @@ public class DatumRangeUtil {
 
         DatumRange lastAdded= null;
 
-        DatumRange src1 = src.get(is);
-        for ( int i=0; i<dst.size(); i++ ) {
-            while ( is<ns && src.get(is).max().le( dst.get(i).min() ) ) is++;
+        DatumRange bounds1 = bounds.get(is);
+        for ( int i=0; i<elements.size(); i++ ) {
+            while ( is<ns && bounds.get(is).max().le( elements.get(i).min() ) ) is++;
             if ( is==ns ) break;
-            while ( i<cs && dst.get(i).max().le( src.get(is).min() )) i++;
+            while ( i<cs && elements.get(i).max().le( bounds.get(is).min() )) i++;
             if ( i==cs ) break;
-            src1= src.get(is);
-            if ( i<cs && src1.intersects( dst.get(i) ) ) {
-                while ( i<cs && src1.intersects( dst.get(i) ) ) {
-                    if ( remove ) contained.add( dst.get(i) );
+            bounds1= bounds.get(is);
+            if ( i<cs && bounds1.intersects( elements.get(i) ) ) {
+                while ( i<cs && bounds1.intersects( elements.get(i) ) ) {
+                    if ( remove ) contained.add( elements.get(i) );
                     i++;
-                    if ( src1!=lastAdded ) {
-                        result.add( src1);
-                        lastAdded= src1;
+                    if ( bounds1!=lastAdded ) {
+                        result.add( bounds1);
+                        lastAdded= bounds1;
                     }
                 }
                 if ( i>0 ) i--;
             }
         }
-        if ( remove ) dst.removeAll(contained);
+        if ( remove ) elements.removeAll(contained);
         return result;
 
     }
