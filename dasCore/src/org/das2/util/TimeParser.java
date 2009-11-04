@@ -483,6 +483,10 @@ public class TimeParser {
                 }
             }
 
+            if ( timeString.length()<offs+len ) {
+                throw new ParseException( "string is too short: "+timeString, timeString.length() );
+            }
+
             String field= timeString.substring(offs, offs + len).trim();
             try {
 
