@@ -16,19 +16,11 @@ import java.net.URLEncoder;
 public class StringSerializeDelegate implements SerializeDelegate {
 
     public String format(Object o) {
-        try {
-            return URLEncoder.encode((String) o, "US-ASCII");
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
-        }
+        return (String) o;
     }
 
     public Object parse(String typeId,String s) {
-        try {
-            return URLDecoder.decode(s, "US-ASCII");
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
-        }
+        return s;
     }
 
     public String typeId(Class clas) {
