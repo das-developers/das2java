@@ -8,6 +8,7 @@ package org.virbo.qstream;
 import java.text.ParseException;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
+import org.virbo.dataset.SemanticOps;
 
 /**
  * This serialize delegate assumes the formatted object is a time range,
@@ -24,7 +25,18 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate {
         try {
             return DatumRangeUtil.parseTimeRange(s);
         } catch ( ParseException e ) {
-            return DatumRangeUtil.parseDatumRange(s, Units.dimensionless );
+            int i = s.trim().lastIndexOf(" ");
+            if ( i==-1 ) {
+                return DatumRangeUtil.parseDatumRange(s, Units.dimensionless );
+            } else {
+                String sunits= s.substring(i).trim();
+                if ( Character.isLetter(sunits.charAt(0) ) ) {
+                    Units u= SemanticOps.lookupUnits(sunits);
+                    return DatumRangeUtil.parseDatumRange(s, u );
+                } else {
+                    return DatumRangeUtil.parseDatumRange(s, Units.dimensionless );
+                }
+            }
         }
     }
 
