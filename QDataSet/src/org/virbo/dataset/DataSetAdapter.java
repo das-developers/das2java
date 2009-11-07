@@ -138,7 +138,7 @@ public class DataSetAdapter {
         }
         
         public int length() {
-            return source.getYLength(0);
+            return source.tableCount()>0 ? source.getYLength(0) : 99;
         }
     }
     
