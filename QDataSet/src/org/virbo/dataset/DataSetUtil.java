@@ -383,16 +383,22 @@ public class DataSetUtil {
             }
         }
 
+        int[] qubeDims;
+        if ( DataSetUtil.isQube(ds) ) {
+            qubeDims= DataSetUtil.qubeDims(ds);
+        } else {
+            qubeDims= new int[ ds.rank() ];
+            qubeDims[0]= ds.length();
+            if ( ds.rank() > 1) qubeDims[1]= ds.length(0);
+            if ( ds.rank() > 2) qubeDims[2]= ds.length(0,0);
+            if ( ds.rank() > 3) qubeDims[3]= ds.length(0,0,0);
+        }
+
         StringBuffer dimStr = new StringBuffer("" + depNames[0] + ds.length());
-        if (ds.rank() > 1) {
-            dimStr.append("," + depNames[1] + ds.length(0) + qubeStr);
+        for ( int i=1; i<ds.rank(); i++ ) {
+            dimStr.append("," + depNames[1] + qubeDims[i] + qubeStr);
         }
-        if (ds.rank() > 2) {
-            dimStr.append("," + depNames[2] + ds.length(0, 0) + qubeStr);
-        }
-        if (ds.rank() > 3) {
-            dimStr.append("," + depNames[3] + ds.length(0, 0, 0) + qubeStr);
-        }
+        
         String su = String.valueOf(u);
         if ( su.equals("")) {
             su = "dimensionless";
