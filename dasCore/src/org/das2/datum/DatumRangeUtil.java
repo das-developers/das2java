@@ -865,17 +865,17 @@ public class DatumRangeUtil {
             else if ( seconds<3600. ) timeOfDayFormatter= TimeDatumFormatter.SECONDS;
             else timeOfDayFormatter= TimeDatumFormatter.MINUTES;
             
+            int minDay= TimeUtil.getJulianDay(self.min());
             int maxDay= TimeUtil.getJulianDay(self.max());
             if ( TimeUtil.getSecondsSinceMidnight(self.max())==0 ) maxDay--;  //  want to have 24:00, not 00:00
-            if ( maxDay== TimeUtil.getJulianDay(self.min()) ) {
+            if ( maxDay==minDay ) {
                 return TimeDatumFormatter.DAYS.format(self.min())
                 + " " + efficientTime( self.min(), self.max(), self )
                 + " to " +  efficientTime( self.max(), self.min(), self );
             } else {
-                String t1str= efficientTime( self.min(), self.max(), self );
-                String t2str= efficientTime( self.max(), self.min(), self );
-                return TimeDatumFormatter.DAYS.format( self.min() ) + " " + t1str
-                        + " to " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + t2str;
+                timeOfDayFormatter.format( self.min() );
+                return TimeDatumFormatter.DAYS.format( self.min() ) + " " + timeOfDayFormatter.format( self.min() )
+                        + " to " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + timeOfDayFormatter.format( self.max() );
             }
         }
     }
