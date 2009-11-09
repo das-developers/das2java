@@ -35,6 +35,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.system.MutatorLock;
@@ -143,7 +144,16 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
             String ds= tok.nextToken();
             pos+=ds.length();
             double d= Double.parseDouble(ds);
-            String u= tok.nextToken();
+            String u=null;
+            try {
+                u = tok.nextToken();
+            } catch (NoSuchElementException e) {
+                if ( s.trim().equals("0") ) {
+                    return new double[] { 0,0,0 };
+                } else {
+                    throw new ParseException("missing units in format string: "+s,0);
+                }
+            }
             pos+=u.length();
             u.trim();
             if ( u.charAt(0)=='%' ) {
