@@ -160,11 +160,13 @@ public class DataRange implements Cloneable {
                 this.range= new DatumRange( minimum, maximum, range.getUnits() );
                 firePropertyChange("log", oldLog, log);
             }
-            this.minimum= DasMath.log10(minimum);
-            this.maximum= DasMath.log10(maximum);
+            Units u= range.getUnits();
+            this.minimum= DasMath.log10(range.min().doubleValue(u));
+            this.maximum= DasMath.log10(range.max().doubleValue(u));
         } else {
-            this.minimum= DasMath.exp10(minimum);
-            this.maximum= DasMath.exp10(maximum);
+            Units u= range.getUnits();
+            this.minimum= range.min().doubleValue(u);
+            this.maximum= range.max().doubleValue(u);
             /* don't do this for now, we need to check that this does not mess things up when changing a bunch of properties at the same time.
              if ( maximum / minimum > 999. ) {
                 minimum= 0; // minimum is close enough to zero.
