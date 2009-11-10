@@ -146,7 +146,7 @@ public class PropertyEditor extends JComponent {
         Class leaderClass= leader.getClass();
         for ( int i=0; i<peers.length; i++ ) {
             if ( !leaderClass.isInstance(peers[i]) )
-                throw new IllegalArgumentException( "children are not instances of leader class" );
+                throw new IllegalArgumentException( "child is not instance of leader class: "+peers[i].getClass().getName()+", should be "+leaderClass.getName() );
         }
         PropertyTreeNode[] peerNodes = new PropertyTreeNode[peers.length];
         for (int i = 0; i < peers.length; i++) {
