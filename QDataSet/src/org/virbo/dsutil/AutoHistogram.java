@@ -501,7 +501,7 @@ public final class AutoHistogram {
         }
 
         if (Math.abs(firstb - (firstBin / binwDenom)) > binwDenom / 1000) {
-            throw new IllegalArgumentException("binw denom");
+      //      throw new IllegalArgumentException("binw denom");
         }
     }
 
