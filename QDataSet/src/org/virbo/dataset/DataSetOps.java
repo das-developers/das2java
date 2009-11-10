@@ -622,6 +622,8 @@ public class DataSetOps {
                 fillDs= Ops.reduceMean(fillDs,dim);
             } else if ( cmd.equals("|autoHistogram") ) {
                 fillDs= Ops.autoHistogram(fillDs);
+            } else if ( cmd.equals("|histogram") ) {
+                fillDs= Ops.autoHistogram(fillDs);
             } else if ( cmd.equals("|logHistogram") ) {
                 fillDs= Ops.autoHistogram(Ops.log10(fillDs));
                 MutablePropertyDataSet dep0= DDataSet.copy( (QDataSet) fillDs.property(QDataSet.DEPEND_0));
