@@ -364,7 +364,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         final DataSet fds= this.ds; // make a local copy for thread safety.
 
-        byte[] lraster= this.raster; // make a local copy for thread safety.
+        byte[] lraster= this.raster;  // make a local copy for thread safety.
 
         try {
             try {
