@@ -143,25 +143,26 @@ public abstract class Units implements Displayable {
 
     
     /**
-     * Microseconds since midnight Jan 1, 2000.
+     * Microseconds since midnight Jan 1, 2000, excluding those within a leap second.  Differences across leap
+     * second boundaries do not represent the number of microseconds elapsed.
      */
     public static final TimeLocationUnits us2000= new TimeLocationUnits("us2000", "Microseconds since midnight Jan 1, 2000.",
             Units.microseconds, Basis.since2000);
 
     /**
-     * Microseconds since midnight Jan 1, 1980.
+     * Microseconds since midnight Jan 1, 1980, excluding those within a leap second.
      */
     public static final TimeLocationUnits us1980= new TimeLocationUnits("us1980", "Microseconds since midnight Jan 1, 1980.",
             Units.microseconds, Basis.since1980 );
 
     /**
-     * Seconds since midnight Jan 1, 2000.
+     * Seconds since midnight Jan 1, 2000, excluding leap seconds.
      */    
     public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",
             Units.seconds, Basis.since2000 );
 
     /**
-     * seconds since midnight Jan 1, 1970.
+     * seconds since midnight Jan 1, 1970, excluding leap seconds.
      */
     public static final TimeLocationUnits t1970= new TimeLocationUnits("t1970","Seconds since midnight Jan 1, 1970",
             Units.seconds, Basis.since1970 );
@@ -180,8 +181,8 @@ public abstract class Units implements Displayable {
             Units.days , Basis.modifiedJulian );
     
     /**
-     * cdf epoch milliseconds since midnight, 01-Jan-0000.  There must be skipped days, because this doesn't yeild 01-Jan-0000 for 0.,
-     * but works fine at 1-1-2000.
+     * cdf epoch milliseconds since midnight, 01-Jan-0000, excluding those with a leap second.  There must be skipped days, because this doesn't yeild 01-Jan-0000 for 0.,
+     * but works fine at 1-1-2000., excluding those within a leap second
      */
     public static final TimeLocationUnits cdfEpoch= new TimeLocationUnits("cdfEpoch","milliseconds since 01-Jan-0000", 
             Units.milliseconds, Basis.since0000 );
