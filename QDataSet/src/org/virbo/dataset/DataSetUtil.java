@@ -557,6 +557,8 @@ public class DataSetUtil {
         Object o= xds.property( QDataSet.CADENCE );
         Units u= (Units) xds.property( QDataSet.UNITS );
 
+        if ( UnitsUtil.isNominalMeasurement(u) ) return null;
+        
         if ( o!=null ) {
             if ( o instanceof RankZeroDataSet ) {
                 return (RankZeroDataSet) o;
