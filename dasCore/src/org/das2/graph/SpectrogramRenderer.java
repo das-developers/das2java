@@ -364,6 +364,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         final DataSet fds= this.ds; // make a local copy for thread safety.
 
+        byte[] lraster= this.raster; // make a local copy for thread safety.
+
         try {
             try {
 
@@ -373,7 +375,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                     Rectangle plotImageBounds2= lparent.getUpdateImageBounds();
 
-                    if ( raster != null 
+                    if ( lraster != null
                             && xmemento != null && ymemento != null 
                             && xAxis.getMemento().equals(xmemento)                             
                             && yAxis.getMemento().equals(ymemento) 
@@ -468,10 +470,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         logger.fine("rebinning to pixel resolution: "+ xmemento + "  " + ymemento );
 
-                        raster = makePixMap( rebinDataSet, raster );
+                        lraster = makePixMap( rebinDataSet, lraster );
 
                         try {
-                            validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), raster );
+                            validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), lraster );
                         } catch ( InconvertibleUnitsException ex ) {
                             System.err.println("zunits="+((TableDataSet)fds).getZUnits()+"  colorbar="+colorBar.getUnits() );
                             return;
@@ -479,7 +481,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         rasterWidth = plotImageBounds2.width;
                         rasterHeight = plotImageBounds2.height;
-
+                        raster= lraster;
                     }
 
                     IndexColorModel model = colorBar.getIndexColorModel();
@@ -489,7 +491,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                     try {
                         if ( plotImageBounds2.width==rasterWidth && plotImageBounds2.height==rasterHeight ) {
-                            r.setDataElements(0, 0, rasterWidth, rasterHeight, raster);
+                            try {
+                                r.setDataElements(0, 0, rasterWidth, rasterHeight, lraster);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         } else {
                             System.err.println("avoided raster ArrayIndex... track this down sometime...");
                         }
@@ -498,7 +504,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                     plotImage = plotImage2;
                     plotImageBounds= plotImageBounds2;
-
+                    raster= lraster;
 
                     Rectangle rr= DasDevicePosition.toRectangle( parent.getRow(), parent.getColumn() );
                     DatumRange xdr= DataSetUtil.xRange( fds );
