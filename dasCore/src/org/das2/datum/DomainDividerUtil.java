@@ -102,7 +102,7 @@ public final class DomainDividerUtil {
     }
 
     public static void main(String[] args) throws ParseException {
-        if (false) {
+        if (true) {
             DomainDivider ldd = new LinearDomainDivider();
             for (int i = 0; i < 10; i++) {
                 ldd = ldd.finerDivider(false);
@@ -115,6 +115,21 @@ public final class DomainDividerUtil {
             }
         }
         if (true) {
+            DomainDivider ldd = new LinearDomainDivider();
+            //for (int i = 0; i < 10; i++) {
+            //    ldd = ldd.coursDivider(false);
+            //}
+            for (int i = 0; i < 12; i++) {
+                ldd = ldd.coarserDivider(false);
+            }
+            DatumRange range = new DatumRange(-1000000, 1000000, Units.dimensionless);
+            DatumFormatter df = getDatumFormatter(ldd, range);
+            DatumVector dv = ldd.boundaries(range.min(), range.max());
+            for (int i = 0; i < dv.getLength(); i++) {
+                System.err.println(df.format(dv.get(i)));
+            }
+        }
+        if (false) {
             System.err.println(""+TimeUtil.isLeapYear(2000)); // initialize class to define time ordinals
             DomainDivider ldd = new OrdinalTimeDomainDivider();
             for (int i = 0; i < 13; i++) {
