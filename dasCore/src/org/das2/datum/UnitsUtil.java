@@ -65,7 +65,7 @@ public class UnitsUtil {
      * @return true if the unit is nominal.
      */
     public static final boolean isNominalMeasurement( Units unit ) {
-        return false;
+        return unit instanceof EnumerationUnits;
     }
     
     /**
