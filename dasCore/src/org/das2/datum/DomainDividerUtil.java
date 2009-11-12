@@ -85,29 +85,33 @@ public final class DomainDividerUtil {
             }
         } else {
             LinearDomainDivider ldiv = (LinearDomainDivider) div;
-            String format;
-            if (ldiv.getExponent() < 0) {
-                format = zeros(-1 * ldiv.getExponent());
-            } else {
-                format = "0";
-            }
-
-            DatumFormatterFactory factory = range.getUnits().getDatumFormatterFactory();
-            try {
-                return factory.newFormatter(format);
-            } catch (ParseException ex) {
-                throw new RuntimeException(ex); // sorry, user, please report this.
-            }
+            DatumVector boundaries = ldiv.boundaries(range.min(), range.max());
+            int nsteps = boundaries.getLength();
+            System.err.printf("%f %f %d%n", boundaries.get(0).doubleValue(), boundaries.get(nsteps - 1).doubleValue(), nsteps);
+            return DatumUtil.bestFormatter(boundaries.get(0), boundaries.get(nsteps - 1), nsteps);
+//            String format;
+//            if (ldiv.getExponent() < 0) {
+//                format = zeros(-1 * ldiv.getExponent());
+//            } else {
+//                format = "0";
+//            }
+//
+//            DatumFormatterFactory factory = range.getUnits().getDatumFormatterFactory();
+//            try {
+//                return factory.newFormatter(format);
+//            } catch (ParseException ex) {
+//                throw new RuntimeException(ex); // sorry, user, please report this.
+//            }
         }
     }
 
     public static void main(String[] args) throws ParseException {
-        if (true) {
+        if (false) {
             DomainDivider ldd = new LinearDomainDivider();
-            for (int i = 0; i < 10; i++) {
-                ldd = ldd.finerDivider(false);
+            for (int i = 0; i < 12; i++) {
+                ldd = ldd.coarserDivider(false);
             }
-            DatumRange range = new DatumRange(1000, 1001, Units.dimensionless);
+            DatumRange range = new DatumRange(1e8, 2e8, Units.dimensionless);
             DatumFormatter df = getDatumFormatter(ldd, range);
             DatumVector dv = ldd.boundaries(range.min(), range.max());
             for (int i = 0; i < dv.getLength(); i++) {
