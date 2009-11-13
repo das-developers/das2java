@@ -87,6 +87,7 @@ public final class DomainDividerUtil {
             LinearDomainDivider ldiv = (LinearDomainDivider) div;
             DatumVector boundaries = ldiv.boundaries(range.min(), range.max());
             int nsteps = boundaries.getLength()-1;
+            System.err.println( boundaries.get(nsteps-1).subtract(boundaries.get(0)).divide(nsteps) );
             //System.err.printf("%f %f %d%n", boundaries.get(0).doubleValue(), boundaries.get(nsteps - 1).doubleValue(), nsteps);
             return DatumUtil.bestFormatter(boundaries.get(0), boundaries.get(nsteps - 1), nsteps);
 //            String format;
