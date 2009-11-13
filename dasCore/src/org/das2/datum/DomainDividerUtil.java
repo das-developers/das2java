@@ -1,12 +1,9 @@
 package org.das2.datum;
 
 import java.text.ParseException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.DefaultDatumFormatter;
-import org.das2.datum.format.TimeDatumFormatter;
 
 /**
  *
@@ -86,10 +83,22 @@ public final class DomainDividerUtil {
         } else {
             LinearDomainDivider ldiv = (LinearDomainDivider) div;
             DatumVector boundaries = ldiv.boundaries(range.min(), range.max());
-            int nsteps = boundaries.getLength()-1;
-            System.err.println( boundaries.get(nsteps-1).subtract(boundaries.get(0)).divide(nsteps) );
+
+            // There is kludginess here because of shortcomings in implementaiton of boundaries
+            if (boundaries.getLength() <= 1) {
+                try{
+                    return new DefaultDatumFormatter("0");
+                } catch (ParseException ex) {
+                    //This will never happen if the string literal above is okay
+                    throw new RuntimeException(ex);
+                }
+            }
+            double stepSize = boundaries.get(1).subtract(boundaries.get(0)).doubleValue();
+            double nsteps = boundaries.get(boundaries.getLength()-1).subtract(boundaries.get(0)).divide(stepSize).doubleValue();
+            //System.err.printf("min: %f, max: %f, stepsize: %.20f, nsteps: %f%n", boundaries.get(0).doubleValue(), boundaries.get(boundaries.getLength()-1).doubleValue(), stepSize, nsteps);
+            //System.err.println( boundaries.get(nsteps-1).subtract(boundaries.get(0)).divide(nsteps) );
             //System.err.printf("%f %f %d%n", boundaries.get(0).doubleValue(), boundaries.get(nsteps - 1).doubleValue(), nsteps);
-            return DatumUtil.bestFormatter(boundaries.get(0), boundaries.get(nsteps - 1), nsteps);
+            return DatumUtil.bestFormatter(boundaries.get(0), boundaries.get(boundaries.getLength() - 1), (int)nsteps);
 //            String format;
 //            if (ldiv.getExponent() < 0) {
 //                format = zeros(-1 * ldiv.getExponent());
@@ -107,7 +116,7 @@ public final class DomainDividerUtil {
     }
 
     public static void main(String[] args) throws ParseException {
-        if (false) {
+        if (true) {
             DomainDivider ldd = new LinearDomainDivider();
             for (int i = 0; i < 12; i++) {
                 ldd = ldd.coarserDivider(false);
@@ -119,7 +128,7 @@ public final class DomainDividerUtil {
                 System.err.println(df.format(dv.get(i)));
             }
         }
-        if (true) {
+        if (false) {
             DomainDivider ldd = new LinearDomainDivider();
             //for (int i = 0; i < 10; i++) {
             //    ldd = ldd.coursDivider(false);
