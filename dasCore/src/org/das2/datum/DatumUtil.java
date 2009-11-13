@@ -155,7 +155,16 @@ public final class DatumUtil {
             throw new RuntimeException(e);
         }
     }
-    
+
+    /**
+     * return a DatumFormatter that efficiently formats evenly-spaced datums
+     * from minimum to maximum with nstep intervals.  (Interval size is
+     * maximum.subtract(minimum).divide(nsteps))
+     * @param minimum
+     * @param maximum
+     * @param nsteps the number of sub intervals
+     * @return
+     */
     public static DatumFormatter bestFormatter(Datum minimum, Datum maximum, int nsteps) {
         
         Units units = minimum.getUnits();
