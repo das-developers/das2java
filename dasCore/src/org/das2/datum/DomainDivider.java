@@ -43,7 +43,8 @@ public interface DomainDivider {
     
     /**
      * Returns the boundaries between intervals on the given data range. When
-     * min or max lay on a boundary, it should be returned.
+     * min or max lay on a boundary, it should be returned.  Note this is
+     * inconsistent with DatumRange logic, where the max is exclusive.
      * @param min
      * @param max
      * @return a <code>DatumVector</code> containing the boundary values
