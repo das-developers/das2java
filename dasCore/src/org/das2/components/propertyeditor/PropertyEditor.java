@@ -38,6 +38,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -301,15 +302,28 @@ public class PropertyEditor extends JComponent {
                 PropertyEditor p;
                 TreeTableModel model = (TreeTableModel) table.getModel();
                 PropertyTreeNodeInterface node = (PropertyTreeNodeInterface) model.getNodeForRow(focusRow);
-                int[] selected = table.getSelectedRows();
+                int[] selected = table.getSelectedRows();                
                 if (selected.length == 1) {
                     p = new PropertyEditor(node.getValue());
                 } else {
-                    Object[] peers = new Object[selected.length];
+                    int ileader= table.getSelectedRow();
+                    java.util.List<Object> peers = new ArrayList(selected.length);
+                    Object leader= ((PropertyTreeNode) model.getNodeForRow(ileader)).getValue();
                     for (int i = 0; i < selected.length; i++) {
-                        peers[i] = ((PropertyTreeNode) model.getNodeForRow(selected[i])).getValue();
+                        Object peer= ((PropertyTreeNode) model.getNodeForRow(selected[i])).getValue();
+                        if ( leader.getClass().isInstance(peer) ) peers.add(peer);
                     }
-                    p = createPeersEditor(node.getValue(), peers);
+                    if ( peers.size()==1 && peers.get(0)==leader ) { //bug where hidden selected parent is leader
+                        peers.remove(leader);
+                        Object newLeader= ((PropertyTreeNode) model.getNodeForRow(selected[0])).getValue();
+                        if ( newLeader==leader ) newLeader= ((PropertyTreeNode) model.getNodeForRow(selected[1])).getValue();
+                        leader= newLeader;
+                        for (int i = 0; i < selected.length; i++) {
+                            Object peer= ((PropertyTreeNode) model.getNodeForRow(selected[i])).getValue();
+                            if ( leader.getClass().isInstance(peer) ) peers.add(peer);
+                        }
+                    }
+                    p = createPeersEditor( leader, peers.toArray() );
                 }
                 p.showDialog(PropertyEditor.this);
 
