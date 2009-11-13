@@ -86,8 +86,8 @@ public final class DomainDividerUtil {
         } else {
             LinearDomainDivider ldiv = (LinearDomainDivider) div;
             DatumVector boundaries = ldiv.boundaries(range.min(), range.max());
-            int nsteps = boundaries.getLength();
-            System.err.printf("%f %f %d%n", boundaries.get(0).doubleValue(), boundaries.get(nsteps - 1).doubleValue(), nsteps);
+            int nsteps = boundaries.getLength()-1;
+            //System.err.printf("%f %f %d%n", boundaries.get(0).doubleValue(), boundaries.get(nsteps - 1).doubleValue(), nsteps);
             return DatumUtil.bestFormatter(boundaries.get(0), boundaries.get(nsteps - 1), nsteps);
 //            String format;
 //            if (ldiv.getExponent() < 0) {
@@ -123,7 +123,7 @@ public final class DomainDividerUtil {
             //for (int i = 0; i < 10; i++) {
             //    ldd = ldd.coursDivider(false);
             //}
-            for (int i = 0; i < 12; i++) {
+            for (int i = 0; i < 15; i++) {
                 ldd = ldd.coarserDivider(false);
             }
             DatumRange range = new DatumRange(-1000000, 1000000, Units.dimensionless);
