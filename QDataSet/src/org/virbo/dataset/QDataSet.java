@@ -373,5 +373,39 @@ public interface QDataSet {
      *  return the length of the fourth dimension for the ith, jth and kth elements of the first three dimensions.
      */
     int length( int i, int j, int k);
+
+    /**
+     * return a dataset that is a slice of this dataset, slicing on the first dimension.
+     * @throws IllegalArgumentException when dataset rank is zero.
+     * @param i
+     * @return
+     */
+    QDataSet slice( int i );
+
+    /**
+     * return a dataset that is a subset of this dataset.
+     * For example:
+     * <tt>
+     *    ds= DDataSet.createRank1(100);
+     *    QDataSet trim= ds.trim(50,60);
+     *    assert( trim.length()==10 );
+     * </tt>
+     * @param start  the first index to be included in the new dataset.
+     * @param end the exclusive index indicating the last index.
+     * @return
+     */
+    QDataSet trim( int start, int end );
+
+    /**
+     * return null or an object implementing the capability for the given interface
+     * For example:
+     * <tt>
+     *    ds= DDataSet.createRank1(100);
+     *    WriteCapability write= ds.capability( WriteCapability.class );
+     *    write.putValue( 99, -1e31 );
+     * </tt>
+     * This allows operations to be performed efficiently.
+     */
+    <T> T capability( Class<T> clazz );
         
 }
