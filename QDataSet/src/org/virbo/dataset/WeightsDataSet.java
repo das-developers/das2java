@@ -97,7 +97,20 @@ public abstract class WeightsDataSet implements QDataSet {
     public int length(int i, int j, int k) {
         return ds.length(i, j, k);
     }
-    
+
+    public <T> T capability(Class<T> clazz) {
+        return null;
+    }
+
+    public QDataSet slice(int i) {
+        return new Slice0DataSet( this, i);
+    }
+
+    public QDataSet trim(int start, int end) {
+        return new TrimDataSet( this, start, end );
+    }
+
+
     public static final class ValidRangeFillFinite extends WeightsDataSet {
 
         public ValidRangeFillFinite( QDataSet ds ) {
