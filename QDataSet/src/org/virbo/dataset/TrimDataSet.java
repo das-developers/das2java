@@ -16,9 +16,18 @@ public class TrimDataSet extends AbstractDataSet {
     final QDataSet ds;
 
     public TrimDataSet(QDataSet ds, int start, int stop) {
-        this.ds = ds;
-        this.offset = start;
-        this.len = stop - start;
+
+     //TODO: uncomment and test this.
+     //   if ( ds instanceof TrimDataSet ) {
+     //       TrimDataSet trds= ((TrimDataSet)ds);
+     //       this.ds= trds.ds;
+     //       this.offset= trds.offset + start;
+     //       this.len= stop-start;
+     //   } else {
+            this.ds = ds;
+            this.offset = start;
+            this.len = stop - start;
+     //   }
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep0 != null) {
