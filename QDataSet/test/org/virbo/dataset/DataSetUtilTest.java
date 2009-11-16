@@ -5,10 +5,14 @@
 
 package org.virbo.dataset;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
 import org.das2.datum.Datum;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 
 /**
@@ -232,12 +236,12 @@ public class DataSetUtilTest extends TestCase {
      */
     public void testGcd_QDataSet() {
         System.out.println("gcd");
-        QDataSet ds = DDataSet.wrap( new double[] { 4.60040, 6.90060, 16.1014, 52.9046, 96.6084, 105.809, 2.30020, 128.811 } );
+        QDataSet ds = DDataSet.wrap( new double[] { 4.60040, 6.90060, 16.1014, 52.9046, 96.6084, 105.8092, 2.30020, 128.8112 } );
         QDataSet expResult = DataSetUtil.asDataSet(2.3002);
-        QDataSet result = DataSetUtil.gcd(ds);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        QDataSet limit= DataSetUtil.asDataSet(1e-7);
+        QDataSet result = DataSetUtil.gcd(ds,limit);
+        assertEquals( expResult.value(), result.value(), limit.value() );
+        
     }
 
     /**
@@ -426,14 +430,16 @@ public class DataSetUtilTest extends TestCase {
      * Test of value method, of class DataSetUtil.
      */
     public void testValue() {
-        System.out.println("value");
-        RankZeroDataSet ds = null;
-        Units tu = null;
-        double expResult = 0.0;
-        double result = DataSetUtil.value(ds, tu);
-        assertEquals(expResult, result, 0.0);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        try {
+            System.out.println("value");
+            RankZeroDataSet ds = (RankZeroDataSet) DataSetUtil.asDataSet( TimeUtil.parseTime("2000-01-01T01:00" ) );
+            Units tu = Units.us2000;
+            double expResult = 3600e6;
+            double result = DataSetUtil.value(ds, tu);
+            assertEquals(expResult, result, 0.0);
+        } catch (ParseException ex) {
+            Logger.getLogger(DataSetUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
