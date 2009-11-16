@@ -48,8 +48,8 @@ public class PlotDemo {
 
         getContentPane().add(canvas, BorderLayout.CENTER );
 
-        //DatumRange xrange= DatumRange.newDatumRange(0,10,Units.seconds);
-        DatumRange xrange= DatumRangeUtil.parseTimeRangeValid("2009");
+        DatumRange xrange= DatumRange.newDatumRange(0,10,Units.seconds);
+        //DatumRange xrange= DatumRangeUtil.parseTimeRangeValid("2009");
         DatumRange yrange= DatumRange.newDatumRange(0.1,100, Units.dimensionless);
 
         DasPlot plot= GraphUtil.newDasPlot(canvas, xrange, yrange);
