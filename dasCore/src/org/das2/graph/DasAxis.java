@@ -1197,11 +1197,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DomainDivider minorTickDivider=  majorTicksDomainDivider;
         DatumVector minor = major;
         DatumVector minor1 = minorTickDivider.finerDivider(true).boundaries(dr.min(), dr.max());
-        while ( ! hasTickCollisions(minor1) ) {
-            minorTickDivider= minorTickDivider.finerDivider(true);
-            minor= minor1;
-            minor1= minorTickDivider.finerDivider(true).boundaries(dr.min(), dr.max());
-        }
+        minor= minor1;
+        //while ( ! hasTickCollisions(minor1) ) {
+        //if ( ! hasTickCollisions(minor1) ) {
+            //minorTickDivider= minorTickDivider.finerDivider(true);
+            //minor= minor1;
+            //minor1= minorTickDivider.finerDivider(true).boundaries(dr.min(), dr.max());
+        //}
         minorTickDivider.boundaries(dr.min(), dr.max());
         this.minorTicksDomainDivider= minorTickDivider;
 
