@@ -10,7 +10,7 @@ package org.virbo.dataset;
  * 
  * Slicing a rank 1 dataset results in a rank 0 dataset.
  *
- * Supports rank 2 depend_1 datasets.  Supports CONTEXT_0 property.
+ * Supports rank 2 depend_1 datasets.  Supports CONTEXT_0, DELTA_PLUS, DELTA_MINUS
  * @author jbf
  */
 public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
@@ -20,7 +20,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
 
     public Slice0DataSet(QDataSet ds, int index) {
         if ( ds.rank() > 4 ) {
-            throw new IllegalArgumentException("rank limit > 2");
+            throw new IllegalArgumentException("rank limit > 4");
         }
         this.ds = ds;
         this.index = index;
