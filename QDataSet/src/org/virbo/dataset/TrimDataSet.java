@@ -5,7 +5,8 @@
 package org.virbo.dataset;
 
 /**
- *
+ * Implements Trim operation by wrapping dataset.
+ * Supports rank 2 depend_1 datasets.  Supports CONTEXT_0, DELTA_PLUS, DELTA_MINUS
  * @author jbf
  */
 public class TrimDataSet extends AbstractDataSet {
@@ -18,6 +19,40 @@ public class TrimDataSet extends AbstractDataSet {
         this.ds = ds;
         this.offset = start;
         this.len = stop - start;
+
+        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if (dep0 != null) {
+            putProperty(QDataSet.DEPEND_0, new TrimDataSet( dep0, start, stop ) );
+        }
+
+        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if ( dep1!=null && dep1.rank()==2 ) {
+                putProperty( QDataSet.DEPEND_1, new TrimDataSet( dep1, start, stop ) );
+        }
+
+        for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
+            String prop= "PLANE_"+i;
+            QDataSet plane0= (QDataSet) ds.property( prop );
+            if ( plane0!=null ) {
+                if ( plane0.rank()<1 ) {
+                    putProperty( prop, plane0 );
+                } else {
+                    putProperty( prop, new TrimDataSet( plane0, start, stop ) );
+                }
+            } else {
+                break;
+            }
+        }
+
+        String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
+
+        for ( int i=0; i<p.length; i++ ) {
+            QDataSet delta= (QDataSet) ds.property( p[i] );
+            if ( delta!=null && delta.rank()>0 ) {
+                putProperty( p[i], new TrimDataSet(delta,start,stop) );
+            }
+        }
+        
     }
 
     public int rank() {
