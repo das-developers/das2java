@@ -18,7 +18,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
     QDataSet ds;
     int index;
 
-    Slice0DataSet(QDataSet ds, int index) {
+    public Slice0DataSet(QDataSet ds, int index) {
         if ( ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 2");
         }
