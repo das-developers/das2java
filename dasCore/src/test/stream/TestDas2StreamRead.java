@@ -23,6 +23,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.DasProgressPanel;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
+import org.das2.dataset.DataSet;
 
 /**
  *
@@ -32,15 +33,15 @@ public class TestDas2StreamRead {
 
     public static void main(String[] args) throws Exception {
         //final URL dataUrl = TestDas2StreamRead.class.getResource("/epupdate4.20071130.d2s");
-        final URL dataUrl = new URL("file:///home/jbf/sun/media/d2s/AllCassiniDensity.20071204.v2.d2s");
+        //final URL dataUrl = new URL("file:///home/jbf/sun/media/d2s/AllCassiniDensity.20071204.v2.d2s");
+        final URL dataUrl = new URL("http://www-wbd.physics.uiowa.edu/das/das2Server?server=dataset&start_time=2007-04-17T08%3A40%3A00.000Z&end_time=2007-04-17T08%3A50%3A00.000Z&resolution=1.1695906432748537&dataset=das2_1%2Fcluster%2Fwbd%2Fr_wbd_wf&params=sc%3D2%26ant%3DEz%26fo%3Dx");
         long t0;
-        
         
 
         {
             t0 = System.currentTimeMillis();
             ProgressMonitor mon = DasProgressPanel.createFramed("reading data");
-            VectorDataSet ds = getDataSet(dataUrl, mon);
+            DataSet ds = getDataSet(dataUrl, mon);
 
             long dt = (System.currentTimeMillis() - t0);
             System.err.println("done in " + dt + " millis");
@@ -121,7 +122,7 @@ public class TestDas2StreamRead {
         in.close();
     }
 
-    public static VectorDataSet getDataSet(URL url, ProgressMonitor mon) throws IOException, StreamException {
+    public static DataSet getDataSet(URL url, ProgressMonitor mon) throws IOException, StreamException {
 
         long taskSize = -1;
 
@@ -155,6 +156,6 @@ public class TestDas2StreamRead {
 
         in.close();
 
-        return (VectorDataSet) handler.getDataSet();
+        return handler.getDataSet();
     }
 }
