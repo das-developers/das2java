@@ -9,6 +9,8 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.Slice0DataSet;
+import org.virbo.dataset.TrimDataSet;
 import org.virbo.dataset.WritableDataSet;
 
 /**
@@ -182,6 +184,19 @@ public class CoerceUtil {
             public int length(int i, int j, int k) {
                 return ds2.length(i, j, k);
             }
+
+            public <T> T capability(Class<T> clazz) {
+                return null;
+            }
+
+            public QDataSet slice(int i) {
+                return new Slice0DataSet(this, i);
+            }
+
+            public QDataSet trim(int start, int end) {
+                return new TrimDataSet(this, start, end );
+            }
+
         };
     }
 
@@ -260,6 +275,18 @@ public class CoerceUtil {
             public int length(int i, int j, int k) {
                 return ds2.length(i, j, k);
             }
+
+            public <T> T capability(Class<T> clazz) {
+                return null;
+            }
+
+            public QDataSet slice(int i) {
+                return new Slice0DataSet(this, i);
+            }
+
+            public QDataSet trim(int start, int end) {
+                return new TrimDataSet(this, start, end );
+            }
         };
     }
 
@@ -336,6 +363,18 @@ public class CoerceUtil {
 
             public int length(int i, int j, int k) {
                 return ds2.length(i, j, k);
+            }
+
+            public <T> T capability(Class<T> clazz) {
+                return null;
+            }
+
+            public QDataSet slice(int i) {
+                return new Slice0DataSet(this, i);
+            }
+
+            public QDataSet trim(int start, int end) {
+                return new TrimDataSet(this, start, end );
             }
         };
     }
