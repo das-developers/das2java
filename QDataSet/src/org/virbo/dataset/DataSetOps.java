@@ -99,63 +99,7 @@ public class DataSetOps {
      */
     public static MutablePropertyDataSet trim(final QDataSet ds, final int offset, final int len) {
 
-        MutablePropertyDataSet result = new AbstractDataSet() {
-
-            public int rank() {
-                return ds.rank();
-            }
-
-            @Override
-            public Object property(String name, int i0, int i1) {
-                return super.property(name, i0, i1);
-            }
-
-            @Override
-            public double value(int i) {
-                return ds.value(offset + i);
-            }
-
-            @Override
-            public double value(int i0, int i1) {
-                return ds.value(i0 + offset, i1);
-            }
-
-            @Override
-            public double value(int i0, int i1, int i2) {
-                return ds.value(i0 + offset, i1, i2);
-            }
-
-            public Object property(String name) {
-                if (properties.containsKey(name)) {
-                    return properties.get(name);
-                } else {
-                    return ds.property(name);
-                }
-            }
-
-            public Object property(String name, int i) {
-                Object p = properties.get(name);
-                return (p != null) ? p : ds.property(name, i);
-            }
-
-            public int length() {
-                return len;
-            }
-
-            public int length(int i0) {
-                return ds.length(i0);
-            }
-
-            public int length(int i0, int i1) {
-                return ds.length(i0, i1);
-            }
-        };
-
-        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if (dep0 != null) {
-            result.putProperty(QDataSet.DEPEND_0, trim(dep0, offset, len));
-        }
-        return result;
+        return new TrimDataSet( ds, offset, offset+len );
 
     }
 
