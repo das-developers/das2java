@@ -102,7 +102,20 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     public int length(int i, int j, int k) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
-    
+
+    public <T> T capability(Class<T> clazz) {
+        return null;
+    }
+
+    public QDataSet slice(int i) {
+        return new Slice0DataSet(this, i);
+    }
+
+    public QDataSet trim(int start, int end) {
+        return new TrimDataSet( this, start, end );
+    }
+
+
     @Override
     public String toString( ) {
         return DataSetUtil.toString(this);
