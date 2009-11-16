@@ -64,11 +64,18 @@ public class Rank0DataSetSerializeDelegate implements SerializeDelegate {
                 Object value = sd.parse(proptype, propsvalue);
                 props.put(propname, value);
             }
-        Units u= (Units) props.get(QDataSet.UNITS);
+            Units u= (Units) props.get(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
-        DRank0DataSet result= DRank0DataSet.create(u.parse(svalue));
-        for ( Entry<String,Object> e:props.entrySet() ) {
-            result.putProperty( e.getKey(), e.getValue() );
+            DRank0DataSet result;
+            if ( u==Units.dimensionless ) {
+                result= DRank0DataSet.create(u.parse(svalue));
+            } else {
+                result= DRank0DataSet.create(u.parse(svalue).doubleValue(u),u);
+            }
+            for ( Entry<String,Object> e:props.entrySet() ) {
+                if ( e.getKey().equals(QDataSet.UNITS) ) {
+                    result.putProperty( e.getKey(), e.getValue() );
+                }
             }
             return result;
         }
