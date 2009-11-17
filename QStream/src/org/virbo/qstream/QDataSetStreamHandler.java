@@ -209,6 +209,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if ( tt==null && svals!=null && svals.length()>0 ) {
                     tt= new AsciiTransferType( 10, true ); // kludge because we need something
                 }
+                if ( tt==null && sdims.equals("0") ) {
+                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
+                }
                 if (tt == null ) {
                     throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
                 }

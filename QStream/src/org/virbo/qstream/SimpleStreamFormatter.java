@@ -22,6 +22,7 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -159,6 +160,10 @@ public class SimpleStreamFormatter {
                 planeDescriptor.setQube(Util.subArray(qube, 1, qube.length - 1));
             } else {
                 planeDescriptor.setQube(qube);
+            }
+        } else {
+            if ( ds.length()==0 ) {
+                System.err.println("here");
             }
         }
         planeDescriptor.setDs(ds);
@@ -333,6 +338,9 @@ public class SimpleStreamFormatter {
                     s += "," + ds.value(i);
                 }
                 values.setAttribute("values", ds.length() == 0 ? "" : s.substring(1));
+                if ( ds.length()==0 ) {
+                    values.setAttribute("length", "0" );
+                }
             }
         }
         return values;
@@ -598,6 +606,10 @@ public class SimpleStreamFormatter {
                 for (int i = 1; i < QDataSet.MAX_RANK; i++) {
                     QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
                     if (depi != null) {
+                        if ( depi==dep0 ) { // kludge: if DEPEND_0==DEPEND_1, an invalid stream was created
+                            System.err.println("DEPEND_0==DEPEND_1, copy kludge");
+                            depi= DDataSet.copy(depi);
+                        }
                         PacketDescriptor pd;
 
                         boolean valuesInDescriptor = true; // because it's a non-qube
