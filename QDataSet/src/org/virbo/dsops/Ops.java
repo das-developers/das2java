@@ -1078,6 +1078,12 @@ public class Ops {
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         DDataSet result = DDataSet.copy(ds1);
+        if ( ds2.rank()==0 && ds1.rank()==1 ) {
+            DDataSet t= DDataSet.createRank1(1);
+            t.putValue(ds2.value());
+            DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
+            ds2= t;
+        }
         result.append(DDataSet.maybeCopy(ds2));
         return result;
     }
@@ -2180,7 +2186,7 @@ public class Ops {
     /**
      * bundle the two datasets, adding if necessary a bundle dimension.  This
      * will try to bundle on the second dimension, unlike join.  This will also
-     * isolate the semmantics of bundle dimensions as its introduced.
+     * isolate the semmantics of bundle dimensions as it's introduced.
      * @param ds1
      * @param ds2
      * @return
