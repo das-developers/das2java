@@ -2138,8 +2138,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         int tickLen = (int) getEmSize();
 
-        double dmin = transform(getDataMinimum());
-        double dmax = transform(getDataMaximum());
+        double dmin, dmax;
+        if ( isHorizontal() ) {
+            dmin= getColumn().getDMinimum();
+            dmax= getColumn().getDMaximum();
+        } else {
+            dmin= getRow().getDMinimum();
+            dmax= getRow().getDMaximum();
+        }
 
         DatumVector ticks = this.getTickV().tickV;
         for (int i = 0; i < labels.length; i++) {
