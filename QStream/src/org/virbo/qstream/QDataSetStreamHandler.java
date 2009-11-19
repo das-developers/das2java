@@ -300,6 +300,12 @@ public class QDataSetStreamHandler implements StreamHandler {
                     result.putProperty("DEPEND_" + i, getDataSet(s));
                 }
             }
+            for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+                String s = (String) result.property("BUNDLE_" + i);
+                if (s != null) {
+                    result.putProperty("BUNDLE_" + i, getDataSet(s));
+                }
+            }
             for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
                 String s = (String) result.property("PLANE_" + i);
                 if (s != null) {
