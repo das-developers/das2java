@@ -36,11 +36,20 @@ public class SemanticOps {
 
     /**
      * return the labels for a dataset where DEPEND_1 is a bundle dimension.
+     * Look for the BUNDLE_1.
      * @param ds
      * @return
      */
     public final static String[] getComponentLabels(QDataSet ds) {
         int n = ds.length(0);
+        QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bdesc==null ) {
+            String[] result= new String[n];
+            for ( int i=0; i<n; i++ ) {
+                result[i]= (String) bdesc.property(QDataSet.NAME, i);
+            }
+            return result;
+        }
         QDataSet labels = (QDataSet) ds.property(QDataSet.DEPEND_1);
         if (labels == null) {
             String[] result = new String[n];
@@ -146,5 +155,14 @@ public class SemanticOps {
                     datum.doubleValue(Units.us2000) ) );
             return result;
         }
+    }
+
+    /**
+     * Test for bundle scheme.  Returns true if the BUNDLE_1 is set.
+     * @param ds
+     * @return true if the dataset is a bundle
+     */
+    public static boolean isBundle(QDataSet ds) {
+        return ds.rank()==2 && ds.property(QDataSet.BUNDLE_1)!=null;
     }
 }
