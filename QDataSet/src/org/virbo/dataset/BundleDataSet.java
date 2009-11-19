@@ -95,7 +95,12 @@ public class BundleDataSet extends AbstractDataSet {
         datasets.add( ds );
     }
 
-    class BundleDescriptor extends AbstractDataSet {
+    public class BundleDescriptor extends AbstractDataSet {
+
+        public void putProperty( String name, int i, Object value ) {
+            properties.put( name+"__"+i, value );
+        }
+
         public int rank() {
             return 2;
         }
@@ -112,7 +117,12 @@ public class BundleDataSet extends AbstractDataSet {
 
         @Override
         public Object property(String name, int i) {
-            return datasets.get(i).property(name);
+            Object v= properties.get( name+"__"+i );
+            if ( v==null ) {
+                return datasets.get(i).property(name);
+            } else {
+                return v;
+            }
         }
 
         @Override
@@ -137,7 +147,11 @@ public class BundleDataSet extends AbstractDataSet {
     }
 
     public Object property(String name, int i0) {
-        return datasets.get(i0).property(name);
+        if ( rank==1 ) {
+            return datasets.get(i0).property(name);
+        } else {
+            return super.property(name);
+        }
     }
 
     public Object property(String name, int i0, int i1) {
