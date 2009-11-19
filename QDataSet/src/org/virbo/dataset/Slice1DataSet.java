@@ -9,6 +9,7 @@ package org.virbo.dataset;
  * dimension.  (Rank 2, 3, and 4 supported.)
  * 
  * plane datasets are sliced as well, when they have rank 2 or greater.
+ * bundle_1 handled.
  * 
  * @author jbf
  */
@@ -34,6 +35,8 @@ public class Slice1DataSet extends AbstractDataSet {
         }
         putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_2) );
         putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
+
+        putProperty( QDataSet.BUNDLE_1, null );
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
