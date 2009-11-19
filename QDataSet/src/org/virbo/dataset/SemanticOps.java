@@ -5,8 +5,6 @@
 package org.virbo.dataset;
 
 import java.text.ParseException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.datum.Basis;
 import org.das2.datum.Datum;
 import org.das2.datum.NumberUnits;
