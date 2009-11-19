@@ -464,6 +464,33 @@ public class DataSetOps {
     }
 
     /**
+     * Extract the named bundled dataset.
+     * @param bundleDs
+     * @param name
+     * @see unbundle( QDataSet bundleDs, int ib )
+     * @return
+     */
+    public static QDataSet unbundle( QDataSet bundleDs, String name ) {
+        QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+        int ib= -1;
+        int i= name.indexOf("["); // allow name to be "Flux[Time=1440,en=10]"
+        if ( i>0 ) {
+            name= name.substring(i);
+        }
+        for ( int j=0; j<bundle1.length(); j++ ) {
+            String n1= (String) bundle1.property( QDataSet.NAME, j );
+            if ( n1!=null && n1.equals(name) ) {
+                ib= j;
+            }
+        }
+        if ( ib==-1 ) {
+            throw new IllegalArgumentException("unable to find dataset with name \""+name+"\"");
+        } else {
+            return unbundle(bundleDs,ib);
+        }
+    }
+
+    /**
      * Extract a bundled dataset from a bundle of datasets.  The input should
      * be a rank 2 dataset with the property BUNDLE_1 set to a bundle descriptor
      * dataset.  See BundleDataSet for more semantics.
