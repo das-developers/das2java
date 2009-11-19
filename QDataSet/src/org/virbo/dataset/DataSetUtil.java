@@ -263,7 +263,7 @@ public class DataSetUtil {
         }
 
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-            QDataSet plane = (QDataSet) ds.property("PLANE_" + i);
+            Object plane = ds.property("PLANE_" + i);
             if (plane != null) {
                 result.put("PLANE_" + i, plane);
             } else {
@@ -272,7 +272,7 @@ public class DataSetUtil {
         }
 
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-            QDataSet cds = (QDataSet) ds.property("CONTEXT_" + i);
+            Object cds = ds.property("CONTEXT_" + i);
             if (cds != null) {
                 result.put("CONTEXT_" + i, cds);
             } else {
