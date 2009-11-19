@@ -124,9 +124,11 @@ public class QDataSetStreamHandler implements StreamHandler {
                 Element n = (Element) nodes.item(i);
                 String name = n.getAttribute("id");
                 int rank = Integer.parseInt(n.getAttribute("rank"));
+                //index stuff--Ed W. thinks index should be implicit.
                 String sdims = xpath.evaluate("values/@length", n);
                 String ttype = xpath.evaluate("values/@encoding", n);
                 String svals = xpath.evaluate("values/@values", n );
+
                 int[] dims;
                 if (sdims == null) {
                     dims = new int[0];
