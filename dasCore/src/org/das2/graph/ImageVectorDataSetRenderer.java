@@ -279,6 +279,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }*/
 
         //show envelope
+
+        boolean xmono = Boolean.TRUE == getDataSet().getProperty(DataSet.PROPERTY_X_MONOTONIC);
+
         int envelopeColor = ( 128 << 24) | colorInt;  // 50% alpha
         if ( envelope==1 ) envelopeColor= ( 128/saturationHitCount << 24) | colorInt;  // 50% alpha
         for (int i=0; i<w; i++) {
@@ -293,8 +296,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if (ymin >= 0) {
                 for (int j=ymin; j<=ymax; j++) {
                      int index = i + (h-j-1) * w;
-                     if ( !(envelope==2) && ( envelope==0 || newHist.getDouble(i, j, Units.dimensionless) > 0 ) ) {
+                     if ( !xmono || (!(envelope==2) && ( envelope==0 || newHist.getDouble(i, j, Units.dimensionless) > 0 ) )) {
                          int alpha = 255 * (int) newHist.getDouble(i, j, Units.dimensionless) / saturationHitCount;
+                         if (alpha>255) alpha = 255;  //Clip alpha; it's only 8 bits!
                          raster[index] =  (alpha << 24) | colorInt;
                      }  else {
                         raster[index] = envelopeColor;
@@ -311,8 +315,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
         imageYRange = yrange;
     }
 
+    //private double meanTime = 0;
+    //private long meanCount = 0;
+
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
+        //long startTime = (new java.util.Date()).getTime();
         super.updatePlotImage(xAxis, yAxis, monitor);
 
         long t0 = System.currentTimeMillis();
@@ -352,6 +360,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
             ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
         }
         logger.fine("done updatePlotImage");
+        //long endTime = (new java.util.Date()).getTime();
+        //meanTime = (meanTime * meanCount + (endTime-startTime))/(meanCount+1);
+        //meanCount++;
+        //System.err.printf("updatePlotImage execution time: %d ms (mean %.1f ms)%n", endTime-startTime, meanTime);
 
     }
     int saturationHitCount = 5;
@@ -389,6 +401,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         this.envelope = envelope;
         refreshImage();
         propertyChangeSupport.firePropertyChange(PROP_ENVELOPE, oldEnvelope, envelope);
+        //meanCount=0;
     }
 
     @Override
