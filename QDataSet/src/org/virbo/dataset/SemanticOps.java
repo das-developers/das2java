@@ -43,7 +43,7 @@ public class SemanticOps {
     public final static String[] getComponentLabels(QDataSet ds) {
         int n = ds.length(0);
         QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
-        if ( bdesc==null ) {
+        if ( bdesc!=null ) {
             String[] result= new String[n];
             for ( int i=0; i<n; i++ ) {
                 result[i]= (String) bdesc.property(QDataSet.NAME, i);
