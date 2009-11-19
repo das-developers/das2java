@@ -497,10 +497,16 @@ public class DataSetOps {
      *
      * @param aThis
      * @param ib index of the dataset to extract.
+     * @throws IndexOutOfBoundsException if the index is invalid.
      * @return
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib) {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+
+        if ( ib<0 || ib>=bundle1.length() ) {
+            throw new IndexOutOfBoundsException("no such data set");
+        }
+
         String[] names= new String[bundle1.length()];
         int[] offsets= new int[bundle1.length()];
         int[] lens= new int[bundle1.length()];
