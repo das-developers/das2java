@@ -4,6 +4,7 @@
  */
 package org.virbo.dsops;
 
+import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.das2.dataset.TableDataSet;
 import org.das2.datum.Datum;
@@ -59,7 +60,7 @@ public class Ops {
 
     /**
      * apply the unary operation (such as "cos") to the dataset.
-     * DEPEND_* is propogated.
+     * DEPEND_[0-3] is propagated.
      * @param ds1
      * @param op
      * @return
@@ -596,7 +597,7 @@ public class Ops {
             }
         });
         result.putProperty( QDataSet.UNITS, null );
-        result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );
+        result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "*" ) );
         return result;
     }
 
@@ -2206,6 +2207,53 @@ public class Ops {
             return ds1;
         } else {
             throw new IllegalArgumentException("not supported yet");
+        }
+
+    }
+
+    /**
+     * like bundle, but declare the last dataset is dependent on the first two.
+     *
+     * @param x rank 1 dataset
+     * @param y rank 1 dataset
+     * @param z rank 1 or 2 dataset.
+     * @return
+     */
+    public static QDataSet link( QDataSet x, QDataSet y, QDataSet z ) {
+        if (z.rank() == 1) {
+            String xname= (String) x.property(QDataSet.NAME);
+            String yname= (String) y.property(QDataSet.NAME);
+            if ( xname==null ) xname="data0";
+            if ( yname==null ) yname="data1";
+            QDataSet result= bundle( bundle( x, y ), z );
+            BundleDataSet.BundleDescriptor bds= (BundleDescriptor) result.property(QDataSet.BUNDLE_1);
+            bds.putProperty( "CONTEXT_0", 2, xname+","+yname );
+            bds.putProperty( QDataSet.NAME, 0, xname );
+            bds.putProperty( QDataSet.NAME, 1, yname );
+
+//            DDataSet yds = DDataSet.copy(y);
+//            yds.putProperty(QDataSet.DEPEND_0, x);
+//            yds.putProperty(QDataSet.PLANE_0, z);
+            List<String> problems= new ArrayList();
+            if ( DataSetUtil.validate(result, problems ) ) {
+                return result;
+            } else {
+                throw new IllegalArgumentException( problems.get(0) );
+            }
+        } else {
+            DDataSet zds = DDataSet.copy(z);
+            if (x != null) {
+                zds.putProperty(QDataSet.DEPEND_0, x);
+            }
+            if (y != null) {
+                zds.putProperty(QDataSet.DEPEND_1, y);
+            }
+            List<String> problems= new ArrayList();
+            if ( !DataSetUtil.validate(zds, problems ) ) {
+                throw new IllegalArgumentException( problems.get(0) );
+            } else {
+                return zds;
+            }
         }
 
     }
