@@ -30,17 +30,45 @@ public class VectorDataSetAdapter implements VectorDataSet {
 
     public static VectorDataSet create( QDataSet y ) {
         QDataSet xds= (QDataSet)y.property( QDataSet.DEPEND_0 );
-        if ( xds==null ) {
-            xds= new IndexGenDataSet(y.length());
-        }
         return new VectorDataSetAdapter( y, xds );
         
     }
-    
+
+    /**
+     * In das2's dataset, Z(X,Y) where X and Y are rank 1, this is
+     * a dataset with Y(X) and Y has a plane for the Z values.
+     * @param y
+     * @return
+     */
+    public static VectorDataSet createFromBundle( QDataSet bds ) {
+        QDataSet bdesc= (QDataSet) bds.property(QDataSet.BUNDLE_1);
+        // identify the dependent parameter.
+        int dependentParameter= bdesc.length()-1;
+        
+        QDataSet y= DataSetOps.unbundle( bds, dependentParameter );
+        QDataSet x= (QDataSet) y.property( QDataSet.DEPEND_0 );
+        QDataSet z= null;
+        String context= (String) bdesc.property(QDataSet.CONTEXT_0,dependentParameter);
+        if ( context!=null ) {
+            String[] ss= context.split(",");
+            if ( ss.length==1 && x!=null ) {
+                z= y;
+                y= DataSetOps.unbundle( bds, ss[0] );
+            } else if ( ss.length==2 ) {
+                z= y;
+                if ( x==null ) x= DataSetOps.unbundle(bds, ss[0]);
+                y= DataSetOps.unbundle(bds, ss[1]);
+                ((MutablePropertyDataSet)y).putProperty(QDataSet.PLANE_0, z);
+            }
+        }
+        return new VectorDataSetAdapter( y, x );
+    }
+
     /** Creates a new instance of VectorDataSetAdapter */
     public VectorDataSetAdapter( QDataSet y, QDataSet x  ) {
         if ( y.rank()!=1 ) throw new IllegalArgumentException("y (rank="+y.rank()+") is not rank 1");
-        if ( x.rank()!=1 ) throw new IllegalArgumentException("x (rank="+x.rank()+") is not rank 1");
+        if ( x==null ) x= new IndexGenDataSet(y.length());
+        if ( x!=null && x.rank()!=1 ) throw new IllegalArgumentException("x (rank="+x.rank()+") is not rank 1");
         xunits= (Units) x.property(QDataSet.UNITS);
         if ( xunits==null ) xunits= Units.dimensionless;
         yunits= (Units) y.property(QDataSet.UNITS);

@@ -38,6 +38,8 @@ public class DataSetAdapter {
     public static org.das2.dataset.DataSet createLegacyDataSet( org.virbo.dataset.QDataSet ds ) {
         if ( ds.rank()==1 ) {
             return VectorDataSetAdapter.create(ds);
+        } else if ( SemanticOps.isBundle(ds) ) {
+            return VectorDataSetAdapter.createFromBundle(ds);
         } else if ( ds.rank()==2 ) {
             return TableDataSetAdapter.create(ds);
         } else if ( ds.rank()==3 ) {
