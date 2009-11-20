@@ -11,9 +11,12 @@ package org.virbo.dataset;
 import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
+import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  * Useful operations for QDataSets
@@ -98,11 +101,26 @@ public class DataSetOps {
      * @return
      */
     public static MutablePropertyDataSet trim(final QDataSet ds, final int offset, final int len) {
-
         return new TrimDataSet( ds, offset, offset+len );
-
     }
 
+
+    public static QDataSet flattenRank2( final QDataSet ds ) {
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        DataSetBuilder builder= new DataSetBuilder( 2, 100, 3 );
+        for ( int i=0; i<ds.length(); i++ ) {
+            for ( int j=0; j<ds.length(i); j++ ) {
+                builder.putValue(-1,0, dep0.value(i) );
+                builder.putValue(-1,1, dep1.value(j) );
+                builder.putValue(-1,2, ds.value(i,j) );
+                builder.nextRecord();
+            }
+        }
+
+        builder.putProperty( QDataSet.DEPEND_1, Ops.labels( new String[] { "dep0", "dep1", "ds" } ) );
+        return builder.getDataSet();
+    }
     /**
      * removes the index-th element from the array.
      * @param array
@@ -464,6 +482,64 @@ public class DataSetOps {
     }
 
     /**
+     * method to help dataset implementations implement slice.
+     * @param sliceIndex
+     * @param props
+     */
+    public static Map<String,Object> sliceProperties0( int index, Map<String,Object> props ) {
+        Map<String,Object> result= new LinkedHashMap();
+
+        QDataSet dep0= (QDataSet) props.get( QDataSet.DEPEND_0 );
+        QDataSet dep1= (QDataSet) props.get( QDataSet.DEPEND_1 );
+        if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
+            throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
+        }
+        if ( props.get(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
+            if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
+            if ( dep1!=null && dep1.rank()==2 ) {
+                result.put( QDataSet.DEPEND_0, dep1.slice( index ) );
+            } else {
+                result.put( QDataSet.DEPEND_0, dep1 );
+            }
+            result.put( QDataSet.DEPEND_1, props.get( QDataSet.DEPEND_2 ) );
+            result.put( QDataSet.DEPEND_2, props.get( QDataSet.DEPEND_3 ) );
+
+        } else {
+            if ( dep0!=null && dep0.rank()==1 ) {
+                if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
+            } else {
+                if ( props.get( "DEPEND_0["+index+"]" )==null ) { // bundle dataset  //TODO: this needs more review
+                    result.put( QDataSet.DEPEND_0, null );    // DANGER--uses indexed property convention.
+                }
+            }
+        }
+
+        for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
+            String prop= "PLANE_"+i;
+            QDataSet plane0= (QDataSet) props.get( prop );
+            if ( plane0!=null ) {
+                if ( plane0.rank()<1 ) {
+                    result.put( prop, plane0 );
+                } else {
+                    result.put( prop, plane0.slice(index) );
+                }
+            } else {
+                break;
+            }
+        }
+
+        String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
+
+        for ( int i=0; i<p.length; i++ ) {
+            QDataSet delta= (QDataSet) props.get( p[i] );
+            if ( delta!=null && delta.rank()>0 ) {
+                result.put( p[i], delta.slice(index) );
+            }
+        }
+        return result;
+    }
+
+    /**
      * Extract the named bundled dataset.
      * @param bundleDs
      * @param name
@@ -614,6 +690,9 @@ public class DataSetOps {
             } else if ( cmd.startsWith("|fftWindow" ) ) {
                 int size= s.nextInt();
                 fillDs= Ops.fftWindow(fillDs, size);
+            } else if ( cmd.equals("|flatten" ) ) {
+                if ( fillDs.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
+                fillDs= flattenRank2(fillDs);
             }
         }
         return fillDs;
