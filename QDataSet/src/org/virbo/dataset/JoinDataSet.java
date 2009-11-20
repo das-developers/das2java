@@ -12,6 +12,8 @@ package org.virbo.dataset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * create a higher rank dataset with dim 0 being a join dimension.  Join implies
@@ -66,7 +68,13 @@ public class JoinDataSet extends AbstractDataSet {
     }
 
     public Object property(String name, int i0) {
-        return datasets.get(i0).property(name);
+        String sname= name + "[" + i0 + "]";
+        Object result= properties.get(sname);
+        if ( result==null ) {
+            return datasets.get(i0).property(name);
+        } else {
+            return result;
+        }
     }
 
     public Object property(String name, int i0, int i1) {
@@ -80,6 +88,13 @@ public class JoinDataSet extends AbstractDataSet {
     public Object property(String name, int i0, int i1, int i2, int i3 ) {
         return datasets.get(i0).property(name,i1,i2,i3);
     }
+
+    @Override
+    public void putProperty(String name, int index, Object value) {
+        String sname= name + "[" + index + "]";
+        properties.put(sname, value);
+    }
+
 
     public int length() {
         return datasets.size();
@@ -113,7 +128,9 @@ public class JoinDataSet extends AbstractDataSet {
     /**
      * slice the dataset by returning the joined dataset at this index.  If the
      * dataset is a MutablePropertiesDataSet, then add the properties of this
-     * join dataset to it. //TODO: danger
+     * join dataset to it. //TODO: danger, the properties should be set regardless.
+     * //this relies on just about every dataset being mpds.  Capabilities
+     * will fix this.
      * @param idx
      * @return
      */
@@ -121,9 +138,15 @@ public class JoinDataSet extends AbstractDataSet {
         QDataSet result= datasets.get(idx);
         if ( result instanceof MutablePropertyDataSet ) {
             MutablePropertyDataSet mpds= (MutablePropertyDataSet)result;
+            Pattern indexPropPattern= Pattern.compile("([a-zA-Z]*)\\[(\\d+)\\]");
             for ( Entry<String,Object> e : properties.entrySet() ) {
-                if ( result.property( e.getKey()) == null ) {
-                    mpds.putProperty( e.getKey(), e.getValue() );
+                Matcher m= indexPropPattern.matcher(e.getKey());
+                if ( m.matches() && Integer.parseInt(m.group(2))==idx ) {
+                    mpds.putProperty( m.group(1), e.getValue() );
+                } else {
+                    if ( result.property( e.getKey()) == null ) {
+                        mpds.putProperty( e.getKey(), e.getValue() );
+                    }
                 }
                 final Object dep1 = properties.get(QDataSet.DEPEND_1);
                 if ( dep1 !=null ) {
