@@ -557,7 +557,10 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet, 
         int noff2= (i+1) * len1 * len2 * len3;
         double[] newback = new double[noff2-noff1];
         System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
-        return new DDataSet( nrank, len1, len2, len3, 1, newback );
+        Map<String,Object> props= DataSetOps.sliceProperties0(i,DataSetUtil.getProperties(this));
+        DDataSet result= new DDataSet( nrank, len1, len2, len3, 1, newback );
+        DataSetUtil.putProperties( props, result );
+        return result;
     }
 
     /**
