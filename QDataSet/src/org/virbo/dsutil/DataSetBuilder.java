@@ -344,4 +344,11 @@ public class DataSetBuilder {
         }
         return "DataSetBuilder rank=" + this.rank + "(" + dims + ") reccount="+(this.index+this.offset);
     }
+
+    /**
+     * return the rank of the dataset we are building.
+     */
+    public int rank() {
+        return rank;
+    }
 }
