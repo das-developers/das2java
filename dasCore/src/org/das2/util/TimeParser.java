@@ -294,6 +294,11 @@ public class TimeParser {
                     if ( m.matches() ) {
                         resolution= Integer.parseInt( m.group(1) );
                     }
+                    p= Pattern.compile("span=(\\d+)");
+                    m= p.matcher(qual);
+                    if ( m.matches() ) {
+                        resolution= Integer.parseInt( m.group(1) );
+                    }
                     int idx= qual.indexOf("=");
                     if ( idx==1 ) {
                         String name= qual.substring(0,idx);
