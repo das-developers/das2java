@@ -238,6 +238,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     } else if (getDataSet().getXLength() == 0) {
                         parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
                     } else {
+                        if ( !( getDataSet() instanceof TableDataSet ) ) {
+                            parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
+                            return;
+                        }
                         TableDataSet ds= (TableDataSet)getDataSet();
                         if ( !ds.getZUnits().isConvertableTo(colorBar.getUnits()) ) {
                             parent.postMessage(this, "inconvertible colorbar units", DasPlot.INFO, null, null);
@@ -424,6 +428,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         if (!fds.getYUnits().isConvertableTo(yAxis.getUnits())) {
                             logger.fine("dataset units are incompatable with y axis.");
+                            plotImage = null;
+                            plotImageBounds= null;
+                            return;
+                        }
+
+                        if ( !( fds instanceof TableDataSet ) ) {
+                            logger.fine("dataset is not TableDataSet.");
                             plotImage = null;
                             plotImageBounds= null;
                             return;
