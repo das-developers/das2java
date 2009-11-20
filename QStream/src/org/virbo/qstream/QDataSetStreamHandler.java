@@ -18,11 +18,13 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -33,6 +35,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     Map<String, DataSetBuilder> builders;
     Map<String, JoinDataSet> joinDataSets;
+    
     XPathFactory factory = XPathFactory.newInstance();
     XPath xpath = factory.newXPath();
     String dsname;
@@ -114,6 +117,47 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
     }
 
+    /**
+     * parse the data found in the node.
+     * TODO: we don't have the Units yet, but we could and should use it to parse.
+     * @param vn
+     * @return
+     * @throws XPathExpressionException
+     */
+    private DDataSet doInLine(Element vn) throws XPathExpressionException {
+
+        String svals = xpath.evaluate("@values", vn ).trim();
+        String sdims = xpath.evaluate("@length", vn);
+        int[] dims;
+        String[] ss= svals.split(",");
+        if (sdims == null || sdims.length()==0 ) {
+           if ( svals.length()==0 ) {
+               dims = new int[0];
+           } else {
+               dims = new int[] { ss.length };
+           }
+        } else {
+           dims = Util.decodeArray(sdims);
+        }
+        int total= dims[0];
+        for ( int i=1; i<dims.length; i++ ) {
+            total*= dims[i];
+        }
+        double [] data;
+        if ( svals!=null && !svals.trim().equals("") ) { //TODO: length 0?
+            data= new double[total];
+            if ( total!=ss.length ) throw new IllegalArgumentException("number of elements inline doesn't match length");
+            for ( int j=0; j<total; j++ ) {
+                data[j]= Double.parseDouble(ss[j]);
+            }
+        } else {
+            if ( total>0 ) throw new IllegalArgumentException("nonzero length but no inline elements");
+            data= new double[0];
+        }
+        DDataSet result= DDataSet.wrap(data, dims);
+        return result;
+    }
+
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         try {
             Element e = pd.getDomElement();
@@ -124,81 +168,69 @@ public class QDataSetStreamHandler implements StreamHandler {
                 Element n = (Element) nodes.item(i);
                 String name = n.getAttribute("id");
                 int rank = Integer.parseInt(n.getAttribute("rank"));
-                //index stuff--Ed W. thinks index should be implicit.
-                String sdims = xpath.evaluate("values/@length", n);
-                String ttype = xpath.evaluate("values/@encoding", n);
-                String svals = xpath.evaluate("values/@values", n );
+                DataSetBuilder builder=null;
+                String sdims=null;
+                int[] dims= null;
+                String ttype=null;
+                boolean isInline= false;
+                NodeList values= (NodeList) xpath.evaluate("values", n, XPathConstants.NODESET );
+                for ( int iv= 0; iv<values.getLength(); iv++ ) {
+                    Element vn= (Element)values.item(iv);
+                    DDataSet inlineDs= null;
+                    if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
+                        inlineDs= doInLine( vn );
+                        isInline= true;
+                    }
+                    //index stuff--Ed W. thinks index should be implicit.
+                    sdims = xpath.evaluate("@length", vn);
+                    ttype = xpath.evaluate("@encoding", vn);
 
-                int[] dims;
-                if (sdims == null) {
-                    dims = new int[0];
-                } else {
-                    dims = Util.decodeArray(sdims);
-                }
-                DataSetBuilder builder = builders.get(name);
-                if (builder == null) {
-                    builder = createBuilder(rank, dims);
-                    builders.put(name, builder);
-                } else {
-                    JoinDataSet join = joinDataSets.get(name);
-                    if (join == null) {
-                        join = new JoinDataSet(rank);
-                        joinDataSets.put(name, join);
+                    if (sdims == null) {
+                        dims = new int[0];
+                    } else {
+                        dims = Util.decodeArray(sdims);
                     }
-                    join.join(builder.getDataSet());
-                    builder = createBuilder(rank, dims);
-                    builders.put(name, builder);
-                }
-                if ( svals!=null && !svals.trim().equals("") ) { //TODO: length 0?
-                    String[] ss= svals.split(",");
-                    for ( int j=0; j<ss.length; j++ ) {
-                        builder.putValue( j, Double.parseDouble(ss[j]) );
-                    }
-                }
-                NodeList odims = (NodeList) xpath.evaluate("properties/property", n, XPathConstants.NODESET);
 
-                for (int j = 0; j < odims.getLength(); j++) {
-                    Element n2 = (Element) odims.item(j);
-                    String pname = n2.getAttribute("name");
-                    if ( pname.equals(QDataSet.USER_PROPERTIES) ) {
-                        //System.err.println("ehre");
-                    }
-                    String svalue;
-                    if ( n2.hasAttribute("value") ){
-                        svalue= n2.getAttribute("value");
+                    if ( isInline && inlineDs.rank()<rank ) {
+                       JoinDataSet join = joinDataSets.get(name);
+                       if (join == null) {
+                           join = new JoinDataSet(rank);
+                           joinDataSets.put(name, join);
+                       }
+                       join.join(inlineDs);
+                       builder= new DataSetBuilder(0,0);
+                       builders.put(name,builder ); // rank 0 means the values were in line.
+                    } else if ( isInline && inlineDs.rank()==rank ) {
+                       builder= new DataSetBuilder(rank,inlineDs.length());
+                       for ( int j=0; j<inlineDs.length(); j++ ) {
+                           DDataSet slice= (DDataSet)inlineDs.slice(j);
+                           builder.putValues( -1, slice, DataSetUtil.totalLength(slice) );
+                           builder.nextRecord();
+                       }
+                       builders.put(name,builder ); // rank 0 means the values were in line.
                     } else {
-                        svalue= n2.getTextContent();
-                    }
-                    Element evalue=null;
-
-                    String stype;
-                    if ( n2.hasAttribute("type") ) {
-                        stype = n2.getAttribute("type");
-                    } else {
-                        evalue= Util.singletonChildElement(n2);
-                        stype= evalue.getTagName();
-                    }
-                    if (stype.equals("qdataset")) {
-                        builder.putProperty(pname, svalue);
-                    } else {
-                        SerializeDelegate delegate = SerializeRegistry.getByName(stype);
-                        if (delegate == null) {
-                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"" + stype + "\"");
-                            continue;
-                        }
-                        Object oval;
-                        try {
-                            if ( evalue!=null && delegate instanceof XMLSerializeDelegate ) {
-                                oval= ((XMLSerializeDelegate)delegate).xmlParse(evalue);
-                            } else {
-                                oval= delegate.parse(stype, svalue);
+                        builder = builders.get(name);
+                        if (builder == null) {
+                            builder = createBuilder(rank, dims);
+                            builders.put(name, builder);
+                        } else {
+                            JoinDataSet join = joinDataSets.get(name);
+                            if (join == null) {
+                                join = new JoinDataSet(rank);
+                                joinDataSets.put(name, join);
                             }
-                            builder.putProperty(pname, oval);
-                        } catch (ParseException ex) {
-                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            join.join(builder.getDataSet());
+                            builder = createBuilder(rank, dims);
+                            builders.put(name, builder);
                         }
                     }
                 }
+
+                NodeList odims = (NodeList) xpath.evaluate("properties[not(@index)]/property", n, XPathConstants.NODESET);
+                doProps( odims, builder );
+
+                odims = (NodeList) xpath.evaluate("properties[@index]/property", n, XPathConstants.NODESET);
+                doPropsIndex( odims, joinDataSets.get(name) );
 
                 PlaneDescriptor planeDescriptor = new PlaneDescriptor();
                 planeDescriptor.setRank(rank);
@@ -208,10 +240,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 pd.setStreamRank( rank - dims.length );
 
                 TransferType tt = TransferType.getForName(ttype, builder.getProperties());
-                if ( tt==null && svals!=null && svals.length()>0 ) {
-                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
-                }
-                if ( tt==null && sdims.equals("0") ) {
+                if ( tt==null && isInline ) {
                     tt= new AsciiTransferType( 10, true ); // kludge because we need something
                 }
                 if (tt == null ) {
@@ -226,6 +255,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
         } catch (XPathExpressionException ex) {
             Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
         }
     }
 
@@ -272,8 +302,13 @@ public class QDataSetStreamHandler implements StreamHandler {
         QDataSet sliceDs= null;
             
         if (join != null) {
-            sliceDs= builder.getDataSet();
-            join.join(sliceDs);
+            if ( builder.rank()>0 ) {
+                sliceDs= builder.getDataSet();
+                join.join(sliceDs);
+            } else {
+                DataSetUtil.putProperties( builder.getProperties(), join );
+                sliceDs= join.slice(join.length()-1);
+            }
             result = join;
             
         } else {
@@ -294,7 +329,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 } else {
                     break;
                 }
-            }            
+            }
         } else {
             for (int i = 0; i < QDataSet.MAX_RANK; i++) {
                 String s = (String) result.property("DEPEND_" + i);
@@ -344,4 +379,98 @@ public class QDataSetStreamHandler implements StreamHandler {
     public boolean getReadPackets() {
         return this.readPackets;
     }
+
+    private static void doProps(NodeList odims, DataSetBuilder builder) {
+         for (int j = 0; j < odims.getLength(); j++) {
+                    Element n2 = (Element) odims.item(j);
+                    String pname = n2.getAttribute("name");
+                    if ( pname.equals(QDataSet.USER_PROPERTIES) ) {
+                        //System.err.println("ehre");
+                    }
+                    String svalue;
+                    if ( n2.hasAttribute("value") ){
+                        svalue= n2.getAttribute("value");
+                    } else {
+                        svalue= n2.getTextContent();
+                    }
+                    Element evalue=null;
+
+                    String stype;
+                    if ( n2.hasAttribute("type") ) {
+                        stype = n2.getAttribute("type");
+                    } else {
+                        evalue= Util.singletonChildElement(n2);
+                        stype= evalue.getTagName();
+                    }
+                    if (stype.equals("qdataset")) {
+                        builder.putProperty(pname, svalue);
+                    } else {
+                        SerializeDelegate delegate = SerializeRegistry.getByName(stype);
+                        if (delegate == null) {
+                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"" + stype + "\"");
+                            continue;
+                        }
+                        Object oval;
+                        try {
+                            if ( evalue!=null && delegate instanceof XMLSerializeDelegate ) {
+                                oval= ((XMLSerializeDelegate)delegate).xmlParse(evalue);
+                            } else {
+                                oval= delegate.parse(stype, svalue);
+                            }
+                            builder.putProperty(pname, oval);
+                        } catch (ParseException ex) {
+                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+         }
+    }
+    
+    private static void doPropsIndex( NodeList odims, JoinDataSet join ) {
+        for (int j = 0; j < odims.getLength(); j++) {
+
+            Element n2 = (Element) odims.item(j);
+            String sidx= ((Element)n2.getParentNode()).getAttribute("index");
+            int index= Integer.parseInt(sidx);
+            String pname = n2.getAttribute("name");
+            if ( pname.equals(QDataSet.USER_PROPERTIES) ) {
+                //System.err.println("ehre");
+            }
+            String svalue;
+            if ( n2.hasAttribute("value") ){
+                svalue= n2.getAttribute("value");
+            } else {
+                svalue= n2.getTextContent();
+            }
+            Element evalue=null;
+
+            String stype;
+            if ( n2.hasAttribute("type") ) {
+                stype = n2.getAttribute("type");
+            } else {
+                evalue= Util.singletonChildElement(n2);
+                stype= evalue.getTagName();
+            }
+            if (stype.equals("qdataset")) {
+                join.putProperty(pname, index, svalue);
+            } else {
+                SerializeDelegate delegate = SerializeRegistry.getByName(stype);
+                if (delegate == null) {
+                    Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"" + stype + "\"");
+                    continue;
+                }
+                Object oval;
+                try {
+                    if ( evalue!=null && delegate instanceof XMLSerializeDelegate ) {
+                        oval= ((XMLSerializeDelegate)delegate).xmlParse(evalue);
+                    } else {
+                        oval= delegate.parse(stype, svalue);
+                    }
+                    join.putProperty(pname, index, oval);
+                } catch (ParseException ex) {
+                    Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+         }
+    }
+
 }
