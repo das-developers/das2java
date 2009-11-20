@@ -503,7 +503,7 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet, 
     /**
      * append the second dataset onto this dataset.  Not thread safe!!!
      * TODO: this really should return a new dataset.  Presumably this is to avoid copies, but currently it copies anyway!
-     * TODO: this will be renamed "concatentate" or "append" since "join" is the anti-slice.
+     * TODO: this will be renamed "concatenate" or "append" since "join" is the anti-slice.
      * @deprecated use append instead.
      */
     public void join(DDataSet ds) {
@@ -541,4 +541,57 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet, 
 
         joinProperties(ds);
     }
+
+    /**
+     * the slice operator is better implemented here.  Presently, we
+     * use System.arraycopy to copy out the data, but this should be
+     * reimplemented along with an offset parameter so the original data
+     * can be used to back the data.
+     * @param i
+     * @return
+     */
+    @Override
+    public QDataSet slice(int i) {
+        int nrank = this.rank-1;
+        int noff1= i * len1 * len2 * len3;
+        int noff2= (i+1) * len1 * len2 * len3;
+        double[] newback = new double[noff2-noff1];
+        System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        return new DDataSet( nrank, len1, len2, len3, 1, newback );
+    }
+
+    /**
+     * trim operator copies the data into a new dataset.
+     * @param start
+     * @param end
+     * @return
+     */
+    @Override
+    public QDataSet trim(int start, int end) {
+        int nrank = this.rank;
+        int noff1= start * len1 * len2 * len3;
+        int noff2= end * len1 * len2 * len3;
+        double[] newback = new double[noff2-noff1];
+        System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        return new DDataSet( nrank, end-start, len1, len2, len3, newback );
+    }
+
+    /**
+     * TODO: this is untested, but is left in to demonstrate how the capability
+     * method should be implemented.  Clients should use this instead of
+     * casting the class to the capability class.
+     * @param <T>
+     * @param clazz
+     * @return
+     */
+    @Override
+    public <T> T capability(Class<T> clazz) {
+        if ( clazz==WritableDataSet.class ) {
+            return (T) this;
+        } else {
+            return super.capability(clazz);
+        }
+    }
+
+
 }
