@@ -1424,6 +1424,18 @@ public class DataSetUtil {
         ds.putProperty( "CONTEXT_"+idx, cds );
     }
 
+    /**
+     * adds the rank 0 dataset (a Datum) to the properties, after all
+     * the other CONTEXT_<i> properties.
+     * @param ds
+     * @param cds
+     */
+    public static void addContext( Map<String,Object> props, QDataSet cds ) {
+        int idx=0;
+        while ( props.get("CONTEXT_"+idx)!=null ) idx++;
+        props.put( "CONTEXT_"+idx, cds );
+    }
+
     public static String contextAsString( QDataSet ds ) {
         StringBuffer result= new StringBuffer();
         QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
