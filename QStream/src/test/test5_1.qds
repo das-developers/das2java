@@ -1,0 +1,10 @@
+[00]000067<?xml version="1.0" encoding="UTF-8"?>
+<stream dataset_id="ds_0"/>
+[01]000178<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_0" rank="1">
+        <properties/>
+        <values encoding="ascii10" length="5"/>
+    </qdataset>
+</packet>
+:01:        0         1         2         3         4

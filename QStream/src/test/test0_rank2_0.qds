@@ -1,0 +1,33 @@
+[00]000067<?xml version="1.0" encoding="UTF-8"?>
+<stream dataset_id="ds_0"/>
+[01]000263<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_0" rank="3">
+        <properties>
+            <property name="QUBE" type="Boolean" value="true"/>
+        </properties>
+        <values encoding="ascii10" length="4"/>
+    </qdataset>
+</packet>
+:01:        0         1         2         3
+:01:        5         6         8         9
+[01]000263<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_0" rank="3">
+        <properties>
+            <property name="QUBE" type="Boolean" value="true"/>
+        </properties>
+        <values encoding="ascii10" length="3"/>
+    </qdataset>
+</packet>
+:01:        4         5         6
+[01]000263<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_0" rank="3">
+        <properties>
+            <property name="QUBE" type="Boolean" value="true"/>
+        </properties>
+        <values encoding="ascii10" length="4"/>
+    </qdataset>
+</packet>
+:01:        8         9        10        11
