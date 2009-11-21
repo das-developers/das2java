@@ -588,21 +588,23 @@ public class DataSetUtil {
         // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
         // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
         // number in a ever increasing sequence.
-        boolean monoDecreasing= true;
-        boolean monoIncreasing= true;
+        int monoDecreasing= 0;
+        int monoIncreasing= 0;
+        int count= 0;
         boolean xHasFill= false;
         for ( int i=1; i<xds.length(); i++ ) {
             if ( wds.value(i)==0 || wds.value(i-1)==0 ) {
                 xHasFill= true;
                 continue;
             }
+            count++;
             sp= xds.value(i) - xds.value(i-1);
-            monoDecreasing= sp < 0.;
-            monoIncreasing= sp > 0.;
+            if ( sp<0. ) monoDecreasing++;
+            if ( sp>0. ) monoIncreasing++;
         }
-        if ( monoIncreasing ) {
+        if ( monoIncreasing>(9*count/10) ) {
             monoMag= 1;
-        } else if ( monoDecreasing ) {
+        } else if ( monoDecreasing>(9*count/10) ) {
             monoMag= -1;
         } else {
             monoMag= 0;
@@ -610,7 +612,8 @@ public class DataSetUtil {
         
         // don't allow datasets with fill in x to be considered.  
         if ( xHasFill && monoMag==0 ) return null;
-
+        if ( monoMag==0 ) return null;
+        
         double everIncreasing= 0.;
         if ( xds.length()>2 ) {
             // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
@@ -647,7 +650,7 @@ public class DataSetUtil {
 
         AutoHistogram ah= new AutoHistogram();
         QDataSet diffs=  Ops.diff(xds);
-        if ( monoDecreasing ) {
+        if ( monoDecreasing>(9*count/10) ) {
             diffs= Ops.multiply( diffs, asDataSet(-1) );
         }
         QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
