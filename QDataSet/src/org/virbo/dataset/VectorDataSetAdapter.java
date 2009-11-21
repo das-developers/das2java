@@ -37,6 +37,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
     /**
      * In das2's dataset, Z(X,Y) where X and Y are rank 1, this is
      * a dataset with Y(X) and Y has a plane for the Z values.
+     * Also we adapt a bundle with two columns to Y(X).
      * @param y
      * @return
      */
@@ -59,6 +60,8 @@ public class VectorDataSetAdapter implements VectorDataSet {
                 if ( x==null ) x= DataSetOps.unbundle(bds, ss[0]);
                 y= DataSetOps.unbundle(bds, ss[1]);
                 ((MutablePropertyDataSet)y).putProperty(QDataSet.PLANE_0, z);
+            } else if ( ss.length==1 ) {
+                x= DataSetOps.unbundle( bds, ss[0] );
             }
         }
         return new VectorDataSetAdapter( y, x );
