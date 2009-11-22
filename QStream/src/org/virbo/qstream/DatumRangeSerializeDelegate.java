@@ -11,6 +11,9 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.SemanticOps;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * This serialize delegate assumes the formatted object is a time range,
@@ -19,7 +22,7 @@ import org.virbo.dataset.SemanticOps;
  *
  * @author jbf
  */
-public class DatumRangeSerializeDelegate implements SerializeDelegate {
+public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerializeDelegate {
 
     public String format(Object o) {
         DatumRange dr= (DatumRange)o;
@@ -58,6 +61,21 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate {
 
     public String typeId(Class clas) {
         return "datumRange";
+    }
+
+    public Element xmlFormat(Document doc, Object o) {
+        DatumRange dr= (DatumRange)o;
+        Element result= doc.createElement( typeId( o.getClass() ) );
+        result.setAttribute( "units",dr.getUnits().toString() );
+        result.setAttribute( "value",dr.toString() );
+        return result;
+    }
+
+    public Object xmlParse(Element e) throws ParseException {
+        String sunits= e.getAttribute("units");
+        Units u= SemanticOps.lookupUnits(sunits);
+        String s= e.getAttribute("value");
+        return DatumRangeUtil.parseDatumRange(s, u );
     }
 
 }
