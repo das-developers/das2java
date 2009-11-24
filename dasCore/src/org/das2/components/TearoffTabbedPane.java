@@ -49,6 +49,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     int selectedTab;
     Point dragStart;
+    Point dragOffset;
     JFrame draggingFrame;
     JPopupMenu tearOffMenu = new JPopupMenu();
     JPopupMenu dockMenu = new JPopupMenu();
@@ -140,14 +141,24 @@ public class TearoffTabbedPane extends JTabbedPane {
                 } else {
                     if (dragStart.distance(e.getPoint()) > 10) {
                         if (draggingFrame == null) {
+                            dragOffset= getComponentAt(selectedTab).getLocationOnScreen();
+                            Point ds= new Point(dragStart);
+                            SwingUtilities.convertPointToScreen(ds, e.getComponent() );
+                            int tabAndWindowHeight=40; // ubuntu, TODO: calculate
+                            dragOffset.translate( -ds.x, -ds.y - tabAndWindowHeight );
                             draggingFrame = TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
                             if (draggingFrame == null) {
                                 return;
                             }
                             setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                            if ( draggingFrame.getWidth()< -1*dragOffset.x ) {
+                                int borderWidth=5;
+                                dragOffset.x= -1*(draggingFrame.getWidth()-borderWidth);
+                            }
                         }
                         Point p = e.getPoint();
                         SwingUtilities.convertPointToScreen(p, (Component) e.getSource());
+                        p.translate(dragOffset.x, dragOffset.y);
                         draggingFrame.setLocation(p);
                     }
                 }
@@ -189,13 +200,12 @@ public class TearoffTabbedPane extends JTabbedPane {
                         }
 
                         if (parentPane != null) {
-                            if ( getTabCount()==1 ) {
+                            selectedComponent = getComponent(selectedTab);
+                            remove(selectedComponent);
+                            parentPane.dock(selectedComponent);
+                            if ( getTabCount()==0 ) {
                                 SwingUtilities.getWindowAncestor(TearoffTabbedPane.this).dispose();
-                            } else {
-                                selectedComponent = getComponent(selectedTab);
-                                remove(selectedComponent);
-                                parentPane.dock(selectedComponent);
-                            }
+                            } 
                         } else {
                             if (desc.babysitter instanceof Window) {
                                 ((Window) desc.babysitter).dispose();
@@ -300,6 +310,10 @@ public class TearoffTabbedPane extends JTabbedPane {
                         if (desc.babysitter instanceof Window) {
                             ((Window) desc.babysitter).dispose();
                         } else if ( desc.babysitter instanceof TearoffTabbedPane ) {
+                            TearoffTabbedPane bb= (TearoffTabbedPane) desc.babysitter;
+                            if ( bb.getTabCount()==1 ) {
+                                SwingUtilities.getWindowAncestor(bb).dispose();
+                            }
                             // do nothing
                         }
 
@@ -447,6 +461,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             rightFrame = new JFrame();
 
             rightFrame.add(rightPane);
+            rightFrame.setIconImage( parent.getIconImage() );
 
             final WindowStateListener listener = new WindowStateListener() {
 
@@ -509,7 +524,11 @@ public class TearoffTabbedPane extends JTabbedPane {
 
         right.add(td.title, c);
         right.setSelectedIndex(right.getTabCount()-1);
-
+        if ( !right.isShowing() ) {
+            Window w= SwingUtilities.getWindowAncestor(right);
+            w.setVisible(false);
+            w.setVisible(true);
+        }
     }
 
     protected JFrame tearOffIntoFrame(int tabIndex) {
@@ -524,6 +543,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
         final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         final JFrame babySitter = new JFrame(td.title);
+        babySitter.setIconImage( parent.getIconImage() );
         final WindowStateListener listener = new WindowStateListener() {
 
             public void windowStateChanged(WindowEvent e) {
