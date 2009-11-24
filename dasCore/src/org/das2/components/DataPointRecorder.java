@@ -226,7 +226,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 builder.insertY(dp.get(0), dp.get(1));
                 for (int i = 2; i < planesArray.length; i++) {
                     if (unitsArray[i] != null) {
-                        builder.insertY(dp.get(0), (Datum) dp.getPlane(planesArray[i]), planesArray[i]);
+                        Object s= dp.getPlane(planesArray[i]);
+                        if ( s instanceof Datum ) {
+                            builder.insertY(dp.get(0), (Datum)s, planesArray[i]);
+                        } else {
+                            builder.insertY(dp.get(0), ((EnumerationUnits)unitsArray[i]).createDatum(s),planesArray[i]);
+                        }
                     }
                 }
             }
@@ -255,9 +260,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 builder.insertY(dp.get(0), dp.get(1));
                 Map map = dp.planes;
                 for (int j = 2; j < planesArray.length; j++) {
-                    builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
-                            ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
-                            planesArray[j]);
+                    Object s= dp.getPlane(planesArray[j]);
+                    if ( s instanceof Datum ) {
+                        builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
+                                ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
+                                planesArray[j]);
+                    } else {
+                        builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
+                                ((EnumerationUnits)unitsArray[j]).createDatum(dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
+                                planesArray[j]);
+                    }
                 }
             }
             if (this.xTagWidth != null) {
@@ -311,9 +323,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     }
                     s.append("\"" + o + "\"\t");
                 } else {
-                    Datum d = (Datum) o;
-                    DatumFormatter f = d.getFormatter();
-                    s.append(f.format(d, unitsArray[j]) + "\t");
+                    if ( o instanceof Datum ) {
+                        Datum d = (Datum) o;
+                        DatumFormatter f = d.getFormatter();
+                        s.append(f.format(d, unitsArray[j]) + "\t");
+                    } else {
+                        s.append( o.toString() + "\t"  );
+                    }
                 }
             }
             r.write(s.toString());
@@ -819,7 +835,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 planesArray[index] = String.valueOf(key);
                 Object value = planes.get(key);
                 if (value instanceof String) {
-                    unitsArray[index] = null;
+                    unitsArray[index] = EnumerationUnits.create("dpr_"+planesArray[index]);
                 } else {
                     unitsArray[index] = ((Datum) value).getUnits();
                 }
