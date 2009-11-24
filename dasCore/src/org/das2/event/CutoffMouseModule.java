@@ -66,11 +66,11 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         this.dataSetConsumer= consumer;
     }
 
-    public static final String CONFIG_CASSINI_LOWER= "Ondrej: min=-4. slopeMin=0.26 nave=3 cutoff=lower xres=1s";
+    public static final String CONFIG_VOYAGER_HR_LOWER= "Ondrej: min=-4. slopeMin=0.26 nave=3 cutoff=lower xres=1s";
     public static final String CONFIG_GALILEO_LOWER= "Ondrej: min=1.78 slopeMin=0.072 nave=3 cutoff=lower xres=120s";
 
     /**
-     * see CONFIG_CASSINI_LOWER, etc.
+     * see CONFIG_VOYAGER_HR_LOWER, etc.
      * @param config
      */
     public void setConfig( String config ) throws ParseException {
