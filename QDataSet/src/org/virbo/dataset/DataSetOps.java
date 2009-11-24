@@ -108,18 +108,21 @@ public class DataSetOps {
     public static QDataSet flattenRank2( final QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
-        DataSetBuilder builder= new DataSetBuilder( 2, 100, 3 );
+        DataSetBuilder builder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder xbuilder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder ybuilder= new DataSetBuilder( 1, 100 );
         for ( int i=0; i<ds.length(); i++ ) {
             for ( int j=0; j<ds.length(i); j++ ) {
-                builder.putValue(-1,0, dep0.value(i) );
-                builder.putValue(-1,1, dep1.value(j) );
-                builder.putValue(-1,2, ds.value(i,j) );
+                xbuilder.putValue(-1, dep0.value(i) );
+                ybuilder.putValue(-1, dep1.value(j) );
+                builder.putValue(-1, ds.value(i,j) );
+                xbuilder.nextRecord();
+                ybuilder.nextRecord();
                 builder.nextRecord();
             }
         }
 
-        builder.putProperty( QDataSet.DEPEND_1, Ops.labels( new String[] { "dep0", "dep1", "ds" } ) );
-        return builder.getDataSet();
+        return Ops.link( xbuilder.getDataSet(), ybuilder.getDataSet(), builder.getDataSet() );
     }
     /**
      * removes the index-th element from the array.
