@@ -22,7 +22,6 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -607,8 +606,13 @@ public class SimpleStreamFormatter {
                     QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
                     if (depi != null) {
                         if ( depi==dep0 ) { // kludge: if DEPEND_0==DEPEND_1, an invalid stream was created
-                            System.err.println("DEPEND_0==DEPEND_1, copy kludge");
-                            depi= DDataSet.copy(depi);
+                            throw new RuntimeException("bug in QStream prevents DEPEND_0==DEPEND_1");
+                            /*(System.err.println("DEPEND_0==DEPEND_1, copy kludge");
+                            depi= DDataSet.copy(dep0);
+                            String name= (String) dep0.property(QDataSet.NAME);
+                            if ( name!=null ) {
+                                ((MutablePropertyDataSet)depi).putProperty( QDataSet.NAME, name + "_1" );
+                            }*/
                         }
                         PacketDescriptor pd;
 
