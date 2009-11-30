@@ -89,6 +89,7 @@ public class AsciiParser {
     private final static Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z _0-9]*)(\\(([a-zA-Z_\\.0-9]*)\\))?\"?\\s*");
     /**
      * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
+     * Note this pattern will match "-999.000" so check groups 2 and 4 for non null.
      */
     private final static Pattern COLUMN_CHANNEL_HEADER_PATTERN = Pattern.compile("\\s*\"?((\\d*\\.?\\d*([eE]\\d+)?)\\-(\\d*\\.?\\d*([eE]\\d+)?))\"?\\s*");
 
@@ -817,7 +818,7 @@ public class AsciiParser {
                 if (fieldUnits[i]!=null) fieldUnits[i]= fieldUnits[i].trim();
             // TODO: check for units too.
             // if ( m.groupCount() is 2) String u= m.group(2).trim()
-            } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() ) {
+            } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() && m.group(2).length()>0 && m.group(4).length()>0 ) {
                 fieldLabels[i] = m.group(1).trim();
                 fieldNames[i] = "ch_"+m.group(1).trim().replaceAll("-", "_");
                 fieldUnits[i]= null;
