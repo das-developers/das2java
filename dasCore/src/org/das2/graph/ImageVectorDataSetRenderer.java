@@ -396,6 +396,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
         return envelope;
     }
 
+    /**
+     * 0=none. 1=faint envelope with points on top.  2=only envelope
+     * @param envelope
+     */
     public void setEnvelope(int envelope) {
         int oldEnvelope = this.envelope;
         this.envelope = envelope;
