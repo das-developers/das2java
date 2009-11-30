@@ -898,7 +898,7 @@ public class SeriesRenderer extends Renderer {
             update(); //DANGER: this kludge is not well tested, and may cause problems.  It should be the case that another
                       // update is posted that will resolve this problem, but somehow it's not happening when Autoplot adds a
                       // bunch of panels.
-            System.err.println("need to update first/last bit");
+            //System.err.println("need to update first/last bit");
             javax.swing.Timer t= new javax.swing.Timer( 200, new ActionListener() {
                 public void actionPerformed( ActionEvent e ) {
                     update();
