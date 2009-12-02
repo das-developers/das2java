@@ -5,9 +5,6 @@
 
 package org.virbo.dataset;
 
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.WritableDataSet;
-
 /**
  *
  * @author jbf
