@@ -92,6 +92,7 @@ public abstract class FileSystem  {
      * @deprecated use create( URI root, ProgressMonitor mon ) instead.
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
+     * @throws IllegalArgumentException if the local root does not exist.
      */
     public synchronized static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException {
         try {
@@ -101,6 +102,18 @@ public abstract class FileSystem  {
         }
     }
 
+    /**
+     * Creates a FileSystem by parsing the URI and creating the correct FS type.
+     * Presently, file, http, and ftp are supported.  If the URI contains a folder
+     * ending in .zip and a FileSystemFactory is registered as handling .zip, then
+     * The zip file will be transferred and the zip file mounted.
+     * 
+     * @param root
+     * @return
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
+     * @throws IllegalArgumentException if the local root does not exist.
+     */
     public static FileSystem create(URI root) throws FileSystemOfflineException {
         return create(root, new NullProgressMonitor());
     }
@@ -112,6 +125,7 @@ public abstract class FileSystem  {
      * The zip file will be transferred and the zip file mounted.
      *
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
+     * @throws IllegalArgumentException if the local root does not exist.
      */
     public synchronized static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException {
         logger.fine("create filesystem "+root);
