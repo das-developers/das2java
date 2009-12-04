@@ -4,6 +4,8 @@
  */
 package org.virbo.dataset;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author jbf
@@ -104,7 +106,7 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
 
         public boolean hasNext() {
-            return index < ds.length();
+            return index < ds.length()-1;
         }
 
         public int nextIndex() {
@@ -122,7 +124,9 @@ public class QubeDataSetIterator implements DataSetIterator {
 
         @Override
         public String toString() {
-            return "[" + ds.toString() + "]";
+            String dstr= ds.toString();
+            dstr= dstr.replace("(dimensionless)", "");
+            return "[" + dstr  + " @ " +index + "]";
         }
     }
 
@@ -185,6 +189,8 @@ public class QubeDataSetIterator implements DataSetIterator {
     }
     private DimensionIterator[] it = new DimensionIterator[4];
     private DimensionIteratorFactory[] fit = new DimensionIteratorFactory[4];
+    private boolean isAllIndexLists;
+
     private int rank;
     private int[] qube;
     private QDataSet ds;
@@ -272,9 +278,12 @@ public class QubeDataSetIterator implements DataSetIterator {
      * begin iterating.
      */
     private void initialize() {
+        boolean allLi= true;
         for (int i = 0; i < rank; i++) {
             it[i] = fit[i].newIterator(dimLength(i));
+            if ( !( it[i] instanceof IndexListIterator ) ) allLi= false;
         }
+        this.isAllIndexLists= allLi;
     }
 
     /**
@@ -332,7 +341,7 @@ public class QubeDataSetIterator implements DataSetIterator {
 
         if (this.allnext) {
             for (int i = 0; i < (rank - 1); i++) {
-                it[i].nextIndex();
+                if ( !( isAllIndexLists && ( it[i] instanceof IndexListIterator ) ) ) it[i].nextIndex();
             }
             allnext = false;
             if (rank == 0) {
@@ -344,11 +353,25 @@ public class QubeDataSetIterator implements DataSetIterator {
         int i = rank - 1;
         if (it[i].hasNext()) {
             it[i].nextIndex();
+            if ( it[i] instanceof IndexListIterator ) { // all index lists need to be incremented together.
+                for ( int k=0; k<i; k++ ) {
+                    if ( isAllIndexLists && ( it[k] instanceof IndexListIterator ) ) {
+                        it[k].nextIndex();
+                    }
+                }
+            }
         } else {
             if (i > 0) {
                 for (int j = i - 1; j >= 0; j--) {
                     if (it[j].hasNext()) {
                         it[j].nextIndex();
+                        if ( it[j] instanceof IndexListIterator ) { // all index lists need to be incremented together.
+                            for ( int k=0; k<j; k++ ) {
+                                if ( isAllIndexLists && ( it[k] instanceof IndexListIterator ) ) {
+                                    it[k].nextIndex();
+                                }
+                            }
+                        }
                         for (int k = j + 1; k <= i; k++) {
                             it[k] = fit[k].newIterator(dimLength(k));
                             it[k].nextIndex();
@@ -366,6 +389,10 @@ public class QubeDataSetIterator implements DataSetIterator {
         return it[dim].index();
     }
 
+    /**
+     * returns the length reported by this iterator.  Use caution, because this
+     * does not imply that the result is a qube and does not account for slices.
+     */
     public int length(int dim) {
         return it[dim].length();
     }
@@ -387,6 +414,40 @@ public class QubeDataSetIterator implements DataSetIterator {
             }
             return "Iter [" + its + "] @ [" + ats + "] ";
         }
+    }
+
+    /**
+     * return a dataset that will have the same geometry at the
+     * dataset implied by each dimension iterator.  This is
+     * introduced to encapsulate this dangerous code to here where it could
+     * be done correctly.  Right now this assumes QUBES.
+     *
+     * Do not pass the result of this into the putValue of this iterator,
+     * the result should have its own iterator.
+     * 
+     * @return
+     */
+    public DDataSet createEmptyDs() {
+        ArrayList<Integer> qqube = new ArrayList<Integer>();
+        for (int i = 0; i < rank(); i++) {
+            boolean reform=  this.it[i] instanceof SingletonIterator;
+            if (!reform) {
+                qqube.add( this.it[i].length() );
+            }
+        }
+        
+        int[] qube;
+        if (isAllIndexLists) {
+            qube=  new int[] { this.it[0].length() };
+        } else {
+            qube = new int[qqube.size()];
+            for (int i = 0; i < qqube.size(); i++) {
+                qube[i] = qqube.get(i);
+            }
+        }
+        DDataSet result = DDataSet.create(qube);
+        return result;
+
     }
 
     /**

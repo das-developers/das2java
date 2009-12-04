@@ -5,21 +5,11 @@
 
 package org.virbo.dataset;
 
-import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.WritableDataSet;
-
 /**
  *
  * @author jbf
  */
 public interface DataSetIterator {
-
-    /**
-     * get the value from ds at the current iterator position.
-     * @param ds a dataset with capatible geometry as the iterator's geometry.
-     * @return the value of ds at the current iterator position.
-     */
-    double getValue(QDataSet ds);
 
     boolean hasNext();
 
@@ -28,6 +18,13 @@ public interface DataSetIterator {
     int length(int dim);
 
     void next();
+
+    /**
+     * get the value from ds at the current iterator position.
+     * @param ds a dataset with capatible geometry as the iterator's geometry.
+     * @return the value of ds at the current iterator position.
+     */
+    double getValue(QDataSet ds);
 
     /**
      * replace the value in ds at the current iterator position.
@@ -42,5 +39,18 @@ public interface DataSetIterator {
      * @return
      */
     int rank();
+
+    /**
+     * return a dataset that will have the same geometry at the
+     * dataset implied by each dimension iterator.  This is
+     * introduced to encapsulate this dangerous code to here where it could
+     * be done correctly.  Right now this assumes QUBES.
+     *
+     * Do not pass the result of this into the putValue of this iterator,
+     * the result should have its own iterator.
+     * 
+     * @return
+     */
+    public DDataSet createEmptyDs();
 
 }

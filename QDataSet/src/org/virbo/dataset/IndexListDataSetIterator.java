@@ -101,4 +101,8 @@ public class IndexListDataSetIterator implements DataSetIterator {
         
         return "ListIter [" + its + "] @ ["+  ats + "] ";
     }
+
+    public DDataSet createEmptyDs() {
+        return DDataSet.createRank1(indeces.length());
+    }
 }
