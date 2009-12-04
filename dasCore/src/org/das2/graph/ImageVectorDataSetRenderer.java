@@ -212,8 +212,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
             Units yunits = ddy.getUnits();
             Units zunits = Units.dimensionless;
 
-            int i = DataSetUtil.getPreviousColumn(ds, ddx.binStart(0));
-            int n = DataSetUtil.getNextColumn(ds, ddx.binStop(ddx.numberOfBins() - 1));
+            boolean xmono = Boolean.TRUE == ds.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+
+            int firstIndex = xmono ? DataSetUtil.getPreviousColumn(ds,  ddx.binStart(0) ) : 0;
+            int lastIndex = xmono ? DataSetUtil.getNextColumn(ds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.getXLength()-1;
+
+            int i = firstIndex;
+            int n = lastIndex;
             for (; i <= n; i++) {
                 int ix = ddx.whichBin(ds.getXTagDouble(i, xunits), xunits);
                 int iy = ddy.whichBin(ds.getDouble(i, yunits), yunits);
