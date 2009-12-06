@@ -930,7 +930,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @param y if non-null, the location on the y axis giving context for the text.
      */
     public void postMessage(Renderer renderer, String message, int messageType, Datum x, Datum y) {
-        messages.add(new MessageDescriptor(renderer, message, messageType, x, y));
+        if ( messages==null ) {
+            //system.err.println("don't post messages in updatePlotImage")
+        } else {
+            messages.add(new MessageDescriptor(renderer, message, messageType, x, y));
+        }
     }
 
     /**
