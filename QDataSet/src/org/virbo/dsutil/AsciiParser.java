@@ -91,7 +91,7 @@ public class AsciiParser {
      * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
      * Note this pattern will match "-999.000" so check groups 2 and 4 for non null.
      */
-    private final static Pattern COLUMN_CHANNEL_HEADER_PATTERN = Pattern.compile("\\s*\"?((\\d*\\.?\\d*([eE]\\d+)?)\\-(\\d*\\.?\\d*([eE]\\d+)?))\"?\\s*");
+    private final static Pattern COLUMN_CHANNEL_HEADER_PATTERN = Pattern.compile("\\s*\"?(([a-zA-Z_]*)(\\d*\\.?\\d*([eE]\\d+)?)\\-(\\d*\\.?\\d*([eE]\\d+)?))\"?\\s*");
 
     public final static String PROPERTY_FIELD_NAMES = "fieldNames";
     public static final String PROPERTY_FILE_HEADER = "fileHeader";
@@ -818,9 +818,13 @@ public class AsciiParser {
                 if (fieldUnits[i]!=null) fieldUnits[i]= fieldUnits[i].trim();
             // TODO: check for units too.
             // if ( m.groupCount() is 2) String u= m.group(2).trim()
-            } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() && m.group(2).length()>0 && m.group(4).length()>0 ) {
+            } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() && m.group(3).length()>0 && m.group(5).length()>0 ) {
                 fieldLabels[i] = m.group(1).trim();
-                fieldNames[i] = "ch_"+m.group(1).trim().replaceAll("-", "_");
+                if ( m.group(2).length()>0 ) { // make valid java identifier
+                    fieldNames[i] = m.group(1).trim().replaceAll("-", "_");
+                } else {
+                    fieldNames[i] = "ch_"+m.group(1).trim().replaceAll("-", "_");
+                }
                 fieldUnits[i]= null;
             } else {
                 if (isColumnHeaders) {
