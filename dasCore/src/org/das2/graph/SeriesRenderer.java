@@ -556,20 +556,30 @@ public class SeriesRenderer extends Renderer {
         public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
+            VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
+
+            if ( lastIndex-firstIndex==0 ) {
+                this.fillToRefPath1= null;
+                return;
+            }
 
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
             Datum sw = DataSetUtil.guessXTagWidth(dataSet);
             double xSampleWidth;
+            boolean logStep;
             if ( UnitsUtil.isRatiometric(sw.getUnits())) {
                 xSampleWidth = sw.doubleValue(Units.logERatio);
+                logStep= true;
             } else {
                 xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                logStep= false;
             }
 
+
             /* fuzz the xSampleWidth */
-            xSampleWidth = xSampleWidth * 1.10;
+            xSampleWidth = xSampleWidth * 1.20;
 
             if (reference != null && reference.getUnits() != yAxis.getUnits()) {
                 // switch the units to the axis units.
@@ -623,19 +633,20 @@ public class SeriesRenderer extends Renderer {
 
             if (psymConnector != PsymConnector.NONE || fillToReference) {
                 // now loop through all of them. //
-
+                boolean ignoreCadence= ! cadenceCheck;
                 for (; index < lastIndex; index++) {
 
                     x = dataSet.getXTagDouble(index, xUnits);
                     y = dataSet.getDouble(index, yUnits);
 
-                    final boolean isValid = yUnits.isValid(y) && xUnits.isValid(x);
+                    final boolean isValid = wds.getDouble( index, Units.dimensionless )>0 && xUnits.isValid(x);
 
                     fx = (float) xAxis.transform(x, xUnits);
                     fy = (float) yAxis.transform(y, yUnits);
 
                     if (isValid) {
-                        if ((x - x0) < xSampleWidth) {
+                        double step= logStep ? Math.log(x/x0) : x-x0;
+                        if ( ignoreCadence || step < xSampleWidth) {
                             // draw connect-a-dot between last valid and here
                             if (histogram) {
                                 float fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
