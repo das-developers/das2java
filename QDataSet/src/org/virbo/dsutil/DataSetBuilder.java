@@ -179,10 +179,6 @@ public class DataSetBuilder {
         return this.recElements;
     }
     
-    private final boolean isFill( double d ) {
-        return fillValue==d || validMin>d || validMax<d;
-    }
-    
     /**
      * returns the result dataset, concatenating all the datasets it's built
      * thus far.
@@ -210,35 +206,6 @@ public class DataSetBuilder {
             result= DDataSet.copy(current);
         }
         result.putLength( length );
-
-        // install canonical fill value
-        if ( fillValue!=-1e31 || validMax<Double.POSITIVE_INFINITY || validMin>Double.NEGATIVE_INFINITY ) {
-            switch ( rank ) {
-                case 1: {
-                    for ( int i=0; i<result.length(); i++ ) {
-                        if ( isFill( result.value(i) ) ) result.putValue(i,-1e31);
-                    }
-                } break;
-                case 2: {
-                    for ( int i=0; i<result.length(); i++ ) {
-                        for ( int j=0; j<result.length(i); j++ ) {
-                            if ( isFill( result.value(i,j) ) ) result.putValue(i,j,-1e31);
-                        }
-                    }
-                } break;
-                case 3: {
-                    for ( int i=0; i<result.length(); i++ ) {
-                        for ( int j=0; j<result.length(i); j++ ) {
-                            for ( int k=0; k<result.length(i,j); k++ ) {
-                                if ( isFill( result.value(i,j,k) ) ) result.putValue(i,j,k,-1e31);
-                            }
-                        }
-                    }
-                }
-                default: throw new RuntimeException("bad rank");
-            }
-            if ( fillValue!=-1e31 ) properties.put( QDataSet.FILL_VALUE, -1e31 );
-        }
         
         for ( Iterator<String> i= properties.keySet().iterator(); i.hasNext();  ) {
             String key= i.next();
