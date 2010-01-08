@@ -22,12 +22,16 @@
  */
 package org.das2.util.filesystem;
 
+import java.text.ParseException;
+import java.util.logging.Level;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
+import java.lang.String;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -48,7 +52,7 @@ public class WebFileObject extends FileObject {
     boolean isRoot;
     boolean isFolder;
     Map<String,String> metadata;
-    
+
     /**
      * true if we know if it's a folder or not.
      */
@@ -63,7 +67,7 @@ public class WebFileObject extends FileObject {
             metadata= wfs.protocol.getMetadata( this );
         }
     }
-    
+
     public FileObject[] getChildren() throws IOException {
         if (!isFolder) {
             throw new IllegalArgumentException(toString() + "is not a folder");
@@ -110,9 +114,9 @@ public class WebFileObject extends FileObject {
     }
 
     public boolean isFolder() {
-        if ( this.isFolderResolved ) {        
+        if ( this.isFolderResolved ) {
             return this.isFolder;
-        } else {    
+        } else {
             //TODO: make HttpFileObject that does HEAD requests to properly answer these questions.  See HttpFileSystem.getHeadMeta()
             throw new RuntimeException("IOException in constructor prevented us from resolving");
         }
@@ -127,6 +131,27 @@ public class WebFileObject extends FileObject {
     }
 
     public java.util.Date lastModified() {
+        if (modifiedDate == null) {
+            try {
+                Map<String, String> meta = wfs.protocol.getMetadata(this);
+                String stime = meta.get(WebProtocol.META_LAST_MODIFIED);
+                if (stime == null) {
+                    modifiedDate = new Date();
+                } else {
+                    try {
+                        modifiedDate = DateFormat.getDateInstance().parse(stime);
+                    } catch (ParseException ex) {
+                        Logger.getLogger(WebFileObject.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    //modifiedDate = new Date(Date.parse(stime));
+                    return modifiedDate;
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(WebFileObject.class.getName()).log(Level.SEVERE, null, ex);
+                return new Date();
+            }
+
+        }
         return modifiedDate;
     }
 
@@ -169,7 +194,7 @@ public class WebFileObject extends FileObject {
         this.wfs = wfs;
         this.pathname = pathname;
         this.isFolderResolved = false;
-        
+
         if ( ! wfs.isAppletMode() ) {
             this.localFile = new File(wfs.getLocalRoot(), pathname);
 
@@ -217,9 +242,9 @@ public class WebFileObject extends FileObject {
     }
 
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
-        
+
         if ( wfs.isAppletMode() ) throw new SecurityException("getFile cannot be used with applets.");
-        
+
         boolean download = false;
 
         if ( monitor==null ) throw new NullPointerException("monitor may not be null");
