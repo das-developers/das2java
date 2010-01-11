@@ -123,7 +123,7 @@ public class HttpFileSystem extends WebFileSystem {
                 while (mon != null) {
                     while (!mon.isStarted()) {
                         try {
-                            Thread.sleep(100);
+                            downloads.wait(100);
                         } catch (InterruptedException e) {
                         }
                     }
@@ -193,9 +193,11 @@ public class HttpFileSystem extends WebFileSystem {
                 in = urlc.getInputStream();
 
                 logger.fine("transferring bytes of " + filename);
-                FileOutputStream out = new FileOutputStream(partFile);
                 monitor.setLabel("downloading file");
                 monitor.started();
+
+                FileOutputStream out = new FileOutputStream(partFile);
+
                 try {
                     copyStream(in, out, monitor);
                     monitor.finished();
