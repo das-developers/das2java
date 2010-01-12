@@ -10,14 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
@@ -78,11 +74,7 @@ public class DefaultHttpProtocol implements WebProtocol {
         if ( result.get("Last-Modified")==null ) {
             result.put( META_LAST_MODIFIED, new Date( ).toString() );
         } else {
-            try {
-                result.put(META_LAST_MODIFIED, DateFormat.getDateInstance().parse(result.get("Last-Modified")).toString());
-            } catch (ParseException ex) {
-                Logger.getLogger(DefaultHttpProtocol.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            result.put( META_LAST_MODIFIED, new Date( Date.parse( result.get("Last-Modified") ) ).toString() );
         }
 
         result.put(META_EXIST, String.valueOf(exists));
