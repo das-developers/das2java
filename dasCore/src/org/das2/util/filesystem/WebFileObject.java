@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
-import java.lang.String;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -138,12 +137,7 @@ public class WebFileObject extends FileObject {
                 if (stime == null) {
                     modifiedDate = new Date();
                 } else {
-                    try {
-                        modifiedDate = DateFormat.getDateInstance().parse(stime);
-                    } catch (ParseException ex) {
-                        Logger.getLogger(WebFileObject.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    //modifiedDate = new Date(Date.parse(stime));
+                    modifiedDate = new Date(Date.parse(stime));
                     return modifiedDate;
                 }
             } catch (IOException ex) {
@@ -282,7 +276,7 @@ public class WebFileObject extends FileObject {
                 throw e;
             }
         }
-
+        
         return localFile;
 
     }
