@@ -28,7 +28,6 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.util.DasExceptionHandler;
-import org.das2.DasApplication;
 /**
  *
  * @author  jbf
@@ -109,10 +108,17 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
 
     private JComboBox rangeComboBox;
 
+    private boolean pref= true;
+
     /** Creates a new instance of DasTimeRangeSelector */
     public DasTimeRangeSelector() {
         super();
-        updateRangeString= Preferences.userNodeForPackage(this.getClass()).getBoolean("updateRangeString", false);
+        pref= true;
+        if ( pref ) {
+            updateRangeString= Preferences.userNodeForPackage(this.getClass()).getBoolean("updateRangeString", false);
+        } else {
+            updateRangeString= false;
+        }
         buildComponents();
     }
 
@@ -120,7 +126,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         return new AbstractAction("mode") {
             public void actionPerformed( ActionEvent e ) {
                 updateRangeString= !updateRangeString;
-                Preferences.userNodeForPackage(this.getClass()).putBoolean("updateRangeString", updateRangeString );
+                if ( pref ) Preferences.userNodeForPackage(this.getClass()).putBoolean("updateRangeString", updateRangeString );
                 revalidateUpdateMode();
                 update();
             }
@@ -234,9 +240,9 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
                 DasExceptionHandler.handle(e);
             }
         }
-        if ( updateRangeString!=updateRangeString0 )
-            Preferences.userNodeForPackage(getClass()).putBoolean("updateRangeString", updateRangeString );
-
+        if ( updateRangeString!=updateRangeString0 ) {
+            if (pref) Preferences.userNodeForPackage(getClass()).putBoolean("updateRangeString", updateRangeString );
+        }
         return;
     }
 
@@ -256,7 +262,8 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
     }
     
     private void buildFavorites( ) {
-        String favorites= Preferences.userNodeForPackage(getClass()).get( "timeRangeSelector.favorites."+favoritesGroup, "" );
+        String favorites="";
+        if ( pref ) favorites= Preferences.userNodeForPackage(getClass()).get( "timeRangeSelector.favorites."+favoritesGroup, "" );
         String[] ss= favorites.split("\\|\\|");
         favoritesList= new ArrayList();
         for ( int i=0; i<ss.length; i++ ) {            
@@ -440,7 +447,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         for ( int i=1; i<favoritesList.size(); i++ ) {
             favorites.append( "||" + favoritesList.get(i) );
         }
-        Preferences.userNodeForPackage(getClass()).put( "timeRangeSelector."+favoritesGroup, favorites.toString() );
+        if ( pref ) Preferences.userNodeForPackage(getClass()).put( "timeRangeSelector."+favoritesGroup, favorites.toString() );
         
     }
 
