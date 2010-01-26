@@ -18,16 +18,16 @@ import java.util.EventListener;
  */
 public class WeakListenerManager {
 
-	public static <L extends EventListener> L wrap(
+	public static <L extends EventListener> L weakListener(
 			Object target,
 			Class<L> listenerClass,
 			L listener)
 	{
 		String removeMethod = "remove"+listenerClass.getSimpleName();
-		return wrap(target, removeMethod, listenerClass, listener);
+		return weakListener(target, removeMethod, listenerClass, listener);
 	}
 
-	public static <L extends EventListener> L wrap(
+	public static <L extends EventListener> L weakListener(
 			Object target,
 			String removeMethod,
 			Class<L> listenerClass,
@@ -38,13 +38,13 @@ public class WeakListenerManager {
 			if (m.getName().equals(removeMethod)
 					&& params.length == 1 && params[0] == listenerClass)
 			{
-				return wrap(target, m, listenerClass, listener);
+				return weakListener(target, m, listenerClass, listener);
 			}
 		}
 		throw new IllegalArgumentException("No suitable remove method found");
 	}
 
-	public static <L extends EventListener> L wrap(
+	public static <L extends EventListener> L weakListener(
 			Object target,
 			Method removeMethod,
 			Class<L> listenerClass,
