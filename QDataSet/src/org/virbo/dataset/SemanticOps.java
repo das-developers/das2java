@@ -143,6 +143,9 @@ public class SemanticOps {
                 //datum= Units.mj1958.createDatum(-714779);
                 ss[1]= "1901-01-01 00:00:00"; // /media/mini/data.backup/examples/netcdf/sst.ltm.1961-1990.nc
             }
+            if ( ss[1].contains("1970-01-01 00:00:00.0 0:00") ) {
+                ss[1]= "1970-01-01 00:00:00";
+            }
             datum= TimeUtil.create(ss[1]);
             String canonicalName = "" + offsetUnits + " since "+ datum;
             Basis basis= new Basis( "since "+ datum, "since "+ datum, Basis.since2000, datum.doubleValue(Units.us2000), Units.us2000.getOffsetUnits() );
