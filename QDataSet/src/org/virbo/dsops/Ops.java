@@ -1071,6 +1071,9 @@ public class Ops {
     /**
      * concatenates the two datasets together, appending the on the zeroth dimension.
      * The two datasets must be QUBES have similar geometry on the higher dimensions.
+     * If one of the datasets is rank 0 and the geometry of the other is rank 1, then
+     * the lower rank dataset is promoted before appending.
+     *
      * This was briefly known as "join."
      * @param ds1
      * @param ds2
@@ -1084,6 +1087,11 @@ public class Ops {
             t.putValue(ds2.value());
             DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
             ds2= t;
+        } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
+            DDataSet t= DDataSet.createRank1(1);
+            t.putValue(ds1.value());
+            DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
+            result= t;
         }
         result.append(DDataSet.maybeCopy(ds2));
         return result;
