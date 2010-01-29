@@ -741,14 +741,12 @@ public class AsciiParser {
     }
 
     public static interface FieldParser {
-
         double parseField(String field, int columnIndex) throws ParseException;
     }
     /**
      * parses the field using Double.parseDouble, java's double parser.
      */
     public static final FieldParser DOUBLE_PARSER = new FieldParser() {
-
         public final double parseField(String field, int columnIndex) {
             return Double.parseDouble(field);
         }
@@ -757,7 +755,6 @@ public class AsciiParser {
      * delegates to the unit object set for this field to parse the data.
      */
     public final FieldParser UNITS_PARSER = new FieldParser() {
-
         public final double parseField(String field, int columnIndex) throws ParseException {
             Units u = AsciiParser.this.units[columnIndex];
             return u.parse(field).doubleValue(u);
@@ -1006,6 +1003,10 @@ public class AsciiParser {
 
             return ( ifield == fields.length && index==len ) ;
         }
+
+        public String toString() {
+            return "AsciiParser.DelimParser: regex="+this.delimRegex;
+        }
     }
 
     public final class RegexParser implements RecordParser {
@@ -1078,6 +1079,10 @@ public class AsciiParser {
             } else {
                 return false;
             }
+        }
+
+        public String toString() {
+            return "RegexParser regex="+this.recordPattern+"";
         }
     }
 
