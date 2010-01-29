@@ -342,6 +342,11 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet, 
             System.err.println("copy of non-qube to DDataSet, which must be qube");
         }
         switch (rank) {
+            case 0:
+                result= createRank1(1);
+                result.rank= 0;
+                result.putValue(ds.value());
+                break;
             case 1:
                 result = createRank1(ds.length());
                 for (int i = 0; i < ds.length(); i++) {
