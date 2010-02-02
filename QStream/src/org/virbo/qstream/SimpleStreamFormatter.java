@@ -22,8 +22,10 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
@@ -86,7 +88,7 @@ public class SimpleStreamFormatter {
     }
 
     /**
-     * pick a time formatter so that resolution is not reduced noticably 
+     * pick a time formatter so that resolution is not reduced noticeably
      * in formatting.
      * @param ds
      * @return
@@ -269,7 +271,14 @@ public class SimpleStreamFormatter {
                 if (qds.rank() == 0) {
                     SerializeDelegate r0d= (SerializeDelegate) SerializeRegistry.getByName("rank0dataset");
                     prop.setAttribute("type", "rank0dataset");
-                    prop.setAttribute("value", r0d.format(value) );
+                    Units u= (Units) qds.property( QDataSet.UNITS );
+                    if ( u!=null && u instanceof EnumerationUnits ) {
+                        //prop.setAttribute("value", r0d.format(value) );
+                        //prop.setAttribute("value", String.valueOf(value) );
+                        continue; // TODO: this should do something!
+                    } else {
+                        prop.setAttribute("value", r0d.format(value) );
+                    }
                 } else {
                     prop.setAttribute("type", "qdataset");
                     prop.setAttribute("value", nameFor((QDataSet) value));
