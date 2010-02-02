@@ -250,7 +250,9 @@ public class SimpleStreamFormatter {
     private boolean isBundle( QDataSet ds ) {
         if ( ds.property(QDataSet.BUNDLE_0) !=null ) return true;
         if ( ds.property(QDataSet.BUNDLE_1) !=null ) return true;
-        if ( ds.property(QDataSet.NAME,0)!=ds.property(QDataSet.NAME) ) {
+        if ( ds.property(QDataSet.NAME,0)!=null &&
+                ds.property(QDataSet.NAME,0)!=ds.property(QDataSet.NAME) ) {
+            //TODO: this is a little bit of a kludge.  See demo 5, export the Z component.
             return true;
         } else {
             return false;
