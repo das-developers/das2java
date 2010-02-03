@@ -145,6 +145,9 @@ public class SeriesRenderer extends Renderer {
          */
         private int renderStamp(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
 
+            DasPlot lparent= parent;
+            if ( lparent==null ) return 0;
+
             VectorDataSet colorByDataSet = null;
             if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
                 colorByDataSet = (VectorDataSet) vds.getPlanarView(colorByDataSetId);
@@ -153,12 +156,12 @@ public class SeriesRenderer extends Renderer {
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
                     int icolor = colors[i];
-                    g.drawImage(coloredPsyms[icolor], ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                    g.drawImage(coloredPsyms[icolor], ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, lparent);
                 }
             } else {
                 try {
                     for (int i = 0; i < count; i++) {
-                        g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, parent);
+                        g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, lparent);
                     }
                 } catch ( ArrayIndexOutOfBoundsException ex ) {
                     ex.printStackTrace();
@@ -212,8 +215,9 @@ public class SeriesRenderer extends Renderer {
 
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
             int i;
-            if ( parent==null ) return 0;
-            if (stampPsyms && !parent.getCanvas().isPrintingThread()) {
+            DasPlot lparent= parent;
+            if ( lparent==null ) return 0;
+            if (stampPsyms && !lparent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
             } else {
                 i = renderDraw(graphics, xAxis, yAxis, vds, mon);
@@ -719,10 +723,12 @@ public class SeriesRenderer extends Renderer {
         Object rendering = antiAliased ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
         g.setColor(color);
-        if (parent != null) {
-            g.setBackground(parent.getBackground());
-        }
 
+        DasPlot lparent= parent;
+        if ( lparent==null ) return;
+
+        g.setBackground(lparent.getBackground());
+        
         g.setStroke(new BasicStroke((float) lineWidth));
 
         psym.draw(g, dcmx, dcmy, (float) symSize, fillStyle);
@@ -735,9 +741,7 @@ public class SeriesRenderer extends Renderer {
                 Color c = new Color(model.getRGB(i));
                 image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
                 g = (Graphics2D) image.getGraphics();
-                if (parent != null) {
-                    g.setBackground(parent.getBackground());
-                }
+                g.setBackground(lparent.getBackground());
 
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
                 g.setColor(c);
@@ -778,11 +782,14 @@ public class SeriesRenderer extends Renderer {
 
         VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
 
+        DasPlot lparent= parent;
+        if ( lparent==null ) return;
+
         Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
-            if (parent.isOverSize()) {
-                Rectangle plotBounds = parent.getUpdateImageBounds();
+            if (lparent.isOverSize()) {
+                Rectangle plotBounds = lparent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
                     visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
                 }
@@ -1159,8 +1166,10 @@ public class SeriesRenderer extends Renderer {
 
     protected void installRenderer() {
         if (!DasApplication.getDefaultApplication().isHeadless()) {
-            DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
-            DasPlot p = parent;
+            DasPlot lparent= parent;
+            if ( lparent==null ) throw new IllegalArgumentException("parent not set");
+            DasMouseInputAdapter mouseAdapter = lparent.mouseAdapter;
+            DasPlot p = lparent;
             mouseAdapter.addMouseModule(new MouseModule(p, new LengthDragRenderer(p, p.getXAxis(), p.getYAxis()), "Length"));
         }
 
@@ -1183,7 +1192,9 @@ public class SeriesRenderer extends Renderer {
         Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) i.getGraphics();
         g.setRenderingHints(DasProperties.getRenderingHints());
-        if ( parent!=null ) g.setBackground(parent.getBackground());
+
+        DasPlot lparent= parent;
+        if ( lparent!=null ) g.setBackground(lparent.getBackground());
 
         // leave transparent if not white
         if (color.equals(Color.white)) {
@@ -1216,9 +1227,10 @@ public class SeriesRenderer extends Renderer {
      * trigger render, but not updatePlotImage.
      */
     private void refreshRender() {
-        if ( parent!=null ) {
-            parent.invalidateCacheImage();
-            parent.repaint();
+        DasPlot lparent= parent;
+        if ( lparent!=null ) {
+            lparent.invalidateCacheImage();
+            lparent.repaint();
         }
     }
     
