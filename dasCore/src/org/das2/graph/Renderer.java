@@ -419,7 +419,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 logger.fine("update plot image for "+id);
                 DasPlot lparent= parent;
                 try {
-                    if (lparent != null) { // TODO: make synchronized, but this is non-trivial since deadlock.
+                    if (lparent != null) {
                         final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
                         updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
                         xmemento = lparent.getXAxis().getMemento();
