@@ -936,7 +936,7 @@ public class DataSetUtil {
      * @return true if the dataset is a qube.
      */
     public static boolean isQube(QDataSet ds) {
-        if (ds.rank() == 1) return true;
+        if (ds.rank() <= 1) return true;
         Boolean q = (Boolean) ds.property(QDataSet.QUBE);
         if (q == null || q.equals(Boolean.FALSE)) {
             QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
