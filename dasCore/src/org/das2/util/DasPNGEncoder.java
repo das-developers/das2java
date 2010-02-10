@@ -291,19 +291,19 @@ public class DasPNGEncoder extends DasPNGConstants {
     }
     
     private byte[] getARGBBytes(BufferedImage image) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("ARGB mode not supported");
     }
     
     private byte[] getABGRBytes(BufferedImage image) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("ABGR mode not supported");
     }
     
     private byte[] get8BitSampleBytes(BufferedImage image) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("8 bit mode not supported");
     }
     
     private byte[] get16BitSampleBytes(BufferedImage image) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("16bit mode not supported");
     }
     
     private byte[] getIENDBytes() {
