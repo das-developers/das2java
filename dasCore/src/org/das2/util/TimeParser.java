@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.datum.MonthDatumRange;
 
 /**
  * TimeParser designed to quickly parse strings with a specified format.  This parser has been
@@ -881,10 +882,18 @@ public class TimeParser {
      * and getDatumRange() would go from midnight to mignight.
      */
     public DatumRange getTimeRange() {
-        TimeStruct time2 = time.add(timeWidth);
-        double t1 = toUs2000(time);
-        double t2 = toUs2000(time2);
-        return new DatumRange(t1, t2, Units.us2000);
+        if ( time.day==1 && time.hour==0 && time.minute==0 && time.seconds==0 &&
+                timeWidth.year==0 && timeWidth.month==1 && timeWidth.day==0 && timeWidth.year==0 ) { //TODO: sloppy!
+            TimeStruct time2 = time.add(timeWidth);
+            int[] t1= new int[] { time.year, time.month, time.day, time.hour, time.minute, (int)time.seconds, time.millis };
+            int[] t2= new int[] { time2.year, time2.month, time2.day, time2.hour, time2.minute, (int)time2.seconds, time2.millis };
+            return new MonthDatumRange( t1, t2 );
+        } else {
+            TimeStruct time2 = time.add(timeWidth);
+            double t1 = toUs2000(time);
+            double t2 = toUs2000(time2);
+            return new DatumRange(t1, t2, Units.us2000);
+        }
     }
 
     public double getEndTime(Units units) {
