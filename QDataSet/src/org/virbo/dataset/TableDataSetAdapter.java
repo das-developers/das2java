@@ -65,16 +65,34 @@ public class TableDataSetAdapter implements TableDataSet {
             int iy=0;
             boolean haveX= true;
             boolean haveY= true;
+            Units xunits=null;
+            boolean haveXUnits= true;
+            Units yunits=null;
+            boolean haveYUnits= true;
             for (int i0 = 0; i0 < z.length(); i0++) {
                 QDataSet xds1 = (QDataSet) z.property(QDataSet.DEPEND_0,i0);
                 if (xds1 == null) {
                     haveX= true;
                     xds1 = new TagGenDataSet( z.length(i0), 1., ix );
                     ix+= z.length(i0);
+                } else {
+                    Units u= (Units) xds1.property(QDataSet.UNITS);
+                    if ( u!=null && xunits!=null && xunits!=u ) {
+                        haveXUnits= false;
+                    } else if ( u!=null && xunits==null ) {
+                        xunits= u;
+                    }
                 }
                 QDataSet yds1 = (QDataSet) z.property(QDataSet.DEPEND_1,i0);
                 if (yds1 == null) {
                     yds1 = new IndexGenDataSet( z.length(i0,0) );
+                } else {
+                    Units u= (Units) yds1.property(QDataSet.UNITS);
+                    if ( u!=null && yunits!=null && yunits!=u ) {
+                        haveYUnits= false;
+                    } else if ( u!=null && yunits==null ) {
+                        yunits= u;
+                    }
                 }
                 if (!DataSetUtil.isMonotonic(xds1)) {
                     throw new IllegalArgumentException("x table must be monotonic");
@@ -94,11 +112,12 @@ public class TableDataSetAdapter implements TableDataSet {
             }
             if ( haveX ) {
                 ((MutablePropertyDataSet)z).putProperty( QDataSet.DEPEND_0, xds );
+                if ( haveXUnits ) xds.putProperty( QDataSet.UNITS, xunits );
             }
             if ( haveY ) {
                 ((MutablePropertyDataSet)z).putProperty( QDataSet.DEPEND_1, yds );
+                if ( haveYUnits ) yds.putProperty( QDataSet.UNITS, yunits );
             }
-            
             return new Rank3TableDataSetAdapter(z, xds, yds);
         } else {
             throw new IllegalArgumentException("rank must be 2 or 3");
