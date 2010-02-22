@@ -1072,7 +1072,8 @@ public class Ops {
      * concatenates the two datasets together, appending the on the zeroth dimension.
      * The two datasets must be QUBES have similar geometry on the higher dimensions.
      * If one of the datasets is rank 0 and the geometry of the other is rank 1, then
-     * the lower rank dataset is promoted before appending.
+     * the lower rank dataset is promoted before appending.  If the first dataset
+     * is null and the second is non-null, then return the second dataset.
      *
      * This was briefly known as "join."
      * @param ds1
@@ -1081,6 +1082,7 @@ public class Ops {
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
+        if ( ds1==null && ds2!=null ) return ds2;
         DDataSet result = DDataSet.copy(ds1);
         if ( ds2.rank()==0 && ds1.rank()==1 ) {
             DDataSet t= DDataSet.createRank1(1);
