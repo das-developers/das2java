@@ -128,6 +128,7 @@ public class DataSetAdapter {
         int table;
         YTagsDataSet( TableDataSet source, int table ) {
             this.source= source;
+            this.table= table;
             properties.put( QDataSet.UNITS, source.getYUnits() );
             
         }
@@ -140,7 +141,7 @@ public class DataSetAdapter {
         }
         
         public int length() {
-            return source.tableCount()>0 ? source.getYLength(0) : 99;
+            return source.tableCount()>0 ? source.getYLength(table) : 99;
         }
     }
     
