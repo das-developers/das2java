@@ -280,7 +280,8 @@ public class QubeDataSetIterator implements DataSetIterator {
     private void initialize() {
         boolean allLi= true;
         for (int i = 0; i < rank; i++) {
-            it[i] = fit[i].newIterator(dimLength(i));
+            int dimLength= dimLength(i);
+            it[i] = fit[i].newIterator(dimLength);
             if ( !( it[i] instanceof IndexListIterator ) ) allLi= false;
         }
         this.isAllIndexLists= allLi;
