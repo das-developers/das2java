@@ -28,7 +28,6 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.util.DasExceptionHandler;
-import org.das2.DasApplication;
 /**
  *
  * @author  jbf
@@ -51,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.*;
 import javax.swing.*;
+import org.das2.datum.DatumUtil;
 
 public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionListener {
 
@@ -113,6 +113,9 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
         super();
         updateRangeString= Preferences.userNodeForPackage(this.getClass()).getBoolean("updateRangeString", false);
         buildComponents();
+        Datum tnow= TimeUtil.prevMidnight( TimeUtil.now().convertTo(Units.us2000) );
+        this.range= new DatumRange( tnow, TimeUtil.next( TimeUtil.DAY, tnow ) );
+        update();
     }
 
     private Action getModeAction() {
@@ -172,7 +175,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
 
         startStopModePane.add( timesPane );
         favoritesButton= new JButton("v");
-        favoritesButton.setToolTipText("recently entries times");
+        favoritesButton.setToolTipText("recent entry times");
         favoritesButton.setPreferredSize(new Dimension( 20,20 ) );
         favoritesButton.setVisible(false);
         startStopModePane.add(favoritesButton);
