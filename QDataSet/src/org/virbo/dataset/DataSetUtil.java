@@ -349,6 +349,9 @@ public class DataSetUtil {
     }*/
     public static String toString(QDataSet ds) {
 
+        if ( ds==null ) {
+            throw new IllegalArgumentException( "null dataset" );
+        }
         Units u= (Units)ds.property(QDataSet.UNITS);
         if ( u==null ) u= Units.dimensionless;
 
