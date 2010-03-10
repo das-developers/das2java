@@ -481,6 +481,7 @@ public class TimeParser {
                         throw new IllegalArgumentException("No delimer specified after unknown length field, \"" + formatName[handlers[idigit]] + "\", field number=" + (1 + idigit) + "");
                     }
                 } else {
+                    while ( Character.isWhitespace( timeString.charAt(offs) ) ) offs++;
                     int i = timeString.indexOf(this.delims[idigit], offs);
                     if (i == -1) {
                         throw new ParseException("expected delimiter \"" + this.delims[idigit] + "\"", offs);
