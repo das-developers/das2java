@@ -195,8 +195,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                             break;
                     }
                     state = STATE_LINETO;
+                }
             }
-        }
         }
 
         logger.fine("done");
@@ -211,6 +211,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 ddy.numberOfBins(), ddy.getUnits(), Units.dimensionless);
 
         if (ds.getXLength() > 0) {
+
+            VectorDataSet wds = WeightsVectorDataSet.create(ds);
+
             Units xunits = ddx.getUnits();
             Units yunits = ddy.getUnits();
             Units zunits = Units.dimensionless;
@@ -223,11 +226,14 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int i = firstIndex;
             int n = lastIndex;
             for (; i <= n; i++) {
-                int ix = ddx.whichBin(ds.getXTagDouble(i, xunits), xunits);
-                int iy = ddy.whichBin(ds.getDouble(i, yunits), yunits);
-                if (ix != -1 && iy != -1) {
-                    double d = tds.getDouble(ix, iy, zunits);
-                    tds.setDouble(ix, iy, d + 1, zunits);
+                boolean isValid = wds.getDouble(i,Units.dimensionless)>0;
+                if ( isValid ) {
+                    int ix = ddx.whichBin(ds.getXTagDouble(i, xunits), xunits);
+                    int iy = ddy.whichBin(ds.getDouble(i, yunits), yunits);
+                    if (ix != -1 && iy != -1) {
+                        double d = tds.getDouble(ix, iy, zunits);
+                        tds.setDouble(ix, iy, d + 1, zunits);
+                    }
                 }
             }
         }
