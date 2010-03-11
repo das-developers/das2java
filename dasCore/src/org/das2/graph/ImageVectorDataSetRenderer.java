@@ -31,6 +31,7 @@ import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.dataset.WeightsVectorDataSet;
 
 /**
  *
@@ -172,8 +173,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
         // TODO: data breaks
         int ix0 = 0, iy0 = 0;
         if (ds.getXLength() > 0) {
+            VectorDataSet wds = WeightsVectorDataSet.create(ds);
             for (int i = firstIndex; i <= lastIndex; i++) {
-                if (ds.getDatum(i).isFill()) {
+                boolean isValid = wds.getDouble(i,Units.dimensionless)>0;
+                if (!isValid) {
                     state = STATE_MOVETO;
                 } else {
                     int iy = (int) yAxis.transform(ds.getDatum(i));
@@ -192,8 +195,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                             break;
                     }
                     state = STATE_LINETO;
-                }
             }
+        }
         }
 
         logger.fine("done");
