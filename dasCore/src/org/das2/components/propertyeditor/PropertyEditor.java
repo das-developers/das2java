@@ -434,7 +434,11 @@ public class PropertyEditor extends JComponent {
 
     public void showDialog(Component c) {
         if (dialog == null) {
-            Container top = (c == null ? null : SwingUtilities.getAncestorOfClass(Window.class, c));
+            Container top=null;
+            if ( c!=null ) {
+                top = SwingUtilities.getAncestorOfClass(Window.class, c);
+                if ( top==null && c instanceof JFrame ) top= (JFrame)c;
+            }
             if (top instanceof JFrame) {
                 dialog = new JDialog((JFrame) top);
             } else if (top instanceof JDialog) {
@@ -467,7 +471,7 @@ public class PropertyEditor extends JComponent {
     public void showDialog( Component c, String title, Image icon ) {
         showDialog(c);
         dialog.setTitle(title);
-        dialog.setIconImage(icon);
+        //dialog.setIconImage(icon);  // java6
     }
 
     public void doLayout() {
