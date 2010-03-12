@@ -459,6 +459,17 @@ public class PropertyEditor extends JComponent {
         dialog.setVisible(true);
     }
 
+    /**
+     * display the dialog, and use the given image for the icon.
+     * @param c
+     * @param icon
+     */
+    public void showDialog( Component c, String title, Image icon ) {
+        showDialog(c);
+        dialog.setTitle(title);
+        dialog.setIconImage(icon);
+    }
+
     public void doLayout() {
         if (SwingUtilities.isDescendingFrom(this, dialog)) {
             closeButton.setVisible(true);
