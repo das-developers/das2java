@@ -59,6 +59,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         initComponents();
         installListeners();
         initToolTips();
+        unitsButton.setVisible(false);
         setFocusable(true);
     }
     
@@ -178,15 +179,15 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
     }
     
     public void setUnits(Units units) {
-        if (units instanceof TimeLocationUnits) {
+//        if (units instanceof TimeLocationUnits) {
             unitsButton.setVisible(false);
-        } else {
-            unitsButton.setVisible(true);
-            String unitsStr= units.toString();
-            if ( unitsStr.length()>10 ) unitsStr= unitsStr.substring(0,9)+"...";
-            unitsButton.setText(unitsStr);
-            unitsButton.setToolTipText(units.toString()); // don't abbreviate
-        }
+//        } else {
+//            unitsButton.setVisible(true);
+//            String unitsStr= units.toString();
+//            if ( unitsStr.length()>10 ) unitsStr= unitsStr.substring(0,9)+"...";
+//            unitsButton.setText(unitsStr);
+//            unitsButton.setToolTipText(units.toString()); // don't abbreviate
+//        }
         this.units = units;
     }
     
