@@ -345,7 +345,7 @@ public class PropertyEditor extends JComponent {
             //buttonPanel.add(loadButton);
         }
         final JButton apply = new JButton("Apply Changes");
-        closeButton = new JButton("Dismiss");
+        closeButton = new JButton("OK");
 
         ActionListener al = new ActionListener() {
 
