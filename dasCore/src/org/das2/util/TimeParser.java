@@ -1003,6 +1003,7 @@ public class TimeParser {
                 throw new RuntimeException("Time Zones not supported");
             }
         }
+        result.insert(offs, this.delims[ndigits - 1]);
         return result.toString().trim();
     }
 
