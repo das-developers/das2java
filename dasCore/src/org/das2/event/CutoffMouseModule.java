@@ -68,6 +68,8 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
 
     public static final String CONFIG_VOYAGER_HR_LOWER= "Ondrej: min=-4. slopeMin=0.26 nave=3 cutoff=lower xres=1s";
     public static final String CONFIG_GALILEO_LOWER= "Ondrej: min=1.78 slopeMin=0.072 nave=3 cutoff=lower xres=120s";
+    public static final String CONFIG_GALILEO_LOWER_60= "Ondrej: min=1.78 slopeMin=0.072 nave=3 cutoff=lower xres=60s";
+    public static final String CONFIG_GALILEO_LOWER_30= "Ondrej: min=1.78 slopeMin=0.072 nave=3 cutoff=lower xres=30s";
 
     /**
      * see CONFIG_VOYAGER_HR_LOWER, etc.
