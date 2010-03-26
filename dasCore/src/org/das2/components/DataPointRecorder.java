@@ -459,7 +459,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             try {
                                 planes.put(planesArray[i], unitsArray[i].parse(s[i]));
                             } catch (ParseException e) {
-                                throw new RuntimeException(e);
+                                if ( unitsArray[i] instanceof EnumerationUnits ) {
+                                    EnumerationUnits u= (EnumerationUnits)unitsArray[i];
+                                    u.createDatum(s[i]);
+                                    planes.put(planesArray[i], unitsArray[i].parse(s[i]));
+                                } else {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         }
                     }
