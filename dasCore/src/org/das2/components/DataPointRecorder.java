@@ -401,8 +401,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     for (int i = 0; i < s.length; i++) {
                         Matcher m= ordinalPattern.matcher(s[i]);
                         if ( m.matches() ) {
-                            planesArray[i] = m.group(1);
-                            String sunits= m.group(2);
+                            planesArray[i] = m.group(1).trim();
+                            String sunits= m.group(2).trim();
                             try {
                                 unitsArray[i] = Units.getByName(sunits);
                             } catch ( IllegalArgumentException ex ) {
@@ -413,8 +413,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         m = p.matcher(s[i]);
                         if (m.matches()) {
                             //System.err.printf("%d %s\n", i, m.group(1) );
-                            planesArray[i] = m.group(1);
-                            String sunits= m.group(2);
+                            planesArray[i] = m.group(1).trim();
+                            String sunits= m.group(2).trim();
                             unitsArray[i] = Units.getByName(sunits);
                         } else {
                             planesArray[i] = s[i];
