@@ -428,12 +428,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     // support for legacy files
                     unitsArray = new Units[s.length];
                     for (int i = 0; i < s.length; i++) {
-                        if (s[i].charAt(0) == '"') {
+                        String field= s[i].trim();
+                        if (field.charAt(0) == '"') {
                             unitsArray[i] = null;
-                        } else if (TimeUtil.isValidTime(s[i])) {
+                        } else if (TimeUtil.isValidTime(field)) {
                             unitsArray[i] = Units.us2000;
                         } else {
-                            unitsArray[i] = DatumUtil.parseValid(s[i]).getUnits();
+                            unitsArray[i] = DatumUtil.parseValid(field).getUnits();
                         }
                     }
                     planesArray = new String[]{"X", "Y", "comment"};
@@ -447,9 +448,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     planes = new LinkedHashMap();
 
                     for (int i = 2; i < s.length; i++) {
+                        String field= s[i].trim();
                         if (unitsArray[i] == null) {
                             Pattern p = Pattern.compile("\"(.*)\".*");
-                            Matcher m = p.matcher(s[i]);
+                            Matcher m = p.matcher(field);
                             if (m.matches()) {
                                 planes.put(planesArray[i], m.group(1));
                             } else {
@@ -457,12 +459,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             }
                         } else {
                             try {
-                                planes.put(planesArray[i], unitsArray[i].parse(s[i]));
+                                planes.put(planesArray[i], unitsArray[i].parse(field));
                             } catch (ParseException e) {
                                 if ( unitsArray[i] instanceof EnumerationUnits ) {
                                     EnumerationUnits u= (EnumerationUnits)unitsArray[i];
-                                    u.createDatum(s[i]);
-                                    planes.put(planesArray[i], unitsArray[i].parse(s[i]));
+                                    u.createDatum(field);
+                                    planes.put(planesArray[i], unitsArray[i].parse(field));
                                 } else {
                                     throw new RuntimeException(e);
                                 }
