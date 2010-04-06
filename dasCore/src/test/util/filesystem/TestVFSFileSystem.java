@@ -5,13 +5,11 @@
 
 package test.util.filesystem;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.PrintStream;
 import java.net.URI;
-import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.util.filesystem.VFSFileObject;
+import org.das2.util.filesystem.VFSFileSystem;
 import org.das2.util.filesystem.VFSFileSystemFactory;
 
 /**
@@ -48,6 +46,7 @@ public class TestVFSFileSystem {
             os.println(new java.util.Date().toString());
             os.close();
             vfo.close();
+            ((VFSFileSystem)fs).close();
 
         } catch(Exception e) {
             e.printStackTrace();

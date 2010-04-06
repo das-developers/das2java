@@ -48,6 +48,13 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         }
     }
 
+    // SFTP has to be closed to be sure all threads finish, otherwise the VM may hang on app exit
+    // This should probably be refactored to the super-class with a default empty implementation.
+    public void close() {
+        // VfsComponent is the interface that specifies close(), so that's the cast we use:
+        ((org.apache.commons.vfs.provider.VfsComponent) vfsSystem).close();
+    }
+
     public static synchronized VFSFileSystem createVFSFileSystem(URI root) throws FileSystemOfflineException {
         //TODO: Handle at least some exceptions; offline detection?
         // yes, this is ugly
