@@ -27,6 +27,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
 
     private final FileSystemManager mgr;
     private org.apache.commons.vfs.FileSystem vfsSystem;
+    private org.apache.commons.vfs.FileObject fsRoot;
     private final File cacheRoot;
     private final URI fsuri;
 
@@ -37,10 +38,10 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         String subFolderName = "vfsCache/" + root.getScheme() + "/" + root.getHost() + root.getPath();
         cacheRoot = new File(settings().getLocalCacheDir(), subFolderName);
         
-        org.apache.commons.vfs.FileObject vfo = mgr.resolveFile(root.toString());
-        vfsSystem = vfo.getFileSystem();
+        fsRoot = mgr.resolveFile(root.toString());
+        vfsSystem = fsRoot.getFileSystem();
 
-        if (vfo.getType() == org.apache.commons.vfs.FileType.FOLDER) {
+        if (fsRoot.getType() == org.apache.commons.vfs.FileType.FOLDER) {
             fsuri = URI.create(root.toString());
         } else {
             fsuri = URI.create(root.toString().substring(0, root.toString().lastIndexOf('/')+1 ));
@@ -61,7 +62,11 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     public FileObject getFileObject(String filename) {
         org.apache.commons.vfs.FileObject vfsob;
         try {
-            vfsob = mgr.resolveFile(filename);
+            // Have to peel leading slash from absolute path so VFS doesn't resolve to file:///filename
+            if(filename.startsWith("/"))
+                vfsob = mgr.resolveFile(fsRoot, filename.substring(1));
+            else
+                vfsob = mgr.resolveFile(fsRoot, filename);
         } catch (FileSystemException e) {
             throw new RuntimeException(e);
         }

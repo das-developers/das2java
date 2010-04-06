@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Date;
@@ -206,5 +207,39 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         } finally {
             return new Date(when);
         }
+    }
+
+    //------- EXPERIMENTAL support for writable file system
+
+    public boolean canWrite() throws IOException {
+        return vfsob.isWriteable();
+    }
+
+    /** Create a folder named by this VFSFileObject.  This method will also create
+     * any necessary ancestor folders.  Does nothing if the folder already exists.
+     *
+     * @throws IOException If parent folder is read-only, or other error creating this
+     * folder or ancestors, or if folder name exists as file.
+     */
+    public void createFolder() throws IOException {
+        vfsob.createFolder();
+    }
+
+    /** Create the file named by this VFSFileObject. Also creates any necessary
+     * ancestor folders.  Does nothing if file already exists and is a file (not a folder).
+     *
+     * @throws IOException If parent folder is read-only, or error creating ancestor
+     * folders, or if file exists and is a folder.
+     */
+    public void createFile() throws IOException {
+        vfsob.createFile();
+    }
+
+    public OutputStream getOutputStream(boolean append) throws IOException {
+        return vfsob.getContent().getOutputStream(append);
+    }
+
+    public void close() throws IOException {
+        vfsob.close();
     }
 }
