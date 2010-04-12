@@ -39,6 +39,7 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.system.MutatorLock;
+import org.das2.util.DebugPropertyChangeSupport;
 
 /**
  *
@@ -107,7 +108,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.isWidth = isWidth;
         
         this.dasName = DasApplication.getDefaultApplication().suggestNameFor(this);
-        this.propertyChangeDelegate = new PropertyChangeSupport(this);
+        this.propertyChangeDelegate = new DebugPropertyChangeSupport(this);
         if ( parent!=null ) {
             parent.addPropertyChangeListener( new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -324,7 +325,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         double doldMin = this.minimum;
         double doldMax = this.maximum;
         this.minimum = Math.min(minimum, maximum);
-        this.maximum = Math.max(maximum, maximum);
+        this.maximum = Math.max(minimum, maximum);
         revalidate();
         if (oldMin != this.minimum) {
             firePropertyChange( PROP_MINIMUM, oldMin, this.minimum);
