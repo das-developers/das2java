@@ -2810,6 +2810,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * scan to the previous interval.  If we were looking at a day with fuzz, then
      * scan to the previous day.
+     * TODO: this should check for any ordinal, for example months, hours, or 10 kg.
      */
     public void scanPrevious() {
         Datum delta = (getDataMaximum().subtract(getDataMinimum())).multiply(1.0);
