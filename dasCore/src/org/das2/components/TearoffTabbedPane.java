@@ -141,9 +141,8 @@ public class TearoffTabbedPane extends JTabbedPane {
                 } else {
                     if (dragStart.distance(e.getPoint()) > 10) {
                         if (draggingFrame == null) {
-                            selectedTab = TearoffTabbedPane.this.indexAtLocation(dragStart.x,dragStart.y);
-                            System.err.println("selectedTab="+selectedTab);
                             setSelectedIndex(selectedTab);
+                            getComponentAt(selectedTab).setVisible(true);
                             dragOffset= getComponentAt(selectedTab).getLocationOnScreen();
                             Point ds= new Point(dragStart);
                             SwingUtilities.convertPointToScreen(ds, e.getComponent() );
