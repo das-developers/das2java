@@ -518,11 +518,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     raster= lraster;
 
                     Rectangle rr= DasDevicePosition.toRectangle( parent.getRow(), parent.getColumn() );
-                    DatumRange xdr= DataSetUtil.xRange( fds );
-                    DatumRange ydr= DataSetUtil.yRange( fds );
-                    double[] yy= GraphUtil.transformRange( yAxis, ydr );
-                    double[] xx= GraphUtil.transformRange( xAxis, xdr );
-                    selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
+
+                    if ( fds!=null ) {
+                        DatumRange xdr= DataSetUtil.xRange( fds );
+                        DatumRange ydr= DataSetUtil.yRange( fds );
+                        double[] yy= GraphUtil.transformRange( yAxis, ydr );
+                        double[] xx= GraphUtil.transformRange( xAxis, xdr );
+                        selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
+                    }
 
                 }
             } catch (InconvertibleUnitsException ex) {
