@@ -1483,7 +1483,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         } else {
             if ( getCanvas().isPrintingThread() ) {
-                System.err.println("inconvertible units on printing thread!");
+                this.updateImmediately();
+                g.setClip(null);
+                System.err.println("calculated ticks on printing thread, this may cause problems");
+                //System.err.println("inconvertible units on printing thread!");
+                if (isHorizontal()) {
+                    paintHorizontalAxis(g);
+                } else {
+                    paintVerticalAxis(g);
+                }
                 
             }
         }
