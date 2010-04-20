@@ -538,7 +538,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public void setActive(boolean active) {
         boolean oldValue = this.active;
         this.active = active;
-        if ( active ) update();
+        if ( oldValue!=active ) update();
         propertyChangeSupport.firePropertyChange(PROPERTY_ACTIVE, oldValue, active);
     }
 
