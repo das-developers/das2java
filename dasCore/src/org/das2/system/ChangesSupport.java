@@ -7,6 +7,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 /**
@@ -115,6 +117,28 @@ public class ChangesSupport {
     }
     private boolean valueIsAdjusting = false;
 
+    private Lock mutatorLock = new ReentrantLock() {
+            public void lock() {
+                super.lock();
+                if (valueIsAdjusting) {
+                    //System.err.println("lock is already set!");
+                } else {
+                    propertyChangeSupport.firePropertyChange( PROP_VALUEADJUSTING, false, true );
+                    valueIsAdjusting = true;
+                }
+            }
+
+            public void unlock() {
+                super.unlock();
+                if ( !super.isLocked() ) {
+                    valueIsAdjusting = false;
+                    propertyChangeSupport.firePropertyChange( PROP_VALUEADJUSTING, true, false );
+                } else {
+                    //System.err.println("lock is still set, neat!");
+                }
+            }
+        };
+
     /**
      * one client will have write access to the bean, and when unlock
      * is called, a "valueAdjusting" property change event is fired.
@@ -123,23 +147,10 @@ public class ChangesSupport {
      * clients should check the valueIsAdjusting property.
      * @return
      */
-    public synchronized MutatorLock mutatorLock() {
-        return new MutatorLock() {
-            public void lock() {
-                if (valueIsAdjusting) {
-                    System.err.println("lock is already set!");
-                }
-                propertyChangeSupport.firePropertyChange(PROP_VALUEADJUSTING, false, true);
-                valueIsAdjusting = true;
-            }
-
-            public void unlock() {
-                valueIsAdjusting = false;
-                propertyChangeSupport.firePropertyChange(PROP_VALUEADJUSTING, true, false);
-            }
-        };
+    public synchronized Lock mutatorLock() {
+        return mutatorLock;
     }
-    
+
     private PropertyChangeSupport propertyChangeSupport;
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
