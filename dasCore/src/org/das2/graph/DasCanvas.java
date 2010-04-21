@@ -84,6 +84,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -2102,7 +2103,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return stateSupport.isPendingChanges();
     }
 
-    public MutatorLock mutatorLock() {
+    public Lock mutatorLock() {
         return stateSupport.mutatorLock();
     }
 
