@@ -123,6 +123,11 @@ public class DasColorBar extends DasAxis {
     }
     
     protected void paintComponent(Graphics g) {
+
+        if (getCanvas().isValueAdjusting()) {
+            return;
+        }
+        
         int x = (int)Math.round(getColumn().getDMinimum());
         int y = (int)Math.round(getRow().getDMinimum());
         int width = (int)Math.round(getColumn().getDMaximum()) - x;
