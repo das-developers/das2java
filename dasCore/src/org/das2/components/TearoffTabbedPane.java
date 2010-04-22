@@ -464,6 +464,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             rightFrame.add(rightPane);
             rightFrame.setIconImage( parent.getIconImage() );
+            rightFrame.setTitle( parent.getTitle().toLowerCase() );
 
             final WindowStateListener listener = new WindowStateListener() {
 
