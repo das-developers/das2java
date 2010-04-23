@@ -427,7 +427,7 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
                 if (isValid) {
                     double step= logStep ? Math.log(x/x0) : x-x0;
-                    if ( ignoreCadence || step < xSampleWidth) {
+                    if ( ( ignoreCadence && step < xSampleWidth*20 ) || step < xSampleWidth) {
                         // draw connect-a-dot between last valid and here
                         if (histogram) {
                             float fx1 = (fx0 + fx) / 2;
