@@ -168,7 +168,7 @@ public class TimeParser {
         ndigits = ss.length;
 
         StringBuffer regex = new StringBuffer(100);
-        regex.append(ss[0]);
+        regex.append(ss[0].replaceAll("\\+","\\\\+"));
 
         lengths = new int[ndigits];
         for (int i = 0; i < lengths.length; i++) {
@@ -327,7 +327,7 @@ public class TimeParser {
             } else {
                 regex.append("(" + dots.substring(0, lengths[i]) + ")");
             }
-            regex.append(delim[i]);
+            regex.append(delim[i].replaceAll("\\+","\\\\+"));
 
         }
 
