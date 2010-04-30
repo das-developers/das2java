@@ -2369,6 +2369,20 @@ public class Ops {
         }
     }
 
+    /**
+     * made a Java-style identifier
+     * @param suggest
+     * @return
+     */
+    public static String safeName( String suggest ) {
+        StringBuilder result= new StringBuilder( suggest.replaceAll(" ", "" ) );
+        for ( int i=0; i<result.length(); i++ ) {
+            if ( result.charAt(i)<'A' ) result.replace( i, i+1, "_" );
+            if ( result.charAt(i)>'z' ) result.replace( i, i+1, "_" );
+        }
+        return result.toString();
+    }
+
     public static QDataSet transpose(QDataSet ds) {
         return DDataSet.copy(new TransposeRank2DataSet(ds));
     }
