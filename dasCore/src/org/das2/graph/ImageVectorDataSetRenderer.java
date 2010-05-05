@@ -358,10 +358,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
             return;
         }
 
-        DatumRange visibleRange = xAxis.getDatumRange();
+        DatumRange visibleRange = xAxis.getDatumRange(); 
 
         boolean xmono = Boolean.TRUE == ds1.getProperty(DataSet.PROPERTY_X_MONOTONIC);
 
+        
         int firstIndex, lastIndex;
         if ( xmono ) {
             firstIndex = DataSetUtil.getPreviousColumn(ds1, visibleRange.min());
