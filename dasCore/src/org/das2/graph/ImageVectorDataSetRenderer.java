@@ -32,6 +32,7 @@ import javax.swing.ImageIcon;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.dataset.WeightsVectorDataSet;
+import org.das2.datum.UnitsUtil;
 
 /**
  *
@@ -48,6 +49,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
     DatumRange imageYRange;
     TableDataSet hist;
     private Color color = Color.BLACK;
+    private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
+    private Datum xres= null; /** size used to set ixstepLimitSq */
 
     /** Creates a new instance of LotsaPointsRenderer */
     public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {
@@ -181,6 +184,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 } else {
                     int iy = (int) yAxis.transform(ds.getDatum(i));
                     int ix = (int) xAxis.transform(ds.getXTagDatum(i));
+                    if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                     switch (state) {
                         case STATE_MOVETO:
                             g.fillRect(ix, iy, 1, 1);
@@ -329,15 +333,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
         imageYRange = yrange;
     }
 
-    //private double meanTime = 0;
-    //private long meanCount = 0;
-
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
-        //long startTime = (new java.util.Date()).getTime();
-        super.updatePlotImage(xAxis, yAxis, monitor);
 
-        long t0 = System.currentTimeMillis();
+        super.updatePlotImage(xAxis, yAxis, monitor);
 
         VectorDataSet ds1 = (VectorDataSet) getDataSet();
         if (ds1 == null) {
@@ -363,8 +362,34 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         boolean xmono = Boolean.TRUE == ds1.getProperty(DataSet.PROPERTY_X_MONOTONIC);
 
-        int firstIndex = xmono ? DataSetUtil.getPreviousColumn(ds1, visibleRange.min()) : 0;
-        int lastIndex = xmono ? DataSetUtil.getNextColumn(ds1, visibleRange.max()) : ds1.getXLength();
+        int firstIndex, lastIndex;
+        if ( xmono ) {
+            firstIndex = DataSetUtil.getPreviousColumn(ds1, visibleRange.min());
+            lastIndex = DataSetUtil.getNextColumn(ds1, visibleRange.max()) ;
+            Datum xres1= visibleRange.width().divide(xAxis.getDLength());
+            if ( xAxis.isLog() ) {
+                ixstepLimitSq= 100000000;
+                xres= null;
+            } else {
+                if ( !xres1.equals(xres) ) {
+                    Datum sw = DataSetUtil.guessXTagWidth(ds);
+                    Datum xmax= xAxis.getDataMaximum();
+                    int ixstepLimit= 0;
+                    if ( UnitsUtil.isRatiometric(sw.getUnits())) {
+                        ixstepLimit= 1 + (int) (xAxis.transform(xmax) - xAxis.transform(xmax.divide(sw)));
+                    } else {
+                        ixstepLimit= 1 + (int) (xAxis.transform(xmax) - xAxis.transform(xmax.subtract(sw)));
+                    }
+                    ixstepLimitSq= ixstepLimit * ixstepLimit;
+                    xres= xres1;
+                }
+            }
+        } else {
+            firstIndex = 0;
+            lastIndex = ds1.getXLength();
+            ixstepLimitSq= 100000000;
+            xres= null;
+        }
 
         if ((lastIndex - firstIndex) > 20 * xAxis.getColumn().getWidth()) {
             logger.fine("rendering with histogram");
@@ -374,11 +399,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
             ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
         }
         logger.fine("done updatePlotImage");
-        //long endTime = (new java.util.Date()).getTime();
-        //meanTime = (meanTime * meanCount + (endTime-startTime))/(meanCount+1);
-        //meanCount++;
-        //System.err.printf("updatePlotImage execution time: %d ms (mean %.1f ms)%n", endTime-startTime, meanTime);
-
     }
     int saturationHitCount = 5;
 
