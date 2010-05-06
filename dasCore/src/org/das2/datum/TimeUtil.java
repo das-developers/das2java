@@ -748,6 +748,7 @@ public final class TimeUtil {
      * @throws ParseException if the name isn't recognized
      */
     public static int monthNumber( String s ) throws ParseException {
+        if ( s.length()<3 ) throw new ParseException("need at least three letters",0);
         s= s.substring(0,3);
         for ( int i=0; i<12; i++ ) {
             if ( s.equalsIgnoreCase( mons[i] ) ) return i+1;
