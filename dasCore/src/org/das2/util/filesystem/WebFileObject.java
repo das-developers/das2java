@@ -22,6 +22,7 @@
  */
 package org.das2.util.filesystem;
 
+import java.awt.EventQueue;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
@@ -219,7 +220,11 @@ public class WebFileObject extends FileObject {
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         
         if ( wfs.isAppletMode() ) throw new SecurityException("getFile cannot be used with applets.");
-        
+
+        if ( EventQueue.isDispatchThread() ) {
+            System.err.println("download on event thread! "+this.getNameExt());
+        }
+
         boolean download = false;
 
         if ( monitor==null ) throw new NullPointerException("monitor may not be null");
