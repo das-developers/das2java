@@ -27,9 +27,10 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
         if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
-            throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
-        }
-        if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
+            // special case where we are pulling out a table, this used to be a runtime exception
+            putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));
+            putProperty( QDataSet.DEPEND_1, new Slice0DataSet(dep1, index));
+        } else if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
             if ( dep0!=null ) DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
             if ( dep1!=null && dep1.rank()==2 ) {
                 putProperty( QDataSet.DEPEND_0, new Slice0DataSet( dep1, index ) );
