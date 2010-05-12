@@ -99,9 +99,16 @@ public interface QDataSet {
     public final static String BINS_0="BINS_0";
 
     /**
+     * type String.  This non-null string identifies that elements in this dimension are
+     * instances of data with the same dimensions.  ds[2,20] where JOIN_0="DEPEND_1" should
+     * be equivalent to ds[40].
+     */
+    public final static String JOIN_0="JOIN_0";
+
+    /**
      * type QDataSet. Correllated plane of data.  An additional dependent DataSet that is correllated by the first index.  
      * Note "0" is just a count, and does not refer to the 0th index.  All correllated datasets must be 
-     * correllated by the first index.  TODO: what about two rank 2 datasets?
+     * correllated by the first index.  TODO: what about two rank 2 datasets?  
      */
     public final static String PLANE_0= "PLANE_0";
 
