@@ -262,6 +262,13 @@ public class DataSetUtil {
             }
         }
 
+        for (int i = 0; i <= ds.rank(); i++) {
+            Object dep = ds.property("JOIN_" + i);
+            if (dep != null) {
+                result.put("JOIN_" + i, dep);
+            }
+        }
+
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
             Object plane = ds.property("PLANE_" + i);
             if (plane != null) {
