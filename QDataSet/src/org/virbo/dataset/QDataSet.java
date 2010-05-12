@@ -101,7 +101,8 @@ public interface QDataSet {
     /**
      * type String.  This non-null string identifies that elements in this dimension are
      * instances of data with the same dimensions.  ds[2,20] where JOIN_0="DEPEND_1" should
-     * be equivalent to ds[40].
+     * be equivalent to ds[40].  It's not clear if the text should indicate anything, but
+     * for now let's just indicate the next dimension.
      */
     public final static String JOIN_0="JOIN_0";
 
