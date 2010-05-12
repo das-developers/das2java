@@ -185,6 +185,7 @@ public class DataSetAdapter {
             super();
 
             this.source= source;
+            properties.put( QDataSet.JOIN_0, "DEPEND_1" );
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( PROPERTY_SOURCE, source );
         }
