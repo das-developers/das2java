@@ -47,8 +47,9 @@ class StreamDescriptor implements Descriptor {
 
     public void addDescriptor(Descriptor pd) {
         int count = descriptors.size() + 1;
+        if ( count>99 ) count= count % 99 + 1;//TODO: nasty kludge
         descriptors.put(count, pd);
-        invPackets.put(pd, count);
+        invPackets.put(pd, count ); 
     }
 
     public int descriptorId(Descriptor pd) {
