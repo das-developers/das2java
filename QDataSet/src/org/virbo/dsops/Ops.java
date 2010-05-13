@@ -2376,9 +2376,20 @@ public class Ops {
      */
     public static String safeName( String suggest ) {
         StringBuilder result= new StringBuilder( suggest.replaceAll(" ", "" ) );
-        for ( int i=0; i<result.length(); i++ ) {
-            if ( result.charAt(i)<'A' ) result.replace( i, i+1, "_" );
+        if ( result.charAt(0)<'A' ) result.replace( 0, 1, "_" );
+        if ( result.charAt(0)>'z' ) result.replace( 0, 1, "_" );
+        if ( result.charAt(0)!='_' && result.charAt(0)>90 && result.charAt(0)<97 ) {
+            result.replace( 0, 1, "_" );
+        }
+        for ( int i=1; i<result.length(); i++ ) {
+            if ( result.charAt(i)<'0' ) result.replace( i, i+1, "_" );
             if ( result.charAt(i)>'z' ) result.replace( i, i+1, "_" );
+            if ( result.charAt(i)!='_' && result.charAt(i)>57 && result.charAt(i)<65 ) {
+                result.replace( i, i+1, "_" );
+            }
+            if ( result.charAt(i)!='_' && result.charAt(i)>90 && result.charAt(i)<97 ) {
+                result.replace( i, i+1, "_" );
+            }
         }
         return result.toString();
     }
