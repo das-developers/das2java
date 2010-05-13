@@ -175,8 +175,8 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
                 return result;
             }
         } else {*/
-            for ( int j=0; j<tables.length; j++ ) {
-                if ( i>=tables[j] ) return j;
+            for ( int j=0; j<tables.length-1; j++ ) { // tables has one extra element
+                if ( i>=tables[j] && i<tables[j+1] ) return j;
             }
             throw new IndexOutOfBoundsException("index out of bounds: "+i);
         //}
