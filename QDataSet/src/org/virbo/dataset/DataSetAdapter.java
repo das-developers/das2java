@@ -26,7 +26,7 @@ public class DataSetAdapter {
         } else if ( ds instanceof TableDataSet ) {
             TableDataSet tds= (TableDataSet) ds;
             if ( tds.tableCount()<=1 ) {
-                return new Table(tds);
+                return new SimpleTable(tds);
             } else {
                 return new MultipleTable(tds);
             }
@@ -145,17 +145,17 @@ public class DataSetAdapter {
         }
     }
     
-    static class Table extends AbstractDataSet {
+    static class SimpleTable extends AbstractDataSet {
         TableDataSet source;
         
-        Table( TableDataSet source ) {
+        SimpleTable( TableDataSet source ) {
             super();
             if ( source.tableCount() > 1 ) throw new IllegalArgumentException("only simple tables are supported" );
             
             this.source= source;
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
-            properties.put( QDataSet.DEPEND_1, new YTagsDataSet( source, 0 ) );
+            properties.put( QDataSet.DEPEND_1, new YTagsDataSet( source, 0 ) ); 
             properties.put( QDataSet.QUBE, Boolean.TRUE );
             properties.put( PROPERTY_SOURCE, source );
         }
@@ -229,8 +229,6 @@ public class DataSetAdapter {
                 return super.property(name, i);
             }
         }
-
-
 
     }
 }
