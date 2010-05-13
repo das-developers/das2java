@@ -2386,6 +2386,44 @@ public class Ops {
     public static QDataSet transpose(QDataSet ds) {
         return DDataSet.copy(new TransposeRank2DataSet(ds));
     }
+
+    /**
+     * returns the number of physical dimensions of a dataset.
+     *   JOIN, BINS   do not increase dataset dimensionality.
+     *   DEPEND       increases dimensionality by dimensionality of DEPEND ds.
+     *   BUNDLE       increases dimensionality by N where N is the number of bundled datasets.
+     * Note this includes implicit dimensions taken by the primary dataset.
+     *   Z(time,freq)->3
+     *   rand(20,20)->3
+     *   B_gsm(20,3)->4
+     * @param ds
+     *
+     * @return the number of dimensions occupied by the data.
+     */
+    public static int dimensionCount( QDataSet dss ) {
+        return dimensionCount( dss, false );
+    }
+
+    private static int dimensionCount( QDataSet dss, boolean noImplicit ) {
+        int dim=1;
+        QDataSet ds= dss;
+        while ( ds.rank()>0 ) {
+            if ( ds.property("JOIN_0")!=null ) {
+
+            } else if ( ds.property("BINS_0")!=null ) {
+                
+            } else if ( ds.property("DEPEND_0")!=null ) {
+                dim+= dimensionCount( (QDataSet) ds.property("DEPEND_0"), true );
+            } else if ( ds.property("BUNDLE_0")!=null ) {
+                dim+= ((QDataSet)ds.property("BUNDLE_0")).length();
+            } else {
+                if ( !noImplicit ) dim+= 1; // implicity undeclared dimensions add one dimension
+            }
+            ds= DataSetOps.slice0(ds, 0);
+        }
+        return dim;
+    }
+
     public static double PI = Math.PI;
     public static double E = Math.E;
 }
