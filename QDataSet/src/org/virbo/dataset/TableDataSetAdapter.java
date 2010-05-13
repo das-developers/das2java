@@ -111,11 +111,9 @@ public class TableDataSetAdapter implements TableDataSet {
                 z= DDataSet.maybeCopy(z);
             }
             if ( haveX ) {
-                ((MutablePropertyDataSet)z).putProperty( QDataSet.DEPEND_0, xds );
                 if ( haveXUnits ) xds.putProperty( QDataSet.UNITS, xunits );
             }
             if ( haveY ) {
-                ((MutablePropertyDataSet)z).putProperty( QDataSet.DEPEND_1, yds );
                 if ( haveYUnits ) yds.putProperty( QDataSet.UNITS, yunits );
             }
             return new Rank3TableDataSetAdapter(z, xds, yds);
