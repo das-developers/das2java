@@ -441,6 +441,13 @@ public class SimpleStreamFormatter {
 
     }
 
+    /**
+     * return a name for the thing that describes dep0.  This will be used in
+     * the descriptor, so if the descriptor doesn't contain the values, then
+     * the name can be reused.  Note no names are reused at this point.
+     * @param dep0
+     * @return
+     */
     private synchronized String nameFor(QDataSet dep0) {
         String name = names.get(dep0);
 
@@ -500,6 +507,16 @@ public class SimpleStreamFormatter {
 
     }
 
+    /**
+     * create the packetDescriptor object.  
+     * @param sd the handle for the stream
+     * @param ds the dataset that will be serialized to this packet descriptor.
+     * @param stream the data will be streamed in packets.
+     * @param valuesInDescriptor the data will be contained in the packet.
+     * @param streamRank the rank of the stream.  
+     * @return
+     * @throws ParserConfigurationException
+     */
     PacketDescriptor doPacketDescriptor(StreamDescriptor sd, QDataSet ds, boolean stream, boolean valuesInDescriptor, int streamRank) throws ParserConfigurationException {
 
         if ( !valuesInDescriptor && DataSetUtil.isQube(ds) == false ) {
