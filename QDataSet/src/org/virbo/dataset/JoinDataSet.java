@@ -34,6 +34,8 @@ public class JoinDataSet extends AbstractDataSet {
      */
     public JoinDataSet( int rank ) {
         this.rank= rank;
+        putProperty(QDataSet.JOIN_0,"DEPEND_1");
+        
         datasets= new ArrayList<QDataSet>();
     }
 
@@ -95,6 +97,12 @@ public class JoinDataSet extends AbstractDataSet {
         properties.put(sname, value);
     }
 
+    public void putProperty(String name, Object value) {
+        super.putProperty(name, value);
+        if ( name.equals(QDataSet.DEPEND_0) ) {
+            super.putProperty(QDataSet.JOIN_0, null);
+        }
+    }
 
     public int length() {
         return datasets.size();
