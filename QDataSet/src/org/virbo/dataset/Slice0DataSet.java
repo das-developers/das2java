@@ -11,6 +11,9 @@ package org.virbo.dataset;
  * Slicing a rank 1 dataset results in a rank 0 dataset.
  *
  * Supports rank 2 depend_1 datasets.  Supports CONTEXT_0, DELTA_PLUS, DELTA_MINUS
+ *
+ * Supports BINS_1, JOIN_0
+ *
  * @author jbf
  */
 public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
@@ -37,6 +40,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             } else {
                 putProperty( QDataSet.DEPEND_0, dep1 );
             }
+            putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_1 ) );
             putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
             putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
 
@@ -51,6 +55,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                 }
             }
         }
+        putProperty( QDataSet.JOIN_0, null );
         
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
