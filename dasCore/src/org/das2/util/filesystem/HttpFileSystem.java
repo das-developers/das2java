@@ -54,7 +54,7 @@ public class HttpFileSystem extends WebFileSystem {
         listings = new HashMap();
     }
 
-    public static synchronized HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException {
+    public static synchronized HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException {
         try {
             URL root= rooturi.toURL();
 
@@ -99,6 +99,8 @@ public class HttpFileSystem extends WebFileSystem {
             return result;
 
         } catch (FileSystemOfflineException e) {
+            throw e;
+        } catch (UnknownHostException e) {
             throw e;
         } catch (IOException e) {
             throw new FileSystemOfflineException(e,rooturi);
