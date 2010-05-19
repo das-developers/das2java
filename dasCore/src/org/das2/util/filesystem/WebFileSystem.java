@@ -222,6 +222,8 @@ public abstract class WebFileSystem extends FileSystem {
      * Subclasses implementing this should download data to partfile, then rename partfile to
      * f after the download is complete.
      *
+     * @param filename the name of the file, relative to the filesystem.
+     * @param f the file to where the file is downloaded.
      * @param partfile the temporary file during download.
      */
     protected abstract void downloadFile(String filename, File f, File partfile, ProgressMonitor monitor) throws IOException;
