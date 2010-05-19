@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,14 +56,24 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         ((org.apache.commons.vfs.provider.VfsComponent) vfsSystem).close();
     }
 
-    public static synchronized VFSFileSystem createVFSFileSystem(URI root) throws FileSystemOfflineException {
+    public static synchronized VFSFileSystem createVFSFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException {
         //TODO: Handle at least some exceptions; offline detection?
         // yes, this is ugly
         try {
             return new VFSFileSystem(root);
+        } catch (UnknownHostException e ) {
+            throw e; // Too bad the library doesn't throw this and we have kludgy code in IOException
         } catch (IOException e) {
-            throw new FileSystemOfflineException(e);  //slightly less ugly
+            if ( e.getMessage().startsWith("Could not connect to ") ) {
+                throw new UnknownHostException(root.getHost());
+            } else {
+                throw new FileSystemOfflineException(e);  //slightly less ugly
+            }
         }
+    }
+
+    protected org.apache.commons.vfs.FileObject getVFSFileObject() throws FileSystemException {
+        return fsRoot;
     }
 
     @Override
@@ -268,6 +279,14 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         }
     }
 
+    /**
+     * Transfers the file from the remote store to a local copy f.  This should only be
+     * used within the class and subclasses, clients should use getFileObject( String ).getFile().
+     *
+     * @param filename the name of the file, relative to the filesystem.
+     * @param f the file to where the file is downloaded.
+     * @param partfile the temporary file during download.
+     */
     protected void downloadFile(String filename, File f, File partfile, ProgressMonitor monitor) throws IOException {
         // This shouldn't be called for local files, but just in case...
         if (isLocal()) {
@@ -281,12 +300,15 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         }
 
         try {
+            if ( filename.startsWith(fsuri.getPath()) ) {
+                System.err.println("something is funny, we have the path twice:"+filename+" " +fsuri );
+            }
             filename = fsuri.getPath() + filename;
             org.apache.commons.vfs.FileObject vfsob = vfsSystem.resolveFile(filename);
 
             if(!vfsob.exists()) {
                 //System.err.println("Uh oh! Attempt to download non-existent file via VFS.");
-                throw new FileNotFoundException("attempt to download non-existent file");
+                throw new FileNotFoundException("attempt to download non-existent file: "+vfsob);
             }
 
             long size = vfsob.getContent().getSize();
@@ -313,7 +335,6 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                 monitor.started();
                 try {
                     copyStream(is, os, monitor);
-                    monitor.finished();
                     is.close();
                     os.close();
                     partfile.renameTo(f);
@@ -331,6 +352,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         } finally {
             // Ensure that the download lock is released no matter what
             lock.unlock();
+            monitor.finished();
         }
     }
 }

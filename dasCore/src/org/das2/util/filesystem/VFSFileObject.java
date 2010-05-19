@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.vfs.FileSystemException;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -25,6 +27,18 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
     private VFSFileSystem vfsfs;
     private boolean local = false;
     private File localFile = null;
+    private String localName= null;  // name within filesystem
+
+    private static String relativeName( org.apache.commons.vfs.FileObject root, org.apache.commons.vfs.FileObject f ) throws FileSystemException {
+        String roots= root.getName().toString();
+        String fs= f.getName().toString();
+        if ( fs.startsWith( roots ) ) {
+            return fs.substring(roots.length());
+        } else {
+            throw new IllegalArgumentException("not a child:"+f);
+
+        }
+    }
 
     /**
      * Create a das2 FileObject from the given VFS FileObject
@@ -38,8 +52,13 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         if (vfsfs.isLocal()) {
             local = true;
         }
-        // localFile may not exist yet
-        localFile = new File(vfsfs.getLocalRoot(), vfsob.getName().getPath());
+        try {
+            // localFile may not exist yet
+            localName= relativeName(fs.getVFSFileObject(), f);
+            localFile = new File( vfsfs.getLocalRoot(), localName );
+        } catch (FileSystemException ex) {
+            Logger.getLogger(VFSFileObject.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -101,7 +120,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
                     localFile.getParentFile().mkdirs();
                 }
                 File partfile = new File(localFile.toString() + ".part");
-                vfsfs.downloadFile(vfsob.getName().getPath(), localFile, partfile, monitor);
+                vfsfs.downloadFile( localName, localFile, partfile, monitor);
             }
             local = true;
         }
