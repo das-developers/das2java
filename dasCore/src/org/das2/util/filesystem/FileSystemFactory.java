@@ -26,11 +26,12 @@ package org.das2.util.filesystem;
 import java.net.MalformedURLException;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.net.URI;
+import java.net.UnknownHostException;
 
 /**
  * creates a new instance of a type of filesystem
  * @author jbf
  */
 public interface FileSystemFactory {
-    FileSystem createFileSystem( URI root ) throws FileSystemOfflineException, MalformedURLException;
+    FileSystem createFileSystem( URI root ) throws FileSystemOfflineException, MalformedURLException, UnknownHostException;
 }

@@ -76,7 +76,7 @@ public abstract class FileSystem  {
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
      */
-    public static FileSystem create(URL root) throws FileSystemOfflineException {
+    public static FileSystem create(URL root) throws FileSystemOfflineException, UnknownHostException {
         try {
             return create( root.toURI(), new NullProgressMonitor() );
         } catch (URISyntaxException ex) {
@@ -94,7 +94,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public synchronized static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException {
+    public synchronized static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
         try {
             return create(root.toURI(), mon);
         } catch (URISyntaxException ex) {
@@ -114,7 +114,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public static FileSystem create(URI root) throws FileSystemOfflineException {
+    public static FileSystem create(URI root) throws FileSystemOfflineException, UnknownHostException {
         return create(root, new NullProgressMonitor());
     }
 
@@ -127,7 +127,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public synchronized static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException {
+    public synchronized static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
         logger.fine("create filesystem "+root);
 
         FileSystem result= instances.get(root);
@@ -153,6 +153,8 @@ public abstract class FileSystem  {
                 } else {
                     result= new SubFileSystem(zipfs, subdir);
                 }
+            } catch (UnknownHostException ex ) {
+                throw ex;
             } catch (URISyntaxException ex) {
                 //this shouldn't happen
                 throw new RuntimeException(ex);
