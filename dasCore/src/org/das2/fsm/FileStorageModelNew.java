@@ -19,7 +19,6 @@ import org.das2.util.TimeParser;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -39,7 +38,6 @@ import java.util.regex.*;
 public class FileStorageModelNew {
 
     private Pattern pattern;
-    private Pattern absPattern;
     private String regex;
 
     FileStorageModelNew parent;
@@ -391,7 +389,7 @@ public class FileStorageModelNew {
     private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template ) {
         this.root= root;
         this.parent= parent;
-        this.template= template;
+        this.template= template.replaceAll("\\+", "\\\\+");
         this.timeParser= TimeParser.create( template );
         this.regex= timeParser.getRegex();
         this.pattern= Pattern.compile(regex);
