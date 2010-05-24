@@ -82,7 +82,7 @@ public class KeyChain {
                 JPasswordField passTf= new JPasswordField();
                 if ( ss.length>1 && !ss[1].equals("pass") ) passTf.setText(ss[1]);
                 panel.add( passTf );
-                if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_OPTION ) ) {
+                if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION ) ) {
                     char[] pass= passTf.getPassword();
                     storedUserInfo= userTf.getText() + ":" + new String(pass);
                     keys.put( hash, storedUserInfo );
@@ -94,5 +94,28 @@ public class KeyChain {
         }
 
         return userInfo;
+    }
+
+    /**
+     * remove the password from the list of known passwords.  This was introduced
+     * because we needed to clear a bad password in FTP.
+     * @param uri
+     */
+    public void clearUserPassword(URL url) {
+
+        String userInfo= url.getUserInfo();
+        if ( userInfo==null ) return;
+
+        String userName=null;
+        String[] ss= userInfo.split(":",-2);
+        if ( !ss[0].equals("user") ) {
+            userName= ss[0];
+        }
+        String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost();
+
+        String storedUserInfo= keys.get(hash);
+        if ( storedUserInfo!=null ) {
+            keys.remove(hash);
+        }
     }
 }
