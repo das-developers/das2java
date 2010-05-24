@@ -69,7 +69,9 @@ public class VectorDataSetAdapter implements VectorDataSet {
 
     /** Creates a new instance of VectorDataSetAdapter */
     public VectorDataSetAdapter( QDataSet y, QDataSet x  ) {
-        if ( y.rank()!=1 ) throw new IllegalArgumentException("y (rank="+y.rank()+") is not rank 1");
+        if ( y.rank()!=1 ) {
+            throw new IllegalArgumentException("y (rank="+y.rank()+") is not rank 1");
+        }
         if ( x==null ) x= new IndexGenDataSet(y.length());
         if ( x!=null && x.rank()!=1 ) throw new IllegalArgumentException("x (rank="+x.rank()+") is not rank 1");
         xunits= (Units) x.property(QDataSet.UNITS);
