@@ -193,7 +193,7 @@ public final class AutoHistogram {
         user.put(USER_PROP_TOTAL, total);
         user.put(USER_PROP_OUTLIERS, outliers);
         user.put(USER_PROP_INVALID_COUNT, invalidCount);
-        user.put(USER_PROP_MIN_GT_ZERO, minGtZero );
+        //user.put(USER_PROP_MIN_GT_ZERO, minGtZero );
         int outlierCount = 0;
         for (int i : outliers.values()) {
             outlierCount += i;
