@@ -74,6 +74,7 @@ public class HttpFileSystem extends WebFileSystem {
             if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
                 if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
                     // might be nice to modify URL so that credentials are used.
+                    KeyChain.getDefault().clearUserPassword(root);
                 }
                 if (FileSystem.settings().isAllowOffline()) {
                     logger.info("remote filesystem is offline, allowing access to local cache.");
