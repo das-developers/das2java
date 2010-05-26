@@ -607,6 +607,9 @@ public class DataSetOps {
 
         if ( bundle1.length(j)==0 ) {
             MutablePropertyDataSet result= DataSetOps.slice1(bundleDs,offsets[j]);
+            result.putProperty(QDataSet.UNITS, bundle1.property( QDataSet.UNITS, j ) ); //TODO: underimplementation
+            result.putProperty(QDataSet.NAME, bundle1.property( QDataSet.NAME, j ) );
+            result.putProperty(QDataSet.LABEL, bundle1.property( QDataSet.LABEL, j ) );
             return result;
         } else if ( bundle1.length(j)==1 ) {
             TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
