@@ -45,6 +45,7 @@ public class SemanticOps {
             String[] result= new String[n];
             for ( int i=0; i<n; i++ ) {
                 result[i]= (String) bdesc.property(QDataSet.NAME, i);
+                if ( result[i]==null ) result[i]="ch_"+i;
             }
             return result;
         }
