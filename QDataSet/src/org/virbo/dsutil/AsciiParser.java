@@ -833,7 +833,9 @@ public class AsciiParser {
 
         if (!isColumnHeaders) {
             for (int i = 0; i < fieldCount; i++) {
-                fieldNames[i] = "field" + i;
+                if (fieldNames[i] == null) {
+                    fieldNames[i] = "field" + i;
+                }
             }
         } else {
             skipColumnHeader = true;
