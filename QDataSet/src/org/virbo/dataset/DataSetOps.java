@@ -699,6 +699,10 @@ public class DataSetOps {
             } else if ( cmd.equals("|flatten" ) ) {
                 if ( fillDs.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
                 fillDs= flattenRank2(fillDs);
+            } else if ( cmd.equals("|magnitude") ) {
+                fillDs= Ops.magnitude(fillDs);
+            } else if ( cmd.equals("|fftPower" ) ) {
+                fillDs= Ops.fftPower(fillDs); 
             }
         }
         return fillDs;
