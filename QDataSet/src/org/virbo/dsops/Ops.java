@@ -256,12 +256,15 @@ public class Ops {
             } else if ("cartesian".equals(depn.property(QDataSet.NAME))) {
                 isCart = true;
             } else {
+                isCart = ds.length(0)<4;  // loosen up restrictions
             }
         }
         if (isCart) {
+            Units u= (Units) ds.property(QDataSet.UNITS);
             ds = pow(ds, 2);
             ds = total(ds, r - 1);
             ds = sqrt(ds);
+            if ( u!=null ) ((MutablePropertyDataSet)ds).putProperty(QDataSet.UNITS,u);
             return ds;
         } else {
             throw new IllegalArgumentException("last dim must have COORDINATE_FRAME property");
