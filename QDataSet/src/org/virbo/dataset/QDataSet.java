@@ -263,6 +263,7 @@ public interface QDataSet {
      * of a dataset should be EnumerationUnits which convert the data in this 
      * dimension to dimension labels that are understood in the coordinate frame
      * label context.  (E.g. X,Y,Z in GSM.)
+     * (Note this is before BUNDLE dimensions were formalized.)
      */
     public final static String COORDINATE_FRAME="COORDINATE_FRAME";
     
