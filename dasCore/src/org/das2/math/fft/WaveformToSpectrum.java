@@ -177,7 +177,8 @@ public class WaveformToSpectrum {
         }
         
         int n21= windowSize/2+1;
-        DatumVector yTags; {
+        DatumVector yTags;
+        {
             Units xUnits;
             Units xOffsetUnits;
             xUnits= vds.getXUnits();
