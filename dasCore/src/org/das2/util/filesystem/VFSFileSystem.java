@@ -93,7 +93,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
 
     @Override
     public boolean isDirectory(String filename) throws IOException {
-        org.apache.commons.vfs.FileObject vfsob = mgr.resolveFile(filename);
+        org.apache.commons.vfs.FileObject vfsob = mgr.resolveFile( fsRoot, filename );
         return (vfsob.getType() == FileType.FOLDER);
     }
 
