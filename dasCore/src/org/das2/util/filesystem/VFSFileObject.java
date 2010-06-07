@@ -63,7 +63,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
 
     @Override
     public boolean canRead() {
-        // TODO: Modifiy this to check local cache first when appropriate
+        // TODO: Modify this to check local cache first when appropriate
         boolean r;
         try {
             r = vfsob.isReadable();
@@ -108,7 +108,21 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
 
     @Override
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
-        if (!local) {
+        boolean download= true;
+        if (localFile.exists()) {
+            Date localFileLastModified = new Date(localFile.lastModified());
+            Date remoteDate = new Date(localFile.lastModified()); //TODO: how to get remote date?
+            if (remoteDate.after(localFileLastModified)) {
+                FileSystem.logger.info("remote file is newer than local copy of " + this.getNameExt() + ", download.");
+                download = true;
+            } else {
+                download= false;
+            }
+        } else {
+            download = true;
+        }
+
+        if (download) {
             // If it's a folder, ensure corresponding cache dir exists
             if (vfsob.getType() == org.apache.commons.vfs.FileType.FOLDER) {
                 if (!localFile.exists()) {
