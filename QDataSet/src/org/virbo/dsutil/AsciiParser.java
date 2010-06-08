@@ -379,6 +379,11 @@ public class AsciiParser {
         for (int i = 0; i < fieldCount - 1; i++) {
             regexBuf.append("(" + decimalRegex + ")[\\s+,+]\\s*");
         }
+        fieldParsers= new FieldParser[fieldCount];
+        for (int i = 0; i< fieldCount; i++ ) {
+            fieldParsers[i] = DOUBLE_PARSER;
+        }
+
         regexBuf.append("(" + decimalRegex + ")\\s*");
 
         recordParser = new RegexParser(regexBuf.toString());
@@ -1243,7 +1248,7 @@ public class AsciiParser {
             System.err.println("great stuff");
         }
 
-        String file = "/media/mini/data.backup/examples/dat/2490lintest90005.raw";
+        String file = "/media/mini/data.backup/examples/dat/sarah/2490lintest90005.raw";
 
         {
             AsciiParser parser = AsciiParser.newParser(5);
