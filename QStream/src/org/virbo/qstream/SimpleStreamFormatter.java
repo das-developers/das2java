@@ -343,9 +343,9 @@ public class SimpleStreamFormatter {
                 values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length));
             }
             if (packetDescriptor.isValuesInDescriptor()) {
-                String s = "";
+                StringBuilder s = new StringBuilder("");
                 for (int i = 0; i < ds.length(); i++) {
-                    s += "," + ds.value(i);
+                    s.append( "," ).append( ds.value(i) );
                 }
                 values.setAttribute("values", ds.length() == 0 ? "" : s.substring(1));
                 if ( ds.length()==0 ) {
