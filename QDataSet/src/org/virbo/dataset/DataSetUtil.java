@@ -753,7 +753,7 @@ public class DataSetUtil {
 
             int highestPeak= linHighestPeak;
 
-            if ( everIncreasing>everIncreasingLimit || ( logPeak>0 && (1.*logMedian/loghist.length() > 1.*linMedian/hist.length() ) ) ) {
+            if ( everIncreasing>everIncreasingLimit || ( logPeak>1 && (1.*logMedian/loghist.length() > 1.*linMedian/hist.length() ) ) ) {
                 hist= loghist;
                 ipeak= logPeak;
                 peakv= logPeakv;
