@@ -140,7 +140,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
             boolean isContext= m.matches();
             if ( isContext ) {
                 try {
-                    if ( m.groupCount()>0 ) {
+                    if ( m.groupCount()>1 && m.group(2).length()>15 ) { //15-> yyyy-mm-ddThh:mm
                         Datum context= topPlot.getXAxis().getUnits().parse(m.group(2));
                         paintBottomContext( (Graphics2D)g1.create(), context );
                         return;
@@ -157,7 +157,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
                 isContext= m.matches();
                 if ( isContext ) {
                     try {
-                        if ( m.groupCount()>0 ) {
+                        if ( m.groupCount()>1 && m.group(2).length()>15 ) {
                             Datum context= bottomPlot.getXAxis().getUnits().parse(m.group(2));
                             paintTopContext( (Graphics2D)g1.create(), context );
                             return;
