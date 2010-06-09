@@ -5,6 +5,9 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
+import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JLayeredPane;
 import org.das2.event.DasMouseInputAdapter;
 
@@ -66,10 +69,111 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     private Datum max( Datum d1, Datum d2 ) {
         return d1.gt(d2) ? d1 : d2;
     }
+
+    private void paintBottomContext( Graphics2D g, Datum context ) {
+                g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+
+        g.translate(-getX(), -getY());
+
+        int xhigh1= (int)topPlot.getXAxis().transform(context);
+        int xhigh2= (int)bottomPlot.getXAxis().getColumn().getDMiddle();
+        int xlow1= (int)topPlot.getXAxis().transform(context);
+        int xlow2= (int)bottomPlot.getXAxis().getColumn().getDMiddle();
+
+        //if ( xhigh1 > xhigh2 ) return;
+        paintIt( g, xhigh1, xhigh2, xlow1, xlow2 );
+    }
+
+    private void paintTopContext( Graphics2D g, Datum context ) {
+                g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+
+        g.translate(-getX(), -getY());
+
+        int xhigh1= (int)topPlot.getXAxis().getColumn().getDMiddle();
+        int xhigh2= (int)bottomPlot.getXAxis().transform(context);
+        int xlow1= (int)topPlot.getXAxis().getColumn().getDMiddle();
+        int xlow2= (int)bottomPlot.getXAxis().transform(context);
+
+        //if ( xhigh1 > xhigh2 ) return;
+        paintIt( g, xhigh1, xhigh2, xlow1, xlow2 );
+    }
+
+    private void paintIt( Graphics2D g, int xhigh1, int xhigh2, int xlow1, int xlow2 ) {
+        int hlen=3;
+
+        int y1= topRow.getDMaximum()+hlen;
+        int y2= bottomPlot.getRow().getDMinimum()-1-hlen;
+        int y3= bottomPlot.getRow().getDMinimum()-1;
+        int y4= bottomPlot.getRow().getDMaximum();
+
+        GeneralPath gp= new GeneralPath();
+        GeneralPath fillPath= new GeneralPath();
+
+        gp.moveTo( xlow1,y1-hlen );                   fillPath.moveTo( xlow1,y1-hlen );
+        gp.lineTo( xlow1,y1 );                        fillPath.lineTo( xlow1,y1 );
+        gp.lineTo( xlow2,y2 );                        fillPath.lineTo( xlow2,y2 );
+        gp.lineTo( xlow2,y3 );                        fillPath.lineTo( xlow2,y3 );
+        gp.moveTo( xhigh2, y3 );
+        fillPath.lineTo( xhigh2,y3 );
+        gp.lineTo( xhigh2,y2 );       fillPath.lineTo( xhigh2,y2 );
+        gp.lineTo( xhigh1,y1 );       fillPath.lineTo( xhigh1,y1 );
+        gp.lineTo( xhigh1,y1-hlen );  fillPath.lineTo( xhigh1,y1-hlen );
+
+        if ( fill ) {
+            g.setColor( fillColor );
+            g.fill(fillPath);
+        }
+
+        g.setColor( getForeground() );
+
+        g.draw( gp );
+
+    }
     
     protected void paintComponent(Graphics g1) {
-        
-        if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) return;
+
+        if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) {
+            //kludge for context plots
+
+            // check to see if bottom panel is slice of top
+            Matcher m= Pattern.compile(".*!c(.*=)?(.*)").matcher(bottomPlot.getTitle());
+            boolean isContext= m.matches();
+            if ( isContext ) {
+                try {
+                    if ( m.groupCount()>0 ) {
+                        Datum context= topPlot.getXAxis().getUnits().parse(m.group(2));
+                        paintBottomContext( (Graphics2D)g1.create(), context );
+                        return;
+                    } else {
+                        return;
+                    }
+                } catch ( ParseException ex ) {
+                    ex.printStackTrace();
+                    return;
+                }
+
+            } else {
+                m= Pattern.compile(".*!c(.*=)?(.*)").matcher(topPlot.getTitle());
+                isContext= m.matches();
+                if ( isContext ) {
+                    try {
+                        if ( m.groupCount()>0 ) {
+                            Datum context= bottomPlot.getXAxis().getUnits().parse(m.group(2));
+                            paintTopContext( (Graphics2D)g1.create(), context );
+                            return;
+                        } else {
+                            return;
+                        }
+                    } catch ( ParseException ex ) {
+                        ex.printStackTrace();
+                        return;
+                    }
+                } else {
+                    return;
+                }
+            }
+        }
+
         
         bottomPlot.addPropertyChangeListener(this);
         
