@@ -581,7 +581,11 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet, 
         int noff2= end * len1 * len2 * len3;
         double[] newback = new double[noff2-noff1];
         System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
-        return new DDataSet( nrank, end-start, len1, len2, len3, newback );
+        DDataSet result= new DDataSet( nrank, end-start, len1, len2, len3, newback );
+        DataSetUtil.putProperties( DataSetUtil.getProperties(this), result );
+        QDataSet dep0= (QDataSet) property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0.trim(start, end) );
+        return result;
     }
 
     /**
