@@ -1595,6 +1595,7 @@ public class Ops {
     public static QDataSet fftPower(QDataSet ds, int len) {
         if ( ds.rank()==2 ) {
             JoinDataSet result= new JoinDataSet(2);
+            result.putProperty(QDataSet.JOIN_0, null);
 
             int nsam= ds.length()*(ds.length(0)/len); // approx
             DataSetBuilder dep0b= new DataSetBuilder(1,nsam );
