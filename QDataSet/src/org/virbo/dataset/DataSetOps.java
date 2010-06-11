@@ -702,7 +702,16 @@ public class DataSetOps {
             } else if ( cmd.equals("|magnitude") ) {
                 fillDs= Ops.magnitude(fillDs);
             } else if ( cmd.equals("|fftPower" ) ) {
-                fillDs= Ops.fftPower(fillDs); 
+                if ( fillDs.length()>0 ) {
+                    if ( s.hasNextInt() ) {
+                        int len= s.nextInt();
+                        fillDs= Ops.fftPower(fillDs,len);
+                    } else {
+                        fillDs= Ops.fftPower(fillDs);
+                    }
+                } else {
+                    fillDs= Ops.fftPower(fillDs);
+                }
             }
         }
         return fillDs;
