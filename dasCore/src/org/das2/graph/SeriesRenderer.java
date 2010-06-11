@@ -261,6 +261,17 @@ public class SeriesRenderer extends Renderer {
 
             VectorDataSet wds= WeightsVectorDataSet.create(dataSet);
 
+            int buffer= (int)Math.ceil( Math.max( 20, getSymSize() ) );
+            Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
+            window= new Rectangle( window.x-buffer, window.y-buffer, window.width+2*buffer, window.height+2*buffer );
+            DasPlot lparent= parent;
+            if ( lparent.isOverSize() ) {
+                window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
+                //TODO: there's a rectangle somewhere that is the preveiw.  Use this instead of assuming 1/3 on either side.
+            } else {
+                window= new Rectangle( window.x- buffer, window.y-buffer, window.width + 2*buffer, window.height + 2 * buffer );
+            }
+
             int i = 0;
             for (; index < lastIndex; index++) {
                 x = dataSet.getXTagDouble(index, xUnits);
@@ -271,7 +282,7 @@ public class SeriesRenderer extends Renderer {
                 fx = (int) xAxis.transform(x, xUnits);
                 fy = (int) yAxis.transform(y, yUnits);
 
-                if (isValid) {
+                if (isValid && window.contains(fx,fy) ) {
                     if ( simplifyPaths ) {
                         if ( fx==fx0 && fy==fy0 ) continue;
                     }
@@ -375,8 +386,19 @@ public class SeriesRenderer extends Renderer {
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
             Units xUnits = xAxis.getUnits();
             Units yUnits = yAxis.getUnits();
+
             VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
-            
+            Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
+            int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
+
+            DasPlot lparent= parent;
+            if ( lparent.isOverSize() ) {
+                window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
+                //TODO: there's a rectangle somewhere that is the preveiw.  Use this instead of assuming 1/3 on either side.
+            } else {
+                window= new Rectangle( window.x- buffer, window.y-buffer, window.width + 2*buffer, window.height + 2 * buffer );
+            }
+
             if ( lastIndex-firstIndex==0 ) {
                 this.path1= null;
                 return;
@@ -410,7 +432,9 @@ public class SeriesRenderer extends Renderer {
             float fy = Float.NaN;
             float fx0 = Float.NaN;
             float fy0 = Float.NaN;
-
+            boolean visible;  // true if this point can be seen
+            boolean visible0; // true if the last point can be seen
+            
             int index;
 
             index = firstIndex;
@@ -421,6 +445,9 @@ public class SeriesRenderer extends Renderer {
             logger.fine("firstPoint moveTo,LineTo= " + x + "," + y);
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
+
+            visible0= window.contains(fx,fy);
+            visible= visible0;
             if (histogram) {
                 float fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, sw.getUnits(), -0.5 );
                 newPath.moveTo(fx1, fy);
@@ -448,10 +475,7 @@ public class SeriesRenderer extends Renderer {
 
                 fx = (float) xAxis.transform(x, xUnits);
                 fy = (float) yAxis.transform(y, yUnits);
-
-                //double tx= xAxis.transformFast( x, xUnits );
-
-                //System.err.println( ""+(float)tx+ "   " + fx );
+                visible= isValid && window.intersectsLine( fx0,fy0, fx,fy );
 
                 if (isValid) {
                     double step= logStep ? Math.log(x/x0) : x-x0;
@@ -463,7 +487,12 @@ public class SeriesRenderer extends Renderer {
                             newPath.lineTo(fx1, fy);
                             newPath.lineTo(fx, fy);
                         } else {
-                            newPath.lineTo(fx, fy); // this is the typical path
+                            if ( visible ) {
+                                if ( !visible0 ) {
+                                    newPath.moveTo(fx0,fy0);
+                                }
+                                newPath.lineTo(fx, fy); // this is the typical path
+                            }
 
                         }
 
@@ -478,8 +507,10 @@ public class SeriesRenderer extends Renderer {
                             newPath.lineTo(fx, fy);
 
                         } else {
-                            newPath.moveTo(fx, fy);
-                            newPath.lineTo(fx, fy);
+                            if ( visible ) {
+                                newPath.moveTo(fx, fy);
+                                newPath.lineTo(fx, fy);
+                            }
                         }
 
                     } // else introduce break in line
@@ -488,9 +519,12 @@ public class SeriesRenderer extends Renderer {
                     y0 = y;
                     fx0 = fx;
                     fy0 = fy;
+                    visible0 = visible;
 
                 } else {
-                    newPath.moveTo(fx0, fy0); // place holder
+                    if (visible0) {
+                        newPath.moveTo(fx0, fy0); // place holder
+                    }
 
                 }
 
