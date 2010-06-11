@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
+import org.das2.datum.UnitsConverter;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -38,6 +39,7 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.VectorDataSetAdapter;
+import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
@@ -272,11 +274,25 @@ public class Ops {
 
     }
 
+    /**
+     * return the total of all the elements in the dataset, returning a rank
+     * 0 dataset.  If there are invalid measurements, then fill is returned.
+     * Does not support BINS or BUNDLE dimensions.
+     *
+     * @param ds
+     * @return the unweighted total of the dataset, or -1e31 if fill was encounted.
+     */
     public static double total(QDataSet ds) {
         double s = 0;
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds);
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         while (it1.hasNext()) {
             it1.next();
+            double w= it1.getValue(wds);
+            if ( w==0 ) {
+                return fill;
+            }
             s += it1.getValue(ds);
         }
         return s;
@@ -1564,6 +1580,77 @@ public class Ops {
 
         return wds;
     }
+
+    /**
+     * create a power spectrum on the dataset by breaking it up and
+     * doing ffts on each segment.
+     * 
+     * right now only rank 2 data is supported, but there is no reason that
+     * rank 1 shouldn't be supported.
+     * 
+     * @param ds rank 2 dataset ds(N,M) with M>len
+     * @param len the number of elements to have in each fft.
+     * @return rank 2 fft spectrum
+     */
+    public static QDataSet fftPower(QDataSet ds, int len) {
+        if ( ds.rank()==2 ) {
+            JoinDataSet result= new JoinDataSet(2);
+
+            int nsam= ds.length()*(ds.length(0)/len); // approx
+            DataSetBuilder dep0b= new DataSetBuilder(1,nsam );
+
+            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+
+            UnitsConverter uc= UnitsConverter.IDENTITY;
+
+            boolean convertable=true;
+            if ( dep1!=null && dep1.rank()==1 ) {
+                QDataSet ytags= FFTUtil.getFrequencyDomainTagsForPower( dep1.trim(0,len) );
+                result.putProperty( QDataSet.DEPEND_1, ytags );
+                Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
+                Units dep0Units= (Units) dep0.property(QDataSet.UNITS);
+                if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
+            }
+
+
+            for ( int i=0; i<ds.length(); i++ ) {
+                for ( int j=0; j<ds.length(i)/len; j++ ) {
+                    GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
+                    QDataSet wave= ds.slice(i).trim(j*len,(j+1)*len );
+                    QDataSet weig= DataSetUtil.weightsDataSet(wave);
+                    boolean hasFill= false;
+                    for ( int k=0; k<weig.length(); k++ ) {
+                        if ( weig.value(k)==0 ) {
+                            hasFill= true;
+                        }
+                    }
+                    if ( hasFill ) continue;
+                    QDataSet vds= FFTUtil.fftPower( fft, wave );
+                    result.join(vds);
+                    if ( dep0!=null && dep1!=null ) {
+                        dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
+                        dep0b.nextRecord();
+                    } else if ( dep0!=null ) {
+                        dep0b.putValue(-1, dep0.value(i) );
+                        dep0b.nextRecord();
+                    } else {
+                        dep0b= null;
+                    }
+                }
+            }
+            if (dep0!=null ) {
+                dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+                result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+            }
+            
+            return result;
+
+        } else {
+            throw new IllegalArgumentException("rank not supported: "+ ds.rank() );
+        }
+    }
+
 
     private static QDataSet fftPowerRank2( QDataSet ds ) {
         JoinDataSet result= new JoinDataSet(2);
