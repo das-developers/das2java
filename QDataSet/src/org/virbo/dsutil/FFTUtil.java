@@ -118,6 +118,7 @@ public class FFTUtil {
     /**
      * Produces the power spectrum of the dataset.  This is the length of the fourier
      * components squared, normalized by the bandwidth.  The result dataset has dimensionless yunits.
+     * It's assumed that all the data is valid.
      * @param vds QDataSet rank 1 dataset with depend 0 units TimeLocationUnits.
      */
     public static QDataSet fftPower( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
