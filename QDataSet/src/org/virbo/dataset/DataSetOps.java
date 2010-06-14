@@ -649,6 +649,9 @@ public class DataSetOps {
         while ( s.hasNext() ) {
             String cmd= s.next();
             if ( cmd.startsWith("|slice") ) {
+                if  ( cmd.length()<=6 ) {
+                    throw new IllegalArgumentException("need DIM on sliceDIM(INDEX)");
+                }
                 int dim= cmd.charAt(6)-'0';
                 int idx= s.nextInt();
                 if ( dim==0 ) {
