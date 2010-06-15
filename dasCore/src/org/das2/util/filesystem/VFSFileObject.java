@@ -268,6 +268,15 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         vfsob.createFile();
     }
 
+    /** Deletes the file.  Does nothing if the file doesn't exist or is a non-empty folder.
+     *
+     * @throws IOException If the file is a non-empty folder, or is read-only,
+     * or on other error during deletion.
+     */
+    public void delete() throws IOException {
+        vfsob.delete();
+    }
+
     public OutputStream getOutputStream(boolean append) throws IOException {
         return vfsob.getContent().getOutputStream(append);
     }

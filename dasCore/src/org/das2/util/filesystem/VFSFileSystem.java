@@ -32,7 +32,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     private final File cacheRoot;
     private final URI fsuri;
 
-    private VFSFileSystem(URI root) throws IOException {
+    private VFSFileSystem(URI root, boolean createFolder) throws IOException {
         super(root);
         mgr = VFS.getManager();
 
@@ -40,6 +40,16 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         cacheRoot = new File(settings().getLocalCacheDir(), subFolderName);
         
         fsRoot = mgr.resolveFile(root.toString());
+
+        if (!fsRoot.exists() && createFolder) {
+            //Also creates any necessary ancestor folders
+            fsRoot.createFolder();
+        }
+
+        if (!fsRoot.exists()) {
+            throw new FileSystemOfflineException("Specified filesystem root does not exist.");
+        }
+        
         vfsSystem = fsRoot.getFileSystem();
 
         if (fsRoot.getType() == org.apache.commons.vfs.FileType.FOLDER) {
@@ -56,11 +66,16 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         ((org.apache.commons.vfs.provider.VfsComponent) vfsSystem).close();
     }
 
-    public static synchronized VFSFileSystem createVFSFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException {
+    public static VFSFileSystem createVFSFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException {
+        // To preserve legacy behavior, the default is to treat this as a read-only operation
+        return createVFSFileSystem(root, false);
+    }
+
+    public static synchronized VFSFileSystem createVFSFileSystem(URI root, boolean createFolder) throws FileSystemOfflineException, UnknownHostException {
         //TODO: Handle at least some exceptions; offline detection?
         // yes, this is ugly
         try {
-            return new VFSFileSystem(root);
+            return new VFSFileSystem(root, createFolder);
         } catch (UnknownHostException e ) {
             throw e; // Too bad the library doesn't throw this and we have kludgy code in IOException
         } catch (IOException e) {
