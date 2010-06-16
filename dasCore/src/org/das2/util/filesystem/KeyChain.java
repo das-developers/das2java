@@ -7,6 +7,7 @@ package org.das2.util.filesystem;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -116,6 +117,20 @@ public class KeyChain {
         String storedUserInfo= keys.get(hash);
         if ( storedUserInfo!=null ) {
             keys.remove(hash);
+        }
+    }
+
+    /**
+     * plug the username and password into the URI.
+     * @param root
+     */
+    public URI resolveUserInfo(URI root) {
+        try {
+            String userInfo = getUserInfo(root);
+            URI newuri = new URI(root.getScheme(), userInfo, root.getHost(), root.getPort(), root.getPath(), root.getQuery(), root.getFragment());
+            return newuri;
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
         }
     }
 }
