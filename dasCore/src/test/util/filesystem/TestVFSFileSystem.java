@@ -5,12 +5,11 @@
 
 package test.util.filesystem;
 
-import java.io.PrintStream;
+import java.io.OutputStream;
 import java.net.URI;
-import org.das2.util.filesystem.FileSystem;
+import java.util.Date;
 import org.das2.util.filesystem.VFSFileObject;
 import org.das2.util.filesystem.VFSFileSystem;
-import org.das2.util.filesystem.VFSFileSystemFactory;
 
 /**
  *
@@ -20,18 +19,35 @@ public class TestVFSFileSystem {
     public static void main( String[] args ) {
         try {
 //            FileSystem.registerFileSystemFactory("sftp", new VFSFileSystemFactory());
-            URI uri = new URI("ftp://anonymous:hithere@127.0.0.1/public/fakeFolder/");  // or USER:PASS
+           // URI uri = new URI("file:///home/jbf/temp/fs/");  // or USER:PASS
+            //URI uri= new URI( "sftp://jbf@klunk.physics.uiowa.edu/home/jbf/temp/" );
+            //new URI( "ftp://anonymous:hi@127.0.0.1/");
+            URI uri= new URI( "ftp://127.0.0.1/temp/" );
+            //URI uri= new URI( "ftp://papco:foo@127.0.0.1/" );
+            //URI uri = new URI("sftp://jbf@192.168.0.203:/temp");  // or USER:PASS
+            
 //            System.out.println("Scheme: " + uri.getScheme());
 //            System.out.println("Host: " + uri.getHost());
 //            System.out.println("Port: " + uri.getPort());
 //            System.out.println("String: " + uri.toString());
 
+//            FileSystem fs2= FileSystem.create(uri);
             //VFSFileSystemFactory factory = new VFSFileSystemFactory();
             VFSFileSystem fs = VFSFileSystem.createVFSFileSystem(uri, false);
+
 
             for (String s: fs.listDirectory("/")) {
                 System.out.println(s);
             }
+
+            System.err.println( fs.getFileObject("foo2.txt").exists() );
+            VFSFileObject vfo= (VFSFileObject) fs.getFileObject("foo2.txt");
+
+            OutputStream out= vfo.getOutputStream(false);
+            String msg= "Current Time:\n"+ new Date()+"\n";
+            out.write( msg.getBytes() );
+            out.close();
+
             fs.close();
 
 //            FileObject fo = fs.getFileObject("/home/ed/elite.xml");
