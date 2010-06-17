@@ -74,11 +74,54 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     public static synchronized VFSFileSystem createVFSFileSystem(URI root, boolean createFolder) throws FileSystemOfflineException, UnknownHostException {
         //TODO: Handle at least some exceptions; offline detection?
         // yes, this is ugly
+
+
+        if ( root.getScheme().equals("ftp") ) {
+            while ( true ) {
+            // this branch allows for passwords.  We don't support passwords 
+            // over sftp, because of security concerns.
+                URI authUri= KeyChain.getDefault().resolveUserInfo(root);
+                try {
+                    VFSFileSystem result= new VFSFileSystem(authUri, createFolder);
+                    return result;
+                } catch (IOException e) {
+                    if ( e instanceof org.apache.commons.vfs.FileSystemException ) {
+                        org.apache.commons.vfs.FileSystemException vfse=
+                            (org.apache.commons.vfs.FileSystemException)e;
+                        if ( vfse.getCode().contains("login.error") ) {
+                            KeyChain.getDefault().clearUserPassword(authUri);
+                            if ( authUri.getUserInfo()==null ) {
+                                throw new FileSystemOfflineException(e);
+                            }
+                        } else if ( vfse.getCode().contains("connect.error") ) {
+                            if ( authUri.getUserInfo()==null ) {
+                                throw new FileSystemOfflineException(e);
+                            }
+                            KeyChain.getDefault().clearUserPassword(authUri);
+                        } else {
+                            throw new FileSystemOfflineException(e);
+                        }
+                    }
+                }
+            }
+        }
+
         try {
             return new VFSFileSystem(root, createFolder);
-        } catch (UnknownHostException e ) {
-            throw e; // Too bad the library doesn't throw this and we have kludgy code in IOException
         } catch (IOException e) {
+            if ( e instanceof org.apache.commons.vfs.FileSystemException ) {
+                org.apache.commons.vfs.FileSystemException vfse=
+                        (org.apache.commons.vfs.FileSystemException)e;
+                if ( vfse.getCode().contains("login.error") ) {
+                    throw new FileSystemOfflineException(e);
+                } else if ( vfse.getCode().contains("connect.error") ) {
+                    throw new FileSystemOfflineException(e);
+                } else if ( e.getMessage().startsWith("Could not connect to ") ) {
+                    throw  new UnknownHostException(root.getHost());
+                } else {
+                    throw new FileSystemOfflineException(e);
+                }
+            }
             if ( e.getMessage().startsWith("Could not connect to ") ) {
                 throw new UnknownHostException(root.getHost());
             } else {
