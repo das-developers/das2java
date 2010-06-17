@@ -97,6 +97,13 @@ public class KeyChain {
         return userInfo;
     }
 
+    public void clearUserPassword(URI uri) {
+        try {
+            clearUserPassword(uri.toURL());
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     /**
      * remove the password from the list of known passwords.  This was introduced
      * because we needed to clear a bad password in FTP.
