@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Adapts QDataSets to legacy das2 TableDataSet.
  * @author jbf
  */
 public class TableDataSetAdapter implements TableDataSet {
@@ -35,7 +35,26 @@ public class TableDataSetAdapter implements TableDataSet {
             }
             QDataSet yds = (QDataSet) z.property(QDataSet.DEPEND_1);
             if (yds == null) {
-                yds = new IndexGenDataSet(z.length(0));
+                if ( z.length()>0 && z.property(QDataSet.DEPEND_0,0)!=null ) {
+                    Units yunits= null;
+                    JoinDataSet jds= new JoinDataSet(2);
+                    for ( int i=0; i<z.length(); i++ ) {
+                        QDataSet d0ds= (QDataSet) z.property(QDataSet.DEPEND_0,i);
+                        if ( yunits==null ) {
+                            yunits= (Units) d0ds.property(QDataSet.UNITS);
+                            if ( yunits==null ) yunits=Units.dimensionless;
+                            jds.putProperty(QDataSet.UNITS, yunits);
+                        } else {
+                            Units y0units= (Units) d0ds.property(QDataSet.UNITS);
+                            if ( y0units==null ) y0units=Units.dimensionless;
+                            if ( y0units!=yunits ) throw new IllegalArgumentException("yunits change");
+                        }
+                        jds.join(d0ds);
+                    }
+                    yds= jds;
+                } else {
+                    yds = new IndexGenDataSet(z.length(0));
+                }
             }
             if (!DataSetUtil.isMonotonic(xds)) {
                 QDataSet sort = DataSetOps.sort(xds);
@@ -47,7 +66,7 @@ public class TableDataSetAdapter implements TableDataSet {
                     ((WritableDataSet)xds).putProperty(QDataSet.CADENCE, cadence);
                 }
             }
-            if (!DataSetUtil.isMonotonic(yds)) {
+            if ( yds.rank()==1 && !DataSetUtil.isMonotonic(yds)) {
                 QDataSet sort = DataSetOps.sort(yds);
                 RankZeroDataSet cadence= (RankZeroDataSet) yds.property(QDataSet.CADENCE);
                 z = DataSetOps.applyIndex(z, 1, sort, false);
@@ -196,21 +215,33 @@ public class TableDataSetAdapter implements TableDataSet {
     }
 
     public DatumVector getYTags(int table) {
-        return DatumVectorAdapter.toDatumVector(y);
+        if ( y.rank()==1 ) {
+            return DatumVectorAdapter.toDatumVector(y);
+        } else {  //  if ( y.rank()==2 ) {
+            return DatumVectorAdapter.toDatumVector( y.slice(table) );
+        }
     }
 
     public Datum getYTagDatum(int table, int j) {
-        if (table > 0) {
-            throw new IllegalArgumentException("table>0");
+        if ( y.rank()==1 ) {
+            if (table > 0) {
+                throw new IllegalArgumentException("table>0");
+            }
+            return yunits.createDatum(y.value(j));
+        } else {
+            return yunits.createDatum(y.value(table,j));
         }
-        return yunits.createDatum(y.value(j));
     }
 
     public double getYTagDouble(int table, int j, Units units) {
-        if (table > 0) {
-            throw new IllegalArgumentException("table>0");
+        if ( y.rank()==1 ) {
+            if (table > 0) {
+                throw new IllegalArgumentException("table>0");
+            }
+            return yunits.convertDoubleTo(units, y.value(j));
+        } else {
+            return yunits.convertDoubleTo(units, y.value(table,j));
         }
-        return yunits.convertDoubleTo(units, y.value(j));
     }
 
     public int getYTagInt(int table, int j, Units units) {
@@ -218,31 +249,61 @@ public class TableDataSetAdapter implements TableDataSet {
     }
 
     public int getYLength(int table) {
-        return y.length();
+        if ( y.rank()==1 ) {
+            return y.length();
+        } else {
+            return y.length(table);
+        }
     }
 
     public int tableStart(int table) {
-        return 0;
+        if ( y.rank()==1 ) {
+            return 0;
+        } else {
+            return table;
+        }
     }
 
     public int tableEnd(int table) {
-        return getXLength();
+        if ( y.rank()==1 ) {
+            return getXLength();
+        } else {
+            return table+1;
+        }
     }
 
     public int tableCount() {
-        return 1;
+        if ( y.rank()==1 ) {
+            return 1;
+        } else {
+            return y.length();  // should be the same as x.length() 
+        }
     }
 
     public int tableOfIndex(int i) {
-        return 0;
+        if ( y.rank()==1 ) {
+            return 0;
+        } else {
+            return i;
+        }
+
     }
 
     public VectorDataSet getXSlice(int i) {
-        return new VectorDataSetAdapter(DataSetOps.slice0(z, i), y);
+        if ( y.rank()==1 ) {
+            return new VectorDataSetAdapter( z.slice(i), y);
+        } else {
+            return new VectorDataSetAdapter( z.slice(i), y.slice(i) );
+        }
     }
 
     public VectorDataSet getYSlice(int j, int table) {
-        return new VectorDataSetAdapter(DataSetOps.slice1(z, j), x);
+        if ( y.rank()==1 ) {
+            return new VectorDataSetAdapter(DataSetOps.slice1(z, j), x);
+        } else {
+            // warning: this assumes qube...
+            return new VectorDataSetAdapter(DataSetOps.slice1(z, j), x);
+        }
     }
 
     public Object getProperty(String name) {
