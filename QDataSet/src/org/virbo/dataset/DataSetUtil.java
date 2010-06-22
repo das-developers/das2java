@@ -193,6 +193,14 @@ public class DataSetUtil {
         return result;
     }
 
+    /**
+     * return the "User" property, which allow for extensions of the data model that
+     * aren't used.  This returns the property "name" under the name USER_PROPERTIES,
+     * which must either be null or a Map<String,Object>.
+     * @param ds  The dataset containing the property.
+     * @param name  The name of the user property.
+     * @return
+     */
     public static Object getUserProperty( QDataSet ds, String name ) {
         Map<String,Object> userProps= (Map<String, Object>) ds.property(QDataSet.USER_PROPERTIES);
         if ( userProps==null ) return null;
