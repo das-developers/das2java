@@ -39,7 +39,6 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.VectorDataSetAdapter;
-import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
@@ -74,17 +73,28 @@ public class Ops {
             u = Units.dimensionless;
         }
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
+
+        double fill= -1e38;
+        
         while (it1.hasNext()) {
             it1.next();
             double d1 = it1.getValue(ds1);
-            it1.putValue(result, u.isFill(d1) ? u.getFillDouble() : op.op(d1));
+            it1.putValue(result, u.isFill(d1) ? fill : op.op(d1));
         }
         Map<String,Object> m= new HashMap<String,Object>();
         m.put( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
         m.put( QDataSet.DEPEND_1, ds1.property(QDataSet.DEPEND_1) );
         m.put( QDataSet.DEPEND_2, ds1.property(QDataSet.DEPEND_2) );
         m.put( QDataSet.DEPEND_3, ds1.property(QDataSet.DEPEND_3) );
+        m.remove( QDataSet.VALID_MIN );
+        m.remove( QDataSet.VALID_MAX );
+        m.remove( QDataSet.TITLE );
+        m.remove( QDataSet.LABEL );
+        m.remove( QDataSet.MONOTONIC );
+        m.remove( QDataSet.METADATA_MODEL );
+        m.remove( QDataSet.METADATA );
         DataSetUtil.putProperties( m, result );
+        result.putProperty( QDataSet.FILL_VALUE, fill );
         return result;
     }
 
@@ -148,21 +158,44 @@ public class Ops {
             m1.put( QDataSet.DEPEND_3, m2.get(QDataSet.DEPEND_3 ) );
         }
         Map<String, Object> m3 = equalProperties(m1, m2);
+        m3.remove( QDataSet.VALID_MIN );
+        m3.remove( QDataSet.VALID_MAX );
+        m3.remove( QDataSet.TITLE );
+        m3.remove( QDataSet.LABEL );
+        m3.remove( QDataSet.MONOTONIC );
+        m3.remove( QDataSet.METADATA_MODEL );
+        m3.remove( QDataSet.METADATA );
+
         DataSetUtil.putProperties(m3, result);
         result.putProperty( QDataSet.FILL_VALUE, fill );
         
         return result;
     }
 
-    public static final QDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
+    public static final MutablePropertyDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
 
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
+        QDataSet w1= DataSetUtil.weightsDataSet(ds1);
+
+        double fill= -1e38;
         while (it1.hasNext()) {
             it1.next();
-            it1.putValue(result, op.op(it1.getValue(ds1), d2));
+            double w= it1.getValue(w1);
+            it1.putValue(result, w==0 ? fill : op.op(it1.getValue(ds1), d2));
         }
-        DataSetUtil.putProperties(DataSetUtil.getProperties(ds1), result);
+        Map<String,Object> props= DataSetUtil.getProperties(ds1);
+        props.remove( QDataSet.VALID_MIN );
+        props.remove( QDataSet.VALID_MAX );
+        props.remove( QDataSet.TITLE );
+        props.remove( QDataSet.LABEL );
+        props.remove( QDataSet.MONOTONIC );
+        props.remove( QDataSet.METADATA_MODEL );
+        props.remove( QDataSet.METADATA );
+
+        DataSetUtil.putProperties(props, result);
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+        
         return result;
     }
 
@@ -1587,6 +1620,10 @@ public class Ops {
      * 
      * right now only rank 2 data is supported, but there is no reason that
      * rank 1 shouldn't be supported.
+     *
+     * Looks for PLANE_0.USER_PROPERTIES.FFT_Translation, which should
+     * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
+     * to the DEPEND_0 dimension.
      * 
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param len the number of elements to have in each fft.
@@ -1606,9 +1643,23 @@ public class Ops {
             UnitsConverter uc= UnitsConverter.IDENTITY;
 
             boolean convertable=true;
+
+            QDataSet translation= null;
+            if ( dep1!=null ) {
+                Map<String,Object> user= (Map<String, Object>) dep1.property(QDataSet.USER_PROPERTIES );
+                if ( user!=null ) {
+                    translation= (QDataSet) user.get( "FFT_Translation" );
+                    if ( translation.rank()==1 ) {
+                        if ( translation.length()!=dep0.length() ) {
+                            throw new IllegalArgumentException("rank 1 FFT_Translation should be the same length as depend_0");
+                        }
+                    }
+                }
+            }
+
             if ( dep1!=null && dep1.rank()==1 ) {
                 QDataSet ytags= FFTUtil.getFrequencyDomainTagsForPower( dep1.trim(0,len) );
-                result.putProperty( QDataSet.DEPEND_1, ytags );
+                if ( translation==null ) result.putProperty( QDataSet.DEPEND_1, ytags );
                 Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
                 Units dep0Units= (Units) dep0.property(QDataSet.UNITS);
                 if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
@@ -1627,7 +1678,19 @@ public class Ops {
                         }
                     }
                     if ( hasFill ) continue;
+
                     QDataSet vds= FFTUtil.fftPower( fft, wave );
+                    if ( translation!=null ) {
+                        QDataSet fftDep1= (QDataSet) vds.property( QDataSet.DEPEND_0 );
+                        if (translation.rank()==0 ) {
+                            fftDep1= Ops.add( fftDep1, translation );
+                        } else if ( translation.rank()==1 ) {
+                            fftDep1= Ops.add( fftDep1, translation.slice(i) );
+                        } else {
+                            throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
+                        }
+                        ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, fftDep1 );
+                    }
                     result.join(vds);
                     if ( dep0!=null && dep1!=null ) {
                         dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
