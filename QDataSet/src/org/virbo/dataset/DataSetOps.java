@@ -704,6 +704,14 @@ public class DataSetOps {
                 fillDs= flattenRank2(fillDs);
             } else if ( cmd.equals("|magnitude") ) {
                 fillDs= Ops.magnitude(fillDs);
+            } else if ( cmd.equals("|pow")) {
+                int idx= s.nextInt();
+                fillDs= Ops.pow(fillDs,idx);
+            } else if ( cmd.equals("|total")) {
+                int idx= s.nextInt();
+                fillDs= Ops.total(fillDs, idx);
+            } else if ( cmd.equals("|sqrt")) {
+                fillDs= Ops.sqrt(fillDs);
             } else if ( cmd.equals("|fftPower" ) ) {
                 if ( fillDs.length()>0 ) {
                     if ( s.hasNextInt() ) {
