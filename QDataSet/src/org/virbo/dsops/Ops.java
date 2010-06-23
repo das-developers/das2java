@@ -409,6 +409,7 @@ public class Ops {
      */
     public static QDataSet total(QDataSet ds, int dim) {
         int[] qube = DataSetUtil.qubeDims(ds);
+        if ( qube==null ) throw new IllegalArgumentException("argument does not appear to be qube");
         int[] newQube = DataSetOps.removeElement(qube, dim);
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result= DDataSet.create(newQube);
