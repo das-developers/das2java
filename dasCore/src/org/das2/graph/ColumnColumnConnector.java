@@ -136,7 +136,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
             //kludge for context plots
 
             // check to see if bottom panel is slice of top
-            Matcher m= Pattern.compile(".*!c(.*=)?(.*)").matcher(bottomPlot.getTitle());
+            Matcher m= Pattern.compile(".*!c(.*=)?(.+)").matcher(bottomPlot.getTitle());
             boolean isContext= m.matches();
             if ( isContext ) {
                 try {
@@ -153,7 +153,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
                 }
 
             } else {
-                m= Pattern.compile(".*!c(.*=)?(.*)").matcher(topPlot.getTitle());
+                m= Pattern.compile(".*!c(.*=)?(.+)").matcher(topPlot.getTitle());
                 isContext= m.matches();
                 if ( isContext ) {
                     try {
