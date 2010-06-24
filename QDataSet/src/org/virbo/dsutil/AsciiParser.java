@@ -814,18 +814,27 @@ public class AsciiParser {
             fieldParsers[i] = DOUBLE_PARSER;
             Matcher m;
             if ((m = COLUMN_ID_HEADER_PATTERN.matcher(ss[i])).matches()) {
-                fieldLabels[i] = m.group(1).trim();
-                fieldNames[i] = fieldLabels[i].replaceAll(" ", "_");
-                fieldUnits[i]= m.group(3);
-                if (fieldUnits[i]!=null) fieldUnits[i]= fieldUnits[i].trim();
-            // TODO: check for units too.
-            // if ( m.groupCount() is 2) String u= m.group(2).trim()
-            } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() && m.group(3).length()>0 && m.group(5).length()>0 ) {
-                fieldLabels[i] = m.group(1).trim();
-                if ( m.group(2).length()>0 ) { // make valid java identifier
-                    fieldNames[i] = m.group(1).trim().replaceAll("-", "_");
+                String n= m.group(1).trim();
+                if ( n.length()!=3 || !n.equalsIgnoreCase("nan") ) {
+                    fieldLabels[i] = n;
+                    fieldNames[i] = fieldLabels[i].replaceAll(" ", "_");
+                    fieldUnits[i]= m.group(3);
+                    if (fieldUnits[i]!=null) fieldUnits[i]= fieldUnits[i].trim();
+                    // TODO: check for units too.
+                    // if ( m.groupCount() is 2) String u= m.group(2).trim()
                 } else {
-                    fieldNames[i] = "ch_"+m.group(1).trim().replaceAll("-", "_");
+                    if (isColumnHeaders) {
+                        logger.finest("parsed line appears to contain NaN's, and is not a column header because of field #" + i + ": " + ss[i]);
+                    }
+                    isColumnHeaders = false;
+                }
+            } else if ((m=COLUMN_CHANNEL_HEADER_PATTERN.matcher(ss[i])).matches() && m.group(3).length()>0 && m.group(5).length()>0 ) {
+                String n= m.group(1).trim();
+                fieldLabels[i] = n;
+                if ( m.group(2).length()>0 ) { // make valid java identifier
+                    fieldNames[i] = n.replaceAll("-", "_");
+                } else {
+                    fieldNames[i] = "ch_"+n.replaceAll("-", "_");
                 }
                 fieldUnits[i]= null;
             } else {
