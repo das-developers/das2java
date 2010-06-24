@@ -311,7 +311,7 @@ public class AsciiParser {
         int commaDelimFieldCount= line.split( ",",-2 ).length;
         int whitespaceDelimFieldCount= line.split("\\s+",-2 ).length;
 
-        if ( tabDelimFieldCount > 1) {  // always use tabs over others
+        if ( tabDelimFieldCount > 1 && tabDelimFieldCount!=whitespaceDelimFieldCount ) {  // always use tabs over others, but only if other doesn't work
             fieldSep = "\t";
         } else if ( commaDelimFieldCount > 1 && commaDelimFieldCount>= whitespaceDelimFieldCount/2 ) { //TODO: improve this
             fieldSep = ",";
