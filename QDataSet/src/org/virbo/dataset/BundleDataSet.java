@@ -155,7 +155,15 @@ public class BundleDataSet extends AbstractDataSet {
     }
 
     public Object property(String name, int i0, int i1) {
-        return datasets.get(i1).property(name,i0);
+        return datasets.get(i0).property(name,i1);
+    }
+
+    public Object property(String name, int i0, int i1, int i2 ) {
+        return datasets.get(i0).property(name,i1,i2);
+    }
+
+    public Object property(String name, int i0, int i1, int i2, int i3 ) {
+        return datasets.get(i0).property(name,i1,i2,i3);
     }
 
     public int length() {
