@@ -243,6 +243,25 @@ public class DataSetUtil {
     }
 
     /**
+     * true if the property is one that is global and is relevant thoughout the
+     * dataset, such as a title or the units.
+     *    property( "TITLE",0,0 ) often returns property("TITLE"), but
+     *    property( "DEPEND_0",0,0 ) should never return property("DEPEND_0").
+     * This is false, for example, for DEPEND_1.
+     * @param prop the property name.
+     * @return
+     */
+    public static boolean isInheritedProperty( String prop ) {
+        boolean indexProp= prop.startsWith("DEPEND_")
+                || prop.startsWith("BUNDLE_")
+                || prop.startsWith("BINS_")
+                || prop.startsWith("JOIN_")
+                || prop.startsWith("PLANE_");
+        // note CONTEXT* is inherited.
+        return !indexProp;
+    }
+
+    /**
      * gets all the properties of the dataset.  This is a shallow
      * copy of properties.
      */
