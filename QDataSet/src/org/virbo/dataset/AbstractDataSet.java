@@ -52,19 +52,35 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
 
     public Object property(String name, int i) {
-        return properties.get(name);
+        if ( DataSetUtil.isInheritedProperty(name) ) {
+            return properties.get(name);
+        } else {
+            return null;
+        }
     }
 
     public Object property(String name, int i0, int i1) {
-        return properties.get(name);
+        if ( DataSetUtil.isInheritedProperty(name) ) {
+            return properties.get(name);
+        } else {
+            return null;
+        }
     }
 
     public Object property(String name, int i0, int i1, int i2) {
-        return properties.get(name);
+        if ( DataSetUtil.isInheritedProperty(name) ) {
+            return properties.get(name);
+        } else {
+            return null;
+        }
     }
 
     public Object property(String name, int i0, int i1, int i2, int i3) {
-        return properties.get(name);
+        if ( DataSetUtil.isInheritedProperty(name) ) {
+            return properties.get(name);
+        } else {
+            return null;
+        }
     }
 
     public void putProperty( String name, Object value ) {
