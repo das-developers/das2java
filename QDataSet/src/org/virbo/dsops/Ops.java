@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 import org.das2.datum.UnitsConverter;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -1628,9 +1630,13 @@ public class Ops {
      * 
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param len the number of elements to have in each fft.
+     * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
      */
-    public static QDataSet fftPower(QDataSet ds, int len) {
+    public static QDataSet fftPower( QDataSet ds, int len, ProgressMonitor mon ) {
+        if ( mon==null ) {
+            mon= new NullProgressMonitor();
+        }
         if ( ds.rank()==2 ) {
             JoinDataSet result= new JoinDataSet(2);
             result.putProperty(QDataSet.JOIN_0, null);
@@ -1642,8 +1648,6 @@ public class Ops {
             QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
 
             UnitsConverter uc= UnitsConverter.IDENTITY;
-
-            boolean convertable=true;
 
             QDataSet translation= null;
             if ( dep1!=null ) {
@@ -1666,7 +1670,9 @@ public class Ops {
                 if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
             }
 
-
+            mon.setTaskSize(ds.length());
+            mon.started();
+            mon.setProgressMessage("performing fftPower");
             for ( int i=0; i<ds.length(); i++ ) {
                 for ( int j=0; j<ds.length(i)/len; j++ ) {
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
@@ -1703,7 +1709,9 @@ public class Ops {
                         dep0b= null;
                     }
                 }
+                mon.setTaskProgress(i);
             }
+            mon.finished();
             if (dep0!=null ) {
                 dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
                 result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
