@@ -104,10 +104,10 @@ public class Ops {
 
     private static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
         HashMap result = new HashMap();
-        for (Object o : m1.keySet()) {
-            Object v = m1.get(o);
-            if (v != null && v.equals(m2.get(o))) {
-                result.put(o, v);
+        for ( String k : m1.keySet()) {
+            Object v = m1.get(k);
+            if (v != null && v.equals(m2.get(k))) {
+                result.put(k, v);
             }
         }
         return result;
