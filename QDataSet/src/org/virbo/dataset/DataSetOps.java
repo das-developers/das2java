@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
+import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
@@ -636,12 +637,26 @@ public class DataSetOps {
     }
 
     /**
+     * return true if the process described in c is probably a slow
+     * process that should be done asynchronously.  For example, do
+     * a long fft on a different thread and use a progress monitor.  Processes
+     * that take a trivial, constant amount of time should return false, and
+     * may be completed on the event thread,etc.
+     * 
+     * @param c, process string, as in sprocess.
+     * @return
+     */
+    public static boolean isProcessAsync(String c) {
+        return c.contains("fft");
+    }
+
+    /**
      * see http://www.papco.org/wiki/index.php/DataReductionSpecs
      * @param c
      * @param fillDs
      * @return
      */
-    public static QDataSet sprocess(String c, QDataSet fillDs) {
+    public static QDataSet sprocess( String c, QDataSet fillDs , ProgressMonitor mon ) {
         int i=1;
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
@@ -716,7 +731,7 @@ public class DataSetOps {
                 if ( fillDs.length()>0 ) {
                     if ( s.hasNextInt() ) {
                         int len= s.nextInt();
-                        fillDs= Ops.fftPower(fillDs,len);
+                        fillDs= Ops.fftPower(fillDs,len, mon);
                     } else {
                         fillDs= Ops.fftPower(fillDs);
                     }
@@ -751,4 +766,5 @@ public class DataSetOps {
         }
         return s.hasNext() || s2.hasNext();
     }
+
 }
