@@ -13,6 +13,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GraphicsDevice;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -435,7 +436,20 @@ public class TearoffTabbedPane extends JTabbedPane {
 
         if ( direction==STICK_RIGHT ) {
             if ( active==frame1 ) {
-                if ( updateSize ) frame2.setSize( new Dimension( s1.width, s1.height + p2.y ) );
+                int delta= frame2.getWidth() - (int)s2.getWidth();
+                // wdelta shrinks right frame
+                GraphicsDevice gd= java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0]; 
+                //TODO: bad assumption what if left is not index 0?
+                if ( updateSize ) {
+                    //int leftWidth= gd.getDisplayMode().getWidth();
+                    //int wdelta= leftWidth - ( frame1.getX() + frame1.getWidth() + rightOffset + frame2.getWidth() );
+                    //if ( frame1.getX() + frame1.getWidth() > leftWidth ) {
+                    //    wdelta= 0;
+                    //} // if we're not on the left side
+                    //frame2.setSize( new Dimension( s2.width  + delta + wdelta, s1.height + p2.y ) );
+                    frame2.setSize( new Dimension( s2.width  + delta, s1.height + p2.y ) );
+                    //frame2.setSize( new Dimension( s1.width, s1.height + p2.y ) ); // old code
+                }
                 frame2.setLocation( frame1.getX() + frame1.getWidth() - p2.x + rightOffset, frame1.getY() + p.y - p2.y );
             } else {
                 if ( false && updateSize ) {
