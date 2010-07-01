@@ -413,4 +413,15 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             monitor.finished();
         }
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+       // ensure that any open VFS filesystem gets closed so threads terminate
+       try {
+           close();
+       } finally {
+           super.finalize();
+       }
+    }
+
 }
