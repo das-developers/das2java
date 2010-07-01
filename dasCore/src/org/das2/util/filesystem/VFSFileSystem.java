@@ -41,6 +41,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         
         fsRoot = mgr.resolveFile(root.toString());
 
+
         if (!fsRoot.exists() && createFolder) {
             //Also creates any necessary ancestor folders
             fsRoot.createFolder();
@@ -118,6 +119,8 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                     throw new FileSystemOfflineException(e);
                 } else if ( e.getMessage().startsWith("Could not connect to ") ) {
                     throw  new UnknownHostException(root.getHost());
+                } else if ( vfse.getCode().contains("invalid-absolute-uri") ) {
+                    throw new UnknownHostException(vfse.getMessage());
                 } else {
                     throw new FileSystemOfflineException(e);
                 }
