@@ -270,6 +270,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         copyFavorites();
     }
 
+    public void removeFromFavorites(final DatumRange range) {
+        dataRange.removeFromFavorites(range);
+        copyFavorites();
+    }
+
     private void copyFavorites() {
         if (DasApplication.getDefaultApplication().isHeadless()) {
             return;
@@ -287,6 +292,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             JMenuItem menuItem = new JMenuItem(action);
             bookmarksMenu.add(menuItem);
         }
+
+        bookmarksMenu.add( new JSeparator() );
         Action action = new AbstractAction("bookmark this range") {
             public void actionPerformed(ActionEvent e) {
                 DasAxis.this.addToFavorites(DasAxis.this.getDatumRange());
@@ -294,6 +301,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         };
         JMenuItem addItem = new JMenuItem(action);
         bookmarksMenu.add(addItem);
+
+        bookmarksMenu.add( new JSeparator() );
+        Action action2 = new AbstractAction("remove bookmark for range") {
+            public void actionPerformed(ActionEvent e) {
+                DasAxis.this.removeFromFavorites(DasAxis.this.getDatumRange());
+            }
+        };
+        JMenuItem rmItem = new JMenuItem(action2);
+        bookmarksMenu.add(rmItem);
     }
 
     private void copyHistory() {
