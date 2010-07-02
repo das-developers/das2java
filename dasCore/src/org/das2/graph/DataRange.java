@@ -256,6 +256,13 @@ public class DataRange implements Cloneable {
         favorites.add( range );
         firePropertyChange("favorites", oldFavorites, favorites );
     }
+
+    public void removeFromFavorites( DatumRange range ) {
+        if (favorites==null) favorites= new ArrayList();
+        List oldFavorites= new ArrayList(favorites);
+        favorites.remove( range );
+        firePropertyChange("favorites", oldFavorites, favorites );
+    }
     
     public List getFavorites() {
         if ( favorites==null ) {
