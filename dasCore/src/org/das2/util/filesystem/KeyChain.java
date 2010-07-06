@@ -140,4 +140,19 @@ public class KeyChain {
             throw new IllegalArgumentException(ex);
         }
     }
+
+    public String hideUserInfo( URI root ) {
+        String userInfo= root.getUserInfo();
+        int i= userInfo.indexOf(":");
+        if ( i>-1 ) {
+            userInfo= userInfo.substring(0,i) + ":*****";
+        }
+        URI uri;
+        try {
+            uri = new URI(root.getScheme(), userInfo, root.getHost(), root.getPort(), root.getPath(), root.getQuery(), root.getFragment());
+            return uri.toString();
+        } catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }
