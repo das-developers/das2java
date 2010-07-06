@@ -48,7 +48,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         }
 
         if (!fsRoot.exists()) {
-            throw new FileSystemOfflineException("Specified filesystem root does not exist.");
+            throw new FileSystemOfflineException("Specified filesystem root does not exist: "+ KeyChain.getDefault().hideUserInfo(root));
         }
         
         vfsSystem = fsRoot.getFileSystem();
@@ -102,6 +102,8 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                         } else {
                             throw new FileSystemOfflineException(e);
                         }
+                    } else {
+                        throw new FileSystemOfflineException(e);
                     }
                 }
             }
@@ -114,6 +116,8 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                 org.apache.commons.vfs.FileSystemException vfse=
                         (org.apache.commons.vfs.FileSystemException)e;
                 if ( vfse.getCode().contains("login.error") ) {
+                    throw new FileSystemOfflineException(e);
+                } else if ( vfse.getCode().equals( "vfs.provider.sftp/connect.error" ) ) {
                     throw new FileSystemOfflineException(e);
                 } else if ( vfse.getCode().contains("connect.error") ) {
                     throw new FileSystemOfflineException(e);
