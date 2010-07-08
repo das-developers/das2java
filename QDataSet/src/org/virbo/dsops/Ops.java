@@ -31,6 +31,7 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetAdapter;
+import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -1586,6 +1587,65 @@ public class Ops {
      */
     public static QDataSet sort(QDataSet ds) {
         return DataSetOps.sort(ds);
+    }
+
+    /**
+     * return the unique elements from the dataset.  If sort is null, then
+     * the dataset is assumed to be monotonic, and only repeating values are
+     * coalesced.  If sort is non-null, then it is the result of the function
+     * "sort" and should be a rank 1 list of indeces that sort the data.
+     *
+     * @param ds
+     * @param sort
+     * @return
+     */
+    public static QDataSet uniq( QDataSet ds, QDataSet sort  ) {
+        if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
+        if ( sort!=null && sort.rank()>1 ) throw new IllegalArgumentException("sort.rank()>1" );
+
+        DataSetBuilder builder= new DataSetBuilder(1,100);
+
+        builder.putProperty( QDataSet.UNITS, ds.property( QDataSet.UNITS ) );
+        double d;
+        if ( sort==null ) {
+            DataSetIterator it= new QubeDataSetIterator(ds);
+            if ( !it.hasNext() ) {
+                return builder.getDataSet();
+            }
+            it.next();
+            d= it.getValue(ds);
+            while ( it.hasNext() ) {
+                it.next();
+                double d1= it.getValue(ds);
+                if ( d!=d1 ) {
+                    builder.putValue(-1, d);
+                    builder.nextRecord();
+                    d= d1;
+                }
+            }
+        } else {
+            DataSetIterator it= new QubeDataSetIterator(sort);
+            if ( !it.hasNext() ) {
+                return builder.getDataSet();
+            }
+            it.next();
+            int i= (int) it.getValue(sort);
+            d= ds.value(i);
+            while ( it.hasNext() ) {
+                it.next();
+                i= (int) it.getValue(sort);
+                double d1= ds.value(i);
+                if ( d!=d1 ) {
+                    builder.putValue(-1, d);
+                    builder.nextRecord();
+                    d= d1;
+                }
+            }
+        }
+        builder.putValue(-1, d);
+        builder.nextRecord();
+        return builder.getDataSet();
+
     }
 
     /**
