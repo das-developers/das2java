@@ -906,6 +906,15 @@ public class TimeParser {
     }
 
     /**
+     * return the formatted range.  This actually returns the range that contains the min
+     * of the given range.
+     * @param range
+     * @return
+     */
+    public String format( DatumRange range ) {
+        return format( range.min(), range.max() );
+    }
+    /**
      * format the range into a string.
      * @param start
      * @param end currently ignored, and may be used in the future
