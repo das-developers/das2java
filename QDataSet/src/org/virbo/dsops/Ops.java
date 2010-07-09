@@ -38,6 +38,7 @@ import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.ReverseDataSet;
 import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
@@ -1646,6 +1647,15 @@ public class Ops {
         builder.nextRecord();
         return builder.getDataSet();
 
+    }
+
+    /**
+     * returns the reverse of the rank 1 dataset.
+     * @param ds
+     * @return
+     */
+    public static QDataSet reverse( QDataSet ds ) {
+        return new ReverseDataSet(ds);
     }
 
     /**
