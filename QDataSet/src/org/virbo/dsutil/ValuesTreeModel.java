@@ -106,6 +106,9 @@ public class ValuesTreeModel extends DefaultTreeModel {
 
     public static MutableTreeNode valuesTreeNode( String prefix, MutableTreeNode aroot, QDataSet ds, int sizeLimit ) {
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
+
+        QDataSet bundle= (QDataSet)ds.property( QDataSet.BUNDLE_1 );
+
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         Units depu= dep0==null ? Units.dimensionless : (Units) dep0.property(QDataSet.UNITS);
         if ( depu==null ) depu= Units.dimensionless;
@@ -117,8 +120,13 @@ public class ValuesTreeModel extends DefaultTreeModel {
             Units units= (Units) ds.property(QDataSet.UNITS);
             if ( units==null ) units= Units.dimensionless;
             for ( int i=0; i<Math.min( ds.length(), sizeLimit ); i++ ) {
+                Units u= units;
+                if ( bundle!=null ) {
+                    u= (Units)bundle.property( QDataSet.UNITS, i );
+                    if ( u==null ) u= Units.dimensionless;
+                }
                 //TODO: future datum class may allow for toString to return nominal data for invalid data.
-                String sval= wds.value(i) > 0. ? String.valueOf(units.createDatum(ds.value(i))) : "fill";
+                String sval= wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill";
                 if ( dep0!=null ) sval += " @ " +String.valueOf(depu.createDatum(dep0.value(i)));
                 aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
             }
