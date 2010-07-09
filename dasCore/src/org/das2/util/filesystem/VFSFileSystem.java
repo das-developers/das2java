@@ -12,11 +12,14 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.VFS;
+import org.das2.CancelledOperationException;
 import org.das2.system.MutatorLock;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -81,7 +84,12 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             while ( true ) {
             // this branch allows for passwords.  We don't support passwords 
             // over sftp, because of security concerns.
-                URI authUri= KeyChain.getDefault().resolveUserInfo(root);
+                URI authUri;
+                try {
+                    authUri = KeyChain.getDefault().resolveUserInfo(root);
+                } catch (CancelledOperationException ex) {
+                    throw new FileSystemOfflineException("access cancelled");
+                }
                 try {
                     VFSFileSystem result= new VFSFileSystem(authUri, createFolder);
                     return result;

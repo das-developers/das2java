@@ -19,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import org.das2.CancelledOperationException;
 import org.das2.DasApplication;
 
 /**
@@ -48,7 +49,14 @@ public class KeyChain {
 
     private Map<String,String> keys= new HashMap<String,String>();
 
-    public String getUserInfo( URI uri ) {
+    /**
+     * get the user credentials, maybe throwing CancelledOperationException if the
+     * user hits cancel.
+     * @param url
+     * @return
+     * @throws CancelledOperationException
+     */
+    public String getUserInfo( URI uri ) throws CancelledOperationException {
         try {
             return getUserInfo(uri.toURL());
         } catch (MalformedURLException ex) {
@@ -56,7 +64,14 @@ public class KeyChain {
         }
     }
 
-    public String getUserInfo( URL url ) {
+    /**
+     * get the user credentials, maybe throwing CancelledOperationException if the
+     * user hits cancel.
+     * @param url
+     * @return
+     * @throws CancelledOperationException
+     */
+    public String getUserInfo( URL url ) throws CancelledOperationException {
 
         String userInfo= url.getUserInfo();
         if ( userInfo==null ) return null;
@@ -83,11 +98,14 @@ public class KeyChain {
                 JPasswordField passTf= new JPasswordField();
                 if ( ss.length>1 && !ss[1].equals("pass") ) passTf.setText(ss[1]);
                 panel.add( passTf );
-                if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION ) ) {
+                int r= JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION );
+                if ( JOptionPane.OK_OPTION==r ) {
                     char[] pass= passTf.getPassword();
                     storedUserInfo= userTf.getText() + ":" + new String(pass);
                     keys.put( hash, storedUserInfo );
                     return storedUserInfo;
+                } else if ( JOptionPane.CANCEL_OPTION==r ) {
+                    throw new CancelledOperationException();
                 }
             } else {
                 return userInfo;
@@ -131,7 +149,7 @@ public class KeyChain {
      * plug the username and password into the URI.
      * @param root
      */
-    public URI resolveUserInfo(URI root) {
+    public URI resolveUserInfo(URI root) throws CancelledOperationException {
         try {
             String userInfo = getUserInfo(root);
             URI newuri = new URI(root.getScheme(), userInfo, root.getHost(), root.getPort(), root.getPath(), root.getQuery(), root.getFragment());

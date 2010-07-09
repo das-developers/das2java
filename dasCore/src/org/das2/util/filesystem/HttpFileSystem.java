@@ -31,6 +31,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.CancelledOperationException;
 import org.das2.DasApplication;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
@@ -63,7 +66,12 @@ public class HttpFileSystem extends WebFileSystem {
             urlc.setConnectTimeout(3000);
 
             urlc.setRequestMethod("HEAD");
-            String userInfo= KeyChain.getDefault().getUserInfo(root);
+            String userInfo;
+            try {
+                userInfo = KeyChain.getDefault().getUserInfo(root);
+            } catch (CancelledOperationException ex) {
+                throw new FileSystemOfflineException("user cancelled credentials");
+            }
             if ( userInfo != null) {
                 String encode = Base64.encodeBytes( userInfo.getBytes());
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
@@ -123,7 +131,12 @@ public class HttpFileSystem extends WebFileSystem {
             URL remoteURL = new URL(root.toString() + filename);
 
             URLConnection urlc = remoteURL.openConnection();
-            String userInfo= KeyChain.getDefault().getUserInfo(root);
+            String userInfo;
+            try {
+                userInfo = KeyChain.getDefault().getUserInfo(root);
+            } catch (CancelledOperationException ex) {
+                throw new IOException("user cancelled at credentials entry");
+            }
             if ( userInfo != null) {
                 String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
@@ -190,7 +203,7 @@ public class HttpFileSystem extends WebFileSystem {
      * @param f
      * @throws java.io.IOException
      */
-    protected Map<String, Object> getHeadMeta(String f) throws IOException {
+    protected Map<String, Object> getHeadMeta(String f) throws IOException, CancelledOperationException {
         String realName = f;
         boolean exists;
         try {
@@ -284,7 +297,12 @@ public class HttpFileSystem extends WebFileSystem {
                 return (String[]) listings.get(directory);
             } else {
 
-                URL[] list = HtmlUtil.getDirectoryListing(getURL(directory));
+                URL[] list;
+                try {
+                    list = HtmlUtil.getDirectoryListing(getURL(directory));
+                } catch (CancelledOperationException ex) {
+                    throw new IOException( "user cancelled at credentials" ); // JAVA6
+                }
                 String[] result = new String[list.length];
                 int n = directory.length();
                 for (int i = 0; i < list.length; i++) {

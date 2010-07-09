@@ -23,6 +23,7 @@
 
 package org.das2.util.filesystem;
 
+import org.das2.CancelledOperationException;
 import org.das2.util.Base64;
 import java.io.*;
 import java.net.*;
@@ -41,7 +42,7 @@ public class HtmlUtil {
         return file.charAt(file.length()-1) != '/';
     }
     
-    public static URL[] getDirectoryListing( URL url ) throws IOException {
+    public static URL[] getDirectoryListing( URL url ) throws IOException, CancelledOperationException {
         FileSystem.logger.finer("listing "+url);
         
         String file= url.getFile();
