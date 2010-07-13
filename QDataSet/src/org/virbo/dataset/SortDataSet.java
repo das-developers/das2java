@@ -44,8 +44,15 @@ public class SortDataSet extends AbstractDataSet {
         if ( p0!=null ) properties.put( QDataSet.PLANE_0, new SortDataSet( p0, sort ) );
         QDataSet dep1= (QDataSet) source.property( QDataSet.DEPEND_1 );
         if ( dep1!=null && dep1.rank()>1 ) {
+            //TODO: this is a rarely-used schema that should probably not be supported.
             properties.put( QDataSet.DEPEND_1, new SortDataSet( dep1, sort ) );
         }
+        // copy the "use" properties from the source to this so it's easier to see what's going on.
+        properties.put( QDataSet.UNITS, source.property(QDataSet.UNITS ) );
+        properties.put( QDataSet.VALID_MIN, source.property(QDataSet.VALID_MIN) );
+        properties.put( QDataSet.VALID_MAX, source.property(QDataSet.VALID_MAX) );
+        properties.put( QDataSet.FILL_VALUE, source.property(QDataSet.FILL_VALUE) );
+
     }
 
     public int rank() {
