@@ -2469,6 +2469,23 @@ public class Ops {
     }
 
     /**
+     * return true if the dataset is a bundle.  It is rank 2 or rank 1, and
+     * has the last dimension a bundle dimension.
+     * @param zds
+     * @return
+     */
+    public static boolean isBundle( QDataSet zds ) {
+        if ( zds.rank()==1 ) {
+            return zds.property(QDataSet.BUNDLE_0)!=null;
+        } else if ( zds.rank()==2 ) {
+            return zds.property(QDataSet.BUNDLE_1)!=null;
+        } else {
+            return false;
+        }
+        
+    }
+
+    /**
      * like bundle, but declare the last dataset is dependent on the first one.
      *
      * @param x rank 1 dataset
@@ -2537,12 +2554,16 @@ public class Ops {
             } else {
                 throw new IllegalArgumentException( problems.get(0) );
             }
+        } if ( z.rank()==2 && isBundle(z) ) {
+            QDataSet z1= DataSetOps.slice1(z,z.length(0)-1);
+            return link( x, y, z1 );
+
         } else {
             DDataSet zds = DDataSet.copy(z);
             if (x != null) {
                 zds.putProperty(QDataSet.DEPEND_0, x);
             }
-            if (y != null) {
+            if (y != null ) {
                 zds.putProperty(QDataSet.DEPEND_1, y);
             }
             List<String> problems= new ArrayList();
