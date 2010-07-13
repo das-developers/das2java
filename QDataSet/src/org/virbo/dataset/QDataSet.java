@@ -197,9 +197,9 @@ public interface QDataSet {
     public final static String TITLE="TITLE";
     
     /**
-     * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Also, the data must not contain 
-     * invalid values.  Generally this will be used with tags datasets.  Negative CADENCE implies
-     * monotonic decreasing.
+     * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may only contain
+     * invalid values at the beginning or end.  Generally this will be used with tags datasets.  
+     * Negative CADENCE implies monotonic decreasing.
      */
     public final static String MONOTONIC="MONOTONIC";
             
