@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
 
@@ -105,6 +104,13 @@ public class DataSetOps {
         return new TrimDataSet( ds, offset, offset+len );
     }
 
+    /**
+     * flatten a rank 2 dataset.
+     * history:
+     *    modified for use in PW group.
+     * @param ds
+     * @return
+     */
 
     public static QDataSet flattenRank2( final QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -114,16 +120,25 @@ public class DataSetOps {
         DataSetBuilder ybuilder= new DataSetBuilder( 1, 100 );
         for ( int i=0; i<ds.length(); i++ ) {
             for ( int j=0; j<ds.length(i); j++ ) {
-                xbuilder.putValue(-1, dep0.value(i) );
-                ybuilder.putValue(-1, dep1.value(j) );
+                if (dep0!=null) {
+                    xbuilder.putValue(-1, dep0.value(i) );
+                    xbuilder.nextRecord();
+                }
+                if (dep1!=null) {
+                    ybuilder.putValue(-1, dep1.value(j) );
+                    ybuilder.nextRecord();
+                }
                 builder.putValue(-1, ds.value(i,j) );
-                xbuilder.nextRecord();
-                ybuilder.nextRecord();
                 builder.nextRecord();
             }
         }
 
-        return Ops.link( xbuilder.getDataSet(), ybuilder.getDataSet(), builder.getDataSet() );
+        if ( dep1!=null && dep0!=null ) {
+            return Ops.link( xbuilder.getDataSet(), ybuilder.getDataSet(), builder.getDataSet() );
+        } else  {
+            return builder.getDataSet();
+        }
+        
     }
     /**
      * removes the index-th element from the array.
@@ -278,7 +293,7 @@ public class DataSetOps {
         }
 
         if ( idim==0 ) {
-            return DDataSet.copy( new SortDataSet( ds, sort ) );
+            return DDataSet.copy( new SortDataSet( ds, sort ) ); // this was presumably for efficiency
         }
         
         int[] qube = DataSetUtil.qubeDims( ds );
