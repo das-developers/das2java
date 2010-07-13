@@ -91,6 +91,7 @@ public class DataSetUtil {
      * returns true if the dataset is monotonically increasing, and contains no fill.
      * If the dataset says it's monotonic, believe it.
      * An empty dataset is not monotonic.
+     * We now use a weights dataset to more thoroughly check for fill.
      */
     public static boolean isMonotonic(QDataSet ds) {
         if (ds.rank() != 1) {
@@ -98,7 +99,7 @@ public class DataSetUtil {
         }
         int i = 0;
 
-        final Units u = (Units) ds.property(QDataSet.UNITS);
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
         if (ds.length() == 0) {
             return false;
@@ -108,15 +109,15 @@ public class DataSetUtil {
             return true;
         }
 
-        double last = ds.value(i);
-
-        if (u != null && u.isFill(last)) {
+        if ( wds.value(i)==0 ) {
             return false;
         }
 
+        double last = ds.value(i);
+
         for (i = 1; i < ds.length(); i++) {
             double d = ds.value(i);
-            if (d < last || (u != null && u.isFill(d))) {
+            if (d < last || wds.value(i)==0 ) {
                 return false;
             }
             last = d;
@@ -209,11 +210,12 @@ public class DataSetUtil {
 
     public static String[] propertyNames() {
         return new String[]{
-                    QDataSet.UNITS, QDataSet.FORMAT, QDataSet.CADENCE,
-                    QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
-                    QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX, QDataSet.RENDER_TYPE,
+                    QDataSet.UNITS, 
                     QDataSet.VALID_MIN, QDataSet.VALID_MAX,
                     QDataSet.FILL_VALUE,
+                    QDataSet.FORMAT, QDataSet.CADENCE,
+                    QDataSet.MONOTONIC, QDataSet.SCALE_TYPE,
+                    QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX, QDataSet.RENDER_TYPE,
                     QDataSet.QUBE,
                     QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
                     QDataSet.CACHE_TAG,
