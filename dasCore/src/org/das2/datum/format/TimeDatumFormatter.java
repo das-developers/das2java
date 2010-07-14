@@ -28,6 +28,7 @@ import java.util.regex.*;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
 
 /**
  *
@@ -169,7 +170,15 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     public String format(Datum datum) {
         if ( datum.isFill() ) return "fill";
-        TimeUtil.TimeStruct ts = TimeUtil.toTimeStruct(datum);
+        int mjd1958= (int)datum.doubleValue( Units.mj1958 );
+        TimeUtil.TimeStruct ts;
+        if ( mjd1958 < -349909 ) { // year 1000
+            ts= TimeUtil.toTimeStruct( Units.mj1958.createDatum(-349909) );
+        } else if ( mjd1958 > 2937279 ) { // year 9999 // should be 2937613 rounding errors?
+            ts= TimeUtil.toTimeStruct( Units.mj1958.createDatum(2937279) );
+        } else {
+            ts= TimeUtil.toTimeStruct(datum);
+        }
         Number[] array = timeStructToArray(ts);
         return format.format(array);
     }
