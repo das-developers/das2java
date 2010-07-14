@@ -341,6 +341,10 @@ public class DasApplication {
     public JFrame getMainFrame() {
         return this.mainFrame;
     }
+
+    public void setMainFrame( JFrame frame ) {
+        this.mainFrame= frame;
+    }
     
     public void quit() {
         final Preferences prefs= Preferences.userNodeForPackage(DasApplication.class);
