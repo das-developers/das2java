@@ -317,6 +317,12 @@ public final class TimeUtil {
         Units u= datum.getUnits();
         double d= datum.doubleValue(u);
         int mjd1958= (int)datum.doubleValue( Units.mj1958 );
+        if ( mjd1958 < -714781 ) { // year 0001
+            throw new IllegalArgumentException( "invalid time: mjd1958="+mjd1958 );
+        }
+        if ( mjd1958 > 2937613 ) { // year 9999
+            throw new IllegalArgumentException( "invalid time: mjd1958="+mjd1958 );
+        }
         double midnight= Units.mj1958.convertDoubleTo( u, mjd1958 );
         double sinceMidnight= d-midnight;
 
@@ -882,6 +888,9 @@ public final class TimeUtil {
             len = tok[i].length();
             
             try {
+                if ( tok[i].length()>0 && Character.isLetter(tok[i].charAt(0) ) ) {
+                    throw new NumberFormatException("must start with a number: "+tok); // caught immediately.
+                }
                 value = Double.parseDouble(tok[i]);
             } catch (NumberFormatException e) {
                 if (len < 3 || !want[DATE]) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
