@@ -10,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
+import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.das2.dataset.TableDataSet;
@@ -79,14 +80,17 @@ public class PitchAngleDistributionRenderer extends Renderer {
         double[][] yy= new double[ tds.getXLength()+1 ] [ tds.getYLength(0)+1 ];
 
 
-        Units xunits= Units.dimensionless;  // should be rad
+        Units xunits= Units.radians;  // should be rad
+        if ( ds.getXUnits()==Units.dimensionless ) {
+            xunits= Units.dimensionless;
+        }
         Units yunits= Units.dimensionless;  // should be eV
         Units zunits= tds.getZUnits();
 
         double da= ( tds.getXTagDouble(1,xunits) - tds.getXTagDouble(0,xunits) ) / 2;
 
-        double x0= xAxis.transform(0,Units.dimensionless);
-        double y0= yAxis.transform(0,Units.dimensionless);
+        double x0= xAxis.transform(0,xunits);
+        double y0= yAxis.transform(0,yunits);
 
         for ( int j=0; j<tds.getYLength(0)-1; j++ ) {
             double v1= tds.getYTagDouble(0, j,yunits);
@@ -103,14 +107,24 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 yy[i+1][j]= y0 - sin(a1+da) * r0;
                 xx[i+1][j+1]= x0 + cos(a1+da) * r1;
                 yy[i+1][j+1]= y0 - sin(a1+da) * r1;
-                int zz= colorBar.indexColorTransform( tds.getDouble(i, j, zunits ), zunits );
+                int zz= colorBar.rgbTransform( tds.getDouble(i, j, zunits ), zunits );
                 //int[] x= new int [] {(int) xx[i][j], (int)xx[i][j+1], (int)xx[i+1][j+1], (int)xx[i+1][j], (int)xx[i][j] };
                 //int[] y= new int [] { (int)yy[i][j], (int)yy[i][j+1], (int)yy[i+1][j+1], (int)yy[i+1][j], (int)yy[i][j] };
-                int[] x= new int [] {(int) xx[i][j], (int)xx[i][j+1], (int)xx[i+1][j+1], (int)xx[i+1][j],};
-                int[] y= new int [] { (int)yy[i][j], (int)yy[i][j+1], (int)yy[i+1][j+1], (int)yy[i+1][j]};
-                Polygon p= new Polygon( x, y, 4 );
+                //int[] x= new int [] {(int) xx[i][j], (int)xx[i][j+1], (int)xx[i+1][j+1], (int)xx[i+1][j],};
+                //int[] y= new int [] { (int)yy[i][j], (int)yy[i][j+1], (int)yy[i+1][j+1], (int)yy[i+1][j]};
+                //Polygon p= new Polygon( x, y, 4 );
                 g.setColor( new Color(zz) );
-                g.fillPolygon(p);
+                //g.fillPolygon(p);
+
+                GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
+                gp.moveTo( xx[i][j], yy[i][j] );
+                gp.lineTo( xx[i][j+1], yy[i][j+1] );
+                gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] );
+                gp.lineTo( xx[i+1][j], yy[i+1][j] );
+                gp.lineTo( xx[i][j], yy[i][j] );
+
+                g.fill(gp);
+                g.draw(gp);
 
             }
         }
