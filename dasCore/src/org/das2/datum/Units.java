@@ -39,12 +39,17 @@ public abstract class Units implements Displayable {
     
     public static final Units dimensionless= new NumberUnits("","dimensionless quantities");
     public static final Units dB = new NumberUnits("dB");
-    public static final Units radians= new NumberUnits("radian");
-    public static final Units degrees= new NumberUnits("degrees");
     static {
         dimensionless.registerConverter(dB, new dBConverter());
     }
-    
+
+    public static final Units radians= new NumberUnits("radian");
+    public static final Units degrees= new NumberUnits("degrees");
+    static {
+        degrees.registerConverter(radians, new UnitsConverter.ScaleOffset(Math.PI/180.0,0.0) );
+
+    }
+
     private static final class dBConverter extends UnitsConverter {
         public double convert(double value) {
             return 10 * DasMath.log10(value);
