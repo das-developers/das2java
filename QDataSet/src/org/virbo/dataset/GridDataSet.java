@@ -22,6 +22,8 @@ public class GridDataSet extends AbstractDataSet {
     int ix;
     int iy;
 
+    final double fill= -1e31;
+
     public GridDataSet() {
         xtags = new TreeMap<Integer, Double>();
         ix=0;
@@ -30,6 +32,7 @@ public class GridDataSet extends AbstractDataSet {
         iy=0;
         rytags= new HashMap<Double,Integer>();
         values = new HashMap<Integer, Double>();
+        properties.put( QDataSet.FILL_VALUE, fill );
     }
 
     /**
@@ -135,6 +138,11 @@ public class GridDataSet extends AbstractDataSet {
 
     @Override
     public double value(int i0, int i1) {
-        return values.get( i1 * 10000 + i0 );
+        Double v= values.get( i1 * 10000 + i0 );
+        if ( v==null ) {
+            return fill;
+        } else {
+            return v;
+        }
     }
 }
