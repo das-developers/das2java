@@ -1,0 +1,140 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.virbo.dataset;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+/**
+ * grids (X,Y,Z) data into a table Z(X,Y)
+ * @author jbf
+ */
+public class GridDataSet extends AbstractDataSet {
+
+    TreeMap<Integer, Double> xtags;
+    TreeMap<Integer, Double> ytags;
+    Map<Double,Integer> rxtags;
+    Map<Double,Integer> rytags;
+    Map<Integer, Double> values;
+    int ix;
+    int iy;
+
+    public GridDataSet() {
+        xtags = new TreeMap<Integer, Double>();
+        ix=0;
+        rxtags= new HashMap<Double,Integer>();
+        ytags = new TreeMap<Integer, Double>();
+        iy=0;
+        rytags= new HashMap<Double,Integer>();
+        values = new HashMap<Integer, Double>();
+    }
+
+    /**
+     * add either rank 1 slice ( x,y,z ) or
+     * add rank 2 dataset ( *,3 )
+     * @param slice
+     */
+    public void add(QDataSet slice) {
+        if ( slice.rank()==1 ) {
+            double x = slice.value(0);
+            double y = slice.value(1);
+            double z = slice.value(2);
+            add( x, y, z );
+        } else if ( slice.rank()==2 ) {
+            for ( int i=0; i<slice.length(); i++ ) {
+                double x = slice.value(i,0);
+                double y = slice.value(i,1);
+                double z = slice.value(i,2);
+                add( x, y, z );
+            }
+        }
+    }
+
+    public void add( double x, double y, double z ) {
+
+        int iix, iiy;
+        if ( !rxtags.containsKey(x) ) {
+            xtags.put(ix,x);
+            rxtags.put(x,ix);
+            iix= ix;
+            ix++;
+        } else {
+            iix= rxtags.get(x);
+        }
+
+        if ( !rytags.containsKey(y) ) {
+            ytags.put(iy,y);
+            rytags.put(y,iy);
+            iiy= iy;
+            iy++;
+        } else {
+            iiy= rytags.get(y);
+        }
+
+        values.put( iiy*10000 + iix, z );
+        
+    }
+
+    @Override
+    public int rank() {
+        return 2;
+    }
+
+    @Override
+    public int length() {
+        return xtags.size();
+    }
+
+    @Override
+    public int length(int i) {
+        return ytags.size();
+    }
+
+    QDataSet x = new AbstractDataSet() {
+
+        public int rank() {
+            return 1;
+        }
+
+        public double value(int i) {
+            return xtags.get(i);
+        }
+
+        public int length() {
+            return xtags.size();
+        }
+    };
+    QDataSet y = new AbstractDataSet() {
+
+        public int rank() {
+            return 1;
+        }
+
+        public double value(int i) {
+            return ytags.get(i);
+        }
+
+        public int length() {
+            return ytags.size();
+        }
+    };
+
+    @Override
+    public Object property(String name) {
+        if (name.equals(QDataSet.DEPEND_0)) {
+            return x;
+        } else if (name.equals(QDataSet.DEPEND_1)) {
+            return y;
+        } else {
+            return super.property(name);
+        }
+    }
+
+    @Override
+    public double value(int i0, int i1) {
+        return values.get( i1 * 10000 + i0 );
+    }
+}

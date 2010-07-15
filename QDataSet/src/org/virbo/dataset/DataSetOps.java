@@ -140,6 +140,18 @@ public class DataSetOps {
         }
         
     }
+
+    /**
+     * takes rank 2 link (x,y,z) and makes a table from it z(x,y)
+     * @param ds
+     * @return
+     */
+    public static QDataSet grid( final QDataSet ds ) {
+        GridDataSet result= new GridDataSet();
+        result.add( ds );
+        return result;
+    }
+
     /**
      * removes the index-th element from the array.
      * @param array
