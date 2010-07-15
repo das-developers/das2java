@@ -76,8 +76,8 @@ public class PitchAngleDistributionRenderer extends Renderer {
         if ( tds==null ) return;
         if ( colorBar==null ) return;
         
-        double[][] xx= new double[ tds.getXLength()+1 ] [ tds.getYLength(0)+1 ];
-        double[][] yy= new double[ tds.getXLength()+1 ] [ tds.getYLength(0)+1 ];
+        float[][] xx= new float[ tds.getXLength()+1 ] [ tds.getYLength(0)+1 ];
+        float[][] yy= new float[ tds.getXLength()+1 ] [ tds.getYLength(0)+1 ];
 
 
         Units xunits= Units.radians;  // should be rad
@@ -99,14 +99,14 @@ public class PitchAngleDistributionRenderer extends Renderer {
             double r1= y0 - ( yAxis.transform(v2,yunits) ); // out
             for ( int i=0; i<tds.getXLength(); i++ ) {
                 double a1= tds.getXTagDouble(i,xunits);
-                xx[i][j]= x0 + cos(a1-da) * r0;
-                yy[i][j]= y0 - sin(a1-da) * r0;
-                xx[i][j+1]= x0 + cos(a1-da) * r1;
-                yy[i][j+1]= y0 - sin(a1-da) * r1;
-                xx[i+1][j]= x0 + cos(a1+da) * r0;
-                yy[i+1][j]= y0 - sin(a1+da) * r0;
-                xx[i+1][j+1]= x0 + cos(a1+da) * r1;
-                yy[i+1][j+1]= y0 - sin(a1+da) * r1;
+                xx[i][j]= (float) ( x0 + cos(a1-da) * r0 );
+                yy[i][j]= (float) ( y0 - sin(a1-da) * r0 );
+                xx[i][j+1]= (float) ( x0 + cos(a1-da) * r1 );
+                yy[i][j+1]= (float) ( y0 - sin(a1-da) * r1 );
+                xx[i+1][j]= (float) ( x0 + cos(a1+da) * r0 );
+                yy[i+1][j]= (float) ( y0 - sin(a1+da) * r0 );
+                xx[i+1][j+1]= (float) ( x0 + cos(a1+da) * r1 );
+                yy[i+1][j+1]= (float) ( y0 - sin(a1+da) * r1 );
                 int zz= colorBar.rgbTransform( tds.getDouble(i, j, zunits ), zunits );
                 //int[] x= new int [] {(int) xx[i][j], (int)xx[i][j+1], (int)xx[i+1][j+1], (int)xx[i+1][j], (int)xx[i][j] };
                 //int[] y= new int [] { (int)yy[i][j], (int)yy[i][j+1], (int)yy[i+1][j+1], (int)yy[i+1][j], (int)yy[i][j] };
