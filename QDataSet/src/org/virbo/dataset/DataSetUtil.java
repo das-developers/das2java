@@ -88,10 +88,12 @@ public class DataSetUtil {
     }
 
     /**
-     * returns true if the dataset is monotonically increasing, and contains no fill.
+     * returns true if the dataset is monotonically increasing.
      * If the dataset says it's monotonic, believe it.
      * An empty dataset is not monotonic.
      * We now use a weights dataset to more thoroughly check for fill.
+     * The dataset may now contain fill data.
+     * See QDataSet.MONOTONIC.
      */
     public static boolean isMonotonic(QDataSet ds) {
         if (ds.rank() != 1) {
@@ -117,9 +119,11 @@ public class DataSetUtil {
 
         for (i = 1; i < ds.length(); i++) {
             double d = ds.value(i);
-            if (d < last || wds.value(i)==0 ) {
+            double w = wds.value(i);
+            if ( w==0 ) continue;
+            if ( d < last  ) {
                 return false;
-            }
+            } 
             last = d;
         }
         return true;
