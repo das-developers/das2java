@@ -24,6 +24,7 @@ import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
@@ -75,6 +76,8 @@ public final class AutoHistogram {
     Units units;
     int rescaleCount;  // number of times we rescaled, useful for debugging.
     double minGtZero= Double.MAX_VALUE; // useful for detecting log spacing, the smallest positive non-zero number observed.
+
+    QDataSet context;  // range over which histogram is taken.
 
     /**
      * list of outliers and thier count.  When we rescale, we see if any outliers can be added to the distribution.
@@ -222,6 +225,34 @@ public final class AutoHistogram {
         return doit(ds, null);
     }
 
+    /**
+     * fast extent only works when monotonic.
+     * Returns null if there is no valid data.
+     * @param dep0
+     * @return rank 1 bins dataset or null
+     */
+    public QDataSet monoExtent( QDataSet dep0 ) {
+        QDataSet wdsdep0= DataSetUtil.weightsDataSet(dep0);
+        int imin, imax;
+        for ( imin=0; imin<dep0.length(); imin++ ) {
+            if ( wdsdep0.value(imin)>0 ) break;
+        }
+        for ( imax=dep0.length()-1; imax>=0; imax-- ) {
+            if ( wdsdep0.value(imax)>0 ) break;
+        }
+        if ( imin<imax ) {
+            DDataSet result= DDataSet.createRank1(2);
+            result.putProperty( QDataSet.BINS_0, "min,max" );
+            result.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+            result.putValue( 0, dep0.value(imin) );
+            result.putValue( 1, dep0.value(imax) );
+            return result;
+        } else {
+            return null;
+        }
+
+    }
+
     //public QDataSet getTiming() {
     //    return timer.getDataSet();
     //}
@@ -245,6 +276,20 @@ public final class AutoHistogram {
 
         if (wds == null) {
             wds = DataSetUtil.weightsDataSet(ds);
+        }
+
+        QDataSet context1;
+        // try to get an extent of the data depend0.
+        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+        if ( dep0!= null ) {
+            if ( DataSetUtil.isMonotonic(dep0 ) ) {
+                context1= monoExtent(dep0);
+                if ( context==null ) {
+                    context= context1;
+                } else {
+                    context= null; //TODO: only support one pass.
+                }
+            }
         }
 
         Units d1 = (Units) ds.property(QDataSet.UNITS);
@@ -336,7 +381,8 @@ public final class AutoHistogram {
         }
 
         DDataSet result = getHistogram();
-
+        if ( context!=null ) result.putProperty( QDataSet.CONTEXT_0, context );
+        
         return result;
     }
 
