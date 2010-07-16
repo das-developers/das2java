@@ -206,7 +206,7 @@ public class DataSetOps {
 
             @Override
             public double value(int i0, int i1, int i2, int i3 ) {
-                return ds.value(i0, i1, i2, i3 + start);
+                return ds.value(i0, i1, i2, i3 + start); 
             }
 
             public Object property(String name) {
