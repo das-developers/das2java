@@ -408,6 +408,11 @@ public class DataSetUtil {
             }
         }
 
+        if ( ds.rank()==1 && "min,max".equals(ds.property(QDataSet.BINS_0)) ) {
+            DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
+            return dr.toString();
+        }
+
         String qubeStr = DataSetUtil.isQube(ds) ? "" : "*";
 
         String[] depNames = new String[4];
@@ -1116,22 +1121,22 @@ public class DataSetUtil {
 
             String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
             if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
-            for ( int i=0; i<ds.length(); i++ ) {
-                result.append( ss[i]+"="+u.createDatum(ds.value(i)) );
-                if ( i<ds.length()-1 ) result.append(", ");
-            }
+            return result.toString();
+
         } else if ( "min,maxInclusive".equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
             StringBuffer result= new StringBuffer();
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
             result.append( new DatumRange( ds.value(0), ds.value(1), u ).toString() );
-
+            result.append( "(inclusive)" );
             String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
             if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
             for ( int i=0; i<ds.length(); i++ ) {
                 result.append( ss[i]+"="+u.createDatum(ds.value(i)) );
                 if ( i<ds.length()-1 ) result.append(", ");
             }
+            return result.toString();
+
         } else if ( ds.property(QDataSet.BINS_0)!=null && ds.rank()==1) {
             StringBuffer result= new StringBuffer();
             Units u= (Units) ds.property(QDataSet.UNITS);
