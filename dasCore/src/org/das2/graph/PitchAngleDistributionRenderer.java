@@ -84,9 +84,11 @@ public class PitchAngleDistributionRenderer extends Renderer {
         Units yunits= Units.dimensionless;  // should be eV
         Units zunits= tds.getZUnits();
 
+        //TODO: handle log energy, etc, by converting to linear axis.
+
         double da= ( tds.getXTagDouble(1,xunits) - tds.getXTagDouble(0,xunits) ) / 2;
 
-        double x0= xAxis.transform(0,xunits);
+        double x0= xAxis.transform(0,yunits);
         double y0= yAxis.transform(0,yunits);
 
         for ( int iflip=0; iflip<2; iflip++ ) {
