@@ -158,6 +158,17 @@ public class NumberUnits extends Units {
                     s= s.substring(0,s.length()-this.getId().length());
                 }
                 String[] ss= s.split("\\s+");
+                if ( ss.length==1 && Character.isLetter(s.charAt(s.length()-1)) ) {   // "1hr"
+                    for ( int i=s.length()-1; i>=0; i-- ) {  // find the last number.
+                        if ( Character.isDigit(s.charAt(i)) ) {
+                            String[] ss2= new String[2];
+                            ss2[0]= ss[0].substring(0,i+1);
+                            ss2[1]= ss[0].substring(i+1);
+                            ss= ss2;
+                            break;
+                        }
+                    }
+                }
                 double[] dd= parseDecimal(ss[0]);
                 if ( ss.length==1 ) {
                     return Datum.create( dd[0], this, dd[1] );
