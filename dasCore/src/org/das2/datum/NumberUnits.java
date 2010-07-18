@@ -140,6 +140,7 @@ public class NumberUnits extends Units {
      * parse the string in the context of this.  If units are not
      * specified, then assume units are this.  Otherwise, parse the
      * unit and attempt to convert to this before creating the unit.
+     * At some point, we introduced support for simple expressions like "3*22"
      */
     public Datum parse(String s) throws ParseException {
         if ( expressionPattern.matcher(s).matches() ) {
@@ -158,7 +159,7 @@ public class NumberUnits extends Units {
                     s= s.substring(0,s.length()-this.getId().length());
                 }
                 String[] ss= s.split("\\s+");
-                if ( ss.length==1 && Character.isLetter(s.charAt(s.length()-1)) ) {   // "1hr"
+                if ( ss.length==1 && !s.startsWith("N") && !s.startsWith("n") && Character.isLetter(s.charAt(s.length()-1)) ) {   // "1hr", watch for nan
                     for ( int i=s.length()-1; i>=0; i-- ) {  // find the last number.
                         if ( Character.isDigit(s.charAt(i)) ) {
                             String[] ss2= new String[2];
