@@ -444,7 +444,7 @@ public class DataSetUtil {
 
         StringBuffer dimStr = new StringBuffer("" + depNames[0] + ds.length());
         for ( int i=1; i<ds.rank(); i++ ) {
-            dimStr.append("," + depNames[1] + qubeDims[i] + qubeStr);
+            dimStr.append("," + depNames[i] + qubeDims[i] + qubeStr);
         }
         
         String su = String.valueOf(u);
