@@ -216,7 +216,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         g.setRenderingHints((RenderingHints) org.das2.DasProperties.getRenderingHints());
         
         DataSet ds;
-        
+
         if ( dataSetConsumer!=null ) {
             ds = dataSetConsumer.getConsumedDataSet();
         } else {
@@ -228,7 +228,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             }
         }
 
-        Rectangle[] superDirty = null;
+        if ( dataSetConsumer instanceof Renderer ) {
+            Renderer r= (Renderer)dataSetConsumer;
+            if ( r.isActive()==false || r.getParent()==null ) {
+                ds= null;
+            }
+        }
 
         Datum x = null;
         Datum y = null;
@@ -260,6 +265,9 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             
             if (ds != null) {
                 if (ds instanceof TableDataSet) {
+                    if ( dataSetConsumer!=null ) {
+
+                    }
                     TableDataSet tds = (TableDataSet) ds;
                     String zAsString;
                     if (tds != null && snapping) {
