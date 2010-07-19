@@ -265,9 +265,6 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             
             if (ds != null) {
                 if (ds instanceof TableDataSet) {
-                    if ( dataSetConsumer!=null ) {
-
-                    }
                     TableDataSet tds = (TableDataSet) ds;
                     String zAsString;
                     if (tds != null && snapping) {
