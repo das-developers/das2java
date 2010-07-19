@@ -67,6 +67,12 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
     @Override
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        
+        if ( !(ds instanceof TableDataSet) ) {
+            parent.postException( this, new IllegalArgumentException("expected Table: " +ds ) );
+            return;
+        }
+
         TableDataSet tds= (TableDataSet)ds;
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
