@@ -33,6 +33,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
+import org.das2.system.NullPreferences;
 
 public class Authenticator extends JPanel {
     
@@ -48,7 +49,14 @@ public class Authenticator extends JPanel {
     final String KEY_AUTOLOGIN= "autoLogin";
     final String KEY_SAVECREDENTIALS= "saveCredentials";
     
-    Preferences prefs= Preferences.userNodeForPackage( Authenticator.class );
+    Preferences prefs;
+    {
+        try {
+            prefs= Preferences.userNodeForPackage( Authenticator.class );
+        } catch ( NullPointerException ex ) {
+            prefs= new NullPreferences();
+        }
+    }
     
     public Authenticator(DasServer dasServer) {
         this( dasServer, "" );
