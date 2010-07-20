@@ -169,6 +169,9 @@ public class BinAverage {
         int s2 = size / 2;
         int s3 = s2 + size % 2;   // one greater than s2 if s2 is odd.
 
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("dataset must be rank 1");
+        if ( ds.length()<size ) throw new IllegalArgumentException("dataset length is less than window size");
+        
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
         DDataSet sums = DDataSet.createRank1(nn);
@@ -236,6 +239,7 @@ public class BinAverage {
         result.putProperty( QDataSet.WEIGHTS_PLANE, weights );
         //result.putProperty( QDataSet.DELTA_PLUS, resultVar );
         //result.putProperty( QDataSet.DELTA_MINUS, resultVar );
+        result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0) );
 
         return result;
 
