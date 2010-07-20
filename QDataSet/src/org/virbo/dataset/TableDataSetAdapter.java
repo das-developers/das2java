@@ -113,12 +113,12 @@ public class TableDataSetAdapter implements TableDataSet {
                         yunits= u;
                     }
                 }
-                if (!DataSetUtil.isMonotonic(xds1)) {
-                    throw new IllegalArgumentException("x table must be monotonic");
-                }
-                if (!DataSetUtil.isMonotonic(yds1)) {
-                    throw new IllegalArgumentException("y table must be monotonic");
-                }
+                //if (!DataSetUtil.isMonotonic(xds1)) {
+                //    throw new IllegalArgumentException("x table must be monotonic");
+                //}
+                //if (!DataSetUtil.isMonotonic(yds1)) {
+                //    throw new IllegalArgumentException("y table must be monotonic");
+                //}
                 if ( haveX ) {
                     xds.join( xds1 );
                 } 
