@@ -143,7 +143,7 @@ public class NumberUnits extends Units {
      * At some point, we introduced support for simple expressions like "3*22"
      */
     public Datum parse(String s) throws ParseException {
-        if ( expressionPattern.matcher(s).matches() ) {
+        if ( false && expressionPattern.matcher(s).matches() ) {
             Datum result= parseExpression( s );
             if ( result.getUnits()==Units.dimensionless ) {
                 result= this.createDatum( result.doubleValue() );
