@@ -36,7 +36,8 @@ public class TableDataSetBuilder {
     
     private static final double[] EMPTY = new double[0];
     
-    private GapListDouble xTags = new GapListDouble();
+    private List xTags = new ArrayList();
+    boolean monotonic= true;
     
     private List zValues = new ArrayList();
     
@@ -103,7 +104,8 @@ public class TableDataSetBuilder {
     public void insertYScan(Datum xTag, DatumVector yTags, DatumVector[] scans, String[] planeIDs) {
         double x = xTag.doubleValue(xUnits);
         double[] y = yTags.toDoubleArray(yUnits);
-        int insertionIndex = xTags.indexOf(x);
+        int insertionIndex = xTags.size();
+        if ( xTags.size()>0 && ((Double)xTags.get(xTags.size()-1))>x ) monotonic=false;
         for (int i = 0; i < scans.length; i++) {
             if (yTags.getLength() != scans[i].getLength()) {
                 IllegalArgumentException iae = new IllegalArgumentException
@@ -234,8 +236,12 @@ public class TableDataSetBuilder {
         int[] tableOffsets = getTableOffsets(zValues, count);
         double[][] collapsedYTags = collapseYTags(zValues, count);
         double[][][] collapsedZValues = collapseZValues(zValues, planeIDs, zUnitsMap);
+        double[] collapsedXTags=  collapseXTags(xTags,xTags.size());
         Units[] zUnitsArray = getUnitsArray(planeIDs, zUnitsMap);
-        return new DefaultTableDataSet(xTags.toArray(), xUnits, 
+        if ( monotonic ) {
+            properties.put( DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
+        }
+        return new DefaultTableDataSet(collapsedXTags, xUnits,
                 collapsedYTags, yUnits, 
                 collapsedZValues, zUnitsArray, 
                 (String[])planeIDs.toArray(new String[planeIDs.size()]), tableOffsets, 
@@ -247,7 +253,7 @@ public class TableDataSetBuilder {
     }
     
     public double getXTag(int i) {
-        return xTags.get(i);
+        return (Double)xTags.get(i);
     }
     
     private static double[] insert(double[] array, double value, int index) {
@@ -321,6 +327,17 @@ public class TableDataSetBuilder {
                 previous = scan.getYTags();
                 index++;
             }
+        }
+        return result;
+    }
+
+    private static double[] collapseXTags( List list, int count ) {
+        int index = 0;
+        list.size();
+        double[] result = new double[count];
+        for ( int i=0; i<list.size(); i++ ) {
+            result[index] = (Double)list.get(index);
+            index++;
         }
         return result;
     }
