@@ -73,6 +73,13 @@ public class PitchAngleDistributionRenderer extends Renderer {
             return;
         }
 
+        if ( !xAxis.getUnits().isConvertableTo( yAxis.getUnits() ) ) {
+            parent.postException( this,
+                    new IllegalArgumentException("x and y axes have different units, x="
+                    +xAxis.getUnits() + " y="+yAxis.getUnits()  ) );
+            return;
+        }
+
         TableDataSet tds= (TableDataSet)ds;
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
