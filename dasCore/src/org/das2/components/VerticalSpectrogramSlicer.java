@@ -108,7 +108,7 @@ extends DasPlot implements DataPointSelectionListener {
     private void createPopup() {
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
-        DasCanvas canvas = new DasCanvas(width, height);
+        final DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);
         canvas.add(this, row, column);
@@ -117,14 +117,26 @@ extends DasPlot implements DataPointSelectionListener {
         
         JPanel buttonPanel = new JPanel();
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
+        buttonPanel.setLayout(buttonLayout);
+
+        buttonPanel.add(Box.createHorizontalGlue());
+
+        JButton printButton= new JButton( new AbstractAction("Print...") {
+            public void actionPerformed( ActionEvent e ) {
+                canvas.makeCurrent();
+                canvas.PRINT_ACTION.actionPerformed(e);
+            }
+        });
+        buttonPanel.add( printButton );
+
+        
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 popupWindow.setVisible(false);
             }
         });
-        buttonPanel.setLayout(buttonLayout);
-        buttonPanel.add(Box.createHorizontalGlue());
+        
         buttonPanel.add(close);
         
         content.add(canvas, BorderLayout.CENTER);
