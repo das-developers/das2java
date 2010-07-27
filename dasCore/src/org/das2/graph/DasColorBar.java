@@ -205,6 +205,9 @@ public class DasColorBar extends DasAxis {
         public static final Type INVERSE_GRAYSCALE = new Type("inverse_grayscale");
         public static final Type WRAPPED_COLOR_WEDGE = new Type("wrapped_color_wedge");
         
+        public static final Type BLUE_BLACK_RED_WEDGE = new Type("blue_black_red");
+        public static final Type BLUE_WHITE_RED_WEDGE = new Type("blue_white_red");
+
         private BufferedImage image;
         private int[] colorTable;
         private final String desc;
@@ -322,6 +325,10 @@ public class DasColorBar extends DasAxis {
                 initializeInverseGrayScale(size, bottom, top);
             } else if (this == WRAPPED_COLOR_WEDGE) {
                 initializeWrappedColorWedge(size, bottom, top);
+            } else if (this == BLUE_BLACK_RED_WEDGE) {
+                initializeBlueBlackRedWedge(size, bottom, top);
+            } else if (this == BLUE_WHITE_RED_WEDGE) {
+                initializeBlueWhiteRedWedge(size, bottom, top);
             //} else if (this == BLUE_TO_ORANGE ) {
             //    initializeBlueToOrange(size, bottom, top);
             }
@@ -336,6 +343,22 @@ public class DasColorBar extends DasAxis {
             colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
         }
         
+        private void initializeBlueBlackRedWedge( int size, int bottom, int top ) {
+            int[] index = {   0,   64,   128, 192, 255 };
+            int[] red =   {   0,    0,     0, 128, 255 };
+            int[] green = {   0,    0,     0,   0,   0 };
+            int[] blue =  { 255,  128,     0,   0,   0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }
+
+        private void initializeBlueWhiteRedWedge( int size, int bottom, int top ) {
+            int[] index = {     0,   64,   128, 192, 255 };
+            int[] red =   {     0,  128,   255, 255, 255 };
+            int[] green = {     0,  128,   255, 128,   0 };
+            int[] blue =  {   255,  255,   255, 128,   0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }
+
         private void initializeBlueToOrange( int size, int bottom, int top ) {
             // cat | awk '{ print $3 "," }'  | xargs
             int[] index = {   0, 23, 46, 69, 92, 115, 139, 162, 185, 208, 231, 255 };
@@ -377,6 +400,10 @@ public class DasColorBar extends DasAxis {
                 return GRAYSCALE;
             } else if (s.equals("inverse_grayscale")) {
                 return INVERSE_GRAYSCALE;
+            } else if (s.equals("blue_black_red")) {
+                return BLUE_BLACK_RED_WEDGE;
+            } else if (s.equals("blue_white_red")) {
+                return BLUE_WHITE_RED_WEDGE;
             //} else if (s.equals("blue_to_orange")) {
             //    return BLUE_TO_ORANGE;                
             } else {
