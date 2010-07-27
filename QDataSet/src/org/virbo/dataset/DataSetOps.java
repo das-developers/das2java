@@ -652,6 +652,8 @@ public class DataSetOps {
                 //fillDs= fillDs;
             } else if ( cmd.equals("|diff") ) {
                 fillDs= Ops.diff(fillDs);
+            } else if ( cmd.equals("|accum") ) {
+                fillDs= Ops.accum(fillDs);
             } else if ( cmd.equals("|log10") ) {
                 fillDs= Ops.log10(fillDs);
             } else if ( cmd.equals("|exp10") ) {
