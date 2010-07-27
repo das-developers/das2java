@@ -555,5 +555,15 @@ public class DasColorBar extends DasAxis {
         update();
         firePropertyChange( PROPERTY_FILL_COLOR, oldColor,fillColor );
     }
+
+    @Override
+    public boolean isVisible() {
+        return super.isVisible();
+    }
     
+    @Override
+    public void setVisible( boolean vi ) {
+        super.setVisible(vi);
+    }
+
 }
