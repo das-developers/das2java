@@ -2053,6 +2053,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         revalidate();
     }
 
+    /**
+     * set the current canvas;
+     */
+    public void makeCurrent() {
+        CanvasAction.currentCanvas= this;
+    }
+
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
