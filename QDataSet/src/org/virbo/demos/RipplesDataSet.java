@@ -42,6 +42,7 @@ public class RipplesDataSet extends AbstractDataSet {
         this.xlen= xlength;
         this.ylen= ylength;
         this.rank= 2;
+        putProperty(org.virbo.dataset.QDataSet.QUBE,Boolean.TRUE);
     }
     
     @Override
