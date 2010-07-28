@@ -47,7 +47,6 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
-import org.das2.graph.DasColorBar;
 //import org.apache.xml.serialize.OutputFormat;
 //import org.apache.xml.serialize.XMLSerializer;
 
@@ -81,8 +80,8 @@ public class PropertyEditor extends JComponent {
         set.add(DatumRange.class);
         set.add(Color.class);
         //set.add(PsymConnector.class);
-        set.add(DasColorBar.Type.class);
-        
+        set.add(org.das2.graph.DasColorBar.Type.class);
+        set.add(org.das2.graph.SpectrogramRenderer.RebinnerEnum.class);
         editableTypes = Collections.unmodifiableSet(set);
     }
     private JTable table;
