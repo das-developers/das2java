@@ -42,7 +42,7 @@ public class CoerceUtil {
     static boolean equalGeom(QDataSet ds1, QDataSet ds2) {
         int[] qube1 = DataSetUtil.qubeDims(ds1);
         int[] qube2 = DataSetUtil.qubeDims(ds2);
-        if (qube1 == null && qube2 == null) {
+        if (qube1 == null || qube2 == null) {
             if (ds1.rank() == 1 && ds2.rank() == 1) {
                 return ds1.length() == ds2.length();
             } else {
@@ -107,7 +107,12 @@ public class CoerceUtil {
         operands[1] = ds2;
         DDataSet result = null;
         if (createResult) {
-            result = DDataSet.create(DataSetUtil.qubeDims(ds1));
+            int [] dims= DataSetUtil.qubeDims(ds1);
+            if ( dims==null ) dims= DataSetUtil.qubeDims(ds2);
+            if ( dims==null ) {
+                throw new RuntimeException( "either ds1 or ds2 needs to be a qube" );
+            }
+            result = DDataSet.create(dims);
         }
         return result;
     }
