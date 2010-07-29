@@ -166,6 +166,7 @@ public class DasApplication {
      */
     public static boolean hasAllPermission() {
         try {
+            if ( restrictPermission==true ) return false;
             SecurityManager sm = System.getSecurityManager();
             if (sm != null) {
                 sm.checkPermission(new java.security.AllPermission());  
@@ -175,7 +176,13 @@ public class DasApplication {
             return false;
         }
     }
-    
+
+    private static boolean restrictPermission= false;
+
+    public static void setRestrictPermission( boolean v ) {
+        restrictPermission= v;
+    }
+
     /**
      * support restricted security environment by checking permissions before 
      * checking property.
