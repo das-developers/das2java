@@ -9,8 +9,10 @@ package org.das2.math.fft;
 import org.das2.dataset.ClippedVectorDataSet;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetUtil;
 import org.das2.dataset.VectorDataSet;
 import org.das2.dataset.TableDataSetBuilder;
+import org.das2.dataset.WeightsVectorDataSet;
 import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
 import org.das2.datum.UnitsUtil;
@@ -196,20 +198,29 @@ public class WaveformToSpectrum {
         
         Units zUnits= vds.getYUnits();
         TableDataSetBuilder tdsb= new TableDataSetBuilder( vds.getXUnits(), yTags.getUnits(), zUnits );
-        
+        VectorDataSet wvds= (VectorDataSet) DataSetUtil.getWeightsDataSet(vds);
+
         double [][] buf= new double[2][windowSize];
         
         int nTableXTags= vds.getXLength() / windowSize;
         for ( int i=0; i<nTableXTags; i++ ) {
+            boolean fill= false;
             for ( int j=0; j<windowSize; j++ ) {
                 buf[0][j]= vds.getDouble( i*windowSize+j,zUnits );
+                if ( wvds.getDouble( i*windowSize+j,Units.dimensionless )==0 ) fill= true;
                 buf[1][j]= 0.;
             }
-            fft(buf);
-            
+
             double[] zBuf= new double[n21-1];
-            for ( int j=1; j<n21; j++ ) {
-                zBuf[j-1]= Math.sqrt( buf[0][j]*buf[0][j] + buf[1][j]*buf[1][j]  );
+            if ( fill ) {
+                for ( int j=1; j<n21; j++ ) {
+                    zBuf[j-1]= zUnits.getFillDouble();
+                }
+            } else {
+                fft(buf);
+                for ( int j=1; j<n21; j++ ) {
+                    zBuf[j-1]= Math.sqrt( buf[0][j]*buf[0][j] + buf[1][j]*buf[1][j]  );
+                }
             }
             tdsb.insertYScan( vds.getXTagDatum((int)((i+0.5)*windowSize)), yTags, DatumVector.newDatumVector( zBuf, zUnits ) );
         }
