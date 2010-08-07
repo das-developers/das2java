@@ -30,6 +30,9 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
     int len2;
     int len3;
 
+    float fill= Float.NaN;
+    double dfill= Double.NaN;
+
     public static final String version="20090606";
     
     public static FDataSet createRank1( int len0 ) {
@@ -135,27 +138,32 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
 
     @Override
     public double value() {
-        return back[0];
+        float v= back[0];
+        return v==fill ? dfill : v;
     }
 
     @Override
     public double value(int i0) {
-        return back[ i0 ];
+        float v= back[i0];
+        return v==fill ? dfill : v;
     }    
 
     @Override
     public double value(int i0, int i1) {
-        return back[ i0 * len1 + i1 ];
+        float v= back[ i0 * len1 + i1 ];
+        return v==fill ? dfill : v;
     }    
     
     @Override
     public double value(int i0, int i1, int i2 ) {
-        return back[ i0 * len1 * len2 + i1 *len2 + i2 ];
+        float v= back[ i0 * len1 * len2 + i1 *len2 + i2 ];
+        return v==fill ? dfill : v;
     }
 
     @Override
     public double value(int i0, int i1, int i2, int i3) {
-        return back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ];
+        float v=  back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ];
+        return v==fill ? dfill : v;
     }
 
     public void putValue( double value ) {
@@ -232,7 +240,8 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
         
         FDataSet result= new FDataSet( ds.rank, ds.len0, ds.len1, ds.len2, ds.len3, newback );
         result.properties.putAll( copyProperties(ds) ); // TODO: problems... 
-        
+        result.checkFill();
+
         return result;
     }
     
@@ -281,7 +290,8 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
             default: throw new IllegalArgumentException("bad rank");
         }
         result.properties.putAll( copyProperties(ds) ); // TODO: problems...
-        
+        result.checkFill();
+
         return result;
     }
     
@@ -328,6 +338,21 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
         }
         //TODO: correlated PLANEs
         this.properties.putAll( result );
+        checkFill();
+    }
+
+    /**
+     * check for fill property and set local variable.
+     */
+    private void checkFill() {
+        Number f= (Number) properties.get(QDataSet.FILL_VALUE);
+        if ( f!=null ) {
+            fill= f.floatValue();
+            dfill= f.doubleValue();
+        } else {
+            fill= Float.NaN;
+            dfill= Double.NaN;
+        }
     }
 
     /**
@@ -359,6 +384,12 @@ public final class FDataSet extends AbstractDataSet implements WritableDataSet {
         this.back= newback;
         
         joinProperties( ds );
+    }
+
+    @Override
+    public void putProperty(String name, Object value) {
+        super.putProperty(name, value);
+        checkFill();
     }
 
     
