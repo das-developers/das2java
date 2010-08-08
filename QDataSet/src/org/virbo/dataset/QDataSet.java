@@ -128,6 +128,13 @@ public interface QDataSet {
     public final static int MAX_PLANE_COUNT=50;
 
     /**
+     * maximum number of same-unit bundled dimensions (e.g. B_GSM[time,Bundle]).  This was introduced when cdf dataset
+     * fa_k0_tms_20040224_v01.cdf?O+_en had 48 energy channels, was marked as time_series but wouldn't render because
+     * view code limited to 12.
+     */
+    public final static int MAX_UNIT_BUNDLE_COUNT=12;
+
+    /**
      * this is the highest rank supported by the library.  Rank 0 is supported though Rank0DataSet.  High rank datasets are supported through
      * RankNDataSet.
      * 
