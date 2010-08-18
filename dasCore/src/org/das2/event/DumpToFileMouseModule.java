@@ -86,7 +86,10 @@ public class DumpToFileMouseModule extends MouseModule {
         
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter( new javax.swing.filechooser.FileFilter() {
-            public boolean accept(File f ) { return f.toString().matches(".*\\.das2Stream"); }
+            public boolean accept(File f ) {
+                if ( f.toString()==null ) return false;
+                return f.toString().matches(".*\\.das2Stream");
+            }
             public String getDescription() { return "*.das2Stream"; }
         });
         int result = chooser.showSaveDialog(parent);

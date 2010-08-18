@@ -165,6 +165,7 @@ public class PersistentStateSupport {
         final Pattern pattern= Glob.getPattern(glob);
         return new FileFilter() {
             public boolean accept( File pathname ) {
+                if ( pathname.toString()==null ) return false;
                 return pathname.isDirectory() || pattern.matcher(pathname.getName()).matches();
             }
             public String getDescription() { return glob; }

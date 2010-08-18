@@ -166,6 +166,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return new FileFilter() {
 
             public boolean accept(File f) {
+                if ( f.toString()==null ) return false;
                 return f.isDirectory() || f.toString().endsWith(ext);
             }
 

@@ -138,6 +138,7 @@ public class Glob {
         FileFilter f;
         return new FileFilter() {
             public boolean accept(File pathname) {
+                if ( pathname.toString()==null ) return false;
                 return pattern.matcher( pathname.getName() ).matches( );
             }
             public String getDescription() {
