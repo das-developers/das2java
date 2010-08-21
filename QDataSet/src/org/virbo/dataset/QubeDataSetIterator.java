@@ -399,7 +399,13 @@ public class QubeDataSetIterator implements DataSetIterator {
     }
 
     public int rank() {
-        return rank;
+        int result= rank;
+        for ( int i=0; i<it.length; i++ ) {
+            if ( it[i] instanceof QubeDataSetIterator.SingletonIterator ) {
+                result--;
+            }
+        }
+        return result;
     }
 
     @Override
