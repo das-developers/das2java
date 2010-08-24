@@ -97,6 +97,7 @@ public final class DDataSet extends AbstractDataSet implements WritableDataSet, 
     }
 
     private DDataSet(int rank, int len0, int len1, int len2, int len3, double[] back) {
+        if ( back==null ) throw new NullPointerException("back was null");
         this.back = back;
         this.rank = rank;
         this.len0 = len0;
