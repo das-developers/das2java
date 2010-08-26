@@ -829,10 +829,13 @@ public class SeriesRenderer extends Renderer {
                 if ( plotBounds!=null ) {
                     visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
                 }
+                ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
+                ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
 
+            } else {
+                ixmin = firstIndex_v;
+                ixmax = lastIndex_v;
             }
-            ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-            ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
 
         } else {
 
