@@ -89,8 +89,9 @@ public class SeriesRenderer extends Renderer {
     private long lastUpdateMillis;
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
     private int firstIndex=-1;/* the index of the first point drawn, nonzero when X is monotonic and we can clip. */
-
     private int lastIndex=-1;/* the non-inclusive index of the last point drawn. */
+    private int firstIndex_v=-1;/* the index of the first point drawn that is visible, nonzero when X is monotonic and we can clip. */
+    private int lastIndex_v=-1;/* the non-inclusive index of the last point that is visible. */
 
     boolean updating = false;
     private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
@@ -804,7 +805,6 @@ public class SeriesRenderer extends Renderer {
      * updates firstIndex and lastIndex that point to the part of
      * the data that is plottable.  The plottable part is the part that
      * might be visible while limiting the number of plotted points.
-     * //TODO: bug 0000354: warning message bubble about all data before or after visible range
      */
     private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
 
@@ -822,6 +822,8 @@ public class SeriesRenderer extends Renderer {
         Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
+            firstIndex_v = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
+            lastIndex_v = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
             if (lparent.isOverSize()) {
                 Rectangle plotBounds = lparent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
@@ -833,8 +835,11 @@ public class SeriesRenderer extends Renderer {
             ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
 
         } else {
+
             ixmin = 0;
             ixmax = dataSet.getXLength();
+            firstIndex_v= ixmin;
+            lastIndex_v= ixmax;
         }
 
         double x = Double.NaN;
@@ -1040,7 +1045,7 @@ public class SeriesRenderer extends Renderer {
             lparent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
 
-        if ( lastIndex - firstIndex < 2 ) {
+        if ( lastIndex_v - firstIndex_v < 2 ) {
             if ( messageCount++==0) lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
         }
 
