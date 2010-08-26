@@ -8,22 +8,37 @@
 
 package org.das2.system;
 
+import java.util.Map;
 import org.das2.components.DasProgressPanel;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-
-
 
 /**
  *
  * @author Jeremy
  */
 public class DefaultMonitorFactory implements MonitorFactory {
-    HashMap monitors= new LinkedHashMap();
+    LinkedHashMap monitors= new LinkedHashMap() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return ( size()>size );
+        }
+    };
+
+    protected int size = 10;
+    public static final String PROP_SIZE = "size";
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
     
     public class MonitorEntry {
         ProgressMonitor monitor;
