@@ -11,6 +11,7 @@ package org.das2.fsm;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.DasException;
 import org.das2.dataset.CacheTag;
@@ -69,7 +70,8 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
         fs = FileSystem.create(new URI("http://www-pw.physics.uiowa.edu/~jbf/cluster/obtdata/"));
         
         TimeParser.FieldHandler hexHandler= new TimeParser.FieldHandler() {
-            public void handleValue(String fieldContent, TimeUtil.TimeStruct startTime, TimeUtil.TimeStruct timeWidth) {
+            public String configure( Map<String,String> args ) { return null; }
+            public void handleValue(String fieldContent, TimeUtil.TimeStruct startTime, TimeUtil.TimeStruct timeWidth, Map<String,String> extra ) {
                 int i= Integer.decode("0x"+fieldContent).intValue();
                 double seconds= 86400 * i / 256;
                 startTime.seconds= seconds;

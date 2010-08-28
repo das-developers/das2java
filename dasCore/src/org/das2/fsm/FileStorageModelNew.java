@@ -8,6 +8,7 @@ package org.das2.fsm;
 
 import org.das2.datum.DatumRange;
 import org.das2.datum.Datum;
+import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.dataset.CacheTag;
@@ -50,6 +51,43 @@ public class FileStorageModelNew {
     static Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
     
     HashMap fileNameMap=null;
+
+    enum VersioningType {
+        none(null),
+        numeric( new Comparator() {       // 4.01
+                public int compare(Object o1, Object o2) {
+                    Double d1= Double.parseDouble((String)o1);
+                    Double d2= Double.parseDouble((String)o2);
+                    return d1.compareTo(d2);
+                }
+            } ),
+        alphanumeric(new Comparator() {   // a001
+                public int compare(Object o1, Object o2) {
+                    return ((String)o1).compareTo((String)o2);
+                }
+            } ),
+        numericSplit( new Comparator() {  // 4.3.23
+               public int compare(Object o1, Object o2) {
+                    String[] ss1= o1.toString().split("\\.",-2);
+                    String[] ss2= o2.toString().split("\\.",-2);
+                    int n= Math.min( ss1.length, ss2.length );
+                    for ( int i=0; i<n; i++ ) {
+                        double d1= Double.parseDouble(ss1[i]);
+                        double d2= Double.parseDouble(ss2[i]);
+                        if ( d1!=d2 ) {
+                            return d1 < d2 ? -1 : 1;
+                        }
+                    }
+                    return ss1.length - ss2.length;  // the longer version wins (3.2.1 > 3.2)
+                } 
+            });
+
+            Comparator<String> comp;
+            VersioningType( Comparator<String> comp ) {
+                this.comp= comp;
+            }
+    };
+    VersioningType versioningType;
 
     
     /* need to map back to TimeUtil's enums, note that we have an extra for the 2 digit year */
@@ -125,11 +163,13 @@ public class FileStorageModelNew {
      *
      * .../FULL1/T8709_12/T871118.DAT
      *'.../FULL1/T'YYMM_MM/TYYMMDD'.DAT'
+     *
+     * @param args an empty map where extra fields (such as version) are put.
      */
-    private DatumRange getDatumRangeFor( String filename ) {
+    private synchronized DatumRange getDatumRangeFor( String filename, Map<String,String> extra ) {
         try {
             if ( pattern.matcher(filename).matches() ) {
-                timeParser.parse( filename );
+                timeParser.parse( filename, extra );
                 return timeParser.getTimeRange();
             } else {
                 throw new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+")");
@@ -159,14 +199,30 @@ public class FileStorageModelNew {
      * @throws java.io.IOException
      */
     public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
+        return getNamesFor( targetRange, false, monitor );
+    }
 
+    /**
+     * return the names in the range, minding version numbers, or all names if the range is null.
+     * @param targetRange range limit, or null.
+     * @param monitor
+     * @return
+     * @throws java.io.IOException
+     */
+    public String[] getBestNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
+        return getNamesFor( targetRange, true, monitor );
+    }
+
+
+
+    private String[] getNamesFor( final DatumRange targetRange, boolean versioning, ProgressMonitor monitor ) throws IOException {
         String listRegex;
 
         FileSystem[] fileSystems;
         String[] names;
 
         if ( parent!=null ) {
-            names= parent.getNamesFor(targetRange);
+            names= parent.getNamesFor(targetRange);   // note recursive call
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
@@ -184,24 +240,70 @@ public class FileStorageModelNew {
             listRegex= regex;
         }
 
-        List list= new ArrayList();
+        List<String> list= new ArrayList();
+        List<String> versionList= new ArrayList();
+        List<DatumRange> rangeList= new ArrayList();
 
         monitor.setTaskSize( fileSystems.length*10 );
         monitor.started();
         
+        Map<String,String> extra= new HashMap();
+
         for ( int i=0; i<fileSystems.length; i++ ) {
             monitor.setTaskProgress(i*10);
             String[] files1= fileSystems[i].listDirectory( "/", listRegex );
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                try { 
-                    if ( targetRange==null || getDatumRangeFor( ff ).intersects(targetRange) ) list.add(ff);
+                try {
+                    DatumRange dr= getDatumRangeFor( ff, extra );
+                    if ( targetRange==null || dr.intersects(targetRange) ) {
+                        list.add(ff);
+                        rangeList.add(dr);
+                        if ( versioningType!=VersioningType.none ) {
+                            if ( extra.get("v")==null ) throw new RuntimeException("expected version");
+                            versionList.add( extra.get("v") );
+                        }
+                    }
                 } catch ( IllegalArgumentException e ) {
                     logger.fine("ignoring file "+ff);
                 }
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
             }
+        }
+
+        if ( versioning && versioningType!=VersioningType.none) {
+
+            Comparator<String> comp= versioningType.comp;
+
+            Map<String,String> bestVersions= new HashMap();
+            Map<String,String> bestFiles= new HashMap();
+
+            for ( int j=0; j<list.size(); j++ ) {
+                String ff= list.get(j);
+                String key= rangeList.get(j).toString();
+                String thss= versionList.get(j);
+                String best= bestVersions.get(key);
+                if ( best==null ) {
+                    try {
+                        comp.compare( thss, thss ); // check for format exception
+                        bestVersions.put( key, thss );
+                        bestFiles.put( key,ff );
+                    } catch ( Exception ex ) {
+                        // doesn't match if comparator (e.g. version isn't a decimal number)
+                    }
+                } else {
+                    try {
+                        if ( comp.compare( best, thss ) < 0 ) {
+                            bestVersions.put( key,thss );
+                            bestFiles.put( key,ff );
+                        }
+                    } catch ( Exception ex ) {
+                        // doesn't match
+                    }
+                }
+            }
+            list= Arrays.asList( bestFiles.values().toArray( new String[ bestFiles.size()] ) );
         }
 
         Collections.sort( list, new Comparator() {
@@ -239,8 +341,12 @@ public class FileStorageModelNew {
         return getFilesFor( targetRange, new NullProgressMonitor() );
     }
 
+    public File[] getBestFilesFor( final DatumRange targetRange ) throws IOException {
+        return getBestFilesFor( targetRange, new NullProgressMonitor() );
+    }
+
     public DatumRange getRangeFor( String name ) {
-        return getDatumRangeFor( name );
+        return getDatumRangeFor( name, new HashMap() );
     }
 
     /**
@@ -299,6 +405,26 @@ public class FileStorageModelNew {
         return files;
     }
 
+    public File[] getBestFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
+        String[] names= getBestNamesFor( targetRange, monitor );
+        File[] files= new File[names.length];
+
+        if ( fileNameMap==null ) fileNameMap= new HashMap();
+
+        if ( names.length>0 ) monitor.setTaskSize( names.length * 10 );
+        monitor.started();
+        for ( int i=0; i<names.length; i++ ) {
+            try {
+                FileObject o= root.getFileObject( names[i] );
+                files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));
+                fileNameMap.put( files[i], names[i] );
+            } catch ( Exception e ) {
+                throw new RuntimeException(e);
+            }
+        }
+        monitor.finished();
+        return files;
+    }
 
     private static int countGroups( String regex ) {
         int result=0;
@@ -336,6 +462,7 @@ public class FileStorageModelNew {
      *    %H  2-digit Hour
      *    %M  2-digit Minute
      *    %S  2-digit second
+     *    %v  best version by number  Also %(v,sep) for 4.3.2  or %(v,alpha)
      *    %{milli}  3-digit milliseconds
      *
      * @param root FileSystem source of the files.
@@ -377,22 +504,53 @@ public class FileStorageModelNew {
         }
     }
     
-    private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler  ) {
+    private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler, Object ... moreHandler   ) {
         this.root= root;
         this.parent= parent;
-        this.template= template;
-        this.timeParser= TimeParser.create( template, fieldName, fieldHandler );
+        this.template= template.replaceAll("\\+", "\\\\+");
+
+        String f="v";
+        versioningType= VersioningType.none;
+        TimeParser.FieldHandler vh= new TimeParser.FieldHandler() {
+            public String configure( Map<String,String> args ) {
+                String sep= args.get( "sep" );
+                String alpha= args.get( "alpha" );
+                if ( alpha!=null ) {
+                    if ( sep!=null ) {
+                        return "alpha with split not supported";
+                    } else {
+                        versioningType= VersioningType.alphanumeric;
+                    }
+                } else {
+                    if ( sep!=null ) {
+                        versioningType= VersioningType.numericSplit;
+                    } else {
+                        versioningType= VersioningType.numeric;
+                    }
+                }
+                return null;
+            }
+            public void handleValue( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) {
+                extra.put( "v", fieldContent );
+            }
+        };
+
+        if ( fieldName==null ) {
+            this.timeParser= TimeParser.create( template, f, vh );
+        } else {
+            if ( moreHandler==null ) {
+                this.timeParser= TimeParser.create( template, fieldName, fieldHandler, f, vh );
+            } else {
+                this.timeParser= TimeParser.create( template, fieldName, fieldHandler, f, vh, moreHandler );
+            }
+        }
+
         this.regex= timeParser.getRegex();
         this.pattern= Pattern.compile(regex);
     }
 
     private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template ) {
-        this.root= root;
-        this.parent= parent;
-        this.template= template.replaceAll("\\+", "\\\\+");
-        this.timeParser= TimeParser.create( template );
-        this.regex= timeParser.getRegex();
-        this.pattern= Pattern.compile(regex);
+        this( parent, root, template, null, null );
     }
  
     @Override
