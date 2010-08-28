@@ -46,10 +46,12 @@ public class TimeParser {
     int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1 };
     int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1, -1, };
     int[] handlers;
+    
     /**
      * set of custom handlers to allow for extension
      */
-    Map/*<String,FieldHandler>*/ fieldHandlers;
+    Map<String,FieldHandler> fieldHandlers;
+    
     /**
      * positions of each digit, within the string to be parsed.  If position is -1, then we need to
      * compute it along the way.
@@ -67,9 +69,16 @@ public class TimeParser {
      */
     int lsd;
 
+    //TODO: FieldHandler needs to report its affect on the LSD.  (Autoplot gets versioning).
     public interface FieldHandler {
-
-        public void handleValue(String fieldContent, TimeStruct startTime, TimeStruct timeWidth);
+        /**
+         * arguments for the parser are passed in.
+         * @param args map of arguments.  %(t,a1,a2,a3)
+         * @return null if the string is parseable, an error message otherwise.
+         */
+        public String configure( Map<String,String> args );
+        //TODO: String getRegex();
+        public void handleValue( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) throws ParseException;
     }
 
     /**
@@ -150,7 +159,12 @@ public class TimeParser {
         }
     }
 
-    private TimeParser(String formatString, Map/*<String,FieldHandler>*/ fieldHandlers) {
+    /**
+     * create a new TimeParser.  
+     * @param formatString
+     * @param fieldHandlers a map of special handlers
+     */
+    private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers) {
         time = new TimeUtil.TimeStruct();
         this.fieldHandlers = fieldHandlers;
         this.formatString = formatString;
@@ -167,8 +181,8 @@ public class TimeParser {
 
         ndigits = ss.length;
 
-        StringBuffer regex = new StringBuffer(100);
-        regex.append(ss[0].replaceAll("\\+","\\\\+"));
+        StringBuffer regex1 = new StringBuffer(100);
+        regex1.append(ss[0].replaceAll("\\+","\\\\+"));//TODO: I thought we did this already.
 
         lengths = new int[ndigits];
         for (int i = 0; i < lengths.length; i++) {
@@ -253,17 +267,34 @@ public class TimeParser {
                 if (fieldHandlers == null || !fieldHandlers.containsKey(fc[i])) {
                     throw new IllegalArgumentException("bad format code: \"" + fc[i] + "\"");
                 } else {
-                    lsd = 100;
                     handler = 100;
                     handlers[i] = 100;
                     offsets[i] = pos;
                     if (lengths[i] < 1 || pos == -1) { // 0->indetermined as well, allows user to force indeterminate
-
                         pos = -1;
                         lengths[i] = -1;
                     } else {
                         pos += lengths[i];
                     }
+                    FieldHandler fh= fieldHandlers.get(fc[i]);
+                    String args= qualifiers[i];
+                    Map<String,String> argv= new HashMap();
+                    if ( args!=null ) {
+                        String[] ss2= args.split(",",-2);
+                        for ( int i2=0; i2<ss2.length; i2++ ) {
+                            int i3= ss2[i2].indexOf("=");
+                            if ( i3==-1 ) {
+                                argv.put(ss2[i2],"");
+                            } else {
+                                argv.put(ss2[i2].substring(0,i3),ss2[i2].substring(i3+1));
+                            }
+                        }
+                    }
+                    String errm= fh.configure(argv);
+                    if ( errm!=null ) {
+                        throw new IllegalArgumentException(errm);
+                    }
+
                 }
             } else {
                 handlers[i] = handler;
@@ -323,11 +354,11 @@ public class TimeParser {
 
             String dots = ".........";
             if (lengths[i] == -1) {
-                regex.append("(.*)");
+                regex1.append("(.*)");
             } else {
-                regex.append("(" + dots.substring(0, lengths[i]) + ")");
+                regex1.append("(" + dots.substring(0, lengths[i]) + ")");
             }
-            regex.append(delim[i].replaceAll("\\+","\\\\+"));
+            regex1.append(delim[i].replaceAll("\\+","\\\\+"));
 
         }
 
@@ -357,11 +388,11 @@ public class TimeParser {
             case 7:
                 timeWidth.micros = lsdMult;
                 break;
-            case 100: /* do nothing */ break;
+            case 100: /* do nothing */ break;  //TODO: handler needs to report it's lsd, if it affects.
         }
 
         this.delims = delim;
-        this.regex = regex.toString();
+        this.regex = regex1.toString();
     }
 
     /**
@@ -389,9 +420,16 @@ public class TimeParser {
         return new TimeParser(formatString, null);
     }
 
-    public static TimeParser create(String formatString, String fieldName, FieldHandler handler) {
+    public static TimeParser create(String formatString, String fieldName, FieldHandler handler, Object ... moreHandler  ) {
         HashMap map = new HashMap();
         map.put(fieldName, handler);
+        if ( moreHandler!=null ) {
+            for ( int i=0; i<moreHandler.length; i+=2 ) {
+                fieldName=  (String) moreHandler[i];
+                handler= (FieldHandler)moreHandler[i+1];
+                map.put( fieldName, handler );
+            }
+        }
         return new TimeParser(formatString, map);
     }
 
@@ -444,15 +482,20 @@ public class TimeParser {
         }
     }
 
+    public TimeParser parse(String timeString) throws ParseException {
+        return parse( timeString, null );
+    }
+
     /**
      * attempt to parse the string.  The parser itsself is returned so that
      * so expressions can be chained like so:
      *    parser.parse("2009-jan").getTimeRange()
      * @param timeString
+     * @param extra map that is passed into field handlers
      * @return the TimeParser, call getTimeRange or getTime to get result.
      * @throws ParseException
      */
-    public TimeParser parse(String timeString) throws ParseException {
+    public TimeParser parse(String timeString, Map<String,String> extra ) throws ParseException {
         int offs = 0;
         int len = 0;
 
@@ -535,7 +578,8 @@ public class TimeParser {
                     }
                 } else if (handlers[idigit] == 100) {
                     FieldHandler handler = (FieldHandler) fieldHandlers.get(fc[idigit]);
-                    handler.handleValue(timeString.substring(offs, offs + len), time, timeWidth);
+                    handler.handleValue(timeString.substring(offs, offs + len), time, timeWidth, extra );
+
                 } else if (handlers[idigit] == 10) {
                     char ch = timeString.charAt(offs);
                     if (ch == 'P' || ch == 'p') {
