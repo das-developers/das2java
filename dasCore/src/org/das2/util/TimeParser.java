@@ -77,7 +77,7 @@ public class TimeParser {
          * @return null if the string is parseable, an error message otherwise.
          */
         public String configure( Map<String,String> args );
-        //TODO: String getRegex();
+        //TODO: String getRegex(); 
         public void handleValue( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) throws ParseException;
     }
 
