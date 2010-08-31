@@ -415,6 +415,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     private ChangeEvent evt;
 
     private void fireEditingStopped() {
+        if ( listeners==null ) return;
         Object[] l = listeners.getListenerList();
         for (int i = 0; i < l.length; i += 2) {
             if (l[i] == CellEditorListener.class) {
@@ -428,6 +429,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     }
 
     private void fireEditingCanceled() {
+        if ( listeners==null ) return;
         Object[] l = listeners.getListenerList();
         for (int i = 0; i < l.length; i += 2) {
             if (l[i] == CellEditorListener.class) {
