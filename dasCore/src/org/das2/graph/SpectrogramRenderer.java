@@ -88,6 +88,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     int updateImageCount = 0, renderCount = 0;
     private TableDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
 
+    private String xrangeWarning= null; // if non-null, print out of bounds warning.
+
     protected class RebinListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent e) {
@@ -282,6 +284,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         parent.postMessage(this, "dataset is outside of axis range", DasPlot.INFO, null, null );
                     }
                 }
+
+                if ( xrangeWarning!=null ) {
+                    parent.postMessage(this, "no data in interval:!c" + xrangeWarning, DasPlot.WARNING, null, null);
+                }
+
             }
         }
     }
@@ -364,6 +371,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         reportCount();
         DasPlot lparent= getParent();
 
+        xrangeWarning= null;
+        
         if (lparent==null ) return;
         
         final DataSet fds= this.ds; // make a local copy for thread safety.
@@ -472,6 +481,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         long t0;
 
                         t0 = System.currentTimeMillis();
+
+                        double start = fds.getXTagDouble(0, xRebinDescriptor.getUnits());
+                        double end = fds.getXTagDouble(fds.getXLength() - 1, xRebinDescriptor.getUnits());
+                        if (start > imageXRange.max().doubleValue( xRebinDescriptor.getUnits() ) ) {
+                            xrangeWarning= "data starts after range";
+                        } else if ( end < imageXRange.min().doubleValue(xRebinDescriptor.getUnits())) {
+                            xrangeWarning= "data ends before range";
+                        }
 
                         rebinDataSet = (TableDataSet) rebinner.rebin(fds, xRebinDescriptor, yRebinDescriptor);
 
