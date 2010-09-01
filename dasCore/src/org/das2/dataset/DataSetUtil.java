@@ -50,7 +50,12 @@ public class DataSetUtil {
         } else {
             for ( int i=0; i<ds.tableCount(); i++ ) {
                 int n= ds.getYLength(i);
-                DatumRange d= new DatumRange( ds.getYTagDatum(i,0), ds.getYTagDatum(i,n-1) );
+                DatumRange d;
+                if (  ds.getYTagDatum(i,0).le( ds.getYTagDatum(i,n-1) ) ) {
+                    d= new DatumRange( ds.getYTagDatum(i,0), ds.getYTagDatum(i,n-1) );
+                } else {
+                    d= new DatumRange( ds.getYTagDatum(i,n-1), ds.getYTagDatum(i,0)  ); // monotonic decreasing
+                }
                 
                 if ( result==null ) {
                     result= d;
