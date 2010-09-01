@@ -11,6 +11,7 @@ package org.virbo.dataset;
 
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.VectorDataSet;
+import org.virbo.dsops.Ops;
 
 /**
  * Presents legacy das2 datasets as QDataSets.
@@ -21,7 +22,18 @@ public class DataSetAdapter {
     public static final String PROPERTY_SOURCE= "adapterSource";
     
     public static AbstractDataSet create( org.das2.dataset.DataSet ds ) {
-        if ( ds instanceof VectorDataSet ) {
+        if ( ( ds instanceof VectorDataSet ) && ds.getPlaneIds().length>2 ) {  // TCAs  kludge
+            VectorDataSet vds= (VectorDataSet)ds;
+            AbstractDataSet bds= (AbstractDataSet) Ops.bundle( null, new Vector(vds) );
+            String[] planes= ds.getPlaneIds();
+            for ( int i=1; i<planes.length; i++ ) {
+                Vector v= new Vector((VectorDataSet)vds.getPlanarView(planes[i]));
+                v.putProperty( QDataSet.NAME, planes[i] );
+                Ops.bundle( bds, v );
+            }
+            bds.putProperty( QDataSet.DEPEND_0, new XTagsDataSet(vds) );
+            return bds;
+        } else if ( ds instanceof VectorDataSet ) {
             return new Vector((VectorDataSet) ds);
         } else if ( ds instanceof TableDataSet ) {
             TableDataSet tds= (TableDataSet) ds;
