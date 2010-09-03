@@ -338,5 +338,64 @@ public final class SDataSet extends AbstractDataSet implements WritableDataSet {
         joinProperties( ds );
     }
 
+
+    /**
+     * the slice operator is better implemented here.  Presently, we
+     * use System.arraycopy to copy out the data, but this should be
+     * reimplemented along with an offset parameter so the original data
+     * can be used to back the data.
+     * @param i
+     * @return
+     */
+    @Override
+    public QDataSet slice(int i) {
+        int nrank = this.rank-1;
+        int noff1= i * len1 * len2 * len3;
+        int noff2= (i+1) * len1 * len2 * len3;
+        short[] newback = new short[noff2-noff1];
+        System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        Map<String,Object> props= DataSetOps.sliceProperties0(i,DataSetUtil.getProperties(this));
+        SDataSet result= new SDataSet( nrank, len1, len2, len3, 1, newback );
+        DataSetUtil.putProperties( props, result );
+        return result;
+    }
+
+    /**
+     * trim operator copies the data into a new dataset.
+     * @param start
+     * @param end
+     * @return
+     */
+    @Override
+    public QDataSet trim(int start, int end) {
+        int nrank = this.rank;
+        int noff1= start * len1 * len2 * len3;
+        int noff2= end * len1 * len2 * len3;
+        short[] newback = new short[noff2-noff1];
+        System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        SDataSet result= new SDataSet( nrank, end-start, len1, len2, len3, newback );
+        DataSetUtil.putProperties( DataSetUtil.getProperties(this), result );
+        QDataSet dep0= (QDataSet) property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0.trim(start, end) );
+        return result;
+    }
+
+    /**
+     * TODO: this is untested, but is left in to demonstrate how the capability
+     * method should be implemented.  Clients should use this instead of
+     * casting the class to the capability class.
+     * @param <T>
+     * @param clazz
+     * @return
+     */
+    @Override
+    public <T> T capability(Class<T> clazz) {
+        if ( clazz==WritableDataSet.class ) {
+            return (T) this;
+        } else {
+            return super.capability(clazz);
+        }
+    }
+
     
 }
