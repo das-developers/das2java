@@ -504,7 +504,15 @@ public class PropertyEditor extends JComponent {
         public void mousePressed(MouseEvent event) {
             Point p = event.getPoint();
             focusRow = table.rowAtPoint(p);
-            if (event.getButton() == MouseEvent.BUTTON3) {
+            if (event.isPopupTrigger()) {
+                popupMenu.show(PropertyEditor.this.table, event.getX(), event.getY());
+            }
+        }
+
+        public void mouseReleased(MouseEvent event) {
+            Point p = event.getPoint();
+            focusRow = table.rowAtPoint(p);
+            if (event.isPopupTrigger()) {
                 popupMenu.show(PropertyEditor.this.table, event.getX(), event.getY());
             }
         }
