@@ -440,11 +440,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return new MouseInputAdapter() {
 
             public void mousePressed(MouseEvent e) {
-                Point primaryPopupLocation = e.getPoint();
                 CanvasAction.currentCanvas = DasCanvas.this;
-                if (SwingUtilities.isRightMouseButton(e))
+                if ( e.isPopupTrigger() )
                     popup.show(DasCanvas.this, e.getX(), e.getY());
             }
+
+            public void mouseReleased(MouseEvent e) {
+                CanvasAction.currentCanvas = DasCanvas.this;
+                if ( e.isPopupTrigger() )
+                    popup.show(DasCanvas.this, e.getX(), e.getY());
+            }
+
         };
     }
 
