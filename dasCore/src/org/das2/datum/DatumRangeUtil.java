@@ -1119,6 +1119,39 @@ public class DatumRangeUtil {
     }    
     
     /**
+     * return a datum range that sloppily covers the d1 and d2.
+     * (The bigger of the two will be the exclusive max.)
+     * @param d1
+     * @param d2
+     * @return
+     */
+    public static DatumRange union( Datum d1, Datum d2 ) {
+        Units units= d1.getUnits();
+        double s1= d1.doubleValue(units);
+        double s2= d2.doubleValue(units);
+        return new DatumRange( Math.min(s1,s2), Math.max(s1, s2), units );
+    }
+
+    /**
+     * return the union of two DatumRanges.  If they do not intersect, the
+     * range between the two is included as well.
+     * @param range
+     * @param include a datum to add this this range.  If its the max, then
+     * it will be the end of the datum range, not included.
+     * @return
+     */
+    public static DatumRange union( DatumRange range, Datum include ) {
+        Units units= range.getUnits();
+        double s11= range.min().doubleValue(units);
+        double s12= include.doubleValue(units);
+        double s21= range.max().doubleValue(units);
+        double s22= include.doubleValue(units);
+
+        return new DatumRange( Math.min(s11,s12), Math.max(s21, s22), units );
+
+    }
+
+    /**
      * return the union of two DatumRanges.  If they do not intersect, the
      * range between the two is included as well.
      * @param range
