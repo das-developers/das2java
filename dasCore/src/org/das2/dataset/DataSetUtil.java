@@ -119,9 +119,9 @@ public class DataSetUtil {
         if ( table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH)!=null ) return (Datum)table.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
         if ( table.getXLength()>1 ) {
             Units units= table.getXUnits();
-            double min= table.getXTagDouble(1,units) - table.getXTagDouble( 0,units) ;
+            double min= Math.abs( table.getXTagDouble(1,units) - table.getXTagDouble( 0,units) );
             for ( int i=2; i<table.getXLength(); i++ ) {
-                double min0= table.getXTagDouble(i,units) - table.getXTagDouble( i-1,units) ;
+                double min0= Math.abs( table.getXTagDouble(i,units) - table.getXTagDouble( i-1,units) );
                 if ( min0 < min ) min= min0;
             }
             return units.getOffsetUnits().createDatum( min );
