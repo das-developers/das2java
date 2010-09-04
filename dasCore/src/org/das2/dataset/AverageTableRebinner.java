@@ -193,7 +193,7 @@ public class AverageTableRebinner implements DataSetRebinner {
 
             int itable = tds.tableOfIndex(i0);
             if (itable == tds.tableOfIndex(i1) && (i1 != i0)) {
-                DatumRange dr = new DatumRange(tds.getXTagDatum(i0), tds.getXTagDatum(i1));
+                DatumRange dr = DatumRangeUtil.union( tds.getXTagDatum(i0), tds.getXTagDatum(i1) );
                 if (dr.width().gt(DataSetUtil.guessXTagWidth(tds).multiply(0.9))) {
                     double alpha = DatumRangeUtil.normalize(dr, xx);
                     if ( interpolateType==Interpolate.NearestNeighbor ) {
@@ -243,7 +243,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 if (j1 != j0) {
 
                     DatumRange dr;
-                    dr = new DatumRange(tds.getYTagDatum(itable, j0), tds.getYTagDatum(itable, j1));
+                    dr = DatumRangeUtil.union( tds.getYTagDatum(itable, j0), tds.getYTagDatum(itable, j1) );
                     Datum dsWidth = TableUtil.guessYTagWidth(tds, itable);
                     if (ddY.isLog()) {
                         Units u = dr.getUnits();
@@ -254,7 +254,6 @@ public class AverageTableRebinner implements DataSetRebinner {
                         yy = Units.logERatio.createDatum(Math.log(yy.doubleValue(u) / d));
                     // TODO: infinity
                     }
-                    DatumRange xdr = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
                     double alpha = DatumRangeUtil.normalize(dr, yy);
                     if ( interpolateType==Interpolate.NearestNeighbor ) {
                         alpha= alpha < 0.5 ? 0.0 : 1.0;
@@ -302,7 +301,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 continue;
             }
 
-            DatumRange xdr = new DatumRange(tds.getXTagDatum(i0), tds.getXTagDatum(i1));
+            DatumRange xdr = DatumRangeUtil.union(tds.getXTagDatum(i0), tds.getXTagDatum(i1));
             double xalpha = DatumRangeUtil.normalize(xdr, xx);
             if (interpolateType == Interpolate.NearestNeighbor) {
                 xalpha = xalpha < 0.5 ? 0.0 : 1.0;
@@ -316,7 +315,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 int j1 = TableUtil.getNextRow(tds, itable, yy);
 
                 if (j0 != j1) {
-                    DatumRange ydr = new DatumRange(tds.getYTagDatum(itable, j0), tds.getYTagDatum(itable, j1));
+                    DatumRange ydr = DatumRangeUtil.union(tds.getYTagDatum(itable, j0), tds.getYTagDatum(itable, j1));
                     if (xdr.width().lt(DataSetUtil.guessXTagWidth(tds).multiply(1.1))) {
                         DatumRange xdr1 = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
                         double yalpha = DatumRangeUtil.normalize(ydr, yy);
