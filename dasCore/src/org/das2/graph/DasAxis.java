@@ -725,6 +725,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setUnits(Units newUnits) {
         dataRange.setUnits(newUnits);
+        boolean b= UnitsUtil.isIntervalMeasurement(newUnits);
+        scanNext.setEnabled( b );
+        scanPrevious.setEnabled( b );
     }
 
     /**
@@ -742,6 +745,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         updateTickV();
         markDirty();
+        boolean b= UnitsUtil.isIntervalMeasurement(range.getUnits());
+        scanNext.setEnabled( b );
+        scanPrevious.setEnabled( b );
+        
         update();
     }
 
@@ -3228,7 +3235,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    private static class ScanButton extends JButton {
+    private class ScanButton extends JButton {
 
         private boolean hover;
         private boolean pressed;
@@ -3249,7 +3256,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 public void mousePressed(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1) {
                         setForeground(Color.LIGHT_GRAY);
-                        pressed = true;
+                        pressed = UnitsUtil.isIntervalMeasurement( getUnits() );
                         repaint();
                     }
                 }
@@ -3263,7 +3270,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
 
                 public void mouseEntered(MouseEvent e) {
-                    hover = true;
+                    hover = UnitsUtil.isIntervalMeasurement( getUnits() );
                     repaint();
                 }
 
