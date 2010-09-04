@@ -1133,7 +1133,7 @@ public class DatumRangeUtil {
     }
 
     /**
-     * return the union of two DatumRanges.  If they do not intersect, the
+     * return the union of a DatumRange and Datum.  If they do not intersect, the
      * range between the two is included as well.
      * @param range
      * @param include a datum to add this this range.  If its the max, then
