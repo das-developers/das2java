@@ -2283,10 +2283,10 @@ public class Ops {
     /**
      * return array that is the differences between each successive pair in the dataset.
      * Result[i]= ds[i+1]-ds[i], so that for an array with N elements, an array with
-     * N-1 elements is returned.
+     * N-1 elements is returned.  DEPEND_0 will contain the average of the two points.
      * @param ds a rank 1 dataset with N elements.
      * @return a rank 1 dataset with N-1 elements.
-     * @see accumulate
+     * @see accum
      */
     public static QDataSet diff(QDataSet ds) {
         if (ds.rank() > 1) {
@@ -2295,6 +2295,12 @@ public class Ops {
         if ( true ) {
             DDataSet result= DDataSet.createRank1( ds.length()-1 );
             QDataSet w1= DataSetUtil.weightsDataSet(ds);
+            QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            DDataSet dep0= null;
+            if ( dep0ds!=null ) {
+                dep0= DDataSet.createRank1( ds.length()-1 );
+                DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
+            }
             double fill= ((Number)w1.property( QDataSet.FILL_VALUE )).doubleValue();
             for ( int i=0; i<result.length(); i++ ) {
                 if ( w1.value(i)>0 && w1.value(i+1)>0 ) {
@@ -2302,12 +2308,16 @@ public class Ops {
                 } else {
                     result.putValue(i,fill);
                 }
+                if ( dep0ds!=null ) dep0.putValue(i, ( dep0ds.value(i+1) + dep0ds.value(i)) / 2 );
             }
             result.putProperty(QDataSet.FILL_VALUE, new Double(fill) );
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u!=null ) result.putProperty(QDataSet.UNITS, u.getOffsetUnits() );
             result.putProperty(QDataSet.NAME, null );
             result.putProperty(QDataSet.MONOTONIC, null );
+            if ( dep0ds!=null ) {
+                result.putProperty( QDataSet.DEPEND_0, dep0 );
+            }
             String label= (String) ds.property(QDataSet.LABEL);
             if ( label!=null ) result.putProperty(QDataSet.LABEL, "diff("+label+")" );
             
@@ -2326,19 +2336,48 @@ public class Ops {
      * return an array that is the running sum of each element in the array,
      * starting with the value accum.
      * Result[i]= accum + total( ds[0:i+1] )
-     * @param accum the initial value of the running sum
+     * @param accum the initial value of the running sum.  Last value of Rank 0 or Rank 1 dataset is used, or may be null.
      * @param ds each element is added to the running sum
      * @return the running of each element in the array.
      * @see diff
      */
-    public static QDataSet accum( double accum, QDataSet ds ) {
-        WritableDataSet result= zeros( ds );
-        QubeDataSetIterator it= new QubeDataSetIterator(ds);
-        while ( it.hasNext() ) {
-            it.next();
-            accum+= it.getValue(ds);
-            it.putValue(result, accum);
+    public static QDataSet accum( QDataSet accumDs, QDataSet ds ) {
+        if (ds.rank() > 1) {
+            throw new IllegalArgumentException("only rank 1");
         }
+        double accum=0;
+        QDataSet accumDep0Ds=null;
+        double accumDep0=0;
+        QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( accumDs==null ) {
+            accumDep0= dep0ds!=null ? dep0ds.value(0) : 0;
+        } else if ( accumDs.rank()==0 ) {
+            accum= accumDs.value();
+            accumDep0Ds= (QDataSet) accumDs.property( QDataSet.CONTEXT_0 );
+            if ( accumDep0Ds!=null ) accumDep0= accumDep0Ds.value(); else accumDep0=0;
+        } else if ( accumDs.rank()==1 ) {
+            accum= accumDs.value(accumDs.length()-1);
+            accumDep0Ds= (QDataSet)  accumDs.property( QDataSet.DEPEND_0 );
+            if ( accumDep0Ds!=null ) accumDep0= accumDep0Ds.value(accumDs.length()); else accumDep0=0;
+        }
+        WritableDataSet result= zeros( ds );
+        DDataSet dep0= null;
+        if ( dep0ds!=null ) {
+            dep0= DDataSet.createRank1( ds.length() );
+            DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
+        }
+        for ( int i=0; i<result.length(); i++ ) {
+            accum+= ds.value(i);
+            result.putValue(i,accum);
+            if ( dep0ds!=null ) {
+                dep0.putValue(i, ( accumDep0 + dep0ds.value(i)) / 2 );
+                accumDep0= dep0ds.value(i);
+            }
+        }
+        if ( dep0!=null ) {
+            //result.putProperty( QDataSet.DEPEND_0, dep0 );
+        }
+
         return result;
     }
 
@@ -2352,7 +2391,7 @@ public class Ops {
      * @see diff
      */
     public static QDataSet accum( QDataSet ds ) {
-        return accum( 0., ds );
+        return accum( null, ds );
     }
 
     /**
