@@ -207,6 +207,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         this(min, max, orientation, false);
     }
 
+    public DasAxis(DatumRange range, int orientation) {
+        this(range.min(), range.max(), orientation);
+    }
+
     /** TODO
      * @param min
      * @param max
@@ -216,6 +220,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public DasAxis(Datum min, Datum max, int orientation, boolean log) {
         this(orientation);
         dataRange = new DataRange(this, min, max, log);
+        scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
+        scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
         addListenersToDataRange(dataRange, dataRangePropertyListener);
         copyFavorites();
         copyHistory();
@@ -228,22 +234,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected DasAxis(DataRange range, int orientation) {
         this(orientation);
         dataRange = range;
+        scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
+        scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
         addListenersToDataRange(range, dataRangePropertyListener);
         copyFavorites();
         copyHistory();
-    }
-
-    private void addListenersToDataRange(DataRange range, PropertyChangeListener listener) {
-        range.addPropertyChangeListener(PROP_LOG, listener);
-        range.addPropertyChangeListener("minimum", listener);
-        range.addPropertyChangeListener("maximum", listener);
-        range.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, listener);
-        range.addPropertyChangeListener("history", listener);
-        range.addPropertyChangeListener("favorites", listener);
-    }
-
-    public DasAxis(DatumRange range, int orientation) {
-        this(range.min(), range.max(), orientation);
     }
 
     private DasAxis(int orientation) {
@@ -263,6 +258,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         maybeInitializeScanButtons();
         add(primaryInputPanel);
         add(secondaryInputPanel);
+    }
+
+    private void addListenersToDataRange(DataRange range, PropertyChangeListener listener) {
+        range.addPropertyChangeListener(PROP_LOG, listener);
+        range.addPropertyChangeListener("minimum", listener);
+        range.addPropertyChangeListener("maximum", listener);
+        range.addPropertyChangeListener(DataRange.PROPERTY_DATUMRANGE, listener);
+        range.addPropertyChangeListener("history", listener);
+        range.addPropertyChangeListener("favorites", listener);
     }
 
     public void addToFavorites(final DatumRange range) {
