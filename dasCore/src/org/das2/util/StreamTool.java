@@ -291,6 +291,8 @@ public class StreamTool {
         } catch (StreamException se) {
             handler.streamException(se);
             throw se;
+        } catch (InterruptedIOException ex) {
+            throw new StreamException(ex);
         } catch (IOException ioe) {
             StreamException se = new StreamException(ioe);
             handler.streamException(se);
