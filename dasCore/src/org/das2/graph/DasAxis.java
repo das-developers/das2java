@@ -220,8 +220,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public DasAxis(Datum min, Datum max, int orientation, boolean log) {
         this(orientation);
         dataRange = new DataRange(this, min, max, log);
-        scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
-        scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
+            scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
+        }
         addListenersToDataRange(dataRange, dataRangePropertyListener);
         copyFavorites();
         copyHistory();
@@ -234,8 +236,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected DasAxis(DataRange range, int orientation) {
         this(orientation);
         dataRange = range;
-        scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
-        scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
+            scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
+        }
         addListenersToDataRange(range, dataRangePropertyListener);
         copyFavorites();
         copyHistory();
@@ -730,8 +734,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setUnits(Units newUnits) {
         dataRange.setUnits(newUnits);
         boolean b= UnitsUtil.isIntervalMeasurement(newUnits);
-        scanNext.setEnabled( b );
-        scanPrevious.setEnabled( b );
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            scanNext.setEnabled( b );
+            scanPrevious.setEnabled( b );
+        }
     }
 
     /**
@@ -750,8 +756,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         updateTickV();
         markDirty();
         boolean b= UnitsUtil.isIntervalMeasurement(range.getUnits());
-        scanNext.setEnabled( b );
-        scanPrevious.setEnabled( b );
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            scanNext.setEnabled( b );
+            scanPrevious.setEnabled( b );
+        }
         
         update();
     }
