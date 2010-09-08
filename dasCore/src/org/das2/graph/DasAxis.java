@@ -69,7 +69,6 @@ import org.das2.system.DasLogger;
 import java.util.logging.Logger;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
-import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsUtil;
 
 /** 
