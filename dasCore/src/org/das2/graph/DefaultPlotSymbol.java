@@ -66,6 +66,12 @@ public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, 
         return path.getPathIterator(at);
     }
 
+    public void drawListIcon( Graphics2D g, int x, int y ) {
+        ImageIcon i= (ImageIcon) getListIcon();
+        g.drawImage(i.getImage(), x, y, null);
+    }
+
+
     public Icon getListIcon() {
         if (icon == null) {
             Image i = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);

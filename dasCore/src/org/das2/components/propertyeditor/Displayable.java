@@ -1,5 +1,6 @@
 package org.das2.components.propertyeditor;
 
+import java.awt.Graphics2D;
 import javax.swing.Icon;
 
 /** Type-safe enumerations that are used as property types
@@ -22,5 +23,10 @@ public interface Displayable {
      */
     Icon getListIcon();
     
+    /**
+     * implement this to provide nice drawing of icon on printing graphics context.
+     * @param g
+     */
+    void drawListIcon( Graphics2D g, int x, int y );
 }
 

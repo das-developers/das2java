@@ -23,6 +23,7 @@
 
 package org.das2.dataset;
 
+import java.awt.Graphics2D;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.datum.Datum;
 import org.das2.DasApplication;
@@ -87,6 +88,10 @@ public abstract class AbstractDataSetCache implements DataSetCache {
 
         public String getListLabel() {
             return toString();
+        }
+
+        public void drawListIcon(Graphics2D g, int x, int y) {
+            // do nothing
         }
 
         public CacheTag getCacheTag() {

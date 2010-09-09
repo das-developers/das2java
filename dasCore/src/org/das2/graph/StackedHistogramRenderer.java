@@ -104,6 +104,11 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         public javax.swing.Icon getListIcon() {
             return null;
         }
+
+        public void drawListIcon( Graphics2D g, int x, int y ) {
+            ImageIcon i= (ImageIcon) getListIcon();
+            g.drawImage(i.getImage(), x, y, null);
+        }
         
     }
     
@@ -439,5 +444,5 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     public Icon getListIcon() {
         return null;
     }
-    
+
 }

@@ -58,6 +58,11 @@ public class FillStyle implements Displayable, Enumeration {
         return icon;
     }
 
+    public void drawListIcon( Graphics2D g, int x, int y ) {
+        ImageIcon i= (ImageIcon) getListIcon();
+        g.drawImage(i.getImage(), x, y, null);
+    }
+
     public static final FillStyle STYLE_FILL= new FillStyle( "fill" );
     public static final FillStyle STYLE_DRAW= new FillStyle( "draw" );
     public static final FillStyle STYLE_OUTLINE= new FillStyle( "outline" );

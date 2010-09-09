@@ -74,6 +74,11 @@ public final class SymColor extends Color implements Enumeration, Displayable {
     public Icon getListIcon() {
         return imageIcon;
     }
+
+    public void drawListIcon( Graphics2D g, int x, int y ) {
+        ImageIcon i= (ImageIcon) getListIcon();
+        g.drawImage(i.getImage(), x, y, null);
+    }
     
     public String getListLabel() {
         return name;

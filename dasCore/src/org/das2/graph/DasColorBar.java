@@ -41,6 +41,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import javax.swing.ImageIcon;
 import javax.swing.event.EventListenerList;
 
 /**
@@ -216,7 +217,12 @@ public class DasColorBar extends DasAxis {
         private Type(String desc) {
             this.desc = desc;
         }
-        
+
+        public void drawListIcon( Graphics2D g, int x, int y ) {
+            ImageIcon icon= (ImageIcon) getListIcon();
+            g.drawImage(icon.getImage(), x, y, null);
+        }
+
         public javax.swing.Icon getListIcon() {
             maybeInitializeIcon();
             return icon;

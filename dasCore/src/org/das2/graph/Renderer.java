@@ -589,6 +589,17 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     /**
+     * most implementations will override me.
+     * @param g
+     * @param x
+     * @param y
+     */
+    public void drawListIcon( Graphics2D g, int x, int y ) {
+        ImageIcon icon= (ImageIcon) getListIcon();
+        g.drawImage(icon.getImage(), x, y, null);
+    }
+
+    /**
      * return a 16x16 icon representing the renderer.  Subclasses that do not override this
      * will have an empty icon displayed.
      * @return

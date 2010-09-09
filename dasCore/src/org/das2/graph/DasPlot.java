@@ -256,7 +256,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     msgy + icony,
                     le.icon.getIconWidth(), 
                     le.icon.getIconHeight() );
-            graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
+            boolean printing= true;
+            if ( printing ) {
+                le.drawIcon( graphics, msgx - (le.icon.getIconWidth() + em / 4), msgy + icony );
+            } else {
+                graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
+            }
             msgy += mrect.getHeight();
             mrect.add(imgBounds);
             le.bounds = mrect;
@@ -908,7 +913,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             this.renderer = rend;
             this.label = label;
         }
+
+        protected void drawIcon(Graphics2D graphics, int x, int y ) {
+            renderer.drawListIcon(graphics, x, y);
+        }
     }
+
     public static final int INFO = 0;
     public static final int WARNING = 1;
     public static final int ERROR = 2;

@@ -90,7 +90,12 @@ public class Psym implements Enumeration, Displayable {
     public Icon getListIcon() {
         return imageIcon;
     }
-    
+
+    public void drawListIcon( Graphics2D g, int x, int y ) {
+        ImageIcon i= (ImageIcon) getListIcon();
+        g.drawImage(i.getImage(), x, y, null);
+    }
+
     /** Draw the psym at the given coordinates.
      * if <code>drawsLines()</code> returns false, then the
      * ix and iy parameters are ignored.

@@ -23,6 +23,7 @@
 
 package org.das2.datum;
 
+import java.awt.Graphics2D;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.util.DasMath;
 
@@ -519,5 +520,9 @@ public abstract class Units implements Displayable {
     
     public String getListLabel() {
         return this.id;
+    }
+
+    public void drawListIcon( Graphics2D g, int x, int y ) {
+        // do nothing
     }
 }

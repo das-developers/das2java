@@ -107,7 +107,11 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     public javax.swing.Icon getListIcon() {
         return null;
     }
-    
+
+    public void drawListIcon(Graphics2D g, int x, int y) {
+       // do nothing
+    }
+
     public String getListLabel() {
         return getLabel();
     }

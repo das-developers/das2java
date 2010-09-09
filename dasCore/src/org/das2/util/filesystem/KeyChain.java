@@ -168,7 +168,7 @@ public class KeyChain {
         URI uri;
         try {
             uri = new URI(root.getScheme(), userInfo, root.getHost(), root.getPort(), root.getPath(), root.getQuery(), root.getFragment());
-            return uri.toString();
+            return uri.toString(); // suspect https://sourceforge.net/tracker/?func=detail&aid=3055130&group_id=199733&atid=970682
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);
         }

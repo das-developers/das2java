@@ -180,7 +180,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     @Override
     public String[] listDirectory(String directory) throws IOException {
         // We'll let the VFS throw any necessary exceptions
-        directory = fsuri.toString() + directory;
+        directory = fsuri.toString() + directory; // suspect https://sourceforge.net/tracker/?func=detail&aid=3055130&group_id=199733&atid=970682
         org.apache.commons.vfs.FileObject vfsob = mgr.resolveFile(directory);
         org.apache.commons.vfs.FileObject children[] = vfsob.getChildren();
 
