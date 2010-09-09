@@ -133,7 +133,8 @@ public class SeriesRenderer extends Renderer {
 
         int[] colors; // store the color index  of each psym
 
-        int[] ipsymsPath; // store the location of the psyms here, evens=x, odds=y
+        //int[] ipsymsPath; // store the location of the psyms here, evens=x, odds=y
+        double[] dpsymsPath;
 
         int count; // the number of points to plot
 
@@ -157,12 +158,12 @@ public class SeriesRenderer extends Renderer {
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
                     int icolor = colors[i];
-                    g.drawImage(coloredPsyms[icolor], ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, lparent);
+                    g.drawImage(coloredPsyms[icolor], (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
                 }
             } else {
                 try {
                     for (int i = 0; i < count; i++) {
-                        g.drawImage(psymImage, ipsymsPath[i * 2] - cmx, ipsymsPath[i * 2 + 1] - cmy, lparent);
+                        g.drawImage(psymImage, (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
                     }
                 } catch ( ArrayIndexOutOfBoundsException ex ) {
                     ex.printStackTrace();
@@ -201,12 +202,14 @@ public class SeriesRenderer extends Renderer {
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
                     graphics.setColor(ccolors[colors[i]]);
-                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
+//                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                    psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
                 }
 
             } else {
                 for (int i = 0; i < count; i++) {
-                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
+//                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                    psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
                 }
             }
 
@@ -243,10 +246,11 @@ public class SeriesRenderer extends Renderer {
 
             double x, y;
             int fx, fy;
+            double dx,dy;
 
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             psymsPath = new GeneralPath(GeneralPath.WIND_NON_ZERO,pathLengthApprox );
-            ipsymsPath = new int[(lastIndex - firstIndex) * 2];
+            dpsymsPath = new double[(lastIndex - firstIndex ) * 2];
             colors = new int[lastIndex - firstIndex + 2];
 
             int index = firstIndex;
@@ -254,11 +258,11 @@ public class SeriesRenderer extends Renderer {
             if ( index<lastIndex ) {
                 x = dataSet.getXTagDouble(index, xUnits);
                 y = dataSet.getDouble(index, yUnits);
-                fx = (int) xAxis.transform(x, xUnits);
-                fy = (int) yAxis.transform(y, yUnits);
+                dx= xAxis.transform(x, xUnits);
+                dy= yAxis.transform(y, yUnits);
             }
             
-            int fx0=-99, fy0=-99; //last point.
+            double dx0=-99, dy0=-99; //last point.
 
             VectorDataSet wds= WeightsVectorDataSet.create(dataSet);
 
@@ -280,22 +284,22 @@ public class SeriesRenderer extends Renderer {
 
                 final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
 
-                fx = (int) xAxis.transform(x, xUnits);
-                fy = (int) yAxis.transform(y, yUnits);
+                dx = xAxis.transform(x, xUnits);
+                dy = yAxis.transform(y, yUnits);
 
-                if (isValid && window.contains(fx,fy) ) {
+                if (isValid && window.contains(dx,dy) ) {
                     if ( simplifyPaths ) {
-                        if ( fx==fx0 && fy==fy0 ) continue;
+                        if ( dx==dx0 && dy==dy0 ) continue;
                     }
-                    ipsymsPath[i * 2] = fx;
-                    ipsymsPath[i * 2 + 1] = fy;
+                    dpsymsPath[i * 2] = dx;
+                    dpsymsPath[i * 2 + 1] = dy;
                     if (colorByDataSet != null) {
                         colors[i] = colorBar.indexColorTransform(colorByDataSet.getDouble(index, cunits), cunits);
                     }
                     i++;
                 }
-                fx0= fx;
-                fy0= fy;
+                dx0= dx;
+                dy0= dy;
 
             }
 
@@ -304,14 +308,14 @@ public class SeriesRenderer extends Renderer {
         }
 
         public boolean acceptContext(Point2D.Double dp) {
-            if (ipsymsPath == null) {
+            if (dpsymsPath == null) {
                 return false;
             }
             double rad = Math.max(symSize, 5);
 
             for (int index = firstIndex; index < lastIndex; index++) {
                 int i = index - firstIndex;
-                if (dp.distance(ipsymsPath[i * 2], ipsymsPath[i * 2 + 1]) < rad) {
+                if (dp.distance(dpsymsPath[i * 2], dpsymsPath[i * 2 + 1]) < rad) {
                     return true;
                 }
             }
@@ -1233,6 +1237,15 @@ public class SeriesRenderer extends Renderer {
     public javax.swing.Icon getListIcon() {
         Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) i.getGraphics();
+        drawListIcon( g, 0, 0 );
+        return new ImageIcon(i);
+    }
+
+    @Override
+    public void drawListIcon(Graphics2D g1, int x, int y) {
+
+        Graphics2D g= (Graphics2D) g1.create( x, y, 16, 16 );
+
         g.setRenderingHints(DasProperties.getRenderingHints());
 
         DasPlot lparent= parent;
@@ -1258,8 +1271,9 @@ public class SeriesRenderer extends Renderer {
         getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
         g.setStroke(stroke0);
         psym.draw(g, 7, 5, 3.f, fillStyle);
-        return new ImageIcon(i);
+        return;
     }
+
 
     public String getListLabel() {
         return String.valueOf(this.getDataSetDescriptor());
