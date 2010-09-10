@@ -210,11 +210,38 @@ public class Ops {
      * @return
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
-        MutablePropertyDataSet result = (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
-            public double op(double d1, double d2) {
-                return d1 + d2;
-            }
-        });
+        Units units1 = (Units) ds1.property(QDataSet.UNITS);
+        Units units2 = (Units) ds2.property(QDataSet.UNITS);
+        if ( units1==null ) units1= Units.dimensionless;
+        if ( units2==null ) units2= Units.dimensionless;
+        MutablePropertyDataSet result;
+        if ( units1==units2 ) {
+            result= (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return d1 + d2;
+                }
+            } );
+            result.putProperty( QDataSet.UNITS, units1 );
+        } else if ( units1.getOffsetUnits()!=units1 ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
+            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return d1 + uc.convert(d2);
+                }
+            } );
+            result.putProperty( QDataSet.UNITS, units1 );
+        } else if ( units2.getOffsetUnits()!=units2 ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units1, units2.getOffsetUnits() );
+            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return uc.convert(d1) + d2;
+                }
+            } );
+            result.putProperty( QDataSet.UNITS, units2 );
+        } else {
+            throw new IllegalArgumentException("both ds1 and ds2 have location units in add");
+        }
+        result.putProperty(QDataSet.NAME, null );
         result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );
         return result;
     }
@@ -2117,9 +2144,16 @@ public class Ops {
         double uc0 = uu.value(ic0);
         double uc1 = uu.value(ic1);
         int n = uu.length();
+        Units vvunits= (Units) vv.property(QDataSet.UNITS);
+        if ( vvunits==null ) vvunits= Units.dimensionless;
+        Units uuunits= (Units) uu.property(QDataSet.UNITS);
+        if ( uuunits==null ) uuunits= Units.dimensionless;
+
+        UnitsConverter uc= UnitsConverter.getConverter( vvunits, uuunits );
+
         while (it.hasNext()) {
             it.next();
-            double d = it.getValue(vv);
+            double d = uc.convert( it.getValue(vv) ); //TODO: assumes no fill data.
             // TODO: optimize by only doing binary search below or above ic0&ic1.
             if (uc0 <= d && d <= uc1) {
                 double ff = (d - uc0) / (uc1 - uc0); // may be 1.0
