@@ -140,7 +140,9 @@ public class SymbolLineRenderer extends Renderer {
         if (path != null) {
             psymConnector.draw(graphics, path, lineWidth);
         }
-        
+
+        graphics.dispose();
+
         Dimension d;
         
         double xmin, xmax, ymin, ymax;
@@ -200,7 +202,7 @@ public class SymbolLineRenderer extends Renderer {
         long milli= System.currentTimeMillis();
         logger.finer( "render: "+ ( milli - timer0 ) + " total:" + ( milli - lastUpdateMillis )+ " fps:"+ (1000./( milli - lastUpdateMillis )) );
         lastUpdateMillis= milli;
-        
+
     }
     
     boolean updating=false;

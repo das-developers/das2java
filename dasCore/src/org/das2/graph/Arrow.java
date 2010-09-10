@@ -84,6 +84,7 @@ public class Arrow extends DasCanvasComponent {
         g.translate(-getX(),-getY());
         paintArrow( g, head, tail, em , HeadStyle.DRAFTING );
         getDasMouseInputAdapter().paint(g1);
+        g.dispose();
     }
     
     

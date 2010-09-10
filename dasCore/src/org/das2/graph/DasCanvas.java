@@ -1451,6 +1451,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                     e.printStackTrace();
                 }
             }
+            g2.dispose();
         }
 
         private void paintRowColumn(Graphics2D g2) {

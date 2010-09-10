@@ -248,7 +248,7 @@ public class DasAnnotation extends DasCanvasComponent {
             Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
             Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
             Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
-            
+            g2.dispose();
         }
 
         if (borderType != BorderType.NONE) {

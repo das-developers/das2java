@@ -1014,6 +1014,7 @@ public class SeriesRenderer extends Renderer {
                     }
                 }
             }
+            graphics.dispose();
             return;
         }
 
@@ -1056,6 +1057,7 @@ public class SeriesRenderer extends Renderer {
             if ( messageCount++==0) lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
         }
 
+        graphics.dispose();
     }
 
 
