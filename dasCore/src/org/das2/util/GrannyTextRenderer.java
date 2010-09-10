@@ -445,6 +445,9 @@ public class GrannyTextRenderer {
         if (!draw) {
             lineBounds.add(bounds);
         }
+        if (draw) {
+            g.dispose();
+        }
     }
     
     private static String[] buildTokenArray(String str) {
