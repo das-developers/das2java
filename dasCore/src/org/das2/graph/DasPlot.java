@@ -194,7 +194,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         firePropertyChange(PROP_FOCUSRENDERER, oldFocusRenderer, focusRenderer);
     }
 
-    private void drawLegend(Graphics2D graphics) {
+    private void drawLegend(Graphics2D g ) {
+
+        Graphics2D graphics= (Graphics2D) g.create();
 
         int em = (int) getEmSize();
         int msgx, msgy;
@@ -267,9 +269,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             le.bounds = mrect;
         }
 
+        graphics.dispose();
+        
+
     }
 
-    private void drawMessages(Graphics2D graphics) {
+    private void drawMessages(Graphics2D g) {
+
+        Graphics2D graphics= (Graphics2D) g.create();
+        
         Font font0 = graphics.getFont();
         int msgem = (int) Math.max(8, font0.getSize2D() / 2);
         graphics.setFont(font0.deriveFont((float) msgem));
@@ -302,6 +310,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
             msgy += gtr.getHeight() + msgem / 2;
         }
+
+        graphics.dispose();
+        
     }
 
     private void maybeDrawGrid(Graphics2D plotGraphics) {
