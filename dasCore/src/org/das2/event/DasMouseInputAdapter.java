@@ -559,11 +559,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             g.setColor(new Color(255, 0, 0, 10));
             g.setStroke(new BasicStroke(10));
             g.draw(parent.getBounds());
+            g.dispose();
             return;
         }
         if (hasFocus && drawControlPoints) {
             drawControlPoints(g);
         }
+        g.dispose();
     }
 
     private void drawControlPoints(Graphics2D g) {
