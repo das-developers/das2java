@@ -545,8 +545,25 @@ public class DataSetOps {
     public static QDataSet unbundle(QDataSet bundleDs, int ib) {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
 
+        if ( bundle1==null ) {
+            bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+            if ( bundle1!=null && bundle1.rank()>1 ) {
+                throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+            }
+        }
+
         if ( ib<0 || ib>=bundle1.length() ) {
             throw new IndexOutOfBoundsException("no such data set");
+        }
+
+        if ( bundle1.rank()==1 ) { //simple legacy bundle was once DEPEND_1.
+            MutablePropertyDataSet result= DataSetOps.slice1(bundleDs,ib);
+            Units enumunits= (Units) bundle1.property(QDataSet.UNITS);
+            if ( enumunits==null ) enumunits= Units.dimensionless;
+            String label=  String.valueOf(enumunits.createDatum(bundle1.value(ib)));
+            result.putProperty(QDataSet.NAME, label ); //TODO: make safe java-identifier
+            result.putProperty(QDataSet.LABEL, label );
+            return result;
         }
 
         String[] names= new String[bundle1.length()];
