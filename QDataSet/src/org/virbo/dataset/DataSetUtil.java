@@ -413,6 +413,11 @@ public class DataSetUtil {
             return dr.toString();
         }
 
+        if ( ds.rank()==1 && "min,maxInclusive".equals(ds.property(QDataSet.BINS_0)) ) {
+            DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
+            return dr.toString() + "(inclusive)";
+        }
+
         String qubeStr = DataSetUtil.isQube(ds) ? "" : "*";
 
         String[] depNames = new String[4];
