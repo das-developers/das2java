@@ -471,7 +471,7 @@ public class DataSetOps {
             result.put( QDataSet.DEPEND_2, props.get( QDataSet.DEPEND_3 ) );
 
         } else {
-            if ( dep0!=null && dep0.rank()==1 ) {
+            if ( dep0!=null && dep0.rank()==1 ) { //TODO: find documentation for rank 2 depend_0...
                 if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
             } else {
                 if ( props.get( "DEPEND_0["+index+"]" )==null ) { // bundle dataset  //TODO: this needs more review
@@ -500,6 +500,14 @@ public class DataSetOps {
             QDataSet delta= (QDataSet) props.get( p[i] );
             if ( delta!=null && delta.rank()>0 ) {
                 result.put( p[i], delta.slice(index) );
+            }
+        }
+
+        String[] ss= new String[] { QDataSet.UNITS, QDataSet.VALID_MAX, QDataSet.VALID_MIN, QDataSet.FILL_VALUE, QDataSet.USER_PROPERTIES };
+        for ( int i=0; i<ss.length; i++ ) {
+            Object o= props.get( ss[i] );
+            if ( o!=null ) {
+                result.put( ss[i], o );
             }
         }
         return result;
