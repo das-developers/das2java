@@ -2458,6 +2458,12 @@ public class Ops {
         return labels(labels, "default");
     }
 
+    /**
+     * TODO: I suspect this is not up to spec.  See DataSetOps.sliceProperties
+     * @param removeDim
+     * @param ds
+     * @param result
+     */
     private static void sliceProperties(int removeDim, QDataSet ds, MutablePropertyDataSet result) {
         for (int i = 0; i < result.rank(); i++) {
             if (i >= removeDim) {
