@@ -16,6 +16,7 @@ import org.das2.math.fft.GeneralFFT;
 import org.das2.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1990,8 +1991,9 @@ public class Ops {
 
         DDataSet qresult= DDataSet.wrap(result);
         qresult.putProperty( QDataSet.SCALE_TYPE, ds.property(QDataSet.SCALE_TYPE) );
-        qresult.putProperty( "count", new Integer(count) );
-        qresult.putProperty( "BINS_0", "min,maxInclusive" );
+        qresult.putProperty( QDataSet.USER_PROPERTIES, Collections.singletonMap( "count", new Integer(count) ) );
+        qresult.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
+        qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
         
         return qresult;
         
