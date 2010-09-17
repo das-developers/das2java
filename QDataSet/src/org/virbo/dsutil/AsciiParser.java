@@ -1384,7 +1384,7 @@ public class AsciiParser {
     }
 
     /**
-     * returns the index of the field
+     * returns the index of the field.  Supports the name, or field0, or 0, etc.
      */
     public int getFieldIndex(String string) {
         for (int i = 0; i < fieldNames.length; i++) {
@@ -1392,7 +1392,17 @@ public class AsciiParser {
                 return i;
             }
         }
-        return -1;
+        int icol= -1;
+        if (Pattern.matches("field[0-9]+", string )) {
+            icol= Integer.parseInt(string.substring(5));
+        } else if (Pattern.matches("[0-9]+", string )) {
+            icol= Integer.parseInt(string);
+        }
+        if ( icol>=fieldCount ) {
+            throw new IllegalArgumentException("bad column parameter: the record parser only expects "+fieldCount+" columns");
+        }
+
+        return icol;
     }
     /**
      * Holds value of property fillValue.
