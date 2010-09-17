@@ -572,8 +572,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
             int xLeft = parent.getColumn().getDMinimum();
             int xRight = parent.getColumn().getDMaximum();
+            int xMid= ( xLeft + xRight ) / 2;
             int yTop = parent.getRow().getDMinimum();
             int yBottom = parent.getRow().getDMaximum();
+            int yMid= (  yTop + yBottom ) / 2;
 
             Graphics2D gg = (Graphics2D) g.create();
 
@@ -586,11 +588,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             gg.fillRect(xLeft + 1, yBottom - ss + 1, ss - 2, ss - 2);
             gg.fillRect(xRight - ss + 1, yBottom - ss + 1, ss - 2, ss - 2);
 
+            gg.fillRect(xMid + 1 - ss/2, yTop + 1, ss - 2, ss - 2);
+            gg.fillRect(xRight - ss + 1, yMid + 1 - ss/2, ss - 2, ss - 2);
+            gg.fillRect(xMid + 1 - ss/2, yBottom - ss + 1, ss - 2, ss - 2);
+            gg.fillRect(xLeft + 1, yMid - ss/2 + 1, ss - 2, ss - 2);
+
             gg.setColor(new Color(255, 255, 255, 100));
             gg.drawRect(xLeft, yTop, ss, ss);
             gg.drawRect(xRight - ss, yTop, ss, ss);
             gg.drawRect(xLeft, yBottom - ss, ss, ss);
             gg.drawRect(xRight - ss, yBottom - ss, ss, ss);
+            gg.drawRect(xMid- ss/2, yTop + 1, ss, ss );
+            gg.drawRect(xRight - ss, yMid - ss/2, ss, ss );
+            gg.drawRect(xMid - ss/2, yBottom - ss, ss, ss );
+            gg.drawRect(xLeft , yMid - ss/2, ss, ss );
 
             int xmid = (xLeft + xRight) / 2;
             int ymid = (yTop + yBottom) / 2;
@@ -649,6 +660,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     } else if (yBottomSide) {
                         result = MouseMode.resize;
                         cursor = new Cursor(Cursor.SW_RESIZE_CURSOR);
+                    } else if (yMiddle) {
+                        result = MouseMode.resize;
+                        cursor = new Cursor(Cursor.W_RESIZE_CURSOR);
                     }
                 } else if (xRightSide) {
                     if (yTopSide) {
@@ -657,10 +671,19 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     } else if (yBottomSide) {
                         result = MouseMode.resize;
                         cursor = new Cursor(Cursor.SE_RESIZE_CURSOR);
+                    } else if (yMiddle) {
+                        result = MouseMode.resize;
+                        cursor = new Cursor(Cursor.E_RESIZE_CURSOR);
                     }
                 } else if (xMiddle && yMiddle) {
                     result = MouseMode.move;
                     cursor = new Cursor(Cursor.MOVE_CURSOR);
+                } else if (xMiddle && yTopSide ) {
+                    result = MouseMode.resize;
+                    cursor = new Cursor(Cursor.N_RESIZE_CURSOR);
+                } else if ( xMiddle && yBottomSide ) {
+                    result = MouseMode.resize;
+                    cursor = new Cursor(Cursor.S_RESIZE_CURSOR);
                 }
             }
 
@@ -759,10 +782,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 resizeStart.x = 0 + xOffset;
             } else if (mouseMode.resizeLeft) {
                 resizeStart.x = parent.getWidth() + xOffset;
+            } else {
+                resizeStart.x = 0 + xOffset;
             }
             if (mouseMode.resizeTop) {
                 resizeStart.y = parent.getHeight() + yOffset;
             } else if (mouseMode.resizeBottom) {
+                resizeStart.y = 0 + yOffset;
+            } else {
                 resizeStart.y = 0 + yOffset;
             }
 
@@ -826,6 +853,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (mouseMode == MouseMode.resize) {
             Point p = e.getPoint();
             p.translate(parent.getX(), parent.getY());
+            if ( !( mouseMode.resizeBottom || mouseMode.resizeTop ) ) {
+                p.y= parent.getRow().getDMaximum();
+            }
+            if ( !( mouseMode.resizeRight || mouseMode.resizeLeft ) ) {
+                p.x= parent.getColumn().getDMaximum();
+            }
             getGlassPane().setDragRenderer(resizeRenderer, resizeStart, p);
             getGlassPane().repaint();
 
