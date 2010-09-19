@@ -6,6 +6,7 @@
 package org.virbo.demos;
 
 import org.virbo.dataset.AbstractDataSet;
+import org.virbo.dataset.QDataSet;
 
 /**
  * old das2 ripples dataset, but supports rank 1 and 2
@@ -42,7 +43,8 @@ public class RipplesDataSet extends AbstractDataSet {
         this.xlen= xlength;
         this.ylen= ylength;
         this.rank= 2;
-        putProperty(org.virbo.dataset.QDataSet.QUBE,Boolean.TRUE);
+        putProperty(QDataSet.QUBE,Boolean.TRUE);
+        putProperty(QDataSet.FILL_VALUE,fill);
     }
     
     @Override
