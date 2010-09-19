@@ -4,6 +4,7 @@
  */
 package org.virbo.dsops;
 
+import com.sun.org.apache.bcel.internal.generic.IUSHR;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.das2.dataset.TableDataSet;
@@ -1371,6 +1372,27 @@ public class Ops {
         //TableDataSet tds= new RipplesDataSet( len0/10., len1/10., len1/20., len0/2., len1/2., len1/10., len0, len1 );
         //return DataSetAdapter.create(tds);
         return new RipplesDataSet( len0, len1 );
+    }
+
+    /**
+     * rank 3 dataset for demos.
+     * @return
+     */
+    public static QDataSet ripples( int len, int len0, int len1 ) {
+        FDataSet result= org.virbo.dataset.FDataSet.createRank3( len, len0, len1 );
+        for ( int i=0; i<len; i++ ) {
+            double eps= 1+(i/(float)len);
+            double eps2= 1+(i*5/(float)len);
+            QDataSet d2= new RipplesDataSet( (len0*eps)/10., len1/10., (len1*eps2)/20., (len0*eps)/2., len1/2., (len1*eps)/10., len0, len1 );
+            QubeDataSetIterator it= new QubeDataSetIterator(d2);
+            while ( it.hasNext() ) {
+                it.next();
+                result.putValue(i,it.index(0),it.index(1), it.getValue(d2) );
+            }
+            if ( i==0 ) result.putProperty(QDataSet.FILL_VALUE,d2.property(QDataSet.FILL_VALUE));
+        }
+        
+        return result;
     }
 
     /**
