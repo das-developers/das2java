@@ -67,15 +67,14 @@ public class WaveformToSpectrum {
     
     private static final double LOG_2 = Math.log(2);
     
-    private static boolean checkXTagsGrid( DataSet ds ) {
+    private static boolean checkXTagsGrid( DataSet ds, int st, int en ) {
         if ( ds.getXLength()<1 ) {
             return false;
         } else {
             Units units= ds.getXUnits();
-            double base= ds.getXTagDouble( 0, units );
-            double delta= ( ds.getXTagDouble( ds.getXLength()-1, units ) - base )
-            / ( ds.getXLength()-1 );
-            for ( int i=0; i<ds.getXLength(); i++ ) {
+            double base= ds.getXTagDouble( st, units );
+            double delta= ( ds.getXTagDouble( en-1, units ) - base ) / ( en-st-1 );
+            for ( int i=st; i<en; i++ ) {
                 double rr= ( ( ds.getXTagDouble(i, units) - base ) / delta ) % 1.;
                 if ( rr > 0.01 && rr < 0.09 ) {
                     return false;
@@ -143,7 +142,7 @@ public class WaveformToSpectrum {
     public static TableDataSet getTableDataSet2( VectorDataSet vds, int windowSize ) {
         GeneralFFT fft= GeneralFFT.newDoubleFFT( windowSize );
         
-        if ( !checkXTagsGrid(vds) ) {
+        if ( !checkXTagsGrid(vds,0,vds.getXLength()) ) {
             throw new IllegalArgumentException( "xtags don't appear to be gridded" );
         }
         
@@ -174,10 +173,6 @@ public class WaveformToSpectrum {
     
     public static TableDataSet getTableDataSet( VectorDataSet vds, int windowSize ) {
         
-        if ( !checkXTagsGrid(vds) ) {
-            throw new IllegalArgumentException( "xtags don't appear to be gridded" );
-        }
-        
         int n21= windowSize/2+1;
         DatumVector yTags;
         {
@@ -201,10 +196,15 @@ public class WaveformToSpectrum {
         VectorDataSet wvds= (VectorDataSet) DataSetUtil.getWeightsDataSet(vds);
 
         double [][] buf= new double[2][windowSize];
-        
+
+        int ngood=0;
         int nTableXTags= vds.getXLength() / windowSize;
         for ( int i=0; i<nTableXTags; i++ ) {
             boolean fill= false;
+            if ( ! checkXTagsGrid( vds,i*windowSize,(i+1)*windowSize ) ) {
+                continue;
+            }
+            ngood++;
             for ( int j=0; j<windowSize; j++ ) {
                 buf[0][j]= vds.getDouble( i*windowSize+j,zUnits );
                 if ( wvds.getDouble( i*windowSize+j,Units.dimensionless )==0 ) fill= true;
@@ -223,6 +223,10 @@ public class WaveformToSpectrum {
                 }
             }
             tdsb.insertYScan( vds.getXTagDatum((int)((i+0.5)*windowSize)), yTags, DatumVector.newDatumVector( zBuf, zUnits ) );
+        }
+
+        if ( ngood==0 ) {
+            throw new IllegalArgumentException( "xtags don't appear to be gridded" );
         }
         return tdsb.toTableDataSet();
     }
