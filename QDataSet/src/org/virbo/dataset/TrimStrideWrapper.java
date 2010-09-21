@@ -8,6 +8,9 @@ package org.virbo.dataset;
 /**
  * Wraps rank N dataset to present a dataset with the same rank that is a subset of
  * wrapped dataset.
+ *
+ * Note this was used before trim() was a native operator for datasets, and it
+ * should be used when stride==1.
  * @author jbf
  */
 public class TrimStrideWrapper extends AbstractDataSet {
