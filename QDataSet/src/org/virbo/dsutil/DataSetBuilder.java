@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 
@@ -203,7 +204,7 @@ public class DataSetBuilder {
             }
             DDataSet.copyElements( current, 0, result, dsindex, length-dsindex );
         } else {
-            result= DDataSet.copy(current);
+            result= (DDataSet) ArrayDataSet.copy(double.class,current);
         }
         result.putLength( length );
         

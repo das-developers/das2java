@@ -4,7 +4,6 @@
  */
 package org.virbo.dsops;
 
-import com.sun.org.apache.bcel.internal.generic.IUSHR;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.das2.dataset.TableDataSet;
@@ -26,6 +25,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.UnitsConverter;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -1169,20 +1169,36 @@ public class Ops {
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) return ds2;
-        DDataSet result = DDataSet.copy(ds1);
-        if ( ds2.rank()==0 && ds1.rank()==1 ) {
-            DDataSet t= DDataSet.createRank1(1);
-            t.putValue(ds2.value());
-            DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
-            ds2= t;
-        } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
-            DDataSet t= DDataSet.createRank1(1);
-            t.putValue(ds1.value());
-            DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
-            result= t;
+        if ( ds1 instanceof FDataSet && ds2 instanceof FDataSet ) {
+            FDataSet result = (FDataSet) ArrayDataSet.copy(ds1);
+            if ( ds2.rank()==0 && ds1.rank()==1 ) {
+                FDataSet t= FDataSet.createRank1(1);
+                t.putValue(ds2.value());
+                DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
+                ds2= t;
+            } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
+                FDataSet t= FDataSet.createRank1(1);
+                t.putValue(ds1.value());
+                DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
+                result= t;
+            }
+            return ArrayDataSet.append(result,FDataSet.maybeCopy(ds2));
+        } else {
+            DDataSet result = (DDataSet)DDataSet.copy(ds1);
+            if ( ds2.rank()==0 && ds1.rank()==1 ) {
+                DDataSet t= DDataSet.createRank1(1);
+                t.putValue(ds2.value());
+                DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
+                ds2= t;
+            } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
+                DDataSet t= DDataSet.createRank1(1);
+                t.putValue(ds1.value());
+                DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
+                result= t;
+            }
+            return ArrayDataSet.append(result,DDataSet.maybeCopy(ds2));
         }
-        result.append(DDataSet.maybeCopy(ds2));
-        return result;
+        
     }
 
     /**
@@ -2381,7 +2397,7 @@ public class Ops {
             
             return result;
         } else {
-            TrimStrideWrapper d1 = new TrimStrideWrapper(ds);
+            TrimStrideWrapper d1 = new TrimStrideWrapper(ds); //TODO: use .trim() operator here if we use this again.
             d1.setTrim(0, 0, ds.length() - 1, 1);
             TrimStrideWrapper d2 = new TrimStrideWrapper(ds);
             d2.setTrim(0, 1, ds.length(), 1);
@@ -2614,7 +2630,7 @@ public class Ops {
                 throw new IllegalArgumentException( problems.get(0) );
             }
         } else {
-            DDataSet zds = DDataSet.copy(y);
+            ArrayDataSet zds = ArrayDataSet.copy(y);
             if (x != null) {
                 zds.putProperty(QDataSet.DEPEND_0, x);
             }
@@ -2662,7 +2678,7 @@ public class Ops {
             return link( x, y, z1 );
 
         } else {
-            DDataSet zds = DDataSet.copy(z);
+            ArrayDataSet zds = ArrayDataSet.copy(z);
             if (x != null) {
                 zds.putProperty(QDataSet.DEPEND_0, x);
             }
