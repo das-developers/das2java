@@ -24,7 +24,9 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     
     private DasPlot topPlot;
     private DasPlot bottomPlot;
-    
+
+    private boolean bottomCurtainDrawn= false;
+
     public ColumnColumnConnector( DasCanvas parent, DasPlot topPlot, DasRow topRow, DasPlot bottomPlot ) {
         super( );
         putClientProperty( JLayeredPane.LAYER_PROPERTY, DasCanvas.AXIS_LAYER );
@@ -46,7 +48,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     
     private Rectangle getMyBounds() {
         int ytop= topRow.getDMaximum();
-        int ybottom= this.bottomCurtain ? bottomPlot.getRow().getDMaximum() : bottomPlot.getRow().getDMinimum() ;
+        int ybottom= this.bottomCurtainDrawn ? bottomPlot.getRow().getDMaximum() : bottomPlot.getRow().getDMinimum() ;
         int xhigh= Math.max( topPlot.getColumn().getDMaximum(), bottomPlot.getColumn().getDMaximum() );
         int xlow= Math.min( topPlot.getColumn().getDMinimum(), bottomPlot.getColumn().getDMinimum() );
         
@@ -145,6 +147,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
                         Graphics2D g2=(Graphics2D)g1.create();
                         paintBottomContext( g2, context );
                         g2.dispose();
+                        bottomCurtainDrawn= false;
                         return;
                     } else {
                         return;
@@ -164,6 +167,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
                             Graphics2D g2=(Graphics2D)g1.create();
                             paintTopContext( g2, context );
                             g2.dispose();
+                            bottomCurtainDrawn= false;
                             return;
                         } else {
                             return;
@@ -225,6 +229,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         g.draw( gp );
         
         if ( bottomCurtain && topPlot.getYAxis().getUnits().isConvertableTo( bottomPlot.getYAxis().getUnits() ) ) {
+            bottomCurtainDrawn= bottomCurtain;
             
             DatumRange drtop= topPlot.getYAxis().getDatumRange();
             DatumRange yaxisRange= bottomPlot.getYAxis().getDatumRange();
