@@ -151,8 +151,10 @@ public abstract class WebFileSystem extends FileSystem {
                 downloadMonitor.cancel();
             }
 
-            // echo what the download monitor is reporting.
-            monitor.setTaskProgress(downloadMonitor.getTaskProgress());
+            if ( !monitor.isCancelled() ) {  //TODO: syncronized block or something
+                // echo what the download monitor is reporting.
+                monitor.setTaskProgress(downloadMonitor.getTaskProgress());
+            }
 
             try {
                 downloads.wait(100); // wait 100ms, then proceed to support progress information
