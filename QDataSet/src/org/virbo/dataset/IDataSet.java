@@ -20,15 +20,9 @@ import java.util.Map;
  *
  * @author jbf
  */
-public final class IDataSet extends AbstractDataSet implements WritableDataSet {
+public final class IDataSet extends ArrayDataSet {
     int[] back;
     
-    int rank;
-    
-    int len0;
-    int len1;
-    int len2;
-    int len3;
     
     public static final String version="20070529";
     
@@ -73,12 +67,11 @@ public final class IDataSet extends AbstractDataSet implements WritableDataSet {
         return new IDataSet( rank, len0, len1, len2, 1, back );
     }
     
-    /** Creates a new instance of IDataSet */
-    private IDataSet( int rank, int len0, int len1, int len2, int len3 ) {
+    protected IDataSet( int rank, int len0, int len1, int len2, int len3 ) {
         this( rank, len0, len1, len2, len3, new int[ len0 * len1 * len2 * len3] );
     }
 
-    private IDataSet( int rank, int len0, int len1, int len2, int len3, int[] back ) {
+    protected IDataSet( int rank, int len0, int len1, int len2, int len3, int[] back ) {
        this.back= back;
        this.rank= rank;
        this.len0= len0;
@@ -87,29 +80,9 @@ public final class IDataSet extends AbstractDataSet implements WritableDataSet {
        this.len3= len3;
        DataSetUtil.addQube(this);
     }
-    
-    public int rank() {
-        return rank;
-    }
 
-    @Override
-    public int length() {
-        return len0;
-    }
-
-    @Override
-    public int length(int i) {
-        return len1;
-    }
-    
-    @Override
-    public int length( int i0, int i1 ) {
-        return len2;
-    }
-
-    @Override
-    public int length( int i0, int i1, int i2 ) {
-        return len3;
+    protected Object getBack() {
+        return this.back;
     }
 
     @Override
@@ -188,7 +161,13 @@ public final class IDataSet extends AbstractDataSet implements WritableDataSet {
                 throw new IllegalArgumentException("dataset is dependent on itsself!");
             }
             if (dep != null) {
-                result.put("DEPEND_" + i, copy(dep));
+                if ( dep instanceof FDataSet ) {
+                    result.put("DEPEND_" + i, FDataSet.copy(dep));
+                } else if ( dep instanceof DDataSet ) {
+                    result.put("DEPEND_" + i, DDataSet.copy(dep));
+                } else {
+                    result.put("DEPEND_" + i, copy(dep));
+                }
             }
         }
 

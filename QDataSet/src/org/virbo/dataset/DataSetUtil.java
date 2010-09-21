@@ -1385,7 +1385,7 @@ public class DataSetUtil {
         Units su= (Units) ds.property(QDataSet.UNITS);
         if ( su==null ) su= Units.dimensionless;
         UnitsConverter uc= su.getConverter(u);
-        DDataSet result = DDataSet.copy(ds);  // assumes ds is QUBE right now...
+        DDataSet result = (DDataSet) ArrayDataSet.copy(ds);  // assumes ds is QUBE right now...
         QubeDataSetIterator it= new QubeDataSetIterator(ds);
         while ( it.hasNext() ) {
             it.next();
