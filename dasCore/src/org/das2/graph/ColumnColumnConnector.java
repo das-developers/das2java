@@ -31,7 +31,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     /**
      * true if the bottom curtain should be drawn
      */
-    private boolean bottomCurtainDrawn= false;
+    private boolean bottomCurtainDrawn= true;
 
     public ColumnColumnConnector( DasCanvas parent, DasPlot topPlot, DasRow topRow, DasPlot bottomPlot ) {
         super( );
