@@ -9,7 +9,9 @@ import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JLayeredPane;
-import org.das2.event.DasMouseInputAdapter;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.MenuElement;
 
 /**
  * draws lines connecting two DasPlots, one on top of the other, typically used
@@ -23,9 +25,9 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     private DasRow bottomRow;
     
     private DasPlot topPlot;
-    private DasPlot bottomPlot;
+    private final DasPlot bottomPlot;
 
-    private boolean bottomCurtainDrawn= false;
+    private boolean bottomCurtainDrawn= true;
 
     public ColumnColumnConnector( DasCanvas parent, DasPlot topPlot, DasRow topRow, DasPlot bottomPlot ) {
         super( );
@@ -44,6 +46,13 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         topPlot.getYAxis().addPropertyChangeListener(this);
         bottomPlot.addPropertyChangeListener(this);
         bottomPlot.getXAxis().addPropertyChangeListener(this);
+
+        JPopupMenu mi= this.bottomPlot.getDasMouseInputAdapter().getPrimaryPopupMenu();
+        mi.setLabel("Plot Menu");
+        
+        getDasMouseInputAdapter().addMenuItem( mi );
+        MenuElement me= getDasMouseInputAdapter().getPrimaryPopupMenu().getSubElements()[0];
+        ((JMenuItem)me.getComponent()).setText("Connector Properties");
     }
     
     private Rectangle getMyBounds() {
