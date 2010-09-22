@@ -443,9 +443,17 @@ public class DatumRangeUtil {
                 if ( lastdelim.equals("\u2013") )  setBeforeTo( false ); // hyphen
                 if ( lastdelim.equals("span") ) {
                     setBeforeTo(false);
+                    if ( ts1[DAY]>-1 ) {
+                        for ( int ii=HOUR; ii<=NANO; ii++ ) if (ts1[ii]==-1) ts1[ii]=0;
+                    } else {
+                        throw new IllegalArgumentException("span needs start date to have day specified");
+                    }
                     Datum start= TimeUtil.toDatum(ts1);
-                    Datum width= DatumUtil.parse( newString.substring(ipos) );
-                    Datum stop= start.add(width);
+                    String swidth= newString.substring(ipos);
+                    swidth= makeCanonicalTimeWidthString(swidth);
+                    Datum width= DatumUtil.parse( swidth );
+                    Datum stop= start.add(width); //TODO: rounding errors.
+
                     TimeUtil.TimeStruct tt= TimeUtil.toTimeStruct(stop);
                     ts2[DAY]= tt.day;
                     ts2[MONTH]= tt.month;
@@ -725,6 +733,18 @@ public class DatumRangeUtil {
                 Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
                 return new DatumRange( time1, time2 );
             }
+        }
+
+        private String makeCanonicalTimeWidthString(String swidth) {
+            if ( swidth.contains("day") && !swidth.contains("days") ){
+                swidth= swidth.replaceAll("day ", "days");
+            }
+            swidth= swidth.replaceAll("hrs", "hr");
+            swidth= swidth.replaceAll("mins", "min");
+            swidth= swidth.replaceAll("secs", "s");
+            swidth= swidth.replaceAll("sec", "s");
+            swidth= swidth.replaceAll("msec", "ms");
+            return swidth;
         }
         
     }
