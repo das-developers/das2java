@@ -5,6 +5,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
+import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,13 +13,12 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
-import javax.swing.SwingUtilities;
 
 /**
  * draws lines connecting two DasPlots, one on top of the other, typically used
  * to show a zoom in above of a context below.
  */
-public class ColumnColumnConnector extends DasCanvasComponent implements java.beans.PropertyChangeListener {
+public class ColumnColumnConnector extends DasCanvasComponent {
     
     private DasCanvas parent;
     
@@ -45,11 +45,14 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         setRow( topRow );
         setColumn( topPlot.getColumn() );
         if ( topRow==null ) topRow= topPlot.getRow();
-        topPlot.addPropertyChangeListener(this);
-        topPlot.getXAxis().addPropertyChangeListener(this);
-        topPlot.getYAxis().addPropertyChangeListener(this);
-        bottomPlot.addPropertyChangeListener(this);
-        bottomPlot.getXAxis().addPropertyChangeListener(this);
+
+        PropertyChangeListener pcl= createPropertyChangeListener();
+
+        topPlot.addPropertyChangeListener(pcl);
+        topPlot.getXAxis().addPropertyChangeListener(pcl);
+        topPlot.getYAxis().addPropertyChangeListener(pcl);
+        bottomPlot.addPropertyChangeListener(pcl);
+        bottomPlot.getXAxis().addPropertyChangeListener(pcl);
 
         JPopupMenu mi= this.bottomPlot.getDasMouseInputAdapter().getPrimaryPopupMenu();
         mi.setLabel("Plot Menu");
@@ -193,9 +196,6 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
             }
         }
 
-        
-        bottomPlot.addPropertyChangeListener(this);
-        
         Graphics2D g= (Graphics2D)g1.create();
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
@@ -282,10 +282,14 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         getDasMouseInputAdapter().paint(g1);
     }
 
-    public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
-        bottomCurtainDrawn= topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() );
-        markDirty();
-        update();
+    private PropertyChangeListener createPropertyChangeListener() {
+        return new PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
+                bottomCurtainDrawn= topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() );
+                markDirty();
+                update();
+            }
+        };
     }
     
     /**
