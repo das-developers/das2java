@@ -220,6 +220,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
     }
 
+    /**
+     * added so ColumnColumnConnector could delegate to DasPlot's adapter.
+     * @return
+     */
+    public JPopupMenu getPrimaryPopupMenu() {
+        return this.primaryPopup;
+    }
+
     public KeyAdapter getKeyAdapter() {
         return new KeyAdapter() {
 
@@ -1106,9 +1114,24 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
         if (numInserted == 0) {
             primaryPopup.insert(new JPopupMenu.Separator(), 0);
+            numInserted++;
         }
-        primaryPopup.insert(b, numInserted);
-        numInserted++;
+        if ( b instanceof JPopupMenu ) {
+            if ( numInserted>1 ) {
+                primaryPopup.insert(new JPopupMenu.Separator(), 0);
+                numInserted++;
+            }
+            JPopupMenu c= (JPopupMenu)b;
+
+            for ( MenuElement me : c.getSubElements() ) {
+                if ( me.getComponent() instanceof JCheckBoxMenuItem ) continue;   //TODO: kludge
+                primaryPopup.insert( me.getComponent(), numInserted );
+                numInserted++;
+            }
+        } else {
+            primaryPopup.insert(b, numInserted);
+            numInserted++;
+        }
 
     }
 
