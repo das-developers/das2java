@@ -12,6 +12,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
+import javax.swing.SwingUtilities;
 
 /**
  * draws lines connecting two DasPlots, one on top of the other, typically used
@@ -27,7 +28,10 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     private DasPlot topPlot;
     private final DasPlot bottomPlot;
 
-    private boolean bottomCurtainDrawn= true;
+    /**
+     * true if the bottom curtain should be drawn
+     */
+    private boolean bottomCurtainDrawn= false;
 
     public ColumnColumnConnector( DasCanvas parent, DasPlot topPlot, DasRow topRow, DasPlot bottomPlot ) {
         super( );
@@ -156,7 +160,6 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
                         Graphics2D g2=(Graphics2D)g1.create();
                         paintBottomContext( g2, context );
                         g2.dispose();
-                        bottomCurtainDrawn= false;
                         return;
                     } else {
                         return;
@@ -176,7 +179,6 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
                             Graphics2D g2=(Graphics2D)g1.create();
                             paintTopContext( g2, context );
                             g2.dispose();
-                            bottomCurtainDrawn= false;
                             return;
                         } else {
                             return;
@@ -238,7 +240,6 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
         g.draw( gp );
         
         if ( bottomCurtain && topPlot.getYAxis().getUnits().isConvertableTo( bottomPlot.getYAxis().getUnits() ) ) {
-            bottomCurtainDrawn= bottomCurtain;
             
             DatumRange drtop= topPlot.getYAxis().getDatumRange();
             DatumRange yaxisRange= bottomPlot.getYAxis().getDatumRange();
@@ -282,6 +283,7 @@ public class ColumnColumnConnector extends DasCanvasComponent implements java.be
     }
 
     public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
+        bottomCurtainDrawn= topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() );
         markDirty();
         update();
     }
