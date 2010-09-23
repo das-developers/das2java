@@ -449,6 +449,8 @@ public class DataSetOps {
 
     /**
      * method to help dataset implementations implement slice.
+     * 2010-09-23: support rank 2 DEPEND_2 and DEPEND_3
+     * 2010-09-23: add BINS_1 and BUNDLE_1, Slice0DataSet calls this.
      * @param sliceIndex
      * @param props
      */
@@ -459,10 +461,13 @@ public class DataSetOps {
         QDataSet dep1= (QDataSet) props.get( QDataSet.DEPEND_1 );
         QDataSet dep2= (QDataSet) props.get( QDataSet.DEPEND_2 );
         QDataSet dep3= (QDataSet) props.get( QDataSet.DEPEND_3 );
+        QDataSet bins1= (QDataSet) props.get( QDataSet.BINS_1 );
+        QDataSet bundle1= (QDataSet) props.get( QDataSet.BUNDLE_1 );
 
         if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
             throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
         }
+
         if ( dep1!=null ) { //DEPEND_1 rank 1 implies qube
             if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
             if ( dep1!=null && dep1.rank()==2 ) {
@@ -480,7 +485,7 @@ public class DataSetOps {
             }
         }
 
-        if ( dep2!=null ) { //DEPEND_2
+        if ( dep2!=null ) {
             if ( dep2.rank()==2 ) {
                 result.put( QDataSet.DEPEND_1, dep2.slice( index ) );
             } else {
@@ -488,13 +493,23 @@ public class DataSetOps {
             }
         }
 
-        if ( dep3!=null ) { //DEPEND_2
+        if ( dep3!=null ) { 
             if ( dep3.rank()==2 ) {
                 result.put( QDataSet.DEPEND_2, dep3.slice( index ) );
             } else {
                 result.put( QDataSet.DEPEND_2, dep3 );
             }
         }
+
+        if ( bins1!=null ) {
+            result.put( QDataSet.BINS_0, bins1 );
+        }
+
+        if ( bundle1!=null ) {
+            result.put( QDataSet.BUNDLE_0, bundle1 );
+        }
+
+        //TODO: verify that we needn't put null in for JOIN_0.
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
