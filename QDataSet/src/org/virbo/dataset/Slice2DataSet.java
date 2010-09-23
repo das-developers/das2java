@@ -28,13 +28,14 @@ public class Slice2DataSet extends AbstractDataSet {
         this.index = index;
 
         QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
-        if ( dep2!=null && dep2.rank()>1 ) {
-            System.err.println( "slice on non-qube, dep2 has rank="+dep2.rank() );
+        if ( dep2!=null ) {
+            if ( dep2.rank()>1 ) {
+                System.err.println( "slice on non-qube, dep2 has rank="+dep2.rank() );
+            } else if ( dep2.rank()==1 ) {
+                DataSetUtil.addContext( this, new Slice0DataSet(dep2,index) );
+            }
         }
 
-        if ( dep2!=null && dep2.rank()==1 ) {
-            DataSetUtil.addContext( this, new Slice0DataSet(dep2,index) );
-        }
         putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
