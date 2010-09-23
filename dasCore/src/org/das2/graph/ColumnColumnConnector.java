@@ -13,6 +13,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
+import org.das2.DasApplication;
 
 /**
  * draws lines connecting two DasPlots, one on top of the other, typically used
@@ -54,12 +55,14 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         bottomPlot.addPropertyChangeListener(pcl);
         bottomPlot.getXAxis().addPropertyChangeListener(pcl);
 
-        JPopupMenu mi= this.bottomPlot.getDasMouseInputAdapter().getPrimaryPopupMenu();
-        mi.setLabel("Plot Menu");
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            JPopupMenu mi= this.bottomPlot.getDasMouseInputAdapter().getPrimaryPopupMenu();
+            mi.setLabel("Plot Menu");
         
-        getDasMouseInputAdapter().addMenuItem( mi );
-        MenuElement me= getDasMouseInputAdapter().getPrimaryPopupMenu().getSubElements()[0];
-        ((JMenuItem)me.getComponent()).setText("Connector Properties");
+            getDasMouseInputAdapter().addMenuItem( mi );
+            MenuElement me= getDasMouseInputAdapter().getPrimaryPopupMenu().getSubElements()[0];
+            ((JMenuItem)me.getComponent()).setText("Connector Properties");
+        }
     }
     
     private Rectangle getMyBounds() {
