@@ -29,7 +29,7 @@ public class Slice1DataSet extends AbstractDataSet {
         this.index = index;
 
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
-        if ( dep1.rank()>1 ) {
+        if ( dep1!=null && dep1.rank()>1 ) {
             System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
         }
 

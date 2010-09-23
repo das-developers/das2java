@@ -28,7 +28,7 @@ public class Slice3DataSet extends AbstractDataSet {
         this.index = index;
 
         QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
-        if ( dep3.rank()>1 ) {
+        if ( dep3!=null && dep3.rank()>1 ) {
             System.err.println( "slice on non-qube, dep3 has rank="+dep3.rank() );
         }
 
@@ -36,7 +36,6 @@ public class Slice3DataSet extends AbstractDataSet {
             DataSetUtil.addContext( this, new Slice0DataSet(dep3,index) );
         }
         putProperty( QDataSet.DEPEND_3, null );
-        putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
