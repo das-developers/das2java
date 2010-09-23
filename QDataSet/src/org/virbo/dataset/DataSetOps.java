@@ -457,19 +457,19 @@ public class DataSetOps {
 
         QDataSet dep0= (QDataSet) props.get( QDataSet.DEPEND_0 );
         QDataSet dep1= (QDataSet) props.get( QDataSet.DEPEND_1 );
+        QDataSet dep2= (QDataSet) props.get( QDataSet.DEPEND_2 );
+        QDataSet dep3= (QDataSet) props.get( QDataSet.DEPEND_3 );
+
         if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
             throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
         }
-        if ( props.get(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
+        if ( dep1!=null ) { //DEPEND_1 rank 1 implies qube
             if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
             if ( dep1!=null && dep1.rank()==2 ) {
                 result.put( QDataSet.DEPEND_0, dep1.slice( index ) );
             } else {
                 result.put( QDataSet.DEPEND_0, dep1 );
             }
-            result.put( QDataSet.DEPEND_1, props.get( QDataSet.DEPEND_2 ) );
-            result.put( QDataSet.DEPEND_2, props.get( QDataSet.DEPEND_3 ) );
-
         } else {
             if ( dep0!=null && dep0.rank()==1 ) { //TODO: find documentation for rank 2 depend_0...
                 if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
@@ -480,14 +480,30 @@ public class DataSetOps {
             }
         }
 
+        if ( dep2!=null ) { //DEPEND_2
+            if ( dep2.rank()==2 ) {
+                result.put( QDataSet.DEPEND_1, dep2.slice( index ) );
+            } else {
+                result.put( QDataSet.DEPEND_1, dep2 );
+            }
+        }
+
+        if ( dep3!=null ) { //DEPEND_2
+            if ( dep3.rank()==2 ) {
+                result.put( QDataSet.DEPEND_2, dep3.slice( index ) );
+            } else {
+                result.put( QDataSet.DEPEND_2, dep3 );
+            }
+        }
+
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
-            QDataSet plane0= (QDataSet) props.get( prop );
-            if ( plane0!=null ) {
-                if ( plane0.rank()<1 ) {
-                    result.put( prop, plane0 );
+            QDataSet plane= (QDataSet) props.get( prop );
+            if ( plane!=null ) {
+                if ( plane.rank()<1 ) {
+                    result.put( prop, plane );
                 } else {
-                    result.put( prop, plane0.slice(index) );
+                    result.put( prop, plane.slice(index) );
                 }
             } else {
                 break;
@@ -503,7 +519,7 @@ public class DataSetOps {
             }
         }
 
-        String[] ss= new String[] { QDataSet.UNITS, QDataSet.VALID_MAX, QDataSet.VALID_MIN, QDataSet.FILL_VALUE, QDataSet.USER_PROPERTIES };
+        String[] ss= DataSetUtil.dimensionProperties();
         for ( int i=0; i<ss.length; i++ ) {
             Object o= props.get( ss[i] );
             if ( o!=null ) {
