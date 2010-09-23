@@ -1279,7 +1279,7 @@ public class DataSetUtil {
                 problems.add(String.format("DEPEND_%d length is %d, should be %d.", dimOffset, dep.length(), ds.length()));
             }
             if (ds.rank() > 1 && ds.length() > 0) {
-                validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1);
+                 validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy
             }
         }
         return problems.size() == 0;
