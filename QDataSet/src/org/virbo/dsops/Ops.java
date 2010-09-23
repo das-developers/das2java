@@ -2793,7 +2793,7 @@ public class Ops {
      * Note this includes implicit dimensions taken by the primary dataset.
      *   Z(time,freq)->3
      *   rand(20,20)->3
-     *   B_gsm(20,3)->4
+     *   B_gsm(20,[X,Y,Z])->4
      * @param ds
      *
      * @return the number of dimensions occupied by the data.
