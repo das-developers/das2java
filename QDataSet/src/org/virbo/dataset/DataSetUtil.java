@@ -245,11 +245,12 @@ public class DataSetUtil {
             QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
             QDataSet.RENDER_TYPE,
             QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
+            QDataSet.USER_PROPERTIES
         };
     }
 
     /**
-     * true if the property is one that is global and is relevant thoughout the
+     * true if the property is one that is global and is relevant throughout the
      * dataset, such as a title or the units.
      *    property( "TITLE",0,0 ) often returns property("TITLE"), but
      *    property( "DEPEND_0",0,0 ) should never return property("DEPEND_0").
