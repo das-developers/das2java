@@ -1282,7 +1282,7 @@ public class DataSetUtil {
                  validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy
             }
         }
-        return problems.size() == 0;
+        return problems.isEmpty();
     }
 
     /**
