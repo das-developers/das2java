@@ -180,6 +180,23 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
+     * return true if the dataset can be appended.  Note this assumes that the
+     * same length, etc.  This just checks that we have the number of spare records
+     * in the backing store.
+     * @param ds
+     * @return
+     */
+    public boolean canAppend( ArrayDataSet ds ) {
+        if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("rank mismatch");
+        if ( ds.len1!=this.len1 ) throw new IllegalArgumentException("len1 mismatch");
+        if ( ds.len2!=this.len2 ) throw new IllegalArgumentException("len2 mismatch");
+        if ( ds.len3!=this.len3 ) throw new IllegalArgumentException("len3 mismatch");
+        if ( this.getBack().getClass()!=ds.getBack().getClass() ) throw new IllegalArgumentException("backing type mismatch");
+        int trec= Array.getLength(this.getBack()) / this.len1 / this.len2 / this.len3;
+        return trec-this.len0 > ds.length();
+    }
+
+    /**
      * copies the properties, copying depend datasets as well.
      */
     private static Map copyProperties( QDataSet ds ) {
