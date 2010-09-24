@@ -82,7 +82,11 @@ public final class LDataSet extends ArrayDataSet {
     protected Object getBack() {
         return this.back;
     }
-    
+
+    protected void setBack(Object back) {
+        this.back= (long[])back;
+    }
+
     @Override
     public double value() {
         return back[0];

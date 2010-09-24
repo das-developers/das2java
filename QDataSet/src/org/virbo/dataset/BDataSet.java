@@ -79,7 +79,11 @@ public final class BDataSet extends ArrayDataSet {
     protected Object getBack() {
         return this.back;
     }
-    
+
+    protected void setBack(Object back) {
+        this.back= (byte[])back;
+    }
+
     @Override
     public double value() {
         return back[0];

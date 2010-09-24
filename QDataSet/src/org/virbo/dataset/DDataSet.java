@@ -105,6 +105,10 @@ public final class DDataSet extends ArrayDataSet {
         return this.back;
     }
 
+    protected void setBack(Object back) {
+        this.back= (double[])back;
+    }
+
     @Override
     public double value() {
         return back[0];

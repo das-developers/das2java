@@ -83,7 +83,11 @@ public final class SDataSet extends ArrayDataSet {
     protected Object getBack() {
         return this.back;
     }
-    
+
+    protected void setBack(Object back) {
+        this.back= (short[])back;
+    }
+
     @Override
     public double value() {
         return back[ 0 ];

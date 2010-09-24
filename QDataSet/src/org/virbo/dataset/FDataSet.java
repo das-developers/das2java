@@ -103,7 +103,11 @@ public final class FDataSet extends ArrayDataSet implements WritableDataSet {
     protected Object getBack() {
         return this.back;
     }
-    
+
+    protected void setBack(Object back) {
+        this.back= (float[])back;
+    }
+
     @Override
     public double value() {
         float v= back[0];

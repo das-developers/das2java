@@ -85,6 +85,10 @@ public final class IDataSet extends ArrayDataSet {
         return this.back;
     }
 
+    protected void setBack(Object back) {
+        this.back= (int[])back;
+    }
+
     @Override
     public double value() {
         return back[0];

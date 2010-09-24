@@ -88,16 +88,22 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     @Override
     public int length(int i) {
+        if ( i>=len0 ) throw new IndexOutOfBoundsException("length("+i+") when dim 0 length="+len0); //TODO: allow disable with RANGE_CHECK for performance
         return len1;
     }
 
     @Override
     public int length( int i0, int i1 ) {
+        if ( i0>=len0 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+") when dim 0 length="+len0);
+        if ( i1>=len1 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+") when dim 1 length="+len1);
         return len2;
     }
 
     @Override
     public int length( int i0, int i1, int i2) {
+        if ( i0>=len0 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+","+i2+") when dim 0 length="+len0);
+        if ( i1>=len1 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+","+i2+") when dim 1 length="+len1);
+        if ( i2>=len2 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+","+i2+") when dim 2 length="+len2);
         return len3;
     }
 
@@ -111,8 +117,66 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * can only shorten!
      */
     public void putLength( int len ) {
-        if ( len>len0 ) throw new IllegalArgumentException("dataset cannot be lengthened");
+        int limit= Array.getLength( getBack() ) / ( len1*len2*len3 );
+        if ( len>limit ) throw new IllegalArgumentException("dataset cannot be lengthened");
         len0= len;
+    }
+
+    /**
+     * grow the internal store so that append may be used to resize the dataset.
+     * @param newRecCount
+     */
+    public void grow( int newRecCount ) {
+        int newSize= newRecCount * len1 * len2 * len3;
+        Object back= getBack();
+        Object newBack;
+        if ( back instanceof double[] ) {
+            newBack= new double[ newSize ];
+        } else if ( back instanceof float[] ) {
+            newBack= new float[ newSize ];
+        } else if ( back instanceof long[] ) {
+            newBack= new long[ newSize ];
+        } else if ( back instanceof int[] ) {
+            newBack= new int[ newSize ];
+        } else if ( back instanceof short[] ) {
+            newBack= new short[ newSize ];
+        } else if ( back instanceof byte[] ) {
+            newBack= new byte[ newSize ];
+        } else {
+            throw new IllegalArgumentException("shouldn't happen bad type");
+        }
+        System.arraycopy( back, 0, newBack, 0, Array.getLength(back) );
+        setBack(newBack);
+    }
+
+    /**
+     * append the dataset with the same geometry but different number of records (zeroth dim)
+     * to this.  An IllegalArgumentException is thrown when there is not enough room.  
+     * See grow(newRecCount).
+     * Not thread safe--we need to go through and make it so...
+     * @param ds
+     */
+    public synchronized void append( ArrayDataSet ds ) {
+        if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("rank mismatch");
+        if ( ds.len1!=this.len1 ) throw new IllegalArgumentException("len1 mismatch");
+        if ( ds.len2!=this.len2 ) throw new IllegalArgumentException("len2 mismatch");
+        if ( ds.len3!=this.len3 ) throw new IllegalArgumentException("len3 mismatch");
+        if ( this.getBack().getClass()!=ds.getBack().getClass() ) throw new IllegalArgumentException("backing type mismatch");
+
+        int myLength= this.len0 * this.len1 * this.len2 * this.len3;
+        int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3;
+
+        if ( Array.getLength(this.getBack()) < myLength + dsLength ) {
+            throw new IllegalArgumentException("unable to append dataset, not enough room");
+        }
+
+        int srcPos= myLength;
+        System.arraycopy( ds.getBack(), 0, this.getBack(), myLength, dsLength );
+
+        this.len0= this.len0 + ds.len0;
+
+        properties.putAll( joinProperties( this, ds ) ); //TODO: verify
+
     }
 
     /**
@@ -178,6 +242,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @return
      */
     protected abstract Object getBack();
+    protected abstract void setBack(Object back);
 
     private static ArrayDataSet ddcopy(ArrayDataSet ds) {
         int dsLength = ds.len0 * ds.len1 * ds.len2 * ds.len3;
@@ -273,8 +338,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * append the second dataset onto this dataset.  Not thread safe!!!
-     * TODO: this really should return a new dataset.  Presumably this is to avoid copies, but currently it copies anyway!
+     * append the second dataset onto this dataset.       *
      */
     public static ArrayDataSet append( ArrayDataSet ths, ArrayDataSet ds ) {
         if ( ds.rank()!=ths.rank ) throw new IllegalArgumentException("rank mismatch");
