@@ -1279,7 +1279,18 @@ public class DataSetUtil {
                 problems.add(String.format("DEPEND_%d length is %d, should be %d.", dimOffset, dep.length(), ds.length()));
             }
             if (ds.rank() > 1 && ds.length() > 0) {
-                 validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy
+                 validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
+            }
+        }
+        if ( ds.property(QDataSet.JOIN_0)!=null ) {
+            if ( dimOffset>0 ) {
+                problems.add( "JOIN_0 must only be on zeroth dimension: "+dimOffset );
+            } else {
+                for ( int i=0; i<ds.length(); i++ ) {
+                    if ( !validate( DataSetOps.slice0(ds,i), problems, dimOffset + 1 ) ) {
+                        problems.add( "join("+i+") not valid JOINED dataset." );
+                    }
+                }
             }
         }
         return problems.isEmpty();
