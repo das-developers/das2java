@@ -32,6 +32,7 @@ import org.w3c.dom.NodeList;
  * @author jbf
  */
 public class QDataSetStreamHandler implements StreamHandler {
+    public static final String BUILDER_JOIN_CHILDREN = "join";
 
     Map<String, DataSetBuilder> builders;
     Map<String, JoinDataSet> joinDataSets;
@@ -171,8 +172,12 @@ public class QDataSetStreamHandler implements StreamHandler {
                 DataSetBuilder builder=null;
                 String sdims=null;
                 int[] dims= null;
-                String ttype=null;
+                String ttype=null; // ttype or
+                String joinChildren= null; //  join will be specified.
+                String joinParent= null;
                 boolean isInline= false;
+                joinParent= n.getAttribute("joinId");
+
                 NodeList values= (NodeList) xpath.evaluate("values", n, XPathConstants.NODESET );
                 for ( int iv= 0; iv<values.getLength(); iv++ ) {
                     Element vn= (Element)values.item(iv);
@@ -184,6 +189,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     //index stuff--Ed W. thinks index should be implicit.
                     sdims = xpath.evaluate("@length", vn);
                     ttype = xpath.evaluate("@encoding", vn);
+                    joinChildren = xpath.evaluate("@join", vn);
 
                     if (sdims == null) {
                         dims = new int[0];
@@ -208,18 +214,35 @@ public class QDataSetStreamHandler implements StreamHandler {
                            builder.nextRecord();
                        }
                        builders.put(name,builder ); // rank 0 means the values were in line.
+                    } else if ( joinChildren.length()>0 ) {
+                        JoinDataSet join= joinDataSets.get(name);
+                        if (join == null) { // typically we will only declare once.
+                           join = new JoinDataSet(rank);
+                           joinDataSets.put(name, join);
+                       }
+                        builder= new DataSetBuilder(1,10);
+                        builder.putProperty(BUILDER_JOIN_CHILDREN, joinChildren);
+                        builders.put(name,builder ); //
                     } else {
                         builder = builders.get(name);
                         if (builder == null) {
                             builder = createBuilder(rank, dims);
                             builders.put(name, builder);
                         } else {
-                            JoinDataSet join = joinDataSets.get(name);
+                            JoinDataSet join;
+                            if ( joinParent.equals("") ) {
+                                join= joinDataSets.get(name); // old scheme
+                            } else {
+                                join= joinDataSets.get(joinParent);
+                            }
+                             
                             if (join == null) {
                                 join = new JoinDataSet(rank);
                                 joinDataSets.put(name, join);
                             }
-                            join.join(builder.getDataSet());
+                            MutablePropertyDataSet mds= resolveProps( builder.getDataSet() );
+                            join.join(mds);
+
                             builder = createBuilder(rank, dims);
                             builders.put(name, builder);
                         }
@@ -243,6 +266,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if ( tt==null && isInline ) {
                     tt= new AsciiTransferType( 10, true ); // kludge because we need something
                 }
+                if ( tt==null && joinChildren!=null ) {
+                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
+                }
                 if (tt == null ) {
                     throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
                 }
@@ -257,6 +283,30 @@ public class QDataSetStreamHandler implements StreamHandler {
             Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
+    }
+
+    private MutablePropertyDataSet resolveProps( MutablePropertyDataSet result ) {
+       for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+            String s = (String) result.property("DEPEND_" + i);
+            if (s != null) {
+                result.putProperty("DEPEND_" + i, getDataSet(s));
+            }
+        }
+        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+            String s = (String) result.property("BUNDLE_" + i);
+            if (s != null) {
+                result.putProperty("BUNDLE_" + i, getDataSet(s));
+            }
+        }
+        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
+            String s = (String) result.property("PLANE_" + i);
+            if (s != null) {
+                result.putProperty("PLANE_" + i, getDataSet(s));
+            } else {
+                break;
+            }
+        }
+       return result;
     }
 
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
@@ -299,15 +349,19 @@ public class QDataSetStreamHandler implements StreamHandler {
 
         JoinDataSet join = joinDataSets.get(name);
         MutablePropertyDataSet result;
-        QDataSet sliceDs= null;
+        MutablePropertyDataSet sliceDs= null;
             
         if (join != null) {
             if ( builder.rank()>0 ) {
                 sliceDs= builder.getDataSet();
+                if ( sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
+                    String joinChild= (String)sliceDs.property(BUILDER_JOIN_CHILDREN);
+                    sliceDs= builders.get(joinChild).getDataSet();
+                }
                 join.join(sliceDs);
             } else {
                 DataSetUtil.putProperties( builder.getProperties(), join );
-                sliceDs= join.slice(join.length()-1);
+                sliceDs= (MutablePropertyDataSet) join.slice(join.length()-1); //wha??  when do we use this?
             }
             result = join;
             
@@ -316,41 +370,9 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
 
         if (join != null) {
-            for (int i = 0; i < QDataSet.MAX_RANK; i++) {
-                String s = (String) sliceDs.property("DEPEND_" + i);
-                if (s != null) {
-                    result.putProperty("DEPEND_" + i, getDataSet(s));
-                }
-            }
-            for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-                String s = (String) sliceDs.property("PLANE_" + i);
-                if (s != null) {
-                    result.putProperty("PLANE_" + i, getDataSet(s));
-                } else {
-                    break;
-                }
-            }
+            resolveProps(sliceDs); //TODO: this technically breaks things, because we cannot call getDataSet again
         } else {
-            for (int i = 0; i < QDataSet.MAX_RANK; i++) {
-                String s = (String) result.property("DEPEND_" + i);
-                if (s != null) {
-                    result.putProperty("DEPEND_" + i, getDataSet(s));
-                }
-            }
-            for (int i = 0; i < QDataSet.MAX_RANK; i++) {
-                String s = (String) result.property("BUNDLE_" + i);
-                if (s != null) {
-                    result.putProperty("BUNDLE_" + i, getDataSet(s));
-                }
-            }
-            for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-                String s = (String) result.property("PLANE_" + i);
-                if (s != null) {
-                    result.putProperty("PLANE_" + i, getDataSet(s));
-                } else {
-                    break;
-                }
-            }
+            resolveProps(result);
         }
 
         return result;
