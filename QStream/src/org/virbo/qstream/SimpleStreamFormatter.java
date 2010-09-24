@@ -58,7 +58,7 @@ public class SimpleStreamFormatter {
         return packet;
     }
     Map<QDataSet, String> names = new HashMap<QDataSet, String>();
-    Map<QDataSet, String> parents= new HashMap<QDataSet, String>();
+    Map<QDataSet, String> joinDataSets= new HashMap<QDataSet, String>();
 
     private void doValuesElement(QDataSet ds, PacketDescriptor pd, PlaneDescriptor planeDescriptor, Document document, Element qdatasetElement) throws DOMException {
         Units u = (Units) ds.property(QDataSet.UNITS);
@@ -230,7 +230,7 @@ public class SimpleStreamFormatter {
             }
         } else if ( isJoin(ds) ) {
             Element values=  document.createElement("values");
-            String sliceName= nameFor( ds );
+            String sliceName= nameFor( ds.slice(0) );  // the slices ought to have a different name
             for ( int i=0; i<ds.length(); i++ ) {
                 setNameFor(ds.slice(i),sliceName);
             }
@@ -584,7 +584,7 @@ public class SimpleStreamFormatter {
      * @throws ParserConfigurationException
      */
     PacketDescriptor doPacketDescriptor(StreamDescriptor sd, QDataSet ds, boolean stream, boolean valuesInDescriptor,
-            int streamRank, String parentId) throws ParserConfigurationException {
+            int streamRank, String joinId) throws ParserConfigurationException {
 
         if ( !valuesInDescriptor && DataSetUtil.isQube(ds) == false ) {
             throw new IllegalArgumentException("must be qube!");
@@ -623,7 +623,7 @@ public class SimpleStreamFormatter {
         packetDescriptor.addPlane(planeDescriptor);
 
         Element dselement= planeDescriptor.getDomElement();
-        if (parentId!=null ) dselement.setAttribute("parentId", parentId );
+        if (joinId!=null ) dselement.setAttribute("joinId", joinId );
 
         packetElement.appendChild(dselement);
 
@@ -678,7 +678,7 @@ public class SimpleStreamFormatter {
                 streamRank = 1;
             } else if ( isJoin(ds) ) {
                 packetDescriptorCount = ds.length();
-                streamRank = 2;
+                streamRank = 1;
             } else {
                 packetDescriptorCount = ds.length();
                 streamRank = 2;
@@ -689,20 +689,20 @@ public class SimpleStreamFormatter {
                 dep0Name = nameFor(dep0);
             }
 
-            String parentDataSet=null;
+            String joinDataSet=null;
             boolean isjoin= ds.property(QDataSet.JOIN_0) != null;
             if ( isjoin ) {
                 PacketDescriptor join= doPacketDescriptorJoin(sd, ds, false, false, streamRank);
                 sd.addDescriptor(join);
                 sd.send(join, out);
-                parentDataSet= nameFor(ds);
+                joinDataSet= nameFor(ds);
             }
 
             for (int ipacket = 0; ipacket < packetDescriptorCount; ipacket++) {
                 PacketDescriptor mainPd;
                 QDataSet packetDs;
 
-                if (streamRank == 1) {
+                if (streamRank == 1 && !isjoin ) {
                     packetDs = ds;
                 } else {
                     packetDs = ds.slice(ipacket);
@@ -713,8 +713,10 @@ public class SimpleStreamFormatter {
                     }
                 }
 
-                if ( isJoin(packetDs) ) throw new IllegalArgumentException("join of join not supported");
-                mainPd = doPacketDescriptor(sd, packetDs, true, false, streamRank, parentDataSet );
+                if ( isJoin(packetDs) ) {
+                    throw new IllegalArgumentException("join of join not supported");
+                }
+                mainPd = doPacketDescriptor(sd, packetDs, true, false, streamRank, joinDataSet );
 
                 sd.addDescriptor(mainPd);
 
