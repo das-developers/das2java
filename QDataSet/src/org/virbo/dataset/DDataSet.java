@@ -227,8 +227,7 @@ public final class DDataSet extends ArrayDataSet {
                 throw new IndexOutOfBoundsException("i3=" + i3 + " " + this);
             }
         }
-        back[i0 * len1 * len2 + i1 * len2 + i2] = value; // temporary--contains bug
-        //back[ i0 * len1 * len2 * len3 + i1 * len2 * len3 + i2 * len3 + i3 ] = value;
+        back[ i0 * len1 * len2 * len3 + i1 * len2 * len3 + i2 * len3 + i3 ] = value;
     }
 
     /**
