@@ -24,7 +24,6 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
@@ -347,6 +346,7 @@ public class SimpleStreamFormatter {
         }
 
         sd.setDomElement(streamElement);
+        sd.addDescriptor(sd); // allocate [00] for itself.
 
         return sd;
 
@@ -702,6 +702,8 @@ public class SimpleStreamFormatter {
                 PacketDescriptor mainPd;
                 QDataSet packetDs;
 
+                List<PacketDescriptor> retire= new ArrayList();
+                
                 if (streamRank == 1 && !isjoin ) {
                     packetDs = ds;
                 } else {
@@ -742,6 +744,8 @@ public class SimpleStreamFormatter {
 
                         depPackets.add(pd);
                         sd.send(pd, out);
+
+                        retire.add(pd);
                     }
                 }
 
@@ -768,6 +772,8 @@ public class SimpleStreamFormatter {
 
                         depPackets.add(pd);
                         sd.send(pd, out);
+
+                        retire.add(pd);
                     }
                 }
 
@@ -780,6 +786,11 @@ public class SimpleStreamFormatter {
                 }
 
                 formatPackets(out, sd, mainPd);
+
+                for ( PacketDescriptor r: retire ) {
+                    sd.retireDescriptor(r);
+                }
+                sd.retireDescriptor(mainPd);
             }
 
         } catch (ParserConfigurationException ex) {

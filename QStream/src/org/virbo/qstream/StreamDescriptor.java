@@ -45,16 +45,33 @@ class StreamDescriptor implements Descriptor {
         documents = new HashMap<Descriptor, Document>();
     }
 
-    public void addDescriptor(Descriptor pd) {
-        int count = descriptors.size() + 1;
-        if ( count>99 ) count= count % 99 + 1;//TODO: nasty kludge
-        descriptors.put(count, pd);
-        invPackets.put(pd, count ); 
+    public synchronized void addDescriptor(Descriptor pd) {
+        int found= -1;
+        for ( int i=0; i<100; i++ ) {
+            if ( descriptors.get(i)==null ) {
+                found=i;
+                break;
+            }
+        }
+        if ( found==-1 ) throw new IllegalArgumentException("ran out of numbers, use retire to free");
+        descriptors.put(found, pd);
+        invPackets.put(pd, found );
     }
 
-    public int descriptorId(Descriptor pd) {
+    public synchronized int descriptorId(Descriptor pd) {
         if ( pd==this ) return 0;
         return invPackets.get(pd);
+    }
+
+    /**
+     * indicate that no more packets will be sent with this descriptor.
+     * This will free up the number so it can be reused.
+     * @param pd
+     */
+    public synchronized void retireDescriptor(Descriptor pd) {
+        int i= invPackets.get(pd);
+        invPackets.remove(pd);
+        descriptors.remove(i);
     }
 
     public void send(Descriptor pd, WritableByteChannel out) throws StreamException, IOException {
