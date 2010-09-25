@@ -704,6 +704,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
         try {
             setOpaque(false);
+
+            // if svg
+            g.setColor( this.getBackground() );
+            g.fillRect(0,0,getWidth(),getHeight());
+            g.setColor( this.getForeground() );
+
             //logger.fine("*** print graphics: " + g);
             //logger.fine("*** print graphics clip: " + g.getClip());
 
