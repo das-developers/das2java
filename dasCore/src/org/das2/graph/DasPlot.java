@@ -72,7 +72,9 @@ import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.das2.DasException;
+import org.das2.graph.DasAxis.Memento;
 
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
@@ -92,7 +94,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (drawGrid || drawMinorGrid) {
-                //invalidateCacheImage();
+                invalidateCacheImage();
             }
         }
     };
@@ -171,7 +173,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
             yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             yAxis.addPropertyChangeListener("log", rebinListener);
-            xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
 
         if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
@@ -363,6 +365,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             Renderer rend = (Renderer) renderers.get(i);
             if (rend.isActive()) {
                 logger.finest("rendering #" + i + ": " + rend);
+                System.err.println( "i: " + i + "  " + rend.getYmemento() );
+                
                 rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
                 noneActive = false;
                 if (rend.isDrawLegendLabel()) {
@@ -706,7 +710,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
     protected void paintComponent(Graphics graphics1) {
         //System.err.println("dasPlot.paintComponent "+ getDasName() );
-        if ( getCanvas().isValueAdjusting() ) return;
+        if ( getCanvas().isValueAdjusting() ) {
+            repaint();
+            return;
+        }
         
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
@@ -812,8 +819,34 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
                 plotGraphics.translate(-x + 1, -y + 1);
 
+                // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
+                Renderer[] rends= getRenderers();
+                if ( rends.length>0 ) {
+                    Memento xmem= getXAxis().getMemento();
+                    Memento ymem= getYAxis().getMemento();
+                    for ( Renderer r: rends ) {
+                        boolean dirt= false;
+                        if ( r.getXmemento()==null || !r.getXmemento().equals(xmem) ) dirt= true;
+                        if ( r.getYmemento()==null || !r.getYmemento().equals(ymem) ) dirt= true;
+                        if ( dirt ) {
+                            try {
+                                r.updatePlotImage(getXAxis(), getYAxis(), new NullProgressMonitor());
+                            } catch (DasException ex) {
+                                Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
+                                ex.printStackTrace();
+                            }
+                            dirt= false;
+                        }
+                    }
+                }
+
                 drawCacheImage(plotGraphics);
 
+                try {
+                    ImageIO.write( cacheImage, "png", new File( "/tmp/cacheImage" + getDasName() + ".png" ) );
+                } catch ( IOException ex ) {
+                    ex.printStackTrace();
+                }
             //if (overSize) {
             //    postMessage(null, "Over size on", DasPlot.INFO, null, null);
             //}
@@ -1109,6 +1142,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         public void propertyChange(java.beans.PropertyChangeEvent e) {
             //            logger.fine("rebin listener got property change: "+e.getNewValue());
+            System.err.println("rebin listener " + DasPlot.this + "got property change: "+e.getPropertyName() + "=" + e.getNewValue());
             markDirty();
             DasPlot.this.update();
         }
