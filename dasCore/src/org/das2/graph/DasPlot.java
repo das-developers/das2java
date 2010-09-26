@@ -122,6 +122,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         addMouseListener(new MouseInputAdapter() {
 
+            @Override
             public void mousePressed(MouseEvent e) {
                 //if (e.getButton() == MouseEvent.BUTTON3) {
                 int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
@@ -364,9 +365,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         for (int i = 0; i < renderers.size(); i++) {
             Renderer rend = (Renderer) renderers.get(i);
             if (rend.isActive()) {
-                logger.finest("rendering #" + i + ": " + rend);
-                System.err.println( "i: " + i + "  " + rend.getYmemento() );
-                
+                logger.log(Level.FINEST, "rendering #{0}: {1}", new Object[]{i, rend});
                 rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
                 noneActive = false;
                 if (rend.isDrawLegendLabel()) {
@@ -382,7 +381,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (gridOver) {
             maybeDrawGrid(plotGraphics);
         }
-        if (renderers.size() == 0) {
+        if (renderers.isEmpty()) {
             postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
             logger.fine("dasPlot has no renderers");
         } else if (noneActive) {
@@ -563,7 +562,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      */
     public void setYAxis(DasAxis yAxis) {
         Object oldValue = this.yAxis;
-        logger.fine("setYAxis(" + yAxis.getName() + "), removes " + this.yAxis);
+        logger.log(Level.FINE, "setYAxis({0}), removes {1}", new Object[]{yAxis.getName(), this.yAxis});
         Container parent = getParent();
         if (this.yAxis != null) {
             DasProperties.getLogger().fine("setYAxis upsets the dmia");
@@ -695,7 +694,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         for (int i = 0; i < renderers.size(); i++) {
             Renderer rend = (Renderer) renderers.get(i);
             if (rend.isActive()) {
-                logger.finest("updating renderer #" + i + ": " + rend);
+                logger.log(Level.FINEST, "updating renderer #{0}: {1}", new Object[]{i, rend});
                 try {
                     rend.updatePlotImage(xAxis, yAxis, new NullProgressMonitor());
                 } catch (DasException ex) {
@@ -708,6 +707,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
 
+    @Override
     protected void paintComponent(Graphics graphics1) {
         //System.err.println("dasPlot.paintComponent "+ getDasName() );
         if ( getCanvas().isValueAdjusting() ) {
@@ -739,7 +739,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             saveClip = null;
         }
 
-        logger.finest("DasPlot clip=" + graphics1.getClip() + " @ " + getX() + "," + getY());
+        logger.log(Level.FINEST, "DasPlot clip={0} @ {1},{2}", new Object[]{graphics1.getClip(), getX(), getY()});
 
         Rectangle clip = graphics1.getClipBounds();
         if (clip != null && (clip.y + getY()) >= (y + ySize)) {
@@ -767,11 +767,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 String atDesc;
                 if (!at.isIdentity()) {    
                     atDesc = GraphUtil.getATScaleTranslateString(at);
-                    logger.finest(" using cacheImage w/AT " + atDesc);
+                    logger.log(Level.FINEST, " using cacheImage w/AT {0}", atDesc);
                     atGraphics.transform(at);
                 } else {
                     atDesc= "identity";
-                    logger.finest(" using cacheImage " + cacheImageBounds +  " " + xmemento + " " + ymemento );
+                    logger.log(Level.FINEST, " using cacheImage {0} {1} {2}", new Object[]{cacheImageBounds, xmemento, ymemento});
                 }
 
                 //int reduceHeight=  getRow().getDMinimum() - clip.y;
@@ -865,7 +865,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 xmemento = xAxis.getMemento();
                 ymemento = yAxis.getMemento();
 
-                logger.finest("recalc cacheImage, xmemento=" + xmemento + " ymemento=" + ymemento );
+                logger.log(Level.FINEST, "recalc cacheImage, xmemento={0} ymemento={1}", new Object[]{xmemento, ymemento});
             }
         }
 
@@ -1044,6 +1044,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         // override me to add to the axes.
     }
 
+    @Override
     public void resize() {
         logger.finer("resize DasPlot");
         if (isDisplayable()) {
@@ -1064,7 +1065,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 bounds.height += titleHeight;
             }
             // TODO check bounds.height<10
-            logger.finer("DasPlot setBounds " + bounds);
+            logger.log(Level.FINER, "DasPlot setBounds {0}", bounds);
             if ( !bounds.equals(oldBounds) ) {
                 setBounds(bounds);
                 SwingUtilities.invokeLater( new Runnable() {
@@ -1165,6 +1166,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
 
+    @Override
     protected void uninstallComponent() {
         super.uninstallComponent();
         if (xAxis != null && xAxis.getCanvas() != null) {
@@ -1180,7 +1182,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public void addRenderer(Renderer rend) {
-        logger.fine("addRenderer(" + rend + ")");
+        logger.log(Level.FINE, "addRenderer({0})", rend);
         if (rend.parent != null) {
             rend.parent.removeRenderer(rend);
         }
@@ -1194,7 +1196,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public void addRenderer(int index, Renderer rend) {
-        logger.fine("addRenderer(" + index + "," + rend + ")");
+        logger.log(Level.FINE, "addRenderer({0},{1})", new Object[]{index, rend});
         if (rend.parent != null) {
             rend.parent.removeRenderer(rend);
         }
@@ -1307,6 +1309,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @return a coalesced event, or <code>null</code> indicating that no
      * 		coalescing was done
      */
+    @Override
     protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent) {
         if (existingEvent instanceof DasRendererUpdateEvent && newEvent instanceof DasRendererUpdateEvent) {
             DasRendererUpdateEvent e1 = (DasRendererUpdateEvent) existingEvent;
@@ -1341,6 +1344,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * @see       java.awt.Component#processMouseWheelEvent
      * @see       #processDasUpdateEvent
      */
+    @Override
     protected void processEvent(AWTEvent e) {
         if (e instanceof DasRendererUpdateEvent) {
             DasRendererUpdateEvent drue = (DasRendererUpdateEvent) e;
@@ -1352,6 +1356,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
 
+    @Override
     public void repaint() {
         super.repaint();
         repaintCount++;
@@ -1363,6 +1368,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         repaint();
     }
 
+    @Override
     void markDirty() {
         logger.finer("DasPlot.markDirty");
         super.markDirty();
@@ -1446,6 +1452,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return this.preview;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         xAxis.setVisible(visible);
@@ -1466,7 +1473,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     /**
-     * returns the rectange that renderers should paint so that when they
+     * returns the rectangle that renderers should paint so that when they
      * are asked to render, they have everything pre-rendered.  This is
      * the same as the axis bounds them oversize is turned off.
      * 
