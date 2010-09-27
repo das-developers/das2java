@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.util.logging.Level;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.DataSetDescriptor;
@@ -32,6 +33,7 @@ import org.das2.dataset.TableUtil;
 import org.das2.dataset.VectorDataSet;
 import org.das2.DasApplication;
 import org.das2.DasException;
+import org.das2.graph.DasAxis.Memento;
 import org.das2.util.DasExceptionHandler;
 import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
@@ -97,7 +99,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     protected int firstValidIndex=-1;
     protected int lastValidIndex=-1;
 
-    protected static Logger logger = DasLogger.getLogger(DasLogger.RENDERER_LOG);
+    protected static final Logger logger = DasLogger.getLogger(DasLogger.RENDERER_LOG);
     private String PROPERTY_ACTIVE = "active";
     private String PROPERTY_DATASET = "dataSet";
 
@@ -118,6 +120,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.parent;
     }
 
+    public Memento getXmemento() {
+        return xmemento;
+    }
+
+    public Memento getYmemento() {
+        return ymemento;
+    }
+    
     /**
      * find the first and last valid data points.  This is an inexpensive
      * calculation which is only done when the dataset changes.  It improves
@@ -222,7 +232,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     public void setDataSet(DataSet ds) {
-        logger.fine("Renderer.setDataSet "+id+": " + ds);
+        logger.log(Level.FINE, "Renderer.setDataSet {0}: {1}", new Object[]{id, ds});
 
         DataSet oldDs = this.ds;
 
@@ -239,7 +249,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     public void setException(Exception e) {
-        logger.fine("Renderer.setException: " + e);
+        logger.log(Level.FINE, "Renderer.setException: {0}", e);
         Exception oldException = this.lastException;
         this.lastException = e;
         this.renderException = lastException;
@@ -363,7 +373,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     public void update() {
         if (getParent() != null) getParent().repaint();
-        logger.fine("Renderer.update "+id);
+        logger.log(Level.FINE, "Renderer.update {0}", id);
         if (parent != null) {
             java.awt.EventQueue eventQueue =
                     Toolkit.getDefaultToolkit().getSystemEventQueue();
@@ -416,7 +426,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         Runnable run = new Runnable() {
 
             public void run() {
-                logger.fine("update plot image for "+id);
+                logger.log(Level.FINE, "update plot image for {0}", id);
                 DasPlot lparent= parent;
                 try {
                     if (lparent != null) {
@@ -430,11 +440,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     }
                 } catch (DasException de) {
                     // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
-                    logger.warning("exception: " + de);
+                    logger.log(Level.WARNING, "exception: {0}", de);
                     ds = null;
                     renderException = de;
                 } catch (RuntimeException re) {
-                    logger.warning("exception: " + re);
+                    logger.log(Level.WARNING, "exception: {0}", re);
                     re.printStackTrace();
                     renderException = re;
                     if ( lparent!=null ) {
