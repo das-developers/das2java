@@ -222,7 +222,7 @@ public class FileStorageModelNew {
         String[] names;
 
         if ( parent!=null ) {
-            names= parent.getNamesFor(targetRange);   // note recursive call
+            names= parent.getNamesFor(targetRange,versioning,new NullProgressMonitor());   // note recursive call
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
@@ -232,7 +232,7 @@ public class FileStorageModelNew {
                     throw new RuntimeException(e);
                 }
             }
-            String parentRegex= getParentRegex(regex);
+            String parentRegex= getParentRegex(regex);  //vap:ftp://virbo.org/POES/n15/$Y/poes_n15_$Y$m$d.cdf.zip/poes_n15_$Y$m$d.cdf?minute&timerange=1998-07-01
             listRegex= regex.substring( parentRegex.length()+1 );
         } else {
             fileSystems= new FileSystem[] { root };
@@ -406,7 +406,7 @@ public class FileStorageModelNew {
     }
 
     public File[] getBestFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
-        String[] names= getBestNamesFor( targetRange, monitor );
+        String[] names= getNamesFor( targetRange, true, monitor );
         File[] files= new File[names.length];
 
         if ( fileNameMap==null ) fileNameMap= new HashMap();
@@ -451,6 +451,18 @@ public class FileStorageModelNew {
         String fileRegex= s[s.length-1];
         return dirRegex;
     }
+
+    /**
+     * returns the parent or null if none exists.  None will exist when there
+     * are no more wildcards. (/home/foo/$Y/$m-$d.dat has parent /home/foo/$Y
+     * which has parent null.)
+     * 
+     * @return
+     */
+    public FileStorageModelNew getParent() {
+        return this.parent;
+    }
+
 
     /**
      * creates a FileStorageModel for the given template, which uses:
