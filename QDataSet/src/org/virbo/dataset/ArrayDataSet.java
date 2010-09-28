@@ -127,6 +127,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @param newRecCount
      */
     public void grow( int newRecCount ) {
+        if ( newRecCount < len0 ) throw new IllegalArgumentException("new recsize for grow smaller than old");
         int newSize= newRecCount * len1 * len2 * len3;
         Object back= getBack();
         Object newBack;
