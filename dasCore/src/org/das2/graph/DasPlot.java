@@ -842,11 +842,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
                 drawCacheImage(plotGraphics);
 
-                try {
-                    ImageIO.write( cacheImage, "png", new File( "/tmp/cacheImage" + getDasName() + ".png" ) );
-                } catch ( IOException ex ) {
-                    ex.printStackTrace();
-                }
             //if (overSize) {
             //    postMessage(null, "Over size on", DasPlot.INFO, null, null);
             //}
