@@ -309,7 +309,10 @@ public class DataSetOps {
     }
 
     /**
-     * returns a rank 1 dataset that is a histogram of the data.
+     * returns a rank 1 dataset that is a histogram of the data.  Note there
+     * will also be in the properties:
+     *   count, the total number of valid values.
+     *   nonZeroMin, the smallest non-zero, positive number
      * @param ds rank N dataset
      * @param min the min of the first bin.
      * @param max the max of the last bin.
@@ -327,10 +330,11 @@ public class DataSetOps {
         tags.putProperty( QDataSet.TYPICAL_MIN, ds.property(QDataSet.TYPICAL_MIN) );
         
         final int[] hits = new int[n];
-        int maxFreq= 0;
         
         QubeDataSetIterator iter = new QubeDataSetIterator(ds);
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
+
+        double positiveMin= Double.MAX_VALUE;
 
         int count=0;
         for (; count<DS_LENGTH_LIMIT && iter.hasNext();) {
@@ -341,8 +345,8 @@ public class DataSetOps {
                 int ibin = (int) ((d - min) / binsize);
                 if (ibin >= 0 && ibin < n) {
                     hits[ibin]++;
-                    if ( hits[ibin]>maxFreq ) maxFreq= hits[ibin];
                 }
+                if ( d>0 && d<positiveMin ) positiveMin=d;
                 count++;
             }
         }
@@ -350,8 +354,8 @@ public class DataSetOps {
         IDataSet result = IDataSet.wrap(hits);
         result.putProperty( QDataSet.DEPEND_0, tags );
         result.putProperty( "count", count );
-        result.putProperty( "max", maxFreq );
-
+        result.putProperty( "positiveMin", positiveMin );
+        
         return result;
     }
     
