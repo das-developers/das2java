@@ -1,8 +1,8 @@
 package org.das2.util;
 
-import org.das2.DasApplication;
 import org.das2.system.DasLogger;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
@@ -21,36 +21,36 @@ public class ArgumentList {
     
     String[] positionKeys;
     
-    HashMap values;
+    Map<String,String> values;
     
-    HashMap descriptions;
+    Map<String,String> descriptions;
     
-    HashMap names;
+    Map<String,String> names;
     
-    HashMap reverseNames;
+    Map<String,String> reverseNames;
     
-    HashMap formUsed;
+    Map<String,String> formUsed;
     
-    HashMap abbrevs;
+    Map<String,String> abbrevs;
     
-    HashMap isBoolean;
+    Map<String,String> isBoolean;
     
-    ArrayList requireOneOfList;
+    ArrayList<String[]> requireOneOfList;
     
     /**
      * if false, then any unrecognized switch is an error.
      */
     boolean allowUndefinedSwitch= false;
     
-    private String UNSPECIFIED = new String("__unspecified__");
+    private String UNSPECIFIED = "__unspecified__";
     
-    private String REFERENCEWITHOUTVALUE = new String( "__referencewithoutvalue__" );
+    private String REFERENCEWITHOUTVALUE = "__referencewithoutvalue__";
     
-    private String UNDEFINED_SWITCH = new String( "__undefinedSwitch__" );
+    private String UNDEFINED_SWITCH = "__undefinedSwitch__";
     
-    private String FALSE = new String("__false__");
+    private String FALSE = "__false__";
     
-    private String TRUE = new String("__true__");
+    private String TRUE = "__true__";
     
     private static final Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
     
@@ -64,7 +64,7 @@ public class ArgumentList {
         positionKeys= new String[10];
         values= new HashMap();
         descriptions= new HashMap();
-        names= new HashMap();
+        names= new LinkedHashMap();
         reverseNames= new HashMap();
         abbrevs= new HashMap();
         formUsed= new HashMap();
@@ -139,7 +139,7 @@ public class ArgumentList {
     }
     
     public boolean getBooleanValue(String key) {
-        return values.get( key ) == this.TRUE;
+        return values.get( key ) .equals( this.TRUE );
     }
     
     /**
@@ -244,7 +244,7 @@ public class ArgumentList {
         s= "Usage: "+this.programName+" ";
         for ( int i=0; i<this.nposition; i++ ) {
             Object key= positionKeys[i];
-            if ( values.get(key)!=this.UNSPECIFIED ) {
+            if ( !values.get(key).equals(this.UNSPECIFIED) ) {
                 s+= "["+descriptions.get(key)+"] ";
             } else {
                 s+= "<"+descriptions.get(key)+"> ";
@@ -254,35 +254,62 @@ public class ArgumentList {
         System.err.println(s);
         
         Set set= names.keySet();
-        Iterator i= set.iterator();
-        
+        Iterator<String> i= set.iterator();
+
+        Map<String,String> abbrevsCopy= new HashMap(abbrevs);
+
         while ( i.hasNext() ) {
-            Object name= i.next();
-            Object key= names.get(name);
+            String name= i.next();
+            String key= names.get(name);
+            String abbrev=null;
+            for ( Entry<String,String> se: abbrevsCopy.entrySet() ) {
+                if ( se.getValue().equals(name) ) {
+                    abbrev= se.getKey();
+                    break;
+                }
+            }
+            if ( abbrev!=null ) {
+                abbrevsCopy.remove(abbrev);
+            }
+            
             s= "  ";
-            Object description= descriptions.get(key);
-            if ( values.get(key)!=this.UNSPECIFIED ) {
-                if ( values.get(key)==this.FALSE || values.get(key)==this.TRUE ) {
-                    s+= "--"+name+"   "+description;
+            String description= descriptions.get(key);
+            String value= values.get(key);
+
+            if ( abbrev==null ) {
+                if ( !value.equals(this.UNSPECIFIED) ) {
+                    if ( value.equals(this.FALSE) || value.equals(this.TRUE) ) {
+                        s+= "--"+name+"  \t"+description;
+                    } else {
+                        s+= "--"+name+"= \t"+description+" ";
+                    }
                 } else {
-                    s+= "--"+name+"="+description+" ";
+                    s+= "--"+name+"= \t"+description+" (required)";
                 }
             } else {
-                s+= "--"+name+"="+description+" (required)";
+                if ( !value.equals(this.UNSPECIFIED) ) {
+                    if ( value.equals(this.FALSE) || value.equals(this.TRUE) ) {
+                        s+= "-"+abbrev+ ", --"+name+"  \t"+description;
+                    } else {
+                        s+= "-"+abbrev+ ", --"+name+"= \t"+description+" ";
+                    }
+                } else {
+                    s+= "-"+abbrev+ ", --"+name+"= \t"+description+" (required)";
+                }
             }
             System.err.println(s);
         }
         
-        set= abbrevs.keySet();
+        set= abbrevsCopy.keySet();
         i= set.iterator();
         
         while ( i.hasNext() ) {
-            Object abbrev= i.next();
-            Object key= abbrevs.get(abbrev);
+            String abbrev= i.next();
+            String key= abbrevs.get(abbrev);
             s= "  ";
-            Object description= descriptions.get(key);
-            if ( values.get(key)!=this.UNSPECIFIED ) {
-                if ( values.get(key)==this.FALSE || values.get(key)==this.TRUE ) {
+            String description= descriptions.get(key);
+            if ( !values.get(key).equals(this.UNSPECIFIED) ) {
+                if ( values.get(key).equals(this.FALSE) || values.get(key).equals(this.TRUE) ) {
                     s+= "-"+abbrev+"   \t"+description;
                 } else {
                     s+= "-"+abbrev+"="+description+" ";
