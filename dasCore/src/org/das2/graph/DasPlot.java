@@ -72,7 +72,6 @@ import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import org.das2.DasException;
 import org.das2.graph.DasAxis.Memento;
 
