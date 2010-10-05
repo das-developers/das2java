@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.util.logging.Level;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.MouseModule;
 import org.das2.event.HorizontalSlicerMouseModule;
@@ -396,7 +397,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             && plotImageBounds2.width==rasterWidth  // TODO: figure out how plotImageBounds2 and xmemento get out of sync.
                             && plotImageBounds2.height==rasterHeight ) {
                         logger.fine("same xaxis, yaxis, reusing raster");
-                        
                     } else {
 
                         if ( plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
@@ -473,8 +473,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         imageXRange = xAxis.getDatumRange();
                         imageYRange = yAxis.getDatumRange();
 
-                        logger.fine("rebinning to pixel resolution: "+ xRebinDescriptor + "  " + yRebinDescriptor );
-                        logger.fine("rebinning to pixel resolution: "+ plotImageBounds2 );
+                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xRebinDescriptor, yRebinDescriptor});
+                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}", plotImageBounds2);
 
                         DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
 
@@ -496,7 +496,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         ymemento = yAxis.getMemento();
                         cmemento = colorBar.getMemento();
 
-                        logger.fine("rebinning to pixel resolution: "+ xmemento + "  " + ymemento );
+                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
 
                         lraster = makePixMap( rebinDataSet, lraster );
 
@@ -544,7 +544,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
                     }
 
-                }
+                } //synchronized (lockObject)
             } catch (InconvertibleUnitsException ex) {
                 logger.fine("inconvertible units, setting image to null");
                 ex.printStackTrace();
