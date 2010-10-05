@@ -708,7 +708,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
 
     @Override
-    protected void paintComponent(Graphics graphics1) {
+    protected synchronized void paintComponent(Graphics graphics1) {
         //System.err.println("dasPlot.paintComponent "+ getDasName() );
         if ( getCanvas().isValueAdjusting() ) {
             repaint();
@@ -781,6 +781,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 //}
                 //clip.translate( getX(), getY() );
                 //atGraphics.setClip(clip);
+
+                if ( cacheImageBounds.width!=cacheImage.getWidth() ) {
+                    System.err.println( " cbw: "+ cacheImageBounds.width + "  ciw:" + cacheImage.getWidth() );
+                }
                 atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
                     //atGraphics.setClip(null);
                     //return;
@@ -841,10 +845,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 }
 
                 drawCacheImage(plotGraphics);
-
-            //if (overSize) {
-            //    postMessage(null, "Over size on", DasPlot.INFO, null, null);
-            //}
             }
 
 
@@ -1478,9 +1478,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         cacheImageBounds = new Rectangle();
-        cacheImageBounds.width = 16 * getWidth() / 10;
-        cacheImageBounds.height = getHeight();
-        cacheImageBounds.x = x - 3 * getWidth() / 10;
+        if ( overSize ) {
+            cacheImageBounds.width = 16 * getWidth() / 10;
+            cacheImageBounds.height = getHeight();
+            cacheImageBounds.x = x - 3 * getWidth() / 10;
+        } else {
+            cacheImageBounds.width = getWidth();
+            cacheImageBounds.height = getHeight();
+            cacheImageBounds.x = x - 1;
+        }
         cacheImageBounds.y = y - 1;
         return cacheImageBounds;
     }
