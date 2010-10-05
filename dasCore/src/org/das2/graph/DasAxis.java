@@ -67,6 +67,7 @@ import java.util.regex.*;
 
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.UnitsUtil;
@@ -1975,7 +1976,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         public String toString() {
-            return (log ? "log " : "") + range.toString() + " " + (dmax - dmin) + " pixels @ " + dmin;
+            return (log ? "log " : "") + range.toString() + " (" + ( DatumUtil.asOrderOneUnits(range.width()).toString() ) + ") " + (dmax - dmin) + " pixels @ " + dmin;
         }
     }
 
