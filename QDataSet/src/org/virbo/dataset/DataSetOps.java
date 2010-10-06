@@ -104,6 +104,26 @@ public class DataSetOps {
         return new TrimDataSet( ds, offset, offset+len );
     }
 
+    public static MutablePropertyDataSet trim( final QDataSet dep, final int start, final int stop, final int stride  ) {
+        if ( dep.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
+        QubeDataSetIterator itIn= new QubeDataSetIterator(dep);
+        itIn.setIndexIteratorFactory( 0, new QubeDataSetIterator.StartStopStepIteratorFactory(start, stop, stride ) );
+        DDataSet depSlice= itIn.createEmptyDs();
+        QubeDataSetIterator itOut= new QubeDataSetIterator(depSlice);
+        while ( itIn.hasNext() ) {
+            itIn.next();
+            itOut.next();
+            itOut.putValue( depSlice, itIn.getValue(dep) );
+        }
+        String[] names = DataSetUtil.dimensionProperties();
+        for (int i = 0; i < names.length; i++) {
+            if ( dep.property(names[i]) != null) {
+                depSlice.putProperty(names[i], dep.property(names[i]));
+            }
+        }
+        return depSlice;
+    }
+    
     /**
      * flatten a rank 2 dataset.
      * history:
