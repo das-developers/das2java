@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.CancelledOperationException;
@@ -294,7 +295,8 @@ public class HttpFileSystem extends WebFileSystem {
         }
         synchronized (listings) {
             if (listings.containsKey(directory)) {
-                return (String[]) listings.get(directory);
+                String[] result= (String[]) listings.get(directory);
+                return (String[]) Arrays.copyOf( result, result.length );
             } else {
 
                 URL[] list;
