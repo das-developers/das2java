@@ -120,10 +120,13 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     private TearoffTabbedPane(TearoffTabbedPane parent) {
         super();
+        Window w= SwingUtilities.getWindowAncestor(this);
         if (parent == null) {
-            MouseAdapter ma = getParentMouseAdapter();
-            addMouseListener(ma);
-            addMouseMotionListener(getMouseMotionListener());
+            if ( w instanceof JFrame ) {
+                MouseAdapter ma = getParentMouseAdapter();
+                addMouseListener(ma);
+                addMouseMotionListener(getMouseMotionListener());
+            }
         } else {
             parentPane = parent;
             addMouseListener(getChildMouseAdapter());
