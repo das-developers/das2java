@@ -5,6 +5,7 @@
 package org.virbo.dataset;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -206,6 +207,7 @@ public class QubeDataSetIterator implements DataSetIterator {
     public QubeDataSetIterator(QDataSet ds) {
         if (Boolean.TRUE.equals(ds.property(QDataSet.QUBE))) {
             this.qube = DataSetUtil.qubeDims(ds);
+            this.ds = ds;
         } else {
             this.ds = ds;
         }
@@ -216,9 +218,16 @@ public class QubeDataSetIterator implements DataSetIterator {
         initialize();
     }
 
+    /**
+     * internal constructor.  Note we have to have both constructors, which must
+     * be kept in sync, because of initialize().
+     * @param ds
+     * @param fits
+     */
     private QubeDataSetIterator(QDataSet ds, DimensionIteratorFactory[] fits) {
         if (Boolean.TRUE.equals(ds.property(QDataSet.QUBE))) {
             this.qube = DataSetUtil.qubeDims(ds);
+            this.ds = ds;
         } else {
             this.ds = ds;
         }
@@ -431,20 +440,24 @@ public class QubeDataSetIterator implements DataSetIterator {
      *
      * Do not pass the result of this into the putValue of this iterator,
      * the result should have its own iterator.
-     * 
+     *
+     * 20101006 jbf: copy dimensional metadata DEPEND_0, etc where possible
+     *
      * @return
      */
     public DDataSet createEmptyDs() {
-        ArrayList<Integer> qqube = new ArrayList<Integer>();
+        List<Integer> qqube = new ArrayList<Integer>();
+        List<Integer> dimMap= new ArrayList<Integer>();  //e.g. [0,1,2,3]
         for (int i = 0; i < rank(); i++) {
             boolean reform=  this.it[i] instanceof SingletonIterator;
             if (!reform) {
                 qqube.add( this.it[i].length() );
+                dimMap.add( i );
             }
         }
         
         int[] qube;
-        if (isAllIndexLists) {
+        if (isAllIndexLists) {  // a=[1,2,3]; b=[2,3,1]; Z[a,b] is rank 1
             qube=  new int[] { this.it[0].length() };
         } else {
             qube = new int[qqube.size()];
@@ -453,13 +466,33 @@ public class QubeDataSetIterator implements DataSetIterator {
             }
         }
         DDataSet result = DDataSet.create(qube);
+        for ( int i=0; i<dimMap.size(); i++ ) {
+            int idim= dimMap.get(i);
+            QDataSet dep= (QDataSet) this.ds.property("DEPEND_"+i);
+            QDataSet bund= (QDataSet) this.ds.property("BUNDLE_"+i);
+            if ( fit[idim] instanceof StartStopStepIteratorFactory ) {
+                if ( dep!=null && dep.rank()==1 ) {
+                    StartStopStepIterator sssi= (StartStopStepIterator)it[idim];
+                    if ( sssi.step==1 && sssi.start==0 && sssi.stop==dep.length() ) {
+                        result.putProperty( "DEPEND_"+i, dep );
+                    } else if ( sssi.step==1 ) {
+                        result.putProperty( "DEPEND_"+i, dep.trim( sssi.start, sssi.stop ) );
+                    } else {
+                        QDataSet depSlice= DataSetOps.trim( dep, sssi.start, sssi.stop, sssi.step );
+                        result.putProperty( "DEPEND_"+i, depSlice );
+                    }
+                } else if ( bund!=null && it[idim].length()==dep.length() ) { //TODO: verify this
+                    result.putProperty( "BUNDLE_"+i, dep );
+                }
+            }
+        }
         return result;
 
     }
 
     /**
      * get the value from ds at the current iterator position.
-     * @param ds a dataset with capatible geometry as the iterator's geometry.
+     * @param ds a dataset with compatible geometry as the iterator's geometry.
      * @return the value of ds at the current iterator position.
      */
     public final double getValue(QDataSet ds) {
