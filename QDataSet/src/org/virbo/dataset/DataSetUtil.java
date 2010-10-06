@@ -212,6 +212,11 @@ public class DataSetUtil {
         return userProps.get(name);
     }
 
+    /**
+     * these are the properties of a given physical dimension.  See also
+     * dimensionProperties
+     * @return
+     */
     public static String[] propertyNames() {
         return new String[]{
                     QDataSet.UNITS, 
@@ -224,7 +229,6 @@ public class DataSetUtil {
                     QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
                     QDataSet.CACHE_TAG,
                     QDataSet.COORDINATE_FRAME,
-                    QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
                     QDataSet.USER_PROPERTIES,
                     QDataSet.METADATA, QDataSet.METADATA_MODEL,
                 };
@@ -321,7 +325,12 @@ public class DataSetUtil {
             }
         }
 
-        String[] names = propertyNames();
+        Object dd= ds.property( QDataSet.DELTA_PLUS );
+        if ( dd!=null ) result.put(QDataSet.DELTA_PLUS,dd);
+        dd= ds.property( QDataSet.DELTA_MINUS );
+        if ( dd!=null ) result.put(QDataSet.DELTA_MINUS,dd);
+
+        String[] names = dimensionProperties();
 
         for (int i = 0; i < names.length; i++) {
             if (ds.property(names[i]) != null) {
@@ -507,8 +516,6 @@ public class DataSetUtil {
             u= Units.dimensionless;
         }
 
-        double offset= u.getFillDouble();
-
         int lenmax= DataSetUtil.totalLength(ds);
 
         DDataSet result= DDataSet.createRank1(lenmax);
@@ -526,7 +533,7 @@ public class DataSetUtil {
             }
         }
 
-        for ( String s: propertyNames() ) {
+        for ( String s: dimensionProperties() ) {
             result.putProperty( s, ds.property(s) );
         }
 
