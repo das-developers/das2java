@@ -31,9 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.CancelledOperationException;
 import org.das2.DasApplication;
 import org.das2.util.Base64;
@@ -50,7 +48,7 @@ import org.das2.system.MutatorLock;
  */
 public class HttpFileSystem extends WebFileSystem {
 
-    private HashMap listings;
+    private final HashMap listings;
 
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URI root, File localRoot) {
@@ -98,10 +96,10 @@ public class HttpFileSystem extends WebFileSystem {
 
             if (DasApplication.hasAllPermission()) {
                 local = localRoot(rooturi);
-                logger.finer("initializing httpfs " + root + " at " + local);
+                logger.log(Level.FINER, "initializing httpfs {0} at {1}", new Object[]{root, local});
             } else {
                 local = null;
-                logger.finer("initializing httpfs " + root + " in applet mode");
+                logger.log(Level.FINER, "initializing httpfs {0} in applet mode", root);
             }
             HttpFileSystem result = new HttpFileSystem(rooturi, local);
             result.offline = offline;
@@ -126,7 +124,7 @@ public class HttpFileSystem extends WebFileSystem {
             return;
         }
 
-        logger.fine("downloadFile(" + filename + ")");
+        logger.log(Level.FINE, "downloadFile({0})", filename);
 
         try {
             URL remoteURL = new URL(root.toString() + filename);
@@ -139,29 +137,29 @@ public class HttpFileSystem extends WebFileSystem {
                 throw new IOException("user cancelled at credentials entry");
             }
             if ( userInfo != null) {
-                String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
+                String encode = Base64.encodeBytes(userInfo.getBytes());
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
 
             HttpURLConnection hurlc = (HttpURLConnection) urlc;
             if (hurlc.getResponseCode() == 404) {
-                logger.info("" + hurlc.getResponseCode() + " URL: " + remoteURL);
+                logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
                 throw new FileNotFoundException("not found: " + remoteURL);
             } else if (hurlc.getResponseCode() != 200) {
-                logger.info("" + hurlc.getResponseCode() + " URL: " + remoteURL);
+                logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
                 throw new IOException(hurlc.getResponseMessage());
             }
 
             monitor.setTaskSize(urlc.getContentLength());
 
             if (!f.getParentFile().exists()) {
-                logger.fine("make dirs " + f.getParentFile());
+                logger.log(Level.FINE, "make dirs {0}", f.getParentFile());
                 f.getParentFile().mkdirs();
             }
             if (partFile.exists()) {
-                logger.fine("clobber file " + f);
+                logger.log(Level.FINE, "clobber file {0}", f);
                 if (!partFile.delete()) {
-                    logger.info("Unable to clobber file " + f + ", better use it for now.");
+                    logger.log(Level.INFO, "Unable to clobber file {0}, better use it for now.", f);
                     return;
                 }
             }
@@ -170,7 +168,7 @@ public class HttpFileSystem extends WebFileSystem {
                 InputStream in;
                 in = urlc.getInputStream();
 
-                logger.fine("transferring bytes of " + filename);
+                logger.log(Level.FINE, "transferring bytes of {0}", filename);
                 FileOutputStream out = new FileOutputStream(partFile);
                 monitor.setLabel("downloading file");
                 monitor.started();
@@ -212,7 +210,7 @@ public class HttpFileSystem extends WebFileSystem {
             HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
             String userInfo= KeyChain.getDefault().getUserInfo(ur);
             if ( userInfo != null) {
-                String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
+                String encode = Base64.encodeBytes(userInfo.getBytes());
                 connect.setRequestProperty("Authorization", "Basic " + encode);
             }
             connect.setRequestMethod("HEAD");
@@ -285,7 +283,7 @@ public class HttpFileSystem extends WebFileSystem {
     }
 
     public String[] listDirectory(String directory) throws IOException {
-        directory = this.toCanonicalFilename(directory);
+        directory = HttpFileSystem.toCanonicalFilename(directory);
         if (!isDirectory(directory)) {
             throw new IllegalArgumentException("is not a directory: " + directory);
         }
@@ -297,7 +295,7 @@ public class HttpFileSystem extends WebFileSystem {
             if (listings.containsKey(directory)) {
                 String[] result= (String[]) listings.get(directory);
                 String[] resultc= new String[result.length];
-                for ( int i=0; i<result.length; i++ ) resultc[i]= result[i];
+                System.arraycopy( result, 0, resultc, 0, result.length );
                 return resultc;
             } else {
 
@@ -319,6 +317,7 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
 
+    @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
         directory = toCanonicalFilename(directory);
         if (!isDirectory(directory)) {
