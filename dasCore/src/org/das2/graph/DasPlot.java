@@ -129,6 +129,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 if ( ir>-1 ) {
                     r= (Renderer) renderers.get(ir);
                 }
+                System.err.println(r);
                 setFocusRenderer(r);
                 if (editRendererMenuItem != null) {
                     //TODO: check out SwingUtilities, I think this is wrong:
@@ -193,7 +194,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public void setFocusRenderer(Renderer focusRenderer) {
         Renderer oldFocusRenderer = this.focusRenderer;
         this.focusRenderer = focusRenderer;
-        firePropertyChange(PROP_FOCUSRENDERER, oldFocusRenderer, focusRenderer);
+        firePropertyChange(PROP_FOCUSRENDERER, null, focusRenderer);
+        //firePropertyChange(PROP_FOCUSRENDERER, oldFocusRenderer, focusRenderer);
     }
 
     private void drawLegend(Graphics2D g ) {
