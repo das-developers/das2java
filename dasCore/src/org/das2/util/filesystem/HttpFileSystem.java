@@ -296,7 +296,9 @@ public class HttpFileSystem extends WebFileSystem {
         synchronized (listings) {
             if (listings.containsKey(directory)) {
                 String[] result= (String[]) listings.get(directory);
-                return (String[]) Arrays.copyOf( result, result.length );
+                String[] resultc= new String[result.length];
+                for ( int i=0; i<result.length; i++ ) resultc[i]= result[i];
+                return resultc;
             } else {
 
                 URL[] list;
