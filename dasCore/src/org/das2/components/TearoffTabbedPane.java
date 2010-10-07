@@ -122,11 +122,10 @@ public class TearoffTabbedPane extends JTabbedPane {
         super();
         Window w= SwingUtilities.getWindowAncestor(this);
         if (parent == null) {
-            if ( w instanceof JFrame ) {
-                MouseAdapter ma = getParentMouseAdapter();
-                addMouseListener(ma);
-                addMouseMotionListener(getMouseMotionListener());
-            }
+            //TODO: need a way to remove mouse adapter when parent isn't JFrame
+            MouseAdapter ma = getParentMouseAdapter();
+            addMouseListener(ma);
+            addMouseMotionListener(getMouseMotionListener());
         } else {
             parentPane = parent;
             addMouseListener(getChildMouseAdapter());
