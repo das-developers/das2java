@@ -129,7 +129,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 if ( ir>-1 ) {
                     r= (Renderer) renderers.get(ir);
                 }
-                System.err.println(r);
                 setFocusRenderer(r);
                 if (editRendererMenuItem != null) {
                     //TODO: check out SwingUtilities, I think this is wrong:
