@@ -4,6 +4,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
@@ -13,6 +14,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
+import javax.swing.event.MouseInputAdapter;
 import org.das2.DasApplication;
 
 /**
@@ -62,6 +64,24 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             getDasMouseInputAdapter().addMenuItem( mi );
             MenuElement me= getDasMouseInputAdapter().getPrimaryPopupMenu().getSubElements()[0];
             ((JMenuItem)me.getComponent()).setText("Connector Properties");
+
+            addMouseListener(new MouseInputAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                //if (e.getButton() == MouseEvent.BUTTON3) {
+
+                DasPlot bot= ColumnColumnConnector.this.bottomPlot;
+                int ir = bot.findRendererAt(getX() + e.getX(), getY() + e.getY());
+                Renderer r = null;
+                if ( ir>-1 ) {
+                    r= (Renderer) bot.getRenderer(ir);
+                }
+                bot.setFocusRenderer(r);
+            //}
+            }
+        });
+
         }
     }
     
