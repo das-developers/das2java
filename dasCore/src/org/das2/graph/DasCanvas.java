@@ -426,6 +426,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         this.topDecorators.remove( painter );
         repaint();
     }
+    public boolean hasTopDecorators() {
+        return ! this.topDecorators.isEmpty();
+    }
+
     public void addBottomDecorator(Painter painter) {
         this.bottomDecorators.add( painter );
         repaint();
@@ -434,7 +438,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         this.bottomDecorators.remove( painter );
         repaint();
     }
-
+    public boolean hasBottomDecorators() {
+        return ! this.bottomDecorators.isEmpty();
+    }
     
     private MouseInputAdapter createMouseInputAdapter() {
         return new MouseInputAdapter() {
