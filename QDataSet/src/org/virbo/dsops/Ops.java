@@ -108,17 +108,6 @@ public class Ops {
         double op(double d1, double d2);
     }
 
-    private static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
-        HashMap result = new HashMap();
-        for ( String k : m1.keySet()) {
-            Object v = m1.get(k);
-            if (v != null && v.equals(m2.get(k))) {
-                result.put(k, v);
-            }
-        }
-        return result;
-    }
-
     /**
      * apply the binary operator element-for-element of the two datasets, minding
      * dataset geometry, fill values, etc.
@@ -202,6 +191,24 @@ public class Ops {
         DataSetUtil.putProperties(props, result);
         result.putProperty( QDataSet.FILL_VALUE, fill );
         
+        return result;
+    }
+
+    private static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
+        HashMap result = new HashMap();
+        for ( String k : m1.keySet()) {
+            Object v = m1.get(k);
+            if (v != null ) {
+                Object v2= m2.get(k);
+                if ( v.equals(v2) ) {
+                    result.put(k, v);
+                } else if ( ( v instanceof QDataSet ) && ( v2 instanceof QDataSet ) ) {
+                    if ( equivalent( (QDataSet)v, (QDataSet)v2 ) ) {
+                        result.put( k, v );
+                    }
+                }
+            }
+        }
         return result;
     }
 
@@ -2783,6 +2790,23 @@ public class Ops {
 
     public static QDataSet transpose(QDataSet ds) {
         return DDataSet.copy(new TransposeRank2DataSet(ds));
+    }
+
+    /**
+     * returns true iff the dataset values are equivalent.  Note this
+     * may promote rank, etc.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
+    public static boolean equivalent( QDataSet ds1, QDataSet ds2 ) {
+        QDataSet eq= eq( ds1, ds2 );
+        QubeDataSetIterator it= new QubeDataSetIterator(eq);
+        while ( it.hasNext() ) {
+            it.next();
+            if ( it.getValue(eq)==0 ) return false;
+        }
+        return true;
     }
 
     /**
