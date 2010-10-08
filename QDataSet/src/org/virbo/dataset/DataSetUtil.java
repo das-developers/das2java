@@ -707,7 +707,7 @@ public class DataSetUtil {
         if ( monoDecreasing>(9*count/10) ) {
             diffs= Ops.multiply( diffs, asDataSet(-1) );
         }
-        QDataSet hist= ah.doit( Ops.diff(xds),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
+        QDataSet hist= ah.doit( diffs ); 
 
         long total= (Long)( ((Map<String,Object>)hist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
 

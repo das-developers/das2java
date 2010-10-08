@@ -14,6 +14,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -26,6 +27,8 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
     QDataSet x, y, z;
     HashMap properties = new HashMap();
     int[] tables;
+
+    HashMap<String,QDataSet> planes;
     
     public static TableDataSet create(QDataSet z) {
         QDataSet xds = (QDataSet) z.property(QDataSet.DEPEND_0);
@@ -52,6 +55,9 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
 
     /** Creates a new instance of TableDataSetAdapter */
     public Rank3TableDataSetAdapter(QDataSet z, QDataSet x, QDataSet y) {
+
+        planes= new LinkedHashMap<String,QDataSet>();
+        planes.put( "", z );
         
         xunits = (Units) x.property(QDataSet.UNITS);
         yunits = (Units) y.property(QDataSet.UNITS);
@@ -89,7 +95,9 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         if ( z.property(QDataSet.FILL_VALUE,0) !=null 
                 || z.property(QDataSet.VALID_MIN,0) !=null  
                 || z.property(QDataSet.VALID_MAX,0) !=null )      {
-            z= DataSetUtil.canonizeFill(z);
+            QDataSet wds= DataSetUtil.weightsDataSet(z);
+            planes.put( org.das2.dataset.DataSet.PROPERTY_PLANE_WEIGHTS, wds );
+            //z= DataSetUtil.canonizeFill(z);
         } 
         
         tables= new int[ z.length()+1 ];
@@ -241,12 +249,17 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
     }
 
     public org.das2.dataset.DataSet getPlanarView(String planeID) {
-        return planeID.equals("") ? this : null;
+        if ( planeID.equals("") ) return this;
+        if ( planes.containsKey(planeID) ) {
+            return new TableDataSetAdapter( (QDataSet)planes.get(planeID), x, y );
+        }
+        return null;
     }
 
     public String[] getPlaneIds() {
-        return new String[0];
+        return planes.keySet().toArray(new String[planes.keySet().size()] );
     }
+
 
     public String toString() {
         return DataSetUtil.toString(this.z);
