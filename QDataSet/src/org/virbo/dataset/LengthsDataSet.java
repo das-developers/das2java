@@ -41,7 +41,12 @@ public class LengthsDataSet extends AbstractDataSet {
 
     @Override
     public int length(int i, int j) {
-        return super.length(i,j);
+        return ds.length(i,j);
+    }
+
+    @Override
+    public int length(int i, int j, int k ) {
+        return ds.length(i,j,k);
     }
 
     @Override
@@ -59,4 +64,8 @@ public class LengthsDataSet extends AbstractDataSet {
         return ds.length(i0, i1);
     }
 
+    @Override
+    public double value(int i0, int i1, int i2) {
+        return ds.length(i0, i1, i2 );
+    }
 }
