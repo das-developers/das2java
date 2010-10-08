@@ -14,6 +14,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -25,6 +26,7 @@ public class TableDataSetAdapter implements TableDataSet {
     Units xunits, yunits, zunits;
     QDataSet x, y, z;
     HashMap properties = new HashMap();
+    HashMap<String,QDataSet> planes;
 
     public static TableDataSet create(QDataSet z) {
 
@@ -145,6 +147,9 @@ public class TableDataSetAdapter implements TableDataSet {
     /** Creates a new instance of TableDataSetAdapter */
     public TableDataSetAdapter(QDataSet z, QDataSet x, QDataSet y) {
 
+        planes= new LinkedHashMap<String,QDataSet>();
+        planes.put( "", z );
+
         xunits = (Units) x.property(QDataSet.UNITS);
         yunits = (Units) y.property(QDataSet.UNITS);
         zunits = (Units) z.property(QDataSet.UNITS);
@@ -180,8 +185,13 @@ public class TableDataSetAdapter implements TableDataSet {
             properties.put(org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, dcadence);
         }
 
-        if (z.property(QDataSet.FILL_VALUE) != null || z.property(QDataSet.VALID_MIN) != null || z.property(QDataSet.VALID_MAX) != null) {
-            this.z = DataSetUtil.canonizeFill(z);
+        if ( z.property(QDataSet.FILL_VALUE) !=null
+                || z.property(QDataSet.VALID_MIN) !=null
+                || z.property(QDataSet.VALID_MAX) !=null ) {
+            //this.z = DataSetUtil.canonizeFill(z);
+            QDataSet wds= DataSetUtil.weightsDataSet(z);
+            planes.put( org.das2.dataset.DataSet.PROPERTY_PLANE_WEIGHTS, wds );
+            //this.y= DataSetUtil.canonizeFill(y);
         }
     }
 
@@ -348,11 +358,15 @@ public class TableDataSetAdapter implements TableDataSet {
     }
 
     public org.das2.dataset.DataSet getPlanarView(String planeID) {
-        return planeID.equals("") ? this : null;
+        if ( planeID.equals("") ) return this;
+        if ( planes.containsKey(planeID) ) {
+            return new TableDataSetAdapter( (QDataSet)planes.get(planeID), x, y );
+        }
+        return null;
     }
 
     public String[] getPlaneIds() {
-        return new String[0];
+        return planes.keySet().toArray(new String[planes.keySet().size()] );
     }
 
     public String toString() {
