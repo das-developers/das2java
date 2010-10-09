@@ -6,7 +6,6 @@
 
 package org.das2.datum;
 
-import org.das2.util.DasMath;
 import java.text.*;
 import java.util.*;
 import java.util.logging.*;
@@ -212,7 +211,7 @@ public class DatumRangeUtil {
                 timearr[HOUR]= Integer.parseInt( m.group(1) );
                 timearr[MINUTE]= Integer.parseInt( m.group(2) );
                 timearr[SECOND]= Integer.parseInt( m.group(3) );
-                timearr[NANO]= (int)( Integer.parseInt( m.group(4) ) * ( 100000 / DasMath.exp10( m.group(4).length() ) ));
+                timearr[NANO]= (int)( Integer.parseInt( m.group(4) ) * ( 100000 / Math.pow( 10, m.group(4).length() ) ));
                 throw new RuntimeException("working on this");
             } else if (( m=hhmmssPattern.matcher(string)).matches() ) {
             } else if (( m=hhmmPattern.matcher(string)).matches() ) {
@@ -1007,15 +1006,15 @@ public class DatumRangeUtil {
      */
     public static DatumRange rescaleLog( DatumRange dr, double min, double max ) {
         Units u= dr.getUnits();
-        double s1= DasMath.log10( dr.min().doubleValue(u) );
-        double s2= DasMath.log10( dr.max().doubleValue(u) );
+        double s1= Math.log10( dr.min().doubleValue(u) );
+        double s2= Math.log10( dr.max().doubleValue(u) );
         double w= s2 - s1;
         if ( w==0. ) {
             // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
             throw new RuntimeException("width is zero!");
         }
-        s2= DasMath.exp10( s1 + max * w ); // danger
-        s1= DasMath.exp10( s1 + min * w );
+        s2= Math.pow( 10, s1 + max * w ); // danger
+        s1= Math.pow( 10, s1 + min * w );
         return new DatumRange( s1, s2, u );
     }
     
