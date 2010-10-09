@@ -7,7 +7,6 @@
 package org.das2.datum;
 
 import org.das2.util.DasMath;
-import org.das2.system.DasLogger;
 import java.text.*;
 import java.util.*;
 import java.util.logging.*;
@@ -81,14 +80,6 @@ public class DatumRangeUtil {
         int dateformat;
     }
     
-    private int stregex( String string, String regex ) {
-        Matcher matcher= Pattern.compile(regex).matcher(string);
-        if ( matcher.find() ) {
-            return matcher.start();
-        } else {
-            return -1;
-        }
-    }
     
     private static void caldat( int julday, DateDescriptor dateDescriptor ) {
         int jalpha, j1, j2, j3, j4, j5;
@@ -389,7 +380,7 @@ public class DatumRangeUtil {
         
         public DatumRange parse( String stringIn ) throws ParseException {
             
-            Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
+            Logger logger= Logger.getLogger("das2.datum");
             
             this.string= stringIn+" ";
             this.ipos= 0;

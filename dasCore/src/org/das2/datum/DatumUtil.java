@@ -23,7 +23,6 @@
 
 package org.das2.datum;
 
-import org.das2.system.DasLogger;
 import org.das2.util.DasMath;
 import java.text.*;
 import java.util.logging.Level;
@@ -214,7 +213,7 @@ public final class DatumUtil {
             }
         }
         catch (java.text.ParseException pe) {
-            Logger logger = DasLogger.getLogger();
+            Logger logger = Logger.getLogger("das2.datum");
             //Should not happen under normal circumstances, so bail.
             RuntimeException re = new RuntimeException(pe);
             logger.log(Level.SEVERE, pe.getMessage(), re);
