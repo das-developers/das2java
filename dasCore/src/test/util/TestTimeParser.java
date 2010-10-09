@@ -10,7 +10,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.TimeUtil;
-import org.das2.util.TimeParser;
+import org.das2.datum.TimeParser;
 
 /**
  *

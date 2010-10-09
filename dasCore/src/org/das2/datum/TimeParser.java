@@ -5,7 +5,7 @@
  *
  *
  */
-package org.das2.util;
+package org.das2.datum;
 
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
