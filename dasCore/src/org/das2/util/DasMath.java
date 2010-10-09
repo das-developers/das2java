@@ -45,7 +45,6 @@ public class DasMath {
         return result;
     }
     
-    // what does this function do?
     public static double exp10(int x) {
         double result= Math.pow(10,x);       
         return result;
@@ -228,7 +227,7 @@ public class DasMath {
     
     public static double median( double[] A ) {
         double[] sorted= sort( A );
-        return A[A.length/2];
+        return sorted[A.length/2];
     }
     
     public static double max( double[] A ) {
