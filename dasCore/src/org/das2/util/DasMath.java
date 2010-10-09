@@ -201,6 +201,8 @@ public class DasMath {
     * your data, the binsize should be the gcd.  An error parameter is provided to
     * avoid numerical noise, and in case there is a granularity that needn't be 
     * surpassed.
+    *
+    * org.das2.datum.DatumUtil has a private copy of this code.
     */
     public static double gcd( double[] A, double error ) {
         double guess= A[0];
