@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.util;
+package org.das2.dasml;
 
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.DasProgressPanel;
@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,6 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
