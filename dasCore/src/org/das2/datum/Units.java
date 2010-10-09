@@ -23,8 +23,6 @@
 
 package org.das2.datum;
 
-import java.awt.Graphics2D;
-import org.das2.components.propertyeditor.Displayable;
 import org.das2.util.DasMath;
 
 import java.util.*;
@@ -34,7 +32,7 @@ import org.das2.datum.format.DatumFormatterFactory;
  *
  * @author  jbf
  */
-public abstract class Units implements Displayable {
+public abstract class Units {
     
     private static Map unitsMap = new HashMap();
     
@@ -512,17 +510,5 @@ public abstract class Units implements Displayable {
         System.out.println("Hz: " + Hz);
         System.out.println("kHz: " + kHz);
         System.out.println("MHz: " + MHz);
-    }
-    
-    public javax.swing.Icon getListIcon() {
-        return null;
-    }
-    
-    public String getListLabel() {
-        return this.id;
-    }
-
-    public void drawListIcon( Graphics2D g, int x, int y ) {
-        // do nothing
     }
 }
