@@ -11,7 +11,6 @@ package test.graph;
 
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.test.RipplesDataSet;
-import org.das2.event.AnnotatorMouseModule;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
 import org.das2.graph.GraphUtil;
