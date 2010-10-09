@@ -26,7 +26,6 @@ package org.das2.datum;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.das2.util.DasMath;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
@@ -44,6 +43,79 @@ public final class DatumUtil {
     private DatumUtil() {
     }
     
+    /**
+     * copy of DasMath.max, so that this can be independent of org.das2.util.
+     * @param A
+     * @return
+     */
+    private static double max( double[] A ) {
+        double max= A[0];
+        for ( int i=0; i<A.length; i++ ) {
+            max= ( max > A[i] ? max : A[i] );
+        }
+        return max;
+    }
+
+    private static double gcd( double a, double d, double error ) {
+
+        if ( error>0 ) {
+            a= Math.round( a/error );
+            d= Math.round( d/error );
+        }
+
+        if ( a<d ) {
+            double t= a;
+            a= d;
+            d= t;
+        }
+
+        if ( d==0 ) {
+            if ( error>0 ) {
+                return a * error;
+            } else {
+                return a;
+            }
+        }
+
+        double r= a % d;
+
+        int iterations=0;
+
+        while ( r > 0 && iterations<15 ) {
+            d= r;
+            r= a % d;
+            iterations++;
+        }
+
+        if ( error>0 ) {
+            return d * error;
+        } else {
+            return d;
+        }
+    }
+
+
+   /*
+    * Returns the greatest common divisor of a group of numbers.  This is useful for
+    * a number of visualization techniques, for instance when you need to integerize
+    * your data, the binsize should be the gcd.  An error parameter is provided to
+    * avoid numerical noise, and in case there is a granularity that needn't be
+    * surpassed.
+    *
+    * See org.das2.util.DasMath
+    */
+    private static double gcd( double[] A, double error ) {
+        double guess= A[0];
+
+        double result= guess;
+
+        for ( int i=1; i<A.length; i++ ) {
+            result= gcd( result, A[i], error );
+        }
+
+        return result;
+    }
+
     public static DatumFormatter bestFormatter( DatumVector datums ) {
         double[] array;
         Units units;
@@ -71,15 +143,15 @@ public final class DatumUtil {
             array= datums.toDoubleArray(units);
         }
         
-        double limit= DasMath.exp10( (int)DasMath.log10( DasMath.max( array ) ) - 7 );
-        double gcd= DasMath.gcd( array, limit );
+        double limit= Math.pow( 10, (int)Math.log10( max( array ) ) - 7 );
+        double gcd= gcd( array, limit );
         
         int smallestExp=99;
         int ismallestExp=-1;
         for ( int j=0; j<datums.getLength(); j++ ) {
             double d= datums.get(j).doubleValue(units);
             if ( Math.abs(d)>(gcd*0.1) ) { // don't look at fuzzy zero
-                int ee= (int)Math.floor(0.05+DasMath.log10(Math.abs(d)));
+                int ee= (int)Math.floor(0.05+Math.log10(Math.abs(d)));
                 if ( ee<smallestExp ) {
                     smallestExp=ee;
                     ismallestExp= j;
@@ -98,11 +170,11 @@ public final class DatumUtil {
     public static int fractionalDigits( Datum resolution ) {
         int DOUBLE_DIGITS= 10;  // this is <15 because math operations introduce noise in more significant digits
         double d= Math.abs( resolution.doubleValue() );
-        int e= (int)Math.floor( DasMath.log10(d)+0.0001 );
-        long i= (long)(d/(DasMath.exp10(e-(DOUBLE_DIGITS-1)))+0.5);
+        int e= (int)Math.floor( Math.log10(d)+0.0001 );
+        long i= (long)(d/(Math.pow(10,e-(DOUBLE_DIGITS-1)))+0.5);
         int nzero;
         for ( nzero=1; nzero<16; nzero++ ) {
-            if ( i % DasMath.exp10(nzero) != 0. ) {                
+            if ( i % Math.pow(10,nzero) != 0. ) {
                 break;
             }
         }
@@ -117,12 +189,12 @@ public final class DatumUtil {
             return bestTimeFormatter(minimum, maximum, nsteps);
         }
         
-        double logmin= DasMath.log10( minimum.doubleValue( units ) );
-        double logmax= DasMath.log10( maximum.doubleValue( units ) );
+        double logmin= Math.log10( minimum.doubleValue( units ) );
+        double logmax= Math.log10( maximum.doubleValue( units ) );
         
-        double percent= ( DasMath.exp10( ( logmax - logmin ) / nsteps ) - 1. ) * 100;
+        double percent= ( Math.pow( 10, ( logmax - logmin ) / nsteps ) - 1. ) * 100;
         
-        int nFraction= 2 - (int)Math.floor( 0.05 + DasMath.log10( percent ) );
+        int nFraction= 2 - (int)Math.floor( 0.05 + Math.log10( percent ) );
         
         nFraction= nFraction<0 ? 0 : nFraction;
         String formatString = exp(nFraction);
@@ -143,7 +215,7 @@ public final class DatumUtil {
         
         Datum resolution= maximum.subtract(minimum).divide(nsteps);
         double discernable= resolution.doubleValue(units);
-        int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
+        int nFraction= -1 * (int)Math.floor(0.05+Math.log10(discernable));
         
         nFraction= nFraction<0 ? 0 : nFraction;
         String formatString = zeros(nFraction);
@@ -190,14 +262,14 @@ public final class DatumUtil {
             
             int smallestExp=99;
             
-            double discernable= DasMath.exp10(-1*fracDigits);
+            double discernable= Math.pow(10,-1*fracDigits);
             
             Datum step= maximum.subtract(minimum).divide( nsteps );
             double dstep= step.doubleValue(units.getOffsetUnits());
             for ( int j=0; j<nsteps; j++ ) {
                 double d= minimum.add(step.multiply(j)).doubleValue(units);
                 if ( Math.abs(d)>(discernable*0.1) ) { // don't look at fuzzy zero
-                    int ee= (int)Math.floor(0.05+DasMath.log10(Math.abs(d)));
+                    int ee= (int)Math.floor(0.05+Math.log10(Math.abs(d)));
                     if ( ee<smallestExp ) smallestExp=ee;
                 }
             }
@@ -206,7 +278,7 @@ public final class DatumUtil {
             } else if ( smallestExp < -3 || smallestExp > 3 ) {
                 return new ExponentialDatumFormatter( smallestExp - (-1*fracDigits) +1 , smallestExp );
             } else {
-                int nFraction= -1 * (int)Math.floor(0.05+DasMath.log10(discernable));
+                int nFraction= -1 * (int)Math.floor(0.05+Math.log10(discernable));
                 nFraction= nFraction<0 ? 0 : nFraction;
                 String formatString = zeros(nFraction);
                 return factory.newFormatter(formatString);
@@ -280,7 +352,6 @@ public final class DatumUtil {
     public static Datum parse(java.lang.String s) throws ParseException {
         String[] ss= s.trim().split("\\s");
         Units units;
-        double value;
         if ( ss.length==1 ) {
                 units= Units.dimensionless;
         } else {

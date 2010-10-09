@@ -23,8 +23,7 @@
 
 package org.das2.datum;
 
-import org.das2.util.DasMath;
-import java.math.*;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,7 +77,7 @@ public class NumberUnits extends Units {
         BigDecimal bd= new BigDecimal(s);
         
         if ( bd.scale()>0 ) {
-            double resolution= DasMath.exp10( -1*bd.scale() );
+            double resolution= Math.pow( 10, -1*bd.scale() );
             return new double[] { Double.parseDouble(s), resolution };
         } else {
             int ie= s.indexOf( 'E' );
@@ -92,13 +91,13 @@ public class NumberUnits extends Units {
                     dd[1]= 1.;
                 } else {
                     int scale= s.length()-id-1;
-                    dd[1]= DasMath.exp10(-1*scale);
+                    dd[1]= Math.pow( 10, -1*scale);
                 }
                 return dd;
             } else {
                 mant= s.substring(0,ie);
                 double[] dd= parseDecimal( mant );
-                double exp= DasMath.exp10( Double.parseDouble( s.substring(ie+1) ) );
+                double exp= Math.pow( 10, Double.parseDouble( s.substring(ie+1) ) );
                 dd[0]= dd[0] * exp;
                 dd[1]= dd[1] * exp;
                 return dd;

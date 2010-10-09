@@ -23,10 +23,15 @@
 
 package org.das2.datum;
 
-import org.das2.util.DasMath;
-
-import java.util.*;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 import org.das2.datum.format.DatumFormatterFactory;
 /**
  *
@@ -51,7 +56,7 @@ public abstract class Units {
 
     private static final class dBConverter extends UnitsConverter {
         public double convert(double value) {
-            return 10 * DasMath.log10(value);
+            return 10 * Math.log10(value);
         }
         public UnitsConverter getInverse() {
             if (inverse == null) {
