@@ -23,7 +23,6 @@
 
 package org.das2.stream;
 
-import org.das2.util.StreamTool;
 import org.das2.DasIOException;
 import org.das2.datum.DatumVector;
 import org.das2.util.IDLParser;

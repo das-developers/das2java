@@ -8,7 +8,7 @@ import org.das2.client.DataSetStreamHandler;
 import org.das2.dataset.VectorDataSet;
 import org.das2.stream.StreamException;
 import org.das2.util.DasProgressMonitorInputStream;
-import org.das2.util.StreamTool;
+import org.das2.stream.StreamTool;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

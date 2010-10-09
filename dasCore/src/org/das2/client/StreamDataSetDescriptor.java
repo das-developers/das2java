@@ -44,7 +44,7 @@ import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.datum.DatumVector;
 import org.das2.system.DasLogger;
-import org.das2.util.StreamTool;
+import org.das2.stream.StreamTool;
 
 import java.io.*;
 import java.nio.*;

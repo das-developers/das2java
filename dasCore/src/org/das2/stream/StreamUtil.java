@@ -14,7 +14,6 @@ import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.TableDataSet;
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.StreamTool;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

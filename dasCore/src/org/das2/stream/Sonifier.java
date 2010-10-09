@@ -1,6 +1,5 @@
 package org.das2.stream;
 
-import org.das2.util.StreamTool;
 import java.io.*;
 import java.io.File;
 import java.io.IOException;

@@ -26,7 +26,6 @@ package org.das2.stream;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.util.DeflaterChannel;
-import org.das2.util.StreamTool;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;

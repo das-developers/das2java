@@ -20,16 +20,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.das2.util;
+package org.das2.stream;
 
-import org.das2.stream.StreamComment;
-import org.das2.stream.StreamDescriptor;
-import org.das2.stream.StreamException;
-import org.das2.stream.StreamHandler;
-import org.das2.stream.PropertyType;
-import org.das2.stream.PacketDescriptor;
-import org.das2.util.InflaterChannel;
-import org.das2.util.ByteBufferInputStream;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import java.io.*;
@@ -53,6 +45,8 @@ import javax.xml.parsers.ParserConfigurationException;
 //import org.apache.xml.serialize.Method;
 //import org.apache.xml.serialize.OutputFormat;
 //import org.apache.xml.serialize.XMLSerializer;
+import org.das2.util.ByteBufferInputStream;
+import org.das2.util.InflaterChannel;
 import org.w3c.dom.*;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;

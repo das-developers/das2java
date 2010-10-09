@@ -6,7 +6,6 @@
 
 package org.das2.stream;
 
-import org.das2.util.StreamTool;
 import java.io.*;
 
 /**
