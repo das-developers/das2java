@@ -35,8 +35,6 @@ import org.das2.datum.Units;
  */
 public class LatinPrefixDatumFormatter extends DatumFormatter {
     
-    private DecimalFormat format;
-    
     int digits;
     int exponent;
     
@@ -53,10 +51,10 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
     public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(units); 
         if ( x == 0. ) return "0.";
-        int exponent= (int) Math.log10(1.000001*Math.abs(x)) / 3 * 3;
+        int expon= (int) Math.log10(1.000001*Math.abs(x)) / 3 * 3;
         
         String expString;
-        switch (exponent) {
+        switch (expon) {
             case -18: expString="a"; break;
             case -15: expString="f"; break;
             case -12: expString="p"; break;
@@ -68,10 +66,10 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
             case 6: expString="M";break;
             case 9: expString="G";break;
             case 12: expString="T"; break;
-            default:  expString=""; exponent=0; break;
+            default:  expString=""; expon=0; break;
         }
         
-        double exp= Math.pow(10,exponent);
+        double exp= Math.pow(10,expon);
         double mant= x / exp;
         
         int mantFracDigits= digits - (int)Math.log10(mant);
