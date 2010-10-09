@@ -46,7 +46,7 @@ public class ParseBenchmarks {
             long t0 = System.currentTimeMillis();
             InputStream in = new FileInputStream(f);
             DataSetStreamHandler handler = new DataSetStreamHandler( new HashMap(), new NullProgressMonitor() );
-            org.das2.util.StreamTool.readStream(Channels.newChannel(in), handler);
+            org.das2.stream.StreamTool.readStream(Channels.newChannel(in), handler);
             DataSet ds = handler.getDataSet();
             System.err.println("Time to read " + ds.getXLength() + " records: " + (System.currentTimeMillis() - t0));
         }
