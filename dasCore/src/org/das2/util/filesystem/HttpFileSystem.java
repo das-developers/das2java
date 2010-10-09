@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import org.das2.CancelledOperationException;
-import org.das2.DasApplication;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
@@ -94,7 +93,7 @@ public class HttpFileSystem extends WebFileSystem {
 
             File local;
 
-            if (DasApplication.hasAllPermission()) {
+            if (FileSystemSettings.hasAllPermission()) {
                 local = localRoot(rooturi);
                 logger.log(Level.FINER, "initializing httpfs {0} at {1}", new Object[]{root, local});
             } else {

@@ -162,6 +162,7 @@ public class DasApplication {
     /**
      * check the security manager to see if all permissions are allowed,
      * True indicates is not an applet running in a sandbox.
+     * See FileSystemSettings, which has a copy of this code
      * @return true if all permissions are allowed
      */
     public static boolean hasAllPermission() {
@@ -179,6 +180,10 @@ public class DasApplication {
 
     private static boolean restrictPermission= false;
 
+    /**
+     * See FileSystemSettings, which has a copy of this code
+     * @param v
+     */
     public static void setRestrictPermission( boolean v ) {
         restrictPermission= v;
     }
@@ -411,7 +416,11 @@ public class DasApplication {
     }
     
     ExceptionHandler exceptionHandler;
-    
+
+    /**
+     * warning: this code is repeated in FileSystem to avoid dependence.
+     * @return
+     */
     public ExceptionHandler getExceptionHandler() {
         if ( exceptionHandler==null ) {
             if ( isHeadless() ) {

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.*;
+import org.das2.util.filesystem.FileSystemSettings;
 
 public class DasProperties extends Properties {
     
@@ -57,6 +58,9 @@ public class DasProperties extends Properties {
         hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         setDefaults();
         propertyOrder= new ArrayList();
+        if ( DasApplication.hasAllPermission()!=FileSystemSettings.hasAllPermission() ) {
+            throw new RuntimeException("DasApplication.hasAllPermission()!=FileSystemSettings.hasAllPermission()");
+        }
         if ( DasApplication.hasAllPermission() ) readPersistentProperties();
         logger= Logger.getLogger("das2");
         setPropertyOrder();

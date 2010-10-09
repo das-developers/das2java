@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import org.das2.CancelledOperationException;
-import org.das2.DasApplication;
 
 /**
  * class that contains the credentials for websites.  This is first
@@ -87,7 +86,7 @@ public class KeyChain {
         if ( storedUserInfo!=null ) return storedUserInfo;
 
         if ( ss.length<2 || ss[1].length()==0 || userInfo.equals("user:pass") ) {
-            if ( !DasApplication.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
+            if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
                 JPanel panel= new JPanel();
                 panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
                 panel.add( new JLabel("Username:") );

@@ -7,7 +7,6 @@ package org.das2.util.filesystem;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import org.das2.DasApplication;
 
 /**
  * controls for file systems.  
@@ -16,11 +15,41 @@ import org.das2.DasApplication;
 public class FileSystemSettings {
 
     /**
+     * check the security manager to see if all permissions are allowed,
+     * True indicates is not an applet running in a sandbox.
+     *
+     * copy of DasAppliction.hasAllPermission
+     * @return true if all permissions are allowed
+     */
+    public static boolean hasAllPermission() {
+        try {
+            if ( restrictPermission==true ) return false;
+            SecurityManager sm = System.getSecurityManager();
+            if (sm != null) {
+                sm.checkPermission(new java.security.AllPermission());
+            }
+            return true;
+        } catch ( SecurityException ex ) {
+            return false;
+        }
+    }
+
+    private static boolean restrictPermission= false;
+
+    /**
+     * see DasApplication.setRestrictPermission
+     * @param v
+     */
+    public static void setRestrictPermission( boolean v ) {
+        restrictPermission= v;
+    }
+
+    /**
      * this should only be called by FileSystem.  Use FileSystem.settings().
      */
     protected FileSystemSettings() {
         File local;
-        if ( !DasApplication.hasAllPermission() ) {
+        if ( !hasAllPermission() ) {
             local= new File("applet_mode");  // this should not be opened.
         } else {
             if (System.getProperty("user.name").equals("Web")) {

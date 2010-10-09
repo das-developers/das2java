@@ -26,7 +26,6 @@ package org.das2.util.filesystem;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.UnknownHostException;
-import org.das2.DasApplication;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 
 /**
@@ -41,7 +40,7 @@ public class HttpFileSystemFactory implements FileSystemFactory {
 
     public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, MalformedURLException, UnknownHostException {
         HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
-        if (!DasApplication.hasAllPermission()) hfs.setAppletMode(true);
+        if (!FileSystemSettings.hasAllPermission()) hfs.setAppletMode(true);
         return hfs;
     }
 }

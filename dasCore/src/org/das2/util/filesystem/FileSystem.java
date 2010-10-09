@@ -22,14 +22,16 @@
  */
 
 package org.das2.util.filesystem;
+
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.das2.DasApplication;
+import org.das2.util.DefaultExceptionHandler;
 import org.das2.util.ExceptionHandler;
+import org.das2.util.ThrowRuntimeExceptionHandler;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -370,10 +372,22 @@ public abstract class FileSystem  {
 
     public static synchronized ExceptionHandler getExceptionHandler() {
         if ( exceptionHandler==null ) {
-            return DasApplication.getDefaultApplication().getExceptionHandler();
-        } else {
-            return exceptionHandler;
+            String name= "java.awt.headless";
+            String deft= "false";
+            String val;
+            try {
+                val= System.getProperty(name, deft);
+            } catch ( SecurityException ex ) {
+                val= deft;
+            }
+            boolean headless= "true".equals(val);
+            if ( headless ) {
+                exceptionHandler= new ThrowRuntimeExceptionHandler();
+            } else {
+                exceptionHandler= new DefaultExceptionHandler();
+            }
         }
+        return exceptionHandler;
     }
 
     public static synchronized void setExceptionHandler( ExceptionHandler eh ) {
