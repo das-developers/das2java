@@ -33,7 +33,7 @@ import org.das2.util.AboutUtil;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasPNGConstants;
 import org.das2.util.DasPNGEncoder;
-import org.das2.util.awt.EventQueueBlocker_1;
+import org.das2.system.EventQueueBlocker_1;
 import org.das2.util.awt.GraphicsOutput;
 import java.awt.BasicStroke;
 import java.awt.Color;

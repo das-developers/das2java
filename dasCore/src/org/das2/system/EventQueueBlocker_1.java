@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.util.awt;
+package org.das2.system;
 
 import org.das2.event.DasUpdateEvent;
 import java.awt.AWTEvent;
