@@ -10,12 +10,10 @@
 package org.das2.util.awt;
 
 import org.das2.event.DasUpdateEvent;
-import org.das2.system.DasLogger;
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
-import java.util.EmptyStackException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Logger;
@@ -27,7 +25,7 @@ import javax.swing.SwingUtilities;
  */
 public final class EventQueueBlocker {
 
-    private static final Logger logger= DasLogger.getLogger(DasLogger.SYSTEM_LOG);
+    private static final Logger logger= Logger.getLogger( "das2.system" );
 
     /** Creates a new instance of EventQueueBlocker */
     private EventQueueBlocker() {

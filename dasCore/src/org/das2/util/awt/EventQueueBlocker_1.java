@@ -10,7 +10,6 @@
 package org.das2.util.awt;
 
 import org.das2.event.DasUpdateEvent;
-import org.das2.system.DasLogger;
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
@@ -26,7 +25,7 @@ import javax.swing.SwingUtilities;
  */
 public final class EventQueueBlocker_1 {
     
-    private static final Logger logger= DasLogger.getLogger(DasLogger.SYSTEM_LOG);
+    private static final Logger logger= Logger.getLogger( "das2.system" );
     
     private static Object lockObject= new String("EQB_1");
     
