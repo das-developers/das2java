@@ -12,7 +12,7 @@ package test;
 import org.das2.datum.Units;
 import java.net.MalformedURLException;
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.TimeParser;
+import org.das2.datum.TimeParser;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
