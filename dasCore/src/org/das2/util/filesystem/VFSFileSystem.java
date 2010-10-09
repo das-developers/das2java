@@ -12,15 +12,14 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.VFS;
 import org.das2.CancelledOperationException;
-import org.das2.system.MutatorLock;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
@@ -261,7 +260,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
      * @throws FileNotFoundException if the file wasn't found after another thread loaded the file.
      * @return MutatorLock.  The client should call mutatorLock.unlock() when the download is complete
      */
-    protected MutatorLock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
+    protected Lock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
         logger.finer("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
         synchronized (downloads) {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
@@ -278,7 +277,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                 downloads.put(filename, monitor);
                 monitor.started();  // this is necessary for the other monitors
 
-                return new MutatorLock() {
+                return new ReentrantLock() {
 
                     public void lock() {
                     }
@@ -366,7 +365,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             return;
         }
 
-        MutatorLock lock = getDownloadLock(filename, f, monitor);
+        Lock lock = getDownloadLock(filename, f, monitor);
 
         if (lock == null) {
             return;  //Another thread downloaded the file

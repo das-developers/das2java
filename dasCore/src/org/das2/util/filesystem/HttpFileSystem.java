@@ -39,8 +39,8 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.regex.*;
-import org.das2.system.MutatorLock;
 
 /**
  *
@@ -118,7 +118,7 @@ public class HttpFileSystem extends WebFileSystem {
 
     protected void downloadFile(String filename, File f, File partFile, ProgressMonitor monitor) throws IOException {
 
-        MutatorLock lock = getDownloadLock(filename, f, monitor);
+        Lock lock = getDownloadLock(filename, f, monitor);
 
         if (lock == null) {
             return;

@@ -28,14 +28,15 @@ package org.das2.util.filesystem;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.*;
-import org.das2.system.MutatorLock;
 
 /**
  * Base class for HTTP and FTP-based filesystems.  A local cache is kept of
@@ -182,9 +183,9 @@ public abstract class WebFileSystem extends FileSystem {
      *    the monitor is not touched, but other threads may use it to keep track
      *    of the download progress.
      * @throws FileNotFoundException if the file wasn't found after another thread loaded the file.
-     * @return MutatorLock.  The client should call mutatorLock.unlock() when the download is complete
+     * @return Lock.  The client should call lock.unlock() when the download is complete
      */
-    protected MutatorLock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
+    protected Lock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
         logger.finer("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
         synchronized (downloads) {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
@@ -201,11 +202,10 @@ public abstract class WebFileSystem extends FileSystem {
                 downloads.put(filename, monitor);
                 monitor.started();  // this is necessary for the other monitors
 
-                return new MutatorLock() {
-
+                return new ReentrantLock() {
                     public void lock() {
-                    }
 
+                    }
                     public void unlock() {
                         synchronized (downloads) {
                             downloads.remove(filename);
