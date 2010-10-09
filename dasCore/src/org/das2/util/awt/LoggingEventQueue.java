@@ -8,7 +8,6 @@
 
 package org.das2.util.awt;
 
-import org.das2.system.DasLogger;
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.event.InvocationEvent;
@@ -26,7 +25,7 @@ import java.util.logging.Logger;
  */
 public class LoggingEventQueue extends EventQueue {
     
-    final static Logger logger= DasLogger.getLogger(DasLogger.GUI_LOG);
+    final static Logger logger= Logger.getLogger( "das2.gui" );
     
     Object lockObject= new String("lockObjectLEQ");
     
