@@ -32,7 +32,6 @@ public class EnumerationDatumFormatterFactory extends DatumFormatterFactory {
     private final static EnumerationDatumFormatterFactory INSTANCE
         = new EnumerationDatumFormatterFactory();
     
-    /** Creates a new instance of EnumerationDatumFormatterFactory */
     private EnumerationDatumFormatterFactory() {
     }
     

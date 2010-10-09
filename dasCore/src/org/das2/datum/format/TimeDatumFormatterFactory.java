@@ -31,8 +31,7 @@ public class TimeDatumFormatterFactory extends DatumFormatterFactory {
     
     private static TimeDatumFormatterFactory factory;
     
-    /** Creates a new instance of TimeDatumFormatterFactory */
-    protected TimeDatumFormatterFactory() {}
+    private TimeDatumFormatterFactory() {}
     
     public DatumFormatter defaultFormatter() {
         return TimeDatumFormatter.DEFAULT;
@@ -42,7 +41,6 @@ public class TimeDatumFormatterFactory extends DatumFormatterFactory {
         return new TimeDatumFormatter(format);
     }
     
-    /** Get an instance of this factory. */
     public static TimeDatumFormatterFactory getInstance() {
         //This isn't thread safe, but who cares.  Instances are small and
         //functionally identical.

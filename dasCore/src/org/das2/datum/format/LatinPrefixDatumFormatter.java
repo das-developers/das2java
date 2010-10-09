@@ -46,6 +46,7 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
         return format( datum, datum.getUnits() ) + " " + datum.getUnits();
     }
 
+    @Override
     public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(units); 
         if ( x == 0. ) return "0.";
@@ -82,6 +83,7 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
         return mantFormat.format(mant) + expString;
     }
     
+    @Override
     public String toString() {
         return "EngineeringFormatter("+digits+" sig fig)";
     }

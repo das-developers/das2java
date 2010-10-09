@@ -23,7 +23,6 @@
 
 package org.das2.datum.format;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
@@ -60,6 +59,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         return format( datum, datum.getUnits() ) + " " + datum.getUnits();
     }
     
+    @Override
     public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(datum.getUnits());
         if ( x == 0. ) return "0.";
@@ -70,6 +70,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         return mantFormat.format(mant)+"E"+exponent;
     }
     
+    @Override
     public String grannyFormat( Datum datum, Units units ) {
         String format= format(datum,units);
         if ( format.indexOf("E")!=-1 ) {
@@ -83,6 +84,7 @@ public class ExponentialDatumFormatter extends DatumFormatter {
         return format;
     }
     
+    @Override
     public String grannyFormat( Datum datum ) {
         String format= format(datum,datum.getUnits());
         if ( format.indexOf("E")!=-1 ) {

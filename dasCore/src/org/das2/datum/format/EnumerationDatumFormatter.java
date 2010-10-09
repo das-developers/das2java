@@ -32,10 +32,10 @@ import org.das2.datum.EnumerationUnits;
  */
 public class EnumerationDatumFormatter extends DatumFormatter {
     
-    /** Creates a new instance of EnumerationDatumFormatter */
     public EnumerationDatumFormatter() {
     }
     
+    @Override
     public String toString() {
         return getClass().getName();
     }

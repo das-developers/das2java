@@ -167,6 +167,7 @@ public class TimeDatumFormatter extends DatumFormatter {
         }
     }
     
+    @Override
     public String toString() {
         return formatString;
     }
@@ -198,7 +199,7 @@ public class TimeDatumFormatter extends DatumFormatter {
                 formatPattern + "|" + delimiterPattern + "|" + literalPattern
                 );
         int from = 0;
-        StringBuffer formatString = new StringBuffer();
+        StringBuffer frmtString = new StringBuffer();
         Matcher matcher = token.matcher(input);
         while (matcher.find(from)) {
             int start = matcher.start();
@@ -212,50 +213,50 @@ public class TimeDatumFormatter extends DatumFormatter {
                 errorString.append(dots);
                 throw new ParseException(errorString.toString(), from);
             }
-            String format = matcher.group(1);
+            String frmt = matcher.group(1);
             String delimiter = matcher.group(3);
             String literal = matcher.group(4);
-            if (format != null) {
-                switch (format.charAt(0)) {
+            if (frmt != null) {
+                switch (frmt.charAt(0)) {
                     case 'y': {
-                        appendSubFormat(formatString, YEAR_FIELD_INDEX, format.length());
+                        appendSubFormat(frmtString, YEAR_FIELD_INDEX, frmt.length());
                     } break;
                     case 'M': {
-                        appendSubFormat(formatString, MONTH_FIELD_INDEX, format.length());
+                        appendSubFormat(frmtString, MONTH_FIELD_INDEX, frmt.length());
                     } break;
                     case 'D': {
-                        appendSubFormat(formatString, DOY_FIELD_INDEX, format.length());
+                        appendSubFormat(frmtString, DOY_FIELD_INDEX, frmt.length());
                     } break;
                     case 'd': {
-                        appendSubFormat(formatString, DAY_FIELD_INDEX, format.length());
+                        appendSubFormat(frmtString, DAY_FIELD_INDEX, frmt.length());
                     } break;
                     case 'H': {
-                        appendSubFormat(formatString, HOUR_FIELD_INDEX, format.length());
+                        appendSubFormat(frmtString, HOUR_FIELD_INDEX, frmt.length());
                     } break;
                     case 'm': {
-                        appendSubFormat(formatString, MINUTE_FIELD_INDEX, format.length());
+                        appendSubFormat(frmtString, MINUTE_FIELD_INDEX, frmt.length());
                     } break;
                     case 's': {
-                        appendSubFormat(formatString, SECONDS_FIELD_INDEX, format.length());
+                        appendSubFormat(frmtString, SECONDS_FIELD_INDEX, frmt.length());
                     }break;
                     case 'S': {
-                        int digitCount = format.length();
+                        int digitCount = frmt.length();
                         int fieldIndex = addScaleFactor(digitCount);
-                        appendSubFormat(formatString, fieldIndex, digitCount);
+                        appendSubFormat(frmtString, fieldIndex, digitCount);
                     }
                     break;
                     default: break;
                 }
             } else if (delimiter != null) {
-                formatString.append(delimiter);
+                frmtString.append(delimiter);
             } else if (literal != null) {
                 literal = literal.substring(1, literal.length() - 1);
                 literal = literal.replaceAll("''", "'");
-                formatString.append(literal);
+                frmtString.append(literal);
             }
             from = matcher.end();
         }
-        return formatString.toString();
+        return frmtString.toString();
     }
     
     /**
@@ -265,30 +266,30 @@ public class TimeDatumFormatter extends DatumFormatter {
      * @throws java.text.ParseException
      */
     protected String parseTimeFormatStringPercent(String format) throws ParseException {
-        StringBuffer formatString= new StringBuffer();
+        StringBuffer frmtString= new StringBuffer();
         String[] ss= format.split("%");
-        formatString.append(ss[0]);
+        frmtString.append(ss[0]);
         int offset= ss[0].length();
         
         for ( int i=1; i<ss.length; i++ ) {
             offset+= 1;
             char c= ss[i].charAt(0);
             switch (c) {
-                case 'Y': appendSubFormat(formatString, YEAR_FIELD_INDEX, 4 ); break;
-                case 'y': appendSubFormat(formatString, YEAR_FIELD_INDEX, 2 ); break;
-                case 'j': appendSubFormat(formatString, DOY_FIELD_INDEX, 3 ); break;
-                case 'm': appendSubFormat(formatString, MONTH_FIELD_INDEX, 2 ); break;
-                case 'd': appendSubFormat(formatString, DAY_FIELD_INDEX, 2 ); break;
-                case 'H': appendSubFormat(formatString, HOUR_FIELD_INDEX, 2 ); break;
-                case 'M': appendSubFormat(formatString, MINUTE_FIELD_INDEX, 2 ); break;
-                case 'S': appendSubFormat(formatString, SECONDS_FIELD_INDEX, 2 ); break;
+                case 'Y': appendSubFormat(frmtString, YEAR_FIELD_INDEX, 4 ); break;
+                case 'y': appendSubFormat(frmtString, YEAR_FIELD_INDEX, 2 ); break;
+                case 'j': appendSubFormat(frmtString, DOY_FIELD_INDEX, 3 ); break;
+                case 'm': appendSubFormat(frmtString, MONTH_FIELD_INDEX, 2 ); break;
+                case 'd': appendSubFormat(frmtString, DAY_FIELD_INDEX, 2 ); break;
+                case 'H': appendSubFormat(frmtString, HOUR_FIELD_INDEX, 2 ); break;
+                case 'M': appendSubFormat(frmtString, MINUTE_FIELD_INDEX, 2 ); break;
+                case 'S': appendSubFormat(frmtString, SECONDS_FIELD_INDEX, 2 ); break;
                 case '{': 
                     int i1= ss[i].indexOf('}');
                     String spec= ss[i].substring(1,i1);
                     if ( spec.equals("milli") ) {
                        int digitCount = 3;
                        int fieldIndex = addScaleFactor(digitCount);
-                       appendSubFormat(formatString, fieldIndex, digitCount);
+                       appendSubFormat(frmtString, fieldIndex, digitCount);
                        ss[i]= ss[i].substring(i1);
                     } else {
                         throw new ParseException("bad format code: {"+spec+"}",offset);
@@ -296,10 +297,10 @@ public class TimeDatumFormatter extends DatumFormatter {
                     break;
                 default: throw new ParseException("bad format code: "+c,offset);
             }
-            formatString.append(ss[i].substring(1));
+            frmtString.append(ss[i].substring(1));
             offset+= ss[i].length();
         }
-        return formatString.toString();
+        return frmtString.toString();
     }
     
     private static void appendSubFormat(StringBuffer buffer, int fieldIndex,int count) {

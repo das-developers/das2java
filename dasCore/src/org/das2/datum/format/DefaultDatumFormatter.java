@@ -41,7 +41,6 @@ public class DefaultDatumFormatter extends DatumFormatter {
     protected DefaultDatumFormatter() {
     }
 
-    /** Creates a new instance of DatumFormatter */
     public DefaultDatumFormatter(String formatString) throws ParseException {
         if (formatString.equals("")) {
             this.formatString = "";
@@ -56,6 +55,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
         return format(datum, datum.getUnits()) + " " + datum.getUnits();
     }
 
+    @Override
     public String format(Datum datum, Units units) {
         double d = datum.doubleValue(units);
         if (Double.isInfinite(d) || Double.isNaN(d)) {

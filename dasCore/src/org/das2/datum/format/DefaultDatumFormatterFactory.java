@@ -39,7 +39,6 @@ public final class DefaultDatumFormatterFactory extends DatumFormatterFactory {
         return new DefaultDatumFormatter(format);
     }
     
-    /** Get an instance of this factory. */
     public static DatumFormatterFactory getInstance() {
         //This isn't thread safe, but who cares.  Instances are small and
         //functionally identical.
