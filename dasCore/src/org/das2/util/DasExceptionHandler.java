@@ -23,7 +23,6 @@
 
 package org.das2.util;
 
-import org.das2.DasApplication;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -54,7 +53,7 @@ public final class DasExceptionHandler {
     }
     
     public static void handle(Throwable t) {
-        if ( DasApplication.getDefaultApplication().isHeadless() ) {
+        if ( "true".equals( System.getProperty("java.awt.headless","false") ) ) {
             t.printStackTrace();
         }
         else {
@@ -63,7 +62,7 @@ public final class DasExceptionHandler {
     }
     
     public static void handleUncaught(Throwable t) {
-        if ( DasApplication.getDefaultApplication().isHeadless() ) {
+        if ( "true".equals( System.getProperty("java.awt.headless","false") ) ) {
             t.printStackTrace();
         }
         else {
@@ -74,7 +73,7 @@ public final class DasExceptionHandler {
     private static void showExceptionDialog(final Throwable t, String extraInfo) {
         String errorMessage = extraInfo + t.getClass().getName() + "\n"
             + (t.getMessage() == null ? "" : t.getMessage());        
-        final JDialog dialog = new JDialog( DasApplication.getDefaultApplication().getMainFrame() );        
+        final JDialog dialog = new JDialog( ); // DasApplication.getDefaultApplication().getMainFrame() );
         dialog.setTitle("Error in das2");
         dialog.setModal(false);
         dialog.setResizable(false);
