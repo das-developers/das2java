@@ -23,10 +23,8 @@
 package org.das2.datum.format;
 
 import org.das2.util.NumberFormatUtil;
-import org.das2.util.DasMath;
 
 import java.text.*;
-import java.util.Locale;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
@@ -145,10 +143,10 @@ public class DefaultDatumFormatter extends DatumFormatter {
         if (resolution > 0) {
             // 28 -->   scale = -1
             // 2.8 -->  scale = 0
-            int scale = (int) Math.ceil(-1 * DasMath.log10(resolution) - 0.00001);
+            int scale = (int) Math.ceil(-1 * Math.log10(resolution) - 0.00001);
             int exp;
             if (d != 0.) {
-                exp = (int) DasMath.log10(Math.abs(d));
+                exp = (int) Math.log10(Math.abs(d));
             } else {
                 exp = 0;
             }
@@ -165,7 +163,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
                 }
                 result = f.format(d);
             } else {
-                double round = DasMath.exp10(-1 * scale);
+                double round = Math.pow( 10, -1*scale);
                 d = Math.round(d / round) * round;
                 DecimalFormat f;
                 if (exp <= -5 || exp >= 5) {

@@ -23,11 +23,9 @@
 
 package org.das2.datum.format;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import org.das2.util.NumberFormatUtil;
-import org.das2.util.DasMath;
-
-import java.text.*;
-import java.util.Locale;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
@@ -55,7 +53,7 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
     public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(units); 
         if ( x == 0. ) return "0.";
-        int exponent= (int) DasMath.log10(1.000001*Math.abs(x)) / 3 * 3;
+        int exponent= (int) Math.log10(1.000001*Math.abs(x)) / 3 * 3;
         
         String expString;
         switch (exponent) {
@@ -73,19 +71,16 @@ public class LatinPrefixDatumFormatter extends DatumFormatter {
             default:  expString=""; exponent=0; break;
         }
         
-        int sign= x < 0 ? -1 : 1;
-        
-        double exp= DasMath.exp10(exponent);
+        double exp= Math.pow(10,exponent);
         double mant= x / exp;
         
-        int mantFracDigits= digits - (int)DasMath.log10(mant);
+        int mantFracDigits= digits - (int)Math.log10(mant);
         
         StringBuffer buff = new StringBuffer(digits+2).append("0");
         if ( digits>1 ) buff.append('.');
         for (int i = 0; i< mantFracDigits; i++) {
             buff.append('0');
         }
-        String mantFormatString= buff.toString();
         NumberFormat mantFormat= NumberFormatUtil.getDecimalFormat(buff.toString());
         
         return mantFormat.format(mant) + expString;

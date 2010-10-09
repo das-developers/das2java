@@ -23,8 +23,11 @@
 
 package org.das2.datum.format;
 
-import java.text.*;
-import java.util.regex.*;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.TimeUtil;

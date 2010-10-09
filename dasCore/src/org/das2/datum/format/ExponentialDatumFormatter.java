@@ -23,10 +23,9 @@
 
 package org.das2.datum.format;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import org.das2.util.NumberFormatUtil;
-import org.das2.util.DasMath;
-
-import java.text.*;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
@@ -67,9 +66,9 @@ public class ExponentialDatumFormatter extends DatumFormatter {
     public String format( Datum datum, Units units ) {
         double x= datum.doubleValue(datum.getUnits());
         if ( x == 0. ) return "0.";
-        double exp= DasMath.exp10(exponent);
+        double exp= Math.pow(10,exponent);
         double mant= x/exp;
-        double tenToN= DasMath.exp10(digits);
+        double tenToN= Math.pow(10,digits);
         mant= Math.round( mant * tenToN ) / tenToN;
         return mantFormat.format(mant)+"E"+exponent;
     }
