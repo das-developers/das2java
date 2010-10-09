@@ -4,7 +4,7 @@
  * Created on September 22, 2004, 1:21 PM
  */
 
-package org.das2.util;
+package org.das2.graph.util;
 
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.graph.Leveler;
@@ -30,6 +30,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+import org.das2.graph.DasAnnotation;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasColumn;
+import org.das2.graph.DasPlot;
+import org.das2.graph.DasRow;
+import org.das2.graph.Legend;
+import org.das2.graph.Leveler;
+import org.das2.graph.Psym;
+import org.das2.graph.SymColor;
+import org.das2.graph.SymbolLineRenderer;
 
 /**
  *

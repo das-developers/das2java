@@ -6,7 +6,7 @@
  *
  */
 
-package org.das2.util;
+package org.das2.graph.util;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.ObjectLocator;
 import org.das2.util.DenseConsoleFormatter;
@@ -56,6 +56,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import org.das2.util.DenseConsoleFormatter;
+import org.das2.util.GrannyTextRenderer;
+import org.das2.util.ObjectLocator;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

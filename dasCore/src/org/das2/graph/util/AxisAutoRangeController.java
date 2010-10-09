@@ -6,7 +6,7 @@
  *
  */
 
-package org.das2.util;
+package org.das2.graph.util;
 
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetDescriptor;
