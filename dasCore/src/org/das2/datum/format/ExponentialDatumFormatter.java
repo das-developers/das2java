@@ -25,7 +25,6 @@ package org.das2.datum.format;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import org.das2.util.NumberFormatUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
@@ -37,8 +36,6 @@ import org.das2.datum.Units;
  * @author  Jeremy Faden
  */
 public class ExponentialDatumFormatter extends DatumFormatter {
-    
-    private DecimalFormat format;
     
     int digits;
     int exponent;

@@ -22,8 +22,6 @@
  */
 package org.das2.datum.format;
 
-import org.das2.util.NumberFormatUtil;
-
 import java.text.*;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;

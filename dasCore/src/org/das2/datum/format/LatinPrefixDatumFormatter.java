@@ -24,7 +24,6 @@
 package org.das2.datum.format;
 
 import java.text.NumberFormat;
-import org.das2.util.NumberFormatUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
