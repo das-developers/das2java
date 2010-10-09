@@ -1,6 +1,5 @@
 package org.das2.util;
 
-import org.das2.system.DasLogger;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -52,7 +51,7 @@ public class ArgumentList {
     
     private String TRUE = "__true__";
     
-    private static final Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
+    private static final Logger logger= Logger.getLogger( "das2.util" );
     
     /**
      * creates the processor for the program.  <tt>programName</tt> is provided
