@@ -23,10 +23,10 @@
 
 package org.das2.datum;
 
-import org.das2.util.DasMath;
-import java.text.*;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.DasMath;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
