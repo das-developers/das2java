@@ -19,8 +19,8 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.VFS;
-import org.das2.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
+import org.das2.util.monitor.CancelledOperationException;
 
 /**
  *

@@ -26,7 +26,10 @@ package org.das2;
 import java.io.InterruptedIOException;
 
 /**
- *
+ * Exception used to indicate the operation was cancelled.
+ * Note there is a CancelledOperationException within the util.filesystem
+ * package that is used to decouple the util from the rest of das2.
+ * 
  * @author  eew
  */
 public class CancelledOperationException extends DasException {

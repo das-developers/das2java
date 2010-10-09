@@ -26,13 +26,13 @@
  */
 package org.das2.util.filesystem;
 
+import org.das2.util.monitor.CancelledOperationException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
-import org.das2.CancelledOperationException;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;

@@ -23,7 +23,7 @@
 
 package org.das2.util.filesystem;
 
-import org.das2.CancelledOperationException;
+import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
 import java.io.*;
 import java.net.*;

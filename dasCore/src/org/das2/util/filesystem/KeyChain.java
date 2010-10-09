@@ -5,6 +5,7 @@
 
 package org.das2.util.filesystem;
 
+import org.das2.util.monitor.CancelledOperationException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,7 +20,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import org.das2.CancelledOperationException;
 
 /**
  * class that contains the credentials for websites.  This is first
