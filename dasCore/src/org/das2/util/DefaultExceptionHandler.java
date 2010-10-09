@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.system;
+package org.das2.util;
 
 import org.das2.util.DasExceptionHandler;
 
