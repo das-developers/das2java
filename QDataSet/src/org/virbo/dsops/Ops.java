@@ -1991,7 +1991,7 @@ public class Ops {
     }
 
     /**
-     * returns a two element, rank 1 dataset containg the extent of the data.
+     * returns a two element, rank 1 dataset containing the extent of the data.
      * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.
      * The property QDataSet.SCALE_TYPE is set to lin or log.
      * The property count is set to the number of valid measurements.
