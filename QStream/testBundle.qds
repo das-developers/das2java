@@ -1,0 +1,54 @@
+[00]000067<?xml version="1.0" encoding="UTF-8"?>
+<stream dataset_id="ds_0"/>
+[02]000299<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_2" rank="1">
+        <properties>
+            <property name="UNITS" type="enumerationUnit" value="default[1:B-GSM-X::2:B-GSM-Y::3:B-GSM-Z]"/>
+        </properties>
+        <values values="1.0,2.0,3.0"/>
+    </qdataset>
+</packet>
+[03]000954<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_1" rank="2">
+        <properties index="0">
+            <property name="BINS_1" type="String" value="min,max"/>
+            <property name="UNITS" type="units" value="us2000"/>
+            <property name="NAME" type="String" value="TimeBins"/>
+        </properties>
+        <properties index="1">
+            <property name="DEPEND_0" type="String" value="TimeBins"/>
+            <property name="DEPEND_1" type="qdataset" value="ds_3"/>
+            <property name="UNITS" type="units" value="m"/>
+        </properties>
+        <properties index="2">
+            <property name="DEPEND_0" type="String" value="TimeBins"/>
+            <property name="UNITS" type="units" value="cm/s"/>
+        </properties>
+        <properties/>
+        <values index="0" values="2.0"/>
+        <values index="1" values="3.0"/>
+        <values index="2" length="0" values=""/>
+    </qdataset>
+</packet>
+[01]000332<?xml version="1.0" encoding="UTF-8"?>
+<packet>
+    <qdataset id="ds_0" rank="2">
+        <properties>
+            <property name="BUNDLE_1" type="qdataset" value="ds_1"/>
+            <property name="QUBE" type="Boolean" value="true"/>
+        </properties>
+        <values encoding="ascii10" length="6"/>
+    </qdataset>
+</packet>
+:01: +0.00E00  +3.60E09 +3.62E-01 +9.33E-01 +8.33E-01 +3.26E-01
+:01: +3.60E09  +7.20E09 +2.36E-01 +3.49E-01 +4.48E-01 +6.38E-01
+:01: +7.20E09  +1.08E10 +1.58E-01 +7.69E-01 +9.45E-01 +6.56E-02
+:01: +1.08E10  +1.44E10 +8.10E-01 +4.78E-01 +3.33E-01 +6.93E-01
+:01: +1.44E10  +1.80E10 +9.16E-01 +3.51E-01 +9.02E-02 +5.55E-01
+:01: +1.80E10  +2.16E10 +1.03E-01 +9.44E-01 +1.94E-01 +2.54E-01
+:01: +2.16E10  +2.52E10 +6.96E-01 +4.73E-02 +2.01E-01 +8.50E-01
+:01: +2.52E10  +2.88E10 +3.98E-01 +2.32E-01 +1.56E-01 +6.66E-02
+:01: +2.88E10  +3.24E10 +1.03E-01 +5.92E-01 +3.78E-01 +4.96E-01
+:01: +3.24E10  +3.60E10 +5.97E-01 +9.12E-01 +8.97E-02 +1.89E-01
