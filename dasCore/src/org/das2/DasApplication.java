@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.logging.*;
 import java.util.prefs.*;
 import javax.swing.*;
+import org.das2.util.filesystem.FileSystemSettings;
 
 /**
  * DasApplication object manages per-application resources, like object name space, 
@@ -186,6 +187,7 @@ public class DasApplication {
      */
     public static void setRestrictPermission( boolean v ) {
         restrictPermission= v;
+        FileSystemSettings.setRestrictPermission(v);
     }
 
     /**
