@@ -42,7 +42,7 @@ public class DasDie {
     public static int verbosity;
     
     static {
-        String debugLevel= org.das2.DasProperties.getInstance().getProperty("debugLevel");
+        String debugLevel= "endUser"; // org.das2.DasProperties.getInstance().getProperty("debugLevel");
         setDebugVerbosityLevel(debugLevel);
     }
     
