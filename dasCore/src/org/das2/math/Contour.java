@@ -13,7 +13,6 @@ import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Datum;
 import java.awt.*;
-import java.io.*;
 
 /**
  * Contouring based on code published in Javatech, Volume 13 Issue 9, "Contour Plotting In Java"
