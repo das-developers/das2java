@@ -22,6 +22,12 @@
  */
 package org.das2.graph;
 
+import java.awt.EventQueue;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Toolkit;
+import java.awt.geom.AffineTransform;
 import java.util.logging.Level;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.dataset.DataSetConsumer;
@@ -39,16 +45,14 @@ import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.system.DasLogger;
-import java.awt.geom.*;
-
-import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import org.das2.components.propertyeditor.Displayable;
-import org.das2.dataset.DataSetUtil;
-import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 
 public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
@@ -100,8 +104,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     protected int lastValidIndex=-1;
 
     protected static final Logger logger = DasLogger.getLogger(DasLogger.RENDERER_LOG);
-    private String PROPERTY_ACTIVE = "active";
-    private String PROPERTY_DATASET = "dataSet";
+    private static final String PROPERTY_ACTIVE = "active";
+    private static final String PROPERTY_DATASET = "dataSet";
 
     protected Renderer(DataSetDescriptor dsd) {
         this.loader = new XAxisDataLoader(this, dsd);
