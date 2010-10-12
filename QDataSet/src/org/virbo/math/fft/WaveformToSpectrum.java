@@ -177,6 +177,8 @@ public class WaveformToSpectrum {
     }
     
     public static QDataSet getTableDataSet( QDataSet vds, int windowSize ) {
+
+        System.err.println("this is the right one");
         
         int n21= windowSize/2+1;
         DatumVector yTags;
@@ -232,7 +234,7 @@ public class WaveformToSpectrum {
                 }
             }
             for ( int k=0; k<zBuf.length; k++ ) {
-                tdsb.putValue( -1, k, zBuf[i] );
+                tdsb.putValue( -1, k, zBuf[k] );
             }
             tdsb.nextRecord();
             xdsb.putValue( -1, xvds.value((int)((i+0.5)*windowSize)) );
