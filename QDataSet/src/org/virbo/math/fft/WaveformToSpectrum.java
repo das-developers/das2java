@@ -210,7 +210,7 @@ public class WaveformToSpectrum {
         int nTableXTags= vds.length() / windowSize;
         for ( int i=0; i<nTableXTags; i++ ) {
             boolean fill= false;
-            if ( ! checkXTagsGrid( vds,i*windowSize,(i+1)*windowSize ) ) {
+            if ( ! checkXTagsGrid( xvds,i*windowSize,(i+1)*windowSize ) ) {
                 continue;
             }
             ngood++;
