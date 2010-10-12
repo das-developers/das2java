@@ -10,8 +10,7 @@ import java.util.Random;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
-import org.das2.math.PoissonDistribution;
-import org.das2.util.DasMath;
+import org.virbo.math.PoissonDistribution;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
@@ -23,8 +22,8 @@ import org.virbo.dsutil.DataSetBuilder;
 public class PlasmaModel {
 
     /**
-    * Model of plasma distibution function for given density, temperature, speed.
-    * A java.util.Random object is passed in so that the data may be reproducable
+    * Model of plasma distribution function for given density, temperature, speed.
+    * A java.util.Random object is passed in so that the data may be reproducible
     * (by using a given starting seed).
     *
      * (written
@@ -58,8 +57,8 @@ public class PlasmaModel {
                 throw new IllegalArgumentException("distribution is not isotropic, need theta,phi");
             }
             double v = Math.sqrt(2 * energy * 1.6e-19 * 1e7 / mass);
-            double logfc = DasMath.log10(nc / (Math.pow(Math.PI, (3. / 2.)) * wcparl * wcparl)) - 3 * Math.pow(v / wcparl, 2);
-            return DasMath.exp10(logfc);
+            double logfc = Math.log10(nc / (Math.pow(Math.PI, (3. / 2.)) * wcparl * wcparl)) - 3 * Math.pow(v / wcparl, 2);
+            return Math.pow(10,logfc);
         }
 
         public double fcounts(double energy, Units units, Random random) {
@@ -107,7 +106,7 @@ public class PlasmaModel {
                     for (int j = 0; j < nj; j++) {
                         if (ylog) {
                             yy[j] = (nj / 300) + j * 0.05;
-                            yy[j] = DasMath.exp10(yy[j]);
+                            yy[j] = Math.pow(10,yy[j]);
                         } else {
                             yy[j] = (nj / 3) + j * 1.2;
                         }
@@ -120,7 +119,7 @@ public class PlasmaModel {
                 int ncol = s.nextInt(4) + 1;
                 DatumVector ydv = yTags[whichYTags];
                 for (int icol = 0; icol < ncol; icol++) {
-                    n= n * DasMath.exp10( ( random.nextDouble()-0.5 )/100 );
+                    n= n * Math.pow(10, ( random.nextDouble()-0.5 )/100 );
                     model.setDensity( Units.pcm3.createDatum(n) );
                     for (int j = 0; j < nj; j++) {
                         zz[j] = model.counts( ydv.get(j).doubleValue(Units.dimensionless), Units.eV, random );

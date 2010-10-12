@@ -6,14 +6,13 @@ package org.virbo.dsops;
 
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dataset.QubeDataSetIterator;
-import org.das2.dataset.TableDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
-import org.das2.math.fft.ComplexArray;
-import org.das2.math.fft.GeneralFFT;
-import org.das2.math.fft.WaveformToSpectrum;
+import org.virbo.math.fft.ComplexArray;
+import org.virbo.math.fft.GeneralFFT;
+import org.virbo.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +31,6 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
-import org.virbo.dataset.DataSetAdapter;
 import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.IDataSet;
@@ -44,7 +42,6 @@ import org.virbo.dataset.ReverseDataSet;
 import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
-import org.virbo.dataset.VectorDataSetAdapter;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
@@ -1986,8 +1983,8 @@ public class Ops {
      * @return rank 2 dataset.
      */
     public static QDataSet fftWindow(QDataSet ds, int len) {
-        TableDataSet result = WaveformToSpectrum.getTableDataSet(VectorDataSetAdapter.create(ds), len);
-        return DataSetAdapter.create(result);
+        QDataSet result = WaveformToSpectrum.getTableDataSet( ds, len);
+        return result;
     }
 
     /**

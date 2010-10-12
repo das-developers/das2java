@@ -9,8 +9,6 @@ package org.virbo.dsutil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
-import org.das2.math.fft.ComplexArray;
-import org.das2.math.fft.GeneralFFT;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -20,6 +18,8 @@ import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
+import org.virbo.math.fft.ComplexArray;
+import org.virbo.math.fft.GeneralFFT;
 
 /**
  *
