@@ -547,8 +547,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         max0 = dataRange.getMaximum();
 
         if (dataRange.isLog()) {
-            min = DasMath.log10(minimum.doubleValue(getUnits()));
-            max = DasMath.log10(maximum.doubleValue(getUnits()));
+            min = Math.log10(minimum.doubleValue(getUnits()));
+            max = Math.log10(maximum.doubleValue(getUnits()));
             if ( minimum.doubleValue(getUnits())==0 ) {  // avoid log zero
                 min= max/1000;
             }
@@ -1057,9 +1057,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double min = getDataMinimum().doubleValue(getUnits());
         double max = getDataMaximum().doubleValue(getUnits());
 
-        double dMinTick = DasMath.roundNFractionalDigits(DasMath.log10(min), 4);
+        double dMinTick = DasMath.roundNFractionalDigits(Math.log10(min), 4);
         int minTick = (int) Math.ceil(dMinTick);
-        double dMaxTick = DasMath.roundNFractionalDigits(DasMath.log10(max), 4);
+        double dMaxTick = DasMath.roundNFractionalDigits(Math.log10(max), 4);
         int maxTick = (int) Math.floor(dMaxTick);
 
         GrannyTextRenderer idlt = new GrannyTextRenderer();
@@ -2589,7 +2589,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (data <= 0.) {
                 data = dataRange.getMinimum() - 3; // TODO verify that dataRange.getMinimum() is log.
             } else {
-                data = DasMath.log10(data);
+                data = Math.log10(data);
             }
         }
         double result = at_m * data + at_b;
@@ -2602,7 +2602,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param units the units of the given data value.
      * @return Horizontal or vertical position on the canvas.
      */
-    protected double transform(double data, Units units) {
+    public double transform(double data, Units units) {
         DasDevicePosition range;
         // TODO: consider optimization here
         if (isHorizontal()) {
@@ -2626,7 +2626,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (data <= 0.) {
                 data = -1e308;
             } else {
-                data = DasMath.log10(data);
+                data = Math.log10(data);
             }
         }
 
@@ -2670,8 +2670,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         double resolution = data_range / getDLength();
         if (dataRange.isLog()) {
-            data = DasMath.exp10(data);
-            resolution = data * (DasMath.exp10(resolution) - 1);
+            data = Math.pow(10,data);
+            resolution = data * (Math.pow(10,resolution) - 1);
         }
 
         Datum result = Datum.create(data, dataRange.getUnits(), resolution);
