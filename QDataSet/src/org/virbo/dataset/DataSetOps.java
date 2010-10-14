@@ -8,12 +8,14 @@
  */
 package org.virbo.dataset;
 
+import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
+import org.das2.datum.DatumRange;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
@@ -125,7 +127,8 @@ public class DataSetOps {
     }
     
     /**
-     * flatten a rank 2 dataset.
+     * flatten a rank 2 dataset.  The result is a n,3 dataset
+     * of [x,y,z], or if there are no tags, just [z].
      * history:
      *    modified for use in PW group.
      * @param ds
@@ -485,7 +488,7 @@ public class DataSetOps {
         QDataSet dep1= (QDataSet) props.get( QDataSet.DEPEND_1 );
         QDataSet dep2= (QDataSet) props.get( QDataSet.DEPEND_2 );
         QDataSet dep3= (QDataSet) props.get( QDataSet.DEPEND_3 );
-        QDataSet bins1= (QDataSet) props.get( QDataSet.BINS_1 );
+        String bins1= (String) props.get( QDataSet.BINS_1 );
         QDataSet bundle1= (QDataSet) props.get( QDataSet.BUNDLE_1 );
 
         if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
@@ -569,7 +572,7 @@ public class DataSetOps {
     }
 
     /**
-     * Extract the named bundled dataset.
+     * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
      * @param bundleDs
      * @param name
      * @see unbundle( QDataSet bundleDs, int ib )
@@ -577,11 +580,28 @@ public class DataSetOps {
      */
     public static QDataSet unbundle( QDataSet bundleDs, String name ) {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+
         int ib= -1;
         int i= name.indexOf("["); // allow name to be "Flux[Time=1440,en=10]"
         if ( i>0 ) {
             name= name.substring(i);
         }
+
+        if ( bundle1==null ) {
+            bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+            if ( bundle1!=null && bundle1.rank()>1 ) {
+                throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+            } else if ( bundle1!=null ) {
+                Units u= (Units) bundle1.property(QDataSet.UNITS);
+                for ( int i2=0; i2<bundle1.length(); i2++ ) {
+                    if ( name.equals( u.createDatum( bundle1.value(i2) ).toString() ) ) {
+                        return unbundle( bundleDs, i2 );
+                    }
+                }
+                throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
+            }
+        }
+
         for ( int j=0; j<bundle1.length(); j++ ) {
             String n1= (String) bundle1.property( QDataSet.NAME, j );
             if ( n1!=null && n1.equals(name) ) {
@@ -589,7 +609,7 @@ public class DataSetOps {
             }
         }
         if ( ib==-1 ) {
-            throw new IllegalArgumentException("unable to find dataset with name \""+name+"\"");
+            throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
         } else {
             return unbundle(bundleDs,ib);
         }
@@ -814,4 +834,45 @@ public class DataSetOps {
         return s.hasNext() || s2.hasNext();
     }
 
+    /**
+     * return a bounding qube of the independent dimensions containing
+     * the dataset.
+     * Only for tables right now.
+     * @param ds
+     * @return
+     */
+    public static QDataSet dependBounds( QDataSet ds ) {
+        QDataSet xrange;
+        QDataSet yrange;
+
+        if( ds.rank() == 2) {
+            xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
+            yrange= Ops.extent( SemanticOps.ytagsDataSet(ds) );
+        } else if ( ds.rank()==3 ) {
+            QDataSet ds1= ds.slice(0);
+            xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1) );
+            yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1) );
+            for ( int i=1; i<ds1.length(); i++ ) {
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), xrange );
+                yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1), yrange );
+            }
+        } else {
+            throw new IllegalArgumentException("bad rank");
+        }
+        DDataSet result= DDataSet.createRank2(2,2);
+        result.putValue(0,0,xrange.value(0));
+        result.putValue(0,1,xrange.value(1));
+        result.putValue(1,0,yrange.value(0));
+        result.putValue(1,1,yrange.value(1));
+        result.putProperty(QDataSet.BINS_1,"min,maxInclusive");
+        return result;
+    }
+
+    public static boolean boundsContains(QDataSet bounds, Datum xValue, Datum yValue) {
+        if ( bounds.property(QDataSet.BINS_1)==null ) throw new IllegalArgumentException("expected BINS_1");
+        DatumRange xrange= DataSetUtil.asDatumRange( bounds.slice(0), true );
+        DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1), true );
+        return xrange.contains(xValue) && yrange.contains(yValue);
+    }
+    
 }
