@@ -348,8 +348,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if ( rebinData.rank()!=2 ) throw new IllegalArgumentException("rank 2 expected");
 
         logger.fine("converting to pixel map");
-        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
-        int itable = 0;
+
         int ny = rebinData.length(0);
         int nx = rebinData.length();
         int icolor;
@@ -489,7 +488,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             plotImageBounds= null;
                             return;                            
                         }
-                        //System.err.println("zunits="+((TableDataSet)fds).getZUnits()+"  colorbar="+colorBar.getUnits() );
                         
                         RebinDescriptor xRebinDescriptor;
                         xRebinDescriptor = new RebinDescriptor(
@@ -541,7 +539,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         try {
                             validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), lraster );
                         } catch ( InconvertibleUnitsException ex ) {
-                            System.err.println("zunits="+((TableDataSet)fds).getZUnits()+"  colorbar="+colorBar.getUnits() );
+                            System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+colorBar.getUnits() );
                             return;
                         }
 
