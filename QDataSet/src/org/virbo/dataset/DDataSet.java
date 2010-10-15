@@ -10,6 +10,7 @@ package org.virbo.dataset;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.datum.Units;
 
 /**
  * rank 1,2,or 3 dataset backed by double array. 
@@ -253,6 +254,19 @@ public final class DDataSet extends ArrayDataSet {
     public static DDataSet wrap(double[] back) {
         return new DDataSet(1, back.length, 1, 1, 1, back);
     }
+
+    /**
+     * useful create with units.
+     * @param xx
+     * @param xunits
+     * @return
+     */
+    public static DDataSet wrap(double[] xx, Units xunits) {
+        DDataSet result= wrap( xx );
+        result.putProperty( QDataSet.UNITS, xunits );
+        return result;
+    }
+
 
     /**
      * creates a DDataSet by wrapping an existing array, and aliasing it to rank2.

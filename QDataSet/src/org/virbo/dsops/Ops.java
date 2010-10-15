@@ -962,16 +962,28 @@ public class Ops {
      * @return
      */
     public static QDataSet timegen(String baseTime, String cadence, int len0) throws ParseException {
-        int size = len0;
         double base = TimeUtil.create(baseTime).doubleValue(Units.us2000);
         double dcadence = Units.us2000.getOffsetUnits().parse(cadence).doubleValue(Units.us2000.getOffsetUnits());
 
-        double[] back = new double[size];
-        for (int i = 0; i < size; i++) {
+        return taggen( base, dcadence, len0, Units.us2000 );
+    }
+
+    /**
+     * creates tags.  First tag will be start and they will increase by cadence.  Units specifies
+     * the units of each tag.
+     * @param start
+     * @param cadence
+     * @param len0
+     * @param units
+     * @return
+     */
+    public static MutablePropertyDataSet taggen( double base, double dcadence, int len0, Units units ) {
+        double[] back = new double[len0];
+        for (int i = 0; i < len0; i++) {
             back[i] = base + i * dcadence;
         }
         DDataSet result = DDataSet.wrap(back, 1, len0, 1, 1);
-        result.putProperty(QDataSet.UNITS, Units.us2000);
+        result.putProperty(QDataSet.UNITS, units );
         result.putProperty(QDataSet.MONOTONIC, Boolean.TRUE);
         return result;
     }
@@ -1996,39 +2008,84 @@ public class Ops {
      * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds ) {
+        return extent( ds, null );
+    }
+
+    /**
+     * returns a two element, rank 1 dataset containing the extent of the data.
+     * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.
+     * The property QDataSet.SCALE_TYPE is set to lin or log.
+     * The property count is set to the number of valid measurements.
+     * 2010-10-14: add branch for monotonic datasets.
+     * @param ds
+     * @param range, if non-null, return the union of this range and the extent.
+     * @return two element, rank 1 "bins" dataset.
+     */
+    public static QDataSet extent( QDataSet ds, QDataSet range ) {
 
         QDataSet max = ds;
         QDataSet min = ds;
-        QDataSet delta;
-        delta = (QDataSet) ds.property(QDataSet.DELTA_PLUS);
-        if (delta != null) {
-            max = Ops.add(ds, delta);
-        }
+        QDataSet deltaplus;
+        QDataSet deltaminus;
 
-        delta = (QDataSet) ds.property(QDataSet.DELTA_MINUS);
-        if (delta != null) {
-            min = Ops.subtract(ds, delta);
-        }
+        deltaplus = (QDataSet) ds.property(QDataSet.DELTA_PLUS);
+        deltaminus = (QDataSet) ds.property(QDataSet.DELTA_MINUS);
 
         QDataSet w = DataSetUtil.weightsDataSet(ds);
-        QubeDataSetIterator it = new QubeDataSetIterator(ds);
-        double[] result = new double[]{Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         int count=0;
 
-        while (it.hasNext()) {
-            it.next();
-            if (it.getValue(w) > 0.) {
-                count++;
-                result[0] = Math.min(result[0], it.getValue(min));
-                result[1] = Math.max(result[1], it.getValue(max));
-            } else {
+        double [] result;
+        double fill= ((Number)w.property(QDataSet.FILL_VALUE)).doubleValue();
 
+        if ( ds.rank()==1 && Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC )) && deltaplus==null ) {
+            int ifirst=0;
+            int n= ds.length();
+            int ilast= n-1;
+            while ( ifirst<n && w.value(ifirst)==0.0 ) ifirst++;
+
+            while ( ilast>=0 && w.value(ilast)==0.0 ) ilast--;
+            count= Math.max( 0, ilast - ifirst + 1 );
+            result= new double[2];
+            if ( count>0 ) {
+                result[0]= ds.value(ifirst);
+                result[1]= ds.value(ilast);
+            } else {
+                result[0] = fill;
+                result[1] = fill;
             }
-        }
-        if ( count==0 ) {  // no valid data!
-            double fill= ((Number)w.property(QDataSet.FILL_VALUE)).doubleValue();
-            result[0] = fill;
-            result[1] = fill;
+
+        } else {
+
+            if (deltaplus != null) {
+                max = Ops.add(ds, deltaplus );
+            }
+
+            if (deltaminus != null) {
+                min = Ops.subtract(ds, deltaminus);
+            }
+
+            QubeDataSetIterator it = new QubeDataSetIterator(ds);
+
+            if ( range==null ) {
+                result= new double[]{ Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+            } else {
+                result= new double[]{ range.value(0), range.value(1) };
+            }
+
+            while (it.hasNext()) {
+                it.next();
+                if (it.getValue(w) > 0.) {
+                    count++;
+                    result[0] = Math.min(result[0], it.getValue(min));
+                    result[1] = Math.max(result[1], it.getValue(max));
+                } else {
+
+                }
+            }
+            if ( count==0 ) {  // no valid data!
+                result[0] = fill;
+                result[1] = fill;
+            }
         }
 
         DDataSet qresult= DDataSet.wrap(result);
@@ -2036,6 +2093,7 @@ public class Ops {
         qresult.putProperty( QDataSet.USER_PROPERTIES, Collections.singletonMap( "count", new Integer(count) ) );
         qresult.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
+        if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
         
         return qresult;
         

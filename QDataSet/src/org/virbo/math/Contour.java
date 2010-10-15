@@ -12,6 +12,7 @@ import java.awt.*;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
 
@@ -39,7 +40,9 @@ public class Contour {
         public ContourPlot( QDataSet tds, QDataSet contourValues ) {
             super();
             this.zz= tds;
-            
+            this.xx= SemanticOps.xtagsDataSet(tds);
+            this.yy= SemanticOps.ytagsDataSet(tds);
+
             xSteps = tds.length();
             ySteps = tds.length(0);
 
@@ -56,14 +59,14 @@ public class Contour {
         }
         
         /*
-         * returns a VectorDataSet with the contours.  The independent variable is just
-         * 1,2,3..., Y is the Z value, and planes "X" and "Y" are the X and Y values
+         * returns a rank 2 bundle QDataSet of ds[:,3] with the contours.
+         * x is ds[:,0], y is ds[:,1], and Zval is ds[:,2]
          */
         
         public QDataSet performContour() {
             DataSetBuilder builder= new DataSetBuilder( 2, 100, 3 );
 
-            QDataSet tags= Ops.labels( new String[] { "X", "Y", "cval" } );
+            QDataSet tags= Ops.labels( new String[] { Contour.PLANE_X, Contour.PLANE_Y, "cval" } );
 
             int workLength = 2 * xSteps * ySteps * ncv;
             boolean[] workSpace= new boolean[workLength];
@@ -174,10 +177,11 @@ public class Contour {
                 idx++ ;
             }
             
-            dsbuilder.putValue((int)idx,0,cval);
+            dsbuilder.putValue(-1,2,cval);
             
-            dsbuilder.putValue((int)idx,1,getXValue(xy[0]));
-            dsbuilder.putValue((int)idx,2,getYValue(xy[1]));
+            dsbuilder.putValue(-1,0,getXValue(xy[0]));
+            dsbuilder.putValue(-1,1,getYValue(xy[1]));
+            dsbuilder.nextRecord();
             
             idx++;
             
@@ -191,10 +195,10 @@ public class Contour {
             if (ij[1-elle] != 1) {
                 ii = ij[0] - i1[1-elle];
                 jj = ij[1] - i1[elle];
-                if ( !zunits.isFill(zz.value(ii-1,jj-1)) ) {
+                if ( ww.value( ii-1,jj-1)>0 ) {
                     ii = ij[0] + i2[elle];
                     jj = ij[1] + i2[1-elle];
-                    if ( !zunits.isFill(zz.value(ii-1,jj-1)) ) ix = 0;
+                    if ( ww.value( ii-1,jj-1)>0 ) ix = 0;
                 }
                 if (ij[1-elle] >= l1[1-elle]) {
                     ix = ix + 2;
@@ -203,11 +207,11 @@ public class Contour {
             }
             ii = ij[0] + i1[1-elle];
             jj = ij[1] + i1[elle];
-            if ( zunits.isFill( zz.value(ii-1,jj-1) ) ) {
+            if ( ww.value( ii-1,jj-1)==0 ) {
                 ix = ix + 2;
                 return;
             }
-            if ( zunits.isFill( zz.value(ij[0],ij[1]) ) ) ix = ix + 2;
+            if ( ww.value(ij[0],ij[1])==0 ) ix = ix + 2;
         }
         
         //-------------------------------------------------------

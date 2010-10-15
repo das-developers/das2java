@@ -96,12 +96,9 @@ public class DataSetUtil {
      * See QDataSet.MONOTONIC.
      */
     public static boolean isMonotonic(QDataSet ds) {
-        if (ds.rank() != 1) {
+        if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
             return false;
         }
-        int i = 0;
-
-        QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
         if (ds.length() == 0) {
             return false;
@@ -111,13 +108,20 @@ public class DataSetUtil {
             return true;
         }
 
-        if ( wds.value(i)==0 ) {
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        int i = 0;
+
+        for ( i=0; i<ds.length() && wds.value(i)==0; i++ ) {
+            // find first valid point.
+        }
+
+        if ( i==ds.length() ) {
             return false;
         }
 
         double last = ds.value(i);
 
-        for (i = 1; i < ds.length(); i++) {
+        for ( i = i+1; i < ds.length(); i++) {
             double d = ds.value(i);
             double w = wds.value(i);
             if ( w==0 ) continue;
@@ -625,7 +629,7 @@ public class DataSetUtil {
         if (yds == null) {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
-        assert (xds.length() == yds.length());
+        assert (xds.length() == yds.length());  // note we need to turn assertions on as a test.  test012_003 shows where this is ignored.
 
         if ( yds.rank()>1 ) { //TODO: check for fill columns.  Note the fill check was to support a flakey dataset.
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
@@ -1440,6 +1444,16 @@ public class DataSetUtil {
         }
     }
 
+    public static DatumRange asDatumRange( QDataSet ds, boolean sloppy ) {
+        Units u= SemanticOps.getUnits(ds);
+        if ( sloppy==false ) {
+            if ( !ds.property( QDataSet.BINS_0 ).equals("min,max") ) {
+                throw new IllegalArgumentException("expected min,max for BINS_0 because we are not allowing sloppy.");
+            }
+        }
+        return new DatumRange( ds.value(0), ds.value(1), u );
+    }
+
     public static DRank0DataSet asDataSet( double d, Units u ) {
         return DRank0DataSet.create(d,u);
     }
@@ -1451,7 +1465,7 @@ public class DataSetUtil {
     public static DRank0DataSet asDataSet( Datum d ) {
         return DRank0DataSet.create(d);
     }
-    
+
     /**
      * convert java arrays into QDataSets.
      * @param arr
@@ -1515,6 +1529,108 @@ public class DataSetUtil {
             if ( cds!=null ) result.append(", ");
         }
         return result.toString();
+    }
+
+    /**
+     * returns the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>.  (See Arrays.binarySearch)
+     */
+    public static int xTagBinarySearch( QDataSet ds, Datum datum, int low, int high ) {
+        Units units= datum.getUnits();
+        Units toUnits= SemanticOps.getUnits( ds );
+        UnitsConverter uc= units.getConverter(toUnits);
+        double key= datum.doubleValue(toUnits);
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            double midVal = ds.value(mid);
+            int cmp;
+            if (midVal < key) {
+                cmp = -1;   // Neither val is NaN, thisVal is smaller
+            } else if (midVal > key) {
+                cmp = 1;    // Neither val is NaN, thisVal is larger
+            } else {
+                long midBits = Double.doubleToLongBits(midVal);
+                long keyBits = Double.doubleToLongBits(key);
+                cmp = (midBits == keyBits ?  0 : // Values are equal
+                    (midBits < keyBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
+                        1));                     // (0.0, -0.0) or (NaN, !NaN)
+            }
+
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else
+                return mid; // key found
+        }
+        return -(low + 1);  // key not found.
+    }
+
+    /**
+     * returns the index of the closest index in the data. "column" comes
+     * from the legacy operator.
+     * @param ds
+     * @param datum
+     * @return
+     */
+    public static int closestIndex( QDataSet ds, Datum datum ) {
+        if ( !isMonotonic(ds) ) {
+            System.err.println("dataset is not monotonic");
+            isMonotonic(ds);
+            throw new IllegalArgumentException("dataset is not monotonic");
+        }
+        int result= xTagBinarySearch( ds, datum, 0, ds.length()-1 );
+        double ddatum= datum.doubleValue( SemanticOps.getUnits(ds) );
+        if (result == -1) {
+            result = 0; //insertion point is 0
+        } else if (result < 0) {
+            result= ~result; // usually this is the case
+            if ( result >= ds.length()-1 ) {
+                result= ds.length()-1;
+            } else {
+                double x= ddatum;
+                double x0= ds.value(result-1 );
+                double x1= ds.value(result );
+                result= ( ( x-x0 ) / ( x1 - x0 ) < 0.5 ? result-1 : result );
+            }
+        }
+        return result;
+    }
+
+    public static int closestIndex( QDataSet table, double x, Units units ) {
+        return closestIndex( table, units.createDatum(x) );
+    }
+
+
+    /**
+     * returns the first column that is before the given datum.  Note the
+     * if the datum identifies (==) an xtag, then the previous column is
+     * returned.
+     */
+    public static int getPreviousIndex( QDataSet ds, Datum datum ) {
+        int i= closestIndex( ds, datum );
+        Units dsUnits= SemanticOps.getUnits(ds);
+        // TODO: consider the virtue of ge
+        if ( i>0 && ds.value(i)>=(datum.doubleValue(dsUnits)) ) {
+            return i-1;
+        } else {
+            return i;
+        }
+    }
+
+    /**
+     * returns the first column that is after the given datum.  Note the
+     * if the datum identifies (==) an xtag, then the previous column is
+     * returned.
+     */
+    public static int getNextIndex( QDataSet ds, Datum datum ) {
+        int i= closestIndex( ds, datum );
+        Units dsUnits= SemanticOps.getUnits(ds);
+        // TODO: consider the virtue of le
+        if ( i<ds.length()-1 && ds.value(i)<=(datum.doubleValue(dsUnits)) ) {
+            return i+1;
+        } else {
+            return i;
+        }
     }
 
 }

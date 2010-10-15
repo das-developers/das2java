@@ -5,6 +5,7 @@
 package org.virbo.dataset;
 
 import java.text.ParseException;
+import java.util.regex.Pattern;
 import org.das2.datum.Basis;
 import org.das2.datum.Datum;
 import org.das2.datum.NumberUnits;
@@ -12,6 +13,7 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter.ScaleOffset;
+import org.virbo.dsops.Ops;
 
 /**
  * Common expressions that apply semantics to QDataSet.  Introduced
@@ -173,4 +175,155 @@ public class SemanticOps {
     public static boolean isBundle(QDataSet ds) {
         return ds.rank()==2 && ds.property(QDataSet.BUNDLE_1)!=null;
     }
+
+    /**
+     * returns true if the dataset indicates that it is monotonically
+     * increasing.  See DataSetUtil.isMonotonic.
+     * @param ds
+     * @return
+     */
+    public static boolean isMonotonic( QDataSet ds ) {
+        return DataSetUtil.isMonotonic(ds);
+    }
+
+    /**
+     * returns the plane requested by name, or null if it does not exist.
+     * If the name is PLANE_i, then return PLANE_i, otherwise return
+     * the dataset with this name.
+     * Note QDataSet has the rule that if PLANE_i is null, then all PLANE_(i+1)
+     * must also be null.
+     * @param ds
+     * @param name
+     * @return
+     */
+    public static QDataSet getPlanarView( QDataSet ds, String name ) {
+        if ( ds.property( QDataSet.PLANE_0 )==null ) return null; // typical case, get them out of here quickly
+        if ( name.equals("") ) throw new IllegalArgumentException("empty name");
+        if ( name.charAt(0)=='P' && Pattern.matches( "PLANE_(\\d|\\d\\d)", name ) ) {
+            return (QDataSet)ds.property(name);
+        }
+        int i=0;
+        while ( i<QDataSet.MAX_PLANE_COUNT ) {
+            QDataSet plane= (QDataSet) ds.property( "PLANE_"+i );
+            if ( plane==null ) {
+                return null;
+            } else {
+                String tname= (String) plane.property( QDataSet.NAME );
+                if ( tname==null ) {
+                    System.err.println("unnamed plane in "+ds );
+                } else {
+                    if ( name.equals(tname) ) {
+                        return plane;
+                    }
+                }
+            }
+            i++;
+        }
+        return null;
+    }
+
+    public static QDataSet weightsDataSet( QDataSet ds ) {
+        return DataSetUtil.weightsDataSet(ds);
+    }
+
+    public static Datum guessXTagWidth( QDataSet ds, QDataSet yds ) {
+        return DataSetUtil.asDatum( DataSetUtil.guessCadenceNew( ds, yds ) );
+    }
+
+    public static QDataSet xtagsDataSet( QDataSet ds ) {
+        QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( result==null ) {
+            return new IndexGenDataSet(ds.length());
+        } else {
+            return result;
+        }
+    }
+
+    /**
+     * return the ytags for the simple table that is ds.
+     * @param ds
+     * @return
+     */
+    public static QDataSet ytagsDataSet( QDataSet ds ) {
+        if ( ds.rank()>2 ) throw new IllegalArgumentException("need to slice to get a table");
+        QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if ( result==null ) {
+            return new IndexGenDataSet(ds.length(0));
+        } else {
+            return result;
+        }
+    }
+
+    /**
+     * return the bounds DS[ (x,y), (min,max) ] of the datasets
+     * independent parameters.  This is only implemented for Tables!
+     * @param ds
+     * @return
+     */
+    public static QDataSet bounds( QDataSet ds ) {
+        QDataSet xrange;
+        QDataSet yrange;
+
+        if ( ds.rank()==2 ) {
+            xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
+            yrange= Ops.extent( SemanticOps.ytagsDataSet(ds), null );
+        } else if ( ds.rank()==3 ) {
+            QDataSet ds1= ds.slice(0);
+            xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), null );
+            yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1), null );
+            for ( int i=1; i<ds.length(); i++ ) {
+                ds1= ds.slice(0);
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), xrange );
+                yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1), yrange );
+            }
+        } else {
+            throw new IllegalArgumentException("bad rank");
+        }
+        DDataSet result= DDataSet.createRank2(2,2);
+        result.putValue(0,0,xrange.value(0));
+        result.putValue(0,1,xrange.value(1));
+        result.putValue(1,0,yrange.value(0));
+        result.putValue(1,1,yrange.value(1));
+        result.putProperty(QDataSet.BINS_1,"min,maxInclusive");
+        return result;
+    }
+
+    /**
+     * returns true if the dataset is the scheme of a legacy TableDataSet
+     * @param ds
+     * @return
+     */
+    public static boolean isTableDataSet(QDataSet ds) {
+         return ds.rank()==3 || isSimpleTableDataSet(ds);
+    }
+
+    /**
+     * returns true if the dataset is the scheme of a legacy TableDataSet
+     * with only one table.  Note "Tables" have just one X unit and one Y unit,
+     * no bundles.
+     * @param ds
+     * @return
+     */
+    public static boolean isSimpleTableDataSet(QDataSet ds) {
+         return ds.rank()==2 && ( ds.property(QDataSet.BUNDLE_1)==null && ds.property(QDataSet.BINS_1)==null );
+    }
+
+    /**
+     * returns the value as a datum.  Note this should be used with reservation,
+     * this is not very efficient when the operation is done many times.
+     * @param ds
+     * @param d
+     * @return
+     */
+    public static Datum getDatum( QDataSet ds, double d ) {
+        Units u = SemanticOps.getUnits(ds);
+        Double vmin= (Double)ds.property( QDataSet.VALID_MIN );
+        Double vmax= (Double)ds.property( QDataSet.VALID_MAX );
+        Double fill= (Double)ds.property( QDataSet.FILL_VALUE );
+        if ( vmin!=null ) if ( vmin>d ) return u.getFillDatum();
+        if ( vmax!=null ) if ( vmax<d ) return u.getFillDatum();
+        if ( fill!=null ) if ( fill==d ) return u.getFillDatum();
+        return u.createDatum(d);
+    }
+
 }

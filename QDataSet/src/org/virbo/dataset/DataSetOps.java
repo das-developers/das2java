@@ -618,7 +618,9 @@ public class DataSetOps {
     /**
      * Extract a bundled dataset from a bundle of datasets.  The input should
      * be a rank 2 dataset with the property BUNDLE_1 set to a bundle descriptor
-     * dataset.  See BundleDataSet for more semantics.
+     * dataset.  See BundleDataSet for more semantics.  Note we support the case
+     * where DEPEND_1 has EnumerationUnits, and this is the same as slice1.
+     *
      *
      * @param aThis
      * @param ib index of the dataset to extract.
@@ -644,7 +646,7 @@ public class DataSetOps {
             Units enumunits= (Units) bundle1.property(QDataSet.UNITS);
             if ( enumunits==null ) enumunits= Units.dimensionless;
             String label=  String.valueOf(enumunits.createDatum(bundle1.value(ib)));
-            result.putProperty(QDataSet.NAME, label ); //TODO: make safe java-identifier
+            result.putProperty(QDataSet.NAME, label ); //TODO: make safe java-identifier eg: org.virbo.dsops.Ops.safeName(label)
             result.putProperty(QDataSet.LABEL, label );
             return result;
         }
@@ -859,12 +861,9 @@ public class DataSetOps {
         } else {
             throw new IllegalArgumentException("bad rank");
         }
-        DDataSet result= DDataSet.createRank2(2,2);
-        result.putValue(0,0,xrange.value(0));
-        result.putValue(0,1,xrange.value(1));
-        result.putValue(1,0,yrange.value(0));
-        result.putValue(1,1,yrange.value(1));
-        result.putProperty(QDataSet.BINS_1,"min,maxInclusive");
+
+        QDataSet result= Ops.join( xrange, yrange );
+
         return result;
     }
 

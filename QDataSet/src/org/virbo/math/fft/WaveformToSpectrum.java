@@ -2,6 +2,7 @@
  * WaveformToSpectrum.java
  *
  * Created on March 25, 2004, 9:09 PM
+ * Translated to QDataSet Oct 11, 2010.
  */
 
 package org.virbo.math.fft;

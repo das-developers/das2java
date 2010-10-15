@@ -4,12 +4,18 @@
  */
 package org.virbo.dataset;
 
+import org.das2.datum.EnumerationUnits;
+import org.das2.datum.Units;
+
 /**
  * return a rank N-1 dataset from a rank N dataset by slicing on the first
  * dimension.  (Rank 2, 3, and 4 supported.)
  * 
  * plane datasets are sliced as well, when they have rank 2 or greater.
  * bundle_1 handled.
+ *
+ * Note when DEPEND_1 has EnumerationUnits (like when it comes from labels() method,
+ * then this should be the same as the unbundle method.
  * 
  * @author jbf
  */
@@ -33,8 +39,19 @@ public class Slice1DataSet extends AbstractDataSet {
             System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
         }
 
+        String label=null;
+        Units dep1units= dep1==null ? null : (Units) dep1.property(QDataSet.UNITS);//TODO stupid hurry, need to drive Sarah to work
+        if ( dep1!=null && dep1.rank()==1 && ( dep1units instanceof EnumerationUnits ) ) { // check for legacy bundle where DEPEND_1 is labels.
+            label= String.valueOf(dep1units.createDatum(dep1.value(index)));
+        }
+
         if ( dep1!=null && dep1.rank()==1 ) {
-            DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
+            if ( label!=null ) {
+                putProperty( QDataSet.LABEL, label );
+                putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
+            } else {
+                DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
+            }
         }
         putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_2) );
         putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
