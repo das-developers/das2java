@@ -31,6 +31,7 @@ import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.*;
 import java.util.logging.*;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
@@ -226,8 +227,8 @@ public class AverageTableRebinner implements DataSetRebinner {
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
             QDataSet wds= SemanticOps.weightsDataSet(tds1);
             
-            Units xunits = SemanticOps.getUnits( tds1 );
-            Units yunits = SemanticOps.getUnits( tds1 );
+            Units xunits = SemanticOps.getUnits( xds );
+            Units yunits = SemanticOps.getUnits( yds );
 
             Datum xTagWidth= getXTagWidth( xds, tds1 ).multiply(0.9);
 
@@ -243,6 +244,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                     DatumRange dr = DatumRangeUtil.union(
                             xunits.createDatum( xds.value(i0) ),
                             xunits.createDatum( xds.value(i1) ) );
+                    try {
+                        dr.width().gt( xTagWidth );
+                    } catch ( InconvertibleUnitsException ex ) {
+                        dr.width().gt( xTagWidth );
+                    }
                     if ( dr.width().gt( xTagWidth ) ) {
                         double alpha = DatumRangeUtil.normalize(dr, xx);
                         if ( interpolateType==Interpolate.NearestNeighbor ) {
