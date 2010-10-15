@@ -786,9 +786,6 @@ public class AverageTableRebinner implements DataSetRebinner {
         for (int i = 0; i < nx; i++) {
             int ii1 = -1;
             int ii2 = -1;
-            if ( i==26 ) {
-                System.err.println("here at 26");
-            }
             for (int j = 0; j < ny; j++) {
                 if (weights[i][j] > 0. && ii1 == (j - 1)) { // ho hum another valid point
 
