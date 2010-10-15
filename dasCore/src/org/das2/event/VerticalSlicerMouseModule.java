@@ -27,13 +27,14 @@ import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
+import org.virbo.dataset.QDataSet;
 /**
  *
  * @author  jbf
  */
 public class VerticalSlicerMouseModule extends MouseModule {
     
-    private org.das2.dataset.DataSet ds;
+    private QDataSet ds;
     double offset;
     private DasAxis xaxis;
     private DasAxis yaxis;

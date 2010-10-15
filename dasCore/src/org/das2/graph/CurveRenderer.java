@@ -29,20 +29,19 @@ import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.geom.*;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
- *
+ * Old renderer that really doesn't do anything that the SeriesRenderer can do.
  * @author  jbf
  */
 public class CurveRenderer extends Renderer {
        
     private String xplane;
     private String yplane;
-    
-    private Units xunits; // xUnits of the axis
-    private Units yunits; // yUnits of the axis
-    private double[][] idata;  // data transformed to pixel space
-    
+        
     private boolean antiAliased= true;
     private SymColor color= SymColor.black;
     private PsymConnector psymConnector = PsymConnector.SOLID;
@@ -52,8 +51,10 @@ public class CurveRenderer extends Renderer {
     
     private GeneralPath path;
         
-    /** The dataset descriptor should return a Vector data set with planes identified
-     *  by xplane and yplane.
+    /** The dataset descriptor should return a rank 2 QDataSet with time for
+     * and a bundle descriptor for BUNDLE_1.  DataSetOps.unbundle is used
+     * to extract the xplane and yplane components.
+     *
      */
     public CurveRenderer( DataSetDescriptor dsd, String xplane, String yplane ) {
         super(dsd);
@@ -64,24 +65,20 @@ public class CurveRenderer extends Renderer {
         this.yplane= yplane;
     }
     
-    protected void uninstallRenderer() {
-    }
-    
-    protected void installRenderer() {
-    }
     
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         long timer0= System.currentTimeMillis();
         
-        VectorDataSet dataSet= (VectorDataSet)getDataSet();
+        QDataSet dataSet= getDataSet();
         
-        if (dataSet == null || dataSet.getXLength() == 0) {
+        if (dataSet == null || dataSet.length() == 0) {
             return;
         }
-        
-         VectorDataSet xds= (VectorDataSet)dataSet.getPlanarView(xplane);
-         VectorDataSet yds= (VectorDataSet)dataSet.getPlanarView(yplane);
-        
+
+        QDataSet xds= DataSetOps.unbundle( dataSet, xplane );
+        QDataSet yds= DataSetOps.unbundle( dataSet, yplane );
+        QDataSet wds= SemanticOps.weightsDataSet(xds);
+
         Graphics2D graphics= (Graphics2D) g1.create();
         
         RenderingHints hints0= graphics.getRenderingHints();
@@ -119,15 +116,11 @@ public class CurveRenderer extends Renderer {
         }                                
         
         
-        for (int index = 0; index < xds.getXLength(); index++) {
-            if ( ! yUnits.isFill(yds.getDouble(index,yUnits)) ) {
-                double i = xAxis.transform(xds.getDouble(index,xUnits),xUnits);
-                double j = yAxis.transform(yds.getDouble(index,yUnits),yUnits);
-                if ( Double.isNaN(j) ) {
-                    //DasApplication.getDefaultApplication().getDebugLogger().warning("got NaN");
-                } else {
-                    psym.draw( g1, i, j, (float)symSize );
-                }
+        for (int index = 0; index < xds.length(); index++) {
+            if ( wds.value()>0  ) {
+                double i = xAxis.transform(xds.value(index),xUnits);
+                double j = yAxis.transform(yds.value(index),yUnits);
+                psym.draw( g1, i, j, (float)symSize );
             }
         }
                 
@@ -137,14 +130,14 @@ public class CurveRenderer extends Renderer {
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage( xAxis, yAxis, monitor );
         
-        VectorDataSet dataSet= (VectorDataSet)getDataSet();
+        QDataSet dataSet= getDataSet();
         
-        if (dataSet == null || dataSet.getXLength() == 0) {
+        if (dataSet == null || dataSet.length() == 0) {
             return;
         }
         
-        VectorDataSet xds= (VectorDataSet)dataSet.getPlanarView(xplane);
-        VectorDataSet yds= (VectorDataSet)dataSet.getPlanarView(yplane);
+        QDataSet xds= DataSetOps.unbundle( dataSet, xplane );
+        QDataSet yds= DataSetOps.unbundle( dataSet, yplane );
         
         path= GraphUtil.getPath( xAxis, yAxis, xds, yds, false, false );
     }
@@ -163,6 +156,7 @@ public class CurveRenderer extends Renderer {
      */
     public void setLineWidth(double lineWidth) {
         this.lineWidth = (float)lineWidth;
+        refreshImage();
     }
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {

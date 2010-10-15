@@ -24,6 +24,7 @@
 package org.das2.dataset;
 
 import org.das2.DasException;
+import org.virbo.dataset.QDataSet;
 
 /**
  *
@@ -31,6 +32,6 @@ import org.das2.DasException;
  */
 public interface DataSetRebinner {
     
-    DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException;
+    QDataSet rebin( QDataSet ds, RebinDescriptor x, RebinDescriptor y ) throws IllegalArgumentException, DasException;
     
 }

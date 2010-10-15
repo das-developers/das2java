@@ -8,12 +8,9 @@
 
 package org.das2.graph;
 
-import org.das2.dataset.DataSetDescriptor;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
-import org.das2.datum.UnitsConverter;
 import org.das2.event.LabelDragRenderer;
 import org.das2.event.MouseModule;
 import org.das2.system.DasLogger;
@@ -23,10 +20,15 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import org.das2.datum.Units;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 
 /**
- *
+ * draw bars for the dataset.  This expects a QDataSet with the scheme:
+ * Events[:] where DEPEND_0 is rank 2 bins dataset [:,"min,max"]
+ * Note fill values in Events are under-implemented, we don't check validMin,validMax.
  * @author Jeremy
  */
 public class EventsRenderer extends Renderer {
@@ -35,9 +37,6 @@ public class EventsRenderer extends Renderer {
     
     private EventsRenderer.ColorSpecifier colorSpecifier=null;
     
-    public EventsRenderer( DataSetDescriptor dsd ) {
-        super(dsd);
-    }
     
     public EventsRenderer( ) {
         super();
@@ -104,10 +103,10 @@ public class EventsRenderer extends Renderer {
         }
         @Override
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
-            VectorDataSet vds= (VectorDataSet)getDataSet();
-            
+            QDataSet vds= (QDataSet)getDataSet();
+            QDataSet xds= SemanticOps.xtagsDataSet(vds); // should be rank 2
             if ( vds==null ) return new Rectangle[0];
-            if ( vds.getXLength()==0 ) return new Rectangle[0];
+            if ( vds.length()==0 ) return new Rectangle[0];
             
             int ix= (int)p2.getX() - parent.getColumn().getDMinimum();
             
@@ -116,10 +115,13 @@ public class EventsRenderer extends Renderer {
             } else {
                 int i= eventMap[ix];
                 if ( i>=0 ) {
-                    Datum sx= vds.getXTagDatum(i);
-                    Datum sz= vds.getDatum(i);
-                    VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView(widthPlaneId);
-                    DatumRange dr= new DatumRange( sx, sx.add(widthsDs.getDatum(i)) );
+                    double sxmin= xds.value(i,0);
+                    double sxmax= xds.value(i,1);
+                    Units sxunits= SemanticOps.getUnits(xds);
+                    Units zunits= SemanticOps.getUnits(ds);
+
+                    Datum sz= zunits.createDatum( vds.value(i) ); //TODO: validMin, validMax
+                    DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
                     setLabel( textSpecifier.getText( dr, sz ) );
                 } else {
                     setLabel(null);
@@ -136,8 +138,8 @@ public class EventsRenderer extends Renderer {
     
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
-        VectorDataSet vds= (VectorDataSet)getDataSet();
-        if (vds == null || vds.getXLength() == 0) {
+        QDataSet vds= (QDataSet)getDataSet();
+        if (vds == null || vds.length() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
             return;
         }
@@ -150,10 +152,6 @@ public class EventsRenderer extends Renderer {
             renderException( g, xAxis, yAxis, lastException );
             
         } else {
-            VectorDataSet widthsDs= (VectorDataSet)vds.getPlanarView(widthPlaneId);
-            if ( widthsDs==null ) {
-                throw new IllegalArgumentException("no width plane named \""+widthPlaneId+"\" found");
-            }
             
             DasColumn column= xAxis.getColumn();
             DasRow row= parent.getRow();
@@ -161,33 +159,32 @@ public class EventsRenderer extends Renderer {
             eventMap= new int[column.getWidth()];
             for ( int k=0; k<eventMap.length; k++ ) eventMap[k]= -1;
             
-            if ( vds.getXLength()>0 ) {
-                UnitsConverter uc=  UnitsConverter.getConverter( widthsDs.getYUnits(), xAxis.getUnits().getOffsetUnits() );
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+            Units xunits= SemanticOps.getUnits(xds);
+            Units units= SemanticOps.getUnits(ds);
+
+            if ( vds.length()>0 ) {
                 
                 int ivds0= 0;
-                int ivds1= vds.getXLength();
+                int ivds1= vds.length();
+
                 for ( int i=ivds0; i<ivds1; i++ ) {
                     
-                    Datum x= vds.getXTagDatum(i);
-                    int ix= (int)xAxis.transform(x);
-                    int iwidth;
-                    if ( uc!=null ) {
-                        Datum y= widthsDs.getDatum(i);
-                        iwidth= (int)xAxis.transform( x.add( y ) ) - ix;
-                    } else {
-                        iwidth= 1;
-                    }
-                    
+                    double xmin= vds.value(i,0);
+                    int ixmin= (int)xAxis.transform( vds.value(i,0),xunits);
+                    int ixmax= (int)xAxis.transform( vds.value(i,1),xunits);
+
+                    int iwidth= Math.max( ixmax- ixmin, 1 );
+
                     if ( colorSpecifier!=null ) {
-                        Datum sz= vds.getDatum(i);
+                        Datum sz= units.createDatum( vds.value(i) );
                         g.setColor( colorSpecifier.getColor(sz) );
                     }
                     
-                    if ( column.getDMinimum() < ( ix+iwidth ) ||
-                            column.getDMaximum() > (ix) ) {
+                    if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
-                        g.fill( new Rectangle( ix, row.getDMinimum(), iwidth, row.getHeight() ) );
-                        int im= ix-column.getDMinimum();
+                        g.fill( new Rectangle( ixmin, row.getDMinimum(), ixmax-ixmin, row.getHeight() ) );
+                        int im= ixmin-column.getDMinimum();
                         int em0= im-1;
                         int em1= im+iwidth+1;
                         for ( int k=em0; k<em1; k++ ) {
@@ -195,6 +192,7 @@ public class EventsRenderer extends Renderer {
                         }
                     }
                 }
+
                 for ( int k1=1; k1<=2; k1++ ) { /* add fuzziness using Larry's algorithm */
                     for ( int k2=-1; k2<=1; k2+=2 ) {
                         int em0= ( k2==1 ) ? 0 : eventMap.length-1;
@@ -222,14 +220,6 @@ public class EventsRenderer extends Renderer {
     public void setColor( Color color ) {
         this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );
         super.invalidateParentCacheImage();
-    }
-    
-    private String widthPlaneId="xTagWidth";
-    public void setWidthPlaneId( String id ) {
-        this.widthPlaneId= id;
-    }
-    public String getWidthPlaneId( ) {
-        return this.widthPlaneId;
     }
     
     /**

@@ -26,9 +26,8 @@ import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasProperties;
 import org.das2.dataset.DataSet;
-import org.das2.dataset.DataSetUtil;
+import org.virbo.dataset.DataSetUtil;
 import org.das2.dataset.TableDataSet;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
@@ -59,9 +58,11 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
-import org.das2.dataset.WeightsVectorDataSet;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -120,9 +121,9 @@ public class SeriesRenderer extends Renderer {
 
     interface RenderElement {
 
-        int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon);
+        int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon);
 
-        void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon);
+        void update(DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon);
 
         boolean acceptContext(Point2D.Double dp);
     }
@@ -145,14 +146,14 @@ public class SeriesRenderer extends Renderer {
          * On 20080206, this was measured to run at 320pts/millisecond for FillStyle.FILL
          * On 20080206, this was measured to run at 300pts/millisecond in FillStyle.OUTLINE
          */
-        private int renderStamp(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+        private int renderStamp(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
 
             DasPlot lparent= parent;
             if ( lparent==null ) return 0;
 
-            VectorDataSet colorByDataSet = null;
+            QDataSet colorByDataSet = null;
             if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                colorByDataSet = (VectorDataSet) vds.getPlanarView(colorByDataSetId);
+                colorByDataSet = SemanticOps.getPlanarView( vds, colorByDataSetId );
             }
 
             if (colorByDataSet != null) {
@@ -180,12 +181,12 @@ public class SeriesRenderer extends Renderer {
          * On 20080206, this was measured to run at 45pts/millisecond in FillStyle.FILL
          * On 20080206, this was measured to run at 9pts/millisecond in FillStyle.OUTLINE
          */
-        private int renderDraw(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
+        private int renderDraw(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             float fsymSize = (float) symSize;
 
             if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                colorByDataSet = (VectorDataSet) dataSet.getPlanarView(colorByDataSetId);
+                colorByDataSet = SemanticOps.getPlanarView( dataSet,colorByDataSetId );
             }
 
             graphics.setStroke(new BasicStroke((float) lineWidth));
@@ -217,7 +218,7 @@ public class SeriesRenderer extends Renderer {
 
         }
 
-        public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+        public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
             DasPlot lparent= parent;
             if ( lparent==null ) return 0;
@@ -229,23 +230,18 @@ public class SeriesRenderer extends Renderer {
             return i;
         }
 
-        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
-            VectorDataSet colorByDataSet = null;
+            QDataSet colorByDataSet = null;
             Units cunits = null;
             if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                colorByDataSet = (VectorDataSet) dataSet.getPlanarView(colorByDataSetId);
+                colorByDataSet = SemanticOps.getPlanarView( dataSet, colorByDataSetId );
                 if (colorByDataSet != null) {
-                    cunits = colorByDataSet.getYUnits();
+                    cunits = SemanticOps.getUnits( colorByDataSet );
                 }
             }
 
-
-            Units xUnits = xAxis.getUnits();
-            Units yUnits = yAxis.getUnits();
-
-            double x, y;
-            int fx, fy;
+            double x, y;            
             double dx,dy;
 
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
@@ -255,16 +251,20 @@ public class SeriesRenderer extends Renderer {
 
             int index = firstIndex;
 
+            QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
+            Units xUnits= SemanticOps.getUnits(xds);
+            Units yUnits = SemanticOps.getUnits(ds);
+
             if ( index<lastIndex ) {
-                x = dataSet.getXTagDouble(index, xUnits);
-                y = dataSet.getDouble(index, yUnits);
+                x = xds.value(index);
+                y = dataSet.value(index);
                 dx= xAxis.transform(x, xUnits);
                 dy= yAxis.transform(y, yUnits);
             }
             
             double dx0=-99, dy0=-99; //last point.
 
-            VectorDataSet wds= WeightsVectorDataSet.create(dataSet);
+            QDataSet wds= SemanticOps.weightsDataSet(dataSet);
 
             int buffer= (int)Math.ceil( Math.max( 20, getSymSize() ) );
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
@@ -279,10 +279,10 @@ public class SeriesRenderer extends Renderer {
 
             int i = 0;
             for (; index < lastIndex; index++) {
-                x = dataSet.getXTagDouble(index, xUnits);
-                y = dataSet.getDouble(index, yUnits);
+                x = xds.value(index);
+                y = dataSet.value(index);
 
-                final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
+                final boolean isValid = wds.value(index)>0 && xUnits.isValid(x);
 
                 dx = xAxis.transform(x, xUnits);
                 dy = yAxis.transform(y, yUnits);
@@ -294,7 +294,7 @@ public class SeriesRenderer extends Renderer {
                     dpsymsPath[i * 2] = dx;
                     dpsymsPath[i * 2 + 1] = dy;
                     if (colorByDataSet != null) {
-                        colors[i] = colorBar.indexColorTransform(colorByDataSet.getDouble(index, cunits), cunits);
+                        colors[i] = colorBar.indexColorTransform( colorByDataSet.value(index), cunits);
                     }
                     i++;
                 }
@@ -327,7 +327,7 @@ public class SeriesRenderer extends Renderer {
 
         GeneralPath p;
 
-        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if (p == null) {
                 return 0;
             }
@@ -335,9 +335,9 @@ public class SeriesRenderer extends Renderer {
             return lastIndex - firstIndex;
         }
 
-        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
-            VectorDataSet deltaPlusY = (VectorDataSet) vds.getPlanarView(PROPERTY_Y_DELTA_PLUS);
-            VectorDataSet deltaMinusY = (VectorDataSet) vds.getPlanarView(PROPERTY_Y_DELTA_MINUS);
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
+            QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
+            QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
 
             p = null;
 
@@ -347,18 +347,21 @@ public class SeriesRenderer extends Renderer {
             if (deltaMinusY == null) {
                 return;
             }
-            Units xunits = vds.getXUnits();
-            Units yunits = vds.getYUnits();
+
+            QDataSet xds= SemanticOps.xtagsDataSet(vds);
+
+            Units xunits = SemanticOps.getUnits(xds);
+            Units yunits = SemanticOps.getUnits(vds);
             Units yoffsetUnits = yunits.getOffsetUnits();
 
             p = new GeneralPath();
             for (int i = firstIndex; i < lastIndex; i++) {
-                float ix = (float) xAxis.transform(vds.getXTagDouble(i, xunits), xunits);
-                double dp= deltaPlusY.getDouble(i, yoffsetUnits);
-                double dm= deltaMinusY.getDouble(i, yoffsetUnits);
+                float ix = (float) xAxis.transform( xds.value(i), xunits );
+                double dp= deltaPlusY.value(i);
+                double dm= deltaMinusY.value(i);
                 if ( yoffsetUnits.isValid(dp) && yoffsetUnits.isValid(dm) ) {
-                    float iym = (float) yAxis.transform(vds.getDouble(i, yunits) - dm, yunits);
-                    float iyp = (float) yAxis.transform(vds.getDouble(i, yunits) + dp, yunits);
+                    float iym = (float) yAxis.transform( vds.value(i) - dm, yunits );
+                    float iyp = (float) yAxis.transform( vds.value(i) + dp, yunits );
                     p.moveTo(ix, iym);
                     p.lineTo(ix, iyp);
                 }
@@ -377,7 +380,7 @@ public class SeriesRenderer extends Renderer {
         private GeneralPath path1;
         private Color color;  // override default color
 
-        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if (path1 == null) {
                 return 0;
             }
@@ -388,11 +391,15 @@ public class SeriesRenderer extends Renderer {
             return 0;
         }
 
-        public synchronized void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
-            Units xUnits = xAxis.getUnits();
-            Units yUnits = yAxis.getUnits();
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
-            VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
+
+            QDataSet wds= SemanticOps.weightsDataSet( dataSet );
+            QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
+
+            Units xUnits = SemanticOps.getUnits(xds);
+            Units yUnits = SemanticOps.getUnits(dataSet);
+
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
 
@@ -412,7 +419,7 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
-            Datum sw = DataSetUtil.guessXTagWidth(dataSet);
+            Datum sw = SemanticOps.guessXTagWidth(xds,dataSet);
             double xSampleWidth;
             boolean logStep;
             if ( UnitsUtil.isRatiometric(sw.getUnits())) {
@@ -443,8 +450,8 @@ public class SeriesRenderer extends Renderer {
             int index;
 
             index = firstIndex;
-            x = (double) dataSet.getXTagDouble(index, xUnits);
-            y = (double) dataSet.getDouble(index, yUnits);
+            x = (double) xds.value(index);
+            y = (double) dataSet.value(index);
 
             // first point //
             logger.fine("firstPoint moveTo,LineTo= " + x + "," + y);
@@ -473,10 +480,10 @@ public class SeriesRenderer extends Renderer {
             boolean ignoreCadence= ! cadenceCheck;
             for (; index < lastIndex; index++) {
 
-                x = dataSet.getXTagDouble(index, xUnits);
-                y = dataSet.getDouble(index, yUnits);
+                x = xds.value(index);
+                y = dataSet.value(index);
 
-                final boolean isValid = wds.getDouble( index, Units.dimensionless )>0 && xUnits.isValid(x);
+                final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
 
                 fx = (float) xAxis.transform(x, xUnits);
                 fy = (float) yAxis.transform(y, yUnits);
@@ -587,7 +594,7 @@ public class SeriesRenderer extends Renderer {
 
         private GeneralPath fillToRefPath1;
 
-        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, VectorDataSet vds, ProgressMonitor mon) {
+        public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if ( fillToRefPath1==null ) {
                 return 0;
             }
@@ -596,10 +603,12 @@ public class SeriesRenderer extends Renderer {
             return 0;
         }
 
-        public void update(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet, ProgressMonitor mon) {
-            Units xUnits = xAxis.getUnits();
-            Units yUnits = yAxis.getUnits();
-            VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
+        public void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
+            QDataSet wds= SemanticOps.weightsDataSet( dataSet );
+            QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
+
+            Units xUnits = SemanticOps.getUnits(xds);
+            Units yUnits = SemanticOps.getUnits(dataSet);
 
             if ( lastIndex-firstIndex==0 ) {
                 this.fillToRefPath1= null;
@@ -609,7 +618,7 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
-            Datum sw = DataSetUtil.guessXTagWidth(dataSet);
+            Datum sw = SemanticOps.guessXTagWidth(xds,dataSet);
             double xSampleWidth;
             boolean logStep;
             if ( UnitsUtil.isRatiometric(sw.getUnits())) {
@@ -650,8 +659,8 @@ public class SeriesRenderer extends Renderer {
             int index;
 
             index = firstIndex;
-            x = (double) dataSet.getXTagDouble(index, xUnits);
-            y = (double) dataSet.getDouble(index, yUnits);
+            x = (double) xds.value(index);
+            y = (double) dataSet.value(index);
 
             // first point //
             fx = (float) xAxis.transform(x, xUnits);
@@ -679,10 +688,10 @@ public class SeriesRenderer extends Renderer {
                 boolean ignoreCadence= ! cadenceCheck;
                 for (; index < lastIndex; index++) {
 
-                    x = dataSet.getXTagDouble(index, xUnits);
-                    y = dataSet.getDouble(index, yUnits);
+                    x = xds.value(index);
+                    y = dataSet.value(index);
 
-                    final boolean isValid = wds.getDouble( index, Units.dimensionless )>0 && xUnits.isValid(x);
+                    final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
 
                     fx = (float) xAxis.transform(x, xUnits);
                     fy = (float) yAxis.transform(y, yUnits);
@@ -810,31 +819,29 @@ public class SeriesRenderer extends Renderer {
      * the data that is plottable.  The plottable part is the part that
      * might be visible while limiting the number of plotted points.
      */
-    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, VectorDataSet dataSet) {
-
-        Units xUnits = xAxis.getUnits();
-        Units yUnits = yAxis.getUnits();
-
+    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet) {
+        
         int ixmax;
         int ixmin;
 
-        VectorDataSet wds= WeightsVectorDataSet.create( dataSet );
+        QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
+        QDataSet wds= SemanticOps.weightsDataSet(dataSet );
 
         DasPlot lparent= parent;
         if ( lparent==null ) return;
 
-        Boolean xMono = (Boolean) dataSet.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        Boolean xMono = SemanticOps.isMonotonic( xds );
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
-            firstIndex_v = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-            lastIndex_v = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
+            firstIndex_v = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
+            lastIndex_v = DataSetUtil.getNextIndex( xds, visibleRange.max()) + 1; // +1 is for exclusive.
             if (lparent.isOverSize()) {
                 Rectangle plotBounds = lparent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
                     visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
                 }
-                ixmin = DataSetUtil.getPreviousColumn(dataSet, visibleRange.min());
-                ixmax = DataSetUtil.getNextColumn(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
+                ixmin = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
+                ixmax = DataSetUtil.getNextIndex( xds, visibleRange.max()) + 1; // +1 is for exclusive.
 
             } else {
                 ixmin = firstIndex_v;
@@ -844,7 +851,7 @@ public class SeriesRenderer extends Renderer {
         } else {
 
             ixmin = 0;
-            ixmax = dataSet.getXLength();
+            ixmax = xds.length();
             firstIndex_v= ixmin;
             lastIndex_v= ixmax;
         }
@@ -856,10 +863,10 @@ public class SeriesRenderer extends Renderer {
 
         // find the first valid point, set x0, y0 //
         for (index = ixmin; index < ixmax; index++) {
-            x = (double) dataSet.getXTagDouble(index, xUnits);
-            y = (double) dataSet.getDouble(index, yUnits);
+            x = (double) xds.value(index);
+            y = (double) dataSet.value(index);
 
-            final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
+            final boolean isValid = wds.value(index)>0;
             if (isValid) {
                 firstIndex = index;  // TODO: what if no valid points?
 
@@ -876,9 +883,9 @@ public class SeriesRenderer extends Renderer {
         // find the last valid point, minding the dataSetSizeLimit
         int pointsPlotted = 0;
         for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-            y = dataSet.getDouble(index, yUnits);
+            y = dataSet.value(index);
 
-            final boolean isValid = wds.getDouble(index,Units.dimensionless)>0 && xUnits.isValid(x);
+            final boolean isValid = wds.value(index)>0;
 
             if (isValid) {
                 pointsPlotted++;
@@ -912,7 +919,7 @@ public class SeriesRenderer extends Renderer {
 
         long timer0 = System.currentTimeMillis();
 
-        DataSet dataSet = getDataSet();
+        QDataSet dataSet = getDataSet();
 
         if (dataSet == null) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
@@ -920,7 +927,7 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
-        if (dataSet.getXLength() == 0) {
+        if (dataSet.length() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
             lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
             return;
@@ -932,16 +939,16 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
-        TableDataSet tds = null;
-        VectorDataSet vds = null;
+        QDataSet tds = null;
+        QDataSet vds = null;
         boolean yaxisUnitsOkay = false;
 
-        if (dataSet instanceof VectorDataSet) {
-            vds = (VectorDataSet) dataSet;
-            yaxisUnitsOkay = dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
-        } else if (dataSet instanceof TableDataSet) {
-            tds = (TableDataSet) dataSet;
-            yaxisUnitsOkay = tds.getZUnits().isConvertableTo(yAxis.getUnits());
+        if ( !isTableDataSet(dataSet) ) {
+            vds = (QDataSet) dataSet;
+            yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
+        } else {
+            tds = (QDataSet) dataSet;
+            yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
         }
 
         if (!yaxisUnitsOkay) {
@@ -949,7 +956,9 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
-        if ( !dataSet.getXUnits().isConvertableTo(xAxis.getUnits()) ) {
+        QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
+
+        if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
             lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
             return;
         }
@@ -992,23 +1001,25 @@ public class SeriesRenderer extends Renderer {
             if (extraConnectorElements == null) {
                 return;
             }
-            if (tds.getYLength(0) != extraConnectorElements.length) {
+            if ( tds.length(0) != extraConnectorElements.length) {
                 return;
             } else {
+                QDataSet yds= SemanticOps.ytagsDataSet(tds);
+                Units yunits= SemanticOps.getUnits(yds);
                 int maxWidth = 0;
-                for (int j = 0; j < tds.getYLength(0); j++) {
-                    String label = String.valueOf(tds.getYTagDatum(0, j));
+                for (int j = 0; j < tds.length(0); j++) {
+                    String label = String.valueOf( yunits.createDatum(yds.value(j)) ).trim();
                     maxWidth = Math.max(maxWidth, g.getFontMetrics().stringWidth(label));
                 }
-                for (int j = 0; j < tds.getYLength(0); j++) {
-                    vds = tds.getYSlice(j, 0);
+                for (int j = 0; j < tds.length(0); j++) {
+                    vds = DataSetOps.slice1( tds, j );
 
                     graphics.setColor(color);
                     if (extraConnectorElements[j] != null) {  // thread race
 
                         extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
 
-                        String label = String.valueOf(tds.getYTagDatum(0, j)).trim();
+                        String label = String.valueOf( yunits.createDatum(yds.value(j)) ).trim();
 
                         lparent.addToLegend( this, (ImageIcon)GraphUtil.colorIcon( extraConnectorElements[j].color, 5, 5 ), j, label );
                     }
@@ -1082,30 +1093,31 @@ public class SeriesRenderer extends Renderer {
         }
 
 
-        DataSet dataSet = getDataSet();
+        QDataSet dataSet = getDataSet();
 
         if (dataSet == null ) {
             logger.fine("dataset was null");
             return;
         }
 
-        if ( dataSet.getXLength() == 0) {
+        if ( dataSet.length() == 0) {
             logger.fine("dataset was empty");
             return;
         }
 
-        TableDataSet tds = null;
-        VectorDataSet vds = null;
+        QDataSet tds = null;
+        QDataSet vds = null;
+        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         boolean plottable = false;
 
-        if (dataSet instanceof VectorDataSet) {
-            vds = (VectorDataSet) dataSet;
-            plottable = dataSet.getYUnits().isConvertableTo(yAxis.getUnits());
-        } else if (dataSet instanceof TableDataSet) {
-            tds = (TableDataSet) dataSet;
-            plottable = tds.getZUnits().isConvertableTo(yAxis.getUnits());
+        if ( !isTableDataSet(dataSet) ) {
+            vds = (QDataSet) dataSet;
+            plottable = SemanticOps.getUnits(dataSet).isConvertableTo(yAxis.getUnits());
+        } else if (dataSet instanceof QDataSet) {
+            tds = (QDataSet) dataSet;
+            plottable = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
         }
-        plottable = plottable && dataSet.getXUnits().isConvertableTo(xAxis.getUnits());
+        plottable = plottable && SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits());
 
         if (!plottable) {
             return;
@@ -1136,8 +1148,8 @@ public class SeriesRenderer extends Renderer {
             selectionArea= calcSelectionArea( xAxis, yAxis, vds );
 
         } else if (tds != null) {
-            extraConnectorElements = new PsymConnectorRenderElement[tds.getYLength(0)];
-            for (int i = 0; i < tds.getYLength(0); i++) {
+            extraConnectorElements = new PsymConnectorRenderElement[tds.length(0)];
+            for (int i = 0; i < tds.length(0); i++) {
                 extraConnectorElements[i] = new PsymConnectorRenderElement();
 
                 float[] colorHSV = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
@@ -1148,7 +1160,7 @@ public class SeriesRenderer extends Renderer {
                     colorHSV[1] = 0.7f;
                 }
                 extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
-                vds = tds.getYSlice(i, 0);
+                vds = DataSetOps.slice1(tds,i);
 
                 if (i == 0) {
                     updateFirstLast(xAxis, yAxis, vds); // minimal support assumes vert slice data is all valid or all invalid.
@@ -1174,7 +1186,7 @@ public class SeriesRenderer extends Renderer {
         setUpdatesPointsPerMillisecond(dppms);
     }
 
-    private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, VectorDataSet ds ) {
+    private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, QDataSet ds ) {
 
         Datum widthx;
         if (xaxis.isLog()) {
@@ -1196,7 +1208,7 @@ public class SeriesRenderer extends Renderer {
         
         DatumRange dr= xaxis.getDatumRange();
         
-        VectorDataSet reduce = VectorUtil.reduce2D( 
+        QDataSet reduce = VectorUtil.reduce2D(
                 ds,
                 firstIndex,
                 Math.min( firstIndex+20000, lastIndex),
@@ -1562,13 +1574,13 @@ public class SeriesRenderer extends Renderer {
     /**
      * Holds value of property colorByDataSet.
      */
-    private org.das2.dataset.VectorDataSet colorByDataSet;
+    private QDataSet colorByDataSet;
 
     /**
      * Getter for property colorByDataSet.
      * @return Value of property colorByDataSet.
      */
-    public org.das2.dataset.VectorDataSet getColorByDataSet() {
+    public QDataSet getColorByDataSet() {
         return this.colorByDataSet;
     }
 
@@ -1576,7 +1588,7 @@ public class SeriesRenderer extends Renderer {
      * Setter for property colorByDataSet.
      * @param colorByDataSet New value of property colorByDataSet.
      */
-    public void setColorByDataSet(org.das2.dataset.VectorDataSet colorByDataSet) {
+    public void setColorByDataSet( QDataSet colorByDataSet) {
         this.colorByDataSet = colorByDataSet;
         refreshImage();
     }

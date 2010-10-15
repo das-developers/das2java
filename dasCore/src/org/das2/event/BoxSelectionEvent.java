@@ -27,6 +27,7 @@ import org.das2.dataset.DataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import java.util.HashMap;
+import org.virbo.dataset.QDataSet;
 
 /**
  * This is the range anolog to the DataPointSelectionEvent.  The DPSE is a point,
@@ -44,7 +45,7 @@ public class BoxSelectionEvent extends DasEvent {
     private DatumRange yrange;
     private Datum finishx, finishy;
     private Datum startx, starty;
-    private DataSet ds;
+    private QDataSet ds;
     private HashMap planes;
        
     /**
@@ -140,11 +141,11 @@ public class BoxSelectionEvent extends DasEvent {
         }
     }
     
-    public void setDataSet(DataSet ds) {
+    public void setDataSet(QDataSet ds) {
         this.ds = ds;
     }
     
-    public DataSet getDataSet() {
+    public QDataSet getDataSet() {
         return ds;
     }
     

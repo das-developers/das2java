@@ -31,11 +31,8 @@ import org.das2.dataset.DefaultTableDataSet;
 import org.das2.dataset.RebinDescriptor;
 import org.das2.util.DasMath;
 import org.das2.DasException;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
 import org.das2.datum.Units;
 import org.das2.util.DasDie;
-import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.Graphics;
@@ -44,9 +41,7 @@ import java.awt.geom.*;
 import java.awt.image.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.ParseException;
 import java.util.Collections;
-import org.w3c.dom.*;
 
 /**
  *

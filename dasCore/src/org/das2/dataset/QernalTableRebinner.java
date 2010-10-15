@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  *
  * @author Jeremy
  */
-public class QernalTableRebinner implements DataSetRebinner {
+public class QernalTableRebinner { // implements DataSetRebinner {
     
     interface QernalFactory {
         Qernal getQernal( RebinDescriptor ddx, RebinDescriptor ddy, Datum xBinWidth, Datum yBinWidth );

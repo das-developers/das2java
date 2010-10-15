@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author Jeremy
  */
-public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
+public class AverageNoInterpolateTableRebinner { // { implements DataSetRebinner {
     Logger logger;
     boolean nearestNeighbor= false;
     

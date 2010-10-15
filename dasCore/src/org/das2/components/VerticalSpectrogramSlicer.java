@@ -30,10 +30,6 @@ import org.das2.graph.DasRow;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasAxis;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.datum.TimeLocationUnits;
@@ -45,6 +41,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 
 public class VerticalSpectrogramSlicer
@@ -64,7 +63,7 @@ extends DasPlot implements DataPointSelectionListener {
         addRenderer(renderer);                
     }
         
-    protected void setDataSet( VectorDataSet ds ) {
+    protected void setDataSet( QDataSet ds ) {
        renderer.setDataSet(ds);
     }
             
@@ -191,13 +190,28 @@ extends DasPlot implements DataPointSelectionListener {
         long xxx[]= { 0,0,0,0 };
         xxx[0] = System.currentTimeMillis()-e.birthMilli;    
         
-        DataSet ds = e.getDataSet();
-        if (ds==null || !(ds instanceof TableDataSet))
+        QDataSet ds = e.getDataSet();
+        if (ds==null || ! SemanticOps.isTableDataSet(ds) )
             return;
         
-        TableDataSet tds = (TableDataSet)ds;
-        
-        VectorDataSet sliceDataSet= tds.getXSlice( DataSetUtil.closestColumn( tds, e.getX() ) );
+        QDataSet tds = (QDataSet)ds;
+        QDataSet tds1=null;
+
+        if ( tds.rank()==3 ) { // slice to get the correct table;
+            for ( int i=0; i<tds.length(); i++ ) {
+                QDataSet bounds= DataSetOps.dependBounds(tds.slice(i));
+                if ( DataSetOps.boundsContains( bounds, e.getX(), e.getY() ) ) {
+                    tds1= tds.slice(i);
+                    break;
+                }
+            }
+        } else {
+            if ( DataSetOps.boundsContains( tds, e.getX(), e.getY() ) ) {
+                tds1= tds;
+            }
+        }
+
+        QDataSet sliceDataSet= tds1.slice( org.virbo.dataset.DataSetUtil.closestIndex( tds1, e.getX() ) );
                       
         renderer.setDataSet(sliceDataSet);
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");        

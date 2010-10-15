@@ -5,8 +5,6 @@
  */
 package org.das2.graph;
 
-import org.das2.dataset.ConstantDataSetDescriptor;
-import org.das2.dataset.XTagsVectorDataSet;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.TableUtil;
@@ -22,6 +20,10 @@ import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import javax.swing.*;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 //import org.apache.xml.serialize.*;
 
 /**
@@ -41,8 +43,8 @@ public class GraphUtil {
     }
 
 
-    public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, boolean histogram, boolean clip ) {
-        return getPath(xAxis, yAxis, new XTagsVectorDataSet(xds), xds, histogram, clip );
+    public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, QDataSet ds, boolean histogram, boolean clip ) {
+        return getPath(xAxis, yAxis, SemanticOps.xtagsDataSet(ds), ds, histogram, clip );
     }
 
     /**
@@ -55,45 +57,21 @@ public class GraphUtil {
      * @param clip limit path to what's visible for each axis.
      * @return
      */
-    public static GeneralPath getPath( DasAxis xAxis, DasAxis yAxis, VectorDataSet xds, VectorDataSet yds, boolean histogram, boolean clip ) {
+    public static GeneralPath getPath( DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet yds, boolean histogram, boolean clip ) {
 
         GeneralPath newPath = new GeneralPath();
 
         Dimension d;
 
-        double xmin, xmax, ymin, ymax;
-        int ixmax, ixmin;
-
         Units xUnits = xAxis.getUnits();
         Units yUnits = yAxis.getUnits();
 
-        xmax = xAxis.getDataMaximum().doubleValue(xUnits);
-        xmin = xAxis.getDataMinimum().doubleValue(xUnits);
-        ymax = yAxis.getDataMaximum().doubleValue(yUnits);
-        ymin = yAxis.getDataMinimum().doubleValue(yUnits);
+        QDataSet tagds= SemanticOps.xtagsDataSet(xds); // yes, it's true, I think because of orbit plots
 
-        /* need consider how to handle clipping.  Presumably java does this efficiently,
-         * so there is no longer a need to worry about this.
-         */
-
-
-        double xSampleWidth;
-        if (xds.getProperty("xTagWidth") != null) {
-            Datum xSampleWidthDatum = (Datum) xds.getProperty("xTagWidth");
+        double xSampleWidth= Double.MAX_VALUE; // old code had 1e31.  MAX_VALUE is better.
+        if ( tagds.property( QDataSet.CADENCE ) != null ) { //e.g. Orbit(T);
+            Datum xSampleWidthDatum = (Datum) org.virbo.dataset.DataSetUtil.asDatum( (RankZeroDataSet)tagds.property( QDataSet.CADENCE ) );
             xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
-        } else if (xds.getProperty("xSampleWidth") != null) {
-            Datum xSampleWidthDatum = (Datum) xds.getProperty("xSampleWidth");   // this is not the correct property name, but we'll allow it for now
-
-            xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
-        } else {
-            //Try to load the legacy sample-width property.
-            String xSampleWidthString = (String) xds.getProperty("x_sample_width");
-            if (xSampleWidthString != null) {
-                double xSampleWidthSeconds = Double.parseDouble(xSampleWidthString);
-                xSampleWidth = Units.seconds.convertDoubleTo(xUnits.getOffsetUnits(), xSampleWidthSeconds);
-            } else {
-                xSampleWidth = 1e31;
-            }
         }
 
         double t0 = -Double.MAX_VALUE;
@@ -101,24 +79,22 @@ public class GraphUtil {
         double j0 = -Double.MAX_VALUE;
         boolean v0= false;  // last point was visible
         boolean skippedLast = true;
-        int n = xds.getXLength();
+        int n = xds.length();
 
-        DatumRange xdr= xAxis.getDatumRange();
-        DatumRange ydr= yAxis.getDatumRange();
-
-        DasColumn col= yAxis.getColumn();
+        QDataSet wds= SemanticOps.weightsDataSet(yds);
+        
         Rectangle rclip= clip ? DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() ) : null;
 
         for (int index = 0; index < n; index++) {
-            double t = xds.getXTagDouble(index, xUnits);
-            double x = xds.getDouble(index, xUnits);
-            double y = yds.getDouble(index, yUnits);
+            double t = index;
+            double x = xds.value(index);
+            double y = yds.value(index);
             double i = xAxis.transform(x, xUnits);
             double j = yAxis.transform(y, yUnits);
             boolean v= rclip==null || rclip.contains( i,j);
-            if (yUnits.isFill(y) || Double.isNaN(y)) {
+            if ( wds.value(index)==0 || Double.isNaN(y)) {
                 skippedLast = true;
-            } else if (skippedLast || (t - t0) > xSampleWidth) {
+            } else if ( skippedLast || (t - t0) > xSampleWidth ) {
                 newPath.moveTo((float) i, (float) j);
                 skippedLast = !v;
             } else {
@@ -190,110 +166,115 @@ public class GraphUtil {
         return at;
     }
 
-    public static DasAxis guessYAxis(DataSet dsz) {
+    public static DasAxis guessYAxis(QDataSet dsz) {
         boolean log = false;
 
-        if (dsz.getProperty(DataSet.PROPERTY_Y_SCALETYPE) != null) {
-            if (dsz.getProperty(DataSet.PROPERTY_Y_SCALETYPE).equals("log")) {
+        if (dsz.property(QDataSet.SCALE_TYPE) != null) {
+            if (dsz.property(QDataSet.SCALE_TYPE).equals("log")) {
                 log = true;
             }
         }
 
         DasAxis result;
 
-        if (dsz instanceof TableDataSet) {
-            TableDataSet ds = (TableDataSet) dsz;
-            Units yunits = ds.getYUnits();
+        if ( SemanticOps.isTableDataSet(dsz) ) {
+            QDataSet ds = (QDataSet) dsz;
+            QDataSet yds= SemanticOps.ytagsDataSet(ds);
+
+            Units yunits = SemanticOps.getUnits(yds);
             Datum min, max;
 
-            DatumRange yrange = DataSetUtil.yRange(dsz);
-            Datum dy = TableUtil.guessYTagWidth(ds);
+            DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
+            Datum dy = org.virbo.dataset.DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( yds, null ) );
+
             if (UnitsUtil.isRatiometric(dy.getUnits())) {
                 log = true;
             }
             result = new DasAxis(yrange.min(), yrange.max(), DasAxis.LEFT, log);
 
-        } else if (dsz instanceof VectorDataSet) {
-            VectorDataSet ds = (VectorDataSet) dsz;
-            Units yunits = ds.getYUnits();
+        } else if ( !SemanticOps.isTableDataSet(dsz) ) {
+            QDataSet ds = (QDataSet) dsz;
+            QDataSet yds= ds;
 
-            DatumRange range = DataSetUtil.yRange(dsz);
-            if (range.width().doubleValue(yunits.getOffsetUnits()) == 0.) {
-                range = range.include(yunits.createDatum(0));
-                if (range.width().doubleValue(yunits.getOffsetUnits()) == 0.) {
-                    range = new DatumRange(0, 10, yunits);
-                }
-            }
-            result = new DasAxis(range.min(), range.max(), DasAxis.LEFT, log);
+            Units yunits = SemanticOps.getUnits(ds);
+
+            DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
+            result = new DasAxis(yrange.min(), yrange.max(), DasAxis.LEFT, log);
 
         } else {
             throw new IllegalArgumentException("not supported: " + dsz);
         }
 
-        if (dsz.getProperty(DataSet.PROPERTY_Y_LABEL) != null) {
-            result.setLabel((String) dsz.getProperty(DataSet.PROPERTY_Y_LABEL));
+        if (dsz.property(QDataSet.LABEL) != null) {
+            result.setLabel( (String) dsz.property(QDataSet.LABEL));
         }
         return result;
     }
 
-    public static DasAxis guessXAxis(DataSet ds) {
-        Datum min = ds.getXTagDatum(0);
-        Datum max = ds.getXTagDatum(ds.getXLength() - 1);
-        return new DasAxis(min, max, DasAxis.BOTTOM);
+    public static DasAxis guessXAxis(QDataSet ds) {
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        DatumRange range= org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(xds), true );
+        return new DasAxis( range.min(), range.max(), DasAxis.BOTTOM);
     }
 
-    public static DasAxis guessZAxis(DataSet dsz) {
-        if (!(dsz instanceof TableDataSet)) {
+    public static DasAxis guessZAxis(QDataSet dsz) {
+        if (!( SemanticOps.isTableDataSet(dsz) ) ) {
             throw new IllegalArgumentException("only TableDataSet supported");
         }
-        TableDataSet ds = (TableDataSet) dsz;
-        Units zunits = ds.getZUnits();
+        QDataSet ds = (QDataSet) dsz;
+        Units zunits = SemanticOps.getUnits(ds);
 
-        DatumRange range = DataSetUtil.zRange(ds);
+        DatumRange range = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(ds), true );
 
         boolean log = false;
-        if (dsz.getProperty(DataSet.PROPERTY_Z_SCALETYPE) != null) {
-            if (dsz.getProperty(DataSet.PROPERTY_Z_SCALETYPE).equals("log")) {
-                log = true;
-                if (range.min().doubleValue(range.getUnits()) <= 0) { // kludge for VALIDMIN
+        if ( "log".equals( dsz.property( QDataSet.SCALE_TYPE ) ) ) {
+            log = true;
+            if (range.min().doubleValue(range.getUnits()) <= 0) { // kludge for VALIDMIN
 
-                    double max = range.max().doubleValue(range.getUnits());
-                    range = new DatumRange(max / 1000, max, range.getUnits());
-                }
+                double max = range.max().doubleValue(range.getUnits());
+                range = new DatumRange(max / 1000, max, range.getUnits());
             }
         }
 
         DasAxis result = new DasAxis(range.min(), range.max(), DasAxis.LEFT, log);
-        if (dsz.getProperty(DataSet.PROPERTY_Z_LABEL) != null) {
-            result.setLabel((String) dsz.getProperty(DataSet.PROPERTY_Z_LABEL));
+        if (dsz.property( QDataSet.LABEL ) != null) {
+            result.setLabel((String) dsz.property( QDataSet.LABEL ) );
         }
         return result;
     }
 
-    public static Renderer guessRenderer(DataSet ds) {
+    /**
+     * legacy guess that is used who-knows-where.  Autoplot has much better code
+     * for guessing, refer to it.
+     * @param ds
+     * @return
+     */
+    public static Renderer guessRenderer(QDataSet ds) {
         Renderer rend = null;
-        if (ds instanceof VectorDataSet) {// TODO use SeriesRenderer
+        if ( !SemanticOps.isTableDataSet(ds) ) {// TODO use SeriesRenderer
 
-            if (ds.getXLength() > 10000) {
-                rend = new ImageVectorDataSetRenderer(new ConstantDataSetDescriptor(ds));
+            if (ds.length() > 10000) {
+                rend = new ImageVectorDataSetRenderer( null );
+                rend.setDataSet( ds );
             } else {
-                rend = new SymbolLineRenderer();
+                rend = new SeriesRenderer();
                 rend.setDataSet(ds);
-                ((SymbolLineRenderer) rend).setPsym(Psym.DOTS);
-                ((SymbolLineRenderer) rend).setSymSize(2.0);
+                ((SeriesRenderer) rend).setPsym( DefaultPlotSymbol.CIRCLES );
+                ((SeriesRenderer) rend).setSymSize(2.0);
             }
 
-        } else if (ds instanceof TableDataSet) {
-            Units zunits = ((TableDataSet) ds).getZUnits();
+        } else if ( SemanticOps.isTableDataSet(ds) ) {
+            Units zunits = SemanticOps.getUnits(ds);
             DasAxis zaxis = guessZAxis(ds);
             DasColorBar colorbar = new DasColorBar(zaxis.getDataMinimum(), zaxis.getDataMaximum(), zaxis.isLog());
             colorbar.setLabel(zaxis.getLabel());
-            rend = new SpectrogramRenderer(new ConstantDataSetDescriptor(ds), colorbar);
+            rend = new SpectrogramRenderer( null, colorbar);
+            rend.setDataSet(ds);
         }
         return rend;
     }
 
-    public static DasPlot guessPlot(DataSet ds) {
+    public static DasPlot guessPlot(QDataSet ds) {
         DasAxis xaxis = guessXAxis(ds);
         DasAxis yaxis = guessYAxis(ds);
         DasPlot plot = new DasPlot(xaxis, yaxis);
@@ -301,7 +282,7 @@ public class GraphUtil {
         return plot;
     }
 
-    public static DasPlot visualize(DataSet ds) {
+    public static DasPlot visualize(QDataSet ds) {
 
         JFrame jframe = new JFrame("DataSetUtil.visualize");
         DasCanvas canvas = new DasCanvas(400, 400);
@@ -315,28 +296,28 @@ public class GraphUtil {
         return result;
     }
 
-    public static DasPlot visualize(DataSet ds, boolean ylog) {
-        DatumRange xRange = DataSetUtil.xRange(ds);
-        DatumRange yRange = DataSetUtil.yRange(ds);
-        JFrame jframe = new JFrame("DataSetUtil.visualize");
-        DasCanvas canvas = new DasCanvas(400, 400);
-        jframe.getContentPane().add(canvas);
-        DasPlot result = guessPlot(ds);
-        canvas.add(result, DasRow.create(canvas), DasColumn.create(canvas,null,"5em","100%-10em"));
-        Units xunits = result.getXAxis().getUnits();
-        result.getXAxis().setDatumRange(xRange.zoomOut(1.1));
-        Units yunits = result.getYAxis().getUnits();
-        if (ylog) {
-            result.getYAxis().setDatumRange(yRange);
-            result.getYAxis().setLog(true);
-        } else {
-            result.getYAxis().setDatumRange(yRange.zoomOut(1.1));
-        }
-        jframe.pack();
-        jframe.setVisible(true);
-        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        return result;
-    }
+//    public static DasPlot visualize(QDataSet ds, boolean ylog) {
+//        DatumRange xRange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent( ds ). true );
+//        DatumRange yRange = org.virbo.dataset.DataSetUtil.yRange(ds);
+//        JFrame jframe = new JFrame("DataSetUtil.visualize");
+//        DasCanvas canvas = new DasCanvas(400, 400);
+//        jframe.getContentPane().add(canvas);
+//        DasPlot result = guessPlot(ds);
+//        canvas.add(result, DasRow.create(canvas), DasColumn.create(canvas,null,"5em","100%-10em"));
+//        Units xunits = result.getXAxis().getUnits();
+//        result.getXAxis().setDatumRange(xRange.zoomOut(1.1));
+//        Units yunits = result.getYAxis().getUnits();
+//        if (ylog) {
+//            result.getYAxis().setDatumRange(yRange);
+//            result.getYAxis().setLog(true);
+//        } else {
+//            result.getYAxis().setDatumRange(yRange.zoomOut(1.1));
+//        }
+//        jframe.pack();
+//        jframe.setVisible(true);
+//        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        return result;
+//    }
 
     public static int reducePath(PathIterator it, GeneralPath result) {
         return reducePath( it, result, 1 );

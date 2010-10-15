@@ -4,9 +4,6 @@
  */
 package test.graph;
 
-import org.das2.dataset.DataSet;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.dataset.test.BigVectorDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
@@ -19,6 +16,12 @@ import org.das2.graph.PsymConnector;
 import org.das2.graph.SeriesRenderer;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.util.Random;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.MutablePropertyDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  *
@@ -28,7 +31,7 @@ public class PlotSymbolRendererDemo {
 
     public static void doit() {
 
-        VectorDataSet vds = BigVectorDataSet.getDataSet(100000, new NullProgressMonitor());
+        QDataSet vds = BigVectorDataSet.getDataSet(100000, new NullProgressMonitor());
 
         DasPlot p = GraphUtil.visualize(vds);
 
@@ -61,26 +64,38 @@ public class PlotSymbolRendererDemo {
 
         Random random = new Random(0);
 
-        VectorDataSetBuilder vbd = new VectorDataSetBuilder(Units.dimensionless, Units.dimensionless);
-        vbd.addPlane( "color", Units.dimensionless );
-        
+        DataSetBuilder vbd = new DataSetBuilder( 2, 100, 3 );
+        vbd.putProperty( QDataSet.FILL_VALUE, Units.dimensionless.getFillDouble() );
+
         double y = 0;
         for (int i = 0; i < size; i += 1) {
             y += random.nextDouble() - 0.5;
             if (i % 100 == 10) {
-                vbd.insertY( i / dsize, Units.dimensionless.getFillDouble() );
-                vbd.insertY( i/ dsize , 0, "color" );
+                vbd.putValue( i, 0, i / dsize );
+                vbd.putValue( i, 1, Units.dimensionless.getFillDouble() );
+                vbd.putValue( i, 2, 0 );
             } else {
-                vbd.insertY( i / dsize, y );
-                vbd.insertY( i / dsize, (i-10)/100, "color" );
+                vbd.putValue( i, 0, i / dsize );
+                vbd.putValue( i, 1, y );
+                vbd.putValue( i, 2, (i-10)/100 );
             }
         }
+
+        vbd.putProperty( QDataSet.DEPEND_1, Ops.labels( new String[] { "x", "y", "color" } ) );
+
+        MutablePropertyDataSet vds = vbd.getDataSet();
         
-        vbd.setProperty(DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
-        VectorDataSet vds = vbd.toVectorDataSet();
+        boolean bundleScheme=false; // test table scheme vds[:,3] with BundleDescriptor
+        if ( !bundleScheme ) {
+            MutablePropertyDataSet vds1= DataSetOps.slice1( vds,1 );
+            vds1.putProperty( QDataSet.DEPEND_0, DataSetOps.slice1(vds,0) );
+            vds1.putProperty( QDataSet.PLANE_0, DataSetOps.slice1(vds,2) );
+            vds= vds1;
+        }
+
         System.err.println("done getDataSet in " + (System.currentTimeMillis() - t0) + " ms");
 
-        DasPlot p = GraphUtil.visualize(vds);
+        DasPlot p = GraphUtil.visualize(vds); //TODO: this should fail right now.
         p.getColumn().setEmMaximum(-10);
 
         p.removeRenderer(p.getRenderer(0));

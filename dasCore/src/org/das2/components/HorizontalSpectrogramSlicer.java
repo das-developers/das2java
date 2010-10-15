@@ -23,6 +23,13 @@
 
 package org.das2.components;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.graph.DasColumn;
 import org.das2.graph.DasCanvas;
@@ -30,21 +37,24 @@ import org.das2.graph.DasRow;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasAxis;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.TableUtil;
-import org.das2.dataset.DataSetUtil;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.Datum;
 import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 
 public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSelectionListener {
@@ -149,18 +159,34 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
     
     public void dataPointSelected(DataPointSelectionEvent e) {
                 
-        DataSet ds = e.getDataSet();
-        if (ds==null || !(ds instanceof TableDataSet)) {
+        QDataSet ds = e.getDataSet();
+        if (ds==null || !( SemanticOps.isTableDataSet(ds) )) {
             return;
         }
         
         Datum yValue = e.getY();
         xValue = e.getX();
         
-        TableDataSet tds = (TableDataSet)ds;
-        
-        int itable= TableUtil.tableIndexAt( tds, DataSetUtil.closestColumn( tds, e.getX() ) );
-        VectorDataSet sliceDataSet= tds.getYSlice( TableUtil.closestRow( tds, itable, e.getY() ), itable );
+        QDataSet tds = (QDataSet)ds; //TODO: clean up after refactor
+
+        QDataSet tds1=null;
+
+        if ( tds.rank()==3 ) { // slice to get the correct table;
+            for ( int i=0; i<tds.length(); i++ ) {
+                QDataSet bounds= DataSetOps.dependBounds(tds.slice(i));
+                if ( DataSetOps.boundsContains( bounds, xValue, yValue ) ) {
+                    tds1= tds.slice(i);
+                    break;
+                }
+            }
+        } else {
+            if ( DataSetOps.boundsContains( tds, xValue, yValue) ) {
+                tds1= tds;
+            }
+        }
+        if (tds1==null) return;
+
+        QDataSet sliceDataSet= DataSetOps.slice1( ds, org.virbo.dataset.DataSetUtil.closestIndex( tds1, e.getY() ) );
         
         renderer.setDataSet(sliceDataSet);
 
@@ -178,6 +204,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         }
     }
     
+    @Override
     public void drawContent(Graphics2D g) {
         super.drawContent(g);
         int ix= (int)this.getXAxis().transform(xValue);
@@ -191,14 +218,6 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         
         g.setColor( new Color(230,230,230) );
         g.drawLine( ix, iy0+4, ix, iy1-4 );
-    }
-    
-    protected void uninstallComponent() {
-        super.uninstallComponent();
-    }
-    
-    protected void installComponent() {
-        super.installComponent();
     }
     
     protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {

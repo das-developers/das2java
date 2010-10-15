@@ -9,14 +9,14 @@
 
 package test.graph;
 
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.test.RipplesDataSet;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.ContoursRenderer;
 import org.das2.graph.DasPlot;
+import org.virbo.dataset.QDataSet;
+import org.virbo.demos.RipplesDataSet;
 
 /**
  *
@@ -29,7 +29,7 @@ public class ContoursRendererDemo  {
         super();
         Renderer rend= new ContoursRenderer();
         
-        TableDataSet tds= new RipplesDataSet(50,50,20,70,70,30,100,100);
+        QDataSet tds= new RipplesDataSet(50,50,20,70,70,30,100,100);
         
         DasPlot p= GraphUtil.visualize( tds );
         p.getXAxis().setAnimated(false);

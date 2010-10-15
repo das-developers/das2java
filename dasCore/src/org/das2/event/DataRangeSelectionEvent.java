@@ -26,6 +26,7 @@ package org.das2.event;
 import org.das2.dataset.DataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.virbo.dataset.QDataSet;
 
 /**
  *
@@ -33,7 +34,7 @@ import org.das2.datum.DatumRange;
  */
 public class DataRangeSelectionEvent extends DasEvent {
     
-    private DataSet ds=null;
+    private QDataSet ds=null;
        
     Datum min;
     Datum max;
@@ -64,11 +65,11 @@ public class DataRangeSelectionEvent extends DasEvent {
         return new DatumRange( min, max );
     }
     
-    public void setDataSet(DataSet ds) {
+    public void setDataSet(QDataSet ds) {
         this.ds= ds;
     }
     
-    public DataSet getDataSet() {
+    public QDataSet getDataSet() {
         return this.ds;
     }
     

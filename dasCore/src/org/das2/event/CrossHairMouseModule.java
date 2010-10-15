@@ -26,6 +26,7 @@ import org.das2.dataset.DataSet;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
+import org.virbo.dataset.QDataSet;
 
 
 /**
@@ -64,8 +65,8 @@ public class CrossHairMouseModule extends MouseModule {
         return new CrossHairMouseModule(parent,null,xaxis,yaxis);
     }
     
-    private DataSet getContextDataSet() {
-        DataSet ds;
+    private QDataSet getContextDataSet() {
+        QDataSet ds;
         if ( dataSetConsumer!=null ) {
             ds = dataSetConsumer.getConsumedDataSet();
         } else {

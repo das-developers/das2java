@@ -63,6 +63,12 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.DataSetUtil;
+import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  * Renderer for spectrograms.  A setting for rebinning data controls how data is binned into pixel space,
@@ -87,7 +93,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     DatumRange imageYRange;
     DasAxis.Memento xmemento, ymemento, cmemento;
     int updateImageCount = 0, renderCount = 0;
-    private TableDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
+    private QDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
 
     private String xrangeWarning= null; // if non-null, print out of bounds warning.
 
@@ -99,7 +105,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
     RebinListener rebinListener = new RebinListener();
-    private static Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+
     /** Holds value of property rebinner. */
     private RebinnerEnum rebinnerEnum;
 
@@ -219,6 +225,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
+    private QDataSet bounds( QDataSet ds ) {
+        return DataSetOps.dependBounds(ds);
+    }
+
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         logger.finer("entering SpectrogramRenderer.render");
         Graphics2D g2 = (Graphics2D) g;
@@ -236,24 +246,40 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         parent.postException(this, lastException);
                     }
                 } else {
-                    if (getDataSet() == null) {
+                    QDataSet zds= getDataSet();
+                    QDataSet xds=null, yds=null;
+
+                    if ( zds==null ) {
                         parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
-                    } else if (getDataSet().getXLength() == 0) {
-                        parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
                     } else {
-                        if ( !( getDataSet() instanceof TableDataSet ) ) {
-                            parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
-                            return;
+                        if ( zds.rank()==2 ) {
+                            xds= SemanticOps.xtagsDataSet(zds);
+                            yds= SemanticOps.ytagsDataSet(zds);
+                        } else if ( zds.rank()==3 ) {
+                            xds= SemanticOps.xtagsDataSet(zds.slice(0));
+                            yds= SemanticOps.ytagsDataSet(zds.slice(0));
+                        } else {
+                            throw new IllegalArgumentException("bad rank");
                         }
-                        TableDataSet ds= (TableDataSet)getDataSet();
-                        if ( !ds.getZUnits().isConvertableTo(colorBar.getUnits()) ) {
-                            parent.postMessage(this, "inconvertible colorbar units", DasPlot.INFO, null, null);
-                        }
-                        if ( !ds.getYUnits().isConvertableTo(yAxis.getUnits()) ) {
-                            parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
-                        }
-                        if ( !ds.getXUnits().isConvertableTo(xAxis.getUnits()) ) {
-                            parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
+
+                        if ( getDataSet().length() == 0 ) {
+                            parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
+
+                        } else {
+                            if ( !isTableDataSet( zds ) ) {
+                                parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
+                                return;
+                            }
+
+                            if ( ! SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits()) ) {
+                                parent.postMessage(this, "inconvertible colorbar units", DasPlot.INFO, null, null);
+                            }
+                            if ( ! SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits()) ) {
+                                parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
+                            }
+                            if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
+                                parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
+                            }
                         }
                     }
                 }
@@ -277,8 +303,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     g2.drawImage(plotImage, x, y, getParent());
                 }
                 if ( validCount==0 ) {
-                    DatumRange xdr= DataSetUtil.xRange(ds);
-                    DatumRange ydr= DataSetUtil.yRange(ds);
+                    QDataSet bounds= bounds(ds);
+                    DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
+                    DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
                     if ( xAxis.getDatumRange().intersects(xdr) && yAxis.getDatumRange().intersects(ydr) ) {
                         parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null );
                     } else {
@@ -293,6 +320,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             }
         }
     }
+    
     int count = 0;
     private boolean sliceRebinnedData = true;
 
@@ -302,12 +330,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * @param pix
      * @return
      */
-    private static byte[] makePixMap( TableDataSet rebinData, byte[] pix ) {
+    private static byte[] makePixMap( QDataSet rebinData, byte[] pix ) {
         logger.fine("converting to pixel map");
-        //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
-        int itable = 0;
-        int ny = rebinData.getYLength(itable);
-        int nx = rebinData.tableEnd(itable) - rebinData.tableStart(itable);
+        int ny = rebinData.length(0);
+        int nx = rebinData.length();
 
         pix = new byte[nx * ny];
         return pix;
@@ -317,36 +343,35 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * transforms the simpleTableDataSet into a Raster byte array.  The rows of
      * the table are adjacent in the output byte array.
      */
-    private static int transformSimpleTableDataSet( TableDataSet rebinData, DasColorBar cb, boolean flipY, byte[] pix ) {
+    private static int transformSimpleTableDataSet( QDataSet rebinData, DasColorBar cb, boolean flipY, byte[] pix ) {
 
-        if (rebinData.tableCount() > 1) {
-            throw new IllegalArgumentException("TableDataSet contains more than one table");
-        }
+        if ( rebinData.rank()!=2 ) throw new IllegalArgumentException("rank 2 expected");
+
         logger.fine("converting to pixel map");
         //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         int itable = 0;
-        int ny = rebinData.getYLength(itable);
-        int nx = rebinData.tableEnd(itable) - rebinData.tableStart(itable);
+        int ny = rebinData.length(0);
+        int nx = rebinData.length();
         int icolor;
 
-        Units units = cb.getUnits();
+        Units units = SemanticOps.getUnits(rebinData);
 
-        TableDataSet weights = (TableDataSet) rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
+        QDataSet wds = SemanticOps.weightsDataSet( rebinData );
 
         Arrays.fill(pix, (byte) cb.getFillColorIndex());
 
         int validCount= 0;
 
-        for (int i = rebinData.tableStart(itable); i < rebinData.tableEnd(itable); i++) {
+        for (int i = 0; i < nx; i++) {
             for (int j = 0; j < ny; j++) {
-                if (weights == null || weights.getDouble(i, j, Units.dimensionless) > 0.) {
+                if ( wds.value( i, j ) > 0.) {
                     int index;
                     if (flipY) {
                         index = i + j * nx;
                     } else {
                         index = (i - 0) + (ny - j - 1) * nx;
                     }
-                    icolor = cb.indexColorTransform(rebinData.getDouble(i, j, units), units);
+                    icolor = cb.indexColorTransform( rebinData.value(i,j), units );
                     pix[index] = (byte) icolor;
                     validCount++;
                 }
@@ -376,7 +401,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         if (lparent==null ) return;
         
-        final DataSet fds= this.ds; // make a local copy for thread safety.
+        final QDataSet fds= this.ds; // make a local copy for thread safety.
 
         byte[] lraster= this.raster;  // make a local copy for thread safety.
 
@@ -416,7 +441,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         }
 
-                        if (fds.getXLength() == 0) {
+                        if (fds.length() == 0) {
                             logger.fine("got empty dataset, setting image to null");
                             plotImage = null;
                             plotImageBounds= null;
@@ -427,7 +452,16 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
-                        if (!fds.getXUnits().isConvertableTo(xAxis.getUnits())) {
+                        Units xunits, yunits;
+                        if ( fds.rank()==2 ) {
+                            xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds) );
+                            yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
+                        } else {
+                            xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
+                            yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
+                        }
+
+                        if ( !xunits.isConvertableTo(xAxis.getUnits()) ) {
                             logger.fine("dataset units are incompatable with x axis.");
                             plotImage = null;
                             plotImageBounds= null;
@@ -435,21 +469,21 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
 
-                        if (!fds.getYUnits().isConvertableTo(yAxis.getUnits())) {
+                        if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
                             logger.fine("dataset units are incompatable with y axis.");
                             plotImage = null;
                             plotImageBounds= null;
                             return;
                         }
 
-                        if ( !( fds instanceof TableDataSet ) ) {
+                        if ( !( isTableDataSet(fds) ) ) {
                             logger.fine("dataset is not TableDataSet.");
                             plotImage = null;
                             plotImageBounds= null;
                             return;
                         }
 
-                        if (!((TableDataSet)fds).getZUnits().isConvertableTo(colorBar.getUnits()) ) {
+                        if ( !( SemanticOps.getUnits(fds) ).isConvertableTo(colorBar.getUnits()) ) {
                             logger.fine("dataset units are incompatable with colorbar.");
                             plotImage = null;
                             plotImageBounds= null;
@@ -482,15 +516,19 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         t0 = System.currentTimeMillis();
 
-                        double start = fds.getXTagDouble(0, xRebinDescriptor.getUnits());
-                        double end = fds.getXTagDouble(fds.getXLength() - 1, xRebinDescriptor.getUnits());
+                        QDataSet bounds= bounds(fds);
+
+                        UnitsConverter xuc= xunits.getConverter( xRebinDescriptor.getUnits() );
+
+                        double start = xuc.convert( bounds.value(0,0) );
+                        double end = xuc.convert( bounds.value(0,1) );
                         if (start > imageXRange.max().doubleValue( xRebinDescriptor.getUnits() ) ) {
                             xrangeWarning= "data starts after range";
                         } else if ( end < imageXRange.min().doubleValue(xRebinDescriptor.getUnits())) {
                             xrangeWarning= "data ends before range";
                         }
 
-                        rebinDataSet = (TableDataSet) rebinner.rebin(fds, xRebinDescriptor, yRebinDescriptor);
+                        rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
 
                         xmemento = xAxis.getMemento();
                         ymemento = yAxis.getMemento();
@@ -537,8 +575,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     Rectangle rr= DasDevicePosition.toRectangle( parent.getRow(), parent.getColumn() );
 
                     if ( fds!=null ) {
-                        DatumRange xdr= DataSetUtil.xRange( fds );
-                        DatumRange ydr= DataSetUtil.yRange( fds );
+                        QDataSet bounds= bounds(fds);
+                        DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
+                        DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
                         double[] yy= GraphUtil.transformRange( yAxis, ydr );
                         double[] xx= GraphUtil.transformRange( xAxis, xdr );
                         selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
@@ -657,7 +696,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return rebinnerEnum.getListIcon();
     }
 
-    public DataSet getConsumedDataSet() {
+    public QDataSet getConsumedDataSet() {
         if (sliceRebinnedData) {
             return rebinDataSet;
         } else {
@@ -665,8 +704,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
-    public void setDataSet(DataSet ds) {
-        DataSet oldDs = this.ds;
+    public void setDataSet(QDataSet ds) {
+        QDataSet oldDs = this.ds;
         if (parent != null && oldDs != ds) {
             this.raster = null;
             // TODO: preserve plotImage until updatePlotImage is done

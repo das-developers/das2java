@@ -35,7 +35,7 @@ import java.util.logging.*;
  * not thread safe!!!
  * @author  Jeremy Faden
  */
-public class NewAverageTableRebinner implements DataSetRebinner {
+public class NewAverageTableRebinner { // implements DataSetRebinner {
     
     private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG);
     

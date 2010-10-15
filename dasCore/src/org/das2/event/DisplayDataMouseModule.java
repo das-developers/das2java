@@ -34,6 +34,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
@@ -113,7 +115,7 @@ public class DisplayDataMouseModule extends MouseModule {
 
                 doc.insertString(doc.getLength(), "Renderer #" + irend + "\n", attrSet);
 
-                DataSet ds = rends[irend].getDataSet();
+                QDataSet ds = rends[irend].getDataSet();
 
                 if (ds == null) {
                     doc.insertString(doc.getLength(), "(no dataset)\n", attrSet);
@@ -124,33 +126,35 @@ public class DisplayDataMouseModule extends MouseModule {
                 DatumRange ry1 = yrange;
 
                 if (ds != null) {
-                    if (!rx1.getUnits().isConvertableTo(ds.getXUnits())) {
-                        rx1 = DataSetUtil.xRange(ds);
+                    QDataSet xds= SemanticOps.xtagsDataSet(ds);
+                    if (!rx1.getUnits().isConvertableTo( SemanticOps.getUnits( xds ) ) ) {
+                        rx1 = org.virbo.dataset.DataSetUtil.asDatumRange( org.virbo.dsops.Ops.extent(xds), true );
                     }
-                    if (!ry1.getUnits().isConvertableTo(ds.getYUnits())) {
-                        ry1 = DataSetUtil.yRange(ds);
+                    QDataSet yds= SemanticOps.ytagsDataSet(ds);
+                    if (!ry1.getUnits().isConvertableTo( SemanticOps.getUnits( yds ) ) ) {
+                        ry1 =  org.virbo.dataset.DataSetUtil.asDatumRange( org.virbo.dsops.Ops.extent( yds ), true );
                     }
                 }
 
-                DataSet outds;
-                if (ds instanceof TableDataSet) {
-                    TableDataSet tds = (TableDataSet) ds;
+                QDataSet outds;
+                if (ds instanceof QDataSet) {
+                    QDataSet tds = (QDataSet) ds;
 
-                    TableDataSet toutds = new ClippedTableDataSet(tds, rx1, ry1);
+                    QDataSet toutds = new ClippedTableDataSet(tds, rx1, ry1);
 
                     StringBuffer buf = new StringBuffer();
 
-                    Units zunits = tds.getZUnits();
-                    DatumFormatter df;
-                    df = (DatumFormatter) tds.getProperty(DataSet.PROPERTY_FORMATTER);
+                    Units zunits = SemanticOps.getUnits(tds);
+                    DatumFormatter df=null;
+                    //df = (DatumFormatter) new tds.property(QDataSet.FORMAT);
                     if (df == null) {
-                        df = tds.getDatum(0, 0).getFormatter();
+                        df = zunits.getDatumFormatterFactory().defaultFormatter();
                     }
-                    buf.append("TableDataSet " + toutds.getXLength() + "x" + toutds.getYLength(0) + " " + unitsStr(zunits) + "\n");
-                    for (int i = 0; i < toutds.getXLength(); i++) {
-                        for (int j = 0; j < toutds.getYLength(0); j++) {
+                    buf.append("TableDataSet " + toutds.length() + "x" + toutds.length(0) + " " + unitsStr(zunits) + "\n");
+                    for (int i = 0; i < toutds.length(); i++) {
+                        for (int j = 0; j < toutds.length(0); j++) {
                             try {
-                                buf.append(df.format(toutds.getDatum(i, j), zunits));
+                                buf.append(df.format( zunits.createDatum(toutds.value(i, j)), zunits)); //TODO: fill
                                 buf.append(" ");
                             } catch (IndexOutOfBoundsException ex) {
                                 System.err.println("here");

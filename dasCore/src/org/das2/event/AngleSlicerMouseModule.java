@@ -60,11 +60,11 @@ public class AngleSlicerMouseModule extends MouseModule {
         
     }
     
-    public static AngleSlicerMouseModule create(DasPlot parent) {
-        DasAxis xaxis= parent.getXAxis();
-        DasAxis yaxis= parent.getYAxis();
-        return new AngleSlicerMouseModule(parent,parent,xaxis,yaxis);
-    }
+//    public static AngleSlicerMouseModule create(DasPlot parent) {
+//        DasAxis xaxis= parent.getXAxis();
+//        DasAxis yaxis= parent.getYAxis();
+//        return new AngleSlicerMouseModule(parent,parent,xaxis,yaxis);
+//    }
     
     public static AngleSlicerMouseModule create(Renderer renderer)
     {

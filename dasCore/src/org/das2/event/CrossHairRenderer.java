@@ -25,10 +25,8 @@ package org.das2.event;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.TableDataSet;
 import org.das2.dataset.TableUtil;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.DataSetUtil;
+import org.virbo.dataset.DataSetUtil;
 import org.das2.dataset.VectorDataSet;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
 import org.das2.datum.format.DatumFormatter;
@@ -41,6 +39,9 @@ import org.das2.graph.Renderer;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.*;
+import org.das2.datum.Units;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
@@ -109,10 +110,15 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         }
     }
 
-    private String getZString(TableDataSet tds, Datum x, Datum y, int[] ij) {
-        int i = DataSetUtil.closestColumn(tds, x);
-        int j = TableUtil.closestRow(tds, tds.tableOfIndex(i), y);
-        Datum zValue = tds.getDatum(i, j);
+    private String getZString( QDataSet tds, Datum x, Datum y, int[] ij) {
+        QDataSet xds= SemanticOps.xtagsDataSet(tds);
+        QDataSet yds= SemanticOps.ytagsDataSet(tds);
+        int i = DataSetUtil.closestIndex(xds, x);
+        int j = DataSetUtil.closestIndex(yds, y); //TODO: check multiple tables?
+        
+        Units units= SemanticOps.getUnits(tds);
+        double d= tds.value(i,j);
+        Datum zValue = SemanticOps.getDatum( tds, d );
 
         if (ij != null) {
             ij[0] = i;
@@ -142,14 +148,13 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             if (debugging) {
                 result += "!c" + tds.toString();
             }
-            String[] planeIds = tds.getPlaneIds();
-            for (int iplane = 0; iplane < planeIds.length; iplane++) {
-                if (!planeIds[iplane].equals("")) {
-                    result = result + "!c";
-                    result += planeIds[iplane] + ":" + nfz.grannyFormat(((TableDataSet) tds.getPlanarView(planeIds[iplane])).getDatum(i, j));
-                    if (debugging) {
-                        result += " " + ((TableDataSet) tds.getPlanarView(planeIds[iplane])).toString();
-                    }
+            for (int iplane = 0; iplane < QDataSet.MAX_PLANE_COUNT; iplane++) {
+                QDataSet plane= (QDataSet) tds.property( "PLANE_"+iplane );
+                if ( plane==null ) break;
+                result = result + "!c";
+                result += plane.property(QDataSet.NAME) + ":" + nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i,j) ) );
+                if (debugging) {
+                    result += " " + plane.toString();
                 }
             }
             if (debugging) {
@@ -159,9 +164,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         return result;
     }
 
-    private int closestPointVector(VectorDataSet ds, Datum x, Datum y) {
+    private int closestPointVector(QDataSet ds, Datum x, Datum y) {
 
-        Boolean xmono = (Boolean) ds.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        Units xunits= SemanticOps.getUnits(xds);
+
+        Boolean xmono = SemanticOps.isMonotonic(xds);
 
         DasAxis xa, ya;
         xa = (this.XAxis == null) ? parent.getXAxis() : XAxis;
@@ -170,11 +178,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         int start, end;
         Point2D.Double me = new Point2D.Double(xa.transform(x), ya.transform(y));
         if (xmono != null && xmono.equals(Boolean.TRUE)) {
-            start = DataSetUtil.getPreviousColumn(ds, xa.getDataMinimum());
-            end = DataSetUtil.getNextColumn(ds, xa.getDataMaximum());
+            start = DataSetUtil.getPreviousIndex(ds, xa.getDataMinimum());
+            end = DataSetUtil.getNextIndex(ds, xa.getDataMaximum());
         } else {
             start = 0;
-            end = ds.getXLength();
+            end = ds.length();
         }
 
         int bestIndex = -1;
@@ -184,17 +192,19 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
         // prime the best dist comparison by scanning decimated dataset
         for (int i = start; i < end; i += 100) {
-            double x1 = xa.transform(ds.getXTagDatum(i));
+            double x1 = xa.transform( xds.value(i), xunits );
             double dist = Math.abs(x1 - me.getX());
             if (dist < bestXDist) {
                 bestXDist = dist;
             }
         }
 
+        Units units= SemanticOps.getUnits(ds);
+
         for (int i = start; i < end; i++) {
-            double x1 = xa.transform(ds.getXTagDatum(i));
+            double x1 = xa.transform( xds.value(i), xunits );
             if (Math.abs(x1 - me.getX()) <= bestXDist) {
-                Point2D them = new Point2D.Double(x1, ya.transform(ds.getDatum(i)));
+                Point2D them = new Point2D.Double(x1, ya.transform( ds.value(i), units ) );
                 double dist = me.distance(them);
                 comparisons++;
                 if (dist < bestDist) {
@@ -207,7 +217,6 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
         return bestIndex;
 
-
     }
 
     @Override
@@ -215,7 +224,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         Graphics2D g = (Graphics2D) g1;
         g.setRenderingHints((RenderingHints) org.das2.DasProperties.getRenderingHints());
         
-        DataSet ds;
+        QDataSet ds;
 
         if ( dataSetConsumer!=null ) {
             ds = dataSetConsumer.getConsumedDataSet();
@@ -262,17 +271,20 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             String nl = multiLine ? "!c" : " ";
 
             report = "x:" + xAsString + nl + "y:" + yAsString;
-            
+
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+
             if (ds != null) {
-                if (ds instanceof TableDataSet) {
-                    TableDataSet tds = (TableDataSet) ds;
+                if ( SemanticOps.isTableDataSet(ds) ) {
+                    QDataSet tds = (QDataSet) ds;
+                    QDataSet yds= SemanticOps.ytagsDataSet(tds);
                     String zAsString;
                     if (tds != null && snapping) {
                         int[] ij = new int[2];
                         zAsString = getZString(tds, x, y, ij);
-                        x = tds.getXTagDatum(ij[0]);
+                        x = SemanticOps.getDatum( xds, xds.value(ij[0]) );
                         xAsString = nfx.format(x);
-                        y = tds.getYTagDatum(tds.tableOfIndex(ij[0]), ij[1]);
+                        y = SemanticOps.getDatum( yds, yds.value(ij[1]) );
                         yAsString = nfy.format(y);
                     } else {
                         zAsString = getZString(tds, x, y, null);
@@ -285,27 +297,28 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                         }
                     }
                     if (ds != null && snapping) {
-                        VectorDataSet vds = (VectorDataSet) ds;
-                        if (vds.getXLength() == 0) {
+                        QDataSet vds = (QDataSet) ds;
+                        if (vds.length() == 0) {
                             yAsString = "(empty dataset)";
                         } else {
                             int i = closestPointVector(vds, x, y);
-                            x = vds.getXTagDatum(i);
-                            y = vds.getDatum(i);
+                            x = SemanticOps.getDatum( xds, xds.value(i) );
+                            y = SemanticOps.getDatum( vds, vds.value(i) );
                             xAsString = nfx.format(x);
                             yAsString = nfy.format(y);
                             if (allPlanesReport) {
                                 String result = yAsString;
-                                String[] planeIds = vds.getPlaneIds();
-                                for (int iplane = 0; iplane < planeIds.length; iplane++) {
-                                    if (!planeIds[iplane].equals("")) {
-                                        result = result + "!c";
-                                        result += planeIds[iplane] + ":" + nfy.grannyFormat(((VectorDataSet) vds.getPlanarView(planeIds[iplane])).getDatum(i));
-                                        if (debugging) {
-                                            result += " " + ((VectorDataSet) vds.getPlanarView(planeIds[iplane])).toString();
-                                        }
+
+                                for (int iplane = 0; iplane < QDataSet.MAX_PLANE_COUNT; iplane++) {
+                                    QDataSet plane= (QDataSet) vds.property( "PLANE_"+iplane );
+                                    if ( plane==null ) break;
+                                    result = result + "!c";
+                                    result += plane.property(QDataSet.NAME) + ":" + nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i) ) );
+                                    if (debugging) {
+                                        result += " " + plane.toString();
                                     }
                                 }
+
                                 yAsString = result;
                             }
                         }

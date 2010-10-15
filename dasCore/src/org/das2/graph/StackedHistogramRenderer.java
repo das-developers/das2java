@@ -56,6 +56,8 @@ import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.beans.*;
 import javax.swing.*;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
@@ -259,7 +261,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         int xDMax= column.getDMaximum();
         int xDMin= column.getDMinimum();
         
-        TableDataSet xtysData= (TableDataSet)getDataSet();
+        QDataSet xtysData= (QDataSet)getDataSet();
         
         if ( xtysData==null ) {
             this.plotImage= null;
@@ -267,41 +269,44 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             return;
         }
         
-        if ( xtysData.tableCount()==0 ) {
+        if ( xtysData.length()==0 ) {
             this.setLastException( new DasException("empty data set") );
-            this.ds= null;
             return;
         }
         
         DataSetRebinner rebinner = new Rebinner();
         
-        TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
-        TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
-        TableDataSet weights= (TableDataSet)data.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
+        QDataSet data= (QDataSet)rebinner.rebin(xtysData, xbins, null);
+        QDataSet peaks= SemanticOps.getPlanarView(data,"peaks");
+        QDataSet weights= SemanticOps.weightsDataSet(data);
         
         DasLabelAxis yAxis= (DasLabelAxis)yAxis_1;
         
         int zmid= zAxis.getRow().getDMiddle();
         boolean haveLittleRow= false;
-        
-        for (int j = 0; j < data.getYLength(0); j++) {
+
+        QDataSet yds= SemanticOps.ytagsDataSet( data );
+        Units yunits= SemanticOps.getUnits(yds);
+        Units zunits= SemanticOps.getUnits(data);
+
+        for (int j = 0; j < data.length(0); j++) {
             
             int yBase;
             Line2D.Float lBase;
             
-            if ( j==(data.getYLength(0)-1) ) {   /* Draw top grey line */
-                yBase= yAxis.getItemMin(data.getYTagDatum(0, j)); 
+            if ( j==(data.length(0)-1) ) {   /* Draw top grey line */
+                yBase= yAxis.getItemMin(yunits.createDatum(yds.value(j)));
                 g.setColor(GREY_PEAKS_COLOR);
                 g.drawLine(xDMin, yBase, xDMax, yBase );
                 g.setColor(BAR_COLOR);
             }
             
-            yBase= yAxis.getItemMax(data.getYTagDatum(0, j));
+            yBase= yAxis.getItemMax(yunits.createDatum(yds.value(j)));
             g.setColor(Color.lightGray);
             g.drawLine(xDMin, yBase, xDMax, yBase );
             g.setColor(BAR_COLOR);
             
-            int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
+            int yBase1= yAxis.getItemMin(yunits.createDatum(yds.value(j)));
             double canvasHeight= parent.getHeight();
             
             if ( !haveLittleRow && yBase1 <= zmid  ) {
@@ -317,24 +322,24 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             int y0= yBase;
             
             int littleRowHeight= yBase - yBase1;
-            double zAxisMax= zAxis.getDataMaximum().doubleValue(xtysData.getZUnits());
-            double zAxisMin= zAxis.getDataMinimum().doubleValue(xtysData.getZUnits());
+            double zAxisMax= zAxis.getDataMaximum().doubleValue(zunits);
+            double zAxisMin= zAxis.getDataMinimum().doubleValue(zunits);
             
             if ( yBase1 >= row.getDMinimum() && yBase <= row.getDMaximum() ) {
-                for (int ibin=0; ibin < data.getXLength(); ibin++) {
+                for (int ibin=0; ibin < data.length(); ibin++) {
                     int x0= (int)xAxis.transform(binStarts[ibin],xbins.getUnits());
                     int x1;
                     x1=x0+1; // 1 pixel wide
-                    double zz= data.getDouble( ibin, j, data.getZUnits() );
-                    if ( !( data.getZUnits().isFill(zz) || Double.isNaN(zz) ) ) {
-                        int yAvg= (int)zAxis.transform( zz, data.getZUnits(), yBase, yBase1 );
+                    double zz= data.value( ibin, j );
+                    if ( !( weights.value(ibin,j)==0 ) ) {
+                        int yAvg= (int)zAxis.transform( zz, zunits, yBase, yBase1 );
                         yAvg= yAvg > ( y0 - littleRowHeight ) ? yAvg : ( y0 - littleRowHeight );
                         int yHeight= (y0-yAvg)>(0) ? (y0-yAvg) : 0;
                         //yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
-                            double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
+                            double peakValue = peaks.value( ibin, j );
                             if (peakValue <= zAxisMax) {
-                                int yMax= (int)zAxis.transform( peakValue, data.getZUnits(), yBase, yBase1 );
+                                int yMax= (int)zAxis.transform( peakValue, zunits, yBase, yBase1 );
                                 yMax= (y0-yMax)>(0) ? yMax : (y0);
                                 if (peaksIndicator==PeaksIndicator.MaxLines) {
                                     g.drawLine(x0,yMax,x0,yMax);
@@ -375,13 +380,16 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         DataSetRebinner highResRebinner;
         DataSetRebinner lowResRebinner;
         Rebinner() {
-            highResRebinner= new NearestNeighborTableRebinner();
+          //  highResRebinner= new NearestNeighborTableRebinner();
             //highResRebinner= new AveragePeakTableRebinner();
-            lowResRebinner= new AveragePeakTableRebinner();
+          //  lowResRebinner= new AveragePeakTableRebinner();
+            //Plasma Wave Group will have to update this
         }
         
-        public DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
-            Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
+        public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+
+            Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
             if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
             Units rdUnits= x.getUnits();
             if ( rdUnits instanceof LocationUnits ) {
@@ -389,13 +397,13 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             }
             
             try {
-                DataSet result;
+                QDataSet result= null;
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                     logger.fine("using rebinner "+highResRebinner);
-                    result= highResRebinner.rebin( ds, x, y );
+                    //result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
                 } else {
                     logger.fine("using rebinner "+lowResRebinner);
-                    result= lowResRebinner.rebin( ds, x, y );
+                    //result= lowResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
                 }
                 return result;
             } catch ( Exception e ) {

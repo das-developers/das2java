@@ -29,7 +29,7 @@ import org.das2.datum.Units;
  *
  * @author  Edward West
  */
-public class PeakTableRebinner implements DataSetRebinner {
+public class PeakTableRebinner { // implements DataSetRebinner {
     
     public PeakTableRebinner() {
     }

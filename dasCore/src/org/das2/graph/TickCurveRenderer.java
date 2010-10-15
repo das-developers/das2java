@@ -23,14 +23,17 @@
 package org.das2.graph;
 
 import org.das2.dataset.VectorUtil;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Units;
 import org.das2.util.DasMath;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -44,8 +47,8 @@ public class TickCurveRenderer extends Renderer {
     private String xplane;
     private String yplane;
     
-    private VectorDataSet xds;
-    private VectorDataSet yds;
+    private QDataSet xds;
+    private QDataSet yds;
     private Units xunits; // xUnits of the axis
     private Units yunits; // yUnits of the axis
     private double[][] idata;  // data transformed to pixel space
@@ -80,7 +83,7 @@ public class TickCurveRenderer extends Renderer {
     /** The dataset be a Vector data set with planes identified
      *  by xplane and yplane.
      */
-    public TickCurveRenderer( DataSet ds, String xplane, String yplane, TickVDescriptor tickv) {
+    public TickCurveRenderer( QDataSet ds, String xplane, String yplane, TickVDescriptor tickv) {
         super(ds);        
     
         setTickStyle( TickCurveRenderer.TickStyle.outer );
@@ -126,7 +129,7 @@ public class TickCurveRenderer extends Renderer {
     }
     
     private double turnDirAt( double findex ) {
-        int nvert= xds.getXLength();
+        int nvert= xds.length();
         int index0, index1, index2;
         if ( findex<1 ) {
             index0= 0;
@@ -138,13 +141,13 @@ public class TickCurveRenderer extends Renderer {
         index1= index0+1;
         index2= index1+1;            
                     
-        return turnDir( xds.getDouble(index0,xunits), yds.getDouble(index0,yunits),
-                        xds.getDouble(index1,xunits), yds.getDouble(index1,yunits),
-                        xds.getDouble(index2,xunits), yds.getDouble(index2,yunits) ); 
+        return turnDir( xds.value(index0), yds.value(index0),
+                        xds.value(index1), yds.value(index1),
+                        xds.value(index2), yds.value(index2) );
     }
     
     private Line2D outsideNormalAt( double findex ) {
-        int nvert= xds.getXLength();
+        int nvert= xds.length();
         int index0= (int)Math.floor(findex);
         if ( index0==nvert-1 ) index0--;            
         double x1= idata[0][index0];
@@ -219,40 +222,40 @@ public class TickCurveRenderer extends Renderer {
         
         g.setColor( Color.black );
         
-        DataSet ds= getDataSet();
-        xds= (VectorDataSet) ds.getPlanarView(xplane);
-        yds= (VectorDataSet) ds.getPlanarView(yplane);
-        xunits= xds.getYUnits();
-        yunits= yds.getYUnits();
+        QDataSet ds3= getDataSet();
+        xds= DataSetOps.unbundle( ds3, xplane );
+        yds= DataSetOps.unbundle( ds3, yplane );
+        xunits= SemanticOps.getUnits(xds);
+        yunits= SemanticOps.getUnits(yds);
         
-        idata= new double[2][xds.getXLength()];
-        for ( int i=0; i<xds.getXLength(); i++ ) {
-            idata[0][i]= xAxis.transform(xds.getDouble(i,xunits),xunits);
-            idata[1][i]= yAxis.transform(yds.getDouble(i,yunits),yunits);
+        idata= new double[2][xds.length()];
+        for ( int i=0; i<xds.length(); i++ ) {
+            idata[0][i]= xAxis.transform(xds.value(i),xunits);
+            idata[1][i]= yAxis.transform(yds.value(i),yunits);
         }
         
-        for ( int i=1; i<xds.getXLength(); i++ ) {            
+        for ( int i=1; i<xds.length(); i++ ) {
             g.drawLine((int)idata[0][i-1],(int)idata[1][i-1],(int)idata[0][i],(int)idata[1][i]);            
         }
         
-        double[] findex;
-        double[] xxx= VectorUtil.getXTagArrayDouble( xds,xds.getXUnits() );
-        double[] xx= tickv.minorTickV.toDoubleArray(xds.getXUnits());
-        findex= DasMath.findex( xxx, xx );
+        QDataSet findex;
+        DDataSet xxds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( xunits ), xunits );
+        findex= Ops.findex( xds, xxds );
 
         tickLabeller= new GrannyTickLabeller( parent ); 
         tickLabeller.init( tickv );
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
-            if ( findex[i]>=0 && findex[i]<xxx.length ) {
-                drawTick( g, findex[i] );
+            if ( findex.value(i)>=0 && findex.value(i)<xds.length() ) {
+                drawTick( g, findex.value(i) );
             }
         }
 
-        findex= DasMath.findex( VectorUtil.getXTagArrayDouble(xds,xds.getXUnits()), tickv.tickV.toDoubleArray(xds.getXUnits()) );
+        xxds= DDataSet.wrap( tickv.tickV.toDoubleArray( xunits ), xunits );
+        findex= Ops.findex( xds, xxds );
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
-            if ( findex[i]>=0 && findex[i]<xxx.length ) {
-                drawLabelTick( g, findex[i], i );      
+            if ( findex.value(i)>=0 && findex.value(i)<xds.length() ) {
+                drawLabelTick( g, findex.value(i), i );
             }
         }
         

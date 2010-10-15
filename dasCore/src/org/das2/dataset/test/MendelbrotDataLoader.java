@@ -20,6 +20,9 @@ import java.util.logging.Logger;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.RebinDescriptor;
 import org.das2.dataset.WritableTableDataSet;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dsops.Ops;
 
 
 /**
@@ -103,8 +106,8 @@ public class MendelbrotDataLoader extends DataLoader {
                 public void run( ) {
                     try {
                         logger.fine( "calculate dataset for "+taskDescription );
-                        DataSet result= getDataSet( xRebinDescriptor, yRebinDescriptor, getMonitor(taskDescription) , taskDescription );
-                        System.err.println( result.getProperty("TaskDescription") );
+                        QDataSet result= getDataSet( xRebinDescriptor, yRebinDescriptor, getMonitor(taskDescription) , taskDescription );
+                        System.err.println( result.property("TaskDescription") );
                         getRenderer().setDataSet( result );
                         completedRequest= currentRequest;
                         logger.fine( "completed "+taskDescription );
@@ -119,7 +122,7 @@ public class MendelbrotDataLoader extends DataLoader {
         }
     }
     
-    private DataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, ProgressMonitor monitor, String desc) throws DasException {
+    private QDataSet getDataSet( RebinDescriptor ddx, RebinDescriptor ddy, ProgressMonitor monitor, String desc) throws DasException {
         
         double xstart, xend, xresolution;
         xstart= ddx.binCenter(0, Units.dimensionless );
@@ -133,36 +136,25 @@ public class MendelbrotDataLoader extends DataLoader {
         
         int ny= (int)(1.5+((yend-ystart)/yresolution));
         int nx= (int)(1.5+((xend-xstart)/xresolution));
-        
-        WritableTableDataSet result=  WritableTableDataSet.newSimple( nx, Units.dimensionless, ny, Units.dimensionless, Units.dimensionless );
-        
-        double[][] z= new double[nx][ny];
-        
+
+        DDataSet result= DDataSet.createRank2(nx, ny);
+
         monitor.setTaskSize(ny);
         monitor.started();
         for ( int iy=0; iy<ny; iy++ ) {
             if ( monitor.isCancelled() ) break;
             monitor.setTaskProgress(iy);
             for ( int ix=0; ix<nx; ix++ ) {
-                result.setDouble(ix,iy, (double)punktfarbe( xstart + ix*xresolution, ystart + iy*yresolution ),Units.dimensionless );
+                result.putValue( ix,iy, (double)punktfarbe( xstart + ix*xresolution, ystart + iy*yresolution ) );
             }
         }
         monitor.finished();
+
+        result.putProperty( QDataSet.DEPEND_0, Ops.taggen( xstart, xresolution, nx, Units.dimensionless ) );
+        result.putProperty( QDataSet.DEPEND_1, Ops.taggen( ystart, yresolution, ny, Units.dimensionless ) );
         
-        double[] xtags= new double[nx];
-        for ( int ix=0; ix<nx; ix++ ) {
-            // it's important that the xtag be in the center of the bin!
-            result.setXTagDouble( ix, xstart + ( ix ) * xresolution, Units.dimensionless );
-        }
-        
-        double[] ytags= new double[ny];
-        for ( int iy=0; iy<ny; iy++ ) {
-            result.setYTagDouble( 0, iy, ystart + ( iy  )* yresolution, Units.dimensionless );
-        }
-        
-        result.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, Units.dimensionless.createDatum(yresolution*2) );
-        result.setProperty( DataSet.PROPERTY_Y_TAG_WIDTH, Units.dimensionless.createDatum(yresolution*2.) );
-        result.setProperty( "TaskDescription", desc );
+        result.putProperty( "TaskDescription", desc );
+
         return result;
         
     }

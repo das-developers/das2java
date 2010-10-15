@@ -33,8 +33,11 @@ import org.das2.graph.DasDevicePosition;
 import org.das2.graph.DasLabelAxis;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasRow;
+import org.das2.graph.DefaultPlotSymbol;
+import org.das2.graph.PlotSymbol;
 import org.das2.graph.Psym;
 import org.das2.graph.Renderer;
+import org.das2.graph.SeriesRenderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.graph.StackedHistogramRenderer;
 import org.das2.graph.SymColor;
@@ -730,11 +733,11 @@ public class Processor {
         }
     }
 
-    public static SymbolLineRenderer processLinePlotElement(Element element, DasPlot parent, FormBase form) {
+    public static SeriesRenderer processLinePlotElement(Element element, DasPlot parent, FormBase form) {
         String dataSetID = element.getAttribute("dataSetID");
-        Psym psym = Psym.parsePsym(element.getAttribute("psym"));
+        PlotSymbol psym = DefaultPlotSymbol.BOX; //TODO: parsePsym(element.getAttribute("psym"));
         SymColor color = SymColor.parseSymColor(element.getAttribute("color"));
-        SymbolLineRenderer renderer = new SymbolLineRenderer();
+        SeriesRenderer renderer = new SeriesRenderer();
         parent.addRenderer(renderer);
         float lineWidth = Float.parseFloat(element.getAttribute("lineWidth"));
         try {

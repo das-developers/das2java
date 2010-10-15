@@ -32,7 +32,7 @@ import java.util.Map;
  *
  * @author  Edward West
  */
-public class AveragePeakTableRebinner implements DataSetRebinner {
+public class AveragePeakTableRebinner { // implements DataSetRebinner {
 
     /* adds additional planes for debugging */
     private boolean debug= false;
@@ -63,8 +63,9 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         double[][] averageData= new double[nx][ny];
         double[][] averageWeights= new double[nx][ny];
         double[][] peakData = new double[nx][ny];
-        
-        AverageTableRebinner.average(tds, weights, averageData, averageWeights, ddX, ddY);
+
+        if (true) throw new RuntimeException("need to update");
+        //AverageTableRebinner.average(tds, weights, averageData, averageWeights, ddX, ddY);
         
         double[] xTags;
         double[] xTagMin, xTagMax;

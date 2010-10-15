@@ -25,6 +25,7 @@ package org.das2.event;
 import org.das2.dataset.DataSet;
 import org.das2.datum.Datum;
 import java.util.Map;
+import org.virbo.dataset.QDataSet;
 
 /**
  * This is the general-purpose "a data point was selected" event.  Note that
@@ -42,7 +43,7 @@ public class DataPointSelectionEvent extends DasEvent {
     
     public long birthMilli;
     
-    private DataSet ds=null;
+    private QDataSet ds=null;
     
     private Object source;
     
@@ -90,11 +91,11 @@ public class DataPointSelectionEvent extends DasEvent {
         this.y= y;
     }
     
-    public void setDataSet(org.das2.dataset.DataSet ds) {
+    public void setDataSet( QDataSet ds) {
         this.ds= ds;
     }
     
-    public org.das2.dataset.DataSet getDataSet() {
+    public QDataSet getDataSet() {
         return this.ds;
     }
     

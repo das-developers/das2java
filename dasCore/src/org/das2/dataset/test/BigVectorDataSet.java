@@ -10,6 +10,8 @@ import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.Random;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  *
@@ -17,7 +19,7 @@ import java.util.Random;
  */
 public class BigVectorDataSet {
 
-    public static VectorDataSet getDataSet( int size, ProgressMonitor mon ) {
+    public static QDataSet getDataSet( int size, ProgressMonitor mon ) {
         double dsize= (double)size;
         
         System.err.println("enter getDataSet");
@@ -25,18 +27,26 @@ public class BigVectorDataSet {
 
         Random random = new Random(0);
 
-        VectorDataSetBuilder vbd = new VectorDataSetBuilder(Units.dimensionless, Units.dimensionless);
+        DataSetBuilder vbd = new DataSetBuilder(1,100);
+        DataSetBuilder xbd = new DataSetBuilder(1,100);
+
         double y = 0;
         for (int i = 0; i < size; i += 1) {
             y += random.nextDouble() - 0.5;
             if (i % 100 == 10) {
-                vbd.insertY( i / dsize, Units.dimensionless.getFillDouble());
+                vbd.putValue( i, Units.dimensionless.getFillDouble());
+                xbd.putValue( i, i/dsize );
             } else {
-                vbd.insertY( i / dsize, y);
+                vbd.putValue( i, y);
+                xbd.putValue( i, i/dsize );
             }
         }
-        vbd.setProperty(DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
-        VectorDataSet vds = vbd.toVectorDataSet();
+        xbd.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
+        vbd.putProperty( QDataSet.DEPEND_0, xbd.getDataSet() );
+        vbd.putProperty( QDataSet.FILL_VALUE, Units.dimensionless.getFillDouble() );
+
+        QDataSet vds = vbd.getDataSet();
+
         System.err.println("done getDataSet in " + (System.currentTimeMillis() - t0) + " ms");
         return vds;
     }

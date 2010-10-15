@@ -34,7 +34,6 @@ import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorUtil;
 import org.das2.dataset.TableDataSet;
-import org.das2.dataset.DataSet;
 import org.das2.dataset.TableUtil;
 import org.das2.dataset.VectorDataSet;
 import org.das2.DasApplication;
@@ -53,7 +52,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import org.das2.components.propertyeditor.Displayable;
+import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.Units;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
 
@@ -66,7 +69,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     /**
      * The dataset that is being plotted by the Renderer.
      */
-    protected DataSet ds;
+    protected QDataSet ds;
     /**
      * Memento for x axis state last time updatePlotImage was called.
      */
@@ -111,7 +114,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         this.loader = new XAxisDataLoader(this, dsd);
     }
 
-    protected Renderer(DataSet ds) {
+    protected Renderer(QDataSet ds) {
         this.ds = ds;
         this.loader = null;
     }
@@ -131,7 +134,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public Memento getYmemento() {
         return ymemento;
     }
-    
+
+    public static boolean isTableDataSet( QDataSet ds ) {
+        return SemanticOps.isTableDataSet(ds);
+    }
+
     /**
      * find the first and last valid data points.  This is an inexpensive
      * calculation which is only done when the dataset changes.  It improves
@@ -147,19 +154,19 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             lastValidIndex=0;
             return;
         } else {
-            if (ds instanceof TableDataSet) {
+            if ( isTableDataSet(ds) ) {
                 firstValidIndex= 0;
-                lastValidIndex= ds.getXLength();
+                lastValidIndex= ds.length();
             } else {
-                VectorDataSet vds= (VectorDataSet)ds;
-                Units u= vds.getYUnits();
+                Units u= SemanticOps.getUnits(ds);
                 firstValidIndex= -1;
                 lastValidIndex= -1;
-                for ( int i=0; firstValidIndex==-1 && i<ds.getXLength(); i++ ) {
-                    if ( !u.isFill(i) ) firstValidIndex=i;
+                QDataSet wds= DataSetUtil.weightsDataSet(ds);
+                for ( int i=0; firstValidIndex==-1 && i<ds.length(); i++ ) {
+                    if ( wds.value(i)>0 ) firstValidIndex=i;
                 }
-                for ( int i=ds.getXLength()-1; lastValidIndex==-1 && i>=0; i-- ) {
-                    if ( !u.isFill(i) ) lastValidIndex=i+1;
+                for ( int i=ds.length()-1; lastValidIndex==-1 && i>=0; i-- ) {
+                    if ( wds.value(i)>0 ) lastValidIndex=i+1;
                 }
             }
         }
@@ -172,16 +179,17 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     /**
      * returns the current dataset being displayed.
      */
-    public DataSet getDataSet() {
+    public QDataSet getDataSet() {
         return this.ds;
     }
 
     /**
      * return the data for DataSetConsumer, which might be rebinned.
      */
-    public DataSet getConsumedDataSet() {
+    public QDataSet getConsumedDataSet() {
         return this.ds;
     }
+
     private boolean dumpDataSet;
 
     /** Getter for property dumpDataSet.
@@ -209,10 +217,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     int xx = chooser.showSaveDialog(this.getParent());
                     if (xx == JFileChooser.APPROVE_OPTION) {
                         File file = chooser.getSelectedFile();
-                        if (ds instanceof TableDataSet) {
-                            TableUtil.dumpToAsciiStream((TableDataSet) ds, new FileOutputStream(file));
+                        if ( isTableDataSet(ds) ) {
+                            TableUtil.dumpToAsciiStream( (TableDataSet) DataSetAdapter.createLegacyDataSet(ds), new FileOutputStream(file));
                         } else if (ds instanceof VectorDataSet) {
-                            VectorUtil.dumpToAsciiStream((VectorDataSet) ds, new FileOutputStream(file));
+                            VectorUtil.dumpToAsciiStream((VectorDataSet) DataSetAdapter.createLegacyDataSet(ds), new FileOutputStream(file));
                         } else {
                             throw new DasException("don't know how to serialize data set: " + ds);
                         }
@@ -235,10 +243,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.lastException;
     }
 
-    public void setDataSet(DataSet ds) {
+    public void setDataSet(QDataSet ds) {
         logger.log(Level.FINE, "Renderer.setDataSet {0}: {1}", new Object[]{id, ds});
 
-        DataSet oldDs = this.ds;
+        QDataSet oldDs = this.ds;
 
         if (oldDs != ds) {
             synchronized(this) {

@@ -19,6 +19,10 @@ import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
 import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  *
@@ -308,7 +312,7 @@ public class VectorUtil {
      * @param yLimit the size of the bins or null to indicate no limit.
      * @return
      */
-    public static VectorDataSet reduce2D( VectorDataSet ds, int start, int finish, Datum xLimit, Datum yLimit ) {
+    public static QDataSet reduce2D( QDataSet ds, int start, int finish, Datum xLimit, Datum yLimit ) {
 
         double x0 = Float.MAX_VALUE;
         double y0 = Float.MAX_VALUE;
@@ -318,11 +322,15 @@ public class VectorUtil {
         double ax0 = Float.NaN;
         double ay0 = Float.NaN;  // last averaged location
 
-        final Units xunits= ds.getXUnits();
-        final Units yunits= ds.getYUnits();
+        QDataSet wds= SemanticOps.weightsDataSet(ds);
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
 
-        VectorDataSetBuilder builder= new VectorDataSetBuilder( ds.getXUnits(), ds.getYUnits() );
-        builder.addPlane( DataSet.PROPERTY_PLANE_WEIGHTS, Units.dimensionless );
+        final Units xunits= SemanticOps.getUnits(xds);
+        final Units yunits= SemanticOps.getUnits(ds);
+
+        DataSetBuilder builder= new DataSetBuilder(1,1000);
+        DataSetBuilder xbuilder= new DataSetBuilder(1,1000);
+        DataSetBuilder wbuilder= new DataSetBuilder(1,1000);
 
         Units dxunits= xLimit!=null ? xLimit.getUnits() : null;
 
@@ -332,13 +340,13 @@ public class VectorUtil {
         UnitsConverter uc;
         double dxLimit, dyLimit;
         if ( xLimit!=null ) {
-            uc= getDifferencesConverter( xLimit.getUnits(), ds.getXUnits().getOffsetUnits(), xlog ? Units.logERatio : null );
+            uc= getDifferencesConverter( xLimit.getUnits(), xunits.getOffsetUnits(), xlog ? Units.logERatio : null );
             dxLimit = uc.convert( xLimit.doubleValue(xLimit.getUnits()) );
         } else {
             dxLimit= Double.MAX_VALUE;
         }
         if ( yLimit!=null ) {
-            uc= getDifferencesConverter( yLimit.getUnits(), ds.getYUnits().getOffsetUnits(), ylog ? Units.logERatio : null );
+            uc= getDifferencesConverter( yLimit.getUnits(), yunits.getOffsetUnits(), ylog ? Units.logERatio : null );
             dyLimit = uc.convert( yLimit.doubleValue(yLimit.getUnits()) );
         } else {
             dyLimit= Double.MAX_VALUE;
@@ -352,9 +360,9 @@ public class VectorUtil {
         while ( i<finish ) {
             inCount++;
 
-            double xx= ds.getXTagDouble(i,xunits);
-            double yy= ds.getDouble(i,yunits);
-            double ww= yunits.isFill( yy ) ? 0. : 1.;
+            double xx= xds.value(i);
+            double yy= ds.value(i);
+            double ww= wds.value(i);
 
             if ( ww==0 ) {
                 i++;
@@ -384,7 +392,10 @@ public class VectorUtil {
                 ax0 = sx0 / nn0;
                 ay0 = sy0 / nn0;
 
-                builder.insertY( xlog ? Math.exp(ax0) : ax0, ylog ? Math.exp(ay0) : ay0, DataSet.PROPERTY_PLANE_WEIGHTS, nn0 );
+                builder.putValue(  points, ylog ? Math.exp(ay0) : ay0 );
+                xbuilder.putValue( points, xlog ? Math.exp(ax0) : ax0 );
+                wbuilder.putValue( points, nn0 );
+
                 points++;
             }
 
@@ -401,21 +412,25 @@ public class VectorUtil {
             ax0 = sx0 / nn0;
             ay0 = sy0 / nn0;
 
-            builder.insertY( xlog ? Math.exp(ax0) : ax0, ylog ? Math.exp(ay0) : ay0, DataSet.PROPERTY_PLANE_WEIGHTS, nn0 );
+            builder.putValue(  points, ylog ? Math.exp(ay0) : ay0 );
+            xbuilder.putValue( points, xlog ? Math.exp(ax0) : ax0 );
+            wbuilder.putValue( points, nn0 );
+
             points++;
         }
 
-        Map props= ds.getProperties();
-        builder.addProperties( props );
-//        Datum xtw= (Datum) props.get(DataSet.PROPERTY_X_TAG_WIDTH);
-//        if ( xtw!=null && dxunits!=null ) {
-//            Datum nxtw= dxunits.createDatum(dxLimit);
-//            if ( nxtw.gt(xtw) ) builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, nxtw );
-//        }
-        builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, null );
-        VectorDataSet yds= builder.toVectorDataSet();
+        DDataSet xdsr= xbuilder.getDataSet();
+        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getProperties(xds), xdsr );
+        xdsr.putProperty( QDataSet.CADENCE, null );
 
-        return yds;
+        DDataSet ydsr= builder.getDataSet();
+        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getProperties(ds), ydsr );
+        ydsr.putProperty( QDataSet.CADENCE, null );
+
+        ydsr.putProperty( QDataSet.DEPEND_0, xdsr );
+        ydsr.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
+        
+        return ydsr;
 
     }
 

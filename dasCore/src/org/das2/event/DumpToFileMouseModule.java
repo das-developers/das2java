@@ -23,6 +23,10 @@ import org.das2.system.UserMessageCenter;
 import java.io.*;
 import java.nio.channels.*;
 import javax.swing.*;
+import org.das2.dataset.DataSetAdapter;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  *
@@ -61,27 +65,30 @@ public class DumpToFileMouseModule extends MouseModule {
         xrange= new DatumRange( xAxis.invTransform(e.getXMinimum()), xAxis.invTransform(e.getXMaximum()) );
         yrange= new DatumRange( yAxis.invTransform(e.getYMaximum()), yAxis.invTransform(e.getYMinimum()) );
         
-        DataSet ds= dsConsumer.getConsumedDataSet();
+        QDataSet ds= dsConsumer.getConsumedDataSet();
         
         if ( ds==null ) {
             UserMessageCenter.getDefault().notifyUser( this, "This renderer doesn't have a dataset loaded" );
             return;
         }
         
-        DataSet outds;
-        if ( ds instanceof TableDataSet ) {
-            TableDataSet tds= (TableDataSet)ds;
+        QDataSet outds;
+        if ( SemanticOps.isTableDataSet(ds) ) {
+            QDataSet tds= (QDataSet)ds;
             outds= new ClippedTableDataSet( tds, xrange, yrange );
             
         } else {
-            VectorDataSet vds= (VectorDataSet)ds;
-            VectorDataSetBuilder builder= new VectorDataSetBuilder(vds.getXUnits(),vds.getYUnits());
-            for ( int i=0; i<vds.getXLength(); i++ ) {
-                if ( yrange.contains(vds.getDatum(i)) & xrange.contains(vds.getXTagDatum(i) ) ) {
-                    builder.insertY(vds.getXTagDouble(i,vds.getXUnits()),vds.getDouble(i,vds.getYUnits()));
+            QDataSet vds= (QDataSet)ds;
+            DataSetBuilder builder= new DataSetBuilder(2,100,2);
+            QDataSet xds= SemanticOps.xtagsDataSet(vds);
+            for ( int i=0; i<vds.length(); i++ ) {
+                if ( yrange.contains( SemanticOps.getDatum(vds,vds.value(i)) ) & xrange.contains( SemanticOps.getDatum( xds,xds.value(i) ) ) ) {
+                    builder.putValue( -1, 0, xds.value(i) );
+                    builder.putValue( -1, 1, vds.value(i) );
                 }
             }
-            outds= builder.toVectorDataSet();
+
+            outds= builder.getDataSet();
         }
         
         JFileChooser chooser = new JFileChooser();
@@ -97,11 +104,13 @@ public class DumpToFileMouseModule extends MouseModule {
             File selected = chooser.getSelectedFile();
             try {
                 FileChannel out = new FileOutputStream(selected).getChannel();
-                if (outds instanceof TableDataSet) {
-                    TableUtil.dumpToAsciiStream((TableDataSet)outds, out);
+                DataSet outds2= DataSetAdapter.createLegacyDataSet(outds);
+
+                if ( outds2 instanceof TableDataSet ) {
+                    TableUtil.dumpToAsciiStream( (TableDataSet)outds2, out);
                 }
                 else if (outds instanceof VectorDataSet) {
-                    VectorUtil.dumpToAsciiStream((VectorDataSet)outds, out);
+                    VectorUtil.dumpToAsciiStream((VectorDataSet)outds2, out);
                 }
             }
             catch (IOException ioe) {

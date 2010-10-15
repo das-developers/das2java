@@ -27,7 +27,7 @@ package org.das2.dataset;
  *
  * @author  Jeremy Faden
  */
-public class NearestNeighborTableRebinner implements DataSetRebinner {
+public class NearestNeighborTableRebinner { //implements DataSetRebinner {
     
     /** Creates a new instance of TableAverageRebinner */
     public NearestNeighborTableRebinner() {

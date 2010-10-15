@@ -126,7 +126,9 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     public DataSet getPlanarView(String planeID) {
         TableDataSet ds = (TableDataSet)source.getPlanarView(planeID);
         if (ds != null) {
-            return new NearestNeighborTableDataSet(ds,ddX,ddY);
+            if ( true ) throw new RuntimeException("qdataset");
+            //return new NearestNeighborTableDataSet(ds,ddX,ddY);
+            return null;
         } else {
             return null;
         }
@@ -149,11 +151,15 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     }
     
     public VectorDataSet getXSlice(int i) {
-        return new XSliceDataSet(this,i);
+        if ( true ) throw new RuntimeException("qdataset");
+        return null;
+        //return new XSliceDataSet(this,i);
     }
     
     public VectorDataSet getYSlice(int j, int table) {
-        return new YSliceDataSet(this, j, table);
+        if ( true ) throw new RuntimeException("qdataset");
+        return null;
+        //return new YSliceDataSet(this, j, table);
     }
     
     public Datum getXTagDatum(int i) {
@@ -229,7 +235,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     }
     
     public String toString() {
-        return "NearestNeighborTableDataSet " + TableUtil.toString(this);
+        return "NearestNeighborTableDataSet " + this;
     }
     
     public double[] getDoubleScan(int i, Units units) {

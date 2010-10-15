@@ -23,7 +23,6 @@
 
 package org.das2.components;
 
-import org.das2.graph.SymbolLineRenderer;
 import org.das2.graph.DasColumn;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.GraphUtil;
@@ -31,11 +30,6 @@ import org.das2.graph.DasRow;
 import org.das2.graph.DasPlot;
 import org.das2.graph.DasAxis;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.VectorDataSetBuilder;
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -45,13 +39,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import org.das2.graph.SeriesRenderer;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsutil.DataSetBuilder;
 
 
 public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListener {
     
     private JDialog popupWindow;
     
-    private SymbolLineRenderer renderer;
+    private SeriesRenderer renderer;
     private DasPlot parentPlot;
     private TableDataSetConsumer consumer;
     private Datum xstart;    
@@ -66,7 +65,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
     private AngleSpectrogramSlicer(DasPlot plot, DasAxis xAxis, DasAxis yAxis, TableDataSetConsumer consumer ) {
         super(xAxis, yAxis);
         parentPlot = plot;
-        renderer= new SymbolLineRenderer();
+        renderer= new SeriesRenderer();
         this.consumer= consumer;
         addRenderer(renderer);
     }
@@ -158,39 +157,53 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
     }
 
     
-    private VectorDataSet angleSliceHoriz( TableDataSet tds, DatumRange xlimit, Datum xbase, Datum ybase, Datum slope ) {
-        VectorDataSetBuilder builder= new VectorDataSetBuilder( tds.getXUnits(), tds.getZUnits() );
-        int i0= DataSetUtil.closestColumn( tds, xlimit.min() );
-        int i1= DataSetUtil.closestColumn( tds, xlimit.max() );
+    private QDataSet angleSliceHoriz( QDataSet tds, DatumRange xlimit, Datum xbase, Datum ybase, Datum slope ) {
+        
+        DataSetBuilder builder= new DataSetBuilder(1,100);
+        DataSetBuilder xbuilder= new DataSetBuilder(1,100);
+
+        QDataSet xds= SemanticOps.xtagsDataSet(tds);
+        QDataSet yds= SemanticOps.ytagsDataSet(tds);
+
+        int i0= DataSetUtil.closestIndex( xds, xlimit.min() );
+        int i1= DataSetUtil.closestIndex( xds, xlimit.max() );
         
         int irow0=0;
         int irow1=0;
         
-        Units zunits= tds.getZUnits();
-        Units yunits= tds.getYUnits();
+        Units zunits= SemanticOps.getUnits(tds);
+        Units yunits= SemanticOps.getUnits(yds);
+        Units xunits= SemanticOps.getUnits(xds);
         
         for ( int i=i0; i<i1; i++ ) {
-            Datum x= tds.getXTagDatum(i);
-            Datum y= ybase.add( slope.multiply(x.subtract(xbase) ) );
-            int itable= tds.tableOfIndex(i);
-            while ( irow0>0 && tds.getYTagDatum( itable, irow0 ).gt( y ) ) irow0--;
+            double x= xds.value(i);
+            double y= ybase.add( slope.multiply( x-xbase.doubleValue(xunits) ) ).doubleValue(yunits);
+            while ( irow0>0 && yds.value( irow0 ) > y ) irow0--;
             irow1= irow0+1;
-            while ( (irow1+1)<tds.getYLength(itable) && tds.getYTagDatum(itable, irow1).lt( y ) ) irow1++;
+            while ( (irow1+1)< yds.length() && yds.value(irow1)< y ) irow1++;
             irow0= irow1-1;
             
             if ( irow0>0 ) {
-                double z0= tds.getDouble( i, irow0, zunits );
-                double z1= tds.getDouble( i, irow1, zunits );
-                double y0= tds.getYTagDouble( itable, irow0, yunits );
-                double y1= tds.getYTagDouble( itable, irow1, yunits );
-                double yy= y.doubleValue(yunits);
+                double z0= tds.value( i, irow0 );
+                double z1= tds.value( i, irow1 );
+                double y0= yds.value( irow0 );
+                double y1= yds.value( irow1 );
+                double yy= y;
                 double alpha= ( yy-y0 ) / ( y1-y0 );
                 double zinterp= z0 + (z1-z0) * alpha;
-                builder.insertY( x, Datum.create(zinterp,zunits) );
+                builder.putValue( -1, zinterp );
+                xbuilder.putValue( -1, x );
+                builder.nextRecord();
+                xbuilder.nextRecord();
             }
         }
-        
-        return builder.toVectorDataSet();
+
+        xbuilder.putProperty( QDataSet.UNITS, xunits );
+        builder.putProperty( QDataSet.UNITS, zunits );
+
+        builder.putProperty( QDataSet.DEPEND_0, xbuilder.getDataSet() );
+        return builder.getDataSet();
+
     }
     
     @Override
@@ -237,14 +250,14 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         
         Datum slope= e.getFinishY().subtract(ybase) .divide( e.getFinishX().subtract(xbase) );
 
-        DataSet ds = consumer.getConsumedDataSet();
+        QDataSet ds = consumer.getConsumedDataSet();
 
-        if (ds==null || !(ds instanceof TableDataSet)) {
+        if (ds==null || !( SemanticOps.isSimpleTableDataSet(ds) )) {
             return;
         }
         
-        TableDataSet tds = (TableDataSet)ds;
-        VectorDataSet sliceDataSet;
+        QDataSet tds = (QDataSet)ds;
+        QDataSet sliceDataSet;
         
         sliceDataSet= angleSliceHoriz( tds, getXAxis().getDatumRange(), xbase, ybase, slope );
         sliceDir= SLICEDIR_HORIZ;

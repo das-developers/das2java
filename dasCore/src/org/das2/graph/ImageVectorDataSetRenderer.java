@@ -12,12 +12,9 @@
 package org.das2.graph;
 
 import javax.swing.Icon;
-import org.das2.dataset.WritableTableDataSet;
 import org.das2.dataset.DataSetDescriptor;
-import org.das2.dataset.TableDataSet;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.DataSetUtil;
+import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -29,10 +26,11 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
-import org.das2.dataset.DataSet;
 import org.das2.dataset.NoDataInIntervalException;
-import org.das2.dataset.WeightsVectorDataSet;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.FDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
@@ -47,7 +45,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     Rectangle plotImageBounds;
     DatumRange imageXRange;
     DatumRange imageYRange;
-    TableDataSet hist;
+    QDataSet hist;
     private Color color = Color.BLACK;
     private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
     private Datum xres= null; /** size used to set ixstepLimitSq */
@@ -89,16 +87,19 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
 
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+
         if ( ds==null ) {
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
         }
-        if (!xAxis.getUnits().isConvertableTo(ds.getXUnits())) {
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+
+        if ( !xAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) xds) ) ) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
             return;
         }
 
-        if (!yAxis.getUnits().isConvertableTo(ds.getYUnits())) {
+        if ( !yAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) ds) )) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
             return;
         }
@@ -113,7 +114,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             } else {
                 if (getDataSet() == null) {
                     parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
-                } else if (getDataSet().getXLength() == 0) {
+                } else if (getDataSet().length() == 0) {
                     parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
                 }
             }
@@ -141,7 +142,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         //renderGhostly(g1, xAxis, yAxis);
     }
 
-    private void ghostlyImage2(DasAxis xAxis, DasAxis yAxis, VectorDataSet ds, Rectangle plotImageBounds2) {
+    private void ghostlyImage2(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
@@ -163,10 +164,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         //if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
 
-        boolean xmono = Boolean.TRUE == ds.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        boolean xmono = Boolean.TRUE == SemanticOps.isMonotonic(xds);
 
-        int firstIndex = xmono ? DataSetUtil.getPreviousColumn(ds, visibleRange.min()) : 0;
-        int lastIndex = xmono ? DataSetUtil.getNextColumn(ds, visibleRange.max()) : ds.getXLength();
+        int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds, visibleRange.min()) : 0;
+        int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, visibleRange.max()) : xds.length();
 
         final int STATE_LINETO = -991;
         final int STATE_MOVETO = -992;
@@ -175,15 +177,17 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         // TODO: data breaks
         int ix0 = 0, iy0 = 0;
-        if (ds.getXLength() > 0) {
-            VectorDataSet wds = WeightsVectorDataSet.create(ds);
+        if (ds.length() > 0) {
+            QDataSet wds = DataSetUtil.weightsDataSet(ds);
+            Units dsunits= SemanticOps.getUnits(ds);
+            Units xunits= SemanticOps.getUnits(xds);
             for (int i = firstIndex; i <= lastIndex; i++) {
-                boolean isValid = wds.getDouble(i,Units.dimensionless)>0;
+                boolean isValid = wds.value(i)>0;
                 if (!isValid) {
                     state = STATE_MOVETO;
                 } else {
-                    int iy = (int) yAxis.transform(ds.getDatum(i));
-                    int ix = (int) xAxis.transform(ds.getXTagDatum(i));
+                    int iy = (int) yAxis.transform( ds.value(i), dsunits );
+                    int ix = (int) xAxis.transform( xds.value(i), xunits );
                     if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                     switch (state) {
                         case STATE_MOVETO:
@@ -208,35 +212,34 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
     }
 
-    private TableDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, VectorDataSet ds) {
+    private QDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds) {
         ddx.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
-        WritableTableDataSet tds = WritableTableDataSet.newSimple(ddx.numberOfBins(), ddx.getUnits(),
-                ddy.numberOfBins(), ddy.getUnits(), Units.dimensionless);
+        FDataSet tds = FDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
 
-        if (ds.getXLength() > 0) {
+        QDataSet xds= SemanticOps.xtagsDataSet( ds );
+        if (ds.length() > 0) {
 
-            VectorDataSet wds = WeightsVectorDataSet.create(ds);
+            QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
-            Units xunits = ddx.getUnits();
-            Units yunits = ddy.getUnits();
-            Units zunits = Units.dimensionless;
+            Units xunits = SemanticOps.getUnits(xds);
+            Units yunits = SemanticOps.getUnits(ds);
 
-            boolean xmono = Boolean.TRUE == ds.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+            boolean xmono = SemanticOps.isMonotonic(xds);
 
-            int firstIndex = xmono ? DataSetUtil.getPreviousColumn(ds,  ddx.binStart(0) ) : 0;
-            int lastIndex = xmono ? DataSetUtil.getNextColumn(ds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.getXLength()-1;
+            int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
+            int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.length()-1;
 
             int i = firstIndex;
             int n = lastIndex;
             for (; i <= n; i++) {
-                boolean isValid = wds.getDouble(i,Units.dimensionless)>0;
+                boolean isValid = wds.value(i)>0;
                 if ( isValid ) {
-                    int ix = ddx.whichBin(ds.getXTagDouble(i, xunits), xunits);
-                    int iy = ddy.whichBin(ds.getDouble(i, yunits), yunits);
+                    int ix = ddx.whichBin(xds.value(i), xunits);
+                    int iy = ddy.whichBin(ds.value(i), yunits);
                     if (ix != -1 && iy != -1) {
-                        double d = tds.getDouble(ix, iy, zunits);
-                        tds.setDouble(ix, iy, d + 1, zunits);
+                        double d = tds.value(ix, iy);
+                        tds.putValue( ix, iy, d+1 );
                     }
                 }
             }
@@ -244,7 +247,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         return tds;
     }
 
-    private void ghostlyImage(DasAxis xAxis, DasAxis yAxis, VectorDataSet ds, Rectangle plotImageBounds2) {
+    private void ghostlyImage(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         RebinDescriptor ddx;
 
         DatumRange xrange = new DatumRange(xAxis.invTransform(plotImageBounds2.x),
@@ -265,7 +268,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 yAxis.isLog());
 
 
-        TableDataSet newHist = histogram(ddx, ddy, ds);
+        QDataSet newHist = histogram(ddx, ddy, ds);
         //WritableTableDataSet whist= (WritableTableDataSet)hist;
 
         /* double histMax= TableUtil.tableMax(hist, Units.dimensionless);
@@ -298,7 +301,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         //show envelope
 
-        boolean xmono = Boolean.TRUE == getDataSet().getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        QDataSet xds= SemanticOps.xtagsDataSet( ds );
+        boolean xmono = SemanticOps.isMonotonic(xds);
 
         int envelopeColor = ( 128 << 24) | colorInt;  // 50% alpha
         if ( envelope==1 ) envelopeColor= ( 128/saturationHitCount << 24) | colorInt;  // 50% alpha
@@ -306,7 +310,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int ymin = -1;
             int ymax = -1; //ymax is inclusive
             for (int j=0; j<h; j++) {
-                if (newHist.getDouble(i, j, Units.dimensionless) > 0) {
+                if (newHist.value(i,j) > 0) {
                     if (ymin<0) ymin = j;
                     ymax = j;
                 }
@@ -314,8 +318,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if (ymin >= 0) {
                 for (int j=ymin; j<=ymax; j++) {
                      int index = i + (h-j-1) * w;
-                     if ( !xmono || (!(envelope==2) && ( envelope==0 || newHist.getDouble(i, j, Units.dimensionless) > 0 ) )) {
-                         int alpha = 255 * (int) newHist.getDouble(i, j, Units.dimensionless) / saturationHitCount;
+                     if ( !xmono || (!(envelope==2) && ( envelope==0 || newHist.value(i,j) > 0 ) )) {
+                         int alpha = 255 * (int) newHist.value(i,j) / saturationHitCount;
                          if (alpha>255) alpha = 255;  //Clip alpha; it's only 8 bits!
                          raster[index] =  (alpha << 24) | colorInt;
                      }  else {
@@ -338,16 +342,19 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         super.updatePlotImage(xAxis, yAxis, monitor);
 
-        VectorDataSet ds1 = (VectorDataSet) getDataSet();
+        QDataSet ds1 = getDataSet();
         if (ds1 == null) {
             return;
         }
-        if (!xAxis.getUnits().isConvertableTo(ds1.getXUnits())) {
+
+        QDataSet xds= SemanticOps.xtagsDataSet( ds );
+
+        if (!xAxis.getUnits().isConvertableTo( SemanticOps.getUnits(xds) )) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
             return;
         }
 
-        if (!yAxis.getUnits().isConvertableTo(ds1.getYUnits())) {
+        if (!yAxis.getUnits().isConvertableTo( SemanticOps.getUnits(ds1) )) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
             return;
         }
@@ -360,20 +367,20 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         DatumRange visibleRange = xAxis.getDatumRange(); 
 
-        boolean xmono = Boolean.TRUE == ds1.getProperty(DataSet.PROPERTY_X_MONOTONIC);
+        boolean xmono = SemanticOps.isMonotonic(xds);
 
         
         int firstIndex, lastIndex;
         if ( xmono ) {
-            firstIndex = DataSetUtil.getPreviousColumn(ds1, visibleRange.min());
-            lastIndex = DataSetUtil.getNextColumn(ds1, visibleRange.max()) ;
+            firstIndex = DataSetUtil.getPreviousIndex(xds, visibleRange.min());
+            lastIndex = DataSetUtil.getNextIndex(xds, visibleRange.max()) ;
             Datum xres1= visibleRange.width().divide(xAxis.getDLength());
             if ( xAxis.isLog() ) {
                 ixstepLimitSq= 100000000;
                 xres= null;
             } else {
                 if ( !xres1.equals(xres) ) {
-                    Datum sw = DataSetUtil.guessXTagWidth(ds);
+                    Datum sw = DataSetUtil.asDatum( DataSetUtil.guessCadenceNew(xds,ds1) ); //TODO! check ratiometric
                     Datum xmax= xAxis.getDataMaximum();
                     int ixstepLimit= 0;
                     if ( UnitsUtil.isRatiometric(sw.getUnits())) {
@@ -387,7 +394,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         } else {
             firstIndex = 0;
-            lastIndex = ds1.getXLength();
+            lastIndex = ds1.length();
             ixstepLimitSq= 100000000;
             xres= null;
         }

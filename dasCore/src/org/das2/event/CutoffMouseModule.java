@@ -16,7 +16,6 @@ import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.DataSetRebinner;
 import org.das2.dataset.DataSetUpdateEvent;
-import org.das2.dataset.DataSetUtil;
 import org.das2.dataset.DefaultVectorDataSet;
 import org.das2.dataset.RebinDescriptor;
 import org.das2.dataset.SingleVectorDataSet;
@@ -36,9 +35,18 @@ import org.das2.graph.SymbolLineRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
+import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.text.PlainDocument;
+import org.das2.dataset.DataSetAdapter;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  *
@@ -109,43 +117,55 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     }
     
     private synchronized void recalculate( ProgressMonitor mon) {
-        TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
+        QDataSet tds= (QDataSet)dataSetConsumer.getConsumedDataSet();
         if ( tds==null ) return;
         if ( xrange==null ) return;
         
         tds= new ClippedTableDataSet( tds, xrange, yrange );
-        
+        QDataSet yds= SemanticOps.ytagsDataSet(tds);
+        QDataSet xds= SemanticOps.xtagsDataSet(tds);
+
         // average the data down to xResolution
         DataSetRebinner rebinner= new AverageTableRebinner();
         
-        DatumRange range= DataSetUtil.xRange( tds );
+        DatumRange range= DataSetUtil.asDatumRange( SemanticOps.bounds(tds).slice(0), true );
+
         RebinDescriptor ddx= getRebinDescriptor( range );
         
         try {
             //TODO: why does rebin throw DasException?
-            tds= (TableDataSet)rebinner.rebin( tds, ddx, null );
+            tds= (QDataSet)rebinner.rebin( tds, ddx, null );
         } catch ( DasException e ) {
             throw new RuntimeException(e);
         }
-        
-        VectorDataSetBuilder builder= new VectorDataSetBuilder( tds.getXUnits(), tds.getYUnits() );
-        
-        mon.setTaskSize( tds.getXLength() );
+
+        double fill= SemanticOps.getUnits(yds).getFillDouble();
+
+        DataSetBuilder builder= new DataSetBuilder( 1, 100 );
+        builder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(yds) );
+        builder.putProperty( QDataSet.FILL_VALUE, fill );
+        DataSetBuilder xbuilder= new DataSetBuilder( 1, 100 );
+        xbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(xds) );
+
+        mon.setTaskSize( tds.length() );
         mon.started();
-        
-        for ( int i=0; i<tds.getXLength(); i++ ) {
+
+        for ( int i=0; i<tds.length(); i++ ) {
             mon.setTaskProgress( i );
             if ( mon.isCancelled() ) break;
-            VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
+            QDataSet spec= Ops.log10( tds.slice(i) );
             int icutoff= cutoff( spec, slopeMin, nave, isLowCutoff() ? 1 : -1, levelMin );
             if ( icutoff>-1 ) {
-                builder.insertY( tds.getXTagDatum(i), tds.getYTagDatum( tds.tableOfIndex(i), icutoff ) );
+                xbuilder.putValue( -1, xds.value(i) );
+                builder.putValue( -1, yds.value(icutoff) );
             } else {
-                Units yunits=tds.getYUnits();
-                builder.insertY( tds.getXTagDatum(i), yunits.createDatum(yunits.getFillDouble()) );
+                xbuilder.putValue( -1, xds.value(i) );
+                builder.putValue( -1, fill );
             }
+            builder.nextRecord();
+            xbuilder.nextRecord();
         }
-        
+
         mon.finished();
         
         if ( mon.isCancelled() ) return;
@@ -154,11 +174,14 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         if ( lastComment!=null ) {
             comment= lastComment + " "+comment;
         }
-        builder.setProperty("comment",comment);
-        builder.setProperty( DataSet.PROPERTY_X_TAG_WIDTH, this.xResolution );
-        VectorDataSet vds= builder.toVectorDataSet();
+
+        builder.putProperty( QDataSet.USER_PROPERTIES, Collections.singletonMap("comment",comment) );
+        xbuilder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet(this.xResolution ) );
+
+        builder.putProperty( QDataSet.DEPEND_0, xbuilder.getDataSet() );
+        QDataSet vds= builder.getDataSet();
         
-        fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent( this,vds ) );
+        fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent( this,DataSetAdapter.createLegacyDataSet(vds) ) );
         
     }
     
@@ -167,51 +190,74 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * levelMin in the y units of ds.
      * mult=-1 high cutoff, =1 low cutoff
      */
-    public int cutoff( VectorDataSet ds, Datum slopeMin, int nave, int mult, Datum levelMin ) {
-        int nfr= ds.getXLength();
+    public int cutoff( QDataSet ds, Datum slopeMin, int nave, int mult, Datum levelMin ) {
+        int nfr= ds.length();
         if ( nfr < (nave+1) ) {
             throw new IllegalArgumentException("DataSet doesn't contain enough elements");
         }
         double[] cumul= new double[nfr];
-        Units units= ds.getYUnits();
+        Units units= SemanticOps.getUnits(ds);
+
         double level= levelMin.doubleValue( units );
         double slope= slopeMin.doubleValue( units );
         
-        cumul[0]= ds.getDouble(0, units);
+        cumul[0]= ds.value(0);
         for ( int i=1; i<nfr; i++ ) {
-            cumul[i]= cumul[i-1] + ds.getDouble(i, units);
+            cumul[i]= cumul[i-1] + ds.value(i);
         }
         boolean[] icof= new boolean[nfr];
+
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        Units xunits= SemanticOps.getUnits(xds);
         
-        VectorDataSetBuilder levelBuilder= new VectorDataSetBuilder( ds.getXUnits(), units );
-        VectorDataSetBuilder slopeBuilder= new VectorDataSetBuilder( ds.getXUnits(), units );
-        VectorDataSetBuilder icofBuilder= new VectorDataSetBuilder( ds.getXUnits(), Units.dimensionless );
-        
+        DataSetBuilder levelBuilder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder xlevelBuilder= new DataSetBuilder( 1, 100 );
+        xlevelBuilder.putProperty( QDataSet.UNITS,xunits );
+        DataSetBuilder slopeBuilder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder xslopeBuilder= new DataSetBuilder( 1, 100 );
+        xslopeBuilder.putProperty( QDataSet.UNITS,xunits );
+        DataSetBuilder icofBuilder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder xicofBuilder= new DataSetBuilder( 1, 100 );
+        xicofBuilder.putProperty( QDataSet.UNITS,xunits );
+
         for ( int i=1; i<nfr; i++ ) icof[i]=true;
         icof[0]= false;  // let's be explicit
         icof[nfr-1]= false; // the tests can't reach this one as well.
-        
+
         for ( int k=1; k<=nave; k++ ) {
             double[] ave= new double[nfr];
             ave[0]= cumul[k-1]/k;
             for ( int j=0; j<nfr-k; j++ ) {
                 ave[j+1]= ( cumul[j+k] - cumul[j] ) / k;
-                levelBuilder.insertY( ds.getXTagDatum(j+1), units.createDatum(ave[j+1]) );
+                levelBuilder.putValue( -1, ave[j+1] );
+                levelBuilder.nextRecord();
+                xlevelBuilder.putValue( -1, xds.value(j+1) );
+                xlevelBuilder.nextRecord();
             }
             for ( int j=k; j<nfr-k; j++ ) {
                 double slopeTest= ( ave[j+1]-ave[j-k] ) / k;
-                slopeBuilder.insertY( ds.getXTagDatum(j+1), units.createDatum(slopeTest) );
+                slopeBuilder.putValue( -1, slopeTest );
+                slopeBuilder.nextRecord();
+                xslopeBuilder.putValue( -1, xds.value(j+1) );
+                xslopeBuilder.nextRecord();
                 if ( slopeTest*mult <= slope*mult ) icof[j]= false;
                 double uave= mult>0 ? ave[j+k] :  ave[j];
                 if ( uave <= level ) icof[j]=false;
-                icofBuilder.insertY( ds.getXTagDatum(j), icof[j] ? units.dimensionless.createDatum(1) : units.dimensionless.createDatum(0) );
+                icofBuilder.putValue( -1, icof[j] ? 1: 0 );
+                icofBuilder.nextRecord();
+                xicofBuilder.putValue( -1, xds.value(j) );
+                xicofBuilder.nextRecord();
+                
             }
         }
         
         if ( cutoffSlicer!=null ) {
-            cutoffSlicer.slopeRenderer.setDataSet( slopeBuilder.toVectorDataSet() );
-            cutoffSlicer.levelRenderer.setDataSet( levelBuilder.toVectorDataSet() );
-            cutoffSlicer.icofRenderer.setDataSet( icofBuilder.toVectorDataSet() );
+            slopeBuilder.putProperty( QDataSet.DEPEND_0, xslopeBuilder.getDataSet() );
+            cutoffSlicer.slopeRenderer.setDataSet( slopeBuilder.getDataSet() );
+            levelBuilder.putProperty( QDataSet.DEPEND_0, xlevelBuilder.getDataSet() );
+            cutoffSlicer.levelRenderer.setDataSet( levelBuilder.getDataSet() );
+            icofBuilder.putProperty( QDataSet.DEPEND_0, xicofBuilder.getDataSet() );
+            cutoffSlicer.icofRenderer.setDataSet( icofBuilder.getDataSet() );
         }
         
         int icutOff=-1;
@@ -401,7 +447,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         
         public void dataPointSelected(org.das2.event.DataPointSelectionEvent event) {
             this.lastSelectedPoint= event;
-            TableDataSet tds= (TableDataSet)dataSetConsumer.getConsumedDataSet();
+            QDataSet tds= (QDataSet)dataSetConsumer.getConsumedDataSet();
             
             this.xValue= event.getX();
             this.yValue= event.getY();
@@ -411,35 +457,40 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             // average the data down to xResolution
             DataSetRebinner rebinner= new AverageTableRebinner();
             
-            DatumRange range= DataSetUtil.xRange( tds );
+            DatumRange range= DataSetUtil.asDatumRange( DataSetOps.dependBounds( tds ).slice(0), true );
             RebinDescriptor ddx= getRebinDescriptor( range );
             
             try {
-                tds= (TableDataSet)rebinner.rebin( tds, ddx, null );
+                tds= (QDataSet)rebinner.rebin( tds, ddx, null );
             } catch ( DasException e ) {
                 throw new RuntimeException(e);
             }
+
+            QDataSet xds= SemanticOps.xtagsDataSet(tds);
+
+            int i= DataSetUtil.closestIndex( xds, event.getX() );
             
-            int i= DataSetUtil.closestColumn( tds, event.getX() );
-            
-            VectorDataSet contextDs= tds.getXSlice(i);
-            contextLevelRenderer.setDataSet( DataSetUtil.log10( contextDs ) );
+            QDataSet contextDs= tds.slice(i);
+            contextLevelRenderer.setDataSet( Ops.log10( contextDs ) );
             
             //VectorDataSet slopeDs= VectorUtil.finiteDerivative( contextDs, nave );
             //contextSlopeRenderer.setDataSet( slopeDs );
+
+            DatumRange xrange= DataSetUtil.asDatumRange( DataSetOps.dependBounds( tds ).slice(0), true );
+            tds= new ClippedTableDataSet( tds, xrange, yrange );
             
-            tds= new ClippedTableDataSet( tds, DataSetUtil.xRange(tds), yrange );
-            
-            this.xValue= tds.getXTagDatum(i);
+            this.xValue= SemanticOps.getDatum( xds, xds.value(i) );
+
             topPlot.setTitle( "" +  xValue + " " + yValue);
             
-            VectorDataSet spec= DataSetUtil.log10( tds.getXSlice(i) );
-            
+            QDataSet spec= Ops.log10( tds.slice(i) );
+            QDataSet xspec= SemanticOps.xtagsDataSet(spec);
+
             int icutoff= cutoff( spec, slopeMin, nave, isLowCutoff() ? 1 : -1, levelMin );
             if ( icutoff==-1 ) {
-                cutoff= spec.getXUnits().getFillDatum();
+                cutoff= SemanticOps.getUnits(xspec).getFillDatum();
             } else {
-                cutoff= spec.getXTagDatum(icutoff);
+                cutoff= SemanticOps.getDatum(xspec,xspec.value(icutoff));
             }
             
             showPopup();
@@ -461,7 +512,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         return cutoffSlicer;
         
     }
-    
+
     private void testCutoff() {
         // see /home/jbf/voyager/cutoff/input.txt
         double[] spec= new double[] {
@@ -480,11 +531,15 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         for ( int i=0; i< tags.length; i++ ) { tags[i]= i+1; }
         double slope= 0.266692;
         int nave=3;
-        int mult= isLowCutoff() ? 1 : -1;
+        boolean isLowCutoff= true;
+        int mult= isLowCutoff ? 1 : -1;
         double level= -14;
-        int icut= cutoff(
-                new DefaultVectorDataSet( spec, Units.hertz, spec, Units.v2pm2Hz, new HashMap() ),
-                Units.v2pm2Hz.createDatum(slope), nave, mult, Units.v2pm2Hz.createDatum(level) );
+
+        DDataSet test= DDataSet.wrap(spec);
+        test.putProperty( QDataSet.UNITS, Units.v2pm2Hz );
+        test.putProperty( QDataSet.DEPEND_0, DDataSet.wrap(tags) );
+
+        int icut= cutoff( test, Units.v2pm2Hz.createDatum(slope), nave, mult, Units.v2pm2Hz.createDatum(level) );
         System.out.println("icut="+icut+"  should be 25");
     }
     

@@ -31,10 +31,7 @@ import org.das2.graph.DasPlot;
 import org.das2.graph.DasAxis;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.AverageTableRebinner;
-import org.das2.dataset.TableDataSet;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.DatumRange;
 import org.das2.DasException;
 import org.das2.datum.Datum;
@@ -44,16 +41,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import org.das2.graph.SeriesRenderer;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 
 public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSelectionListener {
     
     private JDialog popupWindow;
-    
-    private Datum yValue;
-    
+
     private DasPlot parentPlot;
-    private SymbolLineRenderer renderer;
+    private SeriesRenderer renderer;
     
     protected VerticalSpectrogramAverager(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
         super(xAxis, yAxis);
@@ -145,23 +143,15 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
     
-    protected void drawContent(Graphics2D g) {
-        super.drawContent(g);
-        /*int ix= (int)this.getXAxis().transform(yValue);
-        DasRow row= this.getRow();
-        int iy0= (int)row.getDMinimum();
-        int iy1= (int)row.getDMaximum();
-        g.drawLine(ix+3,iy0,ix,iy0+3);
-        g.drawLine(ix-3,iy0,ix,iy0+3);
-        g.drawLine(ix+3,iy1,ix,iy1-3);
-        g.drawLine(ix-3,iy1,ix,iy1-3);*/
-    }
     
     public void dataRangeSelected(DataRangeSelectionEvent e) {
-        DataSet ds = e.getDataSet();
-        if (ds==null || !(ds instanceof TableDataSet))
+        QDataSet ds = e.getDataSet();
+
+        if (ds==null || ! SemanticOps.isTableDataSet(ds) ) {
             return;
-        TableDataSet xtys = (TableDataSet)ds;
+        }
+
+        QDataSet xtys = (QDataSet)ds;
         Datum xValue1 = e.getMinimum();
         Datum xValue2 = e.getMaximum();
         
@@ -175,8 +165,8 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         ddX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         AverageTableRebinner rebinner = new AverageTableRebinner();
         try {
-            TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
-            VectorDataSet ds1 = rebinned.getXSlice(0);
+            QDataSet rebinned = (QDataSet)rebinner.rebin(xtys, ddX, null);
+            QDataSet ds1 = rebinned.slice(0);
             renderer.setDataSet(ds1);
         } catch (DasException de) {
             //Do nothing.

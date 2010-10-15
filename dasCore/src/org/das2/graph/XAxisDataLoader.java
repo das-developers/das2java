@@ -30,6 +30,7 @@ import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.das2.dataset.DataSetAdapter;
 
 /**
  *
@@ -129,7 +130,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
             
             CacheTag cacheTag= new CacheTag( loadRange, resolution );
             if ( dsd.getDataSetCache().haveStored(dsd, cacheTag) ) {
-                renderer.setDataSet( dsd.getDataSetCache().retrieve( dsd, cacheTag ) );
+                renderer.setDataSet( DataSetAdapter.create( dsd.getDataSetCache().retrieve( dsd, cacheTag ) ) );
                 currentRequest= null;
                 
             } else {
@@ -226,7 +227,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                                 logger.fine("  ds range: (empty)" );
                             }
                         }
-                        renderer.setDataSet( ds );
+                        renderer.setDataSet( DataSetAdapter.create(ds) );
 
                         logger.fine("current request completed w/dataset: " + currentRequest.xmem );
                         currentRequest=null;

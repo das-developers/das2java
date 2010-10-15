@@ -73,13 +73,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasException;
+import org.das2.dataset.DataSetAdapter;
 import org.das2.graph.DasAxis.Memento;
+import org.virbo.dataset.QDataSet;
 
 public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
     public static String PROP_TITLE = "title";
     protected DataSetDescriptor dataSetDescriptor;
-    protected DataSet Data;
+    protected QDataSet Data;
     private DasAxis xAxis;
     private DasAxis yAxis;
     DasAxis.Memento xmemento;
@@ -489,7 +491,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 File selected = chooser.getSelectedFile();
                 try {
                     FileChannel out = new FileOutputStream(selected).getChannel();
-                    DataSet ds = renderer.getDataSet();
+                    DataSet ds = DataSetAdapter.createLegacyDataSet( renderer.getDataSet() );
                     if (ds instanceof TableDataSet) {
                         TableUtil.dumpToAsciiStream((TableDataSet) ds, out);
                     } else if (ds instanceof VectorDataSet) {
@@ -502,17 +504,17 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     };
 
-    public DataSet getDataSet() {
+    public QDataSet getDataSet() {
         // TODO: get rid of this!!!
         return Data;
     }
 
-    public DataSet getConsumedDataSet() {
+    public QDataSet getConsumedDataSet() {
         // TODO: get rid of this!!!
         return Data;
     }
 
-    public DataSet getData() {
+    public QDataSet getData() {
         // TODO: get rid of this!!!
         return Data;
     }
@@ -1125,12 +1127,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      */
     public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
         this.dataSetDescriptor = dataSetDescriptor;
-        markDirty();
-    }
-
-    public void setData(DataSet ds) {
-        // TODO: get rid of this!!!
-        this.Data = ds;
         markDirty();
     }
 

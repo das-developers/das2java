@@ -31,6 +31,14 @@ import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.*;
 import java.util.logging.*;
+import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -54,20 +62,40 @@ public class AverageTableRebinner implements DataSetRebinner {
     public AverageTableRebinner() {
     }
 
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, DasException {
+    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
         logger.finest("enter AverageTableRebinner.rebin");
 
         if (ds == null) {
             throw new NullPointerException("null data set");
         }
-        if (!(ds instanceof TableDataSet)) {
+        if (! SemanticOps.isTableDataSet(ds) ) {
             throw new IllegalArgumentException("Data set must be an instanceof TableDataSet: " + ds.getClass().getName());
         }
-        TableDataSet tds = (TableDataSet) ds;
-        TableDataSet weights = (TableDataSet) ds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
-        if (ddX != null && tds.getXLength() > 0) {
-            double start = tds.getXTagDouble(0, ddX.getUnits());
-            double end = tds.getXTagDouble(tds.getXLength() - 1, ddX.getUnits());
+
+        QDataSet tds = (QDataSet) ds;
+        int rank= tds.rank();
+
+        if ( rank==2 ) { // make it into a rank 3 table
+            JoinDataSet tdsx= new JoinDataSet(3);
+            tdsx.join(tds);
+            tds= tdsx;
+        }
+
+        QDataSet weights = SemanticOps.weightsDataSet( ds );
+
+        QDataSet tds1= tds.slice(0);
+
+        QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+        QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+        Units xunits= SemanticOps.getUnits( xds );
+        Units yunits= SemanticOps.getUnits( yds );
+
+        UnitsConverter xc= xunits.getConverter(ddX.getUnits());
+
+        if ( ddX != null && tds.length() > 0 ) {
+            QDataSet bounds= SemanticOps.bounds(tds);
+            double start = xc.convert( bounds.value(0,0) );
+            double end = xc.convert( bounds.value(0,1) );
             if (start > ddX.binStop(ddX.numberOfBins()-1).doubleValue(ddX.getUnits()) ) {
                 throw new NoDataInIntervalException("data starts after range");
             } else if (end < ddX.binStart(0).doubleValue(ddX.getUnits())) {
@@ -75,48 +103,34 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
 
-        long timer = System.currentTimeMillis();
+        int nx = (ddX == null ? tds1.length() : ddX.numberOfBins());
+        int ny = (ddY == null ? tds1.length(0) : ddY.numberOfBins());
 
-        Units xunits = ddX.getUnits();
-
-        int nx = (ddX == null ? tds.getXLength() : ddX.numberOfBins());
-        int ny = (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
+        if ( ddY==null && rank!=2 ) {
+            throw new IllegalArgumentException("ddY was null but there was rank 3 dataset");
+        }
 
         logger.finest("Allocating rebinData and rebinWeights: " + nx + " x " + ny);
 
         double[][] rebinData = new double[nx][ny];
         double[][] rebinWeights = new double[nx][ny];
 
-        average(tds, weights, rebinData, rebinWeights, ddX, ddY);
-        if (interpolate) {
+        average( tds, weights, rebinData, rebinWeights, ddX, ddY );
+        if (interpolate) { // I think these calculate the interpolated value at the edge.  Note there's a bug in here...
             doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
             doBoundaries2TB(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
             doCorners(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
         }
 
         double[] xTags;
-        double[] xTagMin;
-        double[] xTagMax;
 
         if (ddX != null) {
             xTags = ddX.binCenters();
-            xTagMin = ddX.binStops();
-            xTagMax = ddX.binStarts();
-            for (int i = 0; i < tds.getXLength(); i++) {
-                double xt = tds.getXTagDouble(i, xunits);
-                int ibin = ddX.whichBin(xt, xunits);
-                if (ibin > -1 && ibin < nx) {
-                    xTagMin[ibin] = Math.min(xTagMin[ibin], xt);
-                    xTagMax[ibin] = Math.max(xTagMax[ibin], xt);
-                }
-            }
         } else {
             xTags = new double[nx];
             for (int i = 0; i < nx; i++) {
-                xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
+                xTags[i] = xds.value( i );
             }
-            xTagMin = xTags;
-            xTagMax = xTags;
         }
 
 
@@ -126,92 +140,128 @@ public class AverageTableRebinner implements DataSetRebinner {
         } else {
             yTags = new double[1][ny];
             for (int j = 0; j < ny; j++) {
-                yTags[0][j] = tds.getYTagDouble(0, j, tds.getYUnits());
+                yTags[0][j] = yds.value( j );
             }
         }
 
-        Units resultXUnits = ddX == null ? tds.getXUnits() : ddX.getUnits();
-        Units resultYUnits = ddY == null ? tds.getYUnits() : ddY.getUnits();
-
         if (this.interpolate) {
-            Datum xTagWidth = (Datum) ds.getProperty("xTagWidth");
-            if (xTagWidth == null) {
-                xTagWidth = DataSetUtil.guessXTagWidth(tds);
-            }
+            Datum xTagWidth = getXTagWidth(xds, tds1);
+            
             //double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-            Datum yTagWidth = (Datum) ds.getProperty("yTagWidth");
+            Datum yTagWidth = DataSetUtil.asDatum( DataSetUtil.guessCadenceNew( yds, null ) );
 
             if (ddX != null) {
-                //fillInterpolateX(rebinData, rebinWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, interpolateType);
                 fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
             }
             if (ddY != null) {
-                /* Note the yTagMin,yTagMax code doesn't work here, because of the 
-                 * multiple tables.  So here, we'll just up yTagWidth to be twice
-                 * the pixel cadence.  When a new data model is introduced,
-                 * this should be revisited.
-                 */
-                if (yTagWidth == null && interpolateType == Interpolate.NearestNeighbor) {
-                    yTagWidth = TableUtil.guessYTagWidth(tds);
-                }
                 fillInterpolateY(rebinData, rebinWeights, ddY, yTagWidth, interpolateType);
             }
         } else if (enlargePixels) {
             enlargePixels(rebinData, rebinWeights);
         }
 
-        double[][][] zValues = {rebinData, rebinWeights};
+        // copy the data into rank 2 dataset.
+        DDataSet result= DDataSet.createRank2( nx, ny );
+        DDataSet weightResult= DDataSet.createRank2( nx, ny );
+        for ( int i=0; i<nx; i++ ) {
+            for ( int j=0; j<ny; j++ ) {
+                result.putValue( i, j, rebinData[i][j] );
+                weightResult.putValue( i, j, rebinWeights[i][j] );
+            }
+        }
 
-        int[] tableOffsets = {0};
-        Units[] zUnits = {tds.getZUnits(), Units.dimensionless};
-        String[] planeIDs = {"", DataSet.PROPERTY_PLANE_WEIGHTS};
+        DDataSet xx= DDataSet.createRank1( ddX.numberOfBins() );
+        for ( int i=0; i<xx.length(); i++ ) xx.putValue(i, ddX.binCenter(i,xunits));
+        xx.putProperty( QDataSet.UNITS, xunits );
 
-        Map properties = new HashMap(ds.getProperties());
+        DDataSet yy= DDataSet.createRank1( ddY.numberOfBins() );
+        for ( int i=0; i<yy.length(); i++ ) yy.putValue(i, ddY.binCenter(i,yunits));
+        yy.putProperty( QDataSet.UNITS, yunits );
 
+        for ( String s: DataSetUtil.dimensionProperties() ) {
+            if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
+            if ( xds.property(s)!=null ) xx.putProperty(s,xds.property(s));
+            if ( yds.property(s)!=null ) yy.putProperty(s,yds.property(s));
+        }
         if (ddX != null) {
-            properties.put(DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum());
+            xx.putProperty(QDataSet.CADENCE, DataSetUtil.asDataSet(ddX.binWidthDatum()) );
         }
         if (ddY != null) {
-            properties.put(DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum());
+            yy.putProperty(QDataSet.CADENCE, DataSetUtil.asDataSet(ddY.binWidthDatum()) );
         }
-        TableDataSet result = new DefaultTableDataSet(xTags, resultXUnits, yTags, resultYUnits, zValues, zUnits, planeIDs, tableOffsets, properties);
+
+        result.putProperty( QDataSet.DEPEND_0, xx );
+        result.putProperty( QDataSet.DEPEND_1, yy );
+        result.putProperty( QDataSet.WEIGHTS_PLANE, weightResult );
+
         logger.finest("done, AverageTableRebinner.rebin");
         return result;
     }
 
-    static void doBoundaries2RL(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
-        Units yunits = tds.getYUnits();
-        Units zunits = tds.getZUnits();
-        Units wunits = Units.dimensionless;
-        TableDataSet wds = WeightsTableDataSet.create(tds);
-        for (int i = 0; i < 2; i++) {
-            int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;
-            Datum xx = i == 0 ? ddX.binCenter(0) : ddX.binCenter(ix);
+    private static Datum getXTagWidth( QDataSet xds, QDataSet tds1 ) {
+        Datum xTagWidth;
+        if ( xds.length()>1 ) {
+            xTagWidth= SemanticOps.guessXTagWidth( xds, tds1 ).multiply(0.9);
+        } else {
+            RankZeroDataSet xTagWidthDs= (RankZeroDataSet) xds.property( QDataSet.CADENCE ); // note these were once doubles, but this is not supported here.
+            if (xTagWidthDs!=null) {
+                xTagWidth= org.virbo.dataset.DataSetUtil.asDatum(xTagWidthDs);
+            } else {
+                Units xunits= SemanticOps.getUnits(xds);
+                xTagWidth= xunits.createDatum(Double.MAX_VALUE);
+            }
+        }
+        return xTagWidth;
+    }
 
-            int i0 = DataSetUtil.getPreviousColumn(tds, xx);
-            int i1 = DataSetUtil.getNextColumn(tds, xx);
+    static void doBoundaries2RL( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
 
-            int itable = tds.tableOfIndex(i0);
-            if (itable == tds.tableOfIndex(i1) && (i1 != i0)) {
-                DatumRange dr = DatumRangeUtil.union( tds.getXTagDatum(i0), tds.getXTagDatum(i1) );
-                if (dr.width().gt(DataSetUtil.guessXTagWidth(tds).multiply(0.9))) {
-                    double alpha = DatumRangeUtil.normalize(dr, xx);
-                    if ( interpolateType==Interpolate.NearestNeighbor ) {
-                        alpha= alpha < 0.5 ? 0.0 : 1.0;
-                    }
-                    int ny = ddY == null ? tds.getYLength(itable) : ddY.numberOfBins();
-                    for (int j = 0; j < tds.getYLength(itable); j++) {
-                        int jj = ddY == null ? j : ddY.whichBin(tds.getYTagDouble(itable, j, yunits), yunits);
-                        if (jj >= 0 && jj < ny) {
-                            if (rebinWeights[ix][jj] > 0.0) {
-                                continue;
+        if ( tds.rank()!=3 ) throw new IllegalArgumentException("rank 3 expected");
+
+        for ( int itable= 0; itable<tds.length(); itable++ ) {
+
+            QDataSet tds1= tds.slice(itable);
+
+            QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+            QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+            QDataSet wds= SemanticOps.weightsDataSet(tds1);
+            
+            Units xunits = SemanticOps.getUnits( tds1 );
+            Units yunits = SemanticOps.getUnits( tds1 );
+
+            Datum xTagWidth= getXTagWidth( xds, tds1 ).multiply(0.9);
+
+            for (int i = 0; i < 2; i++) { // left, right
+                int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;
+                Datum xx = i == 0 ? ddX.binCenter(0) : ddX.binCenter(ix);
+
+                int i0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( xds, xx );
+                int i1 = org.virbo.dataset.DataSetUtil.getNextIndex( xds, xx );
+
+                if ( i1 != i0 ) {
+
+                    DatumRange dr = DatumRangeUtil.union(
+                            xunits.createDatum( xds.value(i0) ),
+                            xunits.createDatum( xds.value(i1) ) );
+                    if ( dr.width().gt( xTagWidth ) ) {
+                        double alpha = DatumRangeUtil.normalize(dr, xx);
+                        if ( interpolateType==Interpolate.NearestNeighbor ) {
+                            alpha= alpha < 0.5 ? 0.0 : 1.0;
+                        }
+                        int ny = ddY == null ? yds.length() : ddY.numberOfBins();
+                        for (int j = 0; j < yds.length(); j++) {
+                            int jj = ddY == null ? j : ddY.whichBin( yds.value( j ), yunits );
+                            if (jj >= 0 && jj < ny) {
+                                if (rebinWeights[ix][jj] > 0.0) {
+                                    continue;
+                                }
+                                if ( wds.value( i0, j ) * wds.value( i1, j ) == 0.) {
+                                    continue;
+                                }
+                                rebinData[ix][jj] = (1 - alpha) * tds1.value( i0, j ) +
+                                        alpha * tds1.value( i1, j );
+                                rebinWeights[ix][jj] = 1.0;
                             }
-                            if (wds.getDouble(i0, j, wunits) * wds.getDouble(i1, j, wunits) == 0.) {
-                                continue;
-                            }
-                            rebinData[ix][jj] = (1 - alpha) * tds.getDouble(i0, j, zunits) +
-                                    alpha * tds.getDouble(i1, j, zunits);
-                            rebinWeights[ix][jj] = 1.0;
                         }
                     }
                 }
@@ -220,31 +270,54 @@ public class AverageTableRebinner implements DataSetRebinner {
 
     }
 
-    static void doBoundaries2TB(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
+    static void doBoundaries2TB( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
 
         if (ddY == null) {
             return;
         }
 
-        Units yunits = tds.getYUnits();
-        Units zunits = tds.getZUnits();
-        Units xunits = tds.getXUnits();
-        Units wunits = Units.dimensionless;
+        for (int itable = 0; itable < tds.length(); itable++) {
 
-        TableDataSet wds = WeightsTableDataSet.create(tds);
-        for (int itable = 0; itable < tds.tableCount(); itable++) {
+            QDataSet tds1= tds.slice(itable);
+
+            QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+            QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+            QDataSet wds= SemanticOps.weightsDataSet(tds1);
+
+            Units yunits = SemanticOps.getUnits(yds);
+            Units xunits = SemanticOps.getUnits(xds);
+
+            if ( yds.rank()==2 ) {
+                throw new IllegalArgumentException("rank 2 y not yet supported");
+                //TODO: rank 2 yds
+            }
+
             for (int i = 0; i < 2; i++) {
                 int iy = i == 0 ? 0 : ddY.numberOfBins() - 1;
                 Datum yy = i == 0 ? ddY.binCenter(0) : ddY.binCenter(iy);
 
-                int j0 = TableUtil.getPreviousRow(tds, itable, yy);
-                int j1 = TableUtil.getNextRow(tds, itable, yy);
+                int j0,j1;
+                if ( SemanticOps.isMonotonic(yds) ) {
+                    j0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( yds, yy );
+                    j1 = org.virbo.dataset.DataSetUtil.getNextIndex( yds, yy);
+                } else {
+                    QDataSet myds= Ops.multiply( yds, DataSetUtil.asDataSet(-1) );
+                    if ( SemanticOps.isMonotonic(myds) ) {
+                        j0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( myds, yy );
+                        j1 = org.virbo.dataset.DataSetUtil.getNextIndex( myds, yy);
+                    } else {
+                        throw new IllegalArgumentException("dataset tags must be increasing or decreasing");
+                    }
+
+                }
 
                 if (j1 != j0) {
 
                     DatumRange dr;
-                    dr = DatumRangeUtil.union( tds.getYTagDatum(itable, j0), tds.getYTagDatum(itable, j1) );
-                    Datum dsWidth = TableUtil.guessYTagWidth(tds, itable);
+                    dr =  DatumRangeUtil.union(
+                            yunits.createDatum( yds.value(j0) ),
+                            yunits.createDatum( yds.value(j1) ) );
+
                     if (ddY.isLog()) {
                         Units u = dr.getUnits();
                         double d = dr.min().doubleValue(u);
@@ -259,16 +332,16 @@ public class AverageTableRebinner implements DataSetRebinner {
                         alpha= alpha < 0.5 ? 0.0 : 1.0;
                     }
                     int nx = ddX.numberOfBins();
-                    for (int ix = tds.tableStart(itable); ix < tds.tableEnd(itable); ix++) {
-                        int ii = ddX.whichBin(tds.getXTagDouble(ix, xunits), xunits);
+                    for (int ix = 0; ix < tds1.length(); ix++) {
+                        int ii = ddX.whichBin( xds.value(ix), xunits);
                         if (ii >= 0 && ii < nx) {
                             if (rebinWeights[ii][iy] > 0.0) {
                                 continue;
                             }
-                            if (wds.getDouble(ix, j0, wunits) * wds.getDouble(ix, j1, wunits) == 0.) {
+                            if ( wds.value(ix,j0) * wds.value(ix,j1) == 0.) {
                                 continue;
                             }
-                            rebinData[ii][iy] = (1 - alpha) * tds.getDouble(ix, j0, zunits) + alpha * tds.getDouble(ix, j1, zunits);
+                            rebinData[ii][iy] = (1 - alpha) * tds1.value( ix, j0 ) + alpha * tds1.value( ix, j1 );
                             rebinWeights[ii][iy] = 1.0;
                         }
                     }
@@ -277,118 +350,137 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-    static void doCorners(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
+    static void doCorners( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
         if (ddY == null) {
             return;
         }
-        Units yunits = tds.getYUnits();
-        Units zunits = tds.getZUnits();
-        Units xunits = tds.getXUnits();
-        Units wunits = Units.dimensionless;
-        TableDataSet wds = WeightsTableDataSet.create(tds);
-        for (int i = 0; i < 2; i++) {
-            int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;
-            Datum xx = ddX.binCenter(ix);
-            int i0 = DataSetUtil.getPreviousColumn(tds, xx);
-            int i1 = DataSetUtil.getNextColumn(tds, xx);
 
-            int itable = tds.tableOfIndex(i0);
-            if (itable != tds.tableOfIndex(i1)) {
-                continue;
-            }
+        for ( int itable=0; itable<tds.length(); itable++ ) {
+            QDataSet tds1= tds.slice(itable);
 
-            if (i0 == i1) {
-                continue;
-            }
+            QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+            QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+            QDataSet wds= SemanticOps.weightsDataSet(tds1);
 
-            DatumRange xdr = DatumRangeUtil.union(tds.getXTagDatum(i0), tds.getXTagDatum(i1));
-            double xalpha = DatumRangeUtil.normalize(xdr, xx);
-            if (interpolateType == Interpolate.NearestNeighbor) {
-                xalpha = xalpha < 0.5 ? 0.0 : 1.0;
-            }
+            Units yunits = SemanticOps.getUnits(yds);
+            Units xunits = SemanticOps.getUnits(xds);
 
-            for (int j = 0; j < 2; j++) {
-                int iy = j == 0 ? 0 : ddY.numberOfBins() - 1;
-                Datum yy = ddY.binCenter(iy);
+            Datum xTagWidth= getXTagWidth( xds, tds1).multiply(0.9);
 
-                int j0 = TableUtil.getPreviousRow(tds, itable, yy);
-                int j1 = TableUtil.getNextRow(tds, itable, yy);
+            for (int i = 0; i < 2; i++) {
+                int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;
+                Datum xx = ddX.binCenter(ix);
 
-                if (j0 != j1) {
-                    DatumRange ydr = DatumRangeUtil.union(tds.getYTagDatum(itable, j0), tds.getYTagDatum(itable, j1));
-                    if (xdr.width().lt(DataSetUtil.guessXTagWidth(tds).multiply(1.1))) {
-                        DatumRange xdr1 = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
-                        double yalpha = DatumRangeUtil.normalize(ydr, yy);
-                        if (interpolateType == Interpolate.NearestNeighbor) {
-                            yalpha = yalpha < 0.5 ? 0.0 : 1.0;
+                int i0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( xds, xx );
+                int i1 = org.virbo.dataset.DataSetUtil.getNextIndex( xds, xx);
+
+                if (i0 == i1) {
+                    continue;
+                }
+
+                DatumRange xdr = DatumRangeUtil.union(
+                            xunits.createDatum( xds.value(i0) ),
+                            xunits.createDatum( xds.value(i1) ) );
+                double xalpha = DatumRangeUtil.normalize(xdr, xx);
+                if (interpolateType == Interpolate.NearestNeighbor) {
+                    xalpha = xalpha < 0.5 ? 0.0 : 1.0;
+                }
+
+                for (int j = 0; j < 2; j++) {
+                    int iy = j == 0 ? 0 : ddY.numberOfBins() - 1;
+                    Datum yy = ddY.binCenter(iy);
+
+                    int j0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( yds, yy );
+                    int j1 = org.virbo.dataset.DataSetUtil.getNextIndex( yds, yy);
+
+                    if (j0 != j1) {
+                        DatumRange ydr =  DatumRangeUtil.union(
+                            yunits.createDatum( yds.value(j0) ),
+                            yunits.createDatum( yds.value(j1) ) );
+
+                        if (xdr.width().lt(xTagWidth)) {
+                            DatumRange xdr1 = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
+                            double yalpha = DatumRangeUtil.normalize(ydr, yy);
+                            if (interpolateType == Interpolate.NearestNeighbor) {
+                                yalpha = yalpha < 0.5 ? 0.0 : 1.0;
+                            }
+                            if (rebinWeights[ix][iy] > 0.0) {
+                                continue;
+                            }
+                            if ( wds.value(i1, j1 ) *
+                                    wds.value(i0, j0 ) *
+                                    wds.value(i1, j0 ) *
+                                    wds.value(i0, j1 ) == 0.) {
+                                continue;
+                            }
+                            rebinData[ix][iy] =
+                                    tds1.value(i1, j1 ) * xalpha * yalpha +
+                                    tds1.value(i0, j0 ) * (1 - xalpha) * (1 - yalpha) +
+                                    tds1.value(i1, j0 ) * xalpha * (1 - yalpha) +
+                                    tds1.value(i0, j1 ) * (1 - xalpha) * yalpha;
+                            rebinWeights[ix][iy] = 1.0;
                         }
-                        if (rebinWeights[ix][iy] > 0.0) {
-                            continue;
-                        }
-                        if (wds.getDouble(i1, j1, wunits) *
-                                wds.getDouble(i0, j0, wunits) *
-                                wds.getDouble(i1, j0, wunits) *
-                                wds.getDouble(i0, j1, wunits) == 0.) {
-                            continue;
-                        }
-                        rebinData[ix][iy] =
-                                tds.getDouble(i1, j1, zunits) * xalpha * yalpha +
-                                tds.getDouble(i0, j0, zunits) * (1 - xalpha) * (1 - yalpha) +
-                                tds.getDouble(i1, j0, zunits) * xalpha * (1 - yalpha) +
-                                tds.getDouble(i0, j1, zunits) * (1 - xalpha) * yalpha;
-                        rebinWeights[ix][iy] = 1.0;
                     }
                 }
             }
         }
     }
 
-    static void average(TableDataSet tds, TableDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
+    static void average( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
         double[] ycoordinate;
         int nTables;
-        Units xUnits, zUnits;
+        Units zunits;
         int nx, ny;
 
-        xUnits = tds.getXUnits();
-        zUnits = tds.getZUnits();
+        if ( tds.rank()!=3 ) throw new IllegalArgumentException("rank 3 expected");
 
-        nx = (ddX == null ? tds.getXLength() : ddX.numberOfBins());
-        ny = (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
+        zunits = SemanticOps.getUnits( tds );
+
+        nx = (ddX == null ? tds.length(0) : ddX.numberOfBins());
+        ny = (ddY == null ? tds.length(0,0) : ddY.numberOfBins());
 
 
         if (ddY != null) {
             ycoordinate = ddY.binCenters();
         } else {
-            ycoordinate = new double[tds.getYLength(0)];
+            QDataSet yds= SemanticOps.ytagsDataSet( tds.slice(0) );
+            ycoordinate = new double[yds.length()];
             for (int j = 0; j < ycoordinate.length; j++) {
-                ycoordinate[j] = tds.getDouble(0, j, zUnits);
+                ycoordinate[j] = yds.value(0);
             }
         }
 
-        nTables = tds.tableCount();
+        nTables = tds.length();
         for (int iTable = 0; iTable < nTables; iTable++) {
-            int[] ibiny = new int[tds.getYLength(iTable)];
+            QDataSet tds1= tds.slice(iTable);
+            QDataSet xds= SemanticOps.xtagsDataSet( tds1 );
+            QDataSet yds= SemanticOps.ytagsDataSet( tds1 );
+            QDataSet wds= SemanticOps.weightsDataSet( tds1 );
+
+            Units yunits = SemanticOps.getUnits(yds);
+            Units xunits = SemanticOps.getUnits(xds);
+
+            int[] ibiny = new int[tds1.length(0)];
             for (int j = 0; j < ibiny.length; j++) {
                 if (ddY != null) {
-                    ibiny[j] = ddY.whichBin(tds.getYTagDouble(iTable, j, tds.getYUnits()), tds.getYUnits());
+                    ibiny[j] = ddY.whichBin( yds.value(j), yunits );
                 } else {
                     ibiny[j] = j;
                 }
             }
-            for (int i = tds.tableStart(iTable); i < tds.tableEnd(iTable); i++) {
+            for (int i = 0; i < tds1.length(); i++) {
                 int ibinx;
+
                 if (ddX != null) {
-                    ibinx = ddX.whichBin(tds.getXTagDouble(i, xUnits), xUnits);
+                    ibinx = ddX.whichBin( xds.value(i), xunits );
                 } else {
                     ibinx = i;
                 }
 
                 if (ibinx >= 0 && ibinx < nx) {
-                    for (int j = 0; j < tds.getYLength(iTable); j++) {
-                        double z = tds.getDouble(i, j, zUnits);
-                        double w = weights == null
-                                ? (zUnits.isFill(z) ? 0. : 1.)
-                                : weights.getDouble(i, j, Units.dimensionless);
+                    for (int j = 0; j < yds.length(); j++) {
+                        double z = tds1.value( i, j );
+                        double w = wds.value( i, j );
                         if (ibiny[j] >= 0 && ibiny[j] < ny) {
                             rebinData[ibinx][ibiny[j]] += z * w;
                             rebinWeights[ibinx][ibiny[j]] += w;
@@ -397,7 +489,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             }
         }
-        multiplyWeights(rebinData, rebinWeights, zUnits.getFillDouble());
+        multiplyWeights( rebinData, rebinWeights, zunits.getFillDouble() );
     }
 
     private final static double linearlyInterpolate(int i0, double z0, int i1, double z1, int i) {
@@ -694,6 +786,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         for (int i = 0; i < nx; i++) {
             int ii1 = -1;
             int ii2 = -1;
+            if ( i==26 ) {
+                System.err.println("here at 26");
+            }
             for (int j = 0; j < ny; j++) {
                 if (weights[i][j] > 0. && ii1 == (j - 1)) { // ho hum another valid point
 
@@ -773,7 +868,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     
                 }
             } else {
-                for (int j = 0; j < ny; j++) {
+                for (int j = 0; j < ny; j++) { //yunits on sample width
                     if ((i1[j] != -1) && ((yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidth || i2[j] - i1[j] == 2)) { //kludge for bug 000321
 
                         a2 = ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));

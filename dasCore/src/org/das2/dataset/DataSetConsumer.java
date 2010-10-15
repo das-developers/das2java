@@ -23,12 +23,12 @@
 
 package org.das2.dataset;
 
-import org.das2.dataset.DataSet;
+import org.virbo.dataset.QDataSet;
 
 /**
  *
  * @author  jbf
  */
 public interface DataSetConsumer {
-    public DataSet getConsumedDataSet();
+    public QDataSet getConsumedDataSet();
 }

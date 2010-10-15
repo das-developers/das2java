@@ -24,11 +24,11 @@
 package org.das2.event;
 
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
+import org.virbo.dataset.QDataSet;
 /**
  *
  * @author  jbf
@@ -78,7 +78,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     }
     
     public void mousePointSelected(MousePointSelectionEvent e) {
-        org.das2.dataset.DataSet ds= dataSetConsumer.getConsumedDataSet();
+        QDataSet ds= dataSetConsumer.getConsumedDataSet();
         de.setDataSet(ds);
         de.set(xaxis.invTransform(e.getX()),yaxis.invTransform(e.getY()));
 

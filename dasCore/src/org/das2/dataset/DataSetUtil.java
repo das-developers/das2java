@@ -6,8 +6,6 @@
 
 package org.das2.dataset;
 
-import org.das2.graph.GraphUtil;
-import org.das2.graph.DasPlot;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
@@ -97,19 +95,6 @@ public class DataSetUtil {
         } else throw new IllegalArgumentException("unsupported: "+ds);
     }
     
-    /**
-     * @deprecated use GraphUtil.visualize( ds );
-     */
-    public static DasPlot visualize( DataSet ds ) {
-        return GraphUtil.visualize( ds );
-    }
-    
-    /**
-     * @deprecated use GraphUtil.visualize( ds, ylog );
-     */
-    public static DasPlot visualize( DataSet ds, boolean ylog ) {
-        return GraphUtil.visualize( ds, ylog );
-    }
     
     /**
      * Provide a reasonable xTagWidth either by returning the specified xTagWidth property,

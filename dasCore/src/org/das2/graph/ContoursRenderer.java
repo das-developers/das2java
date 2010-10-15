@@ -9,17 +9,13 @@
 package org.das2.graph;
 
 import org.das2.DasException;
-import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.ClippedTableDataSet;
-import org.das2.dataset.DataSetUtil;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.TableUtil;
 import org.das2.dataset.VectorDataSet;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
-import org.das2.math.Contour;
+import org.virbo.math.Contour;
 import java.awt.BasicStroke;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
@@ -40,6 +36,12 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.datum.Datum;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.DataSetUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -200,14 +202,13 @@ public class ContoursRenderer extends Renderer {
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage(xAxis, yAxis, monitor);
 
-        TableDataSet tds = (TableDataSet) getDataSet();
+        QDataSet tds = (QDataSet) getDataSet();
 
         if (tds == null) {
             return;
         }
         tds = new ClippedTableDataSet(tds, xAxis.getDatumRange(), yAxis.getDatumRange());
-
-        Units units = tds.getZUnits();
+        Units units = SemanticOps.getUnits(tds);
 
         String[] cons = this.contours.trim().split(",");
         double[] dcons = new double[cons.length];
@@ -218,7 +219,7 @@ public class ContoursRenderer extends Renderer {
             double c = Double.parseDouble(cons[i]);
             dcons[i] = c;
         }
-        DatumVector dv = DatumVector.newDatumVector(dcons, tds.getZUnits());
+        DatumVector dv = DatumVector.newDatumVector(dcons, units );
 
         final boolean rebin= false;
         if (rebin) {
@@ -233,29 +234,35 @@ public class ContoursRenderer extends Renderer {
                     yAxis.getHeight() / 2,
                     yAxis.isLog());
 
-            if (DataSetUtil.guessXTagWidth(tds).gt(xRebinDescriptor.binWidthDatum())) {
+
+            Datum xTagWidth = DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( SemanticOps.xtagsDataSet(tds), null ) );
+            Datum yTagWidth = DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( SemanticOps.ytagsDataSet(tds), null ) );
+
+            if ( xTagWidth.gt(xRebinDescriptor.binWidthDatum())) {
                 xRebinDescriptor = null;
             }
-            if (TableUtil.guessYTagWidth(tds).gt(yRebinDescriptor.binWidthDatum())) {
+            if ( yTagWidth.gt(yRebinDescriptor.binWidthDatum())) {
                 yRebinDescriptor = null;
             }
             AverageTableRebinner rebinner = new AverageTableRebinner();
             rebinner.setInterpolate(false);
 
             if (xRebinDescriptor != null || yRebinDescriptor != null) {
-                tds = (TableDataSet) rebinner.rebin(tds, xRebinDescriptor, yRebinDescriptor);
+                tds = rebinner.rebin(tds, xRebinDescriptor, yRebinDescriptor);
             }
         }
 
-        VectorDataSet vds = Contour.contour(tds, dv);
+        QDataSet vds = Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
+        //TODO: why do we contour each time???
 
         paths = new GeneralPath[dv.getLength()];
 
         double d0 = units.getFillDouble();
         int ii = -1;
 
-        VectorDataSet xds = (VectorDataSet) vds.getPlanarView(Contour.PLANE_X);
-        VectorDataSet yds = (VectorDataSet) vds.getPlanarView(Contour.PLANE_Y);
+        QDataSet xds = (QDataSet) DataSetOps.unbundle( vds, Contour.PLANE_X );
+        QDataSet yds = (QDataSet) DataSetOps.unbundle( vds, Contour.PLANE_Y );
+        vds= (QDataSet) DataSetOps.unbundle( vds, 2 ); //TODO: why?  clarify
 
         Units xunits = xAxis.getUnits();
         Units yunits = yAxis.getUnits();
@@ -273,12 +280,12 @@ public class ContoursRenderer extends Renderer {
 
         NumberFormat nf = new DecimalFormat("0.00");
 
-        for (int i = 0; i < vds.getXLength(); i++) {
-            double d = vds.getDouble(i, units);
-            int n = (int) vds.getXTagDouble(i, Units.dimensionless);
+        for (int i = 0; i < vds.length(); i++) {
+            double d = vds.value(i);
+            int n = (int) xds.value(i);
 
-            float fx = (float) xAxis.transform(xds.getDatum(i));
-            float fy = (float) yAxis.transform(yds.getDatum(i));
+            float fx = (float) xAxis.transform( xds.value(i), xunits );
+            float fy = (float) yAxis.transform( yds.value(i), yunits );
 
             if (d != d0) {
                 ii++;

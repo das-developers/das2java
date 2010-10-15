@@ -21,6 +21,7 @@ import org.das2.graph.DasRow;
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import javax.swing.JFrame;
+import org.das2.graph.SeriesRenderer;
 
 /**
  *
@@ -93,7 +94,10 @@ public class PolynomialDataSetDescriptor extends DataSetDescriptor {
         DasAxis xAxis = new DasAxis(Datum.create(-10.0), Datum.create(10.0), DasAxis.BOTTOM);
         DasAxis yAxis = new DasAxis(Datum.create(0.0), Datum.create(100.0), DasAxis.LEFT);
         DasPlot plot = new DasPlot(xAxis, yAxis);
-        plot.addRenderer(new SymbolLineRenderer(dsd));
+        SeriesRenderer rend= new SeriesRenderer();
+        rend.setDataSetDescriptor(dsd);
+        
+        plot.addRenderer(rend);
         DasCanvas canvas = new DasCanvas(400, 400);
         canvas.add(plot, new DasRow(canvas, 0.1, 0.9), new DasColumn(canvas, 0.1, 0.9));
         
