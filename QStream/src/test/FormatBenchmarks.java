@@ -8,14 +8,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import javax.xml.parsers.ParserConfigurationException;
-import org.das2.dataset.DataSet;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.TableUtil;
 import org.das2.datum.Units;
-import org.virbo.dataset.DataSetAdapter;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.TableDataSetAdapter;
+import org.das2.dataset.TableDataSetAdapter;
 import org.virbo.dsops.Ops;
 import org.virbo.qstream.SimpleStreamFormatter;
 
