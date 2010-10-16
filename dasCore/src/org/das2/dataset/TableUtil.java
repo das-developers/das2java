@@ -20,7 +20,6 @@ import org.das2.stream.StreamXDescriptor;
 import org.das2.stream.StreamException;
 import org.das2.stream.PacketDescriptor;
 import org.das2.util.FixedWidthFormatter;
-import org.das2.util.DasMath;
 import java.io.*;
 import java.nio.channels.*;
 import java.text.*;
@@ -92,7 +91,7 @@ public class TableUtil {
      * is returned.
      * @param table
      * @param the table index.
-     * @return the norminal cadence of the tags.
+     * @return the nominal cadence of the tags.
      */
     public static Datum guessYTagWidth( TableDataSet table, int itable ) {
         // cheat and check for logarithmic scale.  If logarithmic, then return YTagWidth as percent.
@@ -105,7 +104,7 @@ public class TableUtil {
             double t= y0; y0= y1; y1= t;
         }
         if (  cycles > 10. ) {
-            return Units.log10Ratio.createDatum( DasMath.log10(y1/y0) );
+            return Units.log10Ratio.createDatum( Math.log10(y1/y0) );
         } else {
             return table.getYUnits().createDatum(y1-y0);
         }

@@ -29,7 +29,6 @@ import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.DefaultTableDataSet;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.util.DasMath;
 import org.das2.DasException;
 import org.das2.datum.Units;
 import org.das2.util.DasDie;
@@ -166,7 +165,7 @@ public class StippledTableRenderer extends Renderer {
                         if ( zunits.isFill(z) ) continue;
                         z*= 200;
                         
-                        double n= DasMath.log10(Math.max(z,0.000001));
+                        double n= Math.log10(Math.max(z,0.000001));
                         if ( n>maxn ) maxn=n;
                         if ( Math.random() < n ) {
                             g.fillRect( i,ny-j,1,1);

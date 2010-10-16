@@ -15,7 +15,6 @@ import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.system.DasLogger;
-import org.das2.util.DasMath;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +64,7 @@ public class AverageNoInterpolateTableRebinner { // { implements DataSetRebinner
     
     private static DatumRange[] getLogYTagRanges( TableDataSet ds, int itable ) {
         Datum tagWidth= TableUtil.guessYTagWidth(ds,itable);
-        double ratio= DasMath.exp10( tagWidth.doubleValue( Units.log10Ratio ) / 2. );
+        double ratio= Math.pow( 10, tagWidth.doubleValue( Units.log10Ratio ) / 2. );
         Units units= ds.getYUnits();
         DatumRange[] result= new DatumRange[ ds.getYLength(itable) ];
         for ( int i=0; i<result.length; i++ ) {

@@ -35,9 +35,7 @@ import org.das2.dataset.NoDataInIntervalException;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.DataSetDescriptor;
-import org.das2.dataset.TableDataSet;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.dataset.DataSet;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.components.HorizontalSpectrogramSlicer;
@@ -46,7 +44,6 @@ import org.das2.components.VerticalSpectrogramSlicer;
 import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
-import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
 import java.awt.Graphics;
@@ -59,16 +56,12 @@ import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.UnitsConverter;
-import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
 
 /**
  * Renderer for spectrograms.  A setting for rebinning data controls how data is binned into pixel space,

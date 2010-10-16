@@ -10,7 +10,6 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Datum;
-import org.das2.util.DasMath;
 import java.util.*;
 
 /**
@@ -424,7 +423,7 @@ public class DataSetUtil {
         Units yunits= ds.getYUnits();
         Units xunits= ds.getXUnits();
         for ( int i=0; i<ds.getXLength(); i++ ) {
-            builder.insertY( ds.getXTagDouble(i,xunits), DasMath.log10(ds.getDouble(i,yunits)) );
+            builder.insertY( ds.getXTagDouble(i,xunits), Math.log10(ds.getDouble(i,yunits)) );
         }
         return builder.toVectorDataSet();
     }

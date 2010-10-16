@@ -12,7 +12,6 @@ import org.das2.dataset.QernalTableRebinner.Qernal;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.das2.util.DasMath;
 
 /**
  *
@@ -79,7 +78,7 @@ public class NNQernalFactory implements QernalTableRebinner.QernalFactory {
             if (!ddy.isLog() ) throw new IllegalArgumentException("need log axis");
             d= ddy.binCenter(0);
             double f= yTagWidth.doubleValue( Units.log10Ratio );
-            i= ddy.whichBin( d.multiply( DasMath.exp10(f) ).doubleValue(d.getUnits()), d.getUnits() );
+            i= ddy.whichBin( d.multiply( Math.pow(10,f) ).doubleValue(d.getUnits()), d.getUnits() );
             dy0= i/2;
             dy1= (i+1)/2;
         } else {

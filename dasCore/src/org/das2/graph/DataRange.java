@@ -27,7 +27,6 @@ package org.das2.graph;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
-import org.das2.util.DasMath;
 import org.das2.graph.event.DasUpdateListener;
 import org.das2.graph.event.DasUpdateEvent;
 import org.das2.system.DasLogger;
@@ -99,8 +98,8 @@ public class DataRange implements Cloneable {
         this.parent= parent;
         units= min.getUnits();
         if ( log ) {
-            minimum = DasMath.log10(min.doubleValue(units));
-            maximum = DasMath.log10(max.doubleValue(units));
+            minimum = Math.log10(min.doubleValue(units));
+            maximum = Math.log10(max.doubleValue(units));
         } else {
             minimum = min.doubleValue(units);
             maximum = max.doubleValue(units);
@@ -125,8 +124,8 @@ public class DataRange implements Cloneable {
         this.minimum= range.min().doubleValue(this.units);
         this.maximum= range.max().doubleValue(this.units);
         if ( isLog() ) {
-            this.minimum= DasMath.log10( this.minimum );
-            this.maximum= DasMath.log10( this.maximum );
+            this.minimum= Math.log10( this.minimum );
+            this.maximum= Math.log10( this.maximum );
         }
         fireUpdate();
     }
@@ -161,8 +160,8 @@ public class DataRange implements Cloneable {
                 firePropertyChange("log", oldLog, log);
             }
             Units u= range.getUnits();
-            this.minimum= DasMath.log10(range.min().doubleValue(u));
-            this.maximum= DasMath.log10(range.max().doubleValue(u));
+            this.minimum= Math.log10(range.min().doubleValue(u));
+            this.maximum= Math.log10(range.max().doubleValue(u));
         } else {
             Units u= range.getUnits();
             this.minimum= range.min().doubleValue(u);
@@ -193,7 +192,7 @@ public class DataRange implements Cloneable {
      */
     public final double findex( double value ) {
         if ( log ) {
-            value= DasMath.log10(value);
+            value= Math.log10(value);
         }
         return ( value-minimum ) / ( maximum - minimum );
     }
@@ -292,7 +291,7 @@ public class DataRange implements Cloneable {
     public void setRange( double min, double max ) {
         DatumRange newRange;
         if ( log ) {
-            newRange= new DatumRange( DasMath.exp10( min ), DasMath.exp10( max ), units );
+            newRange= new DatumRange( Math.pow( 10, min ), Math.pow( 10, max ), units );
         } else {
             newRange= new DatumRange( min, max, units );
         }
@@ -321,8 +320,8 @@ public class DataRange implements Cloneable {
         minimum = range.min().doubleValue( units );
         maximum = range.max().doubleValue( units );
         if ( log ) {
-            minimum= DasMath.log10( minimum );
-            maximum= DasMath.log10( maximum );
+            minimum= Math.log10( minimum );
+            maximum= Math.log10( maximum );
         }
         
         fireUpdate();
