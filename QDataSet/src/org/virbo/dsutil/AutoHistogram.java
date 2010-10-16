@@ -24,7 +24,6 @@ import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
-import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
@@ -435,10 +434,10 @@ public final class AutoHistogram {
 
         binw = Math.abs(closestB - closestA) / (nbin / 100);
         if (binw < 1.0) {
-            binwDenom = DasMath.exp10(Math.ceil(DasMath.log10(1 / binw)));
+            binwDenom = Math.pow(10,Math.ceil(Math.log10(1 / binw)));
             binw = 1.0;
         } else {
-            binw = DasMath.exp10(Math.floor(DasMath.log10(binw)));
+            binw = Math.pow(10,Math.floor(Math.log10(binw)));
             binwDenom = 1.0;
         }
 
@@ -680,10 +679,10 @@ public final class AutoHistogram {
 
     private int nextFactor() {
         int factor;
-        int exp = (int) Math.floor(DasMath.log10(binw) + 0.001);
-        int mant = (int) Math.round(binw / DasMath.exp10(exp));
-        int expDenom = (int) Math.floor(DasMath.log10(binwDenom));
-        int mantDenom = (int) Math.round(binwDenom / DasMath.exp10(expDenom));
+        int exp = (int) Math.floor(Math.log10(binw) + 0.001);
+        int mant = (int) Math.round(binw / Math.pow(10,exp));
+        int expDenom = (int) Math.floor(Math.log10(binwDenom));
+        int mantDenom = (int) Math.round(binwDenom / Math.pow(10,expDenom));
         if (mantDenom > 1) {
             mant = 10 / mantDenom;
         }
