@@ -177,7 +177,7 @@ public class TickVDescriptor {
         int targetTicks = Math.max(Math.min(6, nTicksMax), nTicksMin);
 
         double maj = (maximum - minimum) / (targetTicks - 1);
-        double mag = DasMath.exp10(Math.floor(DasMath.log10(maj)));
+        double mag = Math.pow(10,Math.floor(Math.log10(maj)));
         double absissa = maj / mag;
 
         if (absissa < 1.666) {
@@ -262,8 +262,8 @@ public class TickVDescriptor {
         if (min <= 0) {
             min = max / 1000.;
         }
-        double logMin = DasMath.log10(min);
-        double logMax = DasMath.log10(max);
+        double logMin = Math.log10(min);
+        double logMax = Math.log10(max);
         int ntick0 = (int) (Math.floor(logMax * 0.999) - Math.ceil(logMin * 1.001) + 1);
 
         if (ntick0 < 2) {
@@ -294,8 +294,8 @@ public class TickVDescriptor {
 
         if (ntick0 > nTicksMax) {
             Units units = minD.getUnits();
-            Datum logMinD = units.createDatum(DasMath.log10(min));
-            Datum logMaxD = units.createDatum(DasMath.log10(max));
+            Datum logMinD = units.createDatum(Math.log10(min));
+            Datum logMaxD = units.createDatum(Math.log10(max));
             TickVDescriptor linTicks = bestTickVLinear(logMinD, logMaxD, nTicksMin, nTicksMax, fin);
             double[] tickV = linTicks.tickV.toDoubleArray(linTicks.units);
 
@@ -303,7 +303,7 @@ public class TickVDescriptor {
             int i2 = 0;
             for (int i = 0; i < tickV.length; i++) {
                 if (tickV[i] % 1. == 0.) {
-                    tickV[i2++] = DasMath.exp10(tickV[i]);
+                    tickV[i2++] = Math.pow(10,tickV[i]);
                 }
             }
             double[] t = tickV;
@@ -328,7 +328,7 @@ public class TickVDescriptor {
             } else {
                 minorTickV = linTicks.minorTickV.toDoubleArray(linTicks.units);
                 for (int i = 0; i < minorTickV.length; i++) {
-                    minorTickV[i] = DasMath.exp10(minorTickV[i]);
+                    minorTickV[i] = Math.pow(10,minorTickV[i]);
                 }
             }
 
@@ -341,9 +341,9 @@ public class TickVDescriptor {
         double min3 = min / (max / min);
         double max3 = max * (max / min);
 
-        double dMinTick = DasMath.roundNFractionalDigits(DasMath.log10(min3), 4);
+        double dMinTick = DasMath.roundNFractionalDigits(Math.log10(min3), 4);
         int minTick = (int) Math.ceil(dMinTick);
-        double dMaxTick = DasMath.roundNFractionalDigits(DasMath.log10(max3), 4);
+        double dMaxTick = DasMath.roundNFractionalDigits(Math.log10(max3), 4);
         int maxTick = (int) Math.floor(dMaxTick);
 
         int nTicks = (maxTick - minTick) + 1;
@@ -359,21 +359,21 @@ public class TickVDescriptor {
 
         ticks.datumFormatter = DEFAULT_LOG_FORMATTER;
 
-        int firstMinorTickCycle = (int) Math.floor(DasMath.log10(min3));
-        int lastMinorTickCycle = (int) Math.floor(DasMath.log10(max3));
+        int firstMinorTickCycle = (int) Math.floor(Math.log10(min3));
+        int lastMinorTickCycle = (int) Math.floor(Math.log10(max3));
 
         double[] minorTickV = null;
         int idx = 0;
         minorTickV = new double[(lastMinorTickCycle - firstMinorTickCycle + 1) * minors.length];
         for (int i = firstMinorTickCycle; i <= lastMinorTickCycle; i++) {
             for (int j = 0; j < minors.length; j++) {
-                minorTickV[idx++] = DasMath.exp10(i) * minors[j];
+                minorTickV[idx++] = Math.pow(10,i) * minors[j];
             }
         }
         ticks.minorTickV = DatumVector.newDatumVector(minorTickV, ticks.units);
 
         for (int i = 0; i < major.length; i++) {
-            major[i] = DasMath.exp10(major[i]);
+            major[i] = Math.pow(10,major[i]);
         }
         ticks.tickV = DatumVector.newDatumVector(major, ticks.units);
 
