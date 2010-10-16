@@ -271,8 +271,8 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             
             int y5,y6;
             
-            y5= (int)bottomPlot.getYAxis().transform( drtop.max() );
-            y6= (int)bottomPlot.getYAxis().transform( drtop.min() );
+            y5= (int)( bottomPlot.getYAxis().transform( drtop.max() )+0.00001 );
+            y6= (int)( bottomPlot.getYAxis().transform( drtop.min() )+0.00001 );
             
             if ( curtainOpacityPercent > 0 ) {
                 int xLeft= (int)topPlot.getXAxis().getColumn().getDMinimum();
