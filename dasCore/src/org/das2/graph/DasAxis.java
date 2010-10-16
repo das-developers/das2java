@@ -1729,7 +1729,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             String[] labels = tickFormatter(ticks.tickV, getDatumRange());
             for (int i = 0; i < ticks.tickV.getLength(); i++) {
                 Datum tick1 = ticks.tickV.get(i);
-                int tickPosition = (int) Math.floor(transform(tick1));
+                int tickPosition = (int) Math.floor(transform(tick1)+0.0001);
                 if (DMin <= tickPosition && tickPosition <= DMax) {
 
                     tickLength = tickLengthMajor;
