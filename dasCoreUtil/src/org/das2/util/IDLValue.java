@@ -23,8 +23,6 @@
 
 package org.das2.util;
 
-import org.das2.util.DasMath;
-
 public class IDLValue {
     
     static int SCALAR = 1;
@@ -202,12 +200,12 @@ public class IDLValue {
     
     public static IDLValue alog10(IDLValue x) {
         if (x.type == IDLValue.SCALAR) {
-            return new IDLValue(DasMath.log10(x.sValue));
+            return new IDLValue(Math.log10(x.sValue));
         }
         else if (x.type == IDLValue.ARRAY) {
             double[] aValue = new double[x.aValue.length];
             for (int index = 0; index < x.aValue.length; index++) {
-                aValue[index] = DasMath.log10(x.aValue[index]);
+                aValue[index] = Math.log10(x.aValue[index]);
             }
             return new IDLValue(aValue);
         }

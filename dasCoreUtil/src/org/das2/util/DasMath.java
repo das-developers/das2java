@@ -51,15 +51,15 @@ public class DasMath {
     }
     
     public static double roundNFractionalDigits(double x,int n) {                
-        double tenToN= exp10(n-1);
+        double tenToN= Math.pow(10,n-1);
         return Math.round( x * tenToN ) / tenToN;        
     }
     
     public static double roundNSignificantDigits(double x,int n) {
         double sign= x<0 ? -1 : 1;
-        double exp= exp10(Math.floor(log10(sign*x)));
+        double exp= Math.pow(10,Math.floor(Math.log10(sign*x)));
         double mant= x/exp;
-        double tenToN= exp10(n-1);
+        double tenToN= Math.pow(10,n-1);
         mant= Math.round( mant * tenToN ) / tenToN;
         return mant*exp;
     }
