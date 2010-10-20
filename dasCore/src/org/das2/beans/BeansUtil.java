@@ -76,6 +76,7 @@ public class BeansUtil {
             registerEditor(org.das2.graph.DigitalRenderer.Align.class, EnumerationEditor.class );
             registerEditor(org.das2.graph.DasColorBar.Type.class, EnumerationEditor.class );
             registerEditor(org.das2.graph.SpectrogramRenderer.RebinnerEnum.class, EnumerationEditor.class );
+            registerEditor(org.das2.graph.LegendPosition.class, EnumerationEditor.class );
         // registerEditor(Rectangle.class, RectangleEditor.class);
         //registerEditor(DasServer.class, DasServerEditor.class);
         }
