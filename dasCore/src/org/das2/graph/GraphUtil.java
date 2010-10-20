@@ -63,8 +63,8 @@ public class GraphUtil {
 
         Dimension d;
 
-        Units xUnits = xAxis.getUnits();
-        Units yUnits = yAxis.getUnits();
+        Units xUnits = SemanticOps.getUnits(xds);
+        Units yUnits = SemanticOps.getUnits(yds);
 
         QDataSet tagds= SemanticOps.xtagsDataSet(xds); // yes, it's true, I think because of orbit plots
 
