@@ -309,6 +309,20 @@ public class SemanticOps {
     }
 
     /**
+     * returns true if the dataset is a bundle of rank 1 datasets.  If no
+     * dependence is declared, it is assumed that the first one or two datasets
+     * are the independent datasets, and the last is the dependent. 
+     *    X,Y   -->  Y(X)
+     *    X,Y,Z -->  Z(X,Y)
+     *
+     * @param ds
+     * @return
+     */
+    public static boolean isSimpleBundleDataSet( QDataSet ds ) {
+         return ds.rank()==2 && ( ds.property(QDataSet.BUNDLE_1)!=null );
+    }
+
+    /**
      * returns the value as a datum.  Note this should be used with reservation,
      * this is not very efficient when the operation is done many times.
      * @param ds
