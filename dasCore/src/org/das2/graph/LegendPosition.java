@@ -13,7 +13,7 @@ import org.das2.components.propertyeditor.Enumeration;
  * @author jbf
  */
 public enum LegendPosition implements Enumeration {
-    // no NW because of error messages.
+    NW, 
     NE, // corner of plot
     SW,
     SE;
