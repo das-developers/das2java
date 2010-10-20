@@ -70,7 +70,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
     @Override
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
-        if ( !( isTableDataSet(ds) ) ) {
+        if ( !( SemanticOps.isTableDataSet(ds) ) ) {
             parent.postException( this, new IllegalArgumentException("expected Table: " +ds ) );
             return;
         }

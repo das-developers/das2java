@@ -169,7 +169,7 @@ public class DigitalRenderer extends Renderer {
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         g.setColor(color);
-        if ( ! isTableDataSet(ds) ) {
+        if ( ! SemanticOps.isTableDataSet(ds) ) {
             renderRank1( ds, g, xAxis, yAxis, mon);
         } else {
             renderRank2( ds, g, xAxis, yAxis, mon);

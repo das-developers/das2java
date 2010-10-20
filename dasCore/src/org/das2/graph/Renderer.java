@@ -154,7 +154,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             lastValidIndex=0;
             return;
         } else {
-            if ( isTableDataSet(ds) ) {
+            if ( SemanticOps.isTableDataSet(ds) ) {
+                firstValidIndex= 0;
+                lastValidIndex= ds.length();
+            } if ( SemanticOps.isSimpleBundleDataSet(ds) ) {
                 firstValidIndex= 0;
                 lastValidIndex= ds.length();
             } else {

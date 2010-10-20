@@ -259,7 +259,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
 
                         } else {
-                            if ( !isTableDataSet( zds ) ) {
+                            if ( !SemanticOps.isTableDataSet( zds ) ) {
                                 parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
                                 return;
                             }
@@ -468,7 +468,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
-                        if ( !( isTableDataSet(fds) ) ) {
+                        if ( !( SemanticOps.isTableDataSet(fds) ) ) {
                             logger.fine("dataset is not TableDataSet.");
                             plotImage = null;
                             plotImageBounds= null;

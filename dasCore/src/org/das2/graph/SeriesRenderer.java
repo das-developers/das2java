@@ -25,9 +25,7 @@ package org.das2.graph;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasProperties;
-import org.das2.dataset.DataSet;
 import org.virbo.dataset.DataSetUtil;
-import org.das2.dataset.TableDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
@@ -943,7 +941,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet vds = null;
         boolean yaxisUnitsOkay = false;
 
-        if ( !isTableDataSet(dataSet) ) {
+        if ( !SemanticOps.isTableDataSet(dataSet) ) {
             vds = (QDataSet) dataSet;
             yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
         } else {
@@ -1110,7 +1108,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         boolean plottable = false;
 
-        if ( !isTableDataSet(dataSet) ) {
+        if ( !SemanticOps.isTableDataSet(dataSet) ) {
             vds = (QDataSet) dataSet;
             plottable = SemanticOps.getUnits(dataSet).isConvertableTo(yAxis.getUnits());
         } else if (dataSet instanceof QDataSet) {
