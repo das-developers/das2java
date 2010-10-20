@@ -47,7 +47,15 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         for ( String key: properties.keySet() ) {
             Object value= properties.get(key);
             MutableTreeNode nextChild;
-            if ( value instanceof QDataSet ) {
+            if ( key.equals("BUNDLE_1") && ( value instanceof QDataSet ) ) {
+                QDataSet bdsd= (QDataSet)value;
+                String svalue= "";
+                if ( bdsd.length()>0 ) svalue+= bdsd.property( QDataSet.NAME, 0 );
+                for ( int i=1; i<bdsd.length(); i++ ) {
+                    svalue+= "," + bdsd.property( QDataSet.NAME, i );
+                }
+                nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
+            } else if ( value instanceof QDataSet ) {
                 PropertiesTreeModel model= new PropertiesTreeModel( key + "=", (QDataSet)value,valuesSizeLimit);
                 nextChild= (MutableTreeNode) model.getRoot();
             } else if ( value.getClass().isArray() ) {
@@ -75,7 +83,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                 }
                 nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
             }
-            mroot.insert( nextChild, mroot.getChildCount() ); 
+            mroot.insert( nextChild, mroot.getChildCount() );
         }
 
         if ( ds.rank()>0 ) {
