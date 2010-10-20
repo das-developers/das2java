@@ -199,23 +199,24 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         //firePropertyChange(PROP_FOCUSRENDERER, oldFocusRenderer, focusRenderer);
     }
 
-    private void drawLegend(Graphics2D g ) {
+    /**
+     * returns the bounds of the legend, or null if there is no legend.
+     * @param graphics
+     * @param msgx
+     * @param msgy
+     * @return
+     */
+    private Rectangle getLegendBounds( Graphics2D graphics, int msgx, int msgy ) {
+        int maxIconWidth = 0;
 
-        Graphics2D graphics= (Graphics2D) g.create();
+        Rectangle mrect;
+        Rectangle boundRect=null;
 
         int em = (int) getEmSize();
-        int msgx, msgy;
 
-        Color backColor = GraphUtil.getRicePaperColor();
-        Rectangle boundRect = null;
-        Rectangle mrect;
+        if ( legendElements==null ) return null;
+        if ( graphics==null ) return null;
 
-        em = (int) getEmSize();
-
-        msgx = xAxis.getColumn().getDMiddle() + em;
-        msgy = yAxis.getRow().getDMinimum() + em/2;
-
-        int maxIconWidth = 0;
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
             GrannyTextRenderer gtr = new GrannyTextRenderer();
@@ -233,19 +234,81 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             msgy += theheight;
         }
 
-        mrect = new Rectangle(boundRect);
+        if ( boundRect==null ) return null;
         int iconColumnWidth = maxIconWidth + em / 4;
+        mrect = new Rectangle(boundRect);
         mrect.width += iconColumnWidth;
-        mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
-        boundRect.x = mrect.x;
+        if ( legendPosition==LegendPosition.NE ) {
+            msgy = yAxis.getRow().getDMinimum() + em/2;
+            if ( legendPosition==LegendPosition.NE ) {
+                mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
+                msgx =    xAxis.getColumn().getDMaximum() - em - mrect.width;
 
-        graphics.setColor(backColor);
-        graphics.fillRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
-        graphics.setColor(getForeground());
-        graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
+//            } else if ( legendPosition==LegendPosition.NW ) {
+//                mrect.x = xAxis.getColumn().getDMinimum() + em ;
+//                msgx    = xAxis.getColumn().getDMinimum() + em + maxIconWidth + em/4;
+            }
+        } else if ( legendPosition==LegendPosition.SE || legendPosition==LegendPosition.SW ) {
+            msgy =   yAxis.getRow().getDMaximum() - boundRect.height - em/2;
+            mrect.y= msgy;
+            if ( legendPosition==LegendPosition.SE ) {
+                mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
+                msgx =    xAxis.getColumn().getDMaximum() - em - mrect.width ;
 
-        msgx = xAxis.getColumn().getDMaximum() - boundRect.width - em;
+            } else if ( legendPosition==LegendPosition.SW ) {
+                mrect.x = xAxis.getColumn().getDMinimum() + em ;
+                msgx =    xAxis.getColumn().getDMinimum() + em + maxIconWidth + em/4;
+            }
+
+//        } else if ( legendPosition==LegendPosition.OutsideNE ) {
+//            mrect.x = xAxis.getColumn().getDMaximum() + em + maxIconWidth;
+//            boundRect.x = mrect.x;
+//            msgx = mrect.x;
+//            msgy = yAxis.getRow().getDMinimum();
+//            mrect.y= msgy;
+
+        } else {
+            throw new IllegalArgumentException("not supported: "+legendPosition);
+        }
+
+        return mrect;
+    }
+
+
+    private void drawLegend(Graphics2D g ) {
+
+        Graphics2D graphics= (Graphics2D) g.create();
+
+        int em = (int) getEmSize();
+        int msgx, msgy;
+
+        Color backColor = GraphUtil.getRicePaperColor();
+        Rectangle mrect;
+
+        em = (int) getEmSize();
+
+        msgx = xAxis.getColumn().getDMiddle() + em;
         msgy = yAxis.getRow().getDMinimum() + em/2;
+
+        int maxIconWidth= 0;
+        for (int i = 0; i < legendElements.size(); i++) {
+            LegendElement le = legendElements.get(i);
+            maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
+        }
+
+        mrect= getLegendBounds(graphics,msgx,msgy);
+        msgx= mrect.x;
+        msgy= mrect.y;
+        //if ( legendPosition!=LegendPosition.OutsideNE ) {
+            msgx+= maxIconWidth + em/4;
+        //}
+
+        //if ( legendPosition!=LegendPosition.OutsideNE ) {
+            graphics.setColor(backColor);
+            graphics.fillRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
+            graphics.setColor(getForeground());
+            graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
+        //}
 
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
@@ -1052,15 +1115,22 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
             int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
 
+            Rectangle legendBounds= getLegendBounds( (Graphics2D) getGraphics(), 100, 100 );
+
             Rectangle bounds = new Rectangle();
             bounds.x = getColumn().getDMinimum() - 1;
             bounds.y = getRow().getDMinimum() - 1;
+            // if legend label is outside the plot, then we'll do something here.  Note this will cause the data to be drawn out-of-bounds as well.
+
             bounds.width = getColumn().getDMaximum() - bounds.x + 1;
             bounds.height = getRow().getDMaximum() - bounds.y + 1;
             if (!getTitle().equals("")) {
                 bounds.y -= titleHeight;
                 bounds.height += titleHeight;
             }
+
+            if ( legendBounds!=null ) bounds.add(legendBounds);
+            
             // TODO check bounds.height<10
             logger.log(Level.FINER, "DasPlot setBounds {0}", bounds);
             if ( !bounds.equals(oldBounds) ) {
@@ -1365,6 +1435,25 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         super.markDirty();
         repaint();
     }
+
+
+    private LegendPosition legendPosition = LegendPosition.NE;
+
+    public static final String PROP_LEGENDPOSITION = "legendPosition";
+
+    public LegendPosition getLegendPosition() {
+        return this.legendPosition;
+    }
+
+    public void setLegendPosition(LegendPosition newlegendPosition) {
+        LegendPosition oldlegendPosition = legendPosition;
+        this.legendPosition = newlegendPosition;
+        firePropertyChange(PROP_LEGENDPOSITION, oldlegendPosition, newlegendPosition);
+        repaint();
+    }
+
+
+
     /**
      * property drawGrid.  If true, faint grey lines continue the axis major
      * ticks across the plot.
