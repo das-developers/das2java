@@ -332,13 +332,11 @@ public class VectorUtil {
         DataSetBuilder xbuilder= new DataSetBuilder(1,1000);
         DataSetBuilder wbuilder= new DataSetBuilder(1,1000);
 
-        Units dxunits= xLimit!=null ? xLimit.getUnits() : null;
-
         boolean xlog= xLimit!=null && UnitsUtil.isRatiometric( xLimit.getUnits() );
         boolean ylog= yLimit!=null && UnitsUtil.isRatiometric( yLimit.getUnits() );
 
         UnitsConverter uc;
-        double dxLimit, dyLimit;
+        double dxLimit, dyLimit; // x and y bin sizes in dataset offset units.
         if ( xLimit!=null ) {
             uc= getDifferencesConverter( xLimit.getUnits(), xunits.getOffsetUnits(), xlog ? Units.logERatio : null );
             dxLimit = uc.convert( xLimit.doubleValue(xLimit.getUnits()) );
