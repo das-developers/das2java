@@ -133,7 +133,12 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 if ( dep0!=null ) {
                     sval += " @ " +( String.valueOf(wdsDep0.value(i) > 0 ? depu.createDatum(dep0.value(i) ) : "fill" ) );
                 }
-                aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
+                if ( bundle!=null ) {
+                    sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill" );
+                    aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
+                } else {
+                    aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
+                }
             }
             if ( ds.length()>=sizeLimit ) {
                 aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
