@@ -351,8 +351,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         graphics.setFont(font0.deriveFont((float) msgem));
         int em = (int) getEmSize();
 
+        boolean rightJustify= false;
         int msgx = xAxis.getColumn().getDMinimum() + em;
         int msgy = yAxis.getRow().getDMinimum() + em;
+
+        if ( legendPosition==LegendPosition.NW ) {
+            rightJustify= true;
+            msgx= xAxis.getColumn().getDMaximum() - em;
+        }
 
         Color warnColor = new Color(255, 255, 100, 200);
         Color errorColor = new Color(255, 140, 140, 200);
@@ -362,7 +368,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
             Rectangle mrect = gtr.getBounds();
-            mrect.translate(msgx, msgy);
+            int msgx1= msgx;
+            if ( rightJustify ) {
+                msgx1= msgx - (int) gtr.getWidth();
+            }
+            mrect.translate(msgx1, msgy);
             Color backColor = GraphUtil.getRicePaperColor();
             if (message.messageType == DasPlot.WARNING) {
                 backColor = warnColor;
@@ -373,7 +383,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
             graphics.setColor(getForeground());
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
-            gtr.draw(graphics, msgx, msgy);
+            gtr.draw(graphics, msgx1, msgy);
             message.bounds = mrect;
 
             msgy += gtr.getHeight() + msgem / 2;
