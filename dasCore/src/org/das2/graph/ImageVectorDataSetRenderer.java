@@ -28,6 +28,7 @@ import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -50,7 +51,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
     private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
     private Datum xres= null; /** size used to set ixstepLimitSq */
 
-    /** Creates a new instance of LotsaPointsRenderer */
     public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {
         super(dsd);
     }
@@ -92,14 +92,23 @@ public class ImageVectorDataSetRenderer extends Renderer {
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
         }
-        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+
+        QDataSet xds = SemanticOps.xtagsDataSet(ds);
+        QDataSet vds;
+
+        if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+            vds = DataSetOps.unbundleDefaultDataSet( ds );
+        } else {
+            vds = (QDataSet) ds;
+        }
+
 
         if ( !xAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) xds) ) ) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
             return;
         }
 
-        if ( !yAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) ds) )) {
+        if ( !yAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) vds) )) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
             return;
         }
@@ -139,7 +148,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
-        //renderGhostly(g1, xAxis, yAxis);
     }
 
     private void ghostlyImage2(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
@@ -162,9 +170,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         DatumRange visibleRange = imageXRange;
 
-        //if ( isOverloading() ) visibleRange= visibleRange.rescale(-1,2);
+        QDataSet xds = SemanticOps.xtagsDataSet(ds);
+        QDataSet vds;
 
-        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+            vds = DataSetOps.unbundleDefaultDataSet( ds );
+        } else {
+            vds = (QDataSet) ds;
+        }
+
         boolean xmono = Boolean.TRUE == SemanticOps.isMonotonic(xds);
 
         int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds, visibleRange.min()) : 0;
@@ -177,16 +191,16 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         // TODO: data breaks
         int ix0 = 0, iy0 = 0;
-        if (ds.length() > 0) {
-            QDataSet wds = DataSetUtil.weightsDataSet(ds);
-            Units dsunits= SemanticOps.getUnits(ds);
+        if (vds.length() > 0) {
+            QDataSet wds = DataSetUtil.weightsDataSet(vds);
+            Units dsunits= SemanticOps.getUnits(vds);
             Units xunits= SemanticOps.getUnits(xds);
             for (int i = firstIndex; i <= lastIndex; i++) {
                 boolean isValid = wds.value(i)>0;
                 if (!isValid) {
                     state = STATE_MOVETO;
                 } else {
-                    int iy = (int) yAxis.transform( ds.value(i), dsunits );
+                    int iy = (int) yAxis.transform( vds.value(i), dsunits );
                     int ix = (int) xAxis.transform( xds.value(i), xunits );
                     if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                     switch (state) {
@@ -217,18 +231,26 @@ public class ImageVectorDataSetRenderer extends Renderer {
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         FDataSet tds = FDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
 
-        QDataSet xds= SemanticOps.xtagsDataSet( ds );
         if (ds.length() > 0) {
 
-            QDataSet wds = DataSetUtil.weightsDataSet(ds);
+            QDataSet xds = SemanticOps.xtagsDataSet(ds);
+            QDataSet vds;
+
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else {
+                vds = (QDataSet) ds;
+            }
+
+            QDataSet wds= SemanticOps.weightsDataSet( vds );
 
             Units xunits = SemanticOps.getUnits(xds);
-            Units yunits = SemanticOps.getUnits(ds);
+            Units yunits = SemanticOps.getUnits(vds);
 
             boolean xmono = SemanticOps.isMonotonic(xds);
 
             int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
-            int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.length()-1;
+            int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : vds.length()-1;
 
             int i = firstIndex;
             int n = lastIndex;
@@ -236,7 +258,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 boolean isValid = wds.value(i)>0;
                 if ( isValid ) {
                     int ix = ddx.whichBin(xds.value(i), xunits);
-                    int iy = ddy.whichBin(ds.value(i), yunits);
+                    int iy = ddy.whichBin(vds.value(i), yunits);
                     if (ix != -1 && iy != -1) {
                         double d = tds.value(ix, iy);
                         tds.putValue( ix, iy, d+1 );
