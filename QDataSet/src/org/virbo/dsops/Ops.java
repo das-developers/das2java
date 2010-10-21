@@ -2650,6 +2650,26 @@ public class Ops {
     }
 
     /**
+     * return true if DEPEND_1 is set and its units are EnumerationUnits.  This
+     * was the pre-bundle way of representing a bundle of datasets.  It might
+     * be supported indefinitely, because it has some nice rules about the data.
+     * For example, data must be of the same units since there is no place to put
+     * the property.
+     * @param zds
+     * @return
+     */
+    public static boolean isLegacyBundle( QDataSet zds ) {
+        QDataSet dep1= (QDataSet) zds.property(QDataSet.DEPEND_1);
+        if ( dep1!=null ) {
+            Units u= (Units) dep1.property(QDataSet.UNITS);
+            if ( u instanceof EnumerationUnits ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * return true if the dataset is a bundle.  It is rank 2 or rank 1, and
      * has the last dimension a bundle dimension.
      * @param zds
@@ -2684,9 +2704,9 @@ public class Ops {
             bds.putProperty( "CONTEXT_0", 1, xname );
             bds.putProperty( QDataSet.NAME, 0, xname );
             bds.putProperty( QDataSet.NAME, 1, yname );
-
+            bds.putProperty( QDataSet.DEPEND_0, 1, xname );
             List<String> problems= new ArrayList();
-            if ( DataSetUtil.validate(result, problems ) ) {
+            if ( DataSetUtil.validate(result, problems) ) {
                 return result;
             } else {
                 throw new IllegalArgumentException( problems.get(0) );
