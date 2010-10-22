@@ -95,6 +95,15 @@ public class BundleDataSet extends AbstractDataSet {
         datasets.add( ds );
     }
 
+    /**
+     * allow to simply unbundle the dataset.
+     * @param i
+     * @return
+     */
+    QDataSet unbundle(int i) {
+        return datasets.get(i);
+    }
+
     public class BundleDescriptor extends AbstractDataSet {
 
         public void putProperty( String name, int i, Object value ) {
