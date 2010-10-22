@@ -5,11 +5,6 @@
  */
 package org.das2.graph;
 
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.TableUtil;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -20,6 +15,7 @@ import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import javax.swing.*;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -177,12 +173,9 @@ public class GraphUtil {
 
         DasAxis result;
 
-        if ( SemanticOps.isTableDataSet(dsz) ) {
+        if ( SemanticOps.isSimpleTableDataSet(dsz) ) {
             QDataSet ds = (QDataSet) dsz;
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
-
-            Units yunits = SemanticOps.getUnits(yds);
-            Datum min, max;
 
             DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
             Datum dy = org.virbo.dataset.DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( yds, null ) );
@@ -193,10 +186,11 @@ public class GraphUtil {
             result = new DasAxis(yrange.min(), yrange.max(), DasAxis.LEFT, log);
 
         } else if ( !SemanticOps.isTableDataSet(dsz) ) {
-            QDataSet ds = (QDataSet) dsz;
-            QDataSet yds= ds;
-
-            Units yunits = SemanticOps.getUnits(ds);
+            QDataSet yds= dsz;
+            if ( SemanticOps.isBundle(dsz) ) {
+                yds= DataSetOps.unbundleDefaultDataSet(dsz);
+                dsz= yds;
+            }
 
             DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
             result = new DasAxis(yrange.min(), yrange.max(), DasAxis.LEFT, log);
@@ -252,7 +246,6 @@ public class GraphUtil {
     public static Renderer guessRenderer(QDataSet ds) {
         Renderer rend = null;
         if ( !SemanticOps.isTableDataSet(ds) ) {// TODO use SeriesRenderer
-
             if (ds.length() > 10000) {
                 rend = new ImageVectorDataSetRenderer( null );
                 rend.setDataSet( ds );
