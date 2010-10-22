@@ -23,6 +23,8 @@
 
 package org.das2.util.filesystem;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -121,6 +123,25 @@ public class LocalFileObject extends FileObject {
 
     public boolean isLocal() {
         return true;
+    }
+
+    @Override
+    public <T> T getCapability(Class<T> clazz) {
+        if ( clazz==WriteCapability.class ) {
+            return (T) new WriteCapability() {
+                public OutputStream getOutputStream() throws FileNotFoundException {
+                    return new FileOutputStream(localFile);
+                }
+                public boolean canWrite() {
+                    return localFile.canWrite();
+                }
+                public boolean delete() {
+                    return localFile.delete();
+                }
+            };
+        } else {
+            return super.getCapability(clazz);
+        }
     }
     
     

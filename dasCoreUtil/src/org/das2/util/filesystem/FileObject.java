@@ -190,5 +190,14 @@ public abstract class FileObject {
      * @return the last modified Date, or new Date(0) if it is not available.
      */
     public abstract java.util.Date lastModified();
-    
+
+
+    /**
+     * returns extra capabilities, such as writing to the filesystem.
+     * @param T
+     * @return
+     */
+    public <T> T getCapability( Class<T> clazz ) {
+        return null;
+    }
 }
