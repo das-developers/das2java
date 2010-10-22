@@ -31,7 +31,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
     
-    public double value(int i) {
+    public double value(int i0) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
