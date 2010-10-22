@@ -53,7 +53,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
-import org.das2.datum.Units;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -157,11 +156,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             if ( SemanticOps.isTableDataSet(ds) ) {
                 firstValidIndex= 0;
                 lastValidIndex= ds.length();
-            } if ( SemanticOps.isSimpleBundleDataSet(ds) ) {
+            } else if ( SemanticOps.isSimpleBundleDataSet(ds) ) {
                 firstValidIndex= 0;
                 lastValidIndex= ds.length();
             } else {
-                Units u= SemanticOps.getUnits(ds);
                 firstValidIndex= -1;
                 lastValidIndex= -1;
                 QDataSet wds= DataSetUtil.weightsDataSet(ds);
@@ -246,6 +244,17 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.lastException;
     }
 
+    /**
+     * Set the dataset to be plotted.  Different renderers accept QDataSets with
+     * different schemes.  For example SeriesRenderer takes:
+     *   ds[t]   rank 1 dataset with rank 1 DEPEND_0  or
+     *   ds[t,n] rank 2 bundle dataset with X in ds[t,0] and Y in ds[t,n-1]
+     * and SpectrogramRenderer takes:
+     *   ds[t,y] rank 2 table dataset
+     *   ds[n,t,y]  rank 3 dataset with the first dimension join
+     * See each renderer's documentation for the schemes it takes.
+     * @param ds
+     */
     public void setDataSet(QDataSet ds) {
         logger.log(Level.FINE, "Renderer.setDataSet {0}: {1}", new Object[]{id, ds});
 
