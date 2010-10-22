@@ -227,15 +227,20 @@ public class SemanticOps {
     }
 
     public static Datum guessXTagWidth( QDataSet ds, QDataSet yds ) {
-        return DataSetUtil.asDatum( DataSetUtil.guessCadenceNew( ds, yds ) );
+        RankZeroDataSet cadence= DataSetUtil.guessCadenceNew( ds, yds );
+        return cadence==null ? null : DataSetUtil.asDatum( cadence );
     }
 
     public static QDataSet xtagsDataSet( QDataSet ds ) {
-        QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if ( result==null ) {
-            return new IndexGenDataSet(ds.length());
+        if ( isBundle(ds) ){
+            return DataSetOps.unbundle(ds,0);
         } else {
-            return result;
+            QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            if ( result==null ) {
+                return new IndexGenDataSet(ds.length());
+            } else {
+                return result;
+            }
         }
     }
 
@@ -305,7 +310,7 @@ public class SemanticOps {
      * @return
      */
     public static boolean isSimpleTableDataSet(QDataSet ds) {
-         return ds.rank()==2 && ( ds.property(QDataSet.BUNDLE_1)==null && ds.property(QDataSet.BINS_1)==null );
+         return ds.rank()==2 && !Ops.isBundle(ds)  && !Ops.isLegacyBundle(ds);
     }
 
     /**
