@@ -616,6 +616,30 @@ public class DataSetOps {
     }
 
     /**
+     * extract the dataset that is dependent on others, or the last one.  
+     * For example, the dataset ds[:,"x,y"] -> y[:]
+     * @param bundleDs
+     * @return
+     */
+    public static QDataSet unbundleDefaultDataSet( QDataSet bundleDs ) {
+        QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+
+        if ( bundle1==null ) {
+            bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+            if ( bundle1!=null && bundle1.rank()>1 ) {
+                throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+            }
+        }
+
+        int ids= -1;
+        for ( int i=0; i<bundle1.length(); i++ ) {
+            if ( bundle1.property(QDataSet.DEPEND_0,i)!=null ) ids=i;
+        }
+        if ( ids==-1 ) ids= bundle1.length()-1;
+        return unbundle(bundleDs,ids);
+    }
+
+    /**
      * Extract a bundled dataset from a bundle of datasets.  The input should
      * be a rank 2 dataset with the property BUNDLE_1 set to a bundle descriptor
      * dataset.  See BundleDataSet for more semantics.  Note we support the case
@@ -623,7 +647,7 @@ public class DataSetOps {
      *
      *
      * @param aThis
-     * @param ib index of the dataset to extract.
+     * @param ib index of the dataset to extract
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @return
      */
@@ -671,11 +695,17 @@ public class DataSetOps {
         int n= lens[j];
 
         if ( bundle1.length(j)==0 ) {
-            MutablePropertyDataSet result= DataSetOps.slice1(bundleDs,offsets[j]);
-            result.putProperty(QDataSet.UNITS, bundle1.property( QDataSet.UNITS, j ) ); //TODO: underimplementation
-            result.putProperty(QDataSet.NAME, bundle1.property( QDataSet.NAME, j ) );
-            result.putProperty(QDataSet.LABEL, bundle1.property( QDataSet.LABEL, j ) );
-            return result;
+            if ( bundleDs instanceof BundleDataSet ) {
+                QDataSet r= ((BundleDataSet)bundleDs).unbundle(offsets[j]);
+                return r;
+            } else {
+                MutablePropertyDataSet result;
+                result= DataSetOps.slice1(bundleDs,offsets[j]);
+                result.putProperty(QDataSet.UNITS, bundle1.property( QDataSet.UNITS, j ) ); //TODO: underimplementation
+                result.putProperty(QDataSet.NAME, bundle1.property( QDataSet.NAME, j ) );
+                result.putProperty(QDataSet.LABEL, bundle1.property( QDataSet.LABEL, j ) );
+                return result;
+            }
         } else if ( bundle1.length(j)==1 ) {
             TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
             result.setTrim( 1, offsets[j], offsets[j]+lens[j], 1 );
