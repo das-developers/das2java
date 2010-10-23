@@ -8,34 +8,34 @@
  */
 package org.das2.event;
 
-import org.das2.dataset.ClippedTableDataSet;
-import org.das2.dataset.DataSet;
-import org.das2.dataset.DataSetUtil;
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.VectorDataSetBuilder;
+import java.awt.event.ItemEvent;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
-import org.das2.datum.format.DatumFormatter;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
-import org.das2.util.DasExceptionHandler;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.Window;
+import java.awt.event.ItemListener;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JEditorPane;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsutil.QDataSetTableModel;
 
 /**
  *
@@ -43,11 +43,15 @@ import org.virbo.dataset.SemanticOps;
  */
 public class DisplayDataMouseModule extends MouseModule {
 
-    final static String LABEL = "Display Data";
-    DasPlot plot;
-    static JFrame myFrame;
-    static JPanel myPanel;
-    static JEditorPane myEdit;
+    private final static String LABEL = "Display Data";
+    private DasPlot plot;
+    private JFrame myFrame;
+    private JPanel myPanel;
+    private JTable myEdit;
+    private JComboBox comboBox;
+    private Renderer[] rends;
+    private DatumRange xrange;
+    private DatumRange yrange;
 
     /** Creates a new instance of DisplayDataMouseModule */
     public DisplayDataMouseModule(DasPlot parent) {
@@ -55,16 +59,28 @@ public class DisplayDataMouseModule extends MouseModule {
         this.plot = parent;
     }
 
-    private void maybeCreateFrame() {
+    private void maybeCreateFrame(Object source) {
         if (myFrame == null) {
             myFrame = new JFrame(LABEL);
+            if ( source!=null && source instanceof JComponent ) {
+                Window w=  SwingUtilities.getWindowAncestor((JComponent)source);
+                if ( w instanceof JFrame ) {
+                    myFrame.setIconImage( ((JFrame)w).getIconImage() );
+                }
+            }
             myPanel = new JPanel();
             myPanel.setPreferredSize(new Dimension(300, 300));
             myPanel.setLayout(new BorderLayout());
-            myEdit = new JEditorPane();
+            myEdit = new JTable();
             myEdit.setFont(Font.decode("fixed-10"));
             JScrollPane scrollPane = new JScrollPane(myEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             myPanel.add(scrollPane, BorderLayout.CENTER);
+            
+            comboBox= new JComboBox();
+            comboBox.addItemListener( itemListener );
+
+            myPanel.add( comboBox, BorderLayout.NORTH );
+            
             myFrame.getContentPane().add(myPanel);
             myFrame.pack();
         }
@@ -83,135 +99,93 @@ public class DisplayDataMouseModule extends MouseModule {
             return;
         }
        
-        maybeCreateFrame();
-        myFrame.setVisible(true);
+        maybeCreateFrame(e0.getSource());
 
-        DatumRange xrange;
-        DatumRange yrange;
-
+        final DatumRange xrng;
+        final DatumRange yrng;
 
         if (plot.getXAxis().isFlipped()) {
-            xrange = new DatumRange(plot.getXAxis().invTransform(e.getXMaximum()), plot.getXAxis().invTransform(e.getXMinimum()));
+            xrng = new DatumRange(plot.getXAxis().invTransform(e.getXMaximum()), plot.getXAxis().invTransform(e.getXMinimum()));
         } else {
-            xrange = new DatumRange(plot.getXAxis().invTransform(e.getXMinimum()), plot.getXAxis().invTransform(e.getXMaximum()));
+            xrng = new DatumRange(plot.getXAxis().invTransform(e.getXMinimum()), plot.getXAxis().invTransform(e.getXMaximum()));
         }
-        if (plot.getYAxis().isFlipped()) {
-            yrange = new DatumRange(plot.getYAxis().invTransform(e.getYMinimum()), plot.getYAxis().invTransform(e.getYMaximum()));
-        } else {
-            yrange = new DatumRange(plot.getYAxis().invTransform(e.getYMaximum()), plot.getYAxis().invTransform(e.getYMinimum()));
-        }
-
-        Renderer[] rends = plot.getRenderers();
-
-        Document doc = myEdit.getDocument();
-
-        try {
-
-            AttributeSet attrSet = null;
-
-            doc.remove(0, doc.getLength()); // erase all
-
-            for (int irend = 0; irend < rends.length; irend++) {
-
-                doc.insertString(doc.getLength(), "Renderer #" + irend + "\n", attrSet);
-
-                QDataSet ds = rends[irend].getDataSet();
-
-                if (ds == null) {
-                    doc.insertString(doc.getLength(), "(no dataset)\n", attrSet);
-                }
-
-                // copy for this renderer.
-                DatumRange rx1 = xrange;
-                DatumRange ry1 = yrange;
-
-                if (ds != null) {
-                    QDataSet xds= SemanticOps.xtagsDataSet(ds);
-                    if (!rx1.getUnits().isConvertableTo( SemanticOps.getUnits( xds ) ) ) {
-                        rx1 = org.virbo.dataset.DataSetUtil.asDatumRange( org.virbo.dsops.Ops.extent(xds), true );
-                    }
-                    QDataSet yds= SemanticOps.ytagsDataSet(ds);
-                    if (!ry1.getUnits().isConvertableTo( SemanticOps.getUnits( yds ) ) ) {
-                        ry1 =  org.virbo.dataset.DataSetUtil.asDatumRange( org.virbo.dsops.Ops.extent( yds ), true );
-                    }
-                }
-
-                QDataSet outds;
-                if (ds instanceof QDataSet) {
-                    QDataSet tds = (QDataSet) ds;
-
-                    QDataSet toutds = new ClippedTableDataSet(tds, rx1, ry1);
-
-                    StringBuffer buf = new StringBuffer();
-
-                    Units zunits = SemanticOps.getUnits(tds);
-                    DatumFormatter df=null;
-                    //df = (DatumFormatter) new tds.property(QDataSet.FORMAT);
-                    if (df == null) {
-                        df = zunits.getDatumFormatterFactory().defaultFormatter();
-                    }
-                    buf.append("TableDataSet " + toutds.length() + "x" + toutds.length(0) + " " + unitsStr(zunits) + "\n");
-                    for (int i = 0; i < toutds.length(); i++) {
-                        for (int j = 0; j < toutds.length(0); j++) {
-                            try {
-                                buf.append(df.format( zunits.createDatum(toutds.value(i, j)), zunits)); //TODO: fill
-                                buf.append(" ");
-                            } catch (IndexOutOfBoundsException ex) {
-                                System.err.println("here");
-                            }
-                        }
-                        buf.append("\n");
-                    }
-                    doc.insertString(doc.getLength(), buf.toString(), attrSet);
-
-                } else if (ds instanceof VectorDataSet) {
-                    VectorDataSet vds = (VectorDataSet) ds;
-
-                    Units units = vds.getYUnits();
-                    Units xunits = vds.getXUnits();
-
-                    StringBuffer buf = new StringBuffer();
-                    DatumFormatter df = vds.getDatum(0).getFormatter();
-                    DatumFormatter xdf = vds.getXTagDatum(0).getFormatter();
-
-                    String[] planes = vds.getPlaneIds();
-                    VectorDataSet[] vdss = new VectorDataSet[planes.length];
-                    for (int j = 0; j < planes.length; j++) {
-                        vdss[j] = (VectorDataSet) vds.getPlanarView(planes[j]);
-                    }
-
-                    if (planes.length > 1) {
-                        buf.append("X" + unitsStr(xunits) + "\t");
-                        buf.append("Y" + unitsStr(units) + "\t");
-                        for (int j = 0; j < vdss.length; j++) {
-                            if (!planes[j].equals("")) {
-                                buf.append("" + planes[j] + "" + unitsStr(vdss[j].getYUnits()) + "\t");
-                            }
-                        }
-                        buf.append("\n");
-                    }
-
-                    VectorDataSetBuilder builder = new VectorDataSetBuilder(vds.getXUnits(), vds.getYUnits());
-                    for (int i = 0; i < vds.getXLength(); i++) {
-                        if (xrange.contains(vds.getXTagDatum(i)) && (!yclip || yrange.contains(vds.getDatum(i)))) {
-                            buf.append(xdf.format(vds.getXTagDatum(i), xunits) + "\t" + df.format(vds.getDatum(i), units));
-                            for (int j = 0; j < planes.length; j++) {
-                                if (!planes[j].equals("")) {
-                                    buf.append("\t" + df.format(vdss[j].getDatum(i), vdss[j].getYUnits()));
-                                }
-                            }
-
-                            buf.append("\n");
-                        }
-                    }
-                    doc.insertString(doc.getLength(), buf.toString(), attrSet);
-
-                }
-
+        if ( yclip ) {
+            if (plot.getYAxis().isFlipped()) {
+                yrng = new DatumRange(plot.getYAxis().invTransform(e.getYMinimum()), plot.getYAxis().invTransform(e.getYMaximum()));
+            } else {
+                yrng = new DatumRange(plot.getYAxis().invTransform(e.getYMaximum()), plot.getYAxis().invTransform(e.getYMinimum()));
             }
-        } catch (BadLocationException ex) {
-            DasExceptionHandler.handle(ex);
+        } else {
+            yrng= null;
         }
+
+        final Renderer[] rends = plot.getRenderers();
+
+        if ( rends.length==0 ) return;
+        myFrame.setVisible(true);
+
+        String[] rlabels= new String[ rends.length ];
+        int firstActive= -1;
+        for ( int i=0; i<rends.length; i++ ) {
+            String label= rends[i].getLegendLabel();
+            if ( label==null || label.equals("") ) {
+                label= "Renderer "+i;
+            }
+            if ( !rends[i].isActive() ) {
+                label += " (not visible)";
+            } else {
+                if ( firstActive==-1 ) firstActive= i;
+            }
+            rlabels[i]= label;
+        };
+        if ( firstActive==-1 ) firstActive=0;
+
+        this.rends= rends;
+        this.xrange= xrng;
+        this.yrange= yrng;
+
+        comboBox.setModel( new DefaultComboBoxModel( rlabels ) );
+        comboBox.setSelectedIndex(firstActive);
+        setDataSet(rends[firstActive].getDataSet(),xrange,yrange);
+
+    }
+
+    private ItemListener itemListener= new ItemListener() {
+        public void itemStateChanged(ItemEvent e) {
+            if ( rends==null ) return;
+            int i= comboBox.getSelectedIndex();
+            if ( i<rends.length ) setDataSet( rends[i].getDataSet(), xrange, yrange ); // thread safety
+        }
+    };
+
+    private void setDataSet( QDataSet ds, DatumRange xrange, DatumRange yrange ) {
+        TableModel tm;
+
+        if ( ds==null ) {
+            tm= new DefaultTableModel( 1, 1 ) {
+                @Override
+                public Object getValueAt( int row, int col ) {
+                    return "no dataset";
+                }
+            };
+            myEdit.setModel(tm);
+            return;
+        }
+        TableColumnModel tcm= new DefaultTableColumnModel();
+        try {
+            QDataSet tds=SemanticOps.trim( ds, xrange, yrange );
+            tm= new QDataSetTableModel(tds);
+            tcm= ((QDataSetTableModel)tm).getTableColumnModel();
+        } catch ( RuntimeException ex ) {
+            System.err.println("exception in mouseRangeSelected: "+ex);
+            ex.printStackTrace();
+            tm= new QDataSetTableModel(ds);
+            tcm= ((QDataSetTableModel)tm).getTableColumnModel();
+        }
+        myEdit.setModel(tm);
+        //myEdit.setColumnModel(new DefaultTableColumnModel() );
+        //myEdit.setColumnModel(tcm); // error with rank 1.
+
     }
 
     public String getListLabel() {
@@ -232,7 +206,8 @@ public class DisplayDataMouseModule extends MouseModule {
     /**
      * Holds value of property yclip.
      */
-    private boolean yclip = false;
+    private boolean yclip = true;
+    
     /**
      * Utility field used by bound properties.
      */
