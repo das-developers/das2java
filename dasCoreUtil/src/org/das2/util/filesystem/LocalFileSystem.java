@@ -23,8 +23,6 @@
 
 package org.das2.util.filesystem;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.io.*;
 import java.net.*;
@@ -51,9 +49,6 @@ public class LocalFileSystem extends FileSystem {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
         String surl= root.toString();
-        if ( surl.contains("+") ) {
-        	surl= surl.replaceAll("\\+", " "); // Autoplot kludge
-        }
         if ( surl.contains("%20") ) {
             try {
                 surl = URLDecoder.decode(surl, "US-ASCII");
