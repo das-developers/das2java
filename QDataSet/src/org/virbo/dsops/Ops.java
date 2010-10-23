@@ -40,6 +40,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.ReverseDataSet;
 import org.virbo.dataset.SDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.WritableDataSet;
@@ -714,7 +715,6 @@ public class Ops {
      */
     public static QDataSet mod(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
                 return d1 % d2;
             }
@@ -728,13 +728,12 @@ public class Ops {
      */
     public static QDataSet div(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
                 return (int) (d1 / d2);
             }
         });
     }
-// comparators
+    // comparators
     /**
      * element-wise equality test.  1.0 is returned where the two datasets are
      * equal.  invalid measurements are always unequal.
@@ -742,10 +741,10 @@ public class Ops {
      * @return
      */
     public static QDataSet eq(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
-                return d1 == d2 ? 1.0 : 0.0;
+                return uc.convert(d1) == d2 ? 1.0 : 0.0;
             }
         });
     }
@@ -757,46 +756,46 @@ public class Ops {
      * @return
      */
     public static QDataSet ne(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
-                return d1 != d2 ? 1.0 : 0.0;
+                return uc.convert(d1) != d2 ? 1.0 : 0.0;
             }
         });
     }
 
     public static QDataSet gt(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
-                return d1 > d2 ? 1.0 : 0.0;
+                return uc.convert(d1) > d2 ? 1.0 : 0.0;
             }
         });
     }
 
     public static QDataSet ge(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
-                return d1 >= d2 ? 1.0 : 0.0;
+                return uc.convert(d1) >= d2 ? 1.0 : 0.0;
             }
         });
     }
 
     public static QDataSet lt(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
-                return d1 < d2 ? 1.0 : 0.0;
+                return uc.convert(d1) < d2 ? 1.0 : 0.0;
             }
         });
     }
 
     public static QDataSet le(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
-                return d1 <= d2 ? 1.0 : 0.0;
+                return uc.convert(d1) <= d2 ? 1.0 : 0.0;
             }
         });
     }
@@ -804,7 +803,6 @@ public class Ops {
     // logic operators
     public static QDataSet or(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
                 return d1 != 0 || d2 != 0 ? 1.0 : 0.0;
             }
@@ -813,7 +811,6 @@ public class Ops {
 
     public static QDataSet and(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-
             public double op(double d1, double d2) {
                 return d1 != 0 && d2 != 0 ? 1.0 : 0.0;
             }
@@ -822,7 +819,6 @@ public class Ops {
 
     public static QDataSet not(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
-
             public double op(double d1) {
                 return d1 != 0 ? 0.0 : 1.0;
             }
