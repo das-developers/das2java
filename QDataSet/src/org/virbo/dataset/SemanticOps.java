@@ -8,10 +8,12 @@ import java.text.ParseException;
 import java.util.regex.Pattern;
 import org.das2.datum.Basis;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.NumberUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsConverter.ScaleOffset;
 import org.virbo.dsops.Ops;
 
@@ -32,6 +34,12 @@ public class SemanticOps {
     public final static Units getUnits(QDataSet ds) {
         Units u = (Units) ds.property(QDataSet.UNITS);
         return u == null ? Units.dimensionless : u;
+    }
+
+    public final static UnitsConverter getUnitsConverter( QDataSet src, QDataSet dst ) {
+        Units usrc= getUnits(src);
+        Units udst= getUnits(dst);
+        return usrc.getConverter(udst);
     }
 
     /**
@@ -187,6 +195,15 @@ public class SemanticOps {
     }
 
     /**
+     * returns true if the dataset is rank 2 or greater with the first dimension a join dimension.
+     * @param ds
+     * @return
+     */
+    public static boolean isJoin( QDataSet ds ) {
+        return ds.rank()>1 && ds.property(QDataSet.JOIN_0)!=null;
+    }
+
+    /**
      * returns the plane requested by name, or null if it does not exist.
      * If the name is PLANE_i, then return PLANE_i, otherwise return
      * the dataset with this name.
@@ -256,6 +273,26 @@ public class SemanticOps {
             return new IndexGenDataSet(ds.length(0));
         } else {
             return result;
+        }
+    }
+
+    /**
+     * return the dataset that is dependent on others.  For a bundle, we
+     * use DataSetOps.unbundleDefaultDataSet
+     * @param ds
+     * @return
+     */
+    public static QDataSet getDependentDataSet( QDataSet ds ) {
+        QDataSet vds;
+        if ( !SemanticOps.isTableDataSet(ds) ) {
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else {
+                vds = (QDataSet) ds;
+            }
+            return vds;
+        } else  {
+            return ds;
         }
     }
 
@@ -343,6 +380,79 @@ public class SemanticOps {
         if ( vmax!=null ) if ( vmax<d ) return u.getFillDatum();
         if ( fill!=null ) if ( fill==d ) return u.getFillDatum();
         return u.createDatum(d);
+    }
+
+    /**
+     * return the parts of the dataset within the bounds.
+     * @param ds
+     * @param xrange
+     * @param yrange
+     */
+    public static QDataSet trim( QDataSet ds, DatumRange xrange, DatumRange yrange ) {
+        int rank=ds.rank();
+        if ( ds.rank()==0 ) return ds;
+        if ( xrange==null && yrange==null ) return ds;
+        if ( rank==3 && isJoin(ds) ) {
+            JoinDataSet jds= new JoinDataSet(ds.rank());
+            for ( int i=0; i<ds.length(); i++ ) {
+                jds.join( trim( ds.slice(i), xrange, yrange ) );
+            }
+            DataSetUtil.putProperties( DataSetUtil.getProperties(ds), jds );
+            return jds;
+        } else if ( rank==2 ) {
+            if ( SemanticOps.isBundle(ds) ) { // copy over elements where
+                QDataSet xds= SemanticOps.xtagsDataSet(ds);
+                QDataSet yds= SemanticOps.getDependentDataSet(ds);
+                QDataSet xinside= xrange==null ? null :
+                    Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+                QDataSet yinside= yrange==null ? null :
+                    Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
+                QDataSet ok;
+                if ( xrange==null ) {
+                    ok= Ops.where( yinside );
+                } else if ( yrange==null ) {
+                    ok= Ops.where( xinside );
+                } else {
+                    ok= Ops.where( Ops.and( xinside, yinside ) );
+                }
+                SubsetDataSet sds= new SubsetDataSet(ds);
+                sds.applyIndex( 1, ok );
+                return sds;
+                
+            } else { // simple table
+                QDataSet xds= SemanticOps.xtagsDataSet(ds);
+                QDataSet yds= SemanticOps.ytagsDataSet(ds);
+                QDataSet xinside= xrange==null ? null :
+                    Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+                QDataSet yinside= yrange==null ? null :
+                    Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
+                SubsetDataSet sds= new SubsetDataSet(ds);
+                sds.applyIndex( 0, Ops.where(xinside) );
+                sds.applyIndex( 1, Ops.where(yinside) );
+                return sds;
+            }
+        } else if ( rank==1 ) { 
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+            QDataSet yds= SemanticOps.getDependentDataSet(ds);
+            QDataSet xinside= xrange==null ? null :
+                Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+            QDataSet yinside= yrange==null ? null :
+                Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
+            
+            QDataSet ok;
+            if ( xrange==null ) {
+                ok= Ops.where( yinside );
+            } else if ( yrange==null ) {
+                ok= Ops.where( xinside );
+            } else {
+                ok= Ops.where( Ops.and( xinside, yinside ) );
+            }
+            SubsetDataSet sds= new SubsetDataSet(ds);
+            sds.applyIndex( 0, ok );
+            return sds;
+        } else {
+            throw new IllegalArgumentException("not supported: "+ds);
+        }
     }
 
 }
