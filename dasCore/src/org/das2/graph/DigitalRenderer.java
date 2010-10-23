@@ -101,7 +101,16 @@ public class DigitalRenderer extends Renderer {
         int ixmax;
         int ixmin;
 
-        QDataSet wds= SemanticOps.weightsDataSet(dataSet);
+        QDataSet wds;
+        if ( dataSet.rank()==1 ) {
+            wds= SemanticOps.weightsDataSet(dataSet);
+        } else if ( SemanticOps.isSimpleTableDataSet(dataSet) ) {
+            wds= SemanticOps.weightsDataSet(DataSetOps.slice1(dataSet,0));
+        } else {
+            firstIndex=0;
+            lastIndex= Math.min( dataSet.length(), this.dataSetSizeLimit );
+            return;
+        }
         QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
         Boolean xMono = SemanticOps.isMonotonic(xds);
@@ -115,8 +124,8 @@ public class DigitalRenderer extends Renderer {
                 }
 
             }
-            ixmin = DataSetUtil.getPreviousIndex(dataSet, visibleRange.min());
-            ixmax = DataSetUtil.getNextIndex(dataSet, visibleRange.max()) + 1; // +1 is for exclusive.
+            ixmin = DataSetUtil.getPreviousIndex(xds, visibleRange.min());
+            ixmax = DataSetUtil.getNextIndex(xds, visibleRange.max()) + 1; // +1 is for exclusive.
 
         } else {
             ixmin = 0;
@@ -249,30 +258,30 @@ public class DigitalRenderer extends Renderer {
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
 
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        QDataSet yds= SemanticOps.ytagsDataSet(ds);
         QDataSet fds= DataSetOps.flattenRank2(ds);
-
+        QDataSet zds;
         Units u = SemanticOps.getUnits(ds);
 
-        QDataSet zds= DataSetOps.unbundle(fds, fds.length(0)-1 );
-        QDataSet xds;
-        QDataSet yds;
-
-        if ( fds.length(0)==1 ) {
+        if ( fds.length(0)>1 ) {
             xds= DataSetOps.unbundle(fds, 0);
             yds= DataSetOps.unbundle(fds, 1);
+            zds= DataSetOps.unbundle(fds, fds.length(0)-1 );
         } else {
-            xds= Ops.mod( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length() ) );
-            yds= Ops.div( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length() ) );
+            xds= Ops.div( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length() ) );
+            yds= Ops.mod( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length() ) );
+            zds= fds;
         }
 
         Units xunits= SemanticOps.getUnits(xds);
         Units yunits= SemanticOps.getUnits(yds);
 
-        if ( SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits() ) ) {
+        if ( !SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
             return;
         }
-        if ( SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits() ) ) {
+        if ( !SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
             return;
         }
