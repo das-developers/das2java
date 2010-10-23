@@ -246,6 +246,9 @@ public class DataSetOps {
     /**
      * Applies the sort index to the idim-th dimension of the qube dataset ds.
      * TODO: consider sorting multiple dimensions at once, to reduce excessive copying.
+     * TODO: this should probably (and would easily) be redone by using dataset implementation that applies the sort on the ith index when read.
+     *   See SubsetDataSet which would do this nicely.
+     * TODO: note the Jython stuff does this to, using a different implementation.  Reconcile these...
      * @param ds rank 1,2, or 3 qube dataset
      * @param idim the dimension being sorted.
      * @param sort rank 1 dataset of new indeces, needn't be same size as index.
