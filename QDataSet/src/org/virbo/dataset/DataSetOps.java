@@ -134,7 +134,6 @@ public class DataSetOps {
      * @param ds
      * @return
      */
-
     public static QDataSet flattenRank2( final QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
@@ -156,10 +155,17 @@ public class DataSetOps {
             }
         }
 
+        DDataSet zds= builder.getDataSet();
+        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), zds );
+
         if ( dep1!=null && dep0!=null ) {
-            return Ops.link( xbuilder.getDataSet(), ybuilder.getDataSet(), builder.getDataSet() );
+            DDataSet xds= xbuilder.getDataSet();
+            DataSetUtil.putProperties( DataSetUtil.getProperties(dep0), xds );
+            DDataSet yds= ybuilder.getDataSet();
+            DataSetUtil.putProperties( DataSetUtil.getProperties(dep1), yds );
+            return Ops.link( xds, yds, zds );
         } else  {
-            return builder.getDataSet();
+            return zds;
         }
         
     }
