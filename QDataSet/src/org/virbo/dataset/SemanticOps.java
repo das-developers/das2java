@@ -93,6 +93,7 @@ public class SemanticOps {
      */
     public static synchronized Units lookupUnits(String sunits) {
         Units result;
+        sunits= sunits.trim();
         try {
             result= Units.getByName(sunits);
         } catch ( IllegalArgumentException ex ) {
