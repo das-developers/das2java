@@ -22,6 +22,10 @@ import org.apache.commons.vfs.VFS;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.CancelledOperationException;
 
+//these were supposed to make the URIs consistent with the others: ftp://user@host.gov/foo/ should be "foo" in the user's home directory.
+//import org.apache.commons.vfs.FileSystemOptions;
+//import org.apache.commons.vfs.provider.ftp.FtpFileSystemConfigBuilder;
+
 /**
  *
  * @author ed
@@ -37,8 +41,15 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     private VFSFileSystem(URI root, boolean createFolder) throws IOException {
         super(root);
         mgr = VFS.getManager();
-
-        String subFolderName = "vfsCache/" + root.getScheme() + "/" + root.getHost() + root.getPath();
+        downloads= new HashMap();
+        String userInfo= root.getUserInfo();
+        if ( userInfo!=null && userInfo.contains(":") ) {
+            int i= userInfo.indexOf(":");
+            userInfo= userInfo.substring(0,i) + "@";
+        } else if ( userInfo!=null ) {
+            userInfo= userInfo + "@";
+        }
+        String subFolderName = "vfsCache/" + root.getScheme() + "/" + userInfo + root.getHost() + root.getPath();
         cacheRoot = new File(settings().getLocalCacheDir(), subFolderName);
         
         fsRoot = mgr.resolveFile(root.toString());
@@ -55,10 +66,13 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         
         vfsSystem = fsRoot.getFileSystem();
 
+        String roots= root.toString();
+        if ( !roots.endsWith("/") ) roots= roots+"/";
+
         if (fsRoot.getType() == org.apache.commons.vfs.FileType.FOLDER) {
-            fsuri = URI.create(root.toString());
+            fsuri = URI.create(roots);
         } else {
-            fsuri = URI.create(root.toString().substring(0, root.toString().lastIndexOf('/')+1 ));
+            fsuri = URI.create(roots.substring(0, root.toString().lastIndexOf('/')+1 )); // huh--when is this branch taken?
         }
     }
 
@@ -77,7 +91,6 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     public static synchronized VFSFileSystem createVFSFileSystem(URI root, boolean createFolder) throws FileSystemOfflineException, UnknownHostException {
         //TODO: Handle at least some exceptions; offline detection?
         // yes, this is ugly
-
 
         if ( root.getScheme().equals("ftp") ) {
             while ( true ) {
@@ -179,6 +192,8 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     @Override
     public String[] listDirectory(String directory) throws IOException {
         // We'll let the VFS throw any necessary exceptions
+        if ( directory.startsWith("/") ) directory= directory.substring(1);
+
         directory = fsuri.toString() + directory; // suspect https://sourceforge.net/tracker/?func=detail&aid=3055130&group_id=199733&atid=970682
         org.apache.commons.vfs.FileObject vfsob = mgr.resolveFile(directory);
         org.apache.commons.vfs.FileObject children[] = vfsob.getChildren();
@@ -242,7 +257,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
      * Keep track of active downloads.  This handles, for example, the case
      * where the same file is requested several times by different threads.
      */
-    private final Map downloads = new HashMap();
+    private final Map downloads;
 
     /**
      * Request lock to download file.  If this thread gets the lock, then it
