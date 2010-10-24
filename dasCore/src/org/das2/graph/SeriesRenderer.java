@@ -249,20 +249,34 @@ public class SeriesRenderer extends Renderer {
 
             int index = firstIndex;
 
-            QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
+           QDataSet tds = null;
+           QDataSet vds = null;
+
+            QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
+            if ( !SemanticOps.isTableDataSet(dataSet) ) {
+                if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                    vds = DataSetOps.unbundleDefaultDataSet( ds );
+                } else {
+                    vds = (QDataSet) dataSet;
+                }
+
+            } else if (dataSet instanceof QDataSet) {
+                tds = (QDataSet) dataSet;
+            }
+
             Units xUnits= SemanticOps.getUnits(xds);
-            Units yUnits = SemanticOps.getUnits(ds);
+            Units yUnits = SemanticOps.getUnits(vds);
 
             if ( index<lastIndex ) {
                 x = xds.value(index);
-                y = dataSet.value(index);
+                y = vds.value(index);
                 dx= xAxis.transform(x, xUnits);
                 dy= yAxis.transform(y, yUnits);
             }
             
             double dx0=-99, dy0=-99; //last point.
 
-            QDataSet wds= SemanticOps.weightsDataSet(dataSet);
+            QDataSet wds= SemanticOps.weightsDataSet(vds);
 
             int buffer= (int)Math.ceil( Math.max( 20, getSymSize() ) );
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
@@ -278,7 +292,7 @@ public class SeriesRenderer extends Renderer {
             int i = 0;
             for (; index < lastIndex; index++) {
                 x = xds.value(index);
-                y = dataSet.value(index);
+                y = vds.value(index);
 
                 final boolean isValid = wds.value(index)>0 && xUnits.isValid(x);
 
@@ -333,7 +347,15 @@ public class SeriesRenderer extends Renderer {
             return lastIndex - firstIndex;
         }
 
-        public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
+        public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
+
+            QDataSet vds;
+            if ( dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( dataSet );
+            } else {
+                vds = (QDataSet) dataSet;
+            }
+
             QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
             QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
 
@@ -346,7 +368,7 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
 
-            QDataSet xds= SemanticOps.xtagsDataSet(vds);
+            QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
             Units xunits = SemanticOps.getUnits(xds);
             Units yunits = SemanticOps.getUnits(vds);
@@ -392,11 +414,18 @@ public class SeriesRenderer extends Renderer {
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
 
-            QDataSet wds= SemanticOps.weightsDataSet( dataSet );
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
 
+            QDataSet vds;
+            if ( dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( dataSet );
+            } else {
+                vds = (QDataSet) dataSet;
+            }
+            QDataSet wds= SemanticOps.weightsDataSet( vds );
+
             Units xUnits = SemanticOps.getUnits(xds);
-            Units yUnits = SemanticOps.getUnits(dataSet);
+            Units yUnits = SemanticOps.getUnits(vds);
 
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
@@ -417,14 +446,19 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
-            Datum sw = SemanticOps.guessXTagWidth(xds,dataSet);
+            Datum sw = SemanticOps.guessXTagWidth(xds,vds);
             double xSampleWidth;
             boolean logStep;
-            if ( UnitsUtil.isRatiometric(sw.getUnits())) {
-                xSampleWidth = sw.doubleValue(Units.logERatio);
-                logStep= true;
+            if ( sw!=null) {
+                if ( UnitsUtil.isRatiometric(sw.getUnits()) ) {
+                    xSampleWidth = sw.doubleValue(Units.logERatio);
+                    logStep= true;
+                } else {
+                    xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                    logStep= false;
+                }
             } else {
-                xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                xSampleWidth= 1e37; // something really big
                 logStep= false;
             }
 
@@ -449,7 +483,7 @@ public class SeriesRenderer extends Renderer {
 
             index = firstIndex;
             x = (double) xds.value(index);
-            y = (double) dataSet.value(index);
+            y = (double) vds.value(index);
 
             // first point //
             logger.fine("firstPoint moveTo,LineTo= " + x + "," + y);
@@ -459,7 +493,7 @@ public class SeriesRenderer extends Renderer {
             visible0= window.contains(fx,fy);
             visible= visible0;
             if (histogram) {
-                float fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, sw.getUnits(), -0.5 );
+                float fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, logStep, -0.5 );
                 newPath.moveTo(fx1, fy);
                 newPath.lineTo(fx, fy);
             } else {
@@ -479,7 +513,7 @@ public class SeriesRenderer extends Renderer {
             for (; index < lastIndex; index++) {
 
                 x = xds.value(index);
-                y = dataSet.value(index);
+                y = vds.value(index);
 
                 final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
 
@@ -578,9 +612,9 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-    private float midPoint(DasAxis axis, double d1, Units units, double delta, Units offsetUnits, double alpha ) {
+    private float midPoint(DasAxis axis, double d1, Units units, double delta, boolean ratiometric, double alpha ) {
         float fx1;
-        if (axis.isLog() && offsetUnits==Units.logERatio ) {
+        if (axis.isLog() && ratiometric ) {
             fx1 = (float) axis.transform( Math.exp( Math.log(d1) + delta * alpha ), units);
         } else {
             fx1 = (float) axis.transform( d1 + delta * alpha, units);
@@ -602,16 +636,24 @@ public class SeriesRenderer extends Renderer {
         }
 
         public void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
-            QDataSet wds= SemanticOps.weightsDataSet( dataSet );
-            QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
-
-            Units xUnits = SemanticOps.getUnits(xds);
-            Units yUnits = SemanticOps.getUnits(dataSet);
 
             if ( lastIndex-firstIndex==0 ) {
                 this.fillToRefPath1= null;
                 return;
             }
+
+            QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
+            QDataSet vds;
+
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else {
+                vds = (QDataSet) dataSet;
+            }
+
+            Units xUnits = SemanticOps.getUnits(xds);
+            Units yUnits = SemanticOps.getUnits(vds);
+            QDataSet wds= SemanticOps.weightsDataSet( vds );
 
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
@@ -619,11 +661,16 @@ public class SeriesRenderer extends Renderer {
             Datum sw = SemanticOps.guessXTagWidth(xds,dataSet);
             double xSampleWidth;
             boolean logStep;
-            if ( UnitsUtil.isRatiometric(sw.getUnits())) {
-                xSampleWidth = sw.doubleValue(Units.logERatio);
-                logStep= true;
+            if ( sw!=null ) {
+                if ( UnitsUtil.isRatiometric(sw.getUnits()) ) {
+                    xSampleWidth = sw.doubleValue(Units.logERatio);
+                    logStep= true;
+                } else {
+                    xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                    logStep= false;
+                }
             } else {
-                xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                xSampleWidth= 1e37;
                 logStep= false;
             }
 
@@ -658,14 +705,14 @@ public class SeriesRenderer extends Renderer {
 
             index = firstIndex;
             x = (double) xds.value(index);
-            y = (double) dataSet.value(index);
+            y = (double) vds.value(index);
 
             // first point //
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
             if (histogram) {
                 float fx1;
-                fx1= midPoint( xAxis, x, xUnits, xSampleWidth, sw.getUnits(), -0.5 );
+                fx1= midPoint( xAxis, x, xUnits, xSampleWidth, logStep, -0.5 );
                 fillPath.moveTo(fx1, fyref);
                 fillPath.lineTo(fx1, fy);
                 fillPath.lineTo(fx, fy);
@@ -687,7 +734,7 @@ public class SeriesRenderer extends Renderer {
                 for (; index < lastIndex; index++) {
 
                     x = xds.value(index);
-                    y = dataSet.value(index);
+                    y = vds.value(index);
 
                     final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
 
@@ -710,10 +757,10 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             // introduce break in line
                             if (histogram) {
-                                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidth, sw.getUnits(), 0.5 );
+                                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidth, logStep, 0.5 );
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fyref);
-                                fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, sw.getUnits(), -0.5 );
+                                fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, logStep, -0.5 );
                                 fillPath.moveTo(fx1, fyref);
                                 fillPath.lineTo(fx1, fy);
                                 fillPath.lineTo(fx, fy);
@@ -817,12 +864,11 @@ public class SeriesRenderer extends Renderer {
      * the data that is plottable.  The plottable part is the part that
      * might be visible while limiting the number of plotted points.
      */
-    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet) {
+    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet dataSet ) {
         
         int ixmax;
         int ixmin;
 
-        QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
         QDataSet wds= SemanticOps.weightsDataSet(dataSet );
 
         DasPlot lparent= parent;
@@ -941,10 +987,16 @@ public class SeriesRenderer extends Renderer {
         QDataSet vds = null;
         boolean yaxisUnitsOkay = false;
 
+        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
-            vds = (QDataSet) dataSet;
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else {
+                vds = (QDataSet) dataSet;
+            }
             yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
-        } else {
+
+        } else if (dataSet instanceof QDataSet) {
             tds = (QDataSet) dataSet;
             yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
         }
@@ -953,8 +1005,6 @@ public class SeriesRenderer extends Renderer {
             lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
             return;
         }
-
-        QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
         if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
             lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
@@ -1103,14 +1153,20 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
-        QDataSet tds = null;
-        QDataSet vds = null;
-        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         boolean plottable = false;
 
+        QDataSet tds = null;
+        QDataSet vds = null;
+
+        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
-            vds = (QDataSet) dataSet;
-            plottable = SemanticOps.getUnits(dataSet).isConvertableTo(yAxis.getUnits());
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else {
+                vds = (QDataSet) dataSet;
+            }
+
+            plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
         } else if (dataSet instanceof QDataSet) {
             tds = (QDataSet) dataSet;
             plottable = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
@@ -1132,17 +1188,17 @@ public class SeriesRenderer extends Renderer {
         lastIndex= -1;
         
         if (vds != null) {
-            updateFirstLast(xAxis, yAxis, vds);
+            updateFirstLast(xAxis, yAxis, xds, vds );
 
             if (fillToReference) {
-                fillElement.update(xAxis, yAxis, vds, monitor);
+                fillElement.update(xAxis, yAxis, dataSet, monitor);
             }
             if (psymConnector != PsymConnector.NONE) {
-                psymConnectorElement.update(xAxis, yAxis, vds, monitor);
+                psymConnectorElement.update(xAxis, yAxis, dataSet, monitor);
             }
 
-            errorElement.update(xAxis, yAxis, vds, monitor);
-            psymsElement.update(xAxis, yAxis, vds, monitor);
+            errorElement.update(xAxis, yAxis, dataSet, monitor);
+            psymsElement.update(xAxis, yAxis, dataSet, monitor);
             selectionArea= calcSelectionArea( xAxis, yAxis, vds );
 
         } else if (tds != null) {
@@ -1161,10 +1217,10 @@ public class SeriesRenderer extends Renderer {
                 vds = DataSetOps.slice1(tds,i);
 
                 if (i == 0) {
-                    updateFirstLast(xAxis, yAxis, vds); // minimal support assumes vert slice data is all valid or all invalid.
+                    updateFirstLast(xAxis, yAxis, xds, vds ); // minimal support assumes vert slice data is all valid or all invalid.
 
                 }
-                extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
+                extraConnectorElements[i].update(xAxis, yAxis, dataSet, monitor);
                 if ( i==0 ) selectionArea= calcSelectionArea( xAxis, yAxis, vds );
             }
         } else {
