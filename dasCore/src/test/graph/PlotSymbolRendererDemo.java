@@ -18,6 +18,7 @@ import org.das2.util.monitor.NullProgressMonitor;
 import java.util.Random;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
@@ -35,27 +36,26 @@ public class PlotSymbolRendererDemo {
 
         DasPlot p = GraphUtil.visualize(vds);
 
-        p.removeRenderer(p.getRenderer(0));
+    }
 
-        //PlotSymbolRenderer r2= new PlotSymbolRenderer();
-        SeriesRenderer r2 = new SeriesRenderer();
+    public static void doit1() {
 
-        r2.setPsym(DefaultPlotSymbol.CIRCLES);
-        r2.setSymSize(10.0);
-        r2.setPsymConnector( PsymConnector.NONE );
+        QDataSet ds = BigVectorDataSet.getDataSet(1000, new NullProgressMonitor());
+        QDataSet xds = ds.trim(0,500);
+        QDataSet yds = ds.trim(500,1000);
 
-        p.addRenderer(r2);
+        QDataSet ds2= Ops.link( xds, yds );
 
-        r2.setDataSet(vds);
-
-        p.setPreviewEnabled(true);
-        p.getXAxis().setAnimated(false);
-        p.getYAxis().setAnimated(false);
-
+        DasPlot p = GraphUtil.visualize(ds2);
 
     }
 
-    public static void doit2() {
+    /**
+     * tests scheme where color( X, Y ) and X and Y are not monotonic.
+     * If bundleScheme is true, then ds[ :, "X,Y,color" ] is the scheme.
+     * @param bundleScheme
+     */
+    public static void doit2( boolean bundleScheme ) {
         int size= 20000;
         double dsize = (double) size;
 
@@ -85,8 +85,8 @@ public class PlotSymbolRendererDemo {
 
         MutablePropertyDataSet vds = vbd.getDataSet();
         
-        boolean bundleScheme=false; // test table scheme vds[:,3] with BundleDescriptor
         if ( !bundleScheme ) {
+            // test table scheme vds[:,3] with BundleDescriptor
             MutablePropertyDataSet vds1= DataSetOps.slice1( vds,1 );
             vds1.putProperty( QDataSet.DEPEND_0, DataSetOps.slice1(vds,0) );
             vds1.putProperty( QDataSet.PLANE_0, DataSetOps.slice1(vds,2) );
@@ -125,8 +125,35 @@ public class PlotSymbolRendererDemo {
 
     }
 
+    public static void doit3() {
+        int len0= 100;
+        QDataSet dy= Ops.add( DataSetUtil.asDataSet(5), Ops.randn(len0) );
+        MutablePropertyDataSet y= (MutablePropertyDataSet)Ops.multiply( DataSetUtil.asDataSet(30), Ops.sin(Ops.linspace(0,5*Math.PI,len0) ) );
+        y.putProperty(QDataSet.DELTA_MINUS, dy);
+        y.putProperty(QDataSet.DELTA_PLUS, dy);
+
+        DasPlot p = GraphUtil.visualize(y);
+    }
+
+    public static void doit4() {
+
+        QDataSet ds = BigVectorDataSet.getDataSet(1500, new NullProgressMonitor());
+        QDataSet xds = ds.trim(0,500);
+        QDataSet yds = ds.trim(500,1000);
+        QDataSet cds= Ops.findgen(500);
+
+        QDataSet ds2= Ops.link( xds, yds, cds );
+
+        DasPlot p = GraphUtil.visualize(ds2);
+
+    }
+
+
     public static void main(String[] args) {
         //doit();
-        doit2();
+        //doit1();
+        //doit2(true);
+        //doit3();
+        doit4();
     }
 }
