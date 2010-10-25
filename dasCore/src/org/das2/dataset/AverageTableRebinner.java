@@ -215,6 +215,40 @@ public class AverageTableRebinner implements DataSetRebinner {
         return xTagWidth;
     }
 
+
+    /**
+     * return the next or previous closest index.  For monotonic datasets,
+     * this just calls org.virbo.dataset.DataSetUtil.getPreviousIndex or getNextIndex.
+     * Otherwise, we scan the dataset.
+     * @param xds the rank 1 dataset to search.
+     * @param xx the reference value.
+     * @param sign 1 for next closest index, -1 for the index of the value just less than xx.
+     * @return -1 if there is no valid data, the index otherwise.
+     */
+    private static int getNextPrevIndex( QDataSet xds, Datum xx, int sign ) {
+        if ( SemanticOps.isMonotonic(xds) ) {
+            if ( sign<0 ) {
+                return org.virbo.dataset.DataSetUtil.getPreviousIndex(xds, xx);
+            } else {
+                return org.virbo.dataset.DataSetUtil.getNextIndex(xds, xx);
+            }
+        } else {
+            double best= Double.MAX_VALUE;
+            int ibest= -1;
+            double lookFor= xx.doubleValue( SemanticOps.getUnits(xds) );
+            QDataSet wds= SemanticOps.weightsDataSet(xds);
+            for ( int i=0; i<xds.length(); i++ ) {
+                double check= sign*( xds.value(i)-lookFor );
+                if ( wds.value(i)>0. && check>0 && check<best ) {
+                    ibest= i;
+                    best= check;
+                }
+            }
+            return ibest;
+        }
+    }
+
+
     static void doBoundaries2RL( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
 
         if ( tds.rank()!=3 ) throw new IllegalArgumentException("rank 3 expected");
@@ -236,8 +270,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;
                 Datum xx = i == 0 ? ddX.binCenter(0) : ddX.binCenter(ix);
 
-                int i0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( xds, xx );
-                int i1 = org.virbo.dataset.DataSetUtil.getNextIndex( xds, xx );
+                int i0 = getNextPrevIndex( xds, xx, -1 );
+                int i1 = getNextPrevIndex( xds, xx, 1 );
+                if ( i0==-1 || i1==-1 ) return;
 
                 if ( i1 != i0 ) {
 
@@ -377,9 +412,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                 int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;
                 Datum xx = ddX.binCenter(ix);
 
-                int i0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( xds, xx );
-                int i1 = org.virbo.dataset.DataSetUtil.getNextIndex( xds, xx);
-
+                int i0 = getNextPrevIndex( xds, xx, -1 );
+                int i1 = getNextPrevIndex( xds, xx, 1 );
+                if ( i0==-1 || i1==-1 ) {
+                    continue;
+                }
                 if (i0 == i1) {
                     continue;
                 }
@@ -396,8 +433,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                     int iy = j == 0 ? 0 : ddY.numberOfBins() - 1;
                     Datum yy = ddY.binCenter(iy);
 
-                    int j0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( yds, yy );
-                    int j1 = org.virbo.dataset.DataSetUtil.getNextIndex( yds, yy);
+                    int j0 = getNextPrevIndex( yds, yy, -1 );
+                    int j1 = getNextPrevIndex( yds, yy, 1 );
+                    if ( j0==-1 || j1==-1 ) continue;
 
                     if (j0 != j1) {
                         DatumRange ydr =  DatumRangeUtil.union(
