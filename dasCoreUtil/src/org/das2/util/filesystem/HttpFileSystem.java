@@ -26,6 +26,7 @@
  */
 package org.das2.util.filesystem;
 
+import java.util.logging.Logger;
 import org.das2.util.monitor.CancelledOperationException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -81,6 +82,16 @@ public class HttpFileSystem extends WebFileSystem {
                 if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
                     // might be nice to modify URL so that credentials are used.
                     KeyChain.getDefault().clearUserPassword(root);
+                    if ( userInfo==null ) {
+                        String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
+                        URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
+                        try {
+                            URI rootAuthUri= rootAuth.toURI();
+                            return createHttpFileSystem( rootAuthUri );
+                        } catch ( URISyntaxException ex ) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
                 }
                 if (FileSystem.settings().isAllowOffline()) {
                     logger.info("remote filesystem is offline, allowing access to local cache.");
