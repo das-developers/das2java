@@ -183,6 +183,9 @@ public class ArgumentList {
     public void addOptionalPositionArgument(int position, String key, String defaultValue, String description) {
         addPositionArgument( position, key, description );
         values.put(key,defaultValue);
+        if ( defaultValue==null ) {
+            if ( false ) System.err.println("breakpoint");
+        }
     }
     
     /**
@@ -221,6 +224,9 @@ public class ArgumentList {
     public void addOptionalSwitchArgument(String name, String abbrev, String key, String defaultValue, String description) {
         addSwitchArgument( name, abbrev, key, description );
         values.put( key, defaultValue );
+        if ( defaultValue==null ) {
+            if ( false ) System.err.println("breakpoint");
+        }
     }
     
     /**
@@ -234,7 +240,7 @@ public class ArgumentList {
         if ( key.equals("commandLinePrefs") ) allowUndefinedSwitch=true;
         addOptionalSwitchArgument( name, abbrev, key, FALSE, description );
     }
-    
+
     /**
      * print the usage statement out to stderr.
      */
@@ -243,7 +249,7 @@ public class ArgumentList {
         s= "Usage: "+this.programName+" ";
         for ( int i=0; i<this.nposition; i++ ) {
             Object key= positionKeys[i];
-            if ( !values.get(key).equals(this.UNSPECIFIED) ) {
+            if ( !this.UNSPECIFIED.equals(values.get(key)) ) {
                 s+= "["+descriptions.get(key)+"] ";
             } else {
                 s+= "<"+descriptions.get(key)+"> ";
@@ -276,8 +282,8 @@ public class ArgumentList {
             String value= values.get(key);
 
             if ( abbrev==null ) {
-                if ( !value.equals(this.UNSPECIFIED) ) {
-                    if ( value.equals(this.FALSE) || value.equals(this.TRUE) ) {
+                if ( !this.UNSPECIFIED.equals(value) ) {
+                    if ( this.FALSE.equals(value) || this.TRUE.equals(value) ) {
                         s+= "--"+name+"  \t"+description;
                     } else {
                         s+= "--"+name+"= \t"+description+" ";
@@ -286,8 +292,8 @@ public class ArgumentList {
                     s+= "--"+name+"= \t"+description+" (required)";
                 }
             } else {
-                if ( !value.equals(this.UNSPECIFIED) ) {
-                    if ( value.equals(this.FALSE) || value.equals(this.TRUE) ) {
+                if ( !this.UNSPECIFIED.equals(value) ) {
+                    if ( this.FALSE.equals(value) || this.TRUE.equals(value) ) {
                         s+= "-"+abbrev+ ", --"+name+"  \t"+description;
                     } else {
                         s+= "-"+abbrev+ ", --"+name+"= \t"+description+" ";
@@ -307,8 +313,8 @@ public class ArgumentList {
             String key= abbrevs.get(abbrev);
             s= "  ";
             String description= descriptions.get(key);
-            if ( !values.get(key).equals(this.UNSPECIFIED) ) {
-                if ( values.get(key).equals(this.FALSE) || values.get(key).equals(this.TRUE) ) {
+            if ( !this.UNSPECIFIED.equals(values.get(key) ) ) {
+                if ( this.FALSE.equals(values.get(key)) || this.TRUE.equals(values.get(key)) ) {
                     s+= "-"+abbrev+"   \t"+description;
                 } else {
                     s+= "-"+abbrev+"="+description+" ";
