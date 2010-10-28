@@ -304,6 +304,14 @@ public final class DDataSet extends ArrayDataSet {
     }
     
 
+    /** 
+     * convenient method for setting the units.
+     */
+    public DDataSet setUnits( Units units ) {
+        properties.put(QDataSet.UNITS, units);
+        return this;
+    }
+
     /**
      * copy elements of src DDataSet into dest DDataSet, with System.arraycopy.
      * src and dst must have the same geometry, except for dim 0.  Allows for
