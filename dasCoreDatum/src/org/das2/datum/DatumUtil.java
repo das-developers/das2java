@@ -371,7 +371,13 @@ public final class DatumUtil {
             throw new RuntimeException(e);        
         }
     }
-    
+
+    /**
+     * create a dimensionless datum by parsing the string.
+     * See TimeUtil.createValid( String stime ).
+     * @param s
+     * @return
+     */
     public static Datum createValid( String s ) {
         return Datum.create( Double.parseDouble(s), Units.dimensionless );
     }
