@@ -21,6 +21,8 @@ import org.virbo.dataset.QDataSet;
 /**
  * allows dataset of unknown length to be built. Presently, this only builds QUBES, but should allow for geometry changes.
  * TODO: consider using WritableDataSet interface.
+ * The guessRecCount parameter is the initial number of allocated records, and is also the extension when this number of
+ * records is passed.  The final physical dataset size is not affected by this, because the data is copied.
  * @author jbf
  */
 public class DataSetBuilder { 
@@ -39,30 +41,30 @@ public class DataSetBuilder {
     
     /**
      * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
-     * @param recCount initial allocation for the first dimension.
+     * @param guessRecCount initial allocation for the first dimension.
      */
-    public DataSetBuilder( int rank, int recCount ) {
-        this( rank, recCount, 1, 1 );
+    public DataSetBuilder( int rank, int guessRecCount ) {
+        this( rank, guessRecCount, 1, 1 );
     }
     
     /**
      * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
-     * @param recCount initial allocation for the first dimension.
+     * @param guessRecCount initial allocation for the first dimension.
      * @param dim1 when rank 2 or greater is used.
      */
-    public DataSetBuilder( int rank, int recCount, int dim1 ) {
-        this( rank, recCount, dim1, 1 );
+    public DataSetBuilder( int rank, int guessRecCount, int dim1 ) {
+        this( rank, guessRecCount, dim1, 1 );
     }
     
     /**
      * recCount is the guess of dim0 size.  Bad guesses may result in an extra copy.
-     * @param recCount initial allocation for the first dimension.
+     * @param guessRecCount initial allocation for the first dimension.
      * @param dim1 when rank 2 or greater is used.
      * @param dim2 when rank 3 or greater is used.
      */
-    public DataSetBuilder( int rank, int recCount, int dim1, int dim2 ) {
+    public DataSetBuilder( int rank, int guessRecCount, int dim1, int dim2 ) {
         this.rank= rank;
-        this.recCount= recCount;
+        this.recCount= guessRecCount;
         this.dim1= dim1;
         this.dim2= dim2;
         this.recElements= dim1 * dim2;
