@@ -163,7 +163,9 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
 
     @Override
     public void setBounds(Rectangle r) {
-        //if ( getDasName().startsWith("plot_") ) System.err.println( getDasName() + " setBounds(" + r );
+        //if ( getDasName().startsWith("plot_3") ) {
+        //    System.err.println( getDasName() + " setBounds(" + r );
+        //}
         super.setBounds(r);
     }
 

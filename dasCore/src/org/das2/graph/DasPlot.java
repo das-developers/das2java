@@ -240,6 +240,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         mrect.width += iconColumnWidth;
         if ( legendPosition==LegendPosition.NE || legendPosition==LegendPosition.NW ) {
             msgy = yAxis.getRow().getDMinimum() + em/2;
+            mrect.y= msgy;
             if ( legendPosition==LegendPosition.NE ) {
                 mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
                 msgx =    xAxis.getColumn().getDMaximum() - em - mrect.width;
@@ -1125,7 +1126,10 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
             int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
 
-            Rectangle legendBounds= getLegendBounds( (Graphics2D) getGraphics(), 100, 100 );
+            //if ( this.getDasName().startsWith("plot_3")) {
+            //    System.err.println("here");
+            //}
+            Rectangle legendBounds= getLegendBounds( (Graphics2D) getGraphics(), 0, 0 );
 
             Rectangle bounds = new Rectangle();
             bounds.x = getColumn().getDMinimum() - 1;

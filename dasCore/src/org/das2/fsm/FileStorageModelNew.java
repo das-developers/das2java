@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.datum.Units;
 
 /**
  * Represents a method for storing data sets in a set of files by time.  The
@@ -251,6 +252,10 @@ public class FileStorageModelNew {
 
         for ( int i=0; i<fileSystems.length; i++ ) {
             monitor.setTaskProgress(i*10);
+//            This is a nice trick for debugging when there is recursion and NullProgressMonitor is not passed in.
+//            if ( !( monitor instanceof NullProgressMonitor ) ) {
+//                System.err.println("here");
+//            }
             String[] files1= fileSystems[i].listDirectory( "/", listRegex );
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
@@ -266,6 +271,7 @@ public class FileStorageModelNew {
                         }
                     }
                 } catch ( IllegalArgumentException e ) {
+                    System.err.println(e);
                     logger.fine("ignoring file "+ff);
                 }
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
@@ -435,14 +441,13 @@ public class FileStorageModelNew {
 
     /**
      * Split off the end of the regex to get a regex for use in the parent system.
-     * Note: changed from public to private as no one is using this internal routine.
      */
     private static String getParentRegex( String regex ) {
         String[] s= regex.split( "/" );
         String dirRegex;
         if ( s.length>1 ) {
             dirRegex= s[0];
-            for ( int i=1; i<s.length-2; i++ ) {
+            for ( int i=1; i<s.length-1; i++ ) {
                 dirRegex+= "/"+s[i];
             }
         } else {
@@ -465,6 +470,25 @@ public class FileStorageModelNew {
 
 
     /**
+     * Autoplot introduced the dollar sign instead of the percent, because $ is
+     * more URI-friendly.  Switch to this if it looks appropriate.
+     * @param template
+     * @return
+     */
+    protected static String makeCanonical( String template ) {
+        String result;
+        if ( template.contains("$Y") || template.contains("$y" ) ) {
+            result= template.replaceAll("\\$", "%");
+        } else {
+            result= template;
+        }
+        int i=result.indexOf("/");
+        if ( i>-1 && result.indexOf("%")>i ) {
+            System.err.println("static folder in template not allowed: "+ result.substring(0,i) );
+        }
+        return result;
+    }
+    /**
      * creates a FileStorageModel for the given template, which uses:
      *    %Y-%m-%dT%H:%M:%S.%{milli}Z";
      *    %Y  4-digit year
@@ -482,6 +506,7 @@ public class FileStorageModelNew {
      * @return a newly-created FileStorageModelNew.
      */
     public static FileStorageModelNew create( FileSystem root, String template ) {
+        template= makeCanonical(template);
         int i= template.lastIndexOf("/");
         int i2= template.lastIndexOf("%",i);
         if ( i2 != -1 ) {
@@ -505,6 +530,7 @@ public class FileStorageModelNew {
      * @return a newly-created FileStorageModelNew.
      */
     public static FileStorageModelNew create( FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler ) {
+        template= makeCanonical(template);
         int i= template.lastIndexOf("/");
         int i2= template.lastIndexOf("%",i);
         if ( i2 != -1 ) {
