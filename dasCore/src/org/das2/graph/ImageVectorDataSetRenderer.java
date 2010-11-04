@@ -182,7 +182,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         boolean xmono = Boolean.TRUE == SemanticOps.isMonotonic(xds);
 
         int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds, visibleRange.min()) : 0;
-        int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, visibleRange.max()) : xds.length();
+        int lastIndex = xmono ? ( DataSetUtil.getNextIndex(xds, visibleRange.max()) + 1 ) : xds.length();
 
         final int STATE_LINETO = -991;
         final int STATE_MOVETO = -992;
@@ -195,7 +195,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             QDataSet wds = DataSetUtil.weightsDataSet(vds);
             Units dsunits= SemanticOps.getUnits(vds);
             Units xunits= SemanticOps.getUnits(xds);
-            for (int i = firstIndex; i <= lastIndex; i++) {
+            for (int i = firstIndex; i < lastIndex; i++) {
                 boolean isValid = wds.value(i)>0;
                 if (!isValid) {
                     state = STATE_MOVETO;
