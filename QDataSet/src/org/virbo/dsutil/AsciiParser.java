@@ -25,17 +25,22 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 
 /**
- * Class for reading ascii tables into a QDataSet.  This parses a file by breaking
+ * Class for reading ASCII tables into a QDataSet.  This parses a file by breaking
  * it up into records, and passing the record off to a delegate record parser.
  * The record parser then breaks up the record into fields, and each field is 
- * parser by a delegate field parser.  Each column of the table as a Unit and a 
- * field name associated with it.
+ * parsed by a delegate field parser.  Each column of the table has a Unit, field name,
+ * and field label associated with it.
  * 
- * Examples of record parsers include DelimParser,
- * which splits the record by a delimiter such as a tab or comma, and FixedColumnsParser,
- * which splits the record by character positions.  Example of field parsers include
- * DOUBLE_PARSER which parses the value as a double, and UNITS_PARSER, which uses
- * the Unit attached to the column to interpret the value.
+ * Examples of record parsers include 
+ * DelimParser, which splits the record by a delimiter such as a tab or comma,
+ * RegexParser, which processes each record with a regular expression to get the fields,
+ * and FixedColumnsParser, which splits the record by character positions.
+ * Example of field parsers include DOUBLE_PARSER which parses the value
+ * as a double, and UNITS_PARSER, which uses the Unit attached to the column
+ * to interpret the value.
+ *
+ * When the first record with the correct number of fields is found but is not
+ * parseable, we look for field labels and units.
  * 
  * The skipLines property tells the parser to skip a given number of header lines 
  * before attempting to parse the record.  Also, commentPrefix identifies lines to be 
@@ -44,7 +49,7 @@ import org.virbo.dataset.WritableDataSet;
  * is set.  Two Patterns are provided NAME_COLON_VALUE_PATTERN and
  * NAME_EQUAL_VALUE_PATTERN for convenience.   
  *
- * Adapted to v3.0 QDataSet model, Jeremy, May 2007.
+ * Adapted to QDataSet model, Jeremy, May 2007.
  *
  * @author Jeremy
  */
