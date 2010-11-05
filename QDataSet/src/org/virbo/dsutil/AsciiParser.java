@@ -23,6 +23,7 @@ import org.das2.datum.TimeParser;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
+import org.virbo.dsops.Ops;
 
 /**
  * Class for reading ASCII tables into a QDataSet.  This parses a file by breaking
@@ -91,7 +92,7 @@ public class AsciiParser {
     /**
      * detect identifiers for columns.
      */
-    private final static Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z _0-9]*)(\\(([a-zA-Z_\\.0-9]*)\\))?\"?\\s*");
+    Pattern COLUMN_ID_HEADER_PATTERN = Pattern.compile("\\s*\"?([a-zA-Z][a-zA-Z _0-9]*)([\\(\\[]([a-zA-Z_\\.\\[\\-\\]0-9]*)[\\)\\]])?\"?\\s*");
     /**
      * allow columns to be labeled with some datum ranges, such as 10.0-13.1.  We convert these into an identifier, but depend1labels will present as-is.
      * Note this pattern will match "-999.000" so check groups 2 and 4 for non null.
@@ -822,11 +823,19 @@ public class AsciiParser {
                 String n= m.group(1).trim();
                 if ( n.length()!=3 || !n.equalsIgnoreCase("nan") ) {
                     fieldLabels[i] = n;
-                    fieldNames[i] = fieldLabels[i].replaceAll(" ", "_");
+                    fieldNames[i] = Ops.safeName( fieldLabels[i] );
                     fieldUnits[i]= m.group(3);
-                    if (fieldUnits[i]!=null) fieldUnits[i]= fieldUnits[i].trim();
-                    // TODO: check for units too.
-                    // if ( m.groupCount() is 2) String u= m.group(2).trim()
+                    if (fieldUnits[i]!=null) {
+                        fieldUnits[i]= fieldUnits[i].trim();
+                        if ( fieldUnits[i].length()>2 ) {
+                            char ch= fieldUnits[i].charAt(0);
+                            if ( !Character.isLetter(ch) ) {
+                                // this can't be turned into a unit, so just tack this on to the label.
+                                fieldLabels[i]= fieldLabels[i] + m.group(2);
+                                fieldUnits[i]= null;
+                            }
+                        }
+                    }
                 } else {
                     if (isColumnHeaders) {
                         logger.finest("parsed line appears to contain NaN's, and is not a column header because of field #" + i + ": " + ss[i]);
@@ -1225,7 +1234,8 @@ public class AsciiParser {
 
     /**
      * return the units that were associated with the field.  This might also be
-     * the channel label for spectrograms.  In "field0(str)" this is str.
+     * the channel label for spectrograms.  
+     * In "field0(str)" or "field0[str]" this is str.
      * elements may be null if not found.
      * @return
      */
