@@ -2835,7 +2835,7 @@ public class Ops {
     }
 
     /**
-     * made a Java-style identifier
+     * made a Java-style identifier from the provided string
      * @param suggest
      * @return
      */
