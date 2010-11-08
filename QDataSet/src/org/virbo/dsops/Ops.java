@@ -116,6 +116,12 @@ public class Ops {
      */
     public static final MutablePropertyDataSet applyBinaryOp( QDataSet ds1, QDataSet ds2, BinaryOp op ) {
 
+        if ( ds1.rank()==ds2.rank() && ds1.rank()>0 ) {
+            if ( ds1.length()!=ds2.length() ) {
+                throw new IllegalArgumentException("binary option on datasets of different lengths: "+ ds1 + " " + ds2 );
+            }
+        }
+
         QDataSet[] operands= new QDataSet[2];
 
         WritableDataSet result = CoerceUtil.coerce( ds1, ds2, true, operands );
@@ -2000,6 +2006,8 @@ public class Ops {
      * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.
      * The property QDataSet.SCALE_TYPE is set to lin or log.
      * The property count is set to the number of valid measurements.
+     * TODO: this could use MONOTONIC, but it doesn't.  DELTA_PLUS, DELTA_MINUS make that more difficult.
+     * @see DataSetUtil.rangeOfMonotonic( QDataSet ds ).
      * @param ds
      * @return two element, rank 1 "bins" dataset.
      */
