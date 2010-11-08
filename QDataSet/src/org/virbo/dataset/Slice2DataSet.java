@@ -29,10 +29,12 @@ public class Slice2DataSet extends AbstractDataSet {
 
         QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
         if ( dep2!=null ) {
-            if ( dep2.rank()>1 ) {
-                System.err.println( "slice on non-qube, dep2 has rank="+dep2.rank() );
-            } else if ( dep2.rank()==1 ) {
+            if ( dep2.rank()==1 ) {
                 DataSetUtil.addContext( this, new Slice0DataSet(dep2,index) );
+            } else if ( dep2.rank()==2 ) {
+                DataSetUtil.addContext( this, new Slice1DataSet(dep2,index) );
+            } else {
+                System.err.println( "slice on non-qube, dep3 has rank="+dep2.rank() );
             }
         }
 
@@ -51,6 +53,9 @@ public class Slice2DataSet extends AbstractDataSet {
                 break;
             }
         }
+
+        DataSetUtil.copyDimensionProperties( ds, this );
+
     }
 
     public int rank() {

@@ -47,4 +47,32 @@ public class DRank0DataSet extends AbstractDataSet implements RankZeroDataSet {
     public String toString() {
         return DataSetUtil.toString(this);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.d) ^ (Double.doubleToLongBits(this.d) >>> 32));
+        hash = 97 * hash + (this.u != null ? this.u.hashCode() : 0);
+        return hash;
+    }
+
+    /**
+     * implement the equals method to at least return true for two DRank0DataSets.  This
+     * was motivated by cadence parameter being dropped because they were not equal.
+     * @param obj
+     * @return
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if ( this==obj ) {
+            return true;
+        } else if ( obj instanceof DRank0DataSet ) {
+            DRank0DataSet d0= (DRank0DataSet)obj;
+            return ( this.d==d0.d && this.u==d0.u );
+        } else {
+            return super.equals(obj);
+        }
+    }
+
+
 }

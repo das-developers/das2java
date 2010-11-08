@@ -47,8 +47,8 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         } else {
             if ( dep0!=null && dep0.rank()>1 ) {
                 putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));  //DEPEND_0 rank>1
-            } else if ( dep0!=null && dep0.rank()==1 ) {
-                if ( dep0!=null ) DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
+            } else if ( dep0!=null ) {
+                DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
             } else {
                 if ( ds.property(QDataSet.DEPEND_0,index)==null ) { // bundle dataset  //TODO: this needs more review
                     putProperty( QDataSet.DEPEND_0, null );
@@ -72,13 +72,14 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
 
         String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
-
         for ( int i=0; i<p.length; i++ ) {
             QDataSet delta= (QDataSet) ds.property( p[i] );
             if ( delta!=null && delta.rank()>0 ) {
                 putProperty( p[i], new Slice0DataSet(delta,index) );
             }
         }
+
+        DataSetUtil.copyDimensionProperties( ds, this );
         
     }
 

@@ -235,11 +235,25 @@ public class DataSetUtil {
     }
 
     /**
+     * copy over all the dimension properties.
+     * This DOES NOT support join datasets yet.
+     * @param source
+     * @param dest
+     */
+    public static void copyDimensionProperties( QDataSet source, MutablePropertyDataSet dest ) {
+        String[] names= dimensionProperties();
+        for ( String n: names ) {
+            Object p= source.property(n);
+            if ( p!=null ) dest.putProperty( n, p );
+        }
+    }
+
+    /**
      * return the list of properties that pertain to the dimension that dataset
      * values exist.  These are the properties that survive through most operations.
      * For example, if you flattened the dataset, what properties 
-     * would still exist?  These are not structural properties like DEPEND_0,
-     * BUNDLE_1, etc.
+     * would still exist?  If you shuffled the data?  These are not structural
+     * properties like DEPEND_0, BUNDLE_1, etc.
      * @return
      */
     public static String[] dimensionProperties() {
@@ -1141,10 +1155,6 @@ public class DataSetUtil {
             result.append( "(inclusive)" );
             String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
             if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
-            for ( int i=0; i<ds.length(); i++ ) {
-                result.append( ss[i]+"="+u.createDatum(ds.value(i)) );
-                if ( i<ds.length()-1 ) result.append(", ");
-            }
             return result.toString();
 
         } else if ( ds.property(QDataSet.BINS_0)!=null && ds.rank()==1) {
@@ -1290,9 +1300,20 @@ public class DataSetUtil {
             if ( dimOffset>0 ) {
                 problems.add( "JOIN_0 must only be on zeroth dimension: "+dimOffset );
             } else {
+                Units u= null;
+                boolean onceNotify= false;
                 for ( int i=0; i<ds.length(); i++ ) {
-                    if ( !validate( DataSetOps.slice0(ds,i), problems, dimOffset + 1 ) ) {
+                    QDataSet ds1= DataSetOps.slice0(ds,i);
+                    if ( !validate( ds1, problems, dimOffset + 1 ) ) {
                         problems.add( "join("+i+") not valid JOINED dataset." );
+                    }
+                    if ( u==null ) {
+                        u= SemanticOps.getUnits(ds1);
+                    } else {
+                        if ( u!=SemanticOps.getUnits(ds1) && !onceNotify ) {
+                            problems.add( "units change in joined datasets");
+                            onceNotify= true;
+                        }
                     }
                 }
             }
@@ -1523,14 +1544,52 @@ public class DataSetUtil {
         QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
         int idx=0;
         while ( cds!=null ) {
-            result.append( DataSetUtil.format(cds) );
+            if ( cds.rank()>0 ) {
+                if ( cds.rank()==1 && cds.property(QDataSet.BINS_0)!=null ) {
+                    result.append( DataSetUtil.format(cds) );
+                } else {
+                    QDataSet extent= Ops.extent(cds);
+                    if ( extent.value(1)==extent.value(0) ) {
+                        result.append( DataSetUtil.format(cds.slice(0)) );  // for CLUSTER/PEACE this happens where rank 1 context is all the same value
+                    } else {
+                        result.append( DataSetUtil.format(extent) ).append( " " +cds.length() + " different values" ); // slice was probably done when we should't have.
+                    }
+                }
+            } else {
+                result.append( DataSetUtil.format(cds) );
+            }
             idx++;
             cds= (QDataSet) ds.property( "CONTEXT_"+idx );
             if ( cds!=null ) result.append(", ");
         }
         return result.toString();
     }
-
+    
+    /**
+     * returns the indeces of the min and max elements of the monotonic dataset.
+     * This uses DataSetUtil.isMonotonic() which would be slow if MONOTONIC is
+     * not set.
+     * @param ds
+     * @return
+     * @see Ops.extent which returns the range containing any data.
+     */
+    public static int[] rangeOfMonotonic( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("must be rank 1");
+        if ( DataSetUtil.isMonotonic(ds) ) {
+            QDataSet wds= DataSetUtil.weightsDataSet(ds);
+            int firstValid= 0;
+            while ( firstValid<wds.length() && wds.value(firstValid)==0 ) firstValid++;
+            if ( firstValid==wds.length() ) throw new IllegalArgumentException("data contains no valid measurements");
+            int lastValid=wds.length()-1;
+            while ( lastValid>=0 && wds.value(lastValid)==0 ) lastValid--;
+            if ( ( lastValid-firstValid+1 ) == 0 ) {
+                throw new IllegalArgumentException("special case where monotonic dataset contains no valid data");
+            }
+            return new int[] { firstValid, lastValid };
+        } else {
+            throw new IllegalArgumentException("expected monotonic dataset");
+        }
+    }
     /**
      * returns the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>.  (See Arrays.binarySearch)
      */

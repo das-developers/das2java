@@ -8,6 +8,8 @@ package org.virbo.dataset;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 
 /**
  * A number of static methods were initially defined in DDataSet, then
@@ -383,8 +385,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
 
     /**
-     * TODO: this has a number of problems including that it would reduce resolution
-     * for some types. (FDataSet was always used to join DEPEND_0 for example.)
+     * join the properties of the two datasets.
+     * Note MONOTONIC assumes the ds will be added after ths.
      * @param ds
      */
     protected static Map joinProperties( ArrayDataSet ths, ArrayDataSet ds ) {
@@ -419,7 +421,29 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 result.put( prop, ths.property(prop) );
             }
         }
+        // special handling for QDataSet.CADENCE, and QDataSet.MONOTONIC
+        RankZeroDataSet o= (RankZeroDataSet) ths.property(QDataSet.CADENCE);
+        if ( o!=null && o.equals( ds.property(QDataSet.CADENCE) ) ) {
+            result.put( QDataSet.CADENCE, o );
+        }
+        Boolean m= (Boolean) ths.property( QDataSet.MONOTONIC );
+        if ( m!=null && m.equals(Boolean.TRUE) && m.equals( ds.property( QDataSet.MONOTONIC ) ) ) {
+            // check to see that result would be monotonic
+            int[] fl1= DataSetUtil.rangeOfMonotonic( ths );
+            int[] fl2= DataSetUtil.rangeOfMonotonic( ds );
+            Units u= SemanticOps.getUnits(ths);
+            Datum diff= u.createDatum(ds.value(fl2[0])).subtract( u.createDatum(ths.value(fl1[1])) );
+            if ( ds.value(fl2[0]) -  ths.value(fl1[1]) >= 0 ) { //TODO: assumes UNITS
+                result.put( QDataSet.MONOTONIC, Boolean.TRUE );
+            }
+        }
+
         return result;
+    }
+
+    public QDataSet setUnits( Units units ) {
+        this.putProperty( QDataSet.UNITS, units );
+        return this;
     }
 
     @Override

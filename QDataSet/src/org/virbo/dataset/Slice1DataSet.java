@@ -35,9 +35,6 @@ public class Slice1DataSet extends AbstractDataSet {
         this.index = index;
 
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
-        if ( dep1!=null && dep1.rank()>1 ) {
-            System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
-        }
 
         QDataSet bundle1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
         if ( bundle1!=null ) {
@@ -49,14 +46,23 @@ public class Slice1DataSet extends AbstractDataSet {
             label= String.valueOf(dep1units.createDatum(dep1.value(index)));
         }
 
-        if ( dep1!=null && dep1.rank()==1 ) {
-            if ( label!=null ) {
-                putProperty( QDataSet.LABEL, label );
-                putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
+
+        if ( dep1!=null ) {
+            if ( dep1.rank()==1 ) {
+                if ( label!=null ) {
+                    putProperty( QDataSet.LABEL, label ); // special code is like unbundle operator
+                    putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
+                } else {
+                    DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
+                }
+            } else if ( dep1.rank()==2 ) {
+                DataSetUtil.addContext( this, new Slice1DataSet(dep1,index) );
             } else {
-                DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
+                System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
             }
         }
+
+
         putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_2) );
         putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
 
@@ -76,6 +82,9 @@ public class Slice1DataSet extends AbstractDataSet {
                 break;
             }
         }
+
+        DataSetUtil.copyDimensionProperties( ds, this );
+                
     }
 
     public int rank() {
