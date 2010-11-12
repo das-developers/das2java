@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 import org.das2.datum.UnitsConverter;
+import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.ArrayDataSet;
@@ -59,6 +60,9 @@ import org.virbo.dsutil.FFTUtil;
  */
 public class Ops {
 
+    /**
+     * UnaryOps are one-argument operations, such as sin, abs, and sqrt
+     */
     public interface UnaryOp {
         double op(double d1);
     }
@@ -72,6 +76,7 @@ public class Ops {
      */
     public static final MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
+        QDataSet wds= DataSetUtil.weightsDataSet(ds1);
         Units u = (Units) ds1.property(QDataSet.UNITS);
         if (u == null) {
             u = Units.dimensionless;
@@ -83,7 +88,8 @@ public class Ops {
         while (it1.hasNext()) {
             it1.next();
             double d1 = it1.getValue(ds1);
-            it1.putValue(result, u.isFill(d1) ? fill : op.op(d1));
+            double w1 = it1.getValue(wds);
+            it1.putValue(result, w1==0 ? fill : op.op(d1));
         }
         Map<String,Object> m= new HashMap<String,Object>();
         m.put( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
@@ -102,6 +108,9 @@ public class Ops {
         return result;
     }
 
+    /**
+     * BinaryOps are operations such as add, pow, atan2
+     */
     public interface BinaryOp {
         double op(double d1, double d2);
     }
@@ -223,19 +232,18 @@ public class Ops {
      * @return
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
-        Units units1 = (Units) ds1.property(QDataSet.UNITS);
-        Units units2 = (Units) ds2.property(QDataSet.UNITS);
-        if ( units1==null ) units1= Units.dimensionless;
-        if ( units2==null ) units2= Units.dimensionless;
+        Units units1 = SemanticOps.getUnits( ds1 );
+        Units units2 = SemanticOps.getUnits( ds2 );
         MutablePropertyDataSet result;
-        if ( units1==units2 ) {
+        if ( units2.isConvertableTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
             result= (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
                 public double op(double d1, double d2) {
-                    return d1 + d2;
+                    return d1 + uc.convert(d2);
                 }
             } );
-            result.putProperty( QDataSet.UNITS, units1 );
-        } else if ( units1.getOffsetUnits()!=units1 ) {
+            if ( units1!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, units1 );
+        } else if ( UnitsUtil.isIntervalMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
             result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
                 public double op(double d1, double d2) {
@@ -243,7 +251,7 @@ public class Ops {
                 }
             } );
             result.putProperty( QDataSet.UNITS, units1 );
-        } else if ( units2.getOffsetUnits()!=units2 ) {
+        } else if ( UnitsUtil.isIntervalMeasurement(units2) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units1, units2.getOffsetUnits() );
             result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
                 public double op(double d1, double d2) {
@@ -252,7 +260,8 @@ public class Ops {
             } );
             result.putProperty( QDataSet.UNITS, units2 );
         } else {
-            throw new IllegalArgumentException("both ds1 and ds2 have location units in add");
+            throw new IllegalArgumentException("units cannot be added: " + units1 + ", "+ units2 );
+
         }
         result.putProperty(QDataSet.NAME, null );
         result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );
@@ -261,21 +270,43 @@ public class Ops {
 
     /**
      * subtract one dataset from another.
-     * TODO: mind units
      * @param ds1
      * @param ds2
      * @return
      */
     public static QDataSet subtract(QDataSet ds1, QDataSet ds2) {
-        MutablePropertyDataSet result = (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
-            public double op(double d1, double d2) {
-                return d1 - d2;
-            }
-        });
-        Units units1 = (Units) ds1.property(QDataSet.UNITS);
-        Units units2 = (Units) ds2.property(QDataSet.UNITS);
-        if (units1 != null && units1 == units2) {
-            result.putProperty(QDataSet.UNITS, units1.getOffsetUnits());
+        Units units1 = SemanticOps.getUnits( ds1 );
+        Units units2 = SemanticOps.getUnits( ds2 );
+        MutablePropertyDataSet result;
+
+        if ( units2.isConvertableTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
+            result= (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return d1 - uc.convert(d2);
+                }
+            } );
+            if ( units1!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, units1 );
+        } else if ( UnitsUtil.isIntervalMeasurement(units1) && UnitsUtil.isIntervalMeasurement(units2) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1 );
+            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return d1 - uc.convert(d2);
+                }
+            } );
+            result.putProperty( QDataSet.UNITS, units1.getOffsetUnits() );
+        } else if ( UnitsUtil.isIntervalMeasurement(units1) && !UnitsUtil.isIntervalMeasurement(units2)) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
+            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return d1 - uc.convert(d2);
+                }
+            } );
+            result.putProperty( QDataSet.UNITS, units1 );
+        } else if ( UnitsUtil.isIntervalMeasurement(units2) && !UnitsUtil.isIntervalMeasurement(units1)) {
+            throw new IllegalArgumentException("cannot subtract interval measurement from ratio measurement: " + units1 + " - "+ units2 );
+        } else {
+            throw new IllegalArgumentException("cannot subtract: " + units1 + " - "+ units2 );
         }
         result.putProperty(QDataSet.NAME, null );
         result.putProperty(QDataSet.MONOTONIC, null );
@@ -284,6 +315,47 @@ public class Ops {
     }
 
     /**
+     * maybe insert a label indicating the one-argument operation.  The operation
+     * is formatted like opStr(ds1).  If a label cannot be created (for example,
+     * no LABEL or NAME property), then null is returned.
+     * @param ds1
+     * @param opStr
+     * @return the label or null.
+     */
+    private static String maybeLabelUnaryOp( QDataSet ds1, String opStr ) {
+        String label1= (String) ds1.property(QDataSet.LABEL);
+        if ( label1==null ) label1= (String)ds1.property(QDataSet.NAME);
+        if ( label1==null ) return null;
+        String l1Str= label1;
+        if ( l1Str!=null ) {
+            return opStr + "("+l1Str + ")";
+        } else {
+            return null;
+        }
+    }
+    /**
+     * maybe insert a label indicating the two-argument operation.  The operation
+     * is formatted like opStr(ds1,ds2)
+     * @param ds1
+     * @param ds2
+     * @param opStr
+     */
+    private static String maybeLabelBinaryOp( QDataSet ds1, QDataSet ds2, String opStr ) {
+        String label1= (String) ds1.property(QDataSet.LABEL);
+        if ( label1==null ) label1= (String)ds1.property(QDataSet.NAME);
+        String label2= (String) ds2.property(QDataSet.LABEL);
+        if ( label2==null ) label2= (String)ds2.property(QDataSet.NAME);
+        if ( label1==null || label2==null ) return null;
+        String l1Str= label1;
+        String l2Str= label2;
+        if ( l1Str!=null && l2Str!=null ) {
+            return opStr + "(" + l1Str + "," + l2Str + ")";
+        } else {
+            return null;
+        }
+    }
+    
+    /**
      * maybe insert a label indicating the operation.
      * @param ds1
      * @param ds2
@@ -291,7 +363,13 @@ public class Ops {
      */
     private static String maybeLabelInfixOp( QDataSet ds1, QDataSet ds2, String opStr ) {
         String label1= (String) ds1.property(QDataSet.LABEL);
+        if ( label1==null ) label1= (String)ds1.property(QDataSet.NAME);
         String label2= (String) ds2.property(QDataSet.LABEL);
+        if ( label2==null ) label2= (String)ds2.property(QDataSet.NAME);
+        if ( label1==null || label2==null ) return null;
+        if ( label1.equals(label2) ) { // this happens for example when LABEL=B_GSM and we do B_GSM[:,0] / B_GSM[:,1]  See autoplot-test025: test025_000
+            return null;
+        }
         Pattern idpat= Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]*");
         String l1Str= label1;
         if ( l1Str!=null && ! idpat.matcher(l1Str).matches() ) l1Str= "("+l1Str+")";
@@ -579,7 +657,9 @@ public class Ops {
      * @return
      */
     public static QDataSet sqrt(QDataSet ds) {
-        return pow(ds, 0.5);
+        MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
+        result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "sqrt" ) );
+        return result;
     }
 
     /**
@@ -588,12 +668,14 @@ public class Ops {
      * @return
      */
     public static QDataSet abs(QDataSet ds1) {
-        return applyUnaryOp(ds1, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.abs(d1);
             }
         });
+        result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds1, "abs") );
+        return result;
     }
 
     /**
@@ -603,12 +685,15 @@ public class Ops {
      * @return
      */
     public static QDataSet pow(QDataSet ds1, double pow) {
-        return applyBinaryOp(ds1, pow, new BinaryOp() {
+        MutablePropertyDataSet result= applyBinaryOp(ds1, pow, new BinaryOp() {
 
             public double op(double d1, double d2) {
                 return Math.pow(d1, d2);
             }
         });
+        result.putProperty( QDataSet.LABEL, maybeLabelBinaryOp( ds1, DataSetUtil.asDataSet(pow), "pow") );
+        return result;
+
     }
 
     /**
@@ -619,12 +704,14 @@ public class Ops {
      * @return
      */
     public static QDataSet pow(QDataSet ds1, QDataSet pow) {
-        return applyBinaryOp(ds1, pow, new BinaryOp() {
+        MutablePropertyDataSet result=  applyBinaryOp(ds1, pow, new BinaryOp() {
 
             public double op(double d1, double d2) {
                 return Math.pow(d1, d2);
             }
         });
+        result.putProperty( QDataSet.LABEL, maybeLabelBinaryOp( ds1, pow, "pow") );
+        return result;
     }
 
     /**
@@ -633,11 +720,13 @@ public class Ops {
      * @return
      */
     public static QDataSet exp(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result=  applyUnaryOp(ds, new UnaryOp() {
             public double op(double d1) {
                 return Math.pow(Math.E, d1);
             }
         });
+        result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "exp") );
+        return result;
     }
 
     /**
@@ -646,12 +735,14 @@ public class Ops {
      * @return
      */
     public static QDataSet exp10(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result=   applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.pow(10, d1);
             }
         });
+        result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "exp10") );
+        return result;
     }
 
     /**
@@ -660,12 +751,14 @@ public class Ops {
      * @return
      */
     public static QDataSet log(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result=  applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.log(d1);
             }
         });
+        result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "log") );
+        return result;
     }
 
     /**
@@ -674,12 +767,14 @@ public class Ops {
      * @return
      */
     public static QDataSet log10(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result=  applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.log10(d1);
             }
         });
+        result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "log10") );
+        return result;
     }
 
     /**
@@ -688,12 +783,29 @@ public class Ops {
      * @return
      */
     public static QDataSet multiply(QDataSet ds1, QDataSet ds2) {
+        Units units1= SemanticOps.getUnits(ds1);
+        Units units2= SemanticOps.getUnits(ds2);
+        Units resultUnits;
+
+        if ( units1==Units.dimensionless && units2==Units.dimensionless ) {
+            resultUnits= Units.dimensionless;
+        } else if ( units2==Units.dimensionless && UnitsUtil.isRatioMeasurement(units1) ) {
+            resultUnits= units1;
+        } else if ( units1==Units.dimensionless && UnitsUtil.isRatioMeasurement(units2) ) {
+            resultUnits= units2;
+        } else {
+            if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
+            if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
+            System.err.println("throwing out units until we improve the units library, arguments have unequal units");
+            resultUnits= null;
+        }
+
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return d1 * d2;
             }
         });
-        result.putProperty( QDataSet.UNITS, null );
+        if ( resultUnits!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, resultUnits );
         result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "*" ) );
         return result;
     }
@@ -704,12 +816,28 @@ public class Ops {
      * @return
      */
     public static QDataSet divide(QDataSet ds1, QDataSet ds2) {
+        Units units1= SemanticOps.getUnits(ds1);
+        Units units2= SemanticOps.getUnits(ds2);
+        Units resultUnits;
+
+        if ( units1==units2 ) {
+            resultUnits= Units.dimensionless;
+        } else if ( units2==Units.dimensionless && UnitsUtil.isRatioMeasurement(units1) ) {
+            resultUnits= units1;
+        } else {
+            if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
+            if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
+            System.err.println("throwing out units until we improve the units library, arguments have unequal units");
+            resultUnits= null;
+        }
+
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return d1 / d2;
             }
         });
-        result.putProperty( QDataSet.UNITS, null );
+
+        if ( resultUnits!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, resultUnits );
         result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "/" ) );
         return result;
     }
@@ -1435,12 +1563,14 @@ public class Ops {
      * @return
      */
     public static QDataSet sin(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.sin(d1);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "sin" ) );
+        return result;
     }
 
     /**
@@ -1449,12 +1579,14 @@ public class Ops {
      * @return
      */
     public static QDataSet asin(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.asin(d1);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "asin" ) );
+        return result;
     }
 
     /**
@@ -1463,12 +1595,14 @@ public class Ops {
      * @return
      */
     public static QDataSet cos(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.cos(d1);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "asin" ) );
+        return result;
     }
 
     /**
@@ -1477,12 +1611,15 @@ public class Ops {
      * @return
      */
     public static QDataSet acos(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double d1) {
                 return Math.acos(d1);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "acos" ) );
+        return result;
+
     }
 
     /**
@@ -1491,12 +1628,14 @@ public class Ops {
      * @return
      */
     public static QDataSet tan(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double a) {
                 return Math.tan(a);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "tan" ) );
+        return result;
     }
 
     /**
@@ -1505,12 +1644,14 @@ public class Ops {
      * @return
      */
     public static QDataSet atan(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double a) {
                 return Math.atan(a);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "atan" ) );
+        return result;
     }
 
     /**
@@ -1520,12 +1661,14 @@ public class Ops {
      * @return
      */
     public static QDataSet atan2(QDataSet dsy, QDataSet dsx) {
-        return applyBinaryOp(dsy, dsx, new BinaryOp() {
+         MutablePropertyDataSet result= applyBinaryOp(dsy, dsx, new BinaryOp() {
 
             public double op(double y, double x) {
                 return Math.atan2(y, x);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelBinaryOp(dsy,dsx, "cosh" ) );
+        return result;
     }
 
     /**
@@ -1534,12 +1677,14 @@ public class Ops {
      * @return
      */
     public static QDataSet cosh(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double a) {
                 return Math.cosh(a);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "cosh" ) );
+        return result;
     }
 
     /**
@@ -1548,12 +1693,14 @@ public class Ops {
      * @return
      */
     public static QDataSet sinh(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double a) {
                 return Math.sinh(a);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "sinh" ) );
+        return result;
     }
 
     /**
@@ -1562,12 +1709,14 @@ public class Ops {
      * @return
      */
     public static QDataSet tanh(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double a) {
                 return Math.tanh(a);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "tanh" ) );
+        return result;
     }
 
     /**
@@ -1580,12 +1729,14 @@ public class Ops {
      * @return
      */
     public static QDataSet expm1(QDataSet ds) {
-        return applyUnaryOp(ds, new UnaryOp() {
+        MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
 
             public double op(double a) {
                 return Math.expm1(a);
             }
         });
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "expm1" ) );
+        return result;
     }
 
     public static QDataSet toRadians(QDataSet ds) {

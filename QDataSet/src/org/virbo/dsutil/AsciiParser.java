@@ -8,6 +8,7 @@
  */
 package org.virbo.dsutil;
 
+import java.util.logging.Level;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
@@ -106,7 +107,7 @@ public class AsciiParser {
     public static final String DELIM_COMMA = ",";
     public static final String DELIM_TAB = "\t";
     public static final String DELIM_WHITESPACE = "\\s+";
-    private static Logger logger = Logger.getLogger("virbo.dataset.asciiparser");
+    private static final Logger logger = Logger.getLogger("virbo.dataset.asciiparser");
     private static final int HEADER_LENGTH_LIMIT=1000;
 
     private AsciiParser(String[] fieldNames) {
@@ -838,7 +839,7 @@ public class AsciiParser {
                     }
                 } else {
                     if (isColumnHeaders) {
-                        logger.finest("parsed line appears to contain NaN's, and is not a column header because of field #" + i + ": " + ss[i]);
+                        logger.log(Level.FINEST, "parsed line appears to contain NaN''s, and is not a column header because of field #{0}: {1}", new Object[]{i, ss[i]});
                     }
                     isColumnHeaders = false;
                 }
@@ -853,7 +854,7 @@ public class AsciiParser {
                 fieldUnits[i]= null;
             } else {
                 if (isColumnHeaders) {
-                    logger.finest("first parsed line does not appear to be column header because of field #" + i + ": " + ss[i]);
+                    logger.log(Level.FINEST, "first parsed line does not appear to be column header because of field #{0}: {1}", new Object[]{i, ss[i]});
                 }
                 isColumnHeaders = false;
             }
@@ -1350,7 +1351,7 @@ public class AsciiParser {
     public void setKeepFileHeader(boolean keepHeader) {
         boolean oldKeepHeader = this.keepFileHeader;
         this.keepFileHeader = keepHeader;
-        propertyChangeSupport.firePropertyChange("keepHeader", new Boolean(oldKeepHeader), new Boolean(keepHeader));
+        propertyChangeSupport.firePropertyChange("keepHeader", oldKeepHeader, keepHeader);
     }
     /**
      * Holds value of property recordParser.
