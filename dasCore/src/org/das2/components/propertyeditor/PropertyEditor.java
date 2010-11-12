@@ -108,6 +108,7 @@ public class PropertyEditor extends JComponent {
         TreeTableModel model = new TreeTableModel(root, tree);
         table = new JTable(model);
         table.setAutoCreateColumnsFromModel(false);
+        table.putClientProperty("terminateEditOnFocusLost", true);
 
         add(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
 
@@ -338,29 +339,41 @@ public class PropertyEditor extends JComponent {
     }
 
     private void initButtonPanel(boolean saveLoadButton) {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         if (saveLoadButton) {
             //JButton saveButton = new JButton(createSaveAction(this.bean));
             //buttonPanel.add(saveButton);
             //JButton loadButton = new JButton(createLoadAction(this.bean));
             //buttonPanel.add(loadButton);
         }
-        final JButton apply = new JButton("Apply Changes");
+        final JButton cancel = new JButton("Cancel");
+
+        final JButton apply = new JButton("Apply");
+
         closeButton = new JButton("OK");
 
         ActionListener al = new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == apply) {
-                    globalApplyChanges();
-                    refresh();
-                } else if (e.getSource() == closeButton) {
-                    dismissDialog();
-                }
+            public void actionPerformed(final ActionEvent ef) {
+                SwingUtilities.invokeLater( new Runnable() { // allow focus event to occur first.
+                    public void run() {
+                        if (ef.getSource() == apply) {
+                            globalApplyChanges();
+                            refresh();
+                        } else if (ef.getSource() == closeButton) {
+                            globalApplyChanges();
+                            dismissDialog(false);
+                        } else if ( ef.getSource()==cancel ) {
+                            dismissDialog(false);
+                        }
+                    }
+                } );
             }
         };
         apply.addActionListener(al);
         closeButton.addActionListener(al);
+        cancel.addActionListener(al);
 
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(new ActionListener() {
@@ -372,6 +385,7 @@ public class PropertyEditor extends JComponent {
 
         buttonPanel.add(refresh);
         buttonPanel.add(Box.createHorizontalGlue());
+        buttonPanel.add(cancel);
         buttonPanel.add(apply);
         buttonPanel.add(closeButton);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -390,9 +404,9 @@ public class PropertyEditor extends JComponent {
         root.flush();
     }
 
-    private void dismissDialog() {
+    private void dismissDialog(boolean checkDirty) {
         PropertyTreeNodeInterface root = (PropertyTreeNodeInterface) ((TreeTableModel) table.getModel()).getRoot();
-        if (root.isDirty()) {
+        if (checkDirty && root.isDirty()) {
             String[] message = new String[]{
                 "You have unsaved changes",
                 "Would you like to apply them?"
@@ -422,7 +436,11 @@ public class PropertyEditor extends JComponent {
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         dialog.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                dismissDialog();
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        dismissDialog(true);
+                    }
+                } );
             }
         });
         dialog.setContentPane(this);
@@ -452,7 +470,11 @@ public class PropertyEditor extends JComponent {
             dialog.addWindowListener(new WindowAdapter() {
 
                 public void windowClosing(WindowEvent e) {
-                    dismissDialog();
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            dismissDialog(true);
+                        }
+                    } );
                 }
             });
             dialog.setContentPane(this);

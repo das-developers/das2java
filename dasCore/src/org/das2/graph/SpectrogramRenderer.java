@@ -447,7 +447,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         Units xunits, yunits;
                         if ( fds.rank()==2 ) {
                             xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds) );
-                            yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
+                            if ( SemanticOps.isJoin(fds) ) {//TODO: vap+junorpw:file:///media/mini/ct/pw/juno/oct2010/test_2010_10_26T20.lrs.ucal
+                                yunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
+                            } else {
+                                yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
+                            }
                         } else {
                             xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
                             yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
@@ -518,9 +522,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         } else if ( end < imageXRange.min().doubleValue(xRebinDescriptor.getUnits())) {
                             xrangeWarning= "data ends before range";
                         }
-
+                        //t0= System.currentTimeMillis();
                         rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
-
+                        //System.err.println( "rebin (ms): " + ( System.currentTimeMillis()-t0) );
                         xmemento = xAxis.getMemento();
                         ymemento = yAxis.getMemento();
                         cmemento = colorBar.getMemento();
@@ -529,12 +533,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         lraster = makePixMap( rebinDataSet, lraster );
 
+                        //t0= System.currentTimeMillis();
                         try {
                             validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), lraster );
                         } catch ( InconvertibleUnitsException ex ) {
                             System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+colorBar.getUnits() );
                             return;
                         }
+                        //System.err.println( "transformSimpleTable (ms): " + ( System.currentTimeMillis()-t0) );
 
                         rasterWidth = plotImageBounds2.width;
                         rasterHeight = plotImageBounds2.height;

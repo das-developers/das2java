@@ -106,7 +106,11 @@ public class TableUtil {
         if (  cycles > 10. ) {
             return Units.log10Ratio.createDatum( Math.log10(y1/y0) );
         } else {
-            return table.getYUnits().createDatum(y1-y0);
+            if ( (yn-y0)/n > (y1-y0) ) {
+                return table.getYUnits().createDatum((yn-y0)/n); // the average is bigger than the first.  maybe return the last.
+            } else {
+                return table.getYUnits().createDatum(y1-y0);
+            }
         }
     }
     public static double tableMax( TableDataSet tds, Units units ) {

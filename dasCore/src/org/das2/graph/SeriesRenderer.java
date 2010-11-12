@@ -282,6 +282,7 @@ public class SeriesRenderer extends Renderer {
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             window= new Rectangle( window.x-buffer, window.y-buffer, window.width+2*buffer, window.height+2*buffer );
             DasPlot lparent= parent;
+            if ( lparent==null ) return;
             if ( lparent.isOverSize() ) {
                 window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
                 //TODO: there's a rectangle somewhere that is the preveiw.  Use this instead of assuming 1/3 on either side.
@@ -431,6 +432,7 @@ public class SeriesRenderer extends Renderer {
             int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
 
             DasPlot lparent= parent;
+            if ( lparent==null ) return;
             if ( lparent.isOverSize() ) {
                 window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
                 //TODO: there's a rectangle somewhere that is the preveiw.  Use this instead of assuming 1/3 on either side.
