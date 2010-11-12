@@ -30,6 +30,7 @@ public class DefaultHttpProtocol implements WebProtocol {
         if (!fo.localFile.exists()) {
             File partFile = new File(fo.localFile.toString() + ".part");
             fo.wfs.downloadFile(fo.pathname, fo.localFile, partFile, mon);
+            fo.wfs.markAccess(fo.getNameExt());
         }
         return new FileInputStream(fo.localFile);
     }

@@ -57,6 +57,9 @@ public abstract class WebFileSystem extends FileSystem {
 
         return local;
     }
+
+    Map<String,Long> lastAccessed= new HashMap();
+
     protected final File localRoot;
     /**
      * if true, then don't download to local cache.  Instead, provide inputStream
@@ -314,6 +317,25 @@ public abstract class WebFileSystem extends FileSystem {
     public FileObject getFileObject(String filename) {
         WebFileObject f = new WebFileObject(this, filename, new Date(System.currentTimeMillis()));
         return f;
+    }
+
+    /**
+     * reduce the number of hits to a server by caching last access times for local files.
+     * Note subclasses of this must call markAccess to indicate the file is accessed.
+     *
+     * @return
+     */
+    protected synchronized long getLastAccessed( String filename ) {
+        Long lastAccess= lastAccessed.get(filename);
+        if ( lastAccess==null ) {
+            return 0;
+        } else {
+            return lastAccess.longValue();
+        }
+    }
+
+    protected synchronized void markAccess( String filename ) {
+        lastAccessed.put( filename, System.currentTimeMillis() );
     }
 
     /**
