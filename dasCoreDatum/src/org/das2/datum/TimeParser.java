@@ -973,6 +973,12 @@ public class TimeParser {
 
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
 
+        double dextraMillis= 1000 * ( timel.seconds - (int) timel.seconds );
+        int extraMillis= (int)Math.floor( dextraMillis );
+        timel.seconds= (int)timel.seconds;
+
+        double extraMicros= 1000 * ( dextraMillis - extraMillis );
+
         NumberFormat[] nf = new NumberFormat[5];
         nf[2] = new DecimalFormat("00");
         nf[3] = new DecimalFormat("000");
@@ -1021,10 +1027,10 @@ public class TimeParser {
                         digit = (int) timel.seconds;
                         break;
                     case 8:
-                        digit = timel.millis;
+                        digit = timel.millis + extraMillis;
                         break;
                     case 9:
-                        digit = timel.micros;
+                        digit = timel.micros + (int) extraMicros;
                         break;
                     default:
                         throw new RuntimeException("shouldn't get here");
