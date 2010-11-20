@@ -1761,7 +1761,9 @@ public class Ops {
      * returns a dataset containing the indeces of where the dataset is non-zero.
      * For a rank 1 dataset, returns a rank 1 dataset with indeces for the values.
      * For a higher rank dataset, returns a rank 2 qube dataset with ds.rank()
-     * elements in the first dimension.
+     * elements in the first dimension.  Note when the dataset is all zeros (false),
+     * the result is a zero-length array, as opposed to IDL which would return
+     * a -1 scalar.
      * 
      * @param ds of any rank M
      * @return a rank 1 or rank 2 dataset with N by M elements, where N is the number
@@ -2449,17 +2451,29 @@ public class Ops {
 
     /**
      * interpolate values from rank 1 dataset vv using fractional indeces 
-     * in rank N findex.
+     * in rank N findex.  For example, findex=1.5 means interpolate
+     * the 1st and 2nd indeces with equal weight, 1.1 means
+     * 90% of the first mixed with 10% of the second.  No extrapolation is
+     * done, data with findex<0 or findex>(vv.length()-1) are assigned the
+     * first or last value.
+     *
+     * Note there is no check on CADENCE.
+     * Note nothing is done with DEPEND_0, presumably because was already
+     * calculated and used for findex.
      * 
-     * @param vv rank 1 dataset.
+     * @param vv rank 1 dataset that is the data to be interpolated.
      * @param findex rank N dataset of fractional indeces.
-     * @return
+     * @return the result.  
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex));
         QubeDataSetIterator it = new QubeDataSetIterator(findex);
         int ic0, ic1;
         int n = vv.length();
+
+        QDataSet wds= DataSetUtil.weightsDataSet( vv );
+        double fill= (Double)wds.property(QDataSet.FILL_VALUE);
+        result.putProperty( QDataSet.FILL_VALUE, fill );
 
         while (it.hasNext()) {
             it.next();
@@ -2481,12 +2495,18 @@ public class Ops {
 
             double alpha = ff - ic0;
 
-            double vv0 = vv.value(ic0);
-            double vv1 = vv.value(ic1);
+            if ( wds.value(ic0)>0 && wds.value(ic1)>0 ) {
+                double vv0 = vv.value(ic0);
+                double vv1 = vv.value(ic1);
 
-            it.putValue(result, vv0 + alpha * (vv1 - vv0));
+                it.putValue(result, vv0 + alpha * (vv1 - vv0));
+                
+            } else {
+                it.putValue(result, fill );
+            }
 
         }
+
         return result;
     }
 
@@ -2554,6 +2574,22 @@ public class Ops {
         return result;
     }
 
+    /**
+     * returns a dataset with zero where the data is invalid, and positive 
+     * non-zero where the data is valid.  (This just returns the weights
+     * plane of the dataset.)
+     * 
+     *   r= where( valid( ds ) )
+     * 
+     * @param ds a rank N dataset that might have FILL_VALUE, VALID_MIN or VALID_MAX
+     *   set.
+     * @return a rank N dataset with the same geometry, with zeros where the data
+     *   is invalid and >0 where the data is valid.
+     */
+    public static QDataSet valid( QDataSet ds ) {
+        return DataSetUtil.weightsDataSet(ds);
+    }
+    
     /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  Points near the edge are simply copied from the
      * source dataset.  The result dataset contains a property "weights" that is the weights for each point.

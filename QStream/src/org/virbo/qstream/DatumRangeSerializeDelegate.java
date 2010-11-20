@@ -40,6 +40,9 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerial
             return DatumRangeUtil.parseTimeRange(s.substring(5));
         }
         try {
+            if ( !s.contains(" ") && !s.contains("E+") && !s.contains("e+") ) {
+                s= s.replaceAll("\\+", " "); //TODO: verify 2E+13
+            }
             return DatumRangeUtil.parseTimeRange(s);
         } catch ( ParseException e ) {
             int i = s.trim().lastIndexOf(" ");
