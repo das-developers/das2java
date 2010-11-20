@@ -184,10 +184,25 @@ public class FileStorageModelNew {
         }
     }
 
+    /**
+     * return a filename that would intersect the range.  Note this file
+     * may not actually exist.  This may be used to quantize the range.
+     * The template may not contain versions.
+     * @param start
+     * @param end
+     * @return
+     */
     public String getFilenameFor( Datum start, Datum end ) {
         return timeParser.format( start, end );
     }
 
+    /**
+     * return the names in the range, or all names if the range is null.
+     * @param targetRange range limit, or null.
+     * @param monitor
+     * @return
+     * @throws java.io.IOException
+     */
     public String[] getNamesFor( final DatumRange targetRange ) throws IOException {
         return getNamesFor( targetRange, new NullProgressMonitor() );
     }
@@ -502,12 +517,19 @@ public class FileStorageModelNew {
      *    %{milli}  3-digit milliseconds
      *
      * @param root FileSystem source of the files.
-     * @param template describes how filenames are constructed.  This is converted to a regular expression and may contain regex elements without groups.
+     * @param template describes how filenames are constructed.  This is converted to a regular expression and may contain regex elements without groups.  The
+     *   string may contain $ instead of percents as long as there are no percents in the string.
+     *
      * @return a newly-created FileStorageModelNew.
      */
     public static FileStorageModelNew create( FileSystem root, String template ) {
         template= makeCanonical(template);
         int i= template.lastIndexOf("/");
+
+        if ( template.contains("$") && !template.contains("%") ) {
+            template= template.replaceAll("\\$", "%");
+        }
+        
         int i2= template.lastIndexOf("%",i);
         if ( i2 != -1 ) {
             String parentTemplate= template.substring(0,i);
@@ -521,10 +543,11 @@ public class FileStorageModelNew {
     
     /**
      * creates a FileStorageModel for the given template, but with a custom FieldHandler and
-     * field.
+     * field.  
      *
      * @param root FileSystem source of the files.
-     * @param template describes how filenames are constructed.
+     * @param template describes how filenames are constructed.  This is converted to a regular expression and may contain regex elements without groups.  The
+     *   string may contain $ instead of percents as long as there are no percents in the string.
      * @param fieldName custom field name
      * @param fieldHandler TimeParser.FieldHandler to call with the field contents.
      * @return a newly-created FileStorageModelNew.
@@ -532,6 +555,11 @@ public class FileStorageModelNew {
     public static FileStorageModelNew create( FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler ) {
         template= makeCanonical(template);
         int i= template.lastIndexOf("/");
+
+        if ( template.contains("$") && !template.contains("%") ) {
+            template= template.replaceAll("\\$", "%");
+        }
+        
         int i2= template.lastIndexOf("%",i);
         if ( i2 != -1 ) {
             String parentTemplate= template.substring(0,i);
@@ -541,7 +569,7 @@ public class FileStorageModelNew {
             return new FileStorageModelNew( null, root, template, fieldName, fieldHandler );
         }
     }
-    
+
     private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler, Object ... moreHandler   ) {
         this.root= root;
         this.parent= parent;
