@@ -124,7 +124,123 @@ public class DatumRangeUtil {
             throw new ParseException( "failed attempt to parse int in "+s, 0 );
         }
     }
+
+    private static int getInt( String val, int deft ) {
+        if ( val==null ) {
+            if ( deft!=-99 ) return deft; else throw new IllegalArgumentException("bad digit");
+        }
+        int n= val.length()-1;
+        if ( Character.isLetter( val.charAt(n) ) ) {
+            return Integer.parseInt(val.substring(0,n));
+        } else {
+            return Integer.parseInt(val);
+        }
+    }
     
+    /**
+     * returns null or int[7]
+     * @param stringIn
+     * @return
+     */
+    public static int[] parseISO8601 ( String str ) {
+        String d= "[-:]"; // delim
+        String i4= "(\\d\\d\\d\\d)";
+        String i3= "(\\d\\d\\d)";
+        String i2= "(\\d\\d)";
+
+        String iso8601time= i4 + d + i2 + d + i2 + "T" + i2 + d + i2 + "(" + d + i2 + ")?Z?" ;
+        String iso8601time2= i4 + i2 + i2 + "T" + i2 + i2 + "(" + i2 + ")?Z?" ;
+        String iso8601time3= i4 + d + i3 + "T" + i2 + d + i2 + "(" + i2 + ")?Z?" ;
+        Pattern time1= Pattern.compile(iso8601time);
+        Pattern time2= Pattern.compile(iso8601time2);
+        Pattern time3= Pattern.compile(iso8601time3);
+
+        Matcher m;
+
+        m= time1.matcher(str);
+        if ( m.matches() ) {
+            return new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), getInt( m.group(4), 0 ), getInt( m.group(5), 0 ), getInt( m.group(7), 0), 0 };
+        } else {
+            m= time2.matcher(str);
+            if ( m.matches() ) {
+                return new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), getInt( m.group(4), 0 ), getInt( m.group(5), 0 ), getInt( m.group(7), 0), 0 };
+            } else {
+                m= time3.matcher(str);
+                if ( m.matches() ) {
+                    return new int[] { Integer.parseInt( m.group(1) ), 1, Integer.parseInt( m.group(2) ), getInt( m.group(3), 0 ), getInt( m.group(4), 0 ), getInt( m.group(5), 0), 0 };
+                }
+            }
+        }
+        return null;
+
+    }
+
+    /**
+     * returns the time found in an iso8601 string, or null.  This supports
+     * periods (durations) as in: 2007-03-01T13:00:00Z/P1Y2M10DT2H30M
+     * Other examples:
+     *   2007-03-01T13:00:00Z/2008-05-11T15:30:00Z
+     *   2007-03-01T13:00:00Z/P1Y2M10DT2H30M
+     *   P1Y2M10DT2H30M/2008-05-11T15:30:00Z
+     *   2007-03-01T00:00Z/P1D
+     * http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
+     * @param stringIn
+     * @return null or a DatumRange
+     */
+    public static DatumRange parseISO8601Range( String stringIn ) {
+
+        String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?";
+        
+        String[] parts= stringIn.split("/",-2);
+        if ( parts.length!=2 ) return null;
+
+        boolean d1= parts[0].charAt(0)=='P';
+        boolean d2= parts[1].charAt(0)=='P';
+
+        Pattern p;
+        Matcher m;
+
+        int[] digits1= null;
+        int[] digits2= null;
+
+        Pattern duration= Pattern.compile(iso8601duration);
+
+        if ( d1 ) {
+            m= duration.matcher(parts[0]);
+            if ( m.matches() ) {
+                digits1= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), getInt( m.group(7), 0 ) };
+            }
+        } else {
+            digits1= parseISO8601( parts[0] );
+        }
+
+        if ( d2 ) {
+            m= duration.matcher(parts[1]);
+            if ( m.matches() ) {
+                digits2= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), getInt( m.group(7), 0 ) };
+            }
+        } else {
+            digits2= parseISO8601( parts[1] );
+        }
+
+        if ( digits1==null || digits2==null ) return null;
+        
+        if ( d1 ) {
+            for ( int i=0; i<6; i++ ) digits1[i] = digits2[i] - digits1[i];
+        }
+
+        if ( d2 ) {
+            for ( int i=0; i<6; i++ ) digits2[i] = digits1[i] + digits2[i];
+        }
+
+        Datum time1= TimeUtil.toDatum(digits1);
+        Datum time2= TimeUtil.toDatum(digits2);
+
+        return new DatumRange( time1, time2 );
+
+
+    }
+
     /*;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     //;;
     //;; papco_parse_timerange, string -> timeRange
@@ -380,7 +496,10 @@ public class DatumRangeUtil {
         public DatumRange parse( String stringIn ) throws ParseException {
             
             Logger logger= Logger.getLogger("das2.datum");
-            
+
+            DatumRange check= parseISO8601Range( stringIn );
+            if ( check!=null ) return check;
+
             this.string= stringIn+" ";
             this.ipos= 0;
 

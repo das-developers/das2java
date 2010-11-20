@@ -1000,7 +1000,16 @@ public class TimeParser {
 
             }
             if (handlers[idigit] < 10) {
+                String qual= qualifiers[idigit];
                 int digit;
+                int span=1;
+                if ( qual!=null ) {
+                    Pattern p= Pattern.compile("span=(\\d+)"); // TODO: multiple qualifiers
+                    Matcher m= p.matcher(qual);
+                    if ( m.matches() ) {
+                        span= Integer.parseInt(m.group(1));
+                    }
+                }
                 switch (handlers[idigit]) {
                     case 0:
                         digit = timel.year;
@@ -1035,6 +1044,10 @@ public class TimeParser {
                     default:
                         throw new RuntimeException("shouldn't get here");
                 }
+                if ( span>1 ) {
+                    if ( handlers[idigit]>0 && handlers[idigit]<5 ) System.err.println("uh-oh, span used on ordinal like month, day");
+                    digit= ( digit / span ) * span;
+                }
                 if ( len<0 ) {
                     String ss= String.valueOf(digit);
                     result.insert(offs, ss);
@@ -1053,7 +1066,17 @@ public class TimeParser {
                 throw new RuntimeException("cannot format spec containing ignore");
 
             } else if (handlers[idigit] == 100) {
-                throw new RuntimeException("Handlers not supported");
+                if ( fc[idigit].equals("v") ) { // kludge for version
+                    String ins= "00";
+                    if ( len>-1 ) {
+                        if ( len>20 ) throw new IllegalArgumentException("version lengths>20 not supported");
+                        ins= "00000000000000000000".substring(0,len);
+                    }
+                    result.insert( offs, ins );
+                    offs+= ins.length();
+                } else {
+                    throw new RuntimeException("Handlers not supported");
+                }
 
             } else if (handlers[idigit] == 10) {
                 throw new RuntimeException("AM/PM not supported");
