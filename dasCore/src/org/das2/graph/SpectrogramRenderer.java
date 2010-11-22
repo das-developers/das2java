@@ -58,6 +58,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.datum.Datum;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
@@ -94,7 +95,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
         public void propertyChange(PropertyChangeEvent e) {
             update();
-            refreshImage();
+//            refreshImage();
         }
     }
     RebinListener rebinListener = new RebinListener();
@@ -251,8 +252,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         } else if ( zds.rank()==3 ) {
                             xds= SemanticOps.xtagsDataSet(zds.slice(0));
                             yds= SemanticOps.ytagsDataSet(zds.slice(0));
-                        } else {
-                            throw new IllegalArgumentException("bad rank");
                         }
 
                         if ( getDataSet().length() == 0 ) {
