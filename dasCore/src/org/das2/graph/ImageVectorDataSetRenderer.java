@@ -24,6 +24,9 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
@@ -490,6 +493,29 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
         return false;
     }
+
+    public Shape selectionArea() {
+        BufferedImage bufferedImage= new BufferedImage( plotImage.getWidth(), plotImage.getHeight(), BufferedImage.TYPE_INT_RGB );
+        bufferedImage.getGraphics().drawImage( plotImage, 0, 0, parent );
+        float[] kk= new float[11*11];
+        for ( int i=0; i<kk.length; i++ ) kk[i]= 1.f;
+        Kernel kernel = new Kernel( 11, 11, kk );
+        BufferedImageOp op = new ConvolveOp(kernel);
+        bufferedImage = op.filter(bufferedImage, null);
+
+        Area a= new Area();
+        for ( int i=0; i<bufferedImage.getWidth(); i+=1 ) {
+            for ( int j=0; j<bufferedImage.getHeight(); j+=1 ) {
+                if ( ( bufferedImage.getRGB(i,j) & 0xFFFFFF ) >0 ) {
+                    a.add( new Area( new Rectangle( plotImageBounds.x+i,plotImageBounds.y+j,1,1 ) ) );
+                }
+            }
+        }
+        a.add( new Area( new Rectangle(  plotImageBounds.x, plotImageBounds.y,30,30 ) ) );
+
+        return a;
+    }
+
     /**
      * Holds value of property print300dpi.
      */
