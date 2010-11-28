@@ -52,6 +52,8 @@ public class Slice3DataSet extends AbstractDataSet {
                 break;
             }
         }
+        
+        putProperty( QDataSet.WEIGHTS_PLANE, null );
 
         DataSetUtil.copyDimensionProperties( ds, this );
 

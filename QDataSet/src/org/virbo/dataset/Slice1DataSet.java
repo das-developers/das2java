@@ -83,6 +83,8 @@ public class Slice1DataSet extends AbstractDataSet {
             }
         }
 
+        putProperty( QDataSet.WEIGHTS_PLANE, null );
+
         DataSetUtil.copyDimensionProperties( ds, this );
                 
     }
@@ -103,6 +105,12 @@ public class Slice1DataSet extends AbstractDataSet {
         return ds.value(i0, index, i1, i2 );
     }
 
+    /**
+     * TODO: this is danger code, because we grab the property from the original dataset.  The bug I ran into is it was getting WEIGHTS
+     * from the parent, which had the wrong dimensionality.
+     * @param name
+     * @return
+     */
     public Object property(String name) {
         if (properties.containsKey(name)) {
             return properties.get(name);
