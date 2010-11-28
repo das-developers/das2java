@@ -907,7 +907,11 @@ public class DataSetOps {
     }
 
     public static boolean boundsContains(QDataSet bounds, Datum xValue, Datum yValue) {
-        if ( bounds.property(QDataSet.BINS_1)==null ) throw new IllegalArgumentException("expected BINS_1");
+        if ( bounds.property(QDataSet.BINS_1)==null ) {
+            if ( bounds.property(QDataSet.BINS_0,0)==null ) {
+                throw new IllegalArgumentException("expected BINS_1");
+            }
+        }
         DatumRange xrange= DataSetUtil.asDatumRange( bounds.slice(0), true );
         DatumRange yrange= DataSetUtil.asDatumRange( bounds.slice(1), true );
         return xrange.contains(xValue) && yrange.contains(yValue);
