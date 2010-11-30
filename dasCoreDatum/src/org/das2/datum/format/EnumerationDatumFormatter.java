@@ -31,7 +31,9 @@ import org.das2.datum.EnumerationUnits;
  * @author  Edward West
  */
 public class EnumerationDatumFormatter extends DatumFormatter {
-    
+
+    boolean quotes= false;
+
     public EnumerationDatumFormatter() {
     }
     
@@ -41,7 +43,13 @@ public class EnumerationDatumFormatter extends DatumFormatter {
     }
     
     public String format(Datum datum) {
-        return ((EnumerationUnits)datum.getUnits()).getObject(datum).toString();
+        String s= ((EnumerationUnits)datum.getUnits()).getObject(datum).toString();
+        if ( quotes ) s = "\"" + s + "\"";
+        return s;
+    }
+
+    public void setAddQuotes(boolean b) {
+        quotes= b;
     }
     
 }
