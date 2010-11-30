@@ -180,13 +180,15 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
                 }
             }
         } else {
-            if ( DataSetOps.boundsContains( tds, xValue, yValue) ) {
+            QDataSet bounds= DataSetOps.dependBounds(tds);
+            if ( DataSetOps.boundsContains( bounds, xValue, yValue) ) {
                 tds1= tds;
             }
         }
         if (tds1==null) return;
 
-        QDataSet sliceDataSet= DataSetOps.slice1( ds, org.virbo.dataset.DataSetUtil.closestIndex( tds1, e.getY() ) );
+        QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+        QDataSet sliceDataSet= DataSetOps.slice1( ds, org.virbo.dataset.DataSetUtil.closestIndex( yds, e.getY() ) );
         
         renderer.setDataSet(sliceDataSet);
 

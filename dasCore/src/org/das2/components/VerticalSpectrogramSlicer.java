@@ -206,12 +206,14 @@ extends DasPlot implements DataPointSelectionListener {
                 }
             }
         } else {
-            if ( DataSetOps.boundsContains( tds, e.getX(), e.getY() ) ) {
+            QDataSet bounds= DataSetOps.dependBounds(tds);
+            if ( DataSetOps.boundsContains( bounds, e.getX(), e.getY() ) ) {
                 tds1= tds;
             }
         }
 
-        QDataSet sliceDataSet= tds1.slice( org.virbo.dataset.DataSetUtil.closestIndex( tds1, e.getX() ) );
+        QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+        QDataSet sliceDataSet= tds1.slice( org.virbo.dataset.DataSetUtil.closestIndex( xds, e.getX() ) );
                       
         renderer.setDataSet(sliceDataSet);
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");        
