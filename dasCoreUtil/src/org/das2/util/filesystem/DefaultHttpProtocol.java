@@ -17,7 +17,7 @@ import java.util.Map;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
- * This http protocal uses the local cache.
+ * This http protocol uses the local cache.
  *
  * @author jbf
  */
@@ -27,12 +27,8 @@ public class DefaultHttpProtocol implements WebProtocol {
         if (fo.isFolder) {
             throw new IllegalArgumentException("is a folder");
         }
-        if (!fo.localFile.exists()) {
-            File partFile = new File(fo.localFile.toString() + ".part");
-            fo.wfs.downloadFile(fo.pathname, fo.localFile, partFile, mon);
-            fo.wfs.markAccess(fo.getNameExt());
-        }
-        return new FileInputStream(fo.localFile);
+        
+        return new FileInputStream(fo.getFile(mon));
     }
 
     public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
