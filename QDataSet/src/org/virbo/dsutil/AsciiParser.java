@@ -991,7 +991,10 @@ public class AsciiParser {
                     index= index+1;
                     index0= index;
                     i1= input.indexOf(quote,index);
-                    if ( i1==-1 ) throw new IllegalArgumentException("unclosed quote");
+                    if ( i1==-1 ) {
+                        System.err.println("unclosed quote: " + input);
+                        continue;
+                    }
                     while ( i1+1<input.length() && input.charAt(i1+1)==quote ) {
                         i1= input.indexOf(quote,i1+2);
                         if ( i1==-1 ) throw new IllegalArgumentException("unclosed quote");

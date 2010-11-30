@@ -315,16 +315,16 @@ public class SimpleStreamFormatter {
 
             } else {
                 SerializeDelegate sd = SerializeRegistry.getDelegate(value.getClass());
-                if (sd == null) {
-                    throw new IllegalArgumentException("Unsupported data type: " + value.getClass());
-                // TODO: just skip the property, or insert it as a string.
-                }
                 prop.setAttribute("name", name);
-                if ( sd instanceof XMLSerializeDelegate ) {
-                    prop.appendChild( ((XMLSerializeDelegate)sd).xmlFormat(document,value) );
+                if (sd == null) {
+                    System.err.println("dropping "+name+" because unsupported type: "+value.getClass());
                 } else {
-                    prop.setAttribute("type", sd.typeId(value.getClass()));
-                    prop.setAttribute("value", sd.format(value));
+                    if ( sd instanceof XMLSerializeDelegate ) {
+                        prop.appendChild( ((XMLSerializeDelegate)sd).xmlFormat(document,value) );
+                    } else {
+                        prop.setAttribute("type", sd.typeId(value.getClass()));
+                        prop.setAttribute("value", sd.format(value));
+                    }
                 }
             }
             properties.appendChild(prop);
