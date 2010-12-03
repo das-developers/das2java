@@ -53,6 +53,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     private Color color = Color.BLACK;
     private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
     private Datum xres= null; /** size used to set ixstepLimitSq */
+    private Shape selectionArea;
 
     public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {
         super(dsd);
@@ -226,6 +227,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         logger.fine("done");
         plotImage = image;
+        selectionArea= null;
         
     }
 
@@ -355,6 +357,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         plotImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        selectionArea= null;
         WritableRaster r = plotImage.getRaster();
         r.setDataElements(0, 0, w, h, raster);
 
@@ -478,42 +481,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
     @Override
     public boolean acceptContext(int x, int y) {
         if ( plotImage==null ) return false;
-        x -= parent.getCacheImageBounds().getX();
-        y -= parent.getCacheImageBounds().getY();
-        int i0 = Math.max(x - 2, 0);
-        int j0 = Math.max(y - 2, 0);
-        int i1 = Math.min(x + 3, plotImage.getWidth());
-        int j1 = Math.min(y + 3, plotImage.getHeight());
-        for (int i = i0; i < i1; i++) {
-            for (int j = j0; j < j1; j++) {
-                if ( (this.plotImage.getRGB(i, j) & 0xff000000 ) > 0) {
-                    return true;
-                }
-            }
+        Shape s= selectionArea();
+        if ( s.contains(x, y) ) {
+            return true;
         }
         return false;
-    }
-
-    public Shape selectionArea() {
-        BufferedImage bufferedImage= new BufferedImage( plotImage.getWidth(), plotImage.getHeight(), BufferedImage.TYPE_INT_RGB );
-        bufferedImage.getGraphics().drawImage( plotImage, 0, 0, parent );
-        float[] kk= new float[11*11];
-        for ( int i=0; i<kk.length; i++ ) kk[i]= 1.f;
-        Kernel kernel = new Kernel( 11, 11, kk );
-        BufferedImageOp op = new ConvolveOp(kernel);
-        bufferedImage = op.filter(bufferedImage, null);
-
-        Area a= new Area();
-        for ( int i=0; i<bufferedImage.getWidth(); i+=1 ) {
-            for ( int j=0; j<bufferedImage.getHeight(); j+=1 ) {
-                if ( ( bufferedImage.getRGB(i,j) & 0xFFFFFF ) >0 ) {
-                    a.add( new Area( new Rectangle( plotImageBounds.x+i,plotImageBounds.y+j,1,1 ) ) );
-                }
-            }
-        }
-        a.add( new Area( new Rectangle(  plotImageBounds.x, plotImageBounds.y,30,30 ) ) );
-
-        return a;
     }
 
     /**
@@ -535,5 +507,50 @@ public class ImageVectorDataSetRenderer extends Renderer {
      */
     public void setPrint300dpi(boolean print300dpi) {
         this.print300dpi = print300dpi;
+    }
+
+    /**
+     * this is very challenging!
+     * 
+     */
+    synchronized void calcSelectionArea() {
+        //System.err.println("in calc selection area");
+        long t0= System.currentTimeMillis();
+        if ( plotImage==null ) return;
+        int w= plotImage.getWidth();
+        int h= plotImage.getHeight();
+        int imagex = (int)parent.getCacheImageBounds().getX();
+        int imagey = (int)parent.getCacheImageBounds().getY();
+        GeneralPath result= new GeneralPath();
+        for ( int i=0; i<w; i+=5 ) {
+            for ( int j=0; j<h; j+=5 ) {
+                int n=0;
+                int x= 0;
+                int y= 0;
+                for ( int ii=0; ii<10; ii++ ) {
+                    for ( int jj=0; jj<10; jj++ ) {
+                        if ( i+ii<w && j+jj<h ) {
+                            if ( ( plotImage.getRGB(i+ii,j+jj) & 0xff000000 ) != 0 ) {
+                                n++;
+                                x+= ii;
+                                y+= jj;
+                            }
+                        }
+                    }
+                }
+                if ( n>0 ) {
+                    result.append( new Rectangle( (int)( i+((float)x)/n+imagex-5 ), (int)( j+((float)y)/n+imagey-5 ), 10, 10 ), true );
+                }
+            }
+        }
+        selectionArea= result;
+        //System.err.println("done in calc selection area " + ( System.currentTimeMillis()-t0) + "ms");
+    }
+
+    Shape selectionArea() {
+        if ( selectionArea==null ) {
+            calcSelectionArea();
+        }
+        return selectionArea;
     }
 }
