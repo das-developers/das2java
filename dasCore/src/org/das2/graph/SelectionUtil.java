@@ -23,6 +23,8 @@ public class SelectionUtil {
             return ((SpectrogramRenderer)r).selectionArea();
         } else if ( r instanceof DigitalRenderer ) {
             return ((DigitalRenderer)r).selectionArea();
+        } else if ( r instanceof ImageVectorDataSetRenderer ) {
+            return ((ImageVectorDataSetRenderer)r).selectionArea();
         } else {
             Rectangle rect= DasDevicePosition.toRectangle( r.getParent().getRow(), r.getParent().getColumn() );
             rect= new Rectangle( rect.x+5, rect.y+5, rect.width-10, rect.height-10 );
