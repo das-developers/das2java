@@ -136,13 +136,9 @@ public class DatumRangeUtil {
             return Integer.parseInt(val);
         }
     }
-    
-    /**
-     * returns null or int[7]
-     * @param stringIn
-     * @return
-     */
-    public static int[] parseISO8601 ( String str ) {
+
+    private static Pattern time1, time2, time3, time4, time5;
+    static {
         String d= "[-:]"; // delim
         String i4= "(\\d\\d\\d\\d)";
         String i3= "(\\d\\d\\d)";
@@ -151,9 +147,25 @@ public class DatumRangeUtil {
         String iso8601time= i4 + d + i2 + d + i2 + "T" + i2 + d + i2 + "(" + d + i2 + ")?Z?" ;
         String iso8601time2= i4 + i2 + i2 + "T" + i2 + i2 + "(" + i2 + ")?Z?" ;
         String iso8601time3= i4 + d + i3 + "T" + i2 + d + i2 + "(" + i2 + ")?Z?" ;
-        Pattern time1= Pattern.compile(iso8601time);
-        Pattern time2= Pattern.compile(iso8601time2);
-        Pattern time3= Pattern.compile(iso8601time3);
+        String iso8601time4= i4 + d + i2 + d + i2 + "Z?" ;
+        String iso8601time5= i4 + d + i3 + "Z?" ;
+        time1= Pattern.compile(iso8601time);
+        time2= Pattern.compile(iso8601time2);
+        time3= Pattern.compile(iso8601time3);
+        time4= Pattern.compile(iso8601time4);
+        time5= Pattern.compile(iso8601time5);
+    }
+    /**
+     * returns null or int[7]: [ Y, m, d, H, M, S, nano ]
+     *
+     * @param stringIn
+     * @param periodEnd true means the string refers to the end of a period,
+     *   and for ranges (Years,Months,Days) the time should be inclusive.
+     *
+     *
+     * @return
+     */
+    public static int[] parseISO8601 ( String str ) {
 
         Matcher m;
 
@@ -168,11 +180,20 @@ public class DatumRangeUtil {
                 m= time3.matcher(str);
                 if ( m.matches() ) {
                     return new int[] { Integer.parseInt( m.group(1) ), 1, Integer.parseInt( m.group(2) ), getInt( m.group(3), 0 ), getInt( m.group(4), 0 ), getInt( m.group(5), 0), 0 };
+                } else {
+                    m= time4.matcher(str);
+                    if ( m.matches() ) {
+                        return new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), getInt( m.group(3), 0 ), 0, 0, 0, 0 };
+                    } else {
+                        m= time5.matcher(str);
+                        if ( m.matches() ) {
+                            return new int[] { Integer.parseInt( m.group(1) ), 1, Integer.parseInt( m.group(2) ), 0, 0, 0, 0 };
+                        }
+                    }
                 }
             }
         }
         return null;
-
     }
 
     /**

@@ -216,7 +216,15 @@ public abstract class UnitsConverter {
                 return new UnitsConverter[] {uc};
             }
         }
-        
+
+        public String toString() {
+            String result="UnitsConverted$Appended[";
+            for ( UnitsConverter  uc1: converters ) {
+                result += " "+ uc1 + " ";
+            }
+            result += "]";
+            return result;
+        }
     }
     
     public static UnitsConverter getConverter(Units fromUnits, Units toUnits) {
