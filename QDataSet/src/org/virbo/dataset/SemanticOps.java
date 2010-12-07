@@ -5,6 +5,7 @@
 package org.virbo.dataset;
 
 import java.text.ParseException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Basis;
 import org.das2.datum.Datum;
@@ -96,6 +97,7 @@ public class SemanticOps {
         sunits= sunits.trim();
         try {
             result= Units.getByName(sunits);
+            System.err.println("got unit: "+result);            
         } catch ( IllegalArgumentException ex ) {
             if ( sunits.contains(" since ") ) {
                 try {
@@ -108,7 +110,25 @@ public class SemanticOps {
             } else if ( sunits.equals("msec") ) {  // CDF
                 result= Units.milliseconds;
             } else {
-                result= new NumberUnits( sunits );
+                Pattern multPattern= Pattern.compile("([.0-9]+)\\s*([a-zA-Z]+)");
+                Matcher m= multPattern.matcher(sunits);
+                if ( m.matches() ) { // kludge for ge_k0_mgf which has "0.1nT" for units.  We register a converter when we see these.  Note this is going to need more attention
+                    try {
+                        Units convTo;
+                        convTo = SemanticOps.lookupUnits(m.group(2));
+                        if ( convTo!=null ) {
+                            double fact= Double.parseDouble(m.group(1));
+                            result= new NumberUnits( sunits );
+                            result.registerConverter( convTo, new ScaleOffset(fact,0.0) );
+                        } else {
+                            result= SemanticOps.lookupUnits(sunits);
+                        }
+                    } catch ( NumberFormatException ex2 ) {
+                        result= SemanticOps.lookupUnits(sunits);
+                    }
+                } else {
+                    result= new NumberUnits( sunits );
+                }
             }
         }
         return result;
