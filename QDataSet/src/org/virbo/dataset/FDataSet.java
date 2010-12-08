@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * @author jbf
  */
-public final class FDataSet extends ArrayDataSet implements WritableDataSet {
+public final class FDataSet extends ArrayDataSet {
     float[] back;
 
     public static final String version="20090606";
@@ -97,7 +97,7 @@ public final class FDataSet extends ArrayDataSet implements WritableDataSet {
        this.len1= len1;
        this.len2= len2;
        this.len3= len3;
-       DataSetUtil.addQube(this);
+       if ( rank>1 ) putProperty(QDataSet.QUBE, Boolean.TRUE);
     }
 
     protected Object getBack() {

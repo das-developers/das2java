@@ -60,6 +60,10 @@ public class Slice1DataSet extends AbstractDataSet {
             } else {
                 System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
             }
+        } else {
+            DRank0DataSet context= DataSetUtil.asDataSet(index);
+            context.putProperty( QDataSet.NAME, "slice1" );
+            DataSetUtil.addContext( this, context );
         }
 
 

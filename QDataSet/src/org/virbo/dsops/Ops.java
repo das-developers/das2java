@@ -1796,6 +1796,9 @@ public class Ops {
                     if (ds.rank() > 2) {
                         builder.putValue(-1, 2, iter.index(2));
                     }
+                    if (ds.rank() > 3) {
+                        builder.putValue(-1, 3, iter.index(3));
+                    }
                     builder.nextRecord();
                 }
             }
@@ -1803,6 +1806,8 @@ public class Ops {
                 builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1"}));
             } else if (ds.rank() == 3) {
                 builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1", "dim2"}));
+            } else if (ds.rank() == 4) {
+                builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1", "dim2", "dim4"}));
             }
         }
 

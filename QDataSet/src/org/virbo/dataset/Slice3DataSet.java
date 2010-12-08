@@ -36,7 +36,12 @@ public class Slice3DataSet extends AbstractDataSet {
             } else {
                 System.err.println( "slice on non-qube, dep3 has rank="+dep3.rank() );
             }
+        } else {
+            DRank0DataSet context= DataSetUtil.asDataSet(index);
+            context.putProperty( QDataSet.NAME, "slice3" );
+            DataSetUtil.addContext( this, context );
         }
+
         putProperty( QDataSet.DEPEND_3, null );
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {

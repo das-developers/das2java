@@ -78,7 +78,7 @@ public final class IDataSet extends ArrayDataSet {
        this.len1= len1;
        this.len2= len2;
        this.len3= len3;
-       DataSetUtil.addQube(this);
+       if ( rank>1 ) putProperty(QDataSet.QUBE, Boolean.TRUE);
     }
 
     protected Object getBack() {
