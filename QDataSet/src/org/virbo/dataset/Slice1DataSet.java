@@ -57,10 +57,10 @@ public class Slice1DataSet extends AbstractDataSet {
                     putProperty( QDataSet.LABEL, label ); // special code is like unbundle operator
                     putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
                 } else {
-                    if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
+                    if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
                 }
             } else if ( dep1.rank()==2 ) {
-                if ( addContext ) DataSetUtil.addContext( this, new Slice1DataSet(dep1,index) );
+                if ( addContext ) DataSetUtil.addContext( this, new Slice1DataSet(dep1,index,false) );
             } else {
                 System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
             } 
@@ -84,7 +84,7 @@ public class Slice1DataSet extends AbstractDataSet {
                 if ( plane0.rank()<2 ) {
                     putProperty( prop, plane0 );
                 } else {
-                    putProperty( prop, new Slice1DataSet( plane0, index ) );
+                    putProperty( prop, new Slice1DataSet( plane0, index, addContext ) );
                 }
             } else {
                 break;

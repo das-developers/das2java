@@ -82,7 +82,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                 if ( plane0.rank()<1 ) {
                     putProperty( prop, plane0 );
                 } else {
-                    putProperty( prop, new Slice0DataSet( plane0, index ) );
+                    putProperty( prop, new Slice0DataSet( plane0, index, addContext ) );
                 }
             } else {
                 break;
@@ -93,7 +93,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         for ( int i=0; i<p.length; i++ ) {
             QDataSet delta= (QDataSet) ds.property( p[i] );
             if ( delta!=null && delta.rank()>0 ) {
-                putProperty( p[i], new Slice0DataSet(delta,index) );
+                putProperty( p[i], new Slice0DataSet(delta,index,addContext) );
             }
         }
 
