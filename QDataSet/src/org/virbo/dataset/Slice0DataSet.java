@@ -35,8 +35,8 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
         if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
             // special case where we are pulling out a table, this used to be a runtime exception
-            putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));
-            putProperty( QDataSet.DEPEND_1, new Slice0DataSet(dep1, index));
+            putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index, false ));
+            putProperty( QDataSet.DEPEND_1, new Slice0DataSet(dep1, index, false ));
         } else if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
             if ( addContext ) {
                 if ( dep0!=null ) {
@@ -48,7 +48,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                 }
             }
             if ( dep1!=null && dep1.rank()==2 ) {
-                putProperty( QDataSet.DEPEND_0, new Slice0DataSet( dep1, index ) );
+                putProperty( QDataSet.DEPEND_0, new Slice0DataSet( dep1, index, false ) );
             } else if ( dep1!=null ) {
                 putProperty( QDataSet.DEPEND_0, dep1 );
             }
@@ -58,9 +58,9 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
 
         } else {
             if ( dep0!=null && dep0.rank()>1 ) {
-                putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));  //DEPEND_0 rank>1
+                putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index, false ));  //DEPEND_0 rank>1
             } else if ( dep0!=null ) {
-                if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
+                if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet( dep0, index, false ) );
             } else {
                 if ( ds.property(QDataSet.DEPEND_0,index)==null ) { // bundle dataset  //TODO: this needs more review
                     putProperty( QDataSet.DEPEND_0, null );
