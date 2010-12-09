@@ -22,6 +22,10 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
     int index;
 
     public Slice0DataSet(QDataSet ds, int index) {
+        this( ds, index, true );
+    }
+
+    public Slice0DataSet( QDataSet ds, int index, boolean addContext ) {
         if ( ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 4");
         }
@@ -34,16 +38,18 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));
             putProperty( QDataSet.DEPEND_1, new Slice0DataSet(dep1, index));
         } else if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
-            if ( dep0!=null ) {
-                DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
-            } else {
-                DRank0DataSet context= DataSetUtil.asDataSet(index);
-                context.putProperty( QDataSet.NAME, "slice0" );
-                DataSetUtil.addContext( this, context );
+            if ( addContext ) {
+                if ( dep0!=null ) {
+                    DataSetUtil.addContext( this, new Slice0DataSet( dep0, index, false ) );
+                } else {
+                    DRank0DataSet context= DataSetUtil.asDataSet(index);
+                    context.putProperty( QDataSet.NAME, "slice0" );
+                    DataSetUtil.addContext( this, context );
+                }
             }
             if ( dep1!=null && dep1.rank()==2 ) {
                 putProperty( QDataSet.DEPEND_0, new Slice0DataSet( dep1, index ) );
-            } else {
+            } else if ( dep1!=null ) {
                 putProperty( QDataSet.DEPEND_0, dep1 );
             }
             putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_1 ) );
@@ -54,14 +60,16 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             if ( dep0!=null && dep0.rank()>1 ) {
                 putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index));  //DEPEND_0 rank>1
             } else if ( dep0!=null ) {
-                DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
+                if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet( dep0, index ) );
             } else {
                 if ( ds.property(QDataSet.DEPEND_0,index)==null ) { // bundle dataset  //TODO: this needs more review
                     putProperty( QDataSet.DEPEND_0, null );
                 } else {
-                    DRank0DataSet context= DataSetUtil.asDataSet(index);
-                    context.putProperty( QDataSet.NAME, "slice0" );
-                    DataSetUtil.addContext( this, context );
+                    if ( addContext )  {
+                        DRank0DataSet context= DataSetUtil.asDataSet(index);
+                        context.putProperty( QDataSet.NAME, "slice0" );
+                        DataSetUtil.addContext( this, context );
+                    }
                 }
             }
         }

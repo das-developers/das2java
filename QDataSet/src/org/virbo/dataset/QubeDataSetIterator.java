@@ -448,7 +448,10 @@ public class QubeDataSetIterator implements DataSetIterator {
     public DDataSet createEmptyDs() {
         List<Integer> qqube = new ArrayList<Integer>();
         List<Integer> dimMap= new ArrayList<Integer>();  //e.g. [0,1,2,3]
-        for (int i = 0; i < rank(); i++) {
+        for (int i = 0; i < this.it.length; i++) {
+            if ( this.it[i]==null ) {
+                continue;
+            }
             boolean reform=  this.it[i] instanceof SingletonIterator;
             if (!reform) {
                 qqube.add( this.it[i].length() );

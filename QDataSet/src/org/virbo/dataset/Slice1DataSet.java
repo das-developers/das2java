@@ -24,7 +24,11 @@ public class Slice1DataSet extends AbstractDataSet {
     QDataSet ds;
     int index;
 
-    Slice1DataSet( QDataSet ds, int index ) {
+    public Slice1DataSet(QDataSet ds, int index) {
+        this( ds, index, true );
+    }
+
+    Slice1DataSet( QDataSet ds, int index, boolean addContext ) {
         if (ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 4");
         }
@@ -53,17 +57,17 @@ public class Slice1DataSet extends AbstractDataSet {
                     putProperty( QDataSet.LABEL, label ); // special code is like unbundle operator
                     putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
                 } else {
-                    DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
+                    if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index) );
                 }
             } else if ( dep1.rank()==2 ) {
-                DataSetUtil.addContext( this, new Slice1DataSet(dep1,index) );
+                if ( addContext ) DataSetUtil.addContext( this, new Slice1DataSet(dep1,index) );
             } else {
                 System.err.println( "slice on non-qube, dep1 has rank="+dep1.rank() );
-            }
+            } 
         } else {
             DRank0DataSet context= DataSetUtil.asDataSet(index);
             context.putProperty( QDataSet.NAME, "slice1" );
-            DataSetUtil.addContext( this, context );
+            if ( addContext ) DataSetUtil.addContext( this, context );
         }
 
 

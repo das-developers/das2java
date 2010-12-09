@@ -17,7 +17,11 @@ public class Slice3DataSet extends AbstractDataSet {
     QDataSet ds;
     int index;
 
-    Slice3DataSet( QDataSet ds, int index ) {
+    public Slice3DataSet(QDataSet ds, int index) {
+        this( ds, index, true );
+    }
+
+    Slice3DataSet( QDataSet ds, int index, boolean addContext ) {
         if (ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 4");
         }
@@ -27,19 +31,21 @@ public class Slice3DataSet extends AbstractDataSet {
         this.ds = ds;
         this.index = index;
 
-        QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
-        if ( dep3!=null ) {
-            if ( dep3.rank()==1 ) {
-                DataSetUtil.addContext( this, new Slice0DataSet(dep3,index) );
-            } else if ( dep3.rank()==2 ) {
-                DataSetUtil.addContext( this, new Slice1DataSet(dep3,index) );
+        if ( addContext ) {
+            QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
+            if ( dep3!=null ) {
+                if ( dep3.rank()==1 ) {
+                    DataSetUtil.addContext( this, new Slice0DataSet(dep3,index,false) );
+                } else if ( dep3.rank()==2 ) {
+                    DataSetUtil.addContext( this, new Slice1DataSet(dep3,index,false) );
+                } else {
+                    System.err.println( "slice on non-qube, dep3 has rank="+dep3.rank() );
+                }
             } else {
-                System.err.println( "slice on non-qube, dep3 has rank="+dep3.rank() );
+                DRank0DataSet context= DataSetUtil.asDataSet(index);
+                context.putProperty( QDataSet.NAME, "slice3" );
+                DataSetUtil.addContext( this, context );
             }
-        } else {
-            DRank0DataSet context= DataSetUtil.asDataSet(index);
-            context.putProperty( QDataSet.NAME, "slice3" );
-            DataSetUtil.addContext( this, context );
         }
 
         putProperty( QDataSet.DEPEND_3, null );
