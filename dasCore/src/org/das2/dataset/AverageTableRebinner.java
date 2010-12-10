@@ -141,15 +141,17 @@ public class AverageTableRebinner implements DataSetRebinner {
         } else {
             yTags = new double[1][ny];
             for (int j = 0; j < ny; j++) {
-                yTags[0][j] = yds.value( j );
+                yTags[0][j] = yds.value( j );  // TODO: rank 2
             }
         }
 
         if (this.interpolate) {
             Datum xTagWidth = getXTagWidth(xds, tds1);
-            
+
+            QDataSet yds1= yds.rank()==1 ? yds : yds.slice(0); //TODO: rank 2 y
+
             //double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-            Datum yTagWidth = DataSetUtil.asDatum( DataSetUtil.guessCadenceNew( yds, null ) );
+            Datum yTagWidth = DataSetUtil.asDatum( DataSetUtil.guessCadenceNew( yds1, null ) );
 
             if (ddX != null) {
                 fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
@@ -323,15 +325,14 @@ public class AverageTableRebinner implements DataSetRebinner {
 
             QDataSet xds= SemanticOps.xtagsDataSet(tds1);
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+            if ( yds.rank()==2 ) {
+                yds= yds.slice(0);
+            }
             QDataSet wds= SemanticOps.weightsDataSet(tds1);
 
             Units yunits = SemanticOps.getUnits(yds);
             Units xunits = SemanticOps.getUnits(xds);
 
-            if ( yds.rank()==2 ) {
-                throw new IllegalArgumentException("rank 2 y not yet supported");
-                //TODO: rank 2 yds
-            }
 
             for (int i = 0; i < 2; i++) {
                 int iy = i == 0 ? 0 : ddY.numberOfBins() - 1;
@@ -401,6 +402,9 @@ public class AverageTableRebinner implements DataSetRebinner {
 
             QDataSet xds= SemanticOps.xtagsDataSet(tds1);
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+            if ( yds.rank()==2 ) {
+                yds= yds.slice(0);
+            }
             QDataSet wds= SemanticOps.weightsDataSet(tds1);
 
             Units yunits = SemanticOps.getUnits(yds);
@@ -428,6 +432,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 if (interpolateType == Interpolate.NearestNeighbor) {
                     xalpha = xalpha < 0.5 ? 0.0 : 1.0;
                 }
+
 
                 for (int j = 0; j < 2; j++) {
                     int iy = j == 0 ? 0 : ddY.numberOfBins() - 1;
@@ -521,8 +526,20 @@ public class AverageTableRebinner implements DataSetRebinner {
                     ibinx = i;
                 }
 
+                int ny1= yds.rank()==1 ? yds.length() : yds.length(i);
+
                 if (ibinx >= 0 && ibinx < nx) {
-                    for (int j = 0; j < yds.length(); j++) {
+                    for (int j = 0; j < ny1; j++) {
+                        try {
+                            double z = tds1.value( i, j );
+                            double w = wds.value( i, j );
+                            if (ibiny[j] >= 0 && ibiny[j] < ny) {
+                                rebinData[ibinx][ibiny[j]] += z * w;
+                                rebinWeights[ibinx][ibiny[j]] += w;
+                            }
+                        } catch ( Exception e ) {
+                            System.err.println("here");
+                        }
                         double z = tds1.value( i, j );
                         double w = wds.value( i, j );
                         if (ibiny[j] >= 0 && ibiny[j] < ny) {
