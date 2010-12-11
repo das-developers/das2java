@@ -97,7 +97,7 @@ public class SemanticOps {
         sunits= sunits.trim();
         try {
             result= Units.getByName(sunits);
-            System.err.println("got unit: "+result);            
+            
         } catch ( IllegalArgumentException ex ) {
             if ( sunits.contains(" since ") ) {
                 try {
