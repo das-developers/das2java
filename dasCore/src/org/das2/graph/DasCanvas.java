@@ -152,6 +152,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     private List<Painter> topDecorators= new LinkedList<Painter>();
     private List<Painter> bottomDecorators= new LinkedList<Painter>();
 
+    /**
+     * Java6 has paintingForPrint, use this for now.
+     */
+    boolean lpaintingForPrint= false;
+    
+
     /* Canvas actions */
     protected static abstract class CanvasAction extends AbstractAction {
 
@@ -701,6 +707,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
+    /**
+     * Java1.6 has this function native
+     * @return
+     */
+    public boolean lisPaintingForPrint() {
+        return this.lpaintingForPrint;
+    }
+
     public void print(Graphics g) {
         synchronized (this) {
             if (printingThreads == null) {
@@ -729,7 +743,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 //System.err.println("    DasPlot.getBounds()=" + p.getBounds());
                 }
             }
+            lpaintingForPrint= true;
             super.print(g);
+            lpaintingForPrint= false;
         } finally {
             setOpaque(true);
             synchronized (this) {
