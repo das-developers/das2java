@@ -233,8 +233,16 @@ public class WebFileObject extends FileObject {
             URL url = wfs.getURL(this.getNameExt());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
-            connection.connect();
-            remoteDate = new Date(connection.getLastModified());
+            try {
+                connection.connect();
+                remoteDate = new Date(connection.getLastModified());
+            } catch ( IOException ex ) {
+                if ( !((HttpFileSystem)wfs).isOffline() ) {
+                    throw ex;
+                } else {
+                    remoteDate= new Date(0);
+                }
+            }
         } else {
             // this is the old logic
             remoteDate = new Date(localFile.lastModified());
@@ -260,6 +268,15 @@ public class WebFileObject extends FileObject {
             } catch (FileNotFoundException e) {
                 // TODO: do something with part file.
                 throw e;
+            } catch (IOException ex ) {
+                if ( this.wfs instanceof HttpFileSystem ) {
+                    if ( this.wfs.isOffline() ) {
+                        throw new FileSystem.FileSystemOfflineException("not found in local cache: "+getNameExt() );
+                    }
+                }
+                throw ex;
+            } finally {
+                monitor.finished();
             }
         }
 

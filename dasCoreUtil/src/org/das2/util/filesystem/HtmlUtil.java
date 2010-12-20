@@ -66,7 +66,10 @@ public class HtmlUtil {
             String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
-        InputStream urlStream = urlConnection.getInputStream();
+
+        //HERE is where we should support offline use.
+        InputStream urlStream;
+        urlStream= urlConnection.getInputStream();
         
         // search the input stream for links
         // first, read in the entire URL

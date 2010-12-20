@@ -112,7 +112,7 @@ public class FileSystemSettings {
         this.persistence = persistence;
         propertyChangeSupport.firePropertyChange(PROP_PERSISTENCE, oldPersistence, persistence);
     }
-    protected boolean allowOffline = false;
+    protected boolean allowOffline = true;
     /**
      * allow use of persistent, cached files when the file system is not accessible.
      * FileSystem implementations will throw FileNotFound exception when remote

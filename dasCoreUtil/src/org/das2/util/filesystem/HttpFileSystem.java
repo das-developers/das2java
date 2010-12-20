@@ -77,30 +77,40 @@ public class HttpFileSystem extends WebFileSystem {
             }
 
             boolean offline = true;
-            urlc.connect();
-            if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
-                if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
-                    // might be nice to modify URL so that credentials are used.
-                    KeyChain.getDefault().clearUserPassword(root);
-                    if ( userInfo==null ) {
-                        String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
-                        URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
-                        try {
-                            URI rootAuthUri= rootAuth.toURI();
-                            return createHttpFileSystem( rootAuthUri );
-                        } catch ( URISyntaxException ex ) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                }
-                if (FileSystem.settings().isAllowOffline()) {
+            boolean connectFail= true;
+
+            try {
+                urlc.connect();
+                connectFail= false;
+            } catch ( IOException ex ) {
+                ex.printStackTrace();
+                if ( FileSystem.settings().isAllowOffline() ) {
                     logger.info("remote filesystem is offline, allowing access to local cache.");
                 } else {
                     throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
                 }
-            } else {
-                offline = false;
             }
+
+            if ( !connectFail ) {
+                if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
+                    if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                        // might be nice to modify URL so that credentials are used.
+                        KeyChain.getDefault().clearUserPassword(root);
+                        if ( userInfo==null ) {
+                            String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
+                            URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
+                            try {
+                                URI rootAuthUri= rootAuth.toURI();
+                                return createHttpFileSystem( rootAuthUri );
+                            } catch ( URISyntaxException ex ) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    } else {
+                        offline= false;
+                    }
+                }
+            } 
 
             File local;
 
@@ -314,6 +324,14 @@ public class HttpFileSystem extends WebFileSystem {
                     list = HtmlUtil.getDirectoryListing(getURL(directory));
                 } catch (CancelledOperationException ex) {
                     throw new IOException( "user cancelled at credentials" ); // JAVA6
+                } catch ( IOException ex ) {
+                    if ( isOffline() ) {
+                        System.err.println("using local listing because remote is not available");
+                        File localFile= new File( localRoot, directory );
+                        return localFile.list();
+                    } else {
+                        throw ex;
+                    }
                 }
                 String[] result = new String[list.length];
                 int n = directory.length();
