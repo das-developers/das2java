@@ -39,8 +39,8 @@ public class LocalFileSystem extends FileSystem {
     
     /**
      * Note the String used to create the URL should have either one or three slashes:
-     *   file:/home/jbf    or   file:///home/jbf   but not
-     *   file://home/jbf
+     *   file:/home/jbf    or   file:///home/jbf   
+     *   but not file://home/jbf
      * Also, on Windows, /c:/documents and settings/jbf/  is okay.
      */
     protected LocalFileSystem(URI root) throws FileSystemOfflineException {
@@ -57,8 +57,10 @@ public class LocalFileSystem extends FileSystem {
             }
         }
         if ( !surl.endsWith("/") ) surl+="/";
+        if ( surl.startsWith("file://") && !surl.startsWith("file:///") ) {
+            throw new URIException("Local file URLs should start with file:/ or file:///, but not file:// "+surl);
+        }
         String[] split= FileSystem.splitUrl( surl );
-        
         localRoot=new File( split[2].substring(split[0].length()) );
         if ( !localRoot.exists() ) {
             File[] roots= File.listRoots();
