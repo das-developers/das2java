@@ -331,6 +331,7 @@ public class QubeDataSetIterator implements DataSetIterator {
         if (rank == 0) {
             return this.allnext;
         } else {
+            if ( it[0].length()==0 ) return false; // check for empty datasets.
             int i = rank - 1;
             if (it[i].hasNext()) {
                 return true;
