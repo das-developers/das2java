@@ -846,6 +846,17 @@ public class DataSetOps {
                 } else {
                     fillDs= Ops.fftPower(fillDs);
                 }
+            } else if ( cmd.equals("|unbundle" ) ) {
+                String comp= s.next();
+                if ( comp.startsWith("'") && comp.endsWith("'") ) {
+                    comp= comp.substring(1,comp.length()-1);
+                }
+                try {
+                    int icomp= Integer.parseInt(comp);
+                    fillDs= DataSetOps.unbundle( fillDs, icomp );
+                } catch ( NumberFormatException ex ) {
+                    fillDs= DataSetOps.unbundle( fillDs, comp );
+                }
             }
         }
         return fillDs;
