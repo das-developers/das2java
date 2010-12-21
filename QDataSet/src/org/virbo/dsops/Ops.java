@@ -3112,7 +3112,11 @@ public class Ops {
             } else {
                 if ( !noImplicit ) dim+= 1; // implicity undeclared dimensions add one dimension
             }
-            ds= DataSetOps.slice0(ds, 0);
+            if ( ds.length()>0 ) {
+                ds= DataSetOps.slice0(ds, 0);
+            } else {
+                throw new IllegalArgumentException("dataset is empty");
+            }
         }
         return dim;
     }
