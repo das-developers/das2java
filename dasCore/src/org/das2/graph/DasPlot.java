@@ -1546,12 +1546,26 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return this.preview;
     }
 
+    /**
+     * set the visibility of both the plot and its x and y axes.  Recently,
+     * setVisible(v) would do this, but it incorrectly couples the visible properties
+     * of the separate components.
+     *
+     * @param visible
+     */
+    public void setAxisPlotVisible( boolean visible ) {
+        this.setVisible(visible);
+        this.xAxis.setVisible(visible);
+        this.yAxis.setVisible(visible);
+    }
+
     @Override
     public void setVisible(boolean visible) {
+        //bugfix: https://sourceforge.net/tracker/index.php?func=detail&aid=3137434&group_id=199733&atid=970682
+        //visible properties must be independent, or bugs will happen.  See setAxisPlotVisible for old behavior.
         super.setVisible(visible);
-        xAxis.setVisible(visible);
-        yAxis.setVisible(visible);
     }
+
     protected boolean overSize = false;
     public static final String PROP_OVERSIZE = "overSize";
 
