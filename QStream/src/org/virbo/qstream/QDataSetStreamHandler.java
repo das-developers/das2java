@@ -356,9 +356,14 @@ public class QDataSetStreamHandler implements StreamHandler {
                 sliceDs= builder.getDataSet();
                 if ( sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
                     String joinChild= (String)sliceDs.property(BUILDER_JOIN_CHILDREN);
-                    sliceDs= builders.get(joinChild).getDataSet();
+                    DataSetBuilder childBuilder= builders.get(joinChild);
+                    if ( childBuilder!=null ) {
+                        sliceDs= childBuilder.getDataSet();
+                    } else {
+                        sliceDs= null;
+                    }
                 }
-                join.join(sliceDs);
+                if ( sliceDs!=null ) join.join(sliceDs);
             } else {
                 DataSetUtil.putProperties( builder.getProperties(), join );
                 sliceDs= (MutablePropertyDataSet) join.slice(join.length()-1); //wha??  when do we use this?
@@ -370,7 +375,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
 
         if (join != null) {
-            resolveProps(sliceDs); //TODO: this technically breaks things, because we cannot call getDataSet again
+            if ( sliceDs!=null ) resolveProps(sliceDs); //TODO: this technically breaks things, because we cannot call getDataSet again
         } else {
             resolveProps(result);
         }
