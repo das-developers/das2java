@@ -91,6 +91,7 @@ public class SeriesRenderer extends Renderer {
     private int lastIndex=-1;/* the non-inclusive index of the last point drawn. */
     private int firstIndex_v=-1;/* the index of the first point drawn that is visible, nonzero when X is monotonic and we can clip. */
     private int lastIndex_v=-1;/* the non-inclusive index of the last point that is visible. */
+    private int dslen=-1; // length of dataset, compare to firstIndex_v.
 
     boolean updating = false;
     private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
@@ -876,6 +877,7 @@ public class SeriesRenderer extends Renderer {
         DasPlot lparent= parent;
         if ( lparent==null ) return;
 
+        dslen= xds.length();
         Boolean xMono = SemanticOps.isMonotonic( xds );
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
@@ -1115,7 +1117,15 @@ public class SeriesRenderer extends Renderer {
         }
 
         if ( lastIndex_v - firstIndex_v < 2 ) {
-            if ( messageCount++==0) lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
+            if ( messageCount++==0) {
+                if ( lastIndex_v<2 ) {
+                    lparent.postMessage(this, "fewer than two points visible, look right", DasPlot.INFO, null, null);
+                } else if ( this.dslen - this.firstIndex_v < 2 ) {
+                    lparent.postMessage(this, "fewer than two points visible, look left", DasPlot.INFO, null, null);
+                } else {
+                    lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
+                }
+            }
         }
 
         graphics.dispose();
