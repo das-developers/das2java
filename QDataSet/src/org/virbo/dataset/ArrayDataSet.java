@@ -194,7 +194,14 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( ds.len1!=this.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=this.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds.len3!=this.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( this.getBack().getClass()!=ds.getBack().getClass() ) throw new IllegalArgumentException("backing type mismatch");
+        if ( this.getBack().getClass()!=ds.getBack().getClass() ) {
+            Class a1= ds.getBack().getClass();
+            Class a2= this.getBack().getClass();
+            String s1,s2;
+            s1= "" + a1.getComponentType();
+            s2= "" + a2.getComponentType();
+            throw new IllegalArgumentException("backing type mismatch: "+ s2 + "["+ds.length()+",*] can't be appended to "+ s1 + "["+this.length()+",*]" );
+        }
         int trec= Array.getLength(this.getBack()) / this.len1 / this.len2 / this.len3;
         return trec-this.len0 > ds.length();
     }
