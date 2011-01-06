@@ -34,6 +34,7 @@ import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
 
 /**
@@ -407,8 +408,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 ixstepLimitSq= 100000000;
                 xres= null;
             } else {
-                if ( !xres1.equals(xres) ) {
-                    Datum sw = DataSetUtil.asDatum( DataSetUtil.guessCadenceNew(xds,ds1) ); //TODO! check ratiometric
+                RankZeroDataSet d= DataSetUtil.guessCadenceNew(xds,ds1);
+                if ( d!=null ) {
+                    Datum sw = DataSetUtil.asDatum( d ); //TODO! check ratiometric
                     Datum xmax= xAxis.getDataMaximum();
                     int ixstepLimit= 0;
                     if ( UnitsUtil.isRatiometric(sw.getUnits())) {
@@ -418,6 +420,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     }
                     ixstepLimitSq= ixstepLimit * ixstepLimit;
                     xres= xres1;
+                } else {
+                    ixstepLimitSq= 100000000;
                 }
             }
         } else {
