@@ -280,6 +280,13 @@ public class SemanticOps {
         return cadence==null ? null : DataSetUtil.asDatum( cadence );
     }
 
+    /**
+     * return the dataset containing the x tags for the dataset.  This
+     * is QDataSet.DEPEND_0, or if that's null then IndexGenDataSet(ds.length).
+     * For a bundle, this is just the 0th dataset.
+     * @param ds
+     * @return
+     */
     public static QDataSet xtagsDataSet( QDataSet ds ) {
         if ( isBundle(ds) ){
             return DataSetOps.unbundle(ds,0);
