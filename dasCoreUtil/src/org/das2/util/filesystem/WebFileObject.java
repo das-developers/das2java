@@ -221,8 +221,12 @@ public class WebFileObject extends FileObject {
         
         if ( wfs.isAppletMode() ) throw new SecurityException("getFile cannot be used with applets.");
 
-        if ( EventQueue.isDispatchThread() ) {
-            System.err.println("download on event thread! "+this.getNameExt());
+        //bugfix http://sourceforge.net/tracker/?func=detail&aid=3155917&group_id=199733&atid=970682:
+        // calling EventQueue.isDispatchThread() starts the event thread, causing problems when called from RSI's IDL.
+        if ( false ) {
+            if ( EventQueue.isDispatchThread() ) {
+                System.err.println("download on event thread! "+this.getNameExt());
+            }
         }
 
         boolean download = false;
