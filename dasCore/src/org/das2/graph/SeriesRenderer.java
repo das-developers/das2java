@@ -1211,7 +1211,7 @@ public class SeriesRenderer extends Renderer {
 
             errorElement.update(xAxis, yAxis, dataSet, monitor);
             psymsElement.update(xAxis, yAxis, dataSet, monitor);
-            selectionArea= calcSelectionArea( xAxis, yAxis, vds );
+            selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
 
         } else if (tds != null) {
             extraConnectorElements = new PsymConnectorRenderElement[tds.length(0)];
@@ -1233,7 +1233,7 @@ public class SeriesRenderer extends Renderer {
 
                 }
                 extraConnectorElements[i].update(xAxis, yAxis, dataSet, monitor);
-                if ( i==0 ) selectionArea= calcSelectionArea( xAxis, yAxis, vds );
+                if ( i==0 ) selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
             }
         } else {
             System.err.println("both tds and vds are null");
@@ -1252,7 +1252,7 @@ public class SeriesRenderer extends Renderer {
         setUpdatesPointsPerMillisecond(dppms);
     }
 
-    private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, QDataSet ds ) {
+    private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, QDataSet xds, QDataSet ds ) {
 
         Datum widthx;
         if (xaxis.isLog()) {
@@ -1275,7 +1275,7 @@ public class SeriesRenderer extends Renderer {
         DatumRange dr= xaxis.getDatumRange();
         
         QDataSet reduce = VectorUtil.reduce2D(
-                ds,
+                xds, ds,
                 firstIndex,
                 Math.min( firstIndex+20000, lastIndex),
                 widthx.divide(xaxis.getColumn().getWidth()/5),
