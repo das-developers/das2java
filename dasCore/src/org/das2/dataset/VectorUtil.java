@@ -289,8 +289,8 @@ public class VectorUtil {
     }
 
     /**
-     * produce a simpler version of the dataset by averaging adjecent data.
-     * code taken from org.das2.graph.GraphUtil.reducePath.  Adjecent points are
+     * produce a simpler version of the dataset by averaging adjacent data.
+     * code taken from org.das2.graph.GraphUtil.reducePath.  Adjacent points are
      * averaged together until a point is found that is not in the bin, and then
      * a new bin is started.  The bin's lower bounds are integer multiples
      * of xLimit and yLimit.
@@ -301,7 +301,7 @@ public class VectorUtil {
      *
      * xLimit and yLimit are rank 0 datasets, so that they can indicate that binning
      * should be done in log space rather than linear.  In this case, a SCALE_TYPE
-     * for the dataset should be "log" and its unit should be convertable to
+     * for the dataset should be "log" and its unit should be convertible to
      * Units.logERatio (for example, Units.log10Ratio or Units.percentIncrease).
      * Note when either is log, then averaging is done in the log space.
      *
@@ -312,7 +312,7 @@ public class VectorUtil {
      * @param yLimit the size of the bins or null to indicate no limit.
      * @return
      */
-    public static QDataSet reduce2D( QDataSet ds, int start, int finish, Datum xLimit, Datum yLimit ) {
+    public static QDataSet reduce2D( QDataSet xds, QDataSet ds, int start, int finish, Datum xLimit, Datum yLimit ) {
 
         double x0 = Float.MAX_VALUE;
         double y0 = Float.MAX_VALUE;
@@ -323,7 +323,6 @@ public class VectorUtil {
         double ay0 = Float.NaN;  // last averaged location
 
         QDataSet wds= SemanticOps.weightsDataSet(ds);
-        QDataSet xds= SemanticOps.xtagsDataSet(ds);
 
         final Units xunits= SemanticOps.getUnits(xds);
         final Units yunits= SemanticOps.getUnits(ds);
