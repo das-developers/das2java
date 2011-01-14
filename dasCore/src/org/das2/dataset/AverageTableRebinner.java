@@ -29,13 +29,14 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.UnitsUtil;
 import org.das2.DasException;
 import org.das2.system.DasLogger;
-import java.util.*;
 import java.util.logging.*;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -177,9 +178,15 @@ public class AverageTableRebinner implements DataSetRebinner {
         for ( int i=0; i<xx.length(); i++ ) xx.putValue(i, ddX.binCenter(i,xunits));
         xx.putProperty( QDataSet.UNITS, xunits );
 
-        DDataSet yy= DDataSet.createRank1( ddY.numberOfBins() );
-        for ( int i=0; i<yy.length(); i++ ) yy.putValue(i, ddY.binCenter(i,yunits));
-        yy.putProperty( QDataSet.UNITS, yunits );
+        MutablePropertyDataSet yy;
+        if ( ddY!=null ) {
+            DDataSet yyy= DDataSet.createRank1( ddY.numberOfBins() );
+            for ( int i=0; i<yyy.length(); i++ ) yyy.putValue(i, ddY.binCenter(i,yunits));
+            yyy.putProperty( QDataSet.UNITS, yunits );
+            yy= yyy;
+        } else {
+            yy= DataSetOps.makePropertiesMutable( yds );
+        }
 
         for ( String s: DataSetUtil.dimensionProperties() ) {
             if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
