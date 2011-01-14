@@ -30,7 +30,7 @@ public class ClippedTableDataSet extends org.virbo.dataset.AbstractDataSet {
     int xoffset;
     int xlength;
     
-    void calculateXOffset( Datum xmin, Datum xmax ) {
+    final void calculateXOffset( Datum xmin, Datum xmax ) {
         QDataSet xds= SemanticOps.xtagsDataSet(source);
         xoffset= DataSetUtil.getPreviousIndex(xds, xmin);
         int ix1= DataSetUtil.getNextIndex(xds, xmax );
@@ -44,6 +44,19 @@ public class ClippedTableDataSet extends org.virbo.dataset.AbstractDataSet {
     public ClippedTableDataSet ( QDataSet source, DatumRange xrange, DatumRange yrange ) {
         this.source= source;
         calculateXOffset( xrange.min(), xrange.max() );
+        Boolean t= (Boolean) source.property(QDataSet.QUBE);
+        if ( t!=null && t ) {
+            putProperty( QDataSet.QUBE, t );
+        }
+        QDataSet dep0= (QDataSet) source.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) {
+            putProperty( QDataSet.DEPEND_0, dep0.trim( xoffset, xoffset+xlength) );
+        }
+        QDataSet dep1= (QDataSet) source.property(QDataSet.DEPEND_1);
+        if ( dep1!=null ) {
+            putProperty( QDataSet.DEPEND_1, dep1 );
+        }
+        
     }
     
     // TODO: why is this public?
