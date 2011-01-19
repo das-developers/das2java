@@ -12,6 +12,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -147,17 +148,28 @@ public class QDataSetTableModel extends AbstractTableModel {
         }
     }
 
+    /**
+     * this currently isn't used because there's a bug.
+     * @return
+     */
     public TableColumnModel getTableColumnModel() {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
 
         for (int i = 0; i < colCount; i++) {
             TableColumn c = new TableColumn();
+            Units u=null;
             if (i < dep0Offset) {
                 c.setHeaderValue(dep0.property(QDataSet.LABEL));
+                u= (Units) dep0.property(QDataSet.UNITS);
             } else {
                 c.setHeaderValue(labels[i]);
+                u= (Units) ds.property(QDataSet.UNITS); // TODO: for each column
             }
-            result.addColumn(new TableColumn());
+            TableColumn tc= new TableColumn();
+
+            tc.setPreferredWidth( ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 150 : 50 );
+            result.addColumn( tc );
+
         }
 
         return result;
