@@ -353,20 +353,26 @@ public class SemanticOps {
             xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), null );
             yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1), null );
             for ( int i=1; i<ds.length(); i++ ) {
-                ds1= ds.slice(0);
+                ds1= ds.slice(i);
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), xrange );
                 yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1), yrange );
             }
         } else {
             throw new IllegalArgumentException("bad rank");
         }
-        DDataSet result= DDataSet.createRank2(2,2);
-        result.putValue(0,0,xrange.value(0));
-        result.putValue(0,1,xrange.value(1));
-        result.putValue(1,0,yrange.value(0));
-        result.putValue(1,1,yrange.value(1));
-        result.putProperty(QDataSet.BINS_1,"min,maxInclusive");
-        return result;
+
+        JoinDataSet jds= (JoinDataSet) Ops.join( xrange, yrange );
+        jds.putProperty( QDataSet.BINS_1,"min,maxInclusive");
+        return jds;
+
+//        DDataSet result= DDataSet.createRank2(2,2);
+//        result.putValue(0,0,xrange.value(0));
+//        result.putValue(0,1,xrange.value(1));
+//        result.putValue(1,0,yrange.value(0));
+//        result.putValue(1,1,yrange.value(1));
+//        result.putProperty(QDataSet.BINS_1,"min,maxInclusive");
+//
+        //return result;
     }
 
     /**
