@@ -904,7 +904,8 @@ public class DataSetOps {
             QDataSet ds1= ds.slice(0);
             xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1) );
             yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1) );
-            for ( int i=1; i<ds1.length(); i++ ) {
+            for ( int i=1; i<ds.length(); i++ ) {
+                ds1= ds.slice(i);
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), xrange );
                 yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1), yrange );
             }
