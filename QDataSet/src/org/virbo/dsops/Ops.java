@@ -2180,7 +2180,7 @@ public class Ops {
      * The property count is set to the number of valid measurements.
      * 2010-10-14: add branch for monotonic datasets.
      * @param ds
-     * @param range, if non-null, return the union of this range and the extent.
+     * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
      * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds, QDataSet range ) {
@@ -2199,6 +2199,13 @@ public class Ops {
         double [] result;
         double fill= ((Number)w.property(QDataSet.FILL_VALUE)).doubleValue();
 
+        if ( range==null ) {
+            result= new double[]{ Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        } else {
+            result= new double[]{ range.value(0), range.value(1) };
+            if ( range.value(0)==fill ) System.err.println("range passed into extent contained fill");
+        }
+
         if ( ds.rank()==1 && Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC )) && deltaplus==null ) {
             int ifirst=0;
             int n= ds.length();
@@ -2207,13 +2214,12 @@ public class Ops {
 
             while ( ilast>=0 && w.value(ilast)==0.0 ) ilast--;
             count= Math.max( 0, ilast - ifirst + 1 );
-            result= new double[2];
             if ( count>0 ) {
-                result[0]= ds.value(ifirst);
-                result[1]= ds.value(ilast);
+                result[0]= Math.min( result[0], ds.value(ifirst) );
+                result[1]= Math.max( result[1], ds.value(ilast) );
             } else {
-                result[0] = fill;
-                result[1] = fill;
+                result[0] = range==null ? fill : range.value(0);
+                result[1] = range==null ? fill : range.value(1);
             }
 
         } else {
@@ -2227,12 +2233,6 @@ public class Ops {
             }
 
             QubeDataSetIterator it = new QubeDataSetIterator(ds);
-
-            if ( range==null ) {
-                result= new double[]{ Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-            } else {
-                result= new double[]{ range.value(0), range.value(1) };
-            }
 
             while (it.hasNext()) {
                 it.next();
