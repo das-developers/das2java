@@ -31,6 +31,7 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.virbo.dataset.QDataSet;
@@ -73,7 +74,10 @@ public class DisplayDataMouseModule extends MouseModule {
             myPanel.setLayout(new BorderLayout());
             myEdit = new JTable();
             myEdit.setFont(Font.decode("fixed-10"));
-            JScrollPane scrollPane = new JScrollPane(myEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            myEdit.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
+            myEdit.getTableHeader().setReorderingAllowed(false);
+            
+            JScrollPane scrollPane = new JScrollPane( myEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
             myPanel.add(scrollPane, BorderLayout.CENTER);
             
             comboBox= new JComboBox();
@@ -158,17 +162,35 @@ public class DisplayDataMouseModule extends MouseModule {
         }
     };
 
+    private void showMessageInTable( final JTable t, final String message ) {
+       TableModel result= new DefaultTableModel( 1, 1 ) {
+            @Override
+            public Object getValueAt( int row, int col ) {
+                return message;
+            }
+        };
+        t.setModel(result);
+
+        DefaultTableColumnModel tcm = new DefaultTableColumnModel();
+
+        TableColumn c = new TableColumn(0);
+        c.setHeaderValue("");
+        c.setPreferredWidth( 250 );
+        tcm.addColumn(c);
+
+        t.setColumnModel(tcm);
+
+    }
+
     private void setDataSet( QDataSet ds, DatumRange xrange, DatumRange yrange ) {
         TableModel tm;
 
         if ( ds==null ) {
-            tm= new DefaultTableModel( 1, 1 ) {
-                @Override
-                public Object getValueAt( int row, int col ) {
-                    return "no dataset";
-                }
-            };
-            myEdit.setModel(tm);
+            showMessageInTable( myEdit, "no dataset" );
+            return;
+        }
+        if ( ds.rank()>2 ) {
+            showMessageInTable( myEdit,"data cannot be displayed" );
             return;
         }
         TableColumnModel tcm= new DefaultTableColumnModel();
@@ -183,6 +205,8 @@ public class DisplayDataMouseModule extends MouseModule {
             tcm= ((QDataSetTableModel)tm).getTableColumnModel();
         }
         myEdit.setModel(tm);
+        myEdit.setColumnModel(tcm);
+
         //myEdit.setColumnModel(new DefaultTableColumnModel() );
         //myEdit.setColumnModel(tcm); // error with rank 1.
 
