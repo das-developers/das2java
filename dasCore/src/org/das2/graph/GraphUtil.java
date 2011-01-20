@@ -66,11 +66,11 @@ public class GraphUtil {
 
         double xSampleWidth= Double.MAX_VALUE; // old code had 1e31.  MAX_VALUE is better.
         if ( tagds.property( QDataSet.CADENCE ) != null ) { //e.g. Orbit(T);
-            Datum xSampleWidthDatum = (Datum) org.virbo.dataset.DataSetUtil.asDatum( (RankZeroDataSet)tagds.property( QDataSet.CADENCE ) );
-            xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
+            //Datum xSampleWidthDatum = (Datum) org.virbo.dataset.DataSetUtil.asDatum( (RankZeroDataSet)tagds.property( QDataSet.CADENCE ) );
+            //xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
         }
 
-        double t0 = -Double.MAX_VALUE;
+        //double t0 = -Double.MAX_VALUE;
         double i0 = -Double.MAX_VALUE;
         double j0 = -Double.MAX_VALUE;
         boolean v0= false;  // last point was visible
@@ -90,7 +90,7 @@ public class GraphUtil {
             boolean v= rclip==null || rclip.contains( i,j);
             if ( wds.value(index)==0 || Double.isNaN(y)) {
                 skippedLast = true;
-            } else if ( skippedLast || (t - t0) > xSampleWidth ) {
+            } else if ( skippedLast ) { //|| (t - t0) > xSampleWidth ) { // remove use of t until it is compared with physical data, not dimensionless
                 newPath.moveTo((float) i, (float) j);
                 skippedLast = !v;
             } else {
@@ -106,7 +106,7 @@ public class GraphUtil {
                 }
                 skippedLast = false;
             }
-            t0 = t;
+            //t0 = t;
             i0 = i;
             j0 = j;
             v0= v;
