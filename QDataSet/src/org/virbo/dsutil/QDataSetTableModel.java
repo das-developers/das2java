@@ -14,6 +14,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -155,20 +156,27 @@ public class QDataSetTableModel extends AbstractTableModel {
     public TableColumnModel getTableColumnModel() {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
 
+        QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bds!=null ) bds= DataSetOps.flattenBundleDescriptor(bds);
+        
         for (int i = 0; i < colCount; i++) {
-            TableColumn c = new TableColumn();
+            TableColumn c = new TableColumn(i);
             Units u=null;
             if (i < dep0Offset) {
                 c.setHeaderValue(dep0.property(QDataSet.LABEL));
                 u= (Units) dep0.property(QDataSet.UNITS);
             } else {
                 c.setHeaderValue(labels[i]);
-                u= (Units) ds.property(QDataSet.UNITS); // TODO: for each column
+                if ( bds==null ) {
+                    u= (Units) ds.property(QDataSet.UNITS);
+                } else {
+                    u= (Units) bds.property(QDataSet.UNITS,i-dep0Offset);
+                }
             }
-            TableColumn tc= new TableColumn();
 
-            tc.setPreferredWidth( ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 150 : 50 );
-            result.addColumn( tc );
+            c.setPreferredWidth( ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 150 : 80 );
+            c.setMinWidth(  ( u!=null && UnitsUtil.isTimeLocation(u) ) ? 130 : 80 );
+            result.addColumn( c );
 
         }
 
@@ -188,8 +196,8 @@ public class QDataSetTableModel extends AbstractTableModel {
         QDataSet ds = BundleBinsDemo.demo1();
         QDataSetTableModel m = new QDataSetTableModel(ds);
         JTable t = new JTable();
-        t.setColumnModel(m.getTableColumnModel());
         t.setModel(m);
+        t.setColumnModel(m.getTableColumnModel());
 
         JFrame frame = new JFrame();
         frame.getContentPane().add(t);
