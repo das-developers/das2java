@@ -130,13 +130,40 @@ public class FileSystemSettings {
         this.allowOffline = allowOffline;
         propertyChangeSupport.firePropertyChange(PROP_ALLOWOFFLINE, oldAllowOffline, allowOffline);
     }
+
+    public static final String PROP_OFFLINE= "offline";
+
+    private boolean offline= false;
+
+    public boolean isOffline() {
+        return offline;
+    }
+
+    /**
+     * @param offline
+     */
+    protected void setOffline( boolean offline ) {
+        boolean v= this.offline;
+        this.offline= offline;
+        propertyChangeSupport.firePropertyChange( PROP_OFFLINE, v, offline);
+    }
+
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
+
+    public synchronized void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+    public synchronized void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
 }

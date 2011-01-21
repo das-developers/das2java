@@ -70,7 +70,7 @@ public abstract class WebFileSystem extends FileSystem {
      * plug-in template for implementation.  if non-null, use this.
      */
     protected WebProtocol protocol;
-    protected boolean offline = true;
+    protected boolean offline = false;
     /**
      * if true, then the remote filesystem is not accessible, but local cache
      * copies may be accessed.  See FileSystemSettings.allowOffline
@@ -81,9 +81,13 @@ public abstract class WebFileSystem extends FileSystem {
         return offline;
     }
 
+    /**
+     * @param offline
+     */
     public void setOffline(boolean offline) {
         boolean oldOffline = offline;
         this.offline = offline;
+        //FileSystem.settings().setOffline(true);  some may be online, some offline.
         propertyChangeSupport.firePropertyChange(PROP_OFFLINE, oldOffline, offline);
     }
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
