@@ -8,11 +8,13 @@
  */
 package org.virbo.dataset;
 
+import java.util.ArrayList;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import org.das2.datum.DatumRange;
@@ -578,6 +580,81 @@ public class DataSetOps {
             }
         }
         return result;
+    }
+
+    /**
+     * returns a bundle descriptor roughly equivalent to the BundleDescriptor
+     * passed in, but will describe each dataset as if it were rank 1.  This
+     * is useful for when the client can't work with mixed rank bundles anyway
+     * (like display data).
+     * @param bundle1
+     * @return
+     */
+    public static QDataSet flattenBundleDescriptor( QDataSet bundle1 ) {
+
+        int nr1= 0;
+        final List<String> names= new ArrayList();
+        final List<Units> units= new ArrayList();
+
+        for ( int j=0; j<bundle1.length(); j++ ) {
+
+            int rank= bundle1.length(j);
+            int n=1;
+
+            for (int k = 0; k < rank; k++) {
+                 n *= bundle1.value(j, k);
+            }
+            nr1+= n;
+
+            String name= (String) bundle1.property(QDataSet.NAME,j);
+            Units unit= (Units) bundle1.property(QDataSet.UNITS,j);
+            String bins= (String) bundle1.property(QDataSet.BINS_1,j);
+
+            for ( int i=0; i<n; i++ ) {
+                String binName= null;
+                if ( bins!=null ) {
+                    String[] ss= bins.split(",",-2);
+                    binName= ss[i];
+                }
+                String theName= name;
+                if ( theName!=null && binName!=null ) {
+                    theName= theName + "_"+ binName;
+                }
+                if ( theName!=null ) names.add( theName ); else names.add("");
+                if ( unit!=null ) units.add( unit ); else units.add(Units.dimensionless);
+
+            }
+        }
+        final int fnr1= nr1;
+
+        QDataSet bundleDescriptor= new AbstractDataSet() {
+            @Override
+            public int rank() {
+                return 2;
+            }
+
+            @Override
+            public int length() {
+                return fnr1;
+            }
+            @Override
+            public int length(int i) {
+                return 0;
+            }
+            @Override
+            public Object property(String name, int i) {
+                if ( i>names.size() ) throw new IllegalArgumentException("index too large:"+i );
+                if ( name.equals( QDataSet.NAME ) ) {
+                    return names.get(i);
+                } else if ( name.equals( QDataSet.UNITS ) ) {
+                    return units.get(i);
+                } else {
+                    return null;
+                }
+            }
+        };
+
+        return bundleDescriptor;
     }
 
     /**
