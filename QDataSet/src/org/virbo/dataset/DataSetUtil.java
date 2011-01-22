@@ -423,9 +423,9 @@ public class DataSetUtil {
 
         if ( ds.rank()==0 ) {
             if ( name.equals("dataSet") ) {
-                return String.valueOf( DataSetUtil.asDatum((RankZeroDataSet)ds) );
+                return String.valueOf( DataSetUtil.asDatum(ds) );
             } else {
-                return name + "=" + DataSetUtil.asDatum((RankZeroDataSet)ds) ;
+                return name + "=" + DataSetUtil.asDatum(ds) ;
             }
         }
 
@@ -1468,11 +1468,19 @@ public class DataSetUtil {
     }
 
     public static Datum asDatum( RankZeroDataSet ds ) {
-        Units u= (Units) ds.property(QDataSet.UNITS);
-        if ( u==null ) {
-            return Units.dimensionless.createDatum(ds.value());
+        return asDatum((QDataSet)ds);
+    }
+
+    public static Datum asDatum( QDataSet ds ) {
+        if ( ds.rank()>0 ) {
+            throw new IllegalArgumentException("dataset is not rank 0");
         } else {
-            return u.createDatum(ds.value());
+            Units u= (Units) ds.property(QDataSet.UNITS);
+            if ( u==null ) {
+                return Units.dimensionless.createDatum(ds.value());
+            } else {
+                return u.createDatum(ds.value());
+            }
         }
     }
 
