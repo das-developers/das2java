@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
 import org.das2.datum.UnitsUtil;
+import org.das2.event.CrossHairMouseModule;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
@@ -1297,6 +1298,9 @@ public class SeriesRenderer extends Renderer {
             DasMouseInputAdapter mouseAdapter = lparent.mouseAdapter;
             DasPlot p = lparent;
             mouseAdapter.addMouseModule(new MouseModule(p, new LengthDragRenderer(p, p.getXAxis(), p.getYAxis()), "Length"));
+
+            MouseModule ch = new CrossHairMouseModule(parent, this, parent.getXAxis(), parent.getYAxis());
+            mouseAdapter.addMouseModule(ch);
         }
 
         updatePsym();
