@@ -217,7 +217,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             if (xTagWidthDs!=null) {
                 xTagWidth= org.virbo.dataset.DataSetUtil.asDatum(xTagWidthDs);
             } else {
-                Units xunits= SemanticOps.getUnits(xds);
+                Units xunits= SemanticOps.getUnits(xds).getOffsetUnits();
                 xTagWidth= xunits.createDatum(Double.MAX_VALUE);
             }
         }
