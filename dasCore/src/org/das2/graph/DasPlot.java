@@ -1189,7 +1189,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public String getTitle() {
         return plotTitle;
     }
-    private List renderers = null;
+    private List<Renderer> renderers = null;
 
     public DasAxis getXAxis() {
         return this.xAxis;
@@ -1291,6 +1291,22 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if ( focusRenderer==rend ) setFocusRenderer(null);
         renderers.remove(rend);
         rend.parent = null;
+        invalidateCacheImage();
+
+    }
+
+    /**
+     * remove all the renderers from the dasPlot.
+     */
+    public void removeRenderers() {
+        if (getCanvas() != null) {
+            for ( Renderer rend: renderers ) {
+                rend.uninstallRenderer();
+                rend.parent = null; // should get GC'd.
+            }
+            setFocusRenderer(null);
+            renderers.clear();
+        }
         invalidateCacheImage();
 
     }
