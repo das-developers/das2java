@@ -664,6 +664,7 @@ public class Ops {
 
     /**
      * element-wise abs.  For vectors, this returns the length of each element.
+     * Note jython conflict needs to be resolved.
      * @param ds1
      * @return
      */
@@ -680,6 +681,7 @@ public class Ops {
 
     /**
      * element-wise pow.  (** in FORTRAN, ^ in IDL)
+     * Note jython conflict needs to be resolved.
      * @param ds1
      * @param pow
      * @return
@@ -778,7 +780,7 @@ public class Ops {
     }
 
     /**
-     * element-wise multiply of two datasets with the same geometry.
+     * element-wise multiply of two datasets with compatible geometry.
      * @param ds
      * @return
      */
@@ -811,7 +813,7 @@ public class Ops {
     }
 
     /**
-     * element-wise divide of two datasets with the same geometry.
+     * element-wise divide of two datasets with compatible geometry.
      * @param ds
      * @return
      */
@@ -843,7 +845,7 @@ public class Ops {
     }
 
     /**
-     * element-wise mod of two datasets with the same geometry.
+     * element-wise mod of two datasets with compatible geometry.
      * @param ds
      * @return
      */
@@ -856,7 +858,7 @@ public class Ops {
     }
 
     /**
-     * element-wise div of two datasets with the same geometry.
+     * element-wise div of two datasets with compatible geometry.
      * @param ds
      * @return
      */
@@ -870,7 +872,7 @@ public class Ops {
     // comparators
     /**
      * element-wise equality test.  1.0 is returned where the two datasets are
-     * equal.  invalid measurements are always unequal.
+     * equal.  Fill is returned where either measurement is invalid.
      * @param ds
      * @return
      */
@@ -884,7 +886,8 @@ public class Ops {
     }
 
     /**
-     * element-wise not equal test.  invalid measurements are always unequal.
+     * element-wise not equal test.  1.0 is returned where elements are not equal.
+     * Fill is returned where either measurement is invalid.
      * @param ds1
      * @param ds2
      * @return
@@ -898,6 +901,12 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise function returns 1 where ds1&gt;ds2.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
     public static QDataSet gt(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -907,6 +916,12 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise function returns 1 where ds1&gt;=ds2.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
     public static QDataSet ge(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -916,6 +931,12 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise function returns 1 where ds1&lt;ds2.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
     public static QDataSet lt(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -925,6 +946,12 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise function returns 1 where ds1&lt;=ds2.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
     public static QDataSet le(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -935,6 +962,13 @@ public class Ops {
     }
 
     // logic operators
+    /**
+     * element-wise logical or function.  
+     * returns 1 where ds1 is non-zero or ds2 is non-zero.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
     public static QDataSet or(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
@@ -943,6 +977,12 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise logical and function.  non-zero is true, zero is false.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
     public static QDataSet and(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
@@ -951,6 +991,12 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise logical not function.  non-zero is true, zero is false.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
     public static QDataSet not(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
             public double op(double d1) {
@@ -2333,6 +2379,11 @@ public class Ops {
         return result;
     }
 
+    /**
+     * element-wise ceil function.
+     * @param ds1
+     * @return
+     */
     public static QDataSet floor(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
 
@@ -2342,6 +2393,11 @@ public class Ops {
         });
     }
 
+    /**
+     * element-wise ceil function.
+     * @param ds1
+     * @return
+     */
     public static QDataSet ceil(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
 
@@ -2608,7 +2664,8 @@ public class Ops {
             throw new IllegalArgumentException("only rank 1");
         }
         DDataSet result = BinAverage.boxcar(ds, size);
-        DataSetUtil.putProperties(DataSetUtil.getProperties(ds), result);
+        DataSetUtil.copyDimensionProperties( ds, result );
+        
         return result;
     }
 
