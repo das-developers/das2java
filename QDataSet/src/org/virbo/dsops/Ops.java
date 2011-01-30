@@ -117,7 +117,8 @@ public class Ops {
 
     /**
      * apply the binary operator element-for-element of the two datasets, minding
-     * dataset geometry, fill values, etc.
+     * dataset geometry, fill values, etc.  The two datasets are coerced to
+     * compatible geometry, if possible (e.g.Temperature(Time)+2), using CoerceUtil.coerce.
      * @param ds1
      * @param ds2
      * @param op
@@ -207,6 +208,13 @@ public class Ops {
         return result;
     }
 
+    /**
+     * returns the subset of two groups of properties that are equal, so these
+     * may be preserved through operations.
+     * @param m1 map of dataset properties, including DEPEND properties.
+     * @param m2 map of dataset properties, including DEPEND properties.
+     * @return
+     */
     private static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
         HashMap result = new HashMap();
         for ( String k : m1.keySet()) {
