@@ -671,6 +671,33 @@ public class Ops {
     }
 
     /**
+     * for jython, we handle this because the double isn't coerced.
+     * @param x
+     * @return
+     */
+    public static int abs( int x ) {
+        return Math.abs( x );
+    }
+
+    /**
+     * for jython, we handle this because the double isn't coerced.
+     * @param x
+     * @return
+     */
+    public static long abs( long x ) {
+        return Math.abs( x );
+    }
+
+    /**
+     * for jython, we handle this because the double isn't coerced.
+     * @param x
+     * @return
+     */
+    public static double abs( double x ) {
+        return Math.abs( x );
+    }
+
+    /**
      * element-wise abs.  For vectors, this returns the length of each element.
      * Note jython conflict needs to be resolved.
      * @param ds1
@@ -685,6 +712,27 @@ public class Ops {
         });
         result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds1, "abs") );
         return result;
+    }
+
+    /**
+     * for jython, we define this because the doubles aren't coerced.
+     * @param x
+     * @param y
+     * @return
+     */
+    public static long pow( long x, long y ) {
+        return (long)Math.pow( x, y );
+    }
+
+
+    /**
+     * for jython, we define this because the doubles aren't coerced.
+     * @param x
+     * @param y
+     * @return
+     */
+    public static double pow( double x, double y ) {
+        return Math.pow( x, y );
     }
 
     /**
