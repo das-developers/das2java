@@ -838,13 +838,13 @@ public final class TimeUtil {
         delimiters = DELIMITERS;
         if ((c = s.indexOf((int)'Z')) != -1) s = s.substring(0, c);
         end_of_date = s.indexOf((int)'T');
-        if (end_of_date != -1) {
+        if (end_of_date > 1) {
             c = end_of_date - 1;
             if (Character.isDigit(s.charAt(c))) delimiters = PDSDELIMITERS;
             else end_of_date = -1;
         }
         
-        /* if not PDS then coiunt out 3 non-space delimiters */
+        /* if not PDS then count out 3 non-space delimiters */
         
         if (end_of_date == -1) {
             n = 0;
