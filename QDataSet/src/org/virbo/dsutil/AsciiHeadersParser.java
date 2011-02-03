@@ -12,8 +12,6 @@ import java.text.ParseException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
@@ -245,7 +243,7 @@ public class AsciiHeadersParser {
         public int length(int i) {
             String name= datasets2.get(i);
             int[] qube= qubes.get(name);
-            if ( qube==null ) {
+            if ( qube==null || qube.length==0 ) {
                 return 0;
             } else {
                 return qube[0];
