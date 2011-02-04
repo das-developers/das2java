@@ -787,9 +787,13 @@ public class DataSetOps {
             } else {
                 MutablePropertyDataSet result;
                 result= DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
-                result.putProperty(QDataSet.UNITS, bundle1.property( QDataSet.UNITS, j ) ); //TODO: underimplementation
-                result.putProperty(QDataSet.NAME, bundle1.property( QDataSet.NAME, j ) );
-                result.putProperty(QDataSet.LABEL, bundle1.property( QDataSet.LABEL, j ) );
+                String[] names1= DataSetUtil.dimensionProperties();
+                for ( int i=0; i<names1.length; i++ ) {
+                    Object v= bundle1.property( names1[i], j );
+                    if ( v!=null ) {
+                        result.putProperty( names1[i], v );
+                    }
+                }
                 return result;
             }
         } else if ( bundle1.length(j)==1 ) {
