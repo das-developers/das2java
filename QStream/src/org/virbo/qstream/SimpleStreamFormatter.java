@@ -64,7 +64,12 @@ public class SimpleStreamFormatter {
         if ( sunits!=null && !(sunits instanceof Units) ) {
             throw new IllegalArgumentException( "UNITS property doesn't contain type units, it's type "+sunits.getClass()+": "+sunits );
         }
+        boolean highResKludge= false;
         Units u = (Units) sunits;
+        if ( u==null && isBundle(ds) ) {
+            // uh-oh.  just use a high-resolution format for now.
+            highResKludge= true;
+        }
         if (!pd.isValuesInDescriptor()) {
             if (asciiTypes) {
                 double min = Double.POSITIVE_INFINITY;
@@ -102,7 +107,10 @@ public class SimpleStreamFormatter {
                 } else {
                     //QDataSet diffs= Ops.subtract( ds, DataSetOps.slice0(ds,0) );
                     //QDataSet gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet(absMin/100) );
-                    if (maxFp == 0 && min > -1e8 && max < 1e8) {
+                    if ( highResKludge ) {
+                        // we don't have separate formatters for each bundled dataset, so just use a high resolution format for now.
+                        planeDescriptor.setType( new AsciiTransferType(18,true) );
+                    } else if (maxFp == 0 && min > -1e8 && max < 1e8) {
                         planeDescriptor.setType(new AsciiIntegerTransferType(10));
                     } else if (min > -10000 && max < 10000 && absMin > 0.0001) {
                         planeDescriptor.setType(new AsciiTransferType(10, false));
@@ -117,7 +125,9 @@ public class SimpleStreamFormatter {
                     }
                 }
             } else {
-                if (u instanceof EnumerationUnits) {
+                if ( highResKludge ) {
+                    planeDescriptor.setType(new DoubleTransferType());
+                } else if (u instanceof EnumerationUnits) {
                     planeDescriptor.setType(new IntegerTransferType());
                 } else if (u instanceof TimeLocationUnits) {
                     planeDescriptor.setType(new DoubleTransferType());
@@ -676,6 +686,11 @@ public class SimpleStreamFormatter {
             int packetDescriptorCount = 1;
             int streamRank; //TODO: describe this
             String dep0Name = null;
+
+            if ( isBundle(ds) && asciiTypes ) {
+                // we need to do more with this.  right now there's just one planeDescriptor for the bunch.
+                System.err.println("suboptimal implementation doesn't use different formatters for each bundled dataset");
+            }
 
             if (DataSetUtil.isQube(ds)) {
                 packetDescriptorCount = 1;
