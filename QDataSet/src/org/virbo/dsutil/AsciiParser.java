@@ -677,6 +677,8 @@ public class AsciiParser {
                 //properties will be picked up in post-processing
                 
             } else {
+                //TODO: is we've got JSON headers, then use the units specifed there for parsing!
+
                 try {
 
                     if (firstRecord == null) {
@@ -710,7 +712,10 @@ public class AsciiParser {
         if ( doJSON ) {
             try {
                 System.err.println( "== header == \n"+header );
-                QDataSet bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
+                AsciiHeadersParser.BundleDescriptor bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
+                if ( UnitsUtil.isTimeLocation(units[0]) ) {
+                    bundleDescriptor.putProperty( QDataSet.UNITS, 0, units[0] ); //TODO: kludge for times.  We will move this up and set the units before parsing
+                }
                 builder.properties.clear();
                 builder.putProperty(PROPERTY_FILE_HEADER, header);
                 builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
