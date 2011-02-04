@@ -12,6 +12,8 @@ import java.text.ParseException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
@@ -31,6 +33,8 @@ import org.virbo.dataset.SemanticOps;
  */
 public class AsciiHeadersParser {
 
+    private static final Logger logger= Logger.getLogger("org.virbo.dsutil.AsciiHeadersParser");
+    
     char commented= '?'; // tri-state: '?' 'T' 'F'
 
     /**
@@ -49,7 +53,7 @@ public class AsciiHeadersParser {
          } else {
              if ( commented=='Y' ) return null;
          }
-         while ( line!=null && line.trim().isEmpty() ) {
+         while ( line!=null && line.trim().length()==0 ) {
             line = reader.readLine();
             if ( line != null && line.startsWith("#") ) {
                 line = line.substring(1);
@@ -165,7 +169,10 @@ public class AsciiHeadersParser {
 
     /**
      * attempt to parse the metadata stored in the header.  The header lines must
-     * be prefixed with hash (#).
+     * be prefixed with hash (#).  Loosely formatted test is converted into
+     * nicely-formatted JSON and then parsed with a JSON parser.  Note the Java
+     * JSON parser itself is pretty loose, for example allowing 1-word strings to
+     * go without quotes delimiters.
      *
      * @param header
      * @return
@@ -174,14 +181,16 @@ public class AsciiHeadersParser {
         try {
             JSONObject jo;
             AsciiHeadersParser ahp= new AsciiHeadersParser();
-            jo = new JSONObject( ahp.prep(header) );
+            String sjson= ahp.prep(header);
+            jo = new JSONObject( sjson );
 
             BundleDescriptor bd= new BundleDescriptor();
             for ( int i=0; i<columns.length; i++ ) {
                 bd.addDataSet( columns[i], i, new int[0] );
             }
 
-            return fillMetadata(bd,jo);
+            fillMetadata( bd,jo );
+            return bd;
 
         } catch (JSONException ex) {
             throw new ParseException( ex.toString(), 0 );
@@ -311,9 +320,8 @@ public class AsciiHeadersParser {
      * @param jo
      * @return
      */
-    private static BundleDescriptor fillMetadata( BundleDescriptor bd, JSONObject jo ) throws JSONException {
+    private static void fillMetadata( BundleDescriptor bd, JSONObject jo ) throws JSONException {
 
-        String[] names= JSONObject.getNames(jo);
         if ( isTranspose(jo) ) {
             throw new IllegalArgumentException("not implemented");
         } else {
@@ -328,19 +336,26 @@ public class AsciiHeadersParser {
                      System.err.println("STOP HERE");
                      System.err.println(bd);
                      int ids= bd.indexOf( key ); //DANGER:Rank2
-                     bd.addDataSet( key, ids, null );
+                     if ( ids==-1 ) {
+                         logger.log(Level.WARNING, "metadata found for key {0}, but this is not found in the ascii file parser", key);
+                         continue;
+                     }
                      JSONObject propsj= ((JSONObject)o);
                      Iterator props= propsj.keys();
                      bd.putProperty( QDataSet.NAME, ids, key );
                      for ( ; props.hasNext(); ) {
                          String prop= (String) props.next();
-                         Object v= coerceToType( prop, propsj.get(prop) );
-                         bd.putProperty( prop, ids, v );
+                         Object sv= propsj.get(prop);
+                         if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
+                            // UT times are handled outside of here
+                         } else {
+                            Object v= coerceToType( prop, sv );
+                            bd.putProperty( prop, ids, v );
+                         }
                      }
                  }
             }
-        }
-        return bd;
+        }        
     }
 
 
