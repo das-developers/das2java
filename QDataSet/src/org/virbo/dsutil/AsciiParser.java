@@ -669,12 +669,11 @@ public class AsciiParser {
                 if ((commentPrefix != null && line.startsWith(commentPrefix))) {
                     line = line.substring(commentPrefix.length());
                 }
+                if (keepFileHeader && iline<HEADER_LENGTH_LIMIT) {
+                    headerBuffer.append(line).append("\n");
+                }
                 if (propertyPattern != null && (m = propertyPattern.matcher(line)).matches()) {
                     builder.putProperty(m.group(1).trim(), m.group(2).trim());
-                } else {
-                    if (keepFileHeader && iline<HEADER_LENGTH_LIMIT) {
-                        headerBuffer.append(line).append("\n");
-                    }
                 }
                 
             } else {
@@ -705,9 +704,26 @@ public class AsciiParser {
         mon.finished();
 
         String header = headerBuffer.toString();
-        builder.putProperty(PROPERTY_FILE_HEADER, header);
-        builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
-        builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
+
+        boolean doJSON= false;
+        if ( doJSON ) {
+            try {
+                System.err.println( "== header == \n"+header );
+                QDataSet bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
+                builder.properties.clear();
+                builder.putProperty(PROPERTY_FILE_HEADER, header);
+                builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
+                builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
+                builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
+
+            } catch (ParseException ex) {
+                Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            builder.putProperty(PROPERTY_FILE_HEADER, header);
+            builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
+            builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
+        }
 
         return builder.getDataSet();
     }
