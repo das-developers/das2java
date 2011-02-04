@@ -25,10 +25,14 @@ public class Slice1DataSet extends AbstractDataSet {
     int index;
 
     public Slice1DataSet(QDataSet ds, int index) {
-        this( ds, index, true );
+        this( ds, index, true, false );
     }
 
-    Slice1DataSet( QDataSet ds, int index, boolean addContext ) {
+    public Slice1DataSet(QDataSet ds, int index, boolean unbundle ) {
+        this( ds, index, false, unbundle );
+    }
+
+    Slice1DataSet( QDataSet ds, int index, boolean addContext, boolean unbundle ) {
         if (ds.rank() > 4 ) {
             throw new IllegalArgumentException("rank limit > 4");
         }
@@ -41,7 +45,7 @@ public class Slice1DataSet extends AbstractDataSet {
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
 
         QDataSet bundle1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
-        if ( bundle1!=null ) {
+        if ( bundle1!=null && !unbundle ) {
             System.err.println("we're not going to do this correctly, use unbundle instead");
         }
         String label=null;
