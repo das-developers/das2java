@@ -60,7 +60,11 @@ public class SimpleStreamFormatter {
     Map<QDataSet, String> joinDataSets= new HashMap<QDataSet, String>();
 
     private void doValuesElement(QDataSet ds, PacketDescriptor pd, PlaneDescriptor planeDescriptor, Document document, Element qdatasetElement) throws DOMException {
-        Units u = (Units) ds.property(QDataSet.UNITS);
+        Object sunits= ds.property(QDataSet.UNITS);
+        if ( sunits!=null && !(sunits instanceof Units) ) {
+            throw new IllegalArgumentException( "UNITS property doesn't contain type units, it's type "+sunits.getClass()+": "+sunits );
+        }
+        Units u = (Units) sunits;
         if (!pd.isValuesInDescriptor()) {
             if (asciiTypes) {
                 double min = Double.POSITIVE_INFINITY;
