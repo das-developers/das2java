@@ -16,8 +16,10 @@ import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.TimeParser;
@@ -672,9 +674,7 @@ public class AsciiParser {
                 if (keepFileHeader && iline<HEADER_LENGTH_LIMIT) {
                     headerBuffer.append(line).append("\n");
                 }
-                if (propertyPattern != null && (m = propertyPattern.matcher(line)).matches()) {
-                    builder.putProperty(m.group(1).trim(), m.group(2).trim());
-                }
+                //properties will be picked up in post-processing
                 
             } else {
                 try {
@@ -705,7 +705,8 @@ public class AsciiParser {
 
         String header = headerBuffer.toString();
 
-        boolean doJSON= false;
+        boolean doJSON= header.contains("{") && header.contains("}");
+        
         if ( doJSON ) {
             try {
                 System.err.println( "== header == \n"+header );
@@ -720,9 +721,18 @@ public class AsciiParser {
                 Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
+            if ( propertyPattern!=null ) {
+                Map<String,String> userProps= new LinkedHashMap();
+                for ( String line2: header.split("\n") ) {
+                    Matcher m2= propertyPattern.matcher(line2);
+                    if ( m2.matches() ) {
+                        userProps.put( m2.group(1).trim(), m2.group(2).trim() );
+                    }
+                }
+                builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
+            }
             builder.putProperty(PROPERTY_FILE_HEADER, header);
             builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
-            builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
         }
 
         return builder.getDataSet();
