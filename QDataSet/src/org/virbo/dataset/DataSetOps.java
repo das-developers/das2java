@@ -786,7 +786,8 @@ public class DataSetOps {
                 return r;
             } else {
                 MutablePropertyDataSet result;
-                result= DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
+                // DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
+                result= new Slice1DataSet( bundleDs, offsets[j], true );
                 String[] names1= DataSetUtil.dimensionProperties();
                 for ( int i=0; i<names1.length; i++ ) {
                     Object v= bundle1.property( names1[i], j );
