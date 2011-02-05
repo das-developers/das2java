@@ -35,20 +35,20 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     private static List colors = new ArrayList();
     static {
         colors.add(Color.BLACK);
-        colors.add(Color.BLUE);
+        colors.add(Color.BLUE);                      // dark BRG
         colors.add(Color.RED);
-        colors.add(Color.GREEN.darker().darker());
-        colors.add(Color.DARK_GRAY);
+        colors.add(Color.GREEN.darker());
+        colors.add(Color.DARK_GRAY);                 // grey scale
         colors.add(Color.GRAY);
         colors.add(Color.LIGHT_GRAY);
         colors.add(Color.WHITE);
-        colors.add(Color.MAGENTA);
-        colors.add(Color.ORANGE);
-        colors.add( new Color(128, 128, 255) );
+        colors.add( new Color(128, 128, 255) );      // light BRG
         colors.add(Color.PINK);
         colors.add(Color.GREEN);
         colors.add(Color.CYAN);
         colors.add(Color.YELLOW);
+        colors.add(Color.MAGENTA);                   // others
+        colors.add(Color.ORANGE);
         colors.add( new Color(0,true) );
     }
 
