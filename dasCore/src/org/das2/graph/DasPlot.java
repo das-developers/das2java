@@ -367,7 +367,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             MessageDescriptor message = (MessageDescriptor) messages.get(i);
 
             Icon icon=null;
-            if ( message.renderer!=null ) {
+            if ( message.renderer!=null && renderers.size()>1 ) {
                 icon= message.renderer.getListIcon();
             }
 
