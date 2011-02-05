@@ -59,7 +59,11 @@ import org.das2.dataset.VectorUtil;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.ArrayDataSet;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetWrapper;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.w3c.dom.Document;
@@ -95,6 +99,9 @@ public class SeriesRenderer extends Renderer {
     private int dslen=-1; // length of dataset, compare to firstIndex_v.
 
     boolean updating = false;
+
+    boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
+    
     private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     /**
      * indicates the dataset was clipped by dataSetSizeLimit 
@@ -268,6 +275,7 @@ public class SeriesRenderer extends Renderer {
 
             Units xUnits= SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
+            if ( unitsWarning ) yUnits= yAxis.getUnits();
 
             if ( index<lastIndex ) {
                 x = xds.value(index);
@@ -375,6 +383,9 @@ public class SeriesRenderer extends Renderer {
 
             Units xunits = SemanticOps.getUnits(xds);
             Units yunits = SemanticOps.getUnits(vds);
+            
+            if ( unitsWarning ) yunits= yAxis.getUnits();
+            
             Units yoffsetUnits = yunits.getOffsetUnits();
 
             p = new GeneralPath();
@@ -429,6 +440,7 @@ public class SeriesRenderer extends Renderer {
 
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
+            if ( unitsWarning ) yUnits= yAxis.getUnits();
 
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
@@ -657,6 +669,8 @@ public class SeriesRenderer extends Renderer {
 
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
+            if ( unitsWarning ) yUnits= yAxis.getUnits();
+            
             QDataSet wds= SemanticOps.weightsDataSet( vds );
 
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
@@ -1006,9 +1020,14 @@ public class SeriesRenderer extends Renderer {
             yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
         }
 
-        if (!yaxisUnitsOkay) {
-            lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
-            return;
+        if ( !yaxisUnitsOkay ) {
+            if ( unitsWarning ) {
+                //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
+                lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.WARNING, null, null );
+            } else {
+                lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
+                return;
+            }
         }
 
         if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
@@ -1179,7 +1198,15 @@ public class SeriesRenderer extends Renderer {
                 vds = (QDataSet) dataSet;
             }
 
+            unitsWarning= false;
             plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
+            if ( !plottable ) {
+                if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                    plottable= true; // we'll provide a warning
+                    unitsWarning= true;
+                }
+            }
+
         } else if (dataSet instanceof QDataSet) {
             tds = (QDataSet) dataSet;
             plottable = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
@@ -1274,9 +1301,15 @@ public class SeriesRenderer extends Renderer {
         if ( xaxis.getColumn().getWidth()==0 || yaxis.getRow().getHeight()==0 ) return null;
         
         DatumRange dr= xaxis.getDatumRange();
-        
+
+        QDataSet ds2= ds;
+        if ( this.unitsWarning ) {
+            ArrayDataSet ds3= ArrayDataSet.copy(ds);
+            ds3.putProperty( QDataSet.UNITS, yaxis.getUnits() );
+            ds2= ds3;
+        }
         QDataSet reduce = VectorUtil.reduce2D(
-                xds, ds,
+                xds, ds2,
                 firstIndex,
                 Math.min( firstIndex+20000, lastIndex),
                 widthx.divide(xaxis.getColumn().getWidth()/5),
