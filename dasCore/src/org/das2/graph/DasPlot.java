@@ -343,7 +343,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
     }
 
-    private void drawMessages(Graphics2D g) {
+     private void drawMessages(Graphics2D g) {
 
         Graphics2D graphics= (Graphics2D) g.create();
         
@@ -366,12 +366,25 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         for (int i = 0; i < messages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) messages.get(i);
 
+            Icon icon=null;
+            if ( message.renderer!=null ) {
+                icon= message.renderer.getListIcon();
+            }
+
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
+
             Rectangle mrect = gtr.getBounds();
+
+            int spc= 2;
+
+            if ( icon!=null ) {
+                mrect.width+= icon.getIconWidth() + spc;
+            }
+
             int msgx1= msgx;
             if ( rightJustify ) {
-                msgx1= msgx - (int) gtr.getWidth();
+                msgx1= msgx - (int) mrect.getWidth();
             }
             mrect.translate(msgx1, msgy);
             Color backColor = GraphUtil.getRicePaperColor();
@@ -383,8 +396,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             graphics.setColor(backColor);
             graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
             graphics.setColor(getForeground());
+
+            if ( icon!=null ) icon.paintIcon( this, g, mrect.x, mrect.y  );
+            
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
-            gtr.draw(graphics, msgx1, msgy);
+            if ( icon!=null ) {
+                gtr.draw(graphics, msgx1 + icon.getIconWidth() + spc, msgy);
+            } else {
+                gtr.draw(graphics, msgx1 , msgy);
+            }
             message.bounds = mrect;
 
             msgy += gtr.getHeight() + msgem / 2;
