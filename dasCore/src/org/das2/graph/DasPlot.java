@@ -376,6 +376,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
             Rectangle mrect = gtr.getBounds();
 
+            if ( icon!=null && mrect.height<icon.getIconHeight() ) { // spectrograms have icons taller than text
+                mrect.height= icon.getIconHeight();
+                //TODO: adjust y position: mrect.y= mrect.height / 2 - msgem - msgem ;
+            }
+
             int spc= 2;
 
             if ( icon!=null ) {
