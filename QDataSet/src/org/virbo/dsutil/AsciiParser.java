@@ -66,7 +66,13 @@ public class AsciiParser {
      * a java identifier that can be used to identify the column.
      */
     String[] fieldNames;
-    
+
+    /**
+     * more abstract parameter type.  E.g. GSM_X, GSM_Y, GSM_Z -> GSM
+     * These group together adjacent columns into a higher rank dataset.
+     */
+    String[] groupNames;
+
     Units[] units;
 
     /** either the unit or depend 1 value associated with the column 
@@ -653,7 +659,8 @@ public class AsciiParser {
             line = reader.readLine();
         }
 
-        Matcher m;
+        boolean parsedMeta= false;
+
         while (line != null) {
             bytesRead += line.length() + 1; // +1 is for end-of-line
             iline++;
@@ -677,12 +684,19 @@ public class AsciiParser {
                 //properties will be picked up in post-processing
                 
             } else {
-                //TODO: is we've got JSON headers, then use the units specifed there for parsing!
+
+                if ( parsedMeta==false ) { // this will attempt to parse the header to get units for parsing data.
+                    String header = headerBuffer.toString();
+                    parseMeta( header, builder );
+                    builder.putProperty(PROPERTY_FILE_HEADER, header);
+                    parsedMeta= true;
+                }
 
                 try {
 
                     if (firstRecord == null) {
                         firstRecord = line;
+                        builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
                     }
 
                     // *** here's where we parse each record ***
@@ -705,25 +719,63 @@ public class AsciiParser {
 
         mon.finished();
 
-        String header = headerBuffer.toString();
+        builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties)); // put discovered properties into
+
+        return builder.getDataSet();
+    }
+
+    /**
+     * attempt to parse the metadata in the headers.  If the header contains
+     * a pair of braces {}, then we assume it's a special JSON-formatted header
+     * with QDataSet metadata for the UNITS and LABELs.  If not, then we
+     * just look for name/value pairs as specified by the propertyPattern.
+     *
+     * In the JSON case, we form a bundle descriptor (a special QDataSet) which
+     * contains the properties for each bundled dataset.  For the default case,
+     * we assign the values to the USER_PROPERTIES.
+     * @param header
+     * @param builder
+     */
+    private void parseMeta( String header, DataSetBuilder builder ) {
 
         boolean doJSON= header.contains("{") && header.contains("}");
-        
+
         if ( doJSON ) {
             try {
-                System.err.println( "== header == \n"+header );
+                System.err.println( "== JSON Header == \n"+header );
                 AsciiHeadersParser.BundleDescriptor bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
-                if ( UnitsUtil.isTimeLocation(units[0]) ) {
-                    bundleDescriptor.putProperty( QDataSet.UNITS, 0, units[0] ); //TODO: kludge for times.  We will move this up and set the units before parsing
-                }
-                builder.properties.clear();
-                builder.putProperty(PROPERTY_FILE_HEADER, header);
-                builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
-                builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
                 builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
+
+                int i=0;
+                for ( int j=0; j<bundleDescriptor.length(); j++ ) {
+                    Units u= (Units) bundleDescriptor.property( QDataSet.UNITS, j );
+                    int rank= bundleDescriptor.length(i);
+                    int len= 1;
+                    for ( int k=0; k<rank; k++ ) {
+                        len*= bundleDescriptor.value(j,k);
+                    }
+                    for ( int k=0; k<len; k++ ) {
+                        if ( u!=null ) {
+                            this.fieldParsers[i]= UNITS_PARSER;
+                            this.units[i]= u;
+                        }
+                        i++;
+                    }
+                }
 
             } catch (ParseException ex) {
                 Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
+                System.err.println(ex);
+                if ( propertyPattern!=null ) {
+                Map<String,String> userProps= new LinkedHashMap();
+                for ( String line2: header.split("\n") ) {
+                    Matcher m2= propertyPattern.matcher(line2);
+                    if ( m2.matches() ) {
+                        userProps.put( m2.group(1).trim(), m2.group(2).trim() );
+                    }
+                }
+                builder.putProperty( QDataSet.USER_PROPERTIES, userProps );
+            }
             }
         } else {
             if ( propertyPattern!=null ) {
@@ -734,13 +786,10 @@ public class AsciiParser {
                         userProps.put( m2.group(1).trim(), m2.group(2).trim() );
                     }
                 }
-                builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties));
+                builder.putProperty( QDataSet.USER_PROPERTIES, userProps );
             }
-            builder.putProperty(PROPERTY_FILE_HEADER, header);
-            builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
         }
 
-        return builder.getDataSet();
     }
 
     public static interface RecordParser {
