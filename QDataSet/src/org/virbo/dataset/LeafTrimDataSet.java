@@ -131,10 +131,4 @@ public class LeafTrimDataSet extends AbstractDataSet {
         return ds.rank() == 4 ? end - start : ds.length(i0, i1, i2);
     }
 
-    @Override
-    public QDataSet trim(int start, int end) {
-        return new LeafTrimDataSet( this.ds, this.start+start, this.start+end );
-    }
-
-
 }
