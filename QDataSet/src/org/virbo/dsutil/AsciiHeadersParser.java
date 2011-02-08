@@ -14,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.datum.Units;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
@@ -32,6 +34,9 @@ import org.virbo.dataset.SemanticOps;
  * @author jbf
  */
 public class AsciiHeadersParser {
+
+    public static final String PROP_DIMENSION = "DIMENSION";
+    public static final String PROP_ELEMENTS = "ELEMENTS";
 
     private static final Logger logger= Logger.getLogger("org.virbo.dsutil.AsciiHeadersParser");
     
@@ -168,6 +173,114 @@ public class AsciiHeadersParser {
     }
 
     /**
+     * calculate the bundledescriptor, possibly folding together columns to create 
+     * rank 2 datasets.  
+     * @param bd
+     * @param columns
+     */
+    private static BundleDescriptor calcBundleDescritor( JSONObject jo, String[] columns ) {
+
+        String[] snames= new String[ columns.length ];
+
+        BundleDescriptor bd= new BundleDescriptor();
+
+        String[] names= JSONObject.getNames(jo);
+        for ( int i=0; i<names.length; i++ ) {
+            try {
+                JSONObject jo1= jo.getJSONObject(names[i]);
+                if ( !jo1.has(PROP_DIMENSION) ) {
+                    // wait until later
+
+                } else {
+                    Object dims= jo1.get(PROP_DIMENSION);
+                    int[] idims;
+                    if ( dims instanceof JSONArray ) {
+                        idims= new int[ ((JSONArray)dims).length() ];
+                        for ( int j=0;j<idims.length;j++ ) {
+                            idims[j]= ((JSONArray)dims).getInt(j);
+                        }
+                    } else if ( dims instanceof Integer ) {
+                        idims= new int[ (Integer)dims ];
+                    } else {
+                        throw new IllegalArgumentException( "Expected array for DIMENSION in "+ names[i] );
+                    }
+                    if ( idims.length>1 ) throw new IllegalArgumentException("only rank 2 datasets supported, DIMENSION="+dims );
+                    int total= idims[0];
+                    for ( int j=1;j<idims.length; j++) {
+                        total*= idims[j];
+                    }
+                    
+                    if ( jo1.has(PROP_ELEMENTS) ) {
+                        Object oelements= jo1.get( PROP_ELEMENTS );
+                        if ( oelements instanceof JSONArray ) {
+                            JSONArray elements= (JSONArray)oelements;
+                            String lookFor= elements.getString(0);
+                            int icol= -1;
+                            for ( int j=0; j<columns.length; j++ ) {
+                                if ( columns.equals(lookFor) ) {
+                                    icol= j;
+                                }
+                            }
+                            if ( icol==-1 ) {
+                                throw new IllegalArgumentException("Couldn't find column: "+lookFor);
+                            }
+                            if ( total!=elements.length() ) throw new IllegalArgumentException("expected "+total+" items in ELEMENTS" );
+                            for ( int j=0; j<total;j++ ) {
+                                if ( !columns[icol+j].equals(elements.getString(j) ) ) {
+                                    throw new IllegalArgumentException("Expected JSON array to contain "+columns[icol+j]+" in ELEMENTS at index= "+(icol+j) );
+                                }
+                                snames[j]= names[i];
+                            }
+
+                        } else {
+                            throw new IllegalArgumentException("Expected array for ELEMENTS in "+names[i] );
+                        }
+                    } else {
+                        String lookFor= names[i];
+                        int icol= -1;
+                        for ( int j=0; j<columns.length; j++ ) {
+                            if ( columns[j].startsWith(lookFor) ) {
+                                icol= j;
+                                break;
+                            }
+                        }
+                        if ( icol==-1 ) {
+                            throw new IllegalArgumentException("Couldn't find column starting with: "+lookFor);
+                        }
+                        for ( int j=0; j<total;j++ ) {
+                            if ( !columns[icol+j].startsWith(lookFor) ) {
+                                throw new IllegalArgumentException("Expected column to start with "+lookFor+" in columns at index= "+(icol+j) );
+                            }
+                            snames[icol+j]= names[i];
+                        }
+                    }
+                }
+
+            } catch ( JSONException ex ) {
+                ex.printStackTrace();
+            }
+        }
+
+        for ( int i=0; i<columns.length; i++ ) {
+            if ( snames[i]==null ) {
+                bd.addDataSet( columns[i], i, new int[0] );
+            } else {
+                int i2= i+1;
+                while ( i2<snames.length && snames[i2].equals(snames[i]) ) {
+                    i2++;
+                }
+                int[] qube= new int[] { i2-i };
+                qube[0]= i2-i;
+                bd.addDataSet( snames[i], i, qube );
+                i= i2-1;  // for loop will increment by one.
+            }
+        }
+
+        return bd;
+
+    }
+
+    /**
      * attempt to parse the metadata stored in the header.  The header lines must
      * be prefixed with hash (#).  Loosely formatted test is converted into
      * nicely-formatted JSON and then parsed with a JSON parser.  Note the Java
@@ -184,10 +297,7 @@ public class AsciiHeadersParser {
             String sjson= ahp.prep(header);
             jo = new JSONObject( sjson );
 
-            BundleDescriptor bd= new BundleDescriptor();
-            for ( int i=0; i<columns.length; i++ ) {
-                bd.addDataSet( columns[i], i, new int[0] );
-            }
+            BundleDescriptor bd= calcBundleDescritor( jo, columns );
 
             fillMetadata( bd,jo );
             return bd;
@@ -255,7 +365,7 @@ public class AsciiHeadersParser {
             if ( qube==null || qube.length==0 ) {
                 return 0;
             } else {
-                return qube[0];
+                return qube.length;
             }
         }
 
@@ -267,9 +377,11 @@ public class AsciiHeadersParser {
 
         @Override
         public double value(int i0, int i1) {
-            // support bundling just rank N-1 datasets.  to support higher rank
-            // datasets, this should return the qube dims.
-            throw new IndexOutOfBoundsException("length=0");
+            String name= datasets2.get(i0);
+            int[] qube= qubes.get(name);
+            if ( qube==null ) throw new IndexOutOfBoundsException("length=0");
+            return qube[i1];
+            
         }
 
     }
@@ -316,7 +428,7 @@ public class AsciiHeadersParser {
     }
 
     /**
-     * return a map of metadata for each column
+     * return a map of metadata for each column or bundled dataset.
      * @param jo
      * @return
      */
@@ -333,8 +445,7 @@ public class AsciiHeadersParser {
                      System.err.println("expected JSONObject for value: "+key );
                      continue;
                  } else {
-                     System.err.println("STOP HERE");
-                     System.err.println(bd);
+                     System.err.println("KEY: "+key);
                      int ids= bd.indexOf( key ); //DANGER:Rank2
                      if ( ids==-1 ) {
                          logger.log(Level.WARNING, "metadata found for key {0}, but this is not found in the ascii file parser", key);
@@ -347,7 +458,7 @@ public class AsciiHeadersParser {
                          String prop= (String) props.next();
                          Object sv= propsj.get(prop);
                          if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
-                            // UT times are handled outside of here
+                            bd.putProperty( prop, ids, Units.us2000 );
                          } else {
                             Object v= coerceToType( prop, sv );
                             bd.putProperty( prop, ids, v );
