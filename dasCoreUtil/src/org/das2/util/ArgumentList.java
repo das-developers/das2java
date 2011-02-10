@@ -184,6 +184,7 @@ public class ArgumentList {
      * @param description a short (40 character) description of the argument.
      */
     public void addOptionalPositionArgument(int position, String key, String defaultValue, String description) {
+        if ( key==null ) throw new IllegalArgumentException("null key");
         addPositionArgument( position, key, description );
         values.put(key,defaultValue);
         if ( defaultValue==null ) {
@@ -202,6 +203,7 @@ public class ArgumentList {
         if ( abbrev==null && name==null ) {
             throw new IllegalArgumentException( "both abbrev and name are null, one must be specified" );
         }
+        if ( key==null ) throw new IllegalArgumentException("null key");
         descriptions.put( key,  description );
         if ( abbrev!=null ) {
             if ( abbrevs.containsKey(abbrev) ) {
@@ -226,6 +228,7 @@ public class ArgumentList {
      */
     public void addOptionalSwitchArgument(String name, String abbrev, String key, String defaultValue, String description) {
         addSwitchArgument( name, abbrev, key, description );
+        if ( key==null ) throw new IllegalArgumentException("null key");
         values.put( key, defaultValue );
         if ( defaultValue==null ) {
             if ( false ) System.err.println("breakpoint");
@@ -346,6 +349,10 @@ public class ArgumentList {
             Iterator i= values.keySet().iterator();
             while ( i.hasNext() ) {
                 Object key= i.next();
+                if ( key==null ) {
+                    System.err.println("TODO: handle this case whereever it's coming from: key==null");
+                    continue;
+                }
                 if ( key.equals("help") || key.equals("--help" ) ) { // kludge
                     printUsage();
                     System.exit(-1);
