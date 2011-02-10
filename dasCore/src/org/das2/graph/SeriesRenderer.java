@@ -1139,9 +1139,9 @@ public class SeriesRenderer extends Renderer {
         if ( lastIndex_v - firstIndex_v < 2 ) {
             if ( messageCount++==0) {
                 if ( lastIndex_v<2 ) {
-                    lparent.postMessage(this, "fewer than two points visible, look right", DasPlot.INFO, null, null);
+                    lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
                 } else if ( this.dslen - this.firstIndex_v < 2 ) {
-                    lparent.postMessage(this, "fewer than two points visible, look left", DasPlot.INFO, null, null);
+                    lparent.postMessage(this, "data ends before range", DasPlot.INFO, null, null);
                 } else {
                     lparent.postMessage(this, "fewer than two points visible", DasPlot.INFO, null, null);
                 }
