@@ -1085,7 +1085,7 @@ public class DatumRangeUtil {
                     ss[0]= "-"+ss[1];
                     ss[1]= ss[2];
                 } else {
-                    throw new IllegalArgumentException("failed to parse: "+str);
+                    throw new ParseException("failed to parse: "+str,0);
                 }
             }
             
