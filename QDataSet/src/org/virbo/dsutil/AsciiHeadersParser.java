@@ -268,6 +268,7 @@ public class AsciiHeadersParser {
                 int i2= i+1;
                 while ( i2<snames.length && snames[i2].equals(snames[i]) ) {
                     i2++;
+                    System.err.println("i2="+i2);
                 }
                 int[] qube= new int[] { i2-i };
                 qube[0]= i2-i;
@@ -347,6 +348,8 @@ public class AsciiHeadersParser {
             datasets.put( name, i );
             datasets2.put( i, name );
             qubes.put( name, qube );
+            putProperty( QDataSet.LABEL, i, name );
+            putProperty( QDataSet.NAME, i, name );
         }
 
         public int rank() {
