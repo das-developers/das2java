@@ -2497,7 +2497,7 @@ public class Ops {
             }
         });
     }
-
+    
     /**
      * returns the floating point index of each element of vv within the monotonically
      * increasing dataset uu.  The result dataset will have the same geometry
@@ -3047,13 +3047,16 @@ public class Ops {
         if (z.rank() == 1) {
             String xname= (String) x.property(QDataSet.NAME);
             String yname= (String) y.property(QDataSet.NAME);
+            String zname= (String) z.property(QDataSet.NAME);
             if ( xname==null ) xname="data0";
             if ( yname==null ) yname="data1";
+            if ( zname==null ) zname="data2";
             QDataSet result= bundle( bundle( x, y ), z );
             BundleDataSet.BundleDescriptor bds= (BundleDescriptor) result.property(QDataSet.BUNDLE_1);
             bds.putProperty( "CONTEXT_0", 2, xname+","+yname );
             bds.putProperty( QDataSet.NAME, 0, xname );
             bds.putProperty( QDataSet.NAME, 1, yname );
+            bds.putProperty( QDataSet.NAME, 2, zname );
 
 //            DDataSet yds = DDataSet.copy(y);
 //            yds.putProperty(QDataSet.DEPEND_0, x);

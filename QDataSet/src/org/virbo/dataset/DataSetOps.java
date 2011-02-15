@@ -720,6 +720,7 @@ public class DataSetOps {
         int ids= -1;
         for ( int i=0; i<bundle1.length(); i++ ) {
             if ( bundle1.property(QDataSet.DEPEND_0,i)!=null ) ids=i;
+            if ( bundle1.property(QDataSet.CONTEXT_0,i)!=null ) ids=i;
         }
         if ( ids==-1 ) ids= bundle1.length()-1;
         return unbundle(bundleDs,ids);

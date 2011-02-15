@@ -302,16 +302,22 @@ public class SemanticOps {
 
     /**
      * return the ytags for the simple table that is ds.
+     *   rank 2 spectrogram: Z[X,Y] -> Y
+     *   bundle_1: ds[ :, [x,y,z] ] -> y
      * @param ds
      * @return
      */
     public static QDataSet ytagsDataSet( QDataSet ds ) {
         if ( ds.rank()>2 ) throw new IllegalArgumentException("need to slice to get a table");
-        QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
-        if ( result==null ) {
-            return new IndexGenDataSet(ds.length(0));
+        if ( isBundle(ds) ) {
+            return DataSetOps.unbundle( ds, 1 );
         } else {
-            return result;
+            QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
+            if ( result==null ) {
+                return new IndexGenDataSet(ds.length(0));
+            } else {
+                return result;
+            }
         }
     }
 
