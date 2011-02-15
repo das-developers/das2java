@@ -1301,7 +1301,7 @@ public class AsciiParser {
     }
 
     /**
-     * return the labels found for each each field.  If a label wasn't found,
+     * return the labels found for each field.  If a label wasn't found,
      * then the name is returned.
      * @return
      */
