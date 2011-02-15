@@ -940,6 +940,18 @@ public class DataSetOps {
                 } catch ( NumberFormatException ex ) {
                     fillDs= DataSetOps.unbundle( fillDs, comp );
                 }
+            } else if ( cmd.equals("|negate") ) {
+                fillDs= Ops.negate(fillDs);
+            } else if ( cmd.equals("|cos") ) {
+                fillDs= Ops.cos(fillDs);
+            } else if ( cmd.equals("|sin") ) {
+                fillDs= Ops.sin(fillDs);
+            } else if ( cmd.equals("|toRadians") ) {
+                fillDs= Ops.toRadians(fillDs);
+            } else if ( cmd.equals("|toDegrees") ) {
+                fillDs= Ops.toDegrees(fillDs);
+            } else {
+                if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
             }
         }
         return fillDs;
