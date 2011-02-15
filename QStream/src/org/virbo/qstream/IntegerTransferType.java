@@ -20,7 +20,7 @@ public class IntegerTransferType extends TransferType {
     }
 
     @Override
-    double read(ByteBuffer buffer) {
+    public double read(ByteBuffer buffer) {
         return buffer.getInt();
     }
 

@@ -447,8 +447,8 @@ public class StreamTool {
                 Descriptor pd = factory.create(doc.getDocumentElement());
 
                 if (pd instanceof PacketDescriptor) {
-                    struct.handler.packetDescriptor((PacketDescriptor) pd);
                     struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
+                    struct.handler.packetDescriptor((PacketDescriptor) pd);
                 } else if (root.getTagName().equals("exception")) {
                     throw exception(root);
                 } else if (pd instanceof StreamComment) {

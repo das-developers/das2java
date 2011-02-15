@@ -57,7 +57,7 @@ public abstract class TransferType {
      * @param d
      * @param buffer
      */
-    abstract double read( ByteBuffer buffer );
+    public abstract double read( ByteBuffer buffer );
     
     /**
      * return the number of bytes used by the transfer type.

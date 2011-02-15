@@ -41,7 +41,7 @@ public class PacketDescriptor implements Descriptor {
         this();
         this.domElement= element;
     }
-    
+
     public boolean isStream() {
         return stream;
     }
@@ -68,7 +68,7 @@ public class PacketDescriptor implements Descriptor {
      * return the list of planes in an unmodifiable list.
      * @return
      */
-    List<PlaneDescriptor> getPlanes() {
+    public List<PlaneDescriptor> getPlanes() {
         return Collections.unmodifiableList(planes);
     }
 

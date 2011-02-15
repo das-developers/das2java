@@ -22,7 +22,7 @@ import org.w3c.dom.Element;
  * Description of the Stream, and manages resources for the stream.
  * @author jbf
  */
-class StreamDescriptor implements Descriptor {
+public class StreamDescriptor implements Descriptor {
 
     Map<Integer, Descriptor> descriptors;
     Map<Descriptor, Integer> invPackets;

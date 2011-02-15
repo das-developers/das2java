@@ -20,7 +20,7 @@ public class DoubleTransferType extends TransferType {
     }
 
     @Override
-    double read(ByteBuffer buffer) {
+    public double read(ByteBuffer buffer) {
         return buffer.getDouble();
     }
 

@@ -4,6 +4,7 @@
  */
 package org.virbo.qstream;
 
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
 import org.w3c.dom.Element;
@@ -65,7 +66,11 @@ public class PlaneDescriptor {
         return elements;
     }
 
-    public QDataSet getDs() {
+    /**
+     * return the dataset encoded in this plane
+     * @return
+     */
+    public QDataSet getDs( ) {
         return ds;
     }
 
