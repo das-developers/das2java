@@ -68,12 +68,16 @@ public class SimpleStreamFormatter {
         Units u = (Units) sunits;
         if ( u==null && isBundle(ds) && ds.rank()==2 ) {
             QDataSet bundleDescriptor= (QDataSet) ds.property(QDataSet.BUNDLE_1);
-            // uh-oh.  just use a high-resolution format for now.
-            for ( int i=0; i<ds.length(0); i++ ) {
-                Units u1= (Units)bundleDescriptor.property( QDataSet.UNITS, i );
-                if ( u1!=null && UnitsUtil.isTimeLocation(u1) ) {
-                    highResKludge= true;
-                    System.err.println("using high res kludge to format bundle dataset that contains "+u1 );
+            if ( bundleDescriptor==null ) {
+                //TODO: check this schema, demoed by BundleBinsDemo.demo1();
+            } else {
+                // uh-oh.  just use a high-resolution format for now.
+                for ( int i=0; i<bundleDescriptor.length(); i++ ) {
+                    Units u1= (Units)bundleDescriptor.property( QDataSet.UNITS, i );
+                    if ( u1!=null && UnitsUtil.isTimeLocation(u1) ) {
+                        highResKludge= true;
+                        System.err.println("using high res kludge to format bundle dataset that contains "+u1 );
+                    }
                 }
             }
         }
