@@ -1703,7 +1703,7 @@ public class Ops {
                 return Math.cos(d1);
             }
         });
-        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "asin" ) );
+        result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "cos" ) );
         return result;
     }
 
