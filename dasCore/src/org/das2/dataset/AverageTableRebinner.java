@@ -299,8 +299,14 @@ public class AverageTableRebinner implements DataSetRebinner {
                             alpha= alpha < 0.5 ? 0.0 : 1.0;
                         }
                         int ny = ddY == null ? yds.length() : ddY.numberOfBins();
-                        for (int j = 0; j < yds.length(); j++) {
-                            int jj = ddY == null ? j : ddY.whichBin( yds.value( j ), yunits );
+                        QDataSet yds1;
+                        if ( yds.rank()==2 ) {
+                            yds1= yds.slice(i0); //TODO: assumes .slice(i0)==.slice(i1)
+                        } else {
+                            yds1= yds;
+                        }
+                        for (int j = 0; j < yds1.length(); j++) {
+                            int jj = ddY == null ? j : ddY.whichBin( yds1.value( j ), yunits );
                             if (jj >= 0 && jj < ny) {
                                 if (rebinWeights[ix][jj] > 0.0) {
                                     continue;
@@ -333,7 +339,10 @@ public class AverageTableRebinner implements DataSetRebinner {
             QDataSet xds= SemanticOps.xtagsDataSet(tds1);
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
             if ( yds.rank()==2 ) {
-                yds= yds.slice(0);
+                yds= yds.slice(0); //TODO: kludge assumes that all yds slices are repeated.
+                if ( yds.length()>0 && yds.length(0)>0 && yds.value(0,0)!=yds.value(1,0) ) {
+                    System.err.println("kludge assumes rank2 yds is repeating values");
+                }
             }
             QDataSet wds= SemanticOps.weightsDataSet(tds1);
 
