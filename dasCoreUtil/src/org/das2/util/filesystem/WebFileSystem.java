@@ -28,8 +28,6 @@ package org.das2.util.filesystem;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.net.*;
@@ -121,6 +119,8 @@ public abstract class WebFileSystem extends FileSystem {
 
         File local = FileSystem.settings().getLocalCacheDir();
 
+        logger.fine( "WFS localRoot="+ local );
+        
         String s = root.getScheme() + "/" + root.getHost() + "/" + root.getPath(); //TODO: check getPath
 
         local = new File(local, s);
