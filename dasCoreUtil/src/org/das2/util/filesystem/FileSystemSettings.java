@@ -7,12 +7,15 @@ package org.das2.util.filesystem;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.logging.Logger;
 
 /**
  * controls for file systems.  
  * @author jbf
  */
 public class FileSystemSettings {
+
+    private static Logger logger= Logger.getLogger("org.das2.util.filesystem");
 
     /**
      * check the security manager to see if all permissions are allowed,
@@ -95,6 +98,7 @@ public class FileSystemSettings {
     public void setLocalCacheDir(File localCacheDir) {
         File oldLocalCacheDir = this.localCacheDir;
         this.localCacheDir = localCacheDir;
+        logger.fine( "setLocalCacheDir("+localCacheDir+")" );
         propertyChangeSupport.firePropertyChange(PROP_LOCALCACHEDIR, oldLocalCacheDir, localCacheDir);
     }
     protected Persistence persistence = Persistence.SESSION;
