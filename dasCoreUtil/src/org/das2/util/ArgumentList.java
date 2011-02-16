@@ -498,6 +498,9 @@ public class ArgumentList {
                 String key;
                 String value;
                 key= this.positionKeys[iposition];
+                if ( key==null ) {
+                    System.err.println( "\nWarning: position value found when position value was not expected: "+ args[i] + "\n" );
+                }
                 logger.finer("position key: "+key+"="+args[i]);
                 String vv= args[i];
                 if ( vv.startsWith("\"") ) {
