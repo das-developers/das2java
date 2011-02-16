@@ -49,6 +49,7 @@ public class WebFileObject extends FileObject {
     boolean isRoot;
     boolean isFolder;
     Map<String,String> metadata;
+    private final static Logger logger= Logger.getLogger("org.das2.util.filesystem");
     
     /**
      * true if we know if it's a folder or not.
@@ -79,6 +80,7 @@ public class WebFileObject extends FileObject {
 
     public InputStream getInputStream(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         if ( wfs.protocol !=null ) {
+            logger.fine("get inputstream from "+wfs.protocol );
             return wfs.protocol.getInputStream(this, monitor);
         }
         if (isFolder) {
@@ -88,6 +90,7 @@ public class WebFileObject extends FileObject {
             File partFile = new File(localFile.toString() + ".part");
             wfs.downloadFile(pathname, localFile, partFile, monitor);
         }
+        logger.fine( "read local file "+localFile );
         return new FileInputStream(localFile);
     }
 
@@ -275,6 +278,7 @@ public class WebFileObject extends FileObject {
             } catch (IOException ex ) {
                 if ( this.wfs instanceof HttpFileSystem ) {
                     if ( this.wfs.isOffline() ) {
+                        ex.printStackTrace();
                         throw new FileSystem.FileSystemOfflineException("not found in local cache: "+getNameExt() );
                     }
                 }
