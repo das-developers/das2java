@@ -27,8 +27,8 @@ public class DefaultHttpProtocol implements WebProtocol {
         if (fo.isFolder) {
             throw new IllegalArgumentException("is a folder");
         }
-        
-        return new FileInputStream(fo.getFile(mon));
+        File ff= fo.getFile(mon);
+        return new FileInputStream(ff);
     }
 
     public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
