@@ -296,6 +296,29 @@ public interface QDataSet {
 
 
     /**
+     * String, human consumable identifying version.  Presently this is intended for human
+     * consumption, but eventually we may make them usable by software as well.
+     * Note if multiple versions go into making a product (e.g. aggregation), 
+     * The version string should contain space-delimited version ids, so note
+     * versions must not contain spaces for other purposes.  Also
+     * two version strings containing the same value can be coalesced.  If this
+     * is prefixed with "&lt;scheme&gt;:", then this is to be interpreted as such:
+     *   sep: period-delimited list of numeric sorted: 2.2.0 &lt; 2.15.2 &lt; 10.2.0
+     *   alpha: alpha-numeric sorted: 20030202B&gt;20030202A
+     * otherwise it should be numerically sorted.
+     * (see org.das2.fsm.FileStorageModelNew)
+     */
+    public final static String VERSION="VERSION";
+
+    /**
+     * String, Human-consumable string identifying the source of a dataset, such as the file or URI from
+     * which it was read.  Clearly this is easily lost as processes are applied to the
+     * data, but when no other source is involved in a process (excluding library code
+     * itself), then the source should be preserved.
+     */
+    public final static String SOURCE="SOURCE";
+
+    /**
      * Map<String,Object> representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
      * as possible.
