@@ -143,7 +143,7 @@ public class FileStorageModelNew {
 
         String result= null;
 
-        for ( int i=0; result==null && i<fileSystems.length; i++ ) {
+        for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
             String[] files1= fileSystems[i].listDirectory( "/", listRegex );
             if ( files1.length>0 ) {
                 String ff= names[i].equals("") ? files1[0] : names[i]+"/"+files1[0];
