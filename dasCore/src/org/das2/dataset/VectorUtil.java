@@ -155,19 +155,22 @@ public class VectorUtil {
         dumpToAsciiStream(vds, Channels.newChannel(out));
     }
     
-    public static void dumpToAsciiStream(VectorDataSet vds, WritableByteChannel out) {
-        dumpToDas2Stream(vds, out, true);
+    public static void dumpToAsciiStream( VectorDataSet vds, WritableByteChannel out ) {
+        dumpToDas2Stream(vds, out, true, true);
     }
-    
-    public static void dumpToStream( VectorDataSet vds, OutputStream out ) {
-        dumpToAsciiStream(vds, out);
-    }
-    
+        
     public static void dumpToBinaryStream( VectorDataSet vds, OutputStream out ) {
-        dumpToDas2Stream( vds, Channels.newChannel(out), false );
+        dumpToDas2Stream( vds, Channels.newChannel(out), false, true );
     }
-    
-    private static void dumpToDas2Stream( VectorDataSet vds, WritableByteChannel out, boolean asciiTransferTypes ) {
+
+    /**
+     * write the data to a das2Stream
+     * @param vds
+     * @param out
+     * @param asciiTransferTypes
+     * @param sendStreamDescriptor if false, then don't send the stream and don't close
+     */
+    public static void dumpToDas2Stream( VectorDataSet vds, WritableByteChannel out, boolean asciiTransferTypes, boolean sendStreamDescriptor ) {
         if (vds.getXLength() == 0) {
             try {
                 out.close();
@@ -203,7 +206,7 @@ public class VectorUtil {
                 yTransferType= DataTransferType.getByName("sun_real4");
             }
             
-            producer.streamDescriptor(sd);
+            if ( sendStreamDescriptor ) producer.streamDescriptor(sd);
             
             StreamXDescriptor xDescriptor = new StreamXDescriptor();
             xDescriptor.setUnits(vds.getXUnits());
@@ -232,7 +235,7 @@ public class VectorUtil {
                 }
                 producer.packet(pd, xTag, yValues);
             }
-            producer.streamClosed(sd);
+            if ( sendStreamDescriptor ) producer.streamClosed(sd);
         } catch (StreamException se) {
             throw new RuntimeException(se);
         }

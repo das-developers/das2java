@@ -253,18 +253,21 @@ public class TableUtil {
     }
     
     public static void dumpToAsciiStream(TableDataSet tds, WritableByteChannel out) {
-        dumpToDas2Stream( tds, out, true );
-    }
-    
-    public static void dumpToDas2Stream( TableDataSet tds, OutputStream out, boolean asciiTransferTypes ) {
-        dumpToDas2Stream(tds, Channels.newChannel(out), asciiTransferTypes );
+        dumpToDas2Stream( tds, out, true, true );
     }
     
     public static void dumpToBinaryStream( TableDataSet tds, OutputStream out ) {
-        dumpToDas2Stream(tds, Channels.newChannel(out), false );
+        dumpToDas2Stream(tds, Channels.newChannel(out), false, true );
     }
-    
-    private static void dumpToDas2Stream( TableDataSet tds, WritableByteChannel out, boolean asciiTransferTypes ) {
+
+    /**
+     * write the data to a das2Stream
+     * @param tds
+     * @param out
+     * @param asciiTransferTypes
+     * @param sendStreamDescriptor if false, then don't send the stream and don't close.
+     */
+    public static void dumpToDas2Stream( TableDataSet tds, WritableByteChannel out, boolean asciiTransferTypes, boolean sendStreamDescriptor ) {
         try {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
@@ -290,7 +293,7 @@ public class TableUtil {
                 xTransferType= DataTransferType.getByName("sun_real8");
             }
             
-            producer.streamDescriptor(sd);
+            if ( sendStreamDescriptor ) producer.streamDescriptor(sd);
             DatumVector[] zValues = new DatumVector[1];
             for (int table = 0; table < tds.tableCount(); table++) {
                 StreamXDescriptor xDescriptor = new StreamXDescriptor();
@@ -310,7 +313,7 @@ public class TableUtil {
                     producer.packet(pd, xTag, zValues);
                 }
             }
-            producer.streamClosed(sd);
+            if ( sendStreamDescriptor ) producer.streamClosed(sd);
         } catch (StreamException se) {
             throw new RuntimeException(se);
         }
