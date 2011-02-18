@@ -16,6 +16,9 @@ import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.das2.datum.UnitsConverter;
+import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -25,6 +28,7 @@ import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TagGenDataSet;
 import org.virbo.dataset.WritableDataSet;
 
@@ -89,6 +93,19 @@ public class TableDataSetAdapter implements TableDataSet {
                     ((WritableDataSet)yds).putProperty(QDataSet.CADENCE, cadence);
                 }
             }
+            
+            // convert to us2000 for legacy server
+            Units xunits= SemanticOps.getUnits( xds );
+            if ( UnitsUtil.isTimeLocation(xunits) ) {
+                UnitsConverter uc= UnitsConverter.getConverter( xunits, Units.us2000 );
+                ArrayDataSet xx= ArrayDataSet.copy(xds);
+                for ( int i=0; i<xds.length(); i++ ) {
+                    xx.putValue( i, uc.convert( xx.value(i) ) );
+                }
+                xx.putProperty( QDataSet.UNITS, Units.us2000 );
+                xds= xx;
+            }
+            
             return new TableDataSetAdapter(z, xds, yds);
         } else if (z.rank() == 3) {
             JoinDataSet xds= new JoinDataSet(2);
@@ -133,6 +150,16 @@ public class TableDataSetAdapter implements TableDataSet {
                 //    throw new IllegalArgumentException("y table must be monotonic");
                 //}
                 if ( haveX ) {
+                    // convert to us2000 for legacy server
+                    if ( UnitsUtil.isTimeLocation(xunits) ) {
+                        UnitsConverter uc= UnitsConverter.getConverter( xunits, Units.us2000 );
+                        ArrayDataSet xx= ArrayDataSet.copy(xds);
+                        for ( int i=0; i<xds.length(); i++ ) {
+                            xx.putValue( i, uc.convert( xx.value(i) ) );
+                        }
+                        xx.putProperty( QDataSet.UNITS, Units.us2000 );
+                        xds1= xx;
+                    }                    
                     xds.join( xds1 );
                 } 
                 if ( haveY ) {
@@ -148,6 +175,7 @@ public class TableDataSetAdapter implements TableDataSet {
             if ( haveY ) {
                 if ( haveYUnits ) yds.putProperty( QDataSet.UNITS, yunits );
             }
+
             return new Rank3TableDataSetAdapter(z, xds, yds);
         } else {
             throw new IllegalArgumentException("rank must be 2 or 3");
