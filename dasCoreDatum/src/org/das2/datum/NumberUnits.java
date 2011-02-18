@@ -154,7 +154,7 @@ public class NumberUnits extends Units {
         } else {
             try {
                 s= s.trim();
-                if ( s.endsWith(this.getId()) ) {
+                if ( s.endsWith(this.getId()) ) { //TODO: bug Units.seconds.parse("1 days"), Units.seconds.parse("1 microseconds"),
                     s= s.substring(0,s.length()-this.getId().length());
                 }
                 String[] ss= s.split("\\s+");
