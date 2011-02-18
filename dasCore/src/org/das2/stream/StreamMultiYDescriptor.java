@@ -27,6 +27,7 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import org.virbo.dataset.SemanticOps;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,7 +58,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         DataTransferType type = DataTransferType.getByName(typeStr);
     	String unitsString = element.getAttribute("units");
 	if (unitsString != null) {
-            units = Units.getByName(unitsString);
+            units = SemanticOps.lookupUnits(unitsString);
         }
         NamedNodeMap attrs= element.getAttributes();
         for ( int i=0; i<attrs.getLength(); i++ ) {

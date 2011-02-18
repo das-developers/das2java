@@ -27,6 +27,7 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import org.virbo.dataset.SemanticOps;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -70,11 +71,11 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         }
 	String yUnitsString = element.getAttribute("yUnits");
 	if (yUnitsString != null) {
-            yUnits = Units.getByName(yUnitsString);
+            yUnits = SemanticOps.lookupUnits(yUnitsString);
         }
         String zUnitsString = element.getAttribute("zUnits");
         if (zUnitsString != null) {
-            zUnits = Units.getByName(zUnitsString);
+            zUnits = SemanticOps.lookupUnits(zUnitsString);
         }
         String name = element.getAttribute("name");
         if ( name != null ) {

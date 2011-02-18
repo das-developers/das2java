@@ -26,6 +26,7 @@ package org.das2.stream;
 import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.Map;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
@@ -91,7 +92,7 @@ public final class PropertyType {
                 return Units.dimensionless.parse(split[0]);
             }
             else if (split.length == 2) {
-                Units units = Units.getByName(split[1]);
+                Units units = SemanticOps.lookupUnits(split[1]);
                 return units.parse(split[0]);
             }
             else {
