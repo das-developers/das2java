@@ -1045,9 +1045,9 @@ public class DatumRangeUtil {
      * @param element range defining the width and phase of each list DatumRange.
      *
      */
-    public static List generateList( DatumRange bounds, DatumRange element ) {
+    public static List<DatumRange> generateList( DatumRange bounds, DatumRange element ) {
         
-        ArrayList result= new ArrayList();
+        ArrayList<DatumRange> result= new ArrayList();
         DatumRange dr= element;
         while ( dr.max().le( bounds.min() ) ) {
             dr= dr.next();
