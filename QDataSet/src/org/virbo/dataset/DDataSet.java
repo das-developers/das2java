@@ -25,7 +25,7 @@ public final class DDataSet extends ArrayDataSet {
     double[] back;
 
     private static final boolean RANGE_CHECK = true;
-    public static final String version = "20090605";
+    public static final String version = "20110217";
 
     public static DDataSet createRank1(int len0) {
         return new DDataSet(1, len0, 1, 1, 1);
@@ -60,6 +60,8 @@ public final class DDataSet extends ArrayDataSet {
             return DDataSet.createRank3(qube[0], qube[1], qube[2]);
         } else if (qube.length == 4) {
             return DDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
+        } else if (qube.length == 0 ) {
+            return new DDataSet( 0, 1, 1, 1, 1 );
         } else {
             throw new IllegalArgumentException("bad qube");
         }
@@ -69,6 +71,7 @@ public final class DDataSet extends ArrayDataSet {
      * Wraps an array from array of dimension sizes.  The result will have
      * rank qube.length(). 
      * @param data array containing the data, with the last dimension contiguous in memory.
+     *    for rank 0, data is 1-element array.
      * @param qube array specifying the rank and size of each dimension
      * @return DDataSet
      */
@@ -81,6 +84,9 @@ public final class DDataSet extends ArrayDataSet {
             return new DDataSet( 3, qube[0], qube[1], qube[2], 1, data );
         } else if (qube.length == 4) {
             return new DDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
+        } else if (qube.length == 0 ) {
+            // we support rank 0 with a 1-element array.
+            return new DDataSet( 0, 1, 1, 1, 1, data );
         } else {
             throw new IllegalArgumentException("bad qube");
         }

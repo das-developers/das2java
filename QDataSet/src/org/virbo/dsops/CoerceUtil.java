@@ -83,7 +83,7 @@ public class CoerceUtil {
         if (ds1.rank() == ds2.rank() && equalGeom(ds1, ds2)) {
         } else if (ds1.rank() < ds2.rank()) {
             if (ds1.rank() == 0) {
-                ds1 = increaseRank0((RankZeroDataSet) ds1, ds2);
+                ds1 = increaseRank0(ds1, ds2);
             } else if (ds1.rank() == 1) {
                 ds1 = increaseRank1(ds1, ds2);
             } else if (ds1.rank() == 2) {
@@ -123,7 +123,7 @@ public class CoerceUtil {
      * @param ds2
      * @return a dataset with the same geometry as ds2.
      */
-    static QDataSet increaseRank0(final RankZeroDataSet ds, final QDataSet ds2) {
+    static QDataSet increaseRank0(final QDataSet ds, final QDataSet ds2) {
         return new QDataSet() {
 
             public int rank() {
@@ -199,7 +199,7 @@ public class CoerceUtil {
             }
 
             public QDataSet trim(int start, int end) {
-                return new TrimDataSet(this, start, end );
+                return new TrimDataSet(this, start, end ); //TODO: I'm sure there is a better solution for this--like trim on ds2.
             }
 
         };
