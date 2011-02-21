@@ -30,6 +30,7 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import org.virbo.dataset.SemanticOps;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -69,7 +70,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
             units= ((DataTransferType.Time)type).getUnits();
         } else {
             String unitsString = element.getAttribute("units");
-            units = Units.getByName(unitsString);
+            units = SemanticOps.lookupUnits(unitsString);
         }
            
         String baseString = element.getAttribute("base");
