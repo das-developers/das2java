@@ -153,8 +153,8 @@ public class TableDataSetAdapter implements TableDataSet {
                     // convert to us2000 for legacy server
                     if ( UnitsUtil.isTimeLocation(xunits) ) {
                         UnitsConverter uc= UnitsConverter.getConverter( xunits, Units.us2000 );
-                        ArrayDataSet xx= ArrayDataSet.copy(xds);
-                        for ( int i=0; i<xds.length(); i++ ) {
+                        ArrayDataSet xx= ArrayDataSet.copy(xds1);
+                        for ( int i=0; i<xds1.length(); i++ ) {
                             xx.putValue( i, uc.convert( xx.value(i) ) );
                         }
                         xx.putProperty( QDataSet.UNITS, Units.us2000 );
