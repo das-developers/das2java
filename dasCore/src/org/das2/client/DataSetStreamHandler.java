@@ -164,6 +164,7 @@ public class DataSetStreamHandler implements StreamHandler {
     
     public DataSet getDataSet() {
         if (delegate == null) {
+            System.err.println("never established delegate, which might mean the stream contains no packets.");
             return null;
         } else {
             return delegate.getDataSet();
