@@ -211,9 +211,18 @@ public class AverageTableRebinner implements DataSetRebinner {
     private static Datum getXTagWidth( QDataSet xds, QDataSet tds1 ) {
         Datum xTagWidth;
         if ( xds.length()>1 ) {
-            xTagWidth= SemanticOps.guessXTagWidth( xds, tds1 ).multiply(0.9);
+            Datum d= SemanticOps.guessXTagWidth( xds, tds1 );
+            if ( d==null ) {
+                System.err.println("failed to guessXTagWidth");
+                Units xunits= SemanticOps.getUnits(xds).getOffsetUnits();
+                xTagWidth= xunits.createDatum(Double.MAX_VALUE);
+                return xTagWidth;
+                //d= SemanticOps.guessXTagWidth( xds, tds1 );
+            } else {
+                xTagWidth= d.multiply(0.9);
+            }
         } else {
-            RankZeroDataSet xTagWidthDs= (RankZeroDataSet) xds.property( QDataSet.CADENCE ); // note these were once doubles, but this is not supported here.
+            QDataSet xTagWidthDs= (RankZeroDataSet) xds.property( QDataSet.CADENCE ); // note these were once doubles, but this is not supported here.
             if (xTagWidthDs!=null) {
                 xTagWidth= org.virbo.dataset.DataSetUtil.asDatum(xTagWidthDs);
             } else {
