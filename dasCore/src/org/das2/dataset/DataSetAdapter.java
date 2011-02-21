@@ -43,6 +43,8 @@ public class DataSetAdapter {
             } else {
                 return new MultipleTable(tds);
             }
+        } else if ( ds==null ) {
+            throw new NullPointerException("dataset is null");
         } else {
             throw new IllegalArgumentException("unsupported dataset type: "+ds.getClass().getName() );
         }
