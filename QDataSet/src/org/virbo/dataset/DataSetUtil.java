@@ -627,6 +627,9 @@ public class DataSetUtil {
     /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
+     * History:
+     *    2011-02-21: keep track of repeat values, allowing zero to be considered either mono increasing or mono decreasing
+     *    2011-02-21: deal with interleaved fill values, keeping track of last valid value.
      * @param xds the x tags, which may not contain fill values for non-null result.
      * @param yds the y values, which if non-null is only used for fill values.  This
      *   is only used if it is rank 1.
@@ -675,19 +678,30 @@ public class DataSetUtil {
         int monoIncreasing= 0;
         int count= 0;
         boolean xHasFill= false;
-        for ( int i=1; i<xds.length(); i++ ) {
-            if ( wds.value(i)==0 || wds.value(i-1)==0 ) {
+        int repeatValues= 0;
+        double last= Double.NaN;
+        for ( int i=0; i<xds.length(); i++ ) {
+            if ( wds.value(i)==0 ) {
                 xHasFill= true;
                 continue;
             }
             count++;
-            sp= xds.value(i) - xds.value(i-1);
-            if ( sp<0. ) monoDecreasing++;
-            if ( sp>0. ) monoIncreasing++;
+            if ( last==Double.NaN ) {
+                last= xds.value();
+                continue;
+            }
+            sp= xds.value(i) - last;
+            if ( sp<0. ) {
+                monoDecreasing++;
+            } else if ( sp>0. ) {
+                monoIncreasing++;
+            } else {
+                repeatValues++;
+            }
         }
-        if ( monoIncreasing>(9*count/10) ) {
+        if ( ( repeatValues + monoIncreasing ) >(9*count/10) ) {
             monoMag= 1;
-        } else if ( monoDecreasing>(9*count/10) ) {
+        } else if ( ( repeatValues + monoDecreasing ) >(9*count/10) ) {
             monoMag= -1;
         } else {
             monoMag= 0;
