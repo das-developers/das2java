@@ -170,7 +170,7 @@ public class TableDataSetAdapter implements TableDataSet {
                 z= DDataSet.maybeCopy(z);
             }
             if ( haveX ) {
-                if ( haveXUnits ) xds.putProperty( QDataSet.UNITS, xunits );
+                if ( haveXUnits ) xds.putProperty( QDataSet.UNITS, Units.us2000 );
             }
             if ( haveY ) {
                 if ( haveYUnits ) yds.putProperty( QDataSet.UNITS, yunits );
