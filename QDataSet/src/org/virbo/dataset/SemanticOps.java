@@ -141,7 +141,7 @@ public class SemanticOps {
      */
     public static Units lookupTimeLengthUnit(String s) throws ParseException {
         s= s.toLowerCase().trim();
-        if ( s.startsWith("sec") ) {
+        if ( s.startsWith("sec") || s.equals("s") ) {
             return Units.seconds;
         } else if ( s.startsWith("ms") || s.startsWith("millisec") ) {
             return Units.milliseconds;
@@ -153,7 +153,7 @@ public class SemanticOps {
             return Units.microseconds;
         } else if ( s.startsWith("ns") || s.startsWith("nanos" ) ) {
             return Units.nanoseconds;
-        } else if ( s.startsWith("d") ) {
+        } else if ( s.startsWith("d") ) { //TODO: yikes...
             return Units.days;
         } else {
             throw new ParseException("failed to identify unit: "+s,0);
