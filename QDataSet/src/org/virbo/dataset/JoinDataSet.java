@@ -90,7 +90,7 @@ public class JoinDataSet extends AbstractDataSet {
      */
     public void join( QDataSet ds ) {
         if ( ds.rank()!=this.rank-1 ) {
-            throw new IllegalArgumentException("dataset rank must be "+(this.rank-1));
+            throw new IllegalArgumentException("dataset rank must be "+(this.rank-1)+", it is rank "+ds.rank() );
         }
         datasets.add( ds );
     }
