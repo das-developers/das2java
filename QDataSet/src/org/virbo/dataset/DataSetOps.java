@@ -761,40 +761,57 @@ public class DataSetOps {
      * @return
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib) {
-        QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+        
+        QDataSet bundle=null;
 
-        if ( bundle1==null ) {
-            bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
-            if ( bundle1!=null && bundle1.rank()>1 ) {
-                throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+        if ( bundleDs.rank()==2 ) {
+            QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+            if ( bundle1==null ) {
+                bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+                if ( bundle1!=null && bundle1.rank()>1 ) {
+                    throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                }
             }
+            bundle= bundle1;
+        } else if ( bundleDs.rank()==1 ) {
+            QDataSet bundle0= (QDataSet) bundleDs.property(QDataSet.BUNDLE_0);
+            if ( bundle0==null ) {
+                bundle0= (QDataSet) bundleDs.property(QDataSet.DEPEND_0); //simple legacy bundle was once DEPEND_1.
+                if ( bundle0!=null && bundle0.rank()>1 ) {
+                    throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                }
+            }
+            bundle= bundle0;
+        } else {
+            throw new IllegalArgumentException("bundle must be rank 1 or rank 2");
         }
 
-        if ( ib<0 || ib>=bundle1.length() ) {
+
+        if ( ib<0 || ib>=bundle.length() ) {
             throw new IndexOutOfBoundsException("no such data set");
         }
 
-        if ( bundle1.rank()==1 ) { //simple legacy bundle was once DEPEND_1.
+        if ( bundle.rank()==1 ) { //simple legacy bundle was once DEPEND_1.
             MutablePropertyDataSet result= DataSetOps.slice1(bundleDs,ib);
-            Units enumunits= (Units) bundle1.property(QDataSet.UNITS);
+            Units enumunits= (Units) bundle.property(QDataSet.UNITS);
             if ( enumunits==null ) enumunits= Units.dimensionless;
-            String label=  String.valueOf(enumunits.createDatum(bundle1.value(ib)));
+            String label=  String.valueOf(enumunits.createDatum(bundle.value(ib)));
             result.putProperty(QDataSet.NAME, label ); //TODO: make safe java-identifier eg: org.virbo.dsops.Ops.safeName(label)
             result.putProperty(QDataSet.LABEL, label );
             return result;
         }
 
-        String[] names= new String[bundle1.length()];
-        int[] offsets= new int[bundle1.length()];
-        int[] lens= new int[bundle1.length()];
+        String[] names= new String[bundle.length()];
+        int[] offsets= new int[bundle.length()];
+        int[] lens= new int[bundle.length()];
 
         int idx=0;
-        for ( int j=0; j<bundle1.length(); j++ ) {
-            names[j]= (String) bundle1.property( QDataSet.NAME, j );
+        for ( int j=0; j<bundle.length(); j++ ) {
+            names[j]= (String) bundle.property( QDataSet.NAME, j );
             offsets[j]= idx;
             int n= 1;
-            for (int k = 0; k < bundle1.length(j); k++) {
-                 n *= bundle1.value(j, k);
+            for (int k = 0; k < bundle.length(j); k++) {
+                 n *= bundle.value(j, k);
             }
             lens[j]= n;
             idx+= n;
@@ -803,27 +820,33 @@ public class DataSetOps {
         int j= ib;
         int n= lens[j];
 
-        if ( bundle1.length(j)==0 ) {
+        if ( bundle.length(j)==0 ) {
             if ( bundleDs instanceof BundleDataSet ) {
-                QDataSet r= ((BundleDataSet)bundleDs).unbundle(offsets[j]);
+                QDataSet r= ((BundleDataSet)bundleDs).unbundle(offsets[j]); //TODO: check rank 0
                 return r;
             } else {
-                MutablePropertyDataSet result;
+                MutablePropertyDataSet result=null;
                 // DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
-                result= new Slice1DataSet( bundleDs, offsets[j], true );
+                if ( bundleDs.rank()==1 ) {
+                    return bundleDs.slice(offsets[j]);
+                } else if ( bundleDs.rank()==2 ) {
+                    result= new Slice1DataSet( bundleDs, offsets[j], true );
+                }
+
                 String[] names1= DataSetUtil.dimensionProperties();
                 for ( int i=0; i<names1.length; i++ ) {
-                    Object v= bundle1.property( names1[i], j );
+                    Object v= bundle.property( names1[i], j );
                     if ( v!=null ) {
                         result.putProperty( names1[i], v );
                     }
                 }
                 return result;
             }
-        } else if ( bundle1.length(j)==1 ) {
+        } else if ( bundle.length(j)==1 ) {
+            if ( bundleDs.rank()==1 ) throw new IllegalArgumentException("not implemented for rank 0, slice is rank 1");
             TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
             result.setTrim( 1, offsets[j], offsets[j]+lens[j], 1 );
-            Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle1,j) );
+            Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,j) );
             DataSetUtil.putProperties( props, result );
             String[] testProps= new String[] { QDataSet.DEPEND_0, QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.PLANE_0 };
             for ( int i=0; i<testProps.length; i++ ) {
