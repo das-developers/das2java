@@ -118,12 +118,20 @@ public final class DDataSet extends ArrayDataSet {
 
     @Override
     public double value() {
+        if ( RANGE_CHECK ) {
+            if ( this.rank!=0 ) {
+                throw new IllegalArgumentException("rank 0 access on rank "+this.rank+" dataset");
+            }
+        }
         return back[0];
     }
 
     @Override
     public double value(int i0) {
         if (RANGE_CHECK) {
+            if ( this.rank!=1 ) {
+                throw new IllegalArgumentException("rank 1 access on rank "+this.rank+" dataset");
+            }
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
             }
@@ -134,6 +142,9 @@ public final class DDataSet extends ArrayDataSet {
     @Override
     public double value(int i0, int i1) {
         if (RANGE_CHECK) {
+            if ( this.rank!=2 ) {
+                throw new IllegalArgumentException("rank 2 access on rank "+this.rank+" dataset");
+            }
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
             }
@@ -147,6 +158,9 @@ public final class DDataSet extends ArrayDataSet {
     @Override
     public double value(int i0, int i1, int i2) {
         if (RANGE_CHECK) {
+            if ( this.rank!=3 ) {
+                throw new IllegalArgumentException("rank 3 access on rank "+this.rank+" dataset");
+            }
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
             }
@@ -163,6 +177,9 @@ public final class DDataSet extends ArrayDataSet {
     @Override
     public double value(int i0, int i1, int i2, int i3) {
         if (RANGE_CHECK) {
+            if ( this.rank!=4 ) {
+                throw new IllegalArgumentException("rank 4 access on rank "+this.rank+" dataset");
+            }
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
             }
