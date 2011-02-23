@@ -517,8 +517,30 @@ public class DataSetOps {
             if ( dep0!=null && dep0.rank()==1 ) { //TODO: find documentation for rank 2 depend_0...
                 if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
             } else {
-                if ( props.get( "DEPEND_0["+index+"]" )==null ) { // bundle dataset  //TODO: this needs more review
+                if ( props.get( "DEPEND_0__"+index )==null ) { // bundle dataset  //TODO: this needs more review
                     result.put( QDataSet.DEPEND_0, null );    // DANGER--uses indexed property convention.
+                }
+            }
+        }
+
+        // UNITS__2_3=foo   property( UNITS, 2, 3 ) = foo
+        for ( String ss: props.keySet() ) {
+            int ii= ss.indexOf("__");
+            if ( ii>-1 ) {
+                String hd= ss.substring(ii+2);
+                int iii=0;
+                while ( iii<hd.length() && Character.isDigit( hd.charAt(iii) ) ) iii++;
+                if ( iii>0 ) {
+                    int islice= Integer.parseInt( hd.substring(0,iii) );
+                    if ( islice==index ) {
+                        String slicePropName;
+                        if ( iii<hd.length() ) {
+                            slicePropName= ss.substring(0,ii)+"__"+ hd.substring(iii + 1 ); // +1 is for _ in _3
+                        } else {
+                            slicePropName= ss.substring(0,ii);
+                        }
+                        result.put(slicePropName,props.get(ss));
+                    }
                 }
             }
         }
