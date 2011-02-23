@@ -226,7 +226,15 @@ public abstract class UnitsConverter {
             return result;
         }
     }
-    
+
+    /**
+     * lookup the UnitsConverter object that takes numbers from fromUnits to toUnits.
+     * This will chain together UnitsConverters registered via units.registerConverter.
+     * @param fromUnits
+     * @param toUnits
+     * @return UnitsConverter object
+     * @throws InconvertibleUnitsException when the conversion is not possible.
+     */
     public static UnitsConverter getConverter(Units fromUnits, Units toUnits) {
         return Units.getConverter(fromUnits,toUnits);
     }
