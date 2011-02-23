@@ -331,9 +331,6 @@ public class AsciiHeadersParser {
             }
         }
 
-        public void putProperty( String name, int i, Object value ) {
-            properties.put( name+"__"+i, value );
-        }
 
         /**
          * add the named dataset with the dimensions.  Note qube
