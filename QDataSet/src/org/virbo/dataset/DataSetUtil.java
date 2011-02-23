@@ -686,8 +686,8 @@ public class DataSetUtil {
                 continue;
             }
             count++;
-            if ( last==Double.NaN ) {
-                last= xds.value();
+            if ( Double.isNaN(last) ) {
+                last= xds.value(i);
                 continue;
             }
             sp= xds.value(i) - last;
