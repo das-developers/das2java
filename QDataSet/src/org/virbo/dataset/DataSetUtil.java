@@ -685,11 +685,11 @@ public class DataSetUtil {
                 xHasFill= true;
                 continue;
             }
-            count++;
             if ( Double.isNaN(last) ) {
                 last= xds.value(i);
                 continue;
             }
+            count++;
             sp= xds.value(i) - last;
             if ( sp<0. ) {
                 monoDecreasing++;
