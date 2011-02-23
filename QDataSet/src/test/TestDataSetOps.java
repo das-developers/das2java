@@ -9,6 +9,9 @@
 
 package test;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -16,6 +19,7 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IndexGenDataSet;
 import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.WritableDataSet;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -77,9 +81,31 @@ public class TestDataSetOps {
         
         assert( result.value(0)==3 && result.value(2)==4 );
     }
-    
+
+    public static void testSliceIndexProps() {
+        Map m= new HashMap<String,Object>();
+        m.put( "UNITS__0", Units.hertz );
+        m.put( "UNITS__1", Units.eV );
+        m.put( "UNITS__1_100", Units.eV );
+        m.put( "UNITS__2", Units.seconds );
+        System.err.println( DataSetOps.sliceProperties0(1, m) );
+    }
+
+    public static void testUnbundleRank1() {
+        QDataSet bundle;
+        bundle= Ops.bundle( null, DataSetUtil.asDataSet(0,Units.dB) );
+        bundle= Ops.bundle( bundle, DataSetUtil.asDataSet(1,Units.dB) );
+        bundle= Ops.bundle( bundle, DataSetUtil.asDataSet(2,Units.dB) );
+        bundle= Ops.bundle( bundle, DataSetUtil.asDataSet(3,Units.bytesPerSecond) );
+        bundle= Ops.bundle( bundle, DataSetUtil.asDataSet(4,Units.dB) );
+
+        System.err.println( DataSetOps.unbundle(bundle,2) );
+    }
+
     public static void main( String[] args ) {
-        new TestDataSetOps();
+        //new TestDataSetOps();
+        //testSliceIndexProps();
+        testUnbundleRank1();
     }
     
 }
