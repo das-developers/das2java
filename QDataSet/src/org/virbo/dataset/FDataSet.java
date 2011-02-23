@@ -182,7 +182,7 @@ public final class FDataSet extends ArrayDataSet {
     @Override
     public void putProperty(String name, Object value) {
         super.putProperty(name, value);
-        checkFill();
+        if ( name.equals(QDataSet.FILL_VALUE) ) checkFill(); // because of rounding errors
     }
 
 
