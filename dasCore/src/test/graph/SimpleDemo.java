@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.text.ParseException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.das2.datum.Units;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasColumn;
@@ -17,7 +18,12 @@ import org.das2.graph.DasRow;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
+import org.virbo.dataset.ArrayDataSet;
+import org.virbo.dataset.BundleDataSet;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.QFunction;
 import org.virbo.dsops.Ops;
 
 /**
@@ -59,6 +65,26 @@ public class SimpleDemo {
         if ( r instanceof SeriesRenderer ) {
             ((SeriesRenderer)r).setAntiAliased(true);
         }
+
+        xaxis.setTcaFunction( new QFunction() {
+
+            BundleDataSet outbds= new BundleDataSet(1);
+
+            public QDataSet value(QDataSet parm) {
+                ArrayDataSet result= ArrayDataSet.copy( Ops.mod( parm, DataSetUtil.asDataSet(1,Units.seconds) ) );
+                result.putProperty(QDataSet.BUNDLE_0, outbds );
+                return result;
+            }
+
+            public QDataSet exampleInput() {
+                BundleDataSet inbds= BundleDataSet.createRank0Bundle();
+                inbds.bundle( DataSetUtil.asDataSet(0,Units.t2000) );
+                return inbds;
+            }
+
+        } );
+
+        xaxis.setDrawTca(true);
 
         canvas.add( plot, DasRow.create( canvas, null, "0%+2em", "100%-4em" ),
                 DasColumn.create( canvas, null, "0%+5em", "100%-7em" ) );
