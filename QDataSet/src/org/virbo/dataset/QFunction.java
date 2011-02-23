@@ -1,0 +1,48 @@
+
+package org.virbo.dataset;
+
+/**
+ * QFunctions try to recycle as much of the QDataSet interface as possible to
+ * define functions.  Functions take N parameters as input and result in M parameter
+ * output.  The N parameters are passed into value as a rank 1 bundle dataset.
+ * The M parameter output is returned in a rank 1 bundle dataset.  The method
+ * exampleInput returns an example input that allows for discovery of the function.
+ *
+ * @author jbf
+ */
+public interface QFunction {
+
+    /**
+     * A rank 1 dataset of N parameters is passed in, and a
+     * rank 1 dataset of M parameters is returned.  It's presumed that this
+     * is calculated in interactive time (1/30sec).
+     * Goals:
+     *   * support extra tick labels of axis.
+     *   * allow discovery of function, so I can pick it up and use it
+     *   * allow tabulation and plotting of a function
+     *   * non-linear function optimization
+     * @param parm rank 1 bundle of N elements.
+     * @return rank 1 bundle of M elements
+     */
+    QDataSet value( QDataSet parm );
+
+    /**
+     * discover an example input.  Result is a rank 1 bundle QDataSet.
+     *   QFunction ff= TestFunction();
+     *   ff.exampleInput().length();  // how many parameters the function takes
+     *   QDataSet bds= ff.exampleInput().property( QDataSet.BUNDLE_0 );
+     *   ; to discover properties of the first (0th) parameter:
+     *   bds.slice(0).property( QDataSet.UNITS )       // function should handle convertible units (e.g. TimeAxes Ephemeris).
+     *   bds.slice(0).property( QDataSet.VALID_MIN )   // absolute limits of domain of the function
+     *   bds.slice(0).property( QDataSet.VALID_MAX )
+     *   bds.slice(0).property( QDataSet.TYPICAL_MIN ) // domain of the function parameter
+     *   bds.slice(0).property( QDataSet.TYPICAL_MAX )
+     *   bds.slice(0).property( QDataSet.CADENCE ) // granularity of the function parameter
+     *   bds.slice(0).property( QDataSet.LABEL )   // label for the parameter
+     * slice(0) is the first argument, slice(1) would be the second, etc.
+     * This would be a bundle.
+     * @return rank 1 bundle if N elements.
+     */
+    QDataSet exampleInput();
+
+}
