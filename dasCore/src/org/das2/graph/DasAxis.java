@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.util.logging.Level;
 import org.das2.event.MouseModule;
 import org.das2.event.TimeRangeSelectionEvent;
 import org.das2.event.TimeRangeSelectionListener;
@@ -67,10 +68,18 @@ import java.util.regex.*;
 
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
+import org.das2.DasException;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.ArrayDataSet;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.QFunction;
+import org.virbo.dataset.SemanticOps;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -173,8 +182,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private javax.swing.event.EventListenerList timeRangeListenerList = null;
     private TimeRangeSelectionEvent lastProcessedEvent = null;
     /* TCA RELATED INSTANCE MEMBERS */
-    private DataSetDescriptor dsd;
-    private VectorDataSet[] tcaData = new VectorDataSet[0];
+    private QFunction tcaFunction;
+    private QDataSet tcaData = null;
     private String dataset = "";
     private boolean drawTca;
     public static String PROPERTY_DATUMRANGE = "datumRange";
@@ -847,6 +856,29 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return dataset;
     }
 
+    private static QFunction tcaFunction( String dataset ) throws DasException {
+        QFunction result= null;
+        if ( dataset.startsWith("/") ) {
+           throw new IllegalArgumentException("das2 legacy TCA stuff needs to be implemented");
+        } else if ( dataset.startsWith("class:") ) {
+            try {
+                try {
+                    result = (QFunction) Class.forName(dataset.substring(6)).newInstance();
+                } catch (InstantiationException ex) {
+                    Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
+                }
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
+            }
+        }
+        return result;
+    }
+    
     /**
      *
      * @param dataset The URL identifier string of a TCA data set, or "" for no TCAs.
@@ -860,11 +892,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
         this.dataset = dataset;
+
         if (dataset.equals("")) {
-            dsd = null;
+            tcaFunction = null;
         } else {
             try {
-                dsd = DataSetDescriptor.create(dataset);
+                tcaFunction= tcaFunction( dataset );
+                if ( tcaFunction==null ) {
+                    throw new IllegalArgumentException("unable to implement tca QFunction: "+dataset );
+                }
+                //tcaFunction = DataSetDescriptor.create(dataset);
             } catch (org.das2.DasException de) {
                 DasExceptionHandler.handle(de);
             }
@@ -874,7 +911,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("dataPath", oldValue, dataset);
     }
 
-    /** Add auxilary data to an axis (usually OA data for a time axis).
+    /** Add auxilary data to an axis (usually OrbitAttitude data for a time axis).
      * This function does the same thing as setDataPath, but with a different interface.
      * @param will be called upon to generate auillary data sets.  To avoid nonsensical
      * graphs the X axis for this dataset must be the same as the that handed to the
@@ -884,35 +921,29 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (dsdAux == null) {
             throw new NullPointerException("null DataSetDescriptor not allowed");
         }
-        DataSetDescriptor oldVal = dsd;
-        dsd = dsdAux;
+
+        //TODO: adapt old to new
+         throw new IllegalArgumentException("need to implement");
+    }
+
+    /** Add auxilary data to an axis (usually OrbitAttitude data for a time axis).
+     * This function does the same thing as setDataPath, but with a different interface.
+     * @param will be called upon to generate auxillary data sets.  To avoid nonsensical
+     * graphs the X axis for this dataset must be the same as the that handed to the
+     * renderer.
+     */
+    public void setTcaFunction( QFunction f ) {
+        QFunction oldF= this.tcaFunction;
+        this.tcaFunction= f;
+
         markDirty();
         update();
 
-        String oldDataset = dataset;
-        dataset = dsd.getDataSetID();
-        firePropertyChange("dataSetDescriptor", oldVal, dsd);
-        firePropertyChange("dataPath", oldDataset, dataset);
-    }
-    private final DataSetUpdateListener tcaListener = new DataSetUpdateListener() {
+        firePropertyChange("dataSetDescriptor", null, null );
+        firePropertyChange("dataPath", null, null );
+        firePropertyChange("tcaFunction", oldF, f );
 
-        public void dataSetUpdated(DataSetUpdateEvent e) {
-            VectorDataSet ds = (VectorDataSet) e.getDataSet();
-            if (ds == null) {
-                logger.warning("" + e.getException());
-                return;
-            }
-            logger.fine("got TCADataSet");
-            List itemList = (List) ds.getProperty("plane-list");
-            VectorDataSet[] newData = new VectorDataSet[itemList.size()];
-            newData[0] = ds;
-            for (int i = 1; i < itemList.size(); i++) {
-                newData[i] = (VectorDataSet) ds.getPlanarView((String) itemList.get(i));
-            }
-            tcaData = newData;
-            update();
-        }
-    };
+    }
 
     private void updateTCADataSet() {
         logger.fine("updateTCADataSet");
@@ -933,8 +964,30 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         final Datum interval = iinterval;
         tcaData = null;
 
-        this.dsd.requestDataSet(data_minimum, data_maximum.add(Datum.create(1.0, Units.seconds)), interval, new NullProgressMonitor(), getCanvas(), tcaListener);
+        JoinDataSet tcaData= new JoinDataSet(2);
+        ArrayDataSet ex= ArrayDataSet.copy( tcaFunction.exampleInput() );
+        QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
+        Units tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
+        if ( bds==null ) {
+            System.err.println("no bundle descriptor, dealing with it.");
+            tcaUnits= (Units) ex.property( QDataSet.UNITS, 0 );
+        }
+        UnitsConverter uc= UnitsConverter.getConverter( getUnits(), tcaUnits );
 
+        DDataSet dep0= DDataSet.createRank1(tickV.length);
+        dep0.putProperty(QDataSet.UNITS,getUnits());
+
+        for ( int i=0; i<tickV.length; i++ ) {
+            ex.putValue( 0,uc.convert(tickV[i]) );
+            ex.putProperty( QDataSet.BUNDLE_0, bds );
+            QDataSet ticks= this.tcaFunction.value(ex);
+            tcaData.join(ticks);
+            dep0.putValue(i,tickV[i]);
+        }
+        tcaData.putProperty( QDataSet.DEPEND_0, dep0 );
+
+        this.tcaData= tcaData;
+        
     }
 
     /** TODO
@@ -1365,7 +1418,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         datumFormatter = resolveFormatter(tickV);
 
-        if (drawTca && !dataset.equals("") && dsd != null) {
+        if (drawTca && tcaFunction != null) {
             updateTCADataSet();
         }
     }
@@ -1398,6 +1451,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (autoTickV) {
                 if (majorTicksDomainDivider != null) {
                     updateTickVDomainDivider();
+                    if (drawTca && tcaFunction != null) {
+                        updateTCADataSet();
+                    }
                 }
                 repaint();
             }
@@ -1560,12 +1616,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             int width, leftEdge;
 
-            for (int i = 0; i < tcaData.length; i++) {
+            if ( tcaData==null ) {
                 baseLine += lineHeight;
-                idlt.setString(g, (String) tcaData[i].getProperty(PROP_LABEL));
-                width = (int) Math.floor(idlt.getWidth() + 0.5);
-                leftEdge = rightEdge - width;
-                idlt.draw(g, (float) leftEdge, (float) baseLine);
+                idlt.setString( g, "tcaData not available" );
+                idlt.draw( graphics, (float)(rightEdge-idlt.getWidth()), (float)baseLine );
+            } else {
+                QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
+                if ( bds==null ) System.err.println("expected TCA data to have BUNDLE dataset");
+                for (int i = 0; i < tcaData.length(); i++) {
+                    baseLine += lineHeight;
+                    if ( bds==null ) {
+                        idlt.setString( g, "???" );
+                    } else {
+                        idlt.setString( g, (String) bds.property( QDataSet.LABEL, i ) );
+                    }
+                    width = (int) Math.floor(idlt.getWidth() + 0.5);
+                    leftEdge = rightEdge - width;
+                    idlt.draw(g, (float) leftEdge, (float) baseLine);
+                }
             }
         }
 
@@ -1831,7 +1899,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }*/
         }
         if (getOrientation() == BOTTOM && drawTca && tcaData != null) {
-            offset += tcaData.length * (tickLabelFont.getSize() + getLineSpacing());
+            offset += tcaData.length(0) * (tickLabelFont.getSize() + getLineSpacing());
             offset += tickLabelFont.getSize() + getLineSpacing();
         }
         return offset;
@@ -1886,33 +1954,42 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double pixelSize;
         double tcaValue;
 
-        if (tcaData == null || tcaData.length == 0) {
+        if (tcaData == null || tcaData.length() == 0) {
             return;
         }
+
+        QDataSet dep0= (QDataSet)tcaData.property(QDataSet.DEPEND_0);
 
         baseLine = y;
         leftEdge = x;
         rightEdge = leftEdge + width;
 
-        index = DataSetUtil.closestColumn(tcaData[0], value);
-        if (index < 0 || index > tcaData[0].getXLength()) {
+        index = org.virbo.dataset.DataSetUtil.closestIndex( dep0, value);
+        if ( index < 0 || index >= tcaData.length() ) {
             return;
         }
-        pixelSize = getDatumRange().width().divide(getDLength()).doubleValue(
-                getUnits().getOffsetUnits());
 
-        if (tcaData[0].getXLength() == 0) {
+        pixelSize = getDatumRange().width().divide(getDLength()).doubleValue( getUnits().getOffsetUnits() );
+
+        if (tcaData.length() == 0) {
             g.drawString("tca data is empty", leftEdge, baseLine);
             return;
         }
 
-        tcaValue = tcaData[0].getXTagDouble(index, getUnits());
+        tcaValue = dep0.value(index);
 
         //Added in to say take nearest nieghbor as long as the distance to the nieghbor is
         //not more than the xtagwidth.
-        double xTagWidth = DataSetUtil.guessXTagWidth(tcaData[0]).doubleValue(
-                getUnits().getOffsetUnits());
-        double limit = Math.max(xTagWidth, pixelSize);
+        QDataSet xTagWidth = org.virbo.dataset.DataSetUtil.guessCadenceNew( dep0, null );
+        
+        double limit;
+        try {
+            UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dep0).getOffsetUnits(), getUnits().getOffsetUnits() );
+            limit = Math.max( uc.convert( xTagWidth.value() ), pixelSize ); //DANGER: check that this is correct
+        } catch ( InconvertibleUnitsException ex ) {
+            ex.printStackTrace();
+            throw new RuntimeException( ex );
+        }
 
         if (Math.abs(tcaValue - value.doubleValue(getUnits())) > limit) {
             return;
@@ -1921,9 +1998,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Font tickLabelFont = getTickLabelFont();
         FontMetrics fm = getFontMetrics(tickLabelFont);
         int lineHeight = tickLabelFont.getSize() + getLineSpacing();
-        for (int i = 0; i < tcaData.length; i++) {
+        for (int i = 0; i < tcaData.length(0); i++) {
             baseLine += lineHeight;
-            String item = format(tcaData[i].getDouble(index, tcaData[i].getYUnits()), "(f8.2)");
+            String item = format( tcaData.value( index, i ), "(f8.2)" );
             width = fm.stringWidth(item);
             leftEdge = rightEdge - width;
             g.drawString(item, leftEdge, baseLine);
@@ -2248,12 +2325,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             bounds = getVerticalAxisBounds();
         }
         if (getOrientation() == BOTTOM && isTickLabelsVisible()) {
-            if (drawTca && tcaData != null && tcaData.length != 0) {
+            if (drawTca && tcaData != null && tcaData.length() != 0) {
                 int DMin = getColumn().getDMinimum();
                 int DMax = getColumn().getDMaximum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * tcaData.length;
+                int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * tcaData.length(0);
                 int maxLabelWidth = getMaxLabelWidth();
                 bounds.height += tcaHeight;
                 blLabelRect.height += tcaHeight;
@@ -2263,8 +2340,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
-                for (int i = 0; i < tcaData.length; i++) {
-                    idlt.setString(tickLabelFont, (String) tcaData[i].getProperty(PROP_LABEL));
+                QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
+                for (int i = 0; i < tcaData.length(); i++) {
+                    String ss;
+                    if ( bds==null ) {
+                        ss= "???";
+                    } else {
+                        ss=  (String) bds.property( QDataSet.LABEL, i );
+                    }
+                    idlt.setString( tickLabelFont, ss );
                     int width = (int) Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }
@@ -3090,7 +3174,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             if (drawTca && getOrientation() == BOTTOM && tcaData != null) {
                 Rectangle bounds = primaryInputPanel.getBounds();
-                int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing()) * tcaData.length;
+                int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing()) * tcaData.length(0);
                 bounds.height += tcaHeight;
                 primaryInputPanel.setBounds(bounds);
             }
@@ -3387,7 +3471,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROP_MAJORTICKSDOMAINDIVIDER, oldMajorTicksDomainDivider, majorTicksDomainDivider);
     }
 
-    protected boolean useDomainDivider = false;
+    protected boolean useDomainDivider = true;
     public static final String PROP_USEDOMAINDIVIDER = "useDomainDivider";
 
     public boolean isUseDomainDivider() {
