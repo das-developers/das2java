@@ -2941,7 +2941,12 @@ public class Ops {
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null && ds2!=null ) {
-            BundleDataSet ds= new BundleDataSet( );
+            BundleDataSet ds;
+            if ( ds2.rank()==0 ) {
+                ds= BundleDataSet.createRank0Bundle();
+            } else {
+                ds = new BundleDataSet( );
+            }
             ds.bundle(ds2);
             return ds;
         } else if (ds1.rank() == ds2.rank()) {
