@@ -152,7 +152,8 @@ public class AverageTableRebinner implements DataSetRebinner {
             QDataSet yds1= yds.rank()==1 ? yds : yds.slice(0); //TODO: rank 2 y
 
             //double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-            Datum yTagWidth = DataSetUtil.asDatum( DataSetUtil.guessCadenceNew( yds1, null ) );
+            RankZeroDataSet yTagWidthQ= DataSetUtil.guessCadenceNew( yds1, null );
+            Datum yTagWidth = yTagWidthQ==null ? null : DataSetUtil.asDatum( yTagWidthQ );
 
             if (ddX != null) {
                 fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
