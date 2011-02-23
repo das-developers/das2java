@@ -106,10 +106,6 @@ public class BundleDataSet extends AbstractDataSet {
 
     public class BundleDescriptor extends AbstractDataSet {
 
-        public void putProperty( String name, int i, Object value ) {
-            properties.put( name+"__"+i, value );
-        }
-
         public int rank() {
             return 2;
         }

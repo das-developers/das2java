@@ -116,7 +116,7 @@ public class JoinDataSet extends AbstractDataSet {
     }
 
     public Object property(String name, int i0) {
-        String sname= name + "[" + i0 + "]";
+        String sname= name + "__" + i0;
         Object result= properties.get(sname);
         if ( result==null ) {
             return datasets.get(i0).property(name);
@@ -135,12 +135,6 @@ public class JoinDataSet extends AbstractDataSet {
 
     public Object property(String name, int i0, int i1, int i2, int i3 ) {
         return datasets.get(i0).property(name,i1,i2,i3);
-    }
-
-    @Override
-    public void putProperty(String name, int index, Object value) {
-        String sname= name + "[" + index + "]";
-        properties.put(sname, value);
     }
 
     public void putProperty(String name, Object value) {

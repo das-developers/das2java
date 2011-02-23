@@ -72,7 +72,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
             return r;
         } else {
             if ( DataSetUtil.isInheritedProperty(name) ) {
-                return properties.get(name);
+                return properties.get(name); //TODO should this be name__i0?
             } else {
                 return null;
             }
