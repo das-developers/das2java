@@ -489,6 +489,7 @@ public class DataSetOps {
      * method to help dataset implementations implement slice.
      * 2010-09-23: support rank 2 DEPEND_2 and DEPEND_3
      * 2010-09-23: add BINS_1 and BUNDLE_1, Slice0DataSet calls this.
+     * 2010-02-24: BUNDLE_0 handled.
      * @param sliceIndex
      * @param props
      */
@@ -501,6 +502,7 @@ public class DataSetOps {
         QDataSet dep3= (QDataSet) props.get( QDataSet.DEPEND_3 );
         String bins1= (String) props.get( QDataSet.BINS_1 );
         QDataSet bundle1= (QDataSet) props.get( QDataSet.BUNDLE_1 );
+        QDataSet bundle0= (QDataSet) props.get( QDataSet.BUNDLE_0 );
 
         if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
             throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
@@ -567,6 +569,11 @@ public class DataSetOps {
 
         if ( bundle1!=null ) {
             result.put( QDataSet.BUNDLE_0, bundle1 );
+        }
+
+        if ( bundle0!=null ) { //TODO: what if BUNDLE_0 bundles rank 1 dataset?  This assumes they are all rank 0.
+            QDataSet bundle0ds= bundle0.slice(index);
+            result.putAll( DataSetUtil.getProperties(bundle0ds) );
         }
 
         //TODO: verify that we needn't put null in for JOIN_0.
@@ -828,7 +835,7 @@ public class DataSetOps {
                 MutablePropertyDataSet result=null;
                 // DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
                 if ( bundleDs.rank()==1 ) {
-                    return bundleDs.slice(offsets[j]);
+                    result= DataSetOps.makePropertiesMutable( bundleDs.slice(offsets[j]) );
                 } else if ( bundleDs.rank()==2 ) {
                     result= new Slice1DataSet( bundleDs, offsets[j], true );
                 }
