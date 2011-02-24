@@ -28,7 +28,7 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
     public FormatStringFormatter( String formatStr, boolean units ) {
         this.format= formatStr;
         this.units= units;
-        String s= String.format( format, 0 );  // try it out to catch errors early.
+        String s= String.format( format, 0. );  // try it out to catch errors early.
     }
 
     @Override
