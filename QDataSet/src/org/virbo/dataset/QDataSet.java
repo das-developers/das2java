@@ -43,24 +43,25 @@ public interface QDataSet {
     
     /**
      * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
-     * The tags for the DataSet's 1st index are identified by this tags dataset.  Note this is not very mature code, and
-     * it's probably safe to assume there will be problems with this for datasets where DEPEND_1 is dependent on the 0th index.
-     * The legacy das2 DataSet API had the abstraction of tables, and this may be replaced by a bundling dimension or metadata
-     * that indicates where DEPEND_1 changes.  For now, correct codes should should assume that this changes with each 0th index 
-     * value, and a helper method should be introduced that finds the geometry changes.  A depend dimension corresponds to one
-     * physical dimension.
+     * The tags for the DataSet's 1st index are identified by this tags dataset.  When DEPEND_1 is rank 2,
+     * then it's first dimension goes with DEPEND_0 and it's second are the tags for the second dimension.
+     * (TODO: Is this a QUBE?  Check).
      */
     public final static String DEPEND_1="DEPEND_1";
     
     /**
      * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
-     * The tags for the DataSet's 2nd index are identified by this tags dataset.
+     * The tags for the DataSet's 2nd index are identified by this tags dataset.  When DEPEND_2 is rank 2,
+     * then it's first dimension goes with DEPEND_0 and it's second are the tags for the second dimension.
+     * (TODO: Is this a QUBE?  Check).
      */
     public final static String DEPEND_2="DEPEND_2";
     
     /**
      * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
-     * The tags for the DataSet's 3nd index are identified by this tags dataset.
+     * The tags for the DataSet's 3nd index are identified by this tags dataset.  When DEPEND_3 is rank 2,
+     * then it's first dimension goes with DEPEND_0 and it's second are the tags for the second dimension.
+     * (TODO: Is this a QUBE?  Check).
      */
     public final static String DEPEND_3="DEPEND_3";
 
@@ -71,16 +72,18 @@ public interface QDataSet {
      * except for the first dimension.  When all the bundled datasets are rank 1, then
      * length(*) will be equal to zero.  property(*,UNITS) will yield the unit for each
      * dataset.  Bundle dimensions generally add one physical dimension for each
-     * bundled dataset.  property(*,DEPEND_0) is special, because it may return a string
-     * rather than a QDataSet.  This string should refer to one of the bundled datasets.
-     * In fact any property that returns a QDataSet may return a string referring to
-     * another dataset in the bundle.
+     * bundled dataset.  property(*,DEPEND_0) is special, because it will return a string
+     * rather than a QDataSet.  This string should refer to one of the bundled datasets by
+     * its NAME property.  (Any property that returns a QDataSet should return a
+     * string referring to another dataset in the bundle.)  Also the dataset is necessarily
+     * a QUBE.
      */
     public final static String BUNDLE_1="BUNDLE_1";
 
     /**
      * type QDataSet.  This dataset describes how the columns should be split up
-     * into separate parameters.  See BUNDLE_1.
+     * into separate parameters.  See BUNDLE_1.  Note slicing a dataset on the zeroth
+     * dimension will move BUNDLE_1 to BUNDLE_0.
      */
     public final static String BUNDLE_0="BUNDLE_0";
     
@@ -94,7 +97,7 @@ public interface QDataSet {
     /**
      * type String.  This comma-delimited list of keywords that describe the boundary
      * type for each column.  For example, "min,max" or "c95min,mean,c95max"  A bins dimension
-     * doesn't add a physical dimension.
+     * doesn't add a physical dimension.  TODO: describe boundaries Autoplot uses.
      */
     public final static String BINS_0="BINS_0";
 
@@ -107,9 +110,9 @@ public interface QDataSet {
     public final static String JOIN_0="JOIN_0";
 
     /**
-     * type QDataSet. Correllated plane of data.  An additional dependent DataSet that is correllated by the first index.  
-     * Note "0" is just a count, and does not refer to the 0th index.  All correllated datasets must be 
-     * correllated by the first index.  TODO: what about two rank 2 datasets?  
+     * type QDataSet. Correlated plane of data.  An additional dependent DataSet that is correlated by the first index.  
+     * Note "0" is just a count, and does not refer to the 0th index.  All correlated datasets must be 
+     * correlated by the first index.  TODO: what about two rank 2 datasets?  
      */
     public final static String PLANE_0= "PLANE_0";
 
@@ -225,31 +228,33 @@ public interface QDataSet {
     public final static String CADENCE="CADENCE";
     
     /**
-     * QDataSet of rank 0 or correlated plane that limits accuracy.  Integration
-     * intervals should be indicated here, as well as measurement uncertainty.
-     * TODO: break this into BIN_PLUS and ERROR_PLUS to distinguish between
-     * errors and integration intervals, or introduce "BINS" type dimension.
+     * QDataSet of rank 0, or correlated plane limits accuracy.  This should
+     * be interpreted as the one standard deviation confidence level.  See
+     * also BINS for measurement intervals.
      */
     public final static String DELTA_PLUS="DELTA_PLUS";
     
     /**
-     * QDataSet of rank 0 or correlated plane limits limits accuracy.  Integration
-     * intervals should be indicated here, as well as measurement uncertainty.
+     * QDataSet of rank 0, or correlated plane limits accuracy.  This should
+     * be interpreted as the one standard deviation confidence level.   See
+     * also BINS for measurement intervals.
      */
     public final static String DELTA_MINUS="DELTA_MINUS";
     
     /**
-     * CacheTag, to be attached to tags datasets.
+     * CacheTag, to be attached to tags datasets.  This is an object that represents
+     * the coverage and resolution of the interval covered.  For example, in Autoplot
+     * the TimeSeriesBrowse uses this to keep track of what's already been read.
      */
     public final static String CACHE_TAG="CACHE_TAG";
     
     /**
-     * Hint as to preferred rendering method.  Examples include "spectrogram", "time_series", and "stack_plot"
+     * String, hint as to preferred rendering method.  Examples include "spectrogram", "time_series", and "stack_plot"
      */
     public final static String RENDER_TYPE="RENDER_TYPE";
     
     /**
-     * String a java identifier that should can be used when an identifier is needed. This is 
+     * String, a java identifier that should can be used when an identifier is needed. This is
      * originally introduced for debugging purposes, so datasets can have a concise, meaningful name 
      * that is decoupled from the label. When NAMEs are used, properties with the same 
      * name should only refer to the named dataset.
@@ -265,19 +270,20 @@ public interface QDataSet {
     public final static String QUBE="QUBE";
     
     /**
-     * String representing the coordinate frame of the vector index.  The units 
+     * String, representing the coordinate frame of the vector index.  The units
      * of a dataset should be EnumerationUnits which convert the data in this 
      * dimension to dimension labels that are understood in the coordinate frame
      * label context.  (E.g. X,Y,Z in GSM.)
-     * (Note this is before BUNDLE dimensions were formalized.)
+     * (Note this is before BUNDLE dimensions were formalized and is not used.)
      */
     public final static String COORDINATE_FRAME="COORDINATE_FRAME";
     
     /**
      * Map<String,Object> representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
-     * as possible.  METADATA_MODEL is a string identifying the metadata model,
-     * a scheme for the metadata tree, such as ISTP_CDF or SPASE.
+     * as possible.  Note Object can be String, Double, or Map<String,Object>.  METADATA_MODEL
+     * is a string identifying the type of metadata,
+     * a scheme for the metadata tree, such as ISTP-CDF or SPASE.
      */
     public final static String METADATA="METADATA";
 
