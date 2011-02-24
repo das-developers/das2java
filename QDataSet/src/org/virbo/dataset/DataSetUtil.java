@@ -19,6 +19,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.FormatStringFormatter;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
 
@@ -1490,10 +1491,12 @@ public class DataSetUtil {
             throw new IllegalArgumentException("dataset is not rank 0");
         } else {
             Units u= (Units) ds.property(QDataSet.UNITS);
-            if ( u==null ) {
-                return Units.dimensionless.createDatum(ds.value());
+            String format= (String) ds.property(QDataSet.FORMAT);
+            if ( u==null ) u= Units.dimensionless;
+            if ( format==null ) {
+                return Datum.create( ds.value(), u );
             } else {
-                return u.createDatum(ds.value());
+                return Datum.create( ds.value(), u, new FormatStringFormatter(format, true) );
             }
         }
     }
