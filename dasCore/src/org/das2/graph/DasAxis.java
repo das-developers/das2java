@@ -2006,9 +2006,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Font tickLabelFont = getTickLabelFont();
         FontMetrics fm = getFontMetrics(tickLabelFont);
         int lineHeight = tickLabelFont.getSize() + getLineSpacing();
+
+        QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
+
         for (int i = 0; i < tcaData.length(0); i++) {
             baseLine += lineHeight;
-            String item = format( tcaData.value( index, i ), "(f8.2)" );
+
+            QDataSet v1= tcaData.slice(index).slice(i);
+            Datum d1= org.virbo.dataset.DataSetUtil.asDatum(v1);
+            String item= d1.toString();
             width = fm.stringWidth(item);
             leftEdge = rightEdge - width;
             g.drawString(item, leftEdge, baseLine);
