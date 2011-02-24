@@ -1267,6 +1267,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         df = DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
         while ( !hasLabelCollisions(major1,df)) {
             majorTicksDomainDivider = majorTicksDomainDivider.finerDivider(false);
+            if ( majorTicksDomainDivider.boundaryCount( dr.min(), dr.max() ) <=1 ) {
+                continue;
+            }
             df = DomainDividerUtil.getDatumFormatter(majorTicksDomainDivider, dr);
             major= major1;
             major1 = majorTicksDomainDivider.finerDivider(false).boundaries(dr.min(), dr.max());
@@ -3471,7 +3474,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROP_MAJORTICKSDOMAINDIVIDER, oldMajorTicksDomainDivider, majorTicksDomainDivider);
     }
 
-    protected boolean useDomainDivider = true;
+    protected boolean useDomainDivider = false;
     public static final String PROP_USEDOMAINDIVIDER = "useDomainDivider";
 
     public boolean isUseDomainDivider() {
