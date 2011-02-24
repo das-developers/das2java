@@ -964,7 +964,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         final Datum interval = iinterval;
         tcaData = null;
 
-        JoinDataSet tcaData= new JoinDataSet(2);
+        JoinDataSet ltcaData= new JoinDataSet(2);
         ArrayDataSet ex= ArrayDataSet.copy( tcaFunction.exampleInput() );
         QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
         Units tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
@@ -979,14 +979,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         for ( int i=0; i<tickV.length; i++ ) {
             ex.putValue( 0,uc.convert(tickV[i]) );
-            ex.putProperty( QDataSet.BUNDLE_0, bds );
             QDataSet ticks= this.tcaFunction.value(ex);
-            tcaData.join(ticks);
+            ltcaData.join(ticks);
             dep0.putValue(i,tickV[i]);
         }
-        tcaData.putProperty( QDataSet.DEPEND_0, dep0 );
+        ltcaData.putProperty( QDataSet.BUNDLE_1, bds );
+        ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
 
-        this.tcaData= tcaData;
+        this.tcaData= ltcaData;
         
     }
 
@@ -1626,7 +1626,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } else {
                 QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
                 if ( bds==null ) System.err.println("expected TCA data to have BUNDLE dataset");
-                for (int i = 0; i < tcaData.length(); i++) {
+                for (int i = 0; i < tcaData.length(0); i++) {
                     baseLine += lineHeight;
                     if ( bds==null ) {
                         idlt.setString( g, "???" );
@@ -2344,7 +2344,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
-                for (int i = 0; i < tcaData.length(); i++) {
+                for (int i = 0; i < tcaData.length(0); i++) {
                     String ss;
                     if ( bds==null ) {
                         ss= "???";
