@@ -12,8 +12,6 @@ import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
