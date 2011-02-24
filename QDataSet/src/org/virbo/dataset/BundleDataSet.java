@@ -123,6 +123,9 @@ public class BundleDataSet extends AbstractDataSet {
         @Override
         public Object property(String name, int i) {
             Object v= properties.get( name+"__"+i );
+            if ( i>=datasets.size() ) {
+                throw new IndexOutOfBoundsException("No dataset at index " + i + " only " + datasets.size() +" datasets." );
+            }
             if ( v==null ) {
                 return datasets.get(i).property(name);
             } else {
