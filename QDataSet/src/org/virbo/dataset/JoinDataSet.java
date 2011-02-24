@@ -206,7 +206,7 @@ public class JoinDataSet extends AbstractDataSet {
         QDataSet result= datasets.get(idx);
         if ( result instanceof MutablePropertyDataSet ) {
             MutablePropertyDataSet mpds= (MutablePropertyDataSet)result;
-            Pattern indexPropPattern= Pattern.compile("([a-zA-Z]*)\\[(\\d+)\\]"); // e.g. DEPEND_0[3]
+            Pattern indexPropPattern= Pattern.compile("([a-zA-Z]*)__(\\d+)"); // e.g. UNITS__3
             for ( Entry<String,Object> e : properties.entrySet() ) {
                 Matcher m= indexPropPattern.matcher(e.getKey());
                 if ( m.matches() && Integer.parseInt(m.group(2))==idx ) {
