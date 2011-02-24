@@ -83,7 +83,10 @@ public interface QDataSet {
     /**
      * type QDataSet.  This dataset describes how the columns should be split up
      * into separate parameters.  See BUNDLE_1.  Note slicing a dataset on the zeroth
-     * dimension will move BUNDLE_1 to BUNDLE_0.
+     * dimension will move BUNDLE_1 to BUNDLE_0.  
+     * Properties defined in this dataset will be overwritten by the BUNDLE dataset's properties.
+     * For example, if the dataset has property( UNITS, 0 ) defined as "Hz" but the
+     * bundle has property( UNITS,0 ) as "Hertz" then "Hertz" is used.
      */
     public final static String BUNDLE_0="BUNDLE_0";
     
