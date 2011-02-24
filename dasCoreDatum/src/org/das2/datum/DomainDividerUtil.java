@@ -87,6 +87,7 @@ public final class DomainDividerUtil {
             // There is kludginess here because of shortcomings in implementaiton of boundaries
             if (boundaries.getLength() <= 1) {
                 try{
+                    System.err.println("fall back to here, no formatting");
                     return new DefaultDatumFormatter("0");
                 } catch (ParseException ex) {
                     //This will never happen if the string literal above is okay
