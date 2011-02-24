@@ -21,6 +21,7 @@ import org.das2.graph.SeriesRenderer;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QFunction;
@@ -68,17 +69,33 @@ public class SimpleDemo {
 
         xaxis.setTcaFunction( new QFunction() {
 
-            BundleDataSet outbds= new BundleDataSet(1);
-
             public QDataSet value(QDataSet parm) {
-                ArrayDataSet result= ArrayDataSet.copy( Ops.mod( parm, DataSetUtil.asDataSet(1,Units.seconds) ) );
-                result.putProperty(QDataSet.BUNDLE_0, outbds );
-                return result;
+                QDataSet time= parm.slice(0);
+                System.err.println(time);
+                BundleDataSet outbds1= BundleDataSet.createRank0Bundle();
+                ArrayDataSet result= ArrayDataSet.copy( Ops.mod( time, DataSetUtil.asDataSet(3600,Units.seconds) ) );
+                result.putProperty( QDataSet.LABEL, "Sec" );
+                outbds1.bundle(result);
+
+                result= ArrayDataSet.copy( Ops.rand(1).slice(0) );
+                result.putProperty( QDataSet.LABEL, "Rand" );
+                result.putProperty( QDataSet.FORMAT, "%5.2f" );
+                        
+                outbds1.bundle(result);
+
+                result= ArrayDataSet.copy( Ops.rand(1).slice(0) );
+                result.putProperty( QDataSet.LABEL, "Rand2" );
+                result.putProperty( QDataSet.FORMAT, "%5.3f" );
+                outbds1.bundle(result);
+
+                return outbds1;
             }
 
             public QDataSet exampleInput() {
                 BundleDataSet inbds= BundleDataSet.createRank0Bundle();
-                inbds.bundle( DataSetUtil.asDataSet(0,Units.t2000) );
+                DRank0DataSet dd= DataSetUtil.asDataSet(0,Units.t2000);
+                dd.putProperty(QDataSet.LABEL, "Time") ;
+                inbds.bundle( dd );
                 return inbds;
             }
 
