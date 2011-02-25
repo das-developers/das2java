@@ -202,6 +202,7 @@ public final class FDataSet extends ArrayDataSet {
         float[] newback = new float[noff2-noff1];
         System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
         Map<String,Object> props= DataSetOps.sliceProperties0(i,DataSetUtil.getProperties(this));
+        props= DataSetUtil.sliceProperties( this, i, props );
         FDataSet result= new FDataSet( nrank, len1, len2, len3, 1, newback );
         DataSetUtil.putProperties( props, result );
         return result;

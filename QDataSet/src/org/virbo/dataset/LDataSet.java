@@ -181,6 +181,7 @@ public final class LDataSet extends ArrayDataSet {
         long[] newback = new long[noff2-noff1];
         System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
         Map<String,Object> props= DataSetOps.sliceProperties0(i,DataSetUtil.getProperties(this));
+        props= DataSetUtil.sliceProperties( this, i, props );
         LDataSet result= new LDataSet( nrank, len1, len2, len3, 1, newback );
         DataSetUtil.putProperties( props, result );
         return result;

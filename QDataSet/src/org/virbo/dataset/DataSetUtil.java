@@ -217,6 +217,9 @@ public class DataSetUtil {
         return userProps.get(name);
     }
 
+    /**
+     * TODO: how is this different than dimensionProperties?
+     */
     public static String[] propertyNames() {
         return new String[]{
                     QDataSet.UNITS, 
@@ -285,6 +288,30 @@ public class DataSetUtil {
                 || prop.startsWith("PLANE_");
         // note CONTEXT* is inherited.
         return !indexProp;
+    }
+
+    /**
+     * return properties attached to the slice at index.  Note the slice
+     * implementations use this, and this only returns properties from
+     * dimensionProperties().
+     * @param ds
+     * @param index
+     * @return
+     */
+    public static Map<String, Object> sliceProperties( QDataSet ds, int index, Map<String,Object> result ) {
+        if ( result==null ) result= new LinkedHashMap();
+
+        String[] names = dimensionProperties();
+
+        for (int i = 0; i < names.length; i++) {
+            Object val= ds.property(names[i],index);
+            if ( val != null) {
+                result.put( names[i], val );
+            }
+        }
+
+        return result;
+
     }
 
     /**

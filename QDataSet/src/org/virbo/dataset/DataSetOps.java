@@ -509,19 +509,18 @@ public class DataSetOps {
         }
 
         if ( dep1!=null ) { //DEPEND_1 rank 1 implies qube
-            if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
             if ( dep1!=null && dep1.rank()==2 ) {
                 result.put( QDataSet.DEPEND_0, dep1.slice( index ) );
             } else {
                 result.put( QDataSet.DEPEND_0, dep1 );
             }
+        }
+
+        if ( dep0!=null && dep0.rank()==1 ) { //TODO: find documentation for rank 2 depend_0...
+            if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
         } else {
-            if ( dep0!=null && dep0.rank()==1 ) { //TODO: find documentation for rank 2 depend_0...
-                if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
-            } else {
-                if ( props.get( "DEPEND_0__"+index )==null ) { // bundle dataset  //TODO: this needs more review
-                    result.put( QDataSet.DEPEND_0, null );    // DANGER--uses indexed property convention.
-                }
+            if ( dep1==null && props.get( "DEPEND_0__"+index )==null ) { // bundle dataset  //TODO: this needs more review
+                result.put( QDataSet.DEPEND_0, null );    // DANGER--uses indexed property convention.
             }
         }
 

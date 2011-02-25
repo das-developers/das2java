@@ -269,7 +269,7 @@ public class JoinDataSet extends AbstractDataSet {
             MutablePropertyDataSet mpds= (MutablePropertyDataSet)result;
             Map<String,Object> props= DataSetOps.sliceProperties0( idx, properties );
             if ( props.size()>0 ) {
-                System.err.println("slice result is being mutated with "+props );
+                //System.err.println("slice result is being mutated with "+props );
             }
             DataSetUtil.putProperties(props, mpds); //TODO: this is a little dangerous because we mutate the original datasets.
         }
