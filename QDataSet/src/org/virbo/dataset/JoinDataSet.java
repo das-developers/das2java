@@ -16,8 +16,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * create a higher rank dataset with dim 0 being a join dimension.  Join implies
- * that the joined datasets occupy the same physical dimension.
+ * Create a higher rank dataset with dim 0 being a JOIN dimension.  Join implies
+ * that the joined datasets occupy the same physical dimension, and this can
+ * be thought of as the "array of" index.  Note DEPEND_0 is treated as a
+ * special case of join.
+ * Note this dataset is mutable, and clients should not mutate it once the reference is made public.
  * @author jbf
  */
 public class JoinDataSet extends AbstractDataSet {
@@ -46,12 +49,26 @@ public class JoinDataSet extends AbstractDataSet {
         datasets= new ArrayList<QDataSet>();
     }
 
+    /**
+     * create a new JoinDataSet, and join the first dataset.
+     *    ds1= Ops.rand(30);
+     *    jds= new JoinDataSet( ds1 );
+     *    assert( ds1.rank()==1 );
+     *    assert( jds.rank()==2 );
+     *    assert( jds.slice(0).equals(ds1) );
+     * @param ds1
+     */
+    public JoinDataSet( QDataSet ds1 ) {
+        this( ds1.rank()+1 );
+        join(ds1);
+    }
+
     public static JoinDataSet copy(JoinDataSet joinDataSet) {
         JoinDataSet result= new JoinDataSet(joinDataSet.rank());
         result.datasets.addAll( joinDataSet.datasets );
         DataSetUtil.putProperties( DataSetUtil.getProperties(joinDataSet), result );
         result.putProperty(QDataSet.DEPEND_0, joinDataSet.property(QDataSet.DEPEND_0));
-        result.putProperty(QDataSet.JOIN_0, joinDataSet.property(QDataSet.JOIN_0) );//TODO: this seems redundant, it should already be set by the constructor.
+        result.putProperty(QDataSet.JOIN_0, joinDataSet.property(QDataSet.JOIN_0) ); //might need to clear it if DEPEND_0 is set.
         return result;
     }
 
@@ -83,12 +100,13 @@ public class JoinDataSet extends AbstractDataSet {
             }
         }
     }
+    
     /**
      * add the dataset to this set of joined datasets.
      * @param ds rank N-1 dataset where N is the rank of this JoinDataSet.
      * @throws IllegalArgumentException if the dataset rank is not consistent with the other datasets.
      */
-    public void join( QDataSet ds ) {
+    public final void join( QDataSet ds ) {
         if ( ds.rank()!=this.rank-1 ) {
             throw new IllegalArgumentException("dataset rank must be "+(this.rank-1)+", it is rank "+ds.rank() );
         }
@@ -99,22 +117,27 @@ public class JoinDataSet extends AbstractDataSet {
         return rank;
     }
 
+    @Override
     public double value(int i0) {
         return datasets.get(i0).value();
     }
 
+    @Override
     public double value(int i0, int i1) {
         return datasets.get(i0).value(i1);
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         return datasets.get(i0).value(i1,i2);
     }
 
+    @Override
     public double value(int i0, int i1, int i2, int i3 ) {
         return datasets.get(i0).value(i1,i2,i3);
     }
 
+    @Override
     public Object property(String name, int i0) {
         String sname= name + "__" + i0;
         Object result= properties.get(sname);
@@ -125,29 +148,40 @@ public class JoinDataSet extends AbstractDataSet {
         }
     }
 
+    @Override
     public Object property(String name, int i0, int i1) {
         return datasets.get(i0).property(name,i1);
     }
 
+    @Override
     public Object property(String name, int i0, int i1, int i2 ) {
         return datasets.get(i0).property(name,i1,i2);
     }
 
+    @Override
     public Object property(String name, int i0, int i1, int i2, int i3 ) {
         return datasets.get(i0).property(name,i1,i2,i3);
     }
 
-    public void putProperty(String name, Object value) {
+    /**
+     * We override putProperty here because we remove the JOIN_0 if DEPEND_0 is set.
+     * @param name
+     * @param value
+     */
+    @Override
+    public final void putProperty(String name, Object value) {
         super.putProperty(name, value);
         if ( name.equals(QDataSet.DEPEND_0) ) {
             super.putProperty(QDataSet.JOIN_0, null);
         }
     }
 
+    @Override
     public int length() {
         return datasets.size();
     }
 
+    @Override
     public int length(int i0) {
         if ( datasets.size()==0 && i0==0 ) {
             return NO_DATASET_SIZE;
@@ -155,6 +189,7 @@ public class JoinDataSet extends AbstractDataSet {
         return datasets.get(i0).length();
     }
 
+    @Override
     public int length(int i0, int i1) {
         if ( datasets.size()==0 && i0==0 ) {
             return NO_DATASET_SIZE;
@@ -162,6 +197,7 @@ public class JoinDataSet extends AbstractDataSet {
         return datasets.get(i0).length(i1);
     }
 
+    @Override
     public int length(int i0, int i1, int i2 ) {
         if ( datasets.size()==0 && i0==0 ) {
             return NO_DATASET_SIZE;
@@ -169,6 +205,7 @@ public class JoinDataSet extends AbstractDataSet {
         return datasets.get(i0).length(i1,i2);
     }
 
+    @Override
     public String toString() {
         if ( datasets.size()>4 ) {
             return "JoinDataSet["+datasets.size()+" datasets: "+ datasets.get(0)+", "+datasets.get(1)+", ...]";
@@ -183,6 +220,7 @@ public class JoinDataSet extends AbstractDataSet {
      * @param imax
      * @return
      */
+    @Override
     public JoinDataSet trim( int imin, int imax ) {
         JoinDataSet result= new JoinDataSet(this.rank);
         result.datasets= new ArrayList<QDataSet>(imax-imin);
@@ -202,6 +240,7 @@ public class JoinDataSet extends AbstractDataSet {
      * @param idx
      * @return
      */
+    @Override
     public QDataSet slice( int idx ) {
         QDataSet result= datasets.get(idx);
         if ( result instanceof MutablePropertyDataSet ) {
