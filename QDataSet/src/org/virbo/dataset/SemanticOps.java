@@ -271,10 +271,28 @@ public class SemanticOps {
         return null;
     }
 
+    /**
+     * return the weights dataset, possibly creating one based on VALID_MIN
+     * VALID_MAX and FILL_VALUE properties.  The weights dataset will have
+     * value zero where the data is invalid, and a non-zero weight where it is
+     * valid.  DataSets may also contain a weights table with relative weights,
+     * but this is not uniformly supported.  
+     * Note: this uses QDataSet.WEIGHTS_PLANE
+     * Note: calls org.virbo.dataset.DataSetUtil.weightsDataSet.
+     * @param ds
+     * @return QDataSet with same geometry containing zeros and non-zeros.
+     */
     public static QDataSet weightsDataSet( QDataSet ds ) {
         return DataSetUtil.weightsDataSet(ds);
     }
 
+    /**
+     * return a reasonable tag width to use, or null if one cannot be
+     * guessed.
+     * @param ds the dataset containing data with a cadence.
+     * @param yds null or a dataset that may contain fill.
+     * @return
+     */
     public static Datum guessXTagWidth( QDataSet ds, QDataSet yds ) {
         RankZeroDataSet cadence= DataSetUtil.guessCadenceNew( ds, yds );
         return cadence==null ? null : DataSetUtil.asDatum( cadence );
