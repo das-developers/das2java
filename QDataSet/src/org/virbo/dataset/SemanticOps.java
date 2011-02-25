@@ -370,8 +370,12 @@ public class SemanticOps {
         QDataSet yrange;
 
         if ( ds.rank()==2 ) {
-            xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
-            yrange= Ops.extent( SemanticOps.ytagsDataSet(ds), null );
+            if ( ds.property(QDataSet.BUNDLE_1)!=null ) {
+                throw new IllegalArgumentException("scheme not supported: "+ds );
+            } else {
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
+                yrange= Ops.extent( SemanticOps.ytagsDataSet(ds), null );
+            }
         } else if ( ds.rank()==3 ) {
             QDataSet ds1= ds.slice(0);
             xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), null );
@@ -381,8 +385,15 @@ public class SemanticOps {
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1), xrange );
                 yrange= Ops.extent( SemanticOps.ytagsDataSet(ds1), yrange );
             }
+        } else if ( ds.rank()==1 ) {
+            if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
+                throw new IllegalArgumentException("scheme not supported: "+ds );
+            } else {
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
+                yrange= Ops.extent( SemanticOps.ytagsDataSet(ds), null );
+            }
         } else {
-            throw new IllegalArgumentException("bad rank");
+            throw new IllegalArgumentException("scheme not supported: "+ds );
         }
 
         JoinDataSet jds= (JoinDataSet) Ops.join( xrange, yrange );
