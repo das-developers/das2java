@@ -2011,10 +2011,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         for (int i = 0; i < tcaData.length(0); i++) {
             baseLine += lineHeight;
-
             QDataSet v1= tcaData.slice(index).slice(i);
             Datum d1= org.virbo.dataset.DataSetUtil.asDatum(v1);
-            String item= d1.toString();
+            Units u= d1.getUnits();
+            String item;
+            if ( u==null ) {
+                item= d1.getFormatter().format( d1 );
+            } else {
+                item= d1.getFormatter().format( d1,u );
+            }
             width = fm.stringWidth(item);
             leftEdge = rightEdge - width;
             g.drawString(item, leftEdge, baseLine);
