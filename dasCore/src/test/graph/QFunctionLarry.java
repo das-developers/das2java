@@ -28,7 +28,7 @@ public class QFunctionLarry implements QFunction {
 
 		descriptor.putProperty(QDataSet.LABEL,1,"UTC Seconds");
 		descriptor.putProperty(QDataSet.UNITS,1,Units.seconds);
-		descriptor.putProperty(QDataSet.FORMAT,1,"%5.2f");
+		descriptor.putProperty(QDataSet.FORMAT,1,"%5.1f");
 	}
 
 	@Override
@@ -41,8 +41,8 @@ public class QFunctionLarry implements QFunction {
 		q.putProperty(QDataSet.UNITS,u);
 
 		DDataSet ret = DDataSet.createRank1(2);
-		ret.putValue(0,98);
-		ret.putValue(1,99);
+		ret.putValue(0,98.12345678);
+		ret.putValue(1,99.12345678);
 		ret.putProperty(QDataSet.BUNDLE_0,descriptor);
 
 		return ret;
