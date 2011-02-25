@@ -571,7 +571,7 @@ public class DataSetOps {
             result.put( QDataSet.BUNDLE_0, bundle1 );
         }
 
-        if ( bundle0!=null ) { //TODO: what if BUNDLE_0 bundles rank 1 dataset?  This assumes they are all rank 0.
+        if ( bundle0!=null ) { //TODO: what if BUNDLE_0 bundles a high rank dataset?  This assumes they are all rank 0.
             QDataSet bundle0ds= bundle0.slice(index);
             result.putAll( DataSetUtil.getProperties(bundle0ds) );
         }
