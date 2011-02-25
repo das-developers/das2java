@@ -11,6 +11,7 @@ package org.virbo.dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -150,17 +151,35 @@ public class JoinDataSet extends AbstractDataSet {
 
     @Override
     public Object property(String name, int i0, int i1) {
-        return datasets.get(i0).property(name,i1);
+        String sname= name + "__" + i0 + "_" + i1;
+        Object result= properties.get(sname);
+        if ( result==null ) {
+            return datasets.get(i0).property(name,i1);
+        } else {
+            return result;
+        }
     }
 
     @Override
     public Object property(String name, int i0, int i1, int i2 ) {
-        return datasets.get(i0).property(name,i1,i2);
+        String sname= name + "__" + i0 + "_" + i1 + "_"+ i2;
+        Object result= properties.get(sname);
+        if ( result==null ) {
+            return datasets.get(i0).property(name,i1,i2);
+        } else {
+            return result;
+        }
     }
 
     @Override
     public Object property(String name, int i0, int i1, int i2, int i3 ) {
-        return datasets.get(i0).property(name,i1,i2,i3);
+        String sname= name + "__" + i0 + "_" + i1 + "_"+ i2 + "_"+ i3;
+        Object result= properties.get(sname);
+        if ( result==null ) {
+            return datasets.get(i0).property(name,i1,i2,i3);
+        } else {
+            return result;
+        }
     }
 
     /**
@@ -243,26 +262,16 @@ public class JoinDataSet extends AbstractDataSet {
     @Override
     public QDataSet slice( int idx ) {
         QDataSet result= datasets.get(idx);
+        if ( !( result instanceof MutablePropertyDataSet ) ) {
+            result= DataSetOps.makePropertiesMutable(result);
+        }
         if ( result instanceof MutablePropertyDataSet ) {
             MutablePropertyDataSet mpds= (MutablePropertyDataSet)result;
-            Pattern indexPropPattern= Pattern.compile("([a-zA-Z]*)__(\\d+)"); // e.g. UNITS__3
-            for ( Entry<String,Object> e : properties.entrySet() ) {
-                Matcher m= indexPropPattern.matcher(e.getKey());
-                if ( m.matches() && Integer.parseInt(m.group(2))==idx ) {
-                    mpds.putProperty( m.group(1), e.getValue() );
-                } else {
-                    if ( e.getKey().equals("JOIN_0") || e.getKey().equals("DEPEND_0") || e.getKey().equals("BUNDLE_0") || e.getKey().equals("RENDER_TYPE") ) { //DEPEND_0 and BUNDLE_0 for good measure //TODO: use util dimensionProperties array
-                        // don't copy these!!!
-                    } else if ( result.property( e.getKey()) == null ) {
-                        mpds.putProperty( e.getKey(), e.getValue() );
-                    }
-                }
-                final Object dep1 = properties.get(QDataSet.DEPEND_1);
-                if ( dep1 !=null ) {
-                    mpds.putProperty( QDataSet.DEPEND_0,dep1);
-                    mpds.putProperty( QDataSet.DEPEND_1,null);//TODO: this seems a little nasty.   Juno was getting datasets with both DEPEND_0 and DEPEND_1 set.
-                }
+            Map<String,Object> props= DataSetOps.sliceProperties0( idx, properties );
+            if ( props.size()>0 ) {
+                System.err.println("slice result is being mutated with "+props );
             }
+            DataSetUtil.putProperties(props, mpds); //TODO: this is a little dangerous because we mutate the original datasets.
         }
         return result;
     }
