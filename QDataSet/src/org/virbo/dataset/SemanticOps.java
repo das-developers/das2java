@@ -361,8 +361,14 @@ public class SemanticOps {
 
     /**
      * return the bounds DS[ (x,y), (min,max) ] of the datasets
-     * independent parameters.  This is only implemented for Tables!
-     * @param ds
+     * independent parameters.  This is only implemented for:
+     *   rank 2 Tables
+     *   rank 3 array of tables
+     *   rank 1 Y(X)
+     *   not for rank 2 bundle dataset
+     *   not for rank 1 bundle dataset
+     * @param ds rank 2 dataset with BINS_1="min,maxInclusive"
+     * @throws IllegalArgumentException when the dataset scheme is not supported
      * @return
      */
     public static QDataSet bounds( QDataSet ds ) {
