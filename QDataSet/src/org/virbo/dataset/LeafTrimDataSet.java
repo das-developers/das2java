@@ -85,33 +85,6 @@ public class LeafTrimDataSet extends AbstractDataSet {
     }
 
     @Override
-    public Object property(String name, int i0, int i1) {
-        if (DataSetUtil.isInheritedProperty(name) && properties.containsKey(name)) {
-            return properties.get(name);
-        } else {
-            return ds.rank() == 2 ? ds.property(name, i0, i1 - start) : ds.property(name, i0, i1);
-        }
-    }
-
-    @Override
-    public Object property(String name, int i0, int i1, int i2) {
-        if (DataSetUtil.isInheritedProperty(name) && properties.containsKey(name)) {
-            return properties.get(name);
-        } else {
-            return ds.rank() == 3 ? ds.property(name, i0, i1, i2 - start) : ds.property(name, i0, i1, i2);
-        }
-    }
-
-    @Override
-    public Object property(String name, int i0, int i1, int i2, int i3) {
-        if (DataSetUtil.isInheritedProperty(name) && properties.containsKey(name)) {
-            return properties.get(name);
-        } else {
-            return ds.rank() == 4 ? ds.property(name, i0, i1, i2, i3 - start) : ds.property(name, i0, i1, i2, i3);
-        }
-    }
-
-    @Override
     public int length() {
         return ds.rank() == 1 ? end - start : ds.length();
     }

@@ -6,7 +6,7 @@
 package org.virbo.dataset;
 
 /**
- * Wraps a dataset, making the properties mutable.  This is also indended to be base class for extension.
+ * Wraps a dataset, making the properties mutable.  This is also intended to be base class for extension.
  * @author jbf
  */
 public class DataSetWrapper extends AbstractDataSet {
@@ -19,10 +19,21 @@ public class DataSetWrapper extends AbstractDataSet {
                 properties.put( "DEPEND_"+i, new DataSetWrapper(dep) );
             }
         }
+        
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             QDataSet dep= (QDataSet) ds.property("PLANE_"+i);
             if ( dep!=null && !(dep instanceof MutablePropertyDataSet) ) {
                 properties.put( "PLANE_"+i, new DataSetWrapper(dep) );
+            } else {
+                if ( dep==null ) {
+                    break;
+                }
+            }
+        }
+        for ( int i=0; i<ds.rank(); i++ ) {
+            QDataSet dep= (QDataSet) ds.property("BUNDLE_"+i);
+            if ( dep!=null && !(dep instanceof MutablePropertyDataSet) ) {
+                properties.put( "BUNDLE_"+i, new DataSetWrapper(dep) );
             } else {
                 if ( dep==null ) {
                     break;
@@ -45,11 +56,6 @@ public class DataSetWrapper extends AbstractDataSet {
 
     public int rank() {
         return ds.rank();
-    }
-
-    public Object property(String name, int i0, int i1) {
-        Object v= properties.get(name);
-        return v!=null ? v : ds.property(name, i0, i1);
     }
 
     public Object property(String name, int i) {

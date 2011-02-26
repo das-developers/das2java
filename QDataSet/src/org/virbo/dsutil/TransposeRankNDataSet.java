@@ -98,11 +98,6 @@ public class TransposeRankNDataSet extends AbstractDataSet {
         return ( v==null ) ? source.property(name,i) : v;
     }
 
-    public Object property(String name, int i0, int i1) {
-        Object v= properties.get(name);
-        return ( v==null ) ? source.property(name,i0,i1) : v;
-    }
-
     public int length() {
         return qube[order[0]];
     }

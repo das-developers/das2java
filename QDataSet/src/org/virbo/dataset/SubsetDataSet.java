@@ -1,12 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.virbo.dataset;
 
 /**
- *
+ * Extracts a subset of the source dataset by using a rank 1 subset of indeces on each index.
  * @author jbf
  */
 public class SubsetDataSet extends AbstractDataSet {
@@ -96,16 +91,13 @@ public class SubsetDataSet extends AbstractDataSet {
         return source.value((int)sorts[0].value(i0),(int)sorts[1].value(i1),(int)sorts[2].value(i2),(int)sorts[3].value(i3));
     }
 
-    public Object property(String name, int i0, int i1) {
-        Object v= properties.get(name);
-        return v!=null ? v : source.property(name, i0, i1);
-    }
-
+    @Override
     public Object property(String name, int i) {
         Object v= properties.get(name);
         return v!=null ? v : source.property(name, i);
     }
 
+    @Override
     public Object property(String name) {
         Object v= properties.get(name);
         return v!=null ? v : source.property(name);

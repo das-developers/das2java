@@ -384,20 +384,11 @@ public interface QDataSet {
      * accessor for properties attached to the dataset's first index.  These properties
      * override (or shadow) properties attached to the dataset, and often implementations
      * will simply return the result of the no-index accessor.
+     *
+     * Note: properties of higher dimension are accessible only by slicing.
      */    
     Object property( String name, int i );
     
-    /**
-     * accessor for properties attached to the dataset's second index.  These properties
-     * override (or shadow) properties attached to the dataset's first index, and 
-     * often implementations will simply return the result of the one-index (or zero-index) 
-     * accessor.
-     */        
-    Object property( String name, int i0, int i1 );
-
-    Object property( String name, int i0, int i1, int i2);
-
-    Object property( String name, int i0, int i1, int i2, int i3);
     
     /**
      * return the length of the first dimension

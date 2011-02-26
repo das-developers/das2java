@@ -2,15 +2,12 @@
  * TransposeRank2DataSet.java
  *
  * Created on December 11, 2007, 10:19 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.virbo.dataset;
 
 /**
- *
+ * old dataset type transposes a rank 2 dataset with DEPEND_1 and DEPEND_0.
  * @author jbf
  */
 public class TransposeRank2DataSet extends AbstractDataSet {
@@ -31,29 +28,29 @@ public class TransposeRank2DataSet extends AbstractDataSet {
     }
 
 
+    @Override
     public double value(int i0, int i1) {
         return source.value( i1, i0 );
     }
 
+    @Override
     public Object property(String name) {
         Object v= properties.get(name);
         return ( v==null ) ? source.property(name) : v;
     }
 
+    @Override
     public Object property(String name, int i) {
         Object v= properties.get(name);
         return ( v==null ) ? source.property(name,i) : v;
     }
 
-    public Object property(String name, int i0, int i1) {
-        Object v= properties.get(name);
-        return ( v==null ) ? source.property(name,i0,i1) : v;
-    }
-
+    @Override
     public int length() {
         return source.length(0);
     }
 
+    @Override
     public int length(int i) {
         return source.length();
     }

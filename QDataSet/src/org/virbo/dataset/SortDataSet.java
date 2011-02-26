@@ -87,14 +87,6 @@ public class SortDataSet extends AbstractDataSet {
         }
     }
 
-    public Object property(String name, int i0, int i1) {
-        if ( properties.containsKey(name) ) {
-            return properties.get(name);
-        } else {
-            return source.property(name,(int)sort.value(i0),i1);
-        }
-    }
-
     public int length() {
         return sort.length();
     }

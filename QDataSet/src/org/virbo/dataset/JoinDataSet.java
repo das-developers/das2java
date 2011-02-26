@@ -149,39 +149,6 @@ public class JoinDataSet extends AbstractDataSet {
         }
     }
 
-    @Override
-    public Object property(String name, int i0, int i1) {
-        String sname= name + "__" + i0 + "_" + i1;
-        Object result= properties.get(sname);
-        if ( result==null ) {
-            return datasets.get(i0).property(name,i1);
-        } else {
-            return result;
-        }
-    }
-
-    @Override
-    public Object property(String name, int i0, int i1, int i2 ) {
-        String sname= name + "__" + i0 + "_" + i1 + "_"+ i2;
-        Object result= properties.get(sname);
-        if ( result==null ) {
-            return datasets.get(i0).property(name,i1,i2);
-        } else {
-            return result;
-        }
-    }
-
-    @Override
-    public Object property(String name, int i0, int i1, int i2, int i3 ) {
-        String sname= name + "__" + i0 + "_" + i1 + "_"+ i2 + "_"+ i3;
-        Object result= properties.get(sname);
-        if ( result==null ) {
-            return datasets.get(i0).property(name,i1,i2,i3);
-        } else {
-            return result;
-        }
-    }
-
     /**
      * We override putProperty here because we remove the JOIN_0 if DEPEND_0 is set.
      * @param name
