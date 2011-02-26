@@ -753,6 +753,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * changes the units of the axis to a new unit.
      */
     public synchronized void resetRange(DatumRange range) {
+        DatumRange oldRange= this.getDatumRange();
         if (range.getUnits() != this.getUnits()) {
             if (dasPlot != null) {
                 dasPlot.invalidateCacheImage();
@@ -769,7 +770,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             scanNext.setEnabled( b );
             scanPrevious.setEnabled( b );
         }
-        
+        firePropertyChange(PROPERTY_DATUMRANGE, oldRange, range);
         update();
     }
 
