@@ -301,13 +301,31 @@ public class SemanticOps {
     /**
      * return the dataset containing the x tags for the dataset.  This
      * is QDataSet.DEPEND_0, or if that's null then IndexGenDataSet(ds.length).
-     * For a bundle, this is just the 0th dataset.
+     * For a bundle, this is just the 0th dataset.  For a join, this is a join
+     * of all the DEPEND_0 datasets.
      * @param ds
      * @return
      */
     public static QDataSet xtagsDataSet( QDataSet ds ) {
         if ( isBundle(ds) ){
             return DataSetOps.unbundle(ds,0);
+        } else if ( isJoin(ds) ) {
+            int i=0;
+            JoinDataSet jds= new JoinDataSet(2);
+            for ( int j=0; j<ds.length(); j++ ) {
+                QDataSet slice1= ds.slice(j);
+                QDataSet depend0= (QDataSet) slice1.property(QDataSet.DEPEND_0);
+                if (j==0 ) {
+                    jds.putProperty( QDataSet.UNITS, depend0.property(QDataSet.UNITS) );
+                }
+                if ( depend0==null ) {
+                    jds.join( Ops.add( new IndexGenDataSet(slice1.length()), DataSetUtil.asDataSet(i) ) );
+                    i+=slice1.length();
+                } else {
+                    jds.join( depend0 );
+                }
+            }
+            return jds;
         } else {
             QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_0);
             if ( result==null ) {
