@@ -482,9 +482,17 @@ public class DataSetUtil {
 
         for (int i = 0; i < 4; i++) {
             depNames[i] = "";
-            QDataSet dep0 = (QDataSet) ds.property("DEPEND_" + i);
-            if (dep0 != null) {
-                String dname = (String) dep0.property(QDataSet.NAME);
+            Object dep0o= ds.property("DEPEND_" + i);
+            if ( dep0o!=null ) {
+                String dname=null;
+                if ( dep0o instanceof QDataSet ) {
+                    QDataSet dep0 = (QDataSet) dep0o; // BUNDLES can contain strings for DEPEND_x.
+                    if (dep0 != null) {
+                        dname = (String) dep0.property(QDataSet.NAME);
+                    }
+                } else {
+                    dname= String.valueOf(dep0o) + "(Str)";
+                }
                 if (dname != null) {
                     if (dname.length() > 6) {
                         dname = dname.substring(0, 6) + "...";
