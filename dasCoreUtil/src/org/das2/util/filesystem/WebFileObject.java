@@ -23,6 +23,7 @@
 package org.das2.util.filesystem;
 
 import java.awt.EventQueue;
+import java.util.logging.Level;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
@@ -49,7 +50,6 @@ public class WebFileObject extends FileObject {
     boolean isRoot;
     boolean isFolder;
     Map<String,String> metadata;
-    private final static Logger logger= Logger.getLogger("org.das2.util.filesystem");
     
     /**
      * true if we know if it's a folder or not.
@@ -80,7 +80,7 @@ public class WebFileObject extends FileObject {
 
     public InputStream getInputStream(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         if ( wfs.protocol !=null ) {
-            logger.fine("get inputstream from "+wfs.protocol );
+            FileSystem.logger.log(Level.FINE, "get inputstream from {0}", wfs.protocol);
             return wfs.protocol.getInputStream(this, monitor);
         }
         if (isFolder) {
@@ -90,7 +90,7 @@ public class WebFileObject extends FileObject {
             File partFile = new File(localFile.toString() + ".part");
             wfs.downloadFile(pathname, localFile, partFile, monitor);
         }
-        logger.fine( "read local file "+localFile );
+        FileSystem.logger.log( Level.FINE, "read local file {0}", localFile);
         return new FileInputStream(localFile);
     }
 
@@ -192,6 +192,7 @@ public class WebFileObject extends FileObject {
                     }
                 } else {
                     this.isFolder = localFile.isDirectory();
+                    this.modifiedDate= new Date( localFile.lastModified() );
                 }
                 this.isFolderResolved= true;
             } catch (IOException ex) {
@@ -258,7 +259,7 @@ public class WebFileObject extends FileObject {
         if (localFile.exists()) {
             Date localFileLastModified = new Date(localFile.lastModified()); // TODO: I think this is a bug...
             if (remoteDate.after(localFileLastModified)) {
-                FileSystem.logger.info("remote file is newer than local copy of " + this.getNameExt() + ", download.");
+                FileSystem.logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                 download = true;
             }
         } else {
@@ -267,11 +268,15 @@ public class WebFileObject extends FileObject {
 
         if (download) {
             try {
+                FileSystem.logger.log(Level.FINE, "downloading file {0}", getNameExt());
                 if (!localFile.getParentFile().exists()) {
                     localFile.getParentFile().mkdirs();
                 }
                 File partFile = new File(localFile.toString() + ".part");
                 wfs.downloadFile(pathname, localFile, partFile, monitor);
+
+                FileSystem.logger.log(Level.FINE, "downloaded local file has date {0}", new Date(localFile.lastModified()));
+
             } catch (FileNotFoundException e) {
                 // TODO: do something with part file.
                 throw e;

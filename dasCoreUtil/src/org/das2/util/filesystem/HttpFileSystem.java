@@ -170,6 +170,13 @@ public class HttpFileSystem extends WebFileSystem {
                 throw new IOException(hurlc.getResponseMessage());
             }
 
+            Date d=null;
+            List<String> sd= urlc.getHeaderFields().get("Last-Modified");
+            if ( sd!=null && sd.size()>0 ) {
+                d= new Date( sd.get(sd.size()-1) );
+            }
+            
+
             monitor.setTaskSize(urlc.getContentLength());
 
             if (!f.getParentFile().exists()) {
@@ -197,7 +204,20 @@ public class HttpFileSystem extends WebFileSystem {
                     monitor.finished();
                     out.close();
                     in.close();
-                    partFile.renameTo(f);
+                    if ( d!=null ) {
+                        try {
+                            partFile.setLastModified(d.getTime()+10); // add 10 secs because of bad experiences with Windows filesystems.  Also this is probably a good idea in case local clock is not set properly.
+                        } catch ( Exception ex ) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    if ( f.exists() ) {
+                        logger.log(Level.FINE, "deleting old file {0}", f);
+                        f.delete();
+                    }
+                    if ( !partFile.renameTo(f) ) {
+                        logger.log(Level.FINE, "rename failed, but continuing on.");
+                    }
                 } catch (IOException e) {
                     out.close();
                     in.close();

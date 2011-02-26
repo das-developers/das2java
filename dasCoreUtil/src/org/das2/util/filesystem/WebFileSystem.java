@@ -319,7 +319,7 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
     public FileObject getFileObject(String filename) {
-        WebFileObject f = new WebFileObject(this, filename, new Date(System.currentTimeMillis()));
+        WebFileObject f = new WebFileObject(this, filename, new Date(System.currentTimeMillis()));//TODO: huh?  really?
         return f;
     }
 
