@@ -179,8 +179,10 @@ public class WaveformToSpectrum {
     
     public static QDataSet getTableDataSet( QDataSet vds, int windowSize ) {
 
-        System.err.println("this is the right one");
-        
+        if ( vds.rank()!=1 ) {
+            throw new IllegalArgumentException("input dataset should be rank 1");
+        }
+
         int n21= windowSize/2+1;
         DatumVector yTags;
         
@@ -196,7 +198,12 @@ public class WaveformToSpectrum {
         double[] ybuf= new double[windowSize];
         double base= xvds.value( 0 );
         for ( int i=0; i<windowSize; i++ ) {
-            ybuf[i]= xOffsetUnits.convertDoubleTo( timeDomainUnits, xvds.value( i ) - base );
+            try {
+                ybuf[i]= xOffsetUnits.convertDoubleTo( timeDomainUnits, xvds.value( i ) - base );
+            } catch ( IndexOutOfBoundsException ex ) {
+                ybuf[i]= xOffsetUnits.convertDoubleTo( timeDomainUnits, xvds.value( i ) - base );
+                System.err.println("here");
+            }
         }
         //System.out.println(getFrequencyDomainTags(DatumVector.newDatumVector(buf,timeDomainUnits)));
         yTags= getFrequencyDomainTags(DatumVector.newDatumVector(ybuf,timeDomainUnits)).getSubVector(1,n21);
