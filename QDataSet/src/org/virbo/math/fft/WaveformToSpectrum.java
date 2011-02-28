@@ -198,12 +198,7 @@ public class WaveformToSpectrum {
         double[] ybuf= new double[windowSize];
         double base= xvds.value( 0 );
         for ( int i=0; i<windowSize; i++ ) {
-            try {
-                ybuf[i]= xOffsetUnits.convertDoubleTo( timeDomainUnits, xvds.value( i ) - base );
-            } catch ( IndexOutOfBoundsException ex ) {
-                ybuf[i]= xOffsetUnits.convertDoubleTo( timeDomainUnits, xvds.value( i ) - base );
-                System.err.println("here");
-            }
+            ybuf[i]= xOffsetUnits.convertDoubleTo( timeDomainUnits, xvds.value( i ) - base );
         }
         //System.out.println(getFrequencyDomainTags(DatumVector.newDatumVector(buf,timeDomainUnits)));
         yTags= getFrequencyDomainTags(DatumVector.newDatumVector(ybuf,timeDomainUnits)).getSubVector(1,n21);
