@@ -2051,6 +2051,24 @@ public class Ops {
         if ( mon==null ) {
             mon= new NullProgressMonitor();
         }
+        
+        if ( ds.rank()==1 ) {
+            QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
+            JoinDataSet dep0=null;
+            Units dep0u=null;
+            JoinDataSet jds= new JoinDataSet(ds);
+            if ( c!=null && c.rank()==0 ) {
+                dep0u= (Units) c.property(QDataSet.UNITS);
+                dep0= new JoinDataSet(c);
+                if ( dep0u!=null ) {
+                    dep0.putProperty( QDataSet.UNITS, dep0u );
+                    jds.putProperty( QDataSet.DEPEND_0, dep0 );
+                }
+            }
+
+            ds= jds;
+        }
+
         if ( ds.rank()==2 ) {
             JoinDataSet result= new JoinDataSet(2);
             result.putProperty(QDataSet.JOIN_0, null);
