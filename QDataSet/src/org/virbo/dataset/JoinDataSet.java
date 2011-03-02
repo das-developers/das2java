@@ -45,7 +45,7 @@ public class JoinDataSet extends AbstractDataSet {
      */
     public JoinDataSet( int rank ) {
         this.rank= rank;
-        putProperty(QDataSet.JOIN_0,"DEPEND_1");
+        putProperty(QDataSet.JOIN_0,  DDataSet.create( new int[0] ) );  
         
         datasets= new ArrayList<QDataSet>();
     }
@@ -220,9 +220,9 @@ public class JoinDataSet extends AbstractDataSet {
     /**
      * slice the dataset by returning the joined dataset at this index.  If the
      * dataset is a MutablePropertiesDataSet, then add the properties of this
-     * join dataset to it. //TODO: danger, the properties should be set regardless.
-     * //this relies on just about every dataset being mpds.  Capabilities
-     * will fix this.
+     * join dataset to it. 
+     * The result is made a mutable properties dataset if it is not already, the danger here is that we may mutate the original data.
+     * Capabilities will fix this.
      * @param idx
      * @return
      */
@@ -238,7 +238,12 @@ public class JoinDataSet extends AbstractDataSet {
             if ( props.size()>0 ) {
                 //System.err.println("slice result is being mutated with "+props );
             }
+            Object odep0= props.get( QDataSet.DEPEND_0 );
+            if ( odep0!=null ) {
+                props.put( QDataSet.DEPEND_0, null ); //TODO: we can put DEPEND_0 in.
+            }
             DataSetUtil.putProperties(props, mpds); //TODO: this is a little dangerous because we mutate the original datasets.
+            final Object dep1 = properties.get(QDataSet.DEPEND_1);
         }
         return result;
     }
