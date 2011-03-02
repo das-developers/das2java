@@ -77,6 +77,7 @@ public class RGBImageDemo extends PlotDemo {
         }
         rgb.putProperty( QDataSet.DEPEND_2, Ops.labels( new String[] { "b", "g", "r" } ) );
         r.setDataSet( rgb );
+        //r.setDataSet( Ops.multiply( DataSetUtil.asDataSet(255), Ops.rand(300,300) ) );
 
         plot.addRenderer( r );
         
