@@ -315,7 +315,7 @@ public class SemanticOps {
             for ( int j=0; j<ds.length(); j++ ) {
                 QDataSet slice1= ds.slice(j);
                 QDataSet depend0= (QDataSet) slice1.property(QDataSet.DEPEND_0);
-                if (j==0 ) {
+                if ( j==0 && depend0!=null ) {
                     jds.putProperty( QDataSet.UNITS, depend0.property(QDataSet.UNITS) );
                 }
                 if ( depend0==null ) {
@@ -355,6 +355,31 @@ public class SemanticOps {
                 return result;
             }
         }
+    }
+
+    /**
+     * return the first table of the bundle containing x and y
+     * @param tds
+     * @param x
+     * @param y
+     * @return
+     */
+    public static QDataSet getSimpleTableContaining( QDataSet tds, Datum x, Datum y ) {
+        if ( tds.rank()==2 ) {
+            return tds;
+        } else {
+            for ( int i=0; i<tds.length(); i++ ) {
+                QDataSet tds1= tds.slice(i);
+                QDataSet bounds= SemanticOps.bounds(tds1);
+                Units xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(tds1) );
+                Units yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(tds1) );
+                if ( bounds.value(0,0)<=x.doubleValue(xunits) && x.doubleValue(xunits)<bounds.value(0,1)
+                        && bounds.value(1,0)<=y.doubleValue(yunits) && y.doubleValue(yunits)<bounds.value(1,1) ) {
+                    return tds1;
+                }
+            }
+        }
+        return null;
     }
 
     /**
