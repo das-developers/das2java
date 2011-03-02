@@ -25,11 +25,14 @@ import org.virbo.dataset.RankZeroDataSet;
 public class Rank0DataSetSerializeDelegate implements SerializeDelegate {
 
     public String format(Object o) {
-        RankZeroDataSet ds= (RankZeroDataSet)o;
+        QDataSet ds= (QDataSet)o;
+        if ( ds.rank()>0 ) {
+            throw new IllegalArgumentException("rank>0 in Rank0DataSetSerializeDelegate");
+        }
         Map<String,Object> props= DataSetUtil.getProperties(ds);
         Units u= (Units) ds.property(QDataSet.UNITS);
         if ( u==null ) u= Units.dimensionless;
-        Datum d= DataSetUtil.asDatum((RankZeroDataSet)o);
+        Datum d= DataSetUtil.asDatum(ds);
         String svalue= d.getFormatter().format(d, u); // we'll provide units context
         if ( svalue.contains(" ") ) {
             throw new RuntimeException("formatted value contains string");
