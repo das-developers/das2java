@@ -507,7 +507,7 @@ public class SimpleStreamFormatter {
      * @param name
      */
     private synchronized void setNameFor( QDataSet slice, String name ) {
-        if ( name.equals( names.get(slice) ) ) {
+        if ( name.equals( names.get(slice) ) ) { 
             // already named it.
             return;
         } else if ( names.get(slice)!=null ) {
