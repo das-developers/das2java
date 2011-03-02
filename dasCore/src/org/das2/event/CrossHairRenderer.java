@@ -281,7 +281,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                     if ( SemanticOps.isSimpleTableDataSet(ds) ) {
                         tds= (QDataSet) ds;
                     } else {
-                        tds= SemanticOps.getSliceTableContaining( ds, x, y );
+                        tds= SemanticOps.getSimpleTableContaining( ds, x, y );
                         if ( tds==null ) tds= ds.slice(0);
                     }
                     yds= SemanticOps.ytagsDataSet(tds);

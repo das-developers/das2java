@@ -190,7 +190,7 @@ public class DisplayDataMouseModule extends MouseModule {
             return;
         }
         if ( ds.rank()>2 ) {
-            QDataSet ds2= SemanticOps.getSliceTableContaining( ds, xrange.min(), yrange.min() );
+            QDataSet ds2= SemanticOps.getSimpleTableContaining( ds, xrange.min(), yrange.min() );
             if ( ds2==null ) {
                 showMessageInTable( myEdit,"data cannot be displayed" );
                 return;
