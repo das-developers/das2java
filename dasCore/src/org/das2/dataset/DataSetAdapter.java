@@ -10,6 +10,7 @@
 package org.das2.dataset;
 
 import org.virbo.dataset.AbstractDataSet;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -200,7 +201,7 @@ public class DataSetAdapter {
             super();
 
             this.source= source;
-            properties.put( QDataSet.JOIN_0, "DEPEND_1" );
+            properties.put( QDataSet.JOIN_0, DDataSet.create( new int[0] ) );
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( PROPERTY_SOURCE, source );
         }
