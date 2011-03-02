@@ -107,7 +107,7 @@ public class RGBImageRenderer extends Renderer {
         if (ds.rank() == 2) {
             for (int i = 0; i < w; i++) {
                 for (int j = 0; j < h; j++) {
-                    im.setRGB(i, j, (int) ds.value(i,j));
+                    im.setRGB(i, j, 65536 * (int) ds.value(i,j) +  256 * (int) ds.value(i,j) + (int) ds.value(i,j));
                 }
             }
         } else if (ds.rank() == 3) {
