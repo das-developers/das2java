@@ -28,6 +28,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.Slice0DataSet;
 import org.virbo.dsops.Ops;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -316,12 +317,16 @@ public class SimpleStreamFormatter {
         Element properties = document.createElement("properties");
 
         Map<String, Object> props = DataSetUtil.getProperties(ds);
-
+        Element prop;
         for (String name : props.keySet()) {
+            prop= null;
             Object value = props.get(name);
-            Element prop = document.createElement("property");
             if (value instanceof QDataSet) {
                 QDataSet qds = (QDataSet) value;
+                String sliceName= (String) qds.property(QDataSet.NAME);
+                // kludge to avoid formatting slice name, which is intended for help humans.
+                if ( ds instanceof Slice0DataSet && sliceName!=null && sliceName.startsWith("slice") ) continue;
+                prop = document.createElement("property");
                 prop.setAttribute("name", name);
                 if (qds.rank() == 0) {
                     SerializeDelegate r0d= (SerializeDelegate) SerializeRegistry.getByName("rank0dataset");
@@ -341,10 +346,11 @@ public class SimpleStreamFormatter {
 
             } else {
                 SerializeDelegate sd = SerializeRegistry.getDelegate(value.getClass());
-                prop.setAttribute("name", name);
                 if (sd == null) {
                     System.err.println("dropping "+name+" because unsupported type: "+value.getClass());
                 } else {
+                    prop = document.createElement("property");
+                    prop.setAttribute("name", name);
                     if ( sd instanceof XMLSerializeDelegate ) {
                         prop.appendChild( ((XMLSerializeDelegate)sd).xmlFormat(document,value) );
                     } else {
@@ -353,7 +359,7 @@ public class SimpleStreamFormatter {
                     }
                 }
             }
-            properties.appendChild(prop);
+            if ( prop!=null ) properties.appendChild(prop);
         }
 
         return properties;
@@ -501,7 +507,14 @@ public class SimpleStreamFormatter {
      * @param name
      */
     private synchronized void setNameFor( QDataSet slice, String name ) {
-        names.put(slice, name);
+        if ( name.equals( names.get(slice) ) ) {
+            // already named it.
+            return;
+        } else if ( names.get(slice)!=null ) {
+            throw new IllegalArgumentException("already have name for: "+slice + "  want to set to "+name);
+        } else {
+            maybePutName( slice, name );
+        }
     }
 
     /**
@@ -513,6 +526,7 @@ public class SimpleStreamFormatter {
      */
     private synchronized String nameFor(QDataSet dep0) {
         String name = names.get(dep0);
+        boolean assignName= name==null;
 
         if (name == null) {
             name = (String) dep0.property(QDataSet.NAME);
@@ -521,7 +535,7 @@ public class SimpleStreamFormatter {
             name = "ds_" + names.size();
         }
 
-        names.put(dep0, name);
+        if ( assignName ) maybePutName( dep0, name );
 
         return name;
     }
@@ -739,9 +753,9 @@ public class SimpleStreamFormatter {
                     packetDs = ds;
                 } else {
                     packetDs = ds.slice(ipacket);
-                    names.put(packetDs, nameFor(packetDs));
+                    maybePutName( packetDs, nameFor(packetDs) );
                     if (dep0Name != null) {
-                        names.put((QDataSet) packetDs.property(QDataSet.DEPEND_0), dep0Name);
+                        maybePutName( (QDataSet) packetDs.property(QDataSet.DEPEND_0), dep0Name );
                     //TODO: Planes are still a problem
                     }
                 }
@@ -826,6 +840,14 @@ public class SimpleStreamFormatter {
 
         } catch (ParserConfigurationException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    private void maybePutName(QDataSet packetDs, String nameFor) {
+        if ( !names.containsKey(packetDs) ) {
+            names.put( packetDs, nameFor );
+        } else {
+            System.err.println("already have name for "+packetDs );
         }
     }
 }
