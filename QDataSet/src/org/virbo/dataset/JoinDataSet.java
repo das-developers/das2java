@@ -42,8 +42,8 @@ public class JoinDataSet extends AbstractDataSet {
      */
     public JoinDataSet( int rank ) {
         this.rank= rank;
-        //putProperty(QDataSet.JOIN_0,  DDataSet.create( new int[0] ) ); // rank 0 dataset allows properties like CACHE_TAG to be stored here.
-        putProperty(QDataSet.JOIN_0,  "DEPEND_1" );
+        putProperty(QDataSet.JOIN_0,  DDataSet.create( new int[0] ) ); // rank 0 dataset allows properties like CACHE_TAG to be stored here.
+        //putProperty(QDataSet.JOIN_0,  "DEPEND_1" );
         datasets= new ArrayList<QDataSet>();
     }
 
