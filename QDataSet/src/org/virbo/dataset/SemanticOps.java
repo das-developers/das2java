@@ -303,6 +303,7 @@ public class SemanticOps {
      * is QDataSet.DEPEND_0, or if that's null then IndexGenDataSet(ds.length).
      * For a bundle, this is just the 0th dataset.  For a join, this is a join
      * of all the DEPEND_0 datasets.
+     * For a join, this is a join of the xtags datasets of each dataset.
      * @param ds
      * @return
      */
@@ -310,22 +311,12 @@ public class SemanticOps {
         if ( isBundle(ds) ){
             return DataSetOps.unbundle(ds,0);
         } else if ( isJoin(ds) ) {
-            int i=0;
-            JoinDataSet jds= new JoinDataSet(2);
-            for ( int j=0; j<ds.length(); j++ ) {
-                QDataSet slice1= ds.slice(j);
-                QDataSet depend0= (QDataSet) slice1.property(QDataSet.DEPEND_0);
-                if ( j==0 && depend0!=null ) {
-                    jds.putProperty( QDataSet.UNITS, depend0.property(QDataSet.UNITS) );
-                }
-                if ( depend0==null ) {
-                    jds.join( Ops.add( new IndexGenDataSet(slice1.length()), DataSetUtil.asDataSet(i) ) );
-                    i+=slice1.length();
-                } else {
-                    jds.join( depend0 );
-                }
+            QDataSet xds= xtagsDataSet( ds.slice(0) );
+            JoinDataSet result= new JoinDataSet(xds);
+            for ( int i=1; i<ds.length(); i++ ) {
+                result.join( xtagsDataSet(ds.slice(i) ) );
             }
-            return jds;
+            return result;
         } else {
             QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_0);
             if ( result==null ) {
@@ -344,7 +335,7 @@ public class SemanticOps {
      * @return
      */
     public static QDataSet ytagsDataSet( QDataSet ds ) {
-        if ( ds.rank()>2 ) throw new IllegalArgumentException("need to slice to get a table");
+        if ( ds.rank()>2 ) throw new IllegalArgumentException("need to slice to get a simple table");
         if ( isBundle(ds) ) {
             return DataSetOps.unbundle( ds, 1 );
         } else {

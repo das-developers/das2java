@@ -12,6 +12,7 @@ package org.virbo.dataset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.das2.datum.UnitsUtil;
 
 /**
  * Create a higher rank dataset with dim 0 being a JOIN dimension.  Join implies
@@ -108,6 +109,13 @@ public class JoinDataSet extends AbstractDataSet {
         if ( ds.rank()!=this.rank-1 ) {
             throw new IllegalArgumentException("dataset rank must be "+(this.rank-1)+", it is rank "+ds.rank() );
         }
+//TODO  JoinDataSet is used produce a bounds object of BINS datasets with different units.  Should this be allowed?  "strict" JOINs won't allow this.
+//        QDataSet units= (QDataSet) property(QDataSet.UNITS);
+//        if ( units==null ) {
+//            properties.put( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
+//        } else {
+//            if ( units!=ds.property(QDataSet.UNITS) ) throw new IllegalArgumentException("joined dataset has units: "+ds.property(QDataSet.UNITS)+ " and this has units: "+units );
+//        }
         datasets.add( ds );
     }
 

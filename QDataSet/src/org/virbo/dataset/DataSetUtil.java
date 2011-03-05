@@ -498,9 +498,32 @@ public class DataSetUtil {
                         dname = dname.substring(0, 6) + "...";
                     }
                     depNames[i] = dname + "=";
+                } else {
+                    depNames[i] = "DEPEND_"+i+"=";
                 }
             }
         }
+
+        if ( ds.property(QDataSet.BINS_0)!=null ) {
+            depNames[0]= (String)ds.property(QDataSet.BINS_0);
+        }
+
+        if ( ds.property(QDataSet.BINS_1)!=null ) {
+            depNames[1]= (String)ds.property(QDataSet.BINS_1);
+        }
+
+        if ( ds.property(QDataSet.JOIN_0)!=null ) {
+            //don't add anything to this.  ds[8,time=50*,freq=20*]
+        }
+
+        if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
+            depNames[0]= "BUNDLE_0=";
+        }
+
+        if ( ds.property(QDataSet.BUNDLE_1)!=null ) {
+            depNames[1]= "BUNDLE_1=";    // TODO: consider  ds[time=1440,density,b_gsm=5] vs ds[time=1440,BUNDLE_1=5]
+        }
+
 
         int[] qubeDims;
         if ( DataSetUtil.isQube(ds) ) {
