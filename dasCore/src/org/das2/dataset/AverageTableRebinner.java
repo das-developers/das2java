@@ -349,10 +349,12 @@ public class AverageTableRebinner implements DataSetRebinner {
             QDataSet xds= SemanticOps.xtagsDataSet(tds1);
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
             if ( yds.rank()==2 ) {
-                yds= yds.slice(0); //TODO: kludge assumes that all yds slices are repeated.
-                if ( yds.length()>0 && yds.length(0)>0 && yds.value(0,0)!=yds.value(1,0) ) {
+                int islice= yds.length()/2;
+                if ( yds.length()>0 && yds.length(islice)>0 && yds.value(islice,0)!=yds.value(islice,0) ) {
                     System.err.println("kludge assumes rank2 yds is repeating values");
                 }
+
+                yds= yds.slice(islice); //TODO: kludge assumes that all yds slices are repeated.
             }
             QDataSet wds= SemanticOps.weightsDataSet(tds1);
 
@@ -374,6 +376,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                         j0 = org.virbo.dataset.DataSetUtil.getPreviousIndex( myds, yy );
                         j1 = org.virbo.dataset.DataSetUtil.getNextIndex( myds, yy);
                     } else {
+                        //fo_k0_ees_1998011_v01.cdf
+                        if ( Ops.total( SemanticOps.weightsDataSet(yds) )==0 ) return;
                         throw new IllegalArgumentException("dataset tags must be increasing or decreasing");
                     }
 
@@ -536,14 +540,28 @@ public class AverageTableRebinner implements DataSetRebinner {
             Units xunits = SemanticOps.getUnits(xds);
 
             int[] ibiny = new int[tds1.length(0)];
-            for (int j = 0; j < ibiny.length; j++) {
-                if (ddY != null) {
-                    ibiny[j] = ddY.whichBin( yds.value(j), yunits );
-                } else {
-                    ibiny[j] = j;
+
+            if ( yds.rank()==1 ) {
+                for (int j = 0; j < ibiny.length; j++) {
+                    if (ddY != null) {
+                        ibiny[j] = ddY.whichBin( yds.value(j), yunits );
+                    } else {
+                        ibiny[j] = j;
+                    }
                 }
             }
+
             for (int i = 0; i < tds1.length(); i++) {
+                if ( yds.rank()==2 ) {
+                    for (int j = 0; j < ibiny.length; j++) {
+                        if (ddY != null) {
+                            ibiny[j] = ddY.whichBin( yds.value(i,j), yunits );
+                        } else {
+                            ibiny[j] = j;
+                        }
+                    }
+                }
+
                 int ibinx;
 
                 if (ddX != null) {

@@ -163,7 +163,12 @@ public class Authenticator extends JPanel {
         }
         
         Component parent=DasApplication.getDefaultApplication().getMainFrame();
-        
+
+        if ( !DasApplication.isHeadAvailable() ) {
+            System.err.println("head is not available to query for credentials");
+            return null;
+        }
+
         while ( okayCancel==JOptionPane.OK_OPTION && result==null ) {
             okayCancel=
                     JOptionPane.showConfirmDialog(parent,this,"Authenticator",
