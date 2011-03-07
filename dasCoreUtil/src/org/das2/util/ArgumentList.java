@@ -50,9 +50,9 @@ public class ArgumentList {
     
     private String UNDEFINED_SWITCH = "__undefinedSwitch__";
     
-    private String FALSE = "__false__";
+    public String FALSE = "__false__";
     
-    private String TRUE = "__true__";
+    public String TRUE = "__true__";
     
     private static final Logger logger= Logger.getLogger( "das2.util" );
     
@@ -222,7 +222,8 @@ public class ArgumentList {
      * specify a named switch argument that may be specified by the user.  For example, --level=3 or -l=3
      * @param name the long parameter name, which the user may enter. e.g. "level"
      * @param abbrev short (one letter) parameter version.  e.g. "l" for -l=3
-     * @param defaultValue value to return if the user doesn't specify.
+     * @param defaultValue value to return if the user doesn't specify.  If TRUE or FALSE is used, then the
+     *     user may use a number of different inputs such as "T" or "true", and getBooleanValue can be used to read the value
      * @param key the internal reference name to get the value specified, not necessarily but often the same as name.
      * @param description a short (40 character) description of the argument.
      */
@@ -449,7 +450,16 @@ public class ArgumentList {
             String value;
             formUsed.put( key,args[i] );
             if ( values.get(key) == this.FALSE || values.get(key) == this.TRUE ) { // is boolean
-                values.put( key, TRUE );
+                value= TRUE;
+                if ( args[i].indexOf('=')!= -1 ) {
+                    value= args[i].substring( args[i].indexOf('=')+1 );
+                    if ( value.equals("t") || value.equals("true") || value.equals("y") || value.equals("yes") ) {
+                        value= TRUE;
+                    } else if ( value.equals("f") || value.equals("false") || value.equals("n") || value.equals("no") ) {
+                        value= FALSE;
+                    }
+                }
+                values.put( key, value );
             } else {
                 if ( args[i].indexOf('=') != -1 ) {
                     value= args[i].substring( args[i].indexOf('=')+1 );
