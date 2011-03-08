@@ -7,6 +7,7 @@ package org.das2.util.filesystem;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import org.das2.util.DeflaterChannel;
 
 /**
  *
@@ -52,5 +54,22 @@ public class FileSystemUtil {
     public static void main( String[] args ) throws Exception {
         InputStream in= new ByteArrayInputStream( "Hello there".getBytes() );
         dumpToFile( in, new File( "/home/jbf/text.txt" ) );
+    }
+
+    /**
+     * un-gzip the file.  This is similar to the unix gunzip command.
+     * @param fz zipped input file
+     * @param file unzipped destination file
+     */
+    public static void unzip( File fz, File file) throws IOException {
+        FileChannel fin= new FileInputStream(fz).getChannel();
+        DeflaterChannel ch= new DeflaterChannel( new FileOutputStream(file).getChannel() );
+        long total=0;
+        while ( total<fin.size() ) {
+            long t= fin.transferTo( total, fin.size()-total, ch );
+            total+= t;
+        }
+        fin.close();
+        ch.close();
     }
 }
