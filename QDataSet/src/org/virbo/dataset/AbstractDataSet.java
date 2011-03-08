@@ -67,6 +67,12 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
 
     public void putProperty( String name, Object value ) {
         properties.put( name, value );
+        if ( name.equals( QDataSet.DEPEND_0 ) && value!=null ) {
+            QDataSet dep0= ((QDataSet)value);
+            if ( dep0.length()!=this.length() ) {
+                System.err.println("DEPEND_0 is incorrect length, it's length is "+dep0.length()+ " should be "+this.length() );
+            }
+        }
     }
     
     public void putProperty( String name, int index, Object value ) {
