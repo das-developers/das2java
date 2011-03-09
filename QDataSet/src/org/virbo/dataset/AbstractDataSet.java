@@ -70,7 +70,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         if ( name.equals( QDataSet.DEPEND_0 ) && value!=null ) {
             if ( value instanceof QDataSet ) { // BUNDLES can have string value here
                 QDataSet dep0= ((QDataSet)value);
-                if ( dep0.length()!=this.length() ) {
+                if ( this.rank()>0 && dep0.length()!=this.length() ) {
                     System.err.println("DEPEND_0 is incorrect length, its length is "+dep0.length()+ " should be "+this.length() );
                 }
             }
