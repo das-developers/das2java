@@ -192,7 +192,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
-    String tickLenStr= "1.0em"; 
+    String tickLenStr= "0.66em";
 
     final int TICK_LABEL_GAP_MIN= 4;  // minimum number of pixels to label
 
