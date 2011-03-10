@@ -438,7 +438,7 @@ public class FileStorageModelNew {
      */
     private File maybeGetGzFile( String name, ProgressMonitor mon) throws IOException {
         File f0 = null;
-        FileObject oz = root.getFileObject(name + ".gz");
+        FileObject oz = root.getFileObject(name + ".gz"); 
         if (oz.exists()) {
             File fz = oz.getFile(mon);
             String sfz = fz.getPath().substring(0, fz.getPath().length() - 3);
