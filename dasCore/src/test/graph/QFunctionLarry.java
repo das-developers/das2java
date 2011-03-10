@@ -33,6 +33,9 @@ public class QFunctionLarry implements QFunction {
 
 	@Override
 	public QDataSet value(QDataSet parm) {
+
+            //this doesn't support rank 2--don't use this as an example!
+
 		MutablePropertyDataSet q = (MutablePropertyDataSet) DataSetOps.unbundle(parm, 0);
 		//We're going to do this by hand for now since it's broken
 
