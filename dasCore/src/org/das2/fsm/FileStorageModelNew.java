@@ -24,7 +24,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.*;
-import org.das2.datum.Units;
+import org.das2.util.filesystem.FileSystemUtil;
 
 /**
  * Represents a method for storing data sets in a set of files by time.  The
@@ -41,6 +41,7 @@ public class FileStorageModelNew {
 
     private Pattern pattern;
     private String regex;
+    private Pattern gzpattern;
 
     FileStorageModelNew parent;
     FileSystem root;
@@ -52,6 +53,7 @@ public class FileStorageModelNew {
     static Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
     
     HashMap fileNameMap=null;
+    private boolean allowGz= true;  // if true, the getFile can use a .gz version to retrieve a file.
 
     enum VersioningType {
         none(null),
@@ -152,6 +154,19 @@ public class FileStorageModelNew {
             }
         }
 
+        if ( allowGz ) {
+            if ( result==null) {
+                for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
+                    String[] files1= fileSystems[i].listDirectory( "/", listRegex + ".gz" );
+                    if ( files1.length>0 ) {
+                        String ff= names[i].equals("") ? files1[0] : names[i]+"/"+files1[0];
+                        if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
+                        result= ff.substring( 0,ff.length()-3 );
+                    }
+                }
+            }
+        }
+
         return result;
     }
 
@@ -173,7 +188,12 @@ public class FileStorageModelNew {
                 timeParser.parse( filename, extra );
                 return timeParser.getTimeRange();
             } else {
-                throw new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+")");
+                if ( gzpattern!=null && gzpattern.matcher(filename).matches() ) {
+                    timeParser.parse( filename.substring(0,filename.length()-3), extra );
+                    return timeParser.getTimeRange();
+                } else {
+                    throw new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+")");
+                }
             }
         } catch ( ParseException e ) {
             IllegalArgumentException e2=new IllegalArgumentException( "file name ("+filename+") doesn't match model specification ("+regex+"), parse error in field",e);
@@ -204,7 +224,7 @@ public class FileStorageModelNew {
      * @throws java.io.IOException
      */
     public String[] getNamesFor( final DatumRange targetRange ) throws IOException {
-        return getNamesFor( targetRange, new NullProgressMonitor() );
+        return getNamesFor( targetRange, false, new NullProgressMonitor() );
     }
 
     /**
@@ -271,13 +291,20 @@ public class FileStorageModelNew {
 //            if ( !( monitor instanceof NullProgressMonitor ) ) {
 //                System.err.println("here");
 //            }
-            String[] files1= fileSystems[i].listDirectory( "/", listRegex );
+            String theListRegex= listRegex;
+            if ( this.allowGz ) {
+                theListRegex= theListRegex+"(.gz)?";
+            }
+            String[] files1= fileSystems[i].listDirectory( "/", theListRegex );
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
                 try {
                     DatumRange dr= getDatumRangeFor( ff, extra );
                     if ( targetRange==null || dr.intersects(targetRange) ) {
+                        if ( ff.endsWith(".gz") && this.allowGz ) { //TODO: make sure allowgz is off when we really want gz files.
+                            ff= ff.substring(0,ff.length()-3);
+                        }
                         list.add(ff);
                         rangeList.add(dr);
                         if ( versioningType!=VersioningType.none ) {
@@ -403,6 +430,26 @@ public class FileStorageModelNew {
     }
 
     /**
+     * check to see if "NAME.gz" exists
+     * @param name name of uncompressed file
+     * @param mon progress monitor
+     * @return null or the uncompressed file.
+     * @throws IOException
+     */
+    private File maybeGetGzFile( String name, ProgressMonitor mon) throws IOException {
+        File f0 = null;
+        FileObject oz = root.getFileObject(name + ".gz");
+        if (oz.exists()) {
+            File fz = oz.getFile(mon);
+            String sfz = fz.getPath().substring(0, fz.getPath().length() - 3);
+            f0 = new File(sfz);
+            FileSystemUtil.unzip(fz, f0);
+            f0.setLastModified(fz.lastModified());
+        }
+        return f0;
+    }
+
+    /**
      * @return a list of files that can be used
      */
     public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
@@ -416,7 +463,12 @@ public class FileStorageModelNew {
         for ( int i=0; i<names.length; i++ ) {
             try {
                 FileObject o= root.getFileObject( names[i] );
-                files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));
+                if ( o.exists() ) {
+                    files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));
+                } else if ( allowGz ) {
+                    File f0 = maybeGetGzFile( names[i], SubTaskMonitor.create(monitor, i * 10, (i + 1) * 10) );
+                    files[i]= f0;
+                }
                 fileNameMap.put( files[i], names[i] );
             } catch ( Exception e ) {
                 throw new RuntimeException(e);
@@ -437,7 +489,12 @@ public class FileStorageModelNew {
         for ( int i=0; i<names.length; i++ ) {
             try {
                 FileObject o= root.getFileObject( names[i] );
-                files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));
+                if ( o.exists() ) {
+                    files[i]= o.getFile( SubTaskMonitor.create( monitor, i*10, (i+1)*10 ));
+                } else if ( allowGz ) {
+                    File f0 = maybeGetGzFile( names[i], SubTaskMonitor.create(monitor, i * 10, (i + 1) * 10) );
+                    files[i]= f0;                  
+                }
                 fileNameMap.put( files[i], names[i] );
             } catch ( Exception e ) {
                 throw new RuntimeException(e);
@@ -613,6 +670,12 @@ public class FileStorageModelNew {
 
         this.regex= timeParser.getRegex();
         this.pattern= Pattern.compile(regex);
+        if ( template.endsWith(".gz") ) {
+            allowGz= false; // turn off automatic uncompressing GZ files.
+        }
+        if ( allowGz ) {
+            this.gzpattern= Pattern.compile(regex+"\\.gz");
+        }
     }
 
     private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template ) {
