@@ -16,6 +16,7 @@ import org.das2.graph.PsymConnector;
 import org.das2.graph.SeriesRenderer;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.util.Random;
+import org.das2.graph.LegendPosition;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -30,15 +31,15 @@ import org.virbo.dsutil.DataSetBuilder;
  */
 public class PlotSymbolRendererDemo {
 
-    public static void doit() {
+    public static DasPlot doit() {
 
         QDataSet vds = BigVectorDataSet.getDataSet(100000, new NullProgressMonitor());
 
         DasPlot p = GraphUtil.visualize(vds);
-
+        return p;
     }
 
-    public static void doit1() {
+    public static DasPlot doit1() {
 
         QDataSet ds = BigVectorDataSet.getDataSet(1000, new NullProgressMonitor());
         QDataSet xds = ds.trim(0,500);
@@ -47,7 +48,7 @@ public class PlotSymbolRendererDemo {
         QDataSet ds2= Ops.link( xds, yds );
 
         DasPlot p = GraphUtil.visualize(ds2);
-
+        return p;
     }
 
     /**
@@ -55,7 +56,7 @@ public class PlotSymbolRendererDemo {
      * If bundleScheme is true, then ds[ :, "X,Y,color" ] is the scheme.
      * @param bundleScheme
      */
-    public static void doit2( boolean bundleScheme ) {
+    public static DasPlot doit2( boolean bundleScheme ) {
         int size= 20000;
         double dsize = (double) size;
 
@@ -122,10 +123,10 @@ public class PlotSymbolRendererDemo {
         p.getXAxis().setAnimated(false);
         p.getYAxis().setAnimated(false);
 
-
+        return p;
     }
 
-    public static void doit3() {
+    public static DasPlot doit3() {
         int len0= 100;
         QDataSet dy= Ops.add( DataSetUtil.asDataSet(5), Ops.randn(len0) );
         MutablePropertyDataSet y= (MutablePropertyDataSet)Ops.multiply( DataSetUtil.asDataSet(30), Ops.sin(Ops.linspace(0,5*Math.PI,len0) ) );
@@ -133,9 +134,10 @@ public class PlotSymbolRendererDemo {
         y.putProperty(QDataSet.DELTA_PLUS, dy);
 
         DasPlot p = GraphUtil.visualize(y);
+        return p;
     }
 
-    public static void doit4() {
+    public static DasPlot doit4() {
 
         QDataSet ds = BigVectorDataSet.getDataSet(1500, new NullProgressMonitor());
         QDataSet xds = ds.trim(0,500);
@@ -145,15 +147,20 @@ public class PlotSymbolRendererDemo {
         QDataSet ds2= Ops.link( xds, yds, cds );
 
         DasPlot p = GraphUtil.visualize(ds2);
-
+        return p;
     }
 
 
     public static void main(String[] args) {
+        DasPlot p;
         //doit();
         //doit1();
         //doit2(true);
         //doit3();
-        doit4();
+        p=doit4();
+
+        p.setLegendPosition( LegendPosition.OutsideNE );
+        p.getRenderer(0).setLegendLabel("Test!cTest");
+        p.getRenderer(0).setDrawLegendLabel(true);
     }
 }

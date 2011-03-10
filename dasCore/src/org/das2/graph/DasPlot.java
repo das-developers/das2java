@@ -117,6 +117,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     boolean preview = false;
     private int repaintCount = 0;
     private int paintComponentCount = 0;
+    private int titleHeight= 0;
 
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
@@ -261,12 +262,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 msgx =    xAxis.getColumn().getDMinimum() + em + maxIconWidth + em/4;
             }
 
-//        } else if ( legendPosition==LegendPosition.OutsideNE ) {
-//            mrect.x = xAxis.getColumn().getDMaximum() + em + maxIconWidth;
-//            boundRect.x = mrect.x;
-//            msgx = mrect.x;
-//            msgy = yAxis.getRow().getDMinimum();
-//            mrect.y= msgy;
+        } else if ( legendPosition==LegendPosition.OutsideNE ) {
+            mrect.x = xAxis.getColumn().getDMaximum() + em + maxIconWidth;
+            boundRect.x = mrect.x;
+            msgx = mrect.x;
+            msgy = yAxis.getRow().getDMinimum(); // em/5 determined by experiment.
+            mrect.y= msgy;
 
         } else {
             throw new IllegalArgumentException("not supported: "+legendPosition);
@@ -300,16 +301,16 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         mrect= getLegendBounds(graphics,msgx,msgy);
         msgx= mrect.x;
         msgy= mrect.y;
-        //if ( legendPosition!=LegendPosition.OutsideNE ) {
+        if ( legendPosition!=LegendPosition.OutsideNE ) {
             msgx+= maxIconWidth + em/4;
-        //}
+        }
 
-        //if ( legendPosition!=LegendPosition.OutsideNE ) {
+        if ( legendPosition!=LegendPosition.OutsideNE ) {
             graphics.setColor(backColor);
             graphics.fillRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
             graphics.setColor(getForeground());
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
-        //}
+        }
 
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
@@ -851,6 +852,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         boolean disableImageCache = false;
 
         Graphics2D graphics = (Graphics2D) graphics1;
+
+        Rectangle clip0= graphics.getClipBounds();
+        Rectangle plotClip= DasDevicePosition.toRectangle( getRow(), getColumn() );
+        plotClip.height+=2;
+        plotClip.height+=titleHeight;
+        plotClip.width+=2;
+        plotClip.translate(-x, -y);
+        graphics.setClip( plotClip );
+
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
 
@@ -968,6 +978,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         graphics.setColor(getForeground());
         graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
 
+        graphics.setClip(clip0);
+
         if (plotTitle != null && plotTitle.length() != 0) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
@@ -977,6 +989,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             int titleY = y - (int) gtr.getDescent() - (int) gtr.getAscent() / 2;
             gtr.draw(graphics, (float) titleX, (float) titleY);
         }
+
+        graphics.setClip(null);
 
         Font font0 = graphics.getFont();
         // --- draw messages ---
@@ -1149,7 +1163,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setString(getFont(), getTitle());
 
-            int titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
+            titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
 
             //if ( this.getDasName().startsWith("plot_3")) {
             //    System.err.println("here");
@@ -1504,6 +1518,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         LegendPosition oldlegendPosition = legendPosition;
         this.legendPosition = newlegendPosition;
         firePropertyChange(PROP_LEGENDPOSITION, oldlegendPosition, newlegendPosition);
+        resize();
         repaint();
     }
 

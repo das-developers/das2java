@@ -16,7 +16,8 @@ public enum LegendPosition implements Enumeration {
     NW, 
     NE, // corner of plot
     SW,
-    SE;
+    SE,
+    OutsideNE;
     // bugs with bounds prevent OutsideNE; // outside right position on plot
 
     public Icon getListIcon() {
