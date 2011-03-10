@@ -4,7 +4,7 @@ package org.virbo.dataset;
 /**
  * QFunctions try to recycle as much of the QDataSet interface as possible to
  * define functions.  Functions take N parameters as input and result in M parameter
- * output.  The N parameters are passed into value as a rank 1 bundle dataset.
+ * output.  The N parameters are passed into value as a rank 1 bundle QDataSet.
  * The M parameter output is returned in a rank 1 bundle dataset.  The method
  * exampleInput returns an example input that allows for discovery of the function.
  *
@@ -13,16 +13,16 @@ package org.virbo.dataset;
 public interface QFunction {
 
     /**
-     * A rank 1 dataset of N parameters is passed in, and a
-     * rank 1 dataset of M parameters is returned.  It's presumed that this
+     * A rank 1 or 2 dataset of N parameters is passed in, and a
+     * rank 1 or 2 dataset of M parameters is returned.  It's presumed that this
      * is calculated in interactive time (1/30sec).
      * Goals:
      *   * support extra tick labels of axis.
      *   * allow discovery of function, so I can pick it up and use it
      *   * allow tabulation and plotting of a function
      *   * non-linear function optimization
-     * @param parm rank 1 bundle of N elements.
-     * @return rank 1 bundle of M elements
+     * @param parm rank 1 bundle of N elements, or rank 2 array of such.
+     * @return rank 1 bundle of M elements, or rank 2 array of such.
      */
     QDataSet value( QDataSet parm );
 
@@ -41,8 +41,18 @@ public interface QFunction {
      *   bds.slice(0).property( QDataSet.LABEL )   // label for the parameter
      * slice(0) is the first argument, slice(1) would be the second, etc.
      * This would be a bundle.
-     * @return rank 1 bundle if N elements.
+     * @return rank 1 bundle of N elements.
      */
     QDataSet exampleInput();
 
+    /**
+     * discover an example of output.  Result is a rank 1 bundle QDataSet.  This
+     * was introduced to support QFunctions where it would be expensive to calculate
+     * an input that would result in a meaningful output.  It's assumed that many
+     * implementations will simply be:
+     *   value( exampleInput() );
+     * 
+     * @return rank 1 bundle of M elements.
+     */
+    QDataSet exampleOutput();
 }
