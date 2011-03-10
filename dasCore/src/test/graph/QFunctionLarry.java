@@ -64,4 +64,8 @@ public class QFunctionLarry implements QFunction {
 		return ret;
 	}
 
+        public QDataSet exampleOutput() {
+            return value( exampleInput() );
+        }
+
 }
