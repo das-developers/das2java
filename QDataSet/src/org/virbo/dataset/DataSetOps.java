@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import org.das2.datum.DatumRange;
+import org.das2.datum.EnumerationUnits;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
@@ -776,6 +777,11 @@ public class DataSetOps {
                 bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
                 if ( bundle1!=null && bundle1.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                } else {
+                    Units u= SemanticOps.getUnits( bundle1 );
+                    if ( !( u instanceof EnumerationUnits ) ) {
+                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_0 are not enumeration");
+                    }
                 }
             }
             bundle= bundle1;
@@ -785,6 +791,11 @@ public class DataSetOps {
                 bundle0= (QDataSet) bundleDs.property(QDataSet.DEPEND_0); //simple legacy bundle was once DEPEND_1.
                 if ( bundle0!=null && bundle0.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                } else {
+                    Units u= SemanticOps.getUnits( bundle0 );
+                    if ( !( u instanceof EnumerationUnits ) ) {
+                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_0 are not enumeration");
+                    }
                 }
             }
             bundle= bundle0;
