@@ -38,4 +38,8 @@ public class DemoFunction1 implements QFunction {
        return v;
     }
 
+    public QDataSet exampleOutput() {
+        return value( exampleInput() );
+    }
+
 }
