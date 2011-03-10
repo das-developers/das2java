@@ -12,11 +12,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.zip.GZIPInputStream;
 import org.das2.util.DeflaterChannel;
 
 /**
@@ -62,14 +64,17 @@ public class FileSystemUtil {
      * @param file unzipped destination file
      */
     public static void unzip( File fz, File file) throws IOException {
-        FileChannel fin= new FileInputStream(fz).getChannel();
-        DeflaterChannel ch= new DeflaterChannel( new FileOutputStream(file).getChannel() );
-        long total=0;
-        while ( total<fin.size() ) {
-            long t= fin.transferTo( total, fin.size()-total, ch );
-            total+= t;
+        
+        GZIPInputStream in = new GZIPInputStream(new FileInputStream(fz));
+
+        OutputStream out = new FileOutputStream(file);
+    
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
         }
-        fin.close();
-        ch.close();
+        in.close();
+        out.close();
     }
 }
