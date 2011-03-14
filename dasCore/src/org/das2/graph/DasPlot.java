@@ -1208,7 +1208,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         plotTitle = t;
         if (getCanvas() != null) {
             FontMetrics fm = getFontMetrics(getCanvas().getFont());
-            int titleHeight = fm.getHeight() + fm.getHeight() / 2;
+            titleHeight = fm.getHeight() + fm.getHeight() / 2;
             resize();
             invalidateCacheImage();
         }
@@ -1254,13 +1254,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected class RebinListener implements java.beans.PropertyChangeListener {
 
         public void propertyChange(java.beans.PropertyChangeEvent e) {
-            logger.fine("rebin listener got property change: "+e.getNewValue());
+            logger.log(Level.FINE, "rebin listener got property change: {0}", e.getNewValue());
             //System.err.println("rebin listener " + DasPlot.this + "got property change: "+e.getPropertyName() + "=" + e.getNewValue());
             markDirty();
             DasPlot.this.update();
         }
     }
 
+    @Override
     protected void installComponent() {
         super.installComponent();
         if (xAxis != null) {
@@ -1413,6 +1414,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
     }
 
+    @Override
     public Shape getActiveRegion() {
         return getBounds();
     }
