@@ -9,7 +9,6 @@ import java.awt.BorderLayout;
 import java.text.ParseException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import org.das2.datum.Units;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasColumn;
@@ -18,13 +17,7 @@ import org.das2.graph.DasRow;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
-import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.BundleDataSet;
-import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DRank0DataSet;
-import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QFunction;
 import org.virbo.dsops.Ops;
 
 /**
