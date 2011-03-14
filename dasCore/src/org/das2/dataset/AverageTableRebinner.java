@@ -534,6 +534,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             QDataSet tds1= tds.slice(iTable);
             QDataSet xds= SemanticOps.xtagsDataSet( tds1 );
             QDataSet yds= SemanticOps.ytagsDataSet( tds1 );
+            if ( yds.length()==1 && tds1.length()>1 ) {
+                yds= yds.slice(0); //TODO: kludge for RBSP.  Bad CDF file?  vap+cdfj:http://emfisis.physics.uiowa.edu/L1/2011/03/03/rbsp-a_HFR-spectra_emfisis-L1_20110303144809_v1.1.1.cdf?HFR_Spectra
+            }
             QDataSet wds= SemanticOps.weightsDataSet( tds1 );
 
             Units yunits = SemanticOps.getUnits(yds);
