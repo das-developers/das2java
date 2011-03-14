@@ -18,11 +18,13 @@ import org.das2.graph.DasRow;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
+import org.virbo.dataset.AbstractQFunction;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QFunction;
 import org.virbo.dsops.Ops;
@@ -67,26 +69,50 @@ public class SimpleDemo {
             ((SeriesRenderer)r).setAntiAliased(true);
         }
 
-        xaxis.setTcaFunction( new QFunction() {
+        xaxis.setTcaFunction( new AbstractQFunction() {
 
             public QDataSet value(QDataSet parm) {
-                QDataSet time= parm.slice(0);
-                System.err.println(time);
-                BundleDataSet outbds1= BundleDataSet.createRank0Bundle();
-                ArrayDataSet result= ArrayDataSet.copy( Ops.mod( time, DataSetUtil.asDataSet(3600,Units.seconds) ) );
-                result.putProperty( QDataSet.LABEL, "Sec" );
-                outbds1.bundle(result);
 
-                result= ArrayDataSet.copy( Ops.rand(1).slice(0) );
-                result.putProperty( QDataSet.LABEL, "Rand" );
-                result.putProperty( QDataSet.FORMAT, "%5.2f" );
-                        
-                outbds1.bundle(result);
+                if ( parm.rank()==1 ) {
+                    parm= new JoinDataSet(parm);
+                } else {
+                    throw new IllegalArgumentException("rank should be 1");
+                }
 
-                result= ArrayDataSet.copy( Ops.rand(1).slice(0) );
-                result.putProperty( QDataSet.LABEL, "Rand2" );
-                result.putProperty( QDataSet.FORMAT, "%5.3f" );
-                outbds1.bundle(result);
+                QDataSet result= values( parm );
+
+                return result.slice(0);
+            }
+
+            public QDataSet values(QDataSet parms) {
+
+                BundleDataSet outbds1= BundleDataSet.createRank1Bundle();
+
+                //TODO: this example should use bundle descriptor, and then just set BUNDLE_1 property.
+
+                DDataSet sec= DDataSet.createRank1(parms.length());
+                sec.putProperty( QDataSet.LABEL, "Sec" );
+                DDataSet rand= DDataSet.createRank1(parms.length());
+                rand.putProperty( QDataSet.LABEL, "Rand" );
+                rand.putProperty( QDataSet.FORMAT, "%5.2f" );
+                DDataSet rand2= DDataSet.createRank1(parms.length());
+                rand2.putProperty( QDataSet.LABEL, "Rand2" );
+                rand2.putProperty( QDataSet.FORMAT, "%5.3f" );
+
+                for ( int i=0; i<parms.length(); i++ ) {
+                    QDataSet parm= parms.slice(i);
+
+                    QDataSet time= parm.slice(0);
+
+                    sec.putValue( i, Ops.mod( time, DataSetUtil.asDataSet(3600,Units.seconds) ).value() );
+                    rand.putValue(i, Ops.rand(1).slice(0).value() );
+                    rand2.putValue( Ops.rand(1).slice(0).value() );
+
+                }
+
+                outbds1.bundle(sec);
+                outbds1.bundle(rand);
+                outbds1.bundle(rand2);
 
                 return outbds1;
             }
