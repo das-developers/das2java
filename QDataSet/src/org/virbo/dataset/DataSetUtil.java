@@ -315,6 +315,27 @@ public class DataSetUtil {
     }
 
     /**
+     * return just the properties attached to the dataset, not DEPEND_x, etc.
+     * @param ds
+     * @param def default values
+     * @return
+     */
+    public static Map<String,Object> getDimensionProperties( QDataSet ds, Map<String,Object> def ) {
+        if ( def==null ) def= new LinkedHashMap();
+
+        String[] names = dimensionProperties();
+
+        for (int i = 0; i < names.length; i++) {
+            Object val= ds.property(names[i]);
+            if ( val != null) {
+                def.put( names[i], val );
+            }
+        }
+
+        return def;
+    }
+
+    /**
      * gets all the properties of the dataset.  This is a shallow
      * copy of properties.
      */
