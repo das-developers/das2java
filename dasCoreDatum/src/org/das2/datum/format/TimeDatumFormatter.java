@@ -291,6 +291,11 @@ public class TimeDatumFormatter extends DatumFormatter {
                        int fieldIndex = addScaleFactor(digitCount);
                        appendSubFormat(frmtString, fieldIndex, digitCount);
                        ss[i]= ss[i].substring(i1);
+                    } else if ( spec.equals("micro") ) {
+                       int digitCount = 3;
+                       int fieldIndex = addScaleFactor(6);
+                       appendSubFormat(frmtString, fieldIndex, digitCount);
+                       ss[i]= ss[i].substring(i1);
                     } else {
                         throw new ParseException("bad format code: {"+spec+"}",offset);
                     }
