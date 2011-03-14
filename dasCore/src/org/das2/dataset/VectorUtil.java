@@ -420,11 +420,11 @@ public class VectorUtil {
         }
 
         DDataSet xdsr= xbuilder.getDataSet();
-        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getProperties(xds), xdsr );
+        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getDimensionProperties(xds,null), xdsr );
         xdsr.putProperty( QDataSet.CADENCE, null );
 
         DDataSet ydsr= builder.getDataSet();
-        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getProperties(ds), ydsr );
+        org.virbo.dataset.DataSetUtil.putProperties( org.virbo.dataset.DataSetUtil.getDimensionProperties(ds,null), ydsr );
         ydsr.putProperty( QDataSet.CADENCE, null );
 
         ydsr.putProperty( QDataSet.DEPEND_0, xdsr );
