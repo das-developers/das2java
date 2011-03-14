@@ -1007,6 +1007,9 @@ public class SeriesRenderer extends Renderer {
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
                 vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else if ( ds.rank()==2 ) {
+                lparent.postMessage(this, "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
+                return;
             } else {
                 vds = (QDataSet) dataSet;
             }
@@ -1191,7 +1194,10 @@ public class SeriesRenderer extends Renderer {
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
                 vds = DataSetOps.unbundleDefaultDataSet( ds );
-            } else {
+            } else if ( ds.rank()!=1 ) {
+                logger.fine("dataset rank error");
+                return;
+            }  else {
                 vds = (QDataSet) dataSet;
             }
 
