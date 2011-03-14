@@ -8,13 +8,17 @@ package org.virbo.dataset;
  * The M parameter output is returned in a rank 1 bundle dataset.  The method
  * exampleInput returns an example input that allows for discovery of the function.
  *
+ * Implementations will generally extend AbstractQFunction, which implements
+ * values() and exampleOutput().
+ *
+ *
  * @author jbf
  */
 public interface QFunction {
 
     /**
-     * A rank 1 or 2 dataset of N parameters is passed in, and a
-     * rank 1 or 2 dataset of M parameters is returned.  It's presumed that this
+     * A rank 1 dataset of N parameters is passed in, and a
+     * rank 1 dataset of M parameters is returned.  It's presumed that this
      * is calculated in interactive time (1/30sec).
      * Goals:
      *   * support extra tick labels of axis.
@@ -25,6 +29,17 @@ public interface QFunction {
      * @return rank 1 bundle of M elements, or rank 2 array of such.
      */
     QDataSet value( QDataSet parm );
+
+
+    /**
+     * A rank 2 dataset of CxN parameters is passed in, and a
+     * rank 1 dataset of CxM parameters is returned, where C is the number
+     * of repeated value operations.  This is useful for when it's expensive
+     * to look up the first value.
+     * @param parm rank 2 of C bundles of N elements.
+     * @return rank 2 of C bundles of M elements, or rank 2 array of such.
+     */
+    QDataSet values( QDataSet parm );
 
     /**
      * discover an example input.  Result is a rank 1 bundle QDataSet.
