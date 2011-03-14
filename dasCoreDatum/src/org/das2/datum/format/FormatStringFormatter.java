@@ -26,6 +26,9 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
      * @param units if true, append the units after the formatted string
      */
     public FormatStringFormatter( String formatStr, boolean units ) {
+        if ( !formatStr.contains("%") ) {
+            throw new IllegalArgumentException("formatStr doesn't contain percent (%)");
+        }
         this.format= formatStr;
         this.units= units;
         String s= String.format( format, 0. );  // try it out to catch errors early.
@@ -50,4 +53,8 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
         }
     }
 
+    @Override
+    public String toString() {
+        return String.format( "FormatStringFormatter(%s)", format );
+    }
 }
