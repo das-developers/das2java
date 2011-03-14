@@ -6,18 +6,18 @@
 package org.virbo.dataset.examples;
 
 import org.das2.datum.Units;
+import org.virbo.dataset.AbstractQFunction;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QFunction;
 import org.virbo.dsops.Ops;
 
 /**
  * First example function just returns sine of the function.
  * @author jbf
  */
-public class DemoFunction1 implements QFunction {
+public class DemoFunction1 extends AbstractQFunction {
 
     public QDataSet value(QDataSet parm) {
         return Ops.sin(parm);
@@ -36,10 +36,6 @@ public class DemoFunction1 implements QFunction {
        v.putProperty( QDataSet.BUNDLE_0, bds );
 
        return v;
-    }
-
-    public QDataSet exampleOutput() {
-        return value( exampleInput() );
     }
 
 }
