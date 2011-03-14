@@ -810,7 +810,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
 
     @Override
-    protected synchronized void paintComponent(Graphics graphics1) {
+    protected synchronized void paintComponent(Graphics graphics0) {
         //System.err.println("dasPlot.paintComponent "+ getDasName() );
         if ( getCanvas().isValueAdjusting() ) {
             repaint();
@@ -835,15 +835,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         Shape saveClip;
         if (getCanvas().isPrintingThread()) {
-            saveClip = graphics1.getClip();
-            graphics1.setClip(null);
+            saveClip = graphics0.getClip();
+            graphics0.setClip(null);
         } else {
             saveClip = null;
         }
 
-        logger.log(Level.FINEST, "DasPlot clip={0} @ {1},{2}", new Object[]{graphics1.getClip(), getX(), getY()});
+        logger.log(Level.FINEST, "DasPlot clip={0} @ {1},{2}", new Object[]{graphics0.getClip(), getX(), getY()});
 
-        Rectangle clip = graphics1.getClipBounds();
+        Rectangle clip = graphics0.getClipBounds();
         if (clip != null && (clip.y + getY()) >= (y + ySize)) {
             logger.finer("returning because clip indicates nothing to be done.");
             return;
@@ -851,7 +851,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         boolean disableImageCache = false;
 
-        Graphics2D graphics = (Graphics2D) graphics1;
+        Graphics2D graphics = (Graphics2D) graphics0.create();
 
         Rectangle clip0= graphics.getClipBounds();
         Rectangle plotClip= DasDevicePosition.toRectangle( getRow(), getColumn() );
@@ -859,7 +859,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         plotClip.height+=titleHeight;
         plotClip.width+=2;
         plotClip.translate(-x, -y);
-        graphics.setClip( plotClip );
+        graphics.setClip( plotClip.intersection(clip) );
 
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
@@ -1002,14 +1002,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             drawLegend(graphics);
         }
 
-        graphics.setFont(font0);
+        graphics.dispose();
 
-        graphics.translate(getX(), getY());
-
-        getDasMouseInputAdapter().paint(graphics);
+        getDasMouseInputAdapter().paint(graphics0);
 
         if (saveClip != null) {
-            graphics1.setClip(saveClip);
+            graphics0.setClip(saveClip);
         }
     }
 
