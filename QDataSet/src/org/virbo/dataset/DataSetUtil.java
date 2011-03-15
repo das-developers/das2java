@@ -1398,6 +1398,12 @@ public class DataSetUtil {
                 problems.add(String.format("DEPEND_%d length is %d, should be %d.", dimOffset, dep.length(), ds.length()));
             }
             if (ds.rank() > 1 && ds.length() > 0) {
+                QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
+                if ( dep1!=null && dep1.rank()>1 ) {
+                    if ( dep1.length()!=ds.length() ) {
+                        problems.add(String.format("DEPEND_1 length is %d, should be %d.", dep1.length(), ds.length()));
+                    }
+                }
                  validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
             }
         }
