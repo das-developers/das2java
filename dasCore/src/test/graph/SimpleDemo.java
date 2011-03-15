@@ -19,14 +19,12 @@ import org.das2.graph.GraphUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
 import org.virbo.dataset.AbstractQFunction;
-import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QFunction;
 import org.virbo.dsops.Ops;
 
 /**
