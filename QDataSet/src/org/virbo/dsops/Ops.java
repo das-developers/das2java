@@ -25,6 +25,7 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
+import org.das2.util.monitor.SubTaskMonitor;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
@@ -2052,7 +2053,7 @@ public class Ops {
             mon= new NullProgressMonitor();
         }
         
-        if ( ds.rank()==1 ) {
+        if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             JoinDataSet dep0=null;
             Units dep0u=null;
@@ -2069,7 +2070,19 @@ public class Ops {
             ds= jds;
         }
 
-        if ( ds.rank()==2 ) {
+        if ( ds.rank()==3 ) { // slice it and do the process to each branch.
+            JoinDataSet result= new JoinDataSet(3);
+            mon.setTaskSize( ds.length()*10  );
+            mon.started();
+            for ( int i=0; i<ds.length(); i++ ) {
+                mon.setTaskProgress(i*10);
+                QDataSet pow1= fftPower( ds.slice(i), len, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                result.join(pow1);
+            }
+            mon.finished();
+            return result;
+
+        } else if ( ds.rank()==2 ) {
             JoinDataSet result= new JoinDataSet(2);
             result.putProperty(QDataSet.JOIN_0, null);
 
