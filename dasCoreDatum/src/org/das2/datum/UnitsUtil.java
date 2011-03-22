@@ -82,8 +82,10 @@ public class UnitsUtil {
     }
     
     /**
-     * returns the unit whose product with the parameter unit is
-     * unity.
+     * returns the unit whose product with the parameter unit is unity.
+     * @throws IllegalArgumentException if the units inversion is not known.
+     *   (Presently this is only time units).
+     *
      */
     public static Units getInverseUnit( Units unit ) {
         if ( unit==Units.seconds ) {
