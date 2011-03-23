@@ -65,7 +65,22 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         }
     }
 
+    /**
+     * print a warning message when the property is not the correct type.
+     * @param name
+     * @param value
+     */
+    private void checkPropertyType( String name, Object value ) {
+        if ( name.equals(QDataSet.DELTA_MINUS) || name.equals(QDataSet.DELTA_PLUS)
+                || name.equals(QDataSet.DEPEND_0) ) {
+            if ( !( value instanceof QDataSet ) ) {
+                System.err.println( String.format( "%s is not a QDataSet", name, value ) );
+            }
+        } 
+    }
+
     public void putProperty( String name, Object value ) {
+        checkPropertyType( name, value );
         properties.put( name, value );
         if ( name.equals( QDataSet.DEPEND_0 ) && value!=null ) {
             if ( value instanceof QDataSet ) { // BUNDLES can have string value here
