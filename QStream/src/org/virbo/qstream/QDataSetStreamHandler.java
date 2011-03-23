@@ -431,6 +431,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                         stype= evalue.getTagName();
                     }
                     if (stype.equals("qdataset")) {
+                        if (pname.equals(QDataSet.DELTA_MINUS) || pname.equals(QDataSet.DELTA_PLUS) ) {
+                            System.err.println("skipping DELTA_MINUS and DELTA_PLUS because bug");
+                            continue;
+                        }
                         builder.putProperty(pname, svalue);
                     } else {
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
