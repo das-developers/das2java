@@ -2232,6 +2232,12 @@ public class Ops {
 
         double[] xtags = FFTUtil.getFrequencyDomainTags( 1./cadence.value(), ds.length());
         double binsize=  2 * xtags[ xtags.length/2 ] / ds.length();
+        Units invUnits= null;
+        try {
+            invUnits= UnitsUtil.getInverseUnit( SemanticOps.getUnits(cadence) );
+        } catch ( IllegalArgumentException ex ) {
+            // do nothing.
+        }
 
         DDataSet result = DDataSet.createRank1(ds.length()/2);
         DDataSet resultDep0 = DDataSet.createRank1(ds.length()/2);
@@ -2239,6 +2245,7 @@ public class Ops {
             result.putValue(i, (i==0?1:4)*ComplexArray.magnitude2(ca,i) / binsize );
             resultDep0.putValue( i, xtags[i] );
         }
+        if ( invUnits!=null ) resultDep0.putProperty( QDataSet.UNITS, invUnits );
 
         result.putProperty(QDataSet.DEPEND_0, resultDep0);
         return result;
