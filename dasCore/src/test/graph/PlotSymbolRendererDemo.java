@@ -159,7 +159,8 @@ public class PlotSymbolRendererDemo {
         //doit3();
         p=doit4();
 
-        p.setLegendPosition( LegendPosition.OutsideNE );
+        //p.setLegendPosition( LegendPosition.OutsideNE );
+        p.setLegendPosition( LegendPosition.SE );
         p.getRenderer(0).setLegendLabel("Test!cTest");
         p.getRenderer(0).setDrawLegendLabel(true);
     }

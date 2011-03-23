@@ -378,7 +378,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                     } else {
                         //fo_k0_ees_1998011_v01.cdf
                         if ( Ops.total( SemanticOps.weightsDataSet(yds) )==0 ) return;
-                        throw new IllegalArgumentException("dataset tags must be increasing or decreasing");
+                        //throw new IllegalArgumentException("dataset tags must be increasing or decreasing");
+                        continue; // we just return without interpolating.
                     }
 
                 }

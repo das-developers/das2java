@@ -1608,20 +1608,32 @@ public class SeriesRenderer extends Renderer {
         return this.colorBar;
     }
 
+    PropertyChangeListener colorBarListener= new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+           if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
+               update();
+           }
+        }
+    };
+
     /**
      * Setter for property colorBar.
      * @param colorBar New value of property colorBar.
      */
-    public void setColorBar(DasColorBar colorBar) {
-        this.colorBar = colorBar;
-        colorBar.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                    update();
-                }
+    public void setColorBar(DasColorBar cb) {
+        if ( this.colorBar == cb) {
+            return;
+        }
+        if (colorBar != null) {
+            colorBar.removePropertyChangeListener( colorBarListener );
+        }
+        colorBar = cb;
+        if (colorBar != null) {
+            if (parent != null && parent.getCanvas() != null) {
+                parent.getCanvas().add(colorBar);
             }
-        });
+            colorBar.addPropertyChangeListener( colorBarListener );        
+        }
         refreshImage();
         updatePsym();
     }

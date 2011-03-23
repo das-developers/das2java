@@ -640,7 +640,24 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     protected void uninstallRenderer() {
         if (colorBar != null && colorBar.getCanvas() != null) {
-            colorBar.getCanvas().remove(colorBar);
+            // count the number of Renderers pointing to the colorbar.  Remove it if it's the only one.
+            DasCanvas c= colorBar.getCanvas();
+            boolean othersUse= false;
+            for ( DasCanvasComponent cc: c.getCanvasComponents() ) {
+                if ( cc instanceof DasPlot ) {
+                    Renderer[] rr= ((DasPlot)cc).getRenderers();
+                    for ( Renderer r1: rr ) {
+                        if ( r1 instanceof SpectrogramRenderer && r1!=this ) {
+                            if ( ((SpectrogramRenderer)r1).getColorBar()==colorBar ) {
+                                othersUse= true;
+                            }
+                        }
+                    }
+                }
+            }
+            if ( !othersUse ) {
+                colorBar.getCanvas().remove(colorBar);
+            }
         }
     }
 

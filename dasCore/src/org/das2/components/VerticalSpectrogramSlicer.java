@@ -212,6 +212,8 @@ extends DasPlot implements DataPointSelectionListener {
             }
         }
 
+        if ( tds1==null ) return;
+        
         QDataSet xds= SemanticOps.xtagsDataSet(tds1);
         QDataSet sliceDataSet= tds1.slice( org.virbo.dataset.DataSetUtil.closestIndex( xds, e.getX() ) );
                       

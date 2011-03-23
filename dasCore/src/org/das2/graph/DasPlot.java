@@ -862,6 +862,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if ( clip!=null ) plotClip= plotClip.intersection(clip);
         graphics.setClip( plotClip );
 
+
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
 
