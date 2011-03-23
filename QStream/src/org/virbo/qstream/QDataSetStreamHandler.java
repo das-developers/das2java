@@ -344,6 +344,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
 
     public QDataSet getDataSet(String name) {
+        System.err.println("getDataSet("+name+")");
         DataSetBuilder builder = builders.get(name);
         if (builder == null) throw new IllegalArgumentException("No such dataset \"" + name + "\"");
 
