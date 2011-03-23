@@ -265,7 +265,6 @@ public class DataSetUtil {
             QDataSet.UNITS, QDataSet.FORMAT, QDataSet.SCALE_TYPE,
             QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
             QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
-            QDataSet.RENDER_TYPE,
             QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
             QDataSet.USER_PROPERTIES
         };
