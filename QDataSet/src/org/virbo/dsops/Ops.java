@@ -1941,7 +1941,7 @@ public class Ops {
      * coalesced.  If sort is non-null, then it is the result of the function
      * "sort" and should be a rank 1 list of indeces that sort the data.
      *
-     * renamed uniqV from uniqValues to avoid confusion with the IDL command.
+     * renamed uniqValues from uniq to avoid confusion with the IDL command.
      *
      * @param ds
      * @param sort
