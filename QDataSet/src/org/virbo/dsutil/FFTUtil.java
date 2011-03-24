@@ -114,6 +114,18 @@ public class FFTUtil {
         }
         return DDataSet.wrap(ww);
     }
+
+    public static QDataSet getWindowHanning( final int size ) {
+        final int n= size;
+        int maxlim= 410;
+        final double[] ww= new double[n];
+
+        int halfsize= size/2;
+        for ( int k=0; k<size; k++ ) {
+            ww[k] = 1.0 + Math.cos( 2.0*Math.PI*(double)(k-halfsize) /(double)size );
+        }
+        return DDataSet.wrap(ww);
+    }
         
     /**
      * Produces the power spectrum of the dataset.  This is the length of the fourier
