@@ -1941,11 +1941,13 @@ public class Ops {
      * coalesced.  If sort is non-null, then it is the result of the function
      * "sort" and should be a rank 1 list of indeces that sort the data.
      *
+     * renamed uniqV from uniqValues to avoid confusion with the IDL command.
+     *
      * @param ds
      * @param sort
      * @return
      */
-    public static QDataSet uniq( QDataSet ds, QDataSet sort  ) {
+    public static QDataSet uniqValues( QDataSet ds, QDataSet sort  ) {
         if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
         if ( sort!=null && sort.rank()>1 ) throw new IllegalArgumentException("sort.rank()>1" );
 
