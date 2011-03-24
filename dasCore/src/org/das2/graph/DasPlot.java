@@ -424,14 +424,17 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         Color gridColor = new Color(128, 128, 128, 70);
         Color minorGridColor = new Color(128, 128, 128, 40);
 
+        TickVDescriptor xtickv= getXAxis().getTickV();
+        TickVDescriptor ytickv= getYAxis().getTickV();
+
         if (drawMinorGrid) {
             DatumVector xticks = null;
             DatumVector yticks = null;
-            if (getXAxis().isVisible()) {
-                xticks = getXAxis().getTickV().getMinorTicks();
+            if (getXAxis().isVisible() && xtickv!=null ) {
+                xticks = xtickv.getMinorTicks();
             }
-            if (getYAxis().isVisible()) {
-                yticks = getYAxis().getTickV().getMinorTicks();
+            if (getYAxis().isVisible() && ytickv!=null ) {
+                yticks = ytickv.getMinorTicks();
             }
             plotGraphics.setColor(minorGridColor);
             drawGrid(plotGraphics, xticks, yticks);
@@ -440,11 +443,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (drawGrid) {
             DatumVector xticks = null;
             DatumVector yticks = null;
-            if (getXAxis().isVisible()) {
-                xticks = getXAxis().getTickV().getMajorTicks();
+            if (getXAxis().isVisible() && xtickv!=null ) {
+                xticks = xtickv.getMajorTicks();
             }
-            if (getYAxis().isVisible()) {
-                yticks = getYAxis().getTickV().getMajorTicks();
+            if (getYAxis().isVisible() && ytickv!=null ) {
+                yticks = ytickv.getMajorTicks();
             }
             plotGraphics.setColor(gridColor);
             drawGrid(plotGraphics, xticks, yticks);

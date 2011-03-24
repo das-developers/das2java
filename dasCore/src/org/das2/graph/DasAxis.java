@@ -784,10 +784,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         updateTickV();
         markDirty();
-        boolean b= UnitsUtil.isIntervalMeasurement(range.getUnits());
-        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            scanNext.setEnabled( b );
-            scanPrevious.setEnabled( b );
+        final boolean b= UnitsUtil.isIntervalMeasurement(range.getUnits());
+        if ( !DasApplication.getDefaultApplication().isHeadless() && b!=scanPrevious.isEnabled() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    scanNext.setEnabled( b );
+                    scanPrevious.setEnabled( b );
+                } }
+            );
         }
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, range);
         update();
