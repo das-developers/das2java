@@ -60,6 +60,7 @@ public class Slice1DataSet extends AbstractDataSet {
                 if ( label!=null ) {
                     putProperty( QDataSet.LABEL, label ); // special code is like unbundle operator
                     putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
+                    if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
                 } else {
                     if ( addContext ) DataSetUtil.addContext( this, new Slice0DataSet(dep1,index,false) );
                 }
