@@ -42,10 +42,6 @@ public abstract class Units {
     private static Map unitsMap = new HashMap();
     
     public static final Units dimensionless= new NumberUnits("","dimensionless quantities");
-    public static final Units dB = new NumberUnits("dB");
-    static {
-        dimensionless.registerConverter(dB, new dBConverter());
-    }
 
     public static final Units radians= new NumberUnits("radian");
     public static final Units degrees= new NumberUnits("degrees");
@@ -218,6 +214,7 @@ public abstract class Units {
      */
 
     /* percentIncrease is defined as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100 % diff.  */
+    public static final Units dB = new NumberUnits("dB","decibels");
     public static final Units percentIncrease= new NumberUnits("% diff","Special dimensionless number, useful for expressing on logarithmic scale.  100% indicates a doubling");    
     public static final Units log10Ratio= new NumberUnits("log10Ratio", "Special dimensionless number, useful for expressing distances on a log10 scale" );
     public static final Units logERatio= new NumberUnits("logERatio", "Special dimensionless number, useful for expressing distances on a logE scale" );
