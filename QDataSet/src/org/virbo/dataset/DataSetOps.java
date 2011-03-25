@@ -592,7 +592,7 @@ public class DataSetOps {
             }
         }
 
-        String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
+        String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.WEIGHTS_PLANE };
 
         for ( int i=0; i<p.length; i++ ) {
             QDataSet delta= (QDataSet) props.get( p[i] );
