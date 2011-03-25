@@ -233,6 +233,7 @@ public class DataSetUtil {
                     QDataSet.CACHE_TAG,
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
+                    QDataSet.WEIGHTS_PLANE, 
                     QDataSet.USER_PROPERTIES,
                     QDataSet.METADATA, QDataSet.METADATA_MODEL,
                 };
