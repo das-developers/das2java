@@ -204,7 +204,9 @@ public final class SDataSet extends ArrayDataSet {
         short[] newback = new short[noff2-noff1];
         System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
         SDataSet result= new SDataSet( nrank, end-start, len1, len2, len3, newback );
-        DataSetUtil.putProperties( DataSetUtil.getProperties(this), result );
+        Map<String,Object> props= DataSetUtil.getProperties(this);
+        props.remove(QDataSet.DEPEND_0);
+        DataSetUtil.putProperties( props, result );
         QDataSet dep0= (QDataSet) property(QDataSet.DEPEND_0);
         if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0.trim(start, end) );
         return result;

@@ -222,7 +222,9 @@ public final class FDataSet extends ArrayDataSet {
         float[] newback = new float[noff2-noff1];
         System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
         FDataSet result= new FDataSet( nrank, end-start, len1, len2, len3, newback );
-        DataSetUtil.putProperties( DataSetUtil.getProperties(this), result );
+        Map<String,Object> props= DataSetUtil.getProperties(this);
+        props.remove(QDataSet.DEPEND_0);
+        DataSetUtil.putProperties( props, result );
         QDataSet dep0= (QDataSet) property(QDataSet.DEPEND_0);
         if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0.trim(start, end) );
         return result;
