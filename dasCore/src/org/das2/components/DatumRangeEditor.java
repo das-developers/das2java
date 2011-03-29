@@ -166,11 +166,18 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
             } else {
                 return null;
             }
+        } catch ( IllegalArgumentException e ) {
+            if ( value!=null ) {
+                setDatumRange( value ); // cause reformat of old Datum
+                return value;
+            } else {
+                return null;
+            }
         }
     }
     
     public String getAsText() {
-        String text;
+        //String text= editor.getText();
         Object value = getDatumRange();
         if (value == null) {
             return null;
