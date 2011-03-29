@@ -491,6 +491,7 @@ public class DataSetOps {
      * 2010-09-23: support rank 2 DEPEND_2 and DEPEND_3
      * 2010-09-23: add BINS_1 and BUNDLE_1, Slice0DataSet calls this.
      * 2010-02-24: BUNDLE_0 handled.
+     * 2011-03-25: add WEIGHTS_PLANE
      * @param sliceIndex
      * @param props
      */
