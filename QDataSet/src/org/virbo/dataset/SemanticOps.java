@@ -335,9 +335,15 @@ public class SemanticOps {
      * @return
      */
     public static QDataSet ytagsDataSet( QDataSet ds ) {
-        if ( ds.rank()>2 ) throw new IllegalArgumentException("need to slice to get a simple table");
         if ( isBundle(ds) ) {
             return DataSetOps.unbundle( ds, 1 );
+        } else if ( isJoin(ds)) {
+            QDataSet yds= ytagsDataSet( ds.slice(0) );
+            JoinDataSet result= new JoinDataSet(yds);
+            for ( int i=1; i<ds.length(); i++ ) {
+                result.join( ytagsDataSet(ds.slice(i) ) );
+            }
+            return result;
         } else {
             QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
             if ( result==null ) {
