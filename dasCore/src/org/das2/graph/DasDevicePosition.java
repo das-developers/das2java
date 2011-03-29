@@ -35,6 +35,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import org.das2.components.propertyeditor.Editable;
@@ -195,13 +196,13 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public static String formatLayoutStr( DasDevicePosition pos, boolean min ) {
         StringBuffer buf= new StringBuffer();
         if ( min ) {
-            if ( pos.getMinimum()!=0 ) buf.append( String.format("%.2f%%", pos.getMinimum()*100 ) );
-            if ( pos.getEmMinimum()!=0 ) buf.append( String.format("%+.1fem", pos.getEmMinimum() ) );
-            if ( pos.getPtMinimum()!=0 ) buf.append( String.format("%+dpt", pos.getPtMinimum() ) );
+            if ( pos.getMinimum()!=0 ) buf.append( String.format( Locale.US, "%.2f%%", pos.getMinimum()*100 ) );
+            if ( pos.getEmMinimum()!=0 ) buf.append( String.format(Locale.US, "%+.1fem", pos.getEmMinimum() ) );
+            if ( pos.getPtMinimum()!=0 ) buf.append( String.format(Locale.US, "%+dpt", pos.getPtMinimum() ) );
         } else {
-            if ( pos.getMaximum()!=0 ) buf.append( String.format("%.2f%%", pos.getMaximum()*100 ) );
-            if ( pos.getEmMaximum()!=0 ) buf.append( String.format("%+.1fem", pos.getEmMaximum() ) );
-            if ( pos.getPtMaximum()!=0 ) buf.append( String.format("%+dpt", pos.getPtMaximum() ) );
+            if ( pos.getMaximum()!=0 ) buf.append( String.format(Locale.US, "%.2f%%", pos.getMaximum()*100 ) );
+            if ( pos.getEmMaximum()!=0 ) buf.append( String.format(Locale.US, "%+.1fem", pos.getEmMaximum() ) );
+            if ( pos.getPtMaximum()!=0 ) buf.append( String.format(Locale.US, "%+dpt", pos.getPtMaximum() ) );
         }
         if ( buf.length()==0 ) return "0%";
         return buf.toString();

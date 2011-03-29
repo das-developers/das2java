@@ -259,10 +259,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         } else {
                             if ( !SemanticOps.isTableDataSet( zds ) ) {
-                                parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
-                                return;
+                                if ( !SemanticOps.isBundle( zds ) ) {
+                                    parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
+                                    return;
+                                } else {
+                                    zds= SemanticOps.getDependentDataSet(zds);
+                                }
                             }
-
                             if ( ! SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits()) ) {
                                 parent.postMessage(this, "inconvertible colorbar units", DasPlot.INFO, null, null);
                             }
