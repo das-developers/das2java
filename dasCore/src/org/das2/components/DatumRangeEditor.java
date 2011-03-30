@@ -38,6 +38,7 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
+import org.das2.DasApplication;
 import org.das2.datum.UnitsUtil;
 
 
@@ -149,9 +150,20 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         return result;
     }
     
+    private void showErrorUsage( String text ) {
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            JOptionPane.showMessageDialog( this, "Unable to parse range \""+text+"\"" );
+        }
+    }
+
+    /**
+     * attempt to read the datum range in the TextField.  If it is not
+     * parseable, then display an error message and return to the old value.
+     * @return
+     */
     public DatumRange getDatumRange() {
+        String text = editor.getText();
         try {
-            String text = editor.getText();
             DatumRange dr = parseText(text);
             if (!dr.equals(value)) {
                 DatumRange oldValue = value;
@@ -162,6 +174,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         } catch (ParseException e) {
             if ( value!=null ) {
                 setDatumRange( value ); // cause reformat of old Datum
+                showErrorUsage( text );
                 return value;
             } else {
                 return null;
@@ -169,6 +182,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         } catch ( IllegalArgumentException e ) {
             if ( value!=null ) {
                 setDatumRange( value ); // cause reformat of old Datum
+                showErrorUsage( text );
                 return value;
             } else {
                 return null;
