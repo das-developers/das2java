@@ -6,6 +6,7 @@
 
 package org.das2.util;
 
+import java.text.MessageFormat;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
@@ -24,9 +25,15 @@ public class NBConsoleFormatter extends Formatter {
             return "";
         } else {
             StackTraceElement[] st= new Throwable().getStackTrace();
-            String result= rec.getLoggerName()+"  ["+Thread.currentThread().getName()+"]\n"+rec.getLevel().getLocalizedName()+": "+rec.getMessage()
-            +"\n\tat "+st[7]
-            +( st.length>8 ? "\n\tat "+st[8]+"\n" : "\n" );
+            //String msg= Message.fo
+            int len= Math.min( 9, st.length );
+            String msg= MessageFormat.format( rec.getMessage(), rec.getParameters() );
+            String result= rec.getLoggerName()+"  ["+Thread.currentThread().getName()+"]\n"+rec.getLevel().getLocalizedName()+": "+msg;
+            if ( len>2 ) {
+                result= result
+                    +( "\n\tat "+st[len-2] )
+                    +( "\n\tat "+st[len-1]+"\n" );
+            }
             if ( coalesceHits>0 ) {
                 result= "(Last message repeats "+(coalesceHits+1)+" times)\n"+result;
             }
