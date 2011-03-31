@@ -749,7 +749,7 @@ public class AsciiParser {
                 int i=0;
                 for ( int j=0; j<bundleDescriptor.length(); j++ ) {
                     Units u= (Units) bundleDescriptor.property( QDataSet.UNITS, j );
-                    int rank= bundleDescriptor.length(i);
+                    int rank= bundleDescriptor.length(j);
                     int len= 1;
                     for ( int k=0; k<rank; k++ ) {
                         len*= bundleDescriptor.value(j,k);
@@ -761,6 +761,9 @@ public class AsciiParser {
                         }
                         i++;
                     }
+                }
+                if ( i!=this.fieldParsers.length ) {
+                    System.err.println("lengths check didn't work out");
                 }
 
             } catch (ParseException ex) {
