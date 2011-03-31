@@ -9,6 +9,7 @@
 
 package test;
 
+import java.io.FileInputStream;
 import org.das2.datum.Units;
 import java.net.MalformedURLException;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -28,8 +29,10 @@ public class AsciiParserDemo {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
-        
+    public static void main(String[] args) throws Exception {
+
+        testRich();
+
         //test1();
         
         System.err.println( ",hello,".split(",").length );
@@ -61,4 +64,13 @@ public class AsciiParserDemo {
         System.err.println(ds);
     }
     
+    private static void testRich() throws Exception {
+        String sfile= "/home/jbf/ct/hudson/data.backup/dat/headers/CRRES_mod.txt";
+        AsciiParser parser = new AsciiParser();
+        parser.setKeepFileHeader(true);
+        parser.setDelimParser(new InputStreamReader( new FileInputStream( sfile ) ), "\\s+");
+        WritableDataSet ds = parser.readStream(new InputStreamReader( new FileInputStream( sfile ) ), new NullProgressMonitor() );
+
+    }
+
 }
