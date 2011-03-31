@@ -766,6 +766,7 @@ public class DataSetOps {
      * @param aThis
      * @param ib index of the dataset to extract
      * @throws IndexOutOfBoundsException if the index is invalid.
+     * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
      * @return
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib) {
@@ -776,12 +777,15 @@ public class DataSetOps {
             QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
             if ( bundle1==null ) {
                 bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+                if ( bundle1==null ) {
+                    throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
+                }
                 if ( bundle1!=null && bundle1.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
                 } else {
                     Units u= SemanticOps.getUnits( bundle1 );
                     if ( !( u instanceof EnumerationUnits ) ) {
-                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_0 are not enumeration");
+                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_1 are not enumeration");
                     }
                 }
             }
@@ -790,8 +794,11 @@ public class DataSetOps {
             QDataSet bundle0= (QDataSet) bundleDs.property(QDataSet.BUNDLE_0);
             if ( bundle0==null ) {
                 bundle0= (QDataSet) bundleDs.property(QDataSet.DEPEND_0); //simple legacy bundle was once DEPEND_1.
+                if ( bundle0==null ) {
+                    throw new IllegalArgumentException( "Neither BUNDLE_0 nor DEPEND_0 found on dataset passed to unbundle command.");
+                }
                 if ( bundle0!=null && bundle0.rank()>1 ) {
-                    throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                    throw new IllegalArgumentException("high rank DEPEND_0 found where rank 1 was expected");
                 } else {
                     Units u= SemanticOps.getUnits( bundle0 );
                     if ( !( u instanceof EnumerationUnits ) ) {
