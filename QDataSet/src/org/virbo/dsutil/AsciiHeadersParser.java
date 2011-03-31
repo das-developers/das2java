@@ -98,7 +98,6 @@ public class AsciiHeadersParser {
         boolean dontHaveOpeningBrace = true;
         boolean addClosingBrace = false;
         boolean expectClosingBrace= false;
-        boolean haveComments= false;
 
         int braceLevel= 0;
         try {
@@ -240,6 +239,8 @@ public class AsciiHeadersParser {
                             if ( columns[j].equals(lookFor) ) {
                                 logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
                                 icol= j;
+                                bd.addDataSet( name, ids, idims );
+                                break;
                             }
                         }
                         if ( icol==-1 ) {
@@ -280,6 +281,7 @@ public class AsciiHeadersParser {
                         if ( columns[j].equals(lookFor) ) {
                             logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
                             icol= j;
+                            bd.addDataSet( name, ids, idims );
                             break;
                         }
                     }
