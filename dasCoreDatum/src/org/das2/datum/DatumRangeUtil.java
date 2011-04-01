@@ -1024,8 +1024,10 @@ public class DatumRangeUtil {
                 + " to " +  efficientTime( self.max(), self.min(), self );
             } else {
                 timeOfDayFormatter.format( self.min() );
-                return TimeDatumFormatter.DAYS.format( self.min() ) + " " + timeOfDayFormatter.format( self.min() )
-                        + " to " + TimeDatumFormatter.DAYS.format( self.max() ) + " " + timeOfDayFormatter.format( self.max() );
+                String sminDay=  TimeDatumFormatter.DAYS.format( TimeUtil.prevMidnight( self.min() ) ); //grrr
+                String smaxDay=  TimeDatumFormatter.DAYS.format( self.max() );
+                return sminDay + " " + timeOfDayFormatter.format( self.min() )
+                        + " to " + smaxDay + " " + timeOfDayFormatter.format( self.max() );
             }
         }
     }
