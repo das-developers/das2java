@@ -224,6 +224,9 @@ public class SeriesRenderer extends Renderer {
 
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
+            if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
+                renderException( graphics, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
+            }
             DasPlot lparent= parent;
             if ( lparent==null ) return 0;
             if (stampPsyms && !lparent.getCanvas().isPrintingThread()) {
@@ -262,6 +265,8 @@ public class SeriesRenderer extends Renderer {
             if ( !SemanticOps.isTableDataSet(dataSet) ) {
                 if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
                     vds = DataSetOps.unbundleDefaultDataSet( ds );
+                } else if (ds.rank() != 1 ) {
+                    return;
                 } else {
                     vds = (QDataSet) dataSet;
                 }
@@ -360,6 +365,8 @@ public class SeriesRenderer extends Renderer {
             QDataSet vds;
             if ( dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
                 vds = DataSetOps.unbundleDefaultDataSet( dataSet );
+            } else if ( dataSet.rank()!=1 ) {
+                return;
             } else {
                 vds = (QDataSet) dataSet;
             }
@@ -412,6 +419,9 @@ public class SeriesRenderer extends Renderer {
         private Color color;  // override default color
 
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
+            if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
+                renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
+            }
             if (path1 == null) {
                 return 0;
             }
@@ -430,6 +440,8 @@ public class SeriesRenderer extends Renderer {
             QDataSet vds;
             if ( dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
                 vds = DataSetOps.unbundleDefaultDataSet( dataSet );
+            } else if ( dataSet.rank()!=1 ) {
+                return;
             } else {
                 vds = (QDataSet) dataSet;
             }
