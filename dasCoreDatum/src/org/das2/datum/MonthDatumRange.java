@@ -22,7 +22,6 @@ public class MonthDatumRange extends DatumRange {
         TimeUtil.toDatum( end ) );
         widthDigit= -1;
         int[] widthArr= new int[7];
-        boolean haveNonZeroDigit= false;
         for ( int i=0; i<7; i++ ) {
             widthArr[i]= end[i]-start[i];
         }
@@ -32,8 +31,12 @@ public class MonthDatumRange extends DatumRange {
         }
         for ( int i=0; i<7; i++ ) {
             if ( widthArr[i]!=0 ) {
-                if ( widthDigit!=-1 ) {
-                    throw new IllegalArgumentException("MonthDatumRange must only vary in month or year, not both");
+                if ( widthDigit==0 && i==1 ) {
+                    widthDigit=i;
+                    widthArr[1]+=widthArr[0]*12;
+                    widthArr[0]= 0;
+                } else if ( widthDigit!=-1 ) {
+                    throw new IllegalArgumentException("MonthDatumRange must only vary in month or year, not both"); //todo: why?
                 } else {
                     widthDigit=i;
                     width= widthArr[widthDigit];
