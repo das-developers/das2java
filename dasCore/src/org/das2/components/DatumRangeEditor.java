@@ -130,8 +130,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         try {
             setDatumRange( parseText( text ) );
         } catch (ParseException pe) {
-            IllegalArgumentException iae = new IllegalArgumentException(pe.getMessage());
-            iae.initCause(pe);
+            IllegalArgumentException iae = new IllegalArgumentException(pe);
             throw iae;
         }
     }
