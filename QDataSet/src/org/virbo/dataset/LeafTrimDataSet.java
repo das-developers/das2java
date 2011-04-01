@@ -39,6 +39,10 @@ public class LeafTrimDataSet extends AbstractDataSet {
             depN = new LeafTrimDataSet(depN, start, end);
         }
         properties.put(depNName, depN);
+        for ( int i=0; i<ds.rank()-1; i++ ) {
+            Object o= ds.property("DEPEND_"+i);
+            if ( o!=null ) properties.put( "DEPEND_"+i, o );
+        }
 
     }
     
@@ -71,7 +75,11 @@ public class LeafTrimDataSet extends AbstractDataSet {
         if (properties.containsKey(name)) {
             return properties.get(name);
         } else {
-            return ds.property(name);
+            if ( DataSetUtil.isInheritedProperty(name) ) {
+                return ds.property(name);
+            } else {
+                return null;
+            }
         }
     }
 
