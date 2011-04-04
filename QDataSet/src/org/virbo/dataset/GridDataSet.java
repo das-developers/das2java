@@ -7,6 +7,7 @@ package org.virbo.dataset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import org.das2.datum.Units;
 
 /**
  * grids (X,Y,Z) data into a table Z(X,Y)
@@ -41,11 +42,13 @@ public class GridDataSet extends AbstractDataSet {
      * @param slice
      */
     public void add(QDataSet slice) {
+        QDataSet bds=null;
         if ( slice.rank()==1 ) {
             double x = slice.value(0);
             double y = slice.value(1);
             double z = slice.value(2);
             add( x, y, z );
+            bds= (QDataSet)slice.property(QDataSet.BUNDLE_0);
         } else if ( slice.rank()==2 ) {
             for ( int i=0; i<slice.length(); i++ ) {
                 double x = slice.value(i,0);
@@ -53,7 +56,31 @@ public class GridDataSet extends AbstractDataSet {
                 double z = slice.value(i,2);
                 add( x, y, z );
             }
+            bds= (QDataSet)slice.property(QDataSet.BUNDLE_1);
         }
+        if ( bds!=null ) {
+            for ( int i=0;i<3;i++ ) {
+                MutablePropertyDataSet mds;
+                if ( i==0 ) {
+                    mds= x;
+                } else if ( i==1 ) {
+                    mds= y;
+                } else {
+                    mds= this;
+                } 
+                
+                Units u;
+                String s;
+                u= (Units) bds.property( QDataSet.UNITS, i );
+                if ( u!=null ) mds.putProperty(QDataSet.UNITS, u );
+                s= (String)bds.property( QDataSet.LABEL, i );
+                if ( s!=null ) mds.putProperty(QDataSet.LABEL, s );
+                s= (String)bds.property( QDataSet.TITLE, i );
+                if ( s!=null ) mds.putProperty(QDataSet.TITLE, s );
+                
+            }
+        }
+
     }
 
     public void add( double x, double y, double z ) {
@@ -96,7 +123,7 @@ public class GridDataSet extends AbstractDataSet {
         return ytags.size();
     }
 
-    QDataSet x = new AbstractDataSet() {
+    AbstractDataSet x = new AbstractDataSet() {
 
         public int rank() {
             return 1;
@@ -110,7 +137,7 @@ public class GridDataSet extends AbstractDataSet {
             return xtags.size();
         }
     };
-    QDataSet y = new AbstractDataSet() {
+    AbstractDataSet y = new AbstractDataSet() {
 
         public int rank() {
             return 1;
