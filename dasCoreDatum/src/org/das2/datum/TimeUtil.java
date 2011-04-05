@@ -665,10 +665,20 @@ public final class TimeUtil {
     public static Datum nextMonth(Datum datum) {
         return next(MONTH,datum);
     }
-    
+
+    public static Datum prevWeek( Datum datum ) {
+        TimeStruct t= toTimeStruct(datum);
+        t.day= t.day-7;
+        if ( t.day<1 ) {
+            t.month--;
+            t.day+= daysInMonth( t.month, t.year );
+        }
+        return toDatum(t);
+    }
+
     /**
      * step down the previous ordinal.  If the datum is already at an ordinal
-     * boundry, then step down by one ordinal.
+     * boundary, then step down by one ordinal.
      * @param step
      * @param datum
      * @return
@@ -678,6 +688,8 @@ public final class TimeUtil {
         TimeStruct t= toTimeStruct(datum);
         
         switch(step) {
+            case WEEK:
+                throw new IllegalArgumentException("not supported, use prevWeek");
             case YEAR:
                 t.month=1;
             case HALF_YEAR:
