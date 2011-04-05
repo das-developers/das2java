@@ -315,11 +315,22 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public double getMinimum() {
         return minimum;
     }
-    
+
+    /**
+     * return the normal position control of the bottom/right.
+     * @return
+     */
     public double getMaximum() {
         return maximum;
     }
-    
+
+    /**
+     * set the new normal location of both the min and max in one operation.
+     * @param minimum the top or left
+     * @param maximum the bottom or right
+     * @param minimum
+     * @param maximum
+     */
     private void setPosition(double minimum, double maximum) {
         double oldMin = this.minimum;
         double oldMax = this.maximum;
@@ -335,7 +346,12 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
             firePropertyChange( PROP_MAXIMUM, oldMax, this.maximum);
         }
     }
-    
+
+    /**
+     * set the new pixel location of both the min and max in one operation.
+     * @param minimum the top or left
+     * @param maximum the bottom or right
+     */
     public void setDPosition( int minimum, int maximum) {
         int pmin= getParentMin();
         int pmax= getParentMax();
@@ -362,7 +378,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
 
 
     /**
-     * set the new pixel position of the bottom/right boundry.  em and pt offsets
+     * set the new pixel position of the bottom/right boundary.  em and pt offsets
      * are not modified, and the normal position is recalculated.
      * @param maximum
      */
@@ -375,6 +391,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         setMaximum( n );
     }
     
+    /**
+     * set the normal position of the minimum of the row or column.  For a row,
+     * this is the top.  For a column, this is the left side.
+     * @param minimum
+     */
     public void setMinimum( double minimum) {
         if (minimum == this.minimum) {
             return;
@@ -390,7 +411,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     /**
-     * set the new pixel position of the top/left boundry.  em and pt offsets
+     * set the new pixel position of the top/left boundary.  em and pt offsets
      * are not modified, and the normal position is recalculated.
      * @param minimum
      */    

@@ -149,9 +149,13 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         return result;
     }
     
-    private void showErrorUsage( String text ) {
+    private void showErrorUsage( String text, String why ) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            JOptionPane.showMessageDialog( this, "Unable to parse range \""+text+"\"" );
+            if ( why!=null ) {
+                JOptionPane.showMessageDialog( this, "<html>Unable to accept \""+text+"\"<br>"+why+"<html>" );
+            } else {
+                JOptionPane.showMessageDialog( this, "<html>Unable to accept \""+text+"\"</html>" );
+            }
         }
     }
 
@@ -173,7 +177,11 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         } catch (ParseException e) {
             if ( value!=null ) {
                 setDatumRange( value ); // cause reformat of old Datum
-                showErrorUsage( text );
+                if ( UnitsUtil.isTimeLocation(value.getUnits()) ) {
+                    showErrorUsage( text, "unable to parse time range" );
+                } else {
+                    showErrorUsage( text, "unable to parse range" );
+                }
                 return value;
             } else {
                 return null;
@@ -181,7 +189,11 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         } catch ( IllegalArgumentException e ) {
             if ( value!=null ) {
                 setDatumRange( value ); // cause reformat of old Datum
-                showErrorUsage( text );
+                if ( e.getMessage().contains("min > max") ) {
+                    showErrorUsage( text, "min cannot be greater than max" );
+                } else {
+                    showErrorUsage( text, e.getMessage() );
+                }
                 return value;
             } else {
                 return null;

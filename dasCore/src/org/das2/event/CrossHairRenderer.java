@@ -272,9 +272,9 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
             report = "x:" + xAsString + nl + "y:" + yAsString;
 
-            QDataSet xds= SemanticOps.xtagsDataSet(ds);
-
             if (ds != null) {
+                QDataSet xds= SemanticOps.xtagsDataSet(ds);
+
                 if ( SemanticOps.isTableDataSet(ds) ) {
                     QDataSet tds;
                     QDataSet yds;
