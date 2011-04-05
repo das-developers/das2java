@@ -173,6 +173,10 @@ public class TimeParser {
             formatString= formatString.replaceAll("\\$", "%");
         }
 
+        if ( formatString.contains(".*") ) {
+            formatString= formatString.replaceAll("\\.\\*", "\\%\\{ignore\\}");
+        }
+        
         String[] ss = formatString.split("%");
         fc = new String[ss.length];
         qualifiers= new String[ss.length];

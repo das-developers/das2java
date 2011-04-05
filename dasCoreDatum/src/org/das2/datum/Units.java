@@ -50,6 +50,9 @@ public abstract class Units {
 
     }
 
+    /**
+     * this is left in in case legacy code needs to see the conversion from dB to dimensionless offset.
+     */
     private static final class dBConverter extends UnitsConverter {
         public double convert(double value) {
             return 10 * Math.log10(value);
