@@ -100,7 +100,9 @@ public class DigitalRenderer extends Renderer {
         int ixmin;
 
         QDataSet wds;
-        if ( dataSet.rank()==1 ) {
+        if ( dataSet.rank()==0 ) {
+            wds= SemanticOps.weightsDataSet(dataSet);
+        } else if ( dataSet.rank()==1 ) {
             wds= SemanticOps.weightsDataSet(dataSet);
         } else if ( SemanticOps.isSimpleTableDataSet(dataSet) ) {
             wds= SemanticOps.weightsDataSet(DataSetOps.slice1(dataSet,0));
@@ -176,11 +178,47 @@ public class DigitalRenderer extends Renderer {
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         g.setColor(color);
-        if ( ! SemanticOps.isTableDataSet(ds) ) {
+        if ( ds==null ) {
+            if ( getLastException()!=null ) {
+                renderException(g, xAxis, yAxis, lastException);
+            }
+            return;
+        }
+        if ( ds.rank()==0 || ( ds.rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
+            renderRank0( ds, g, xAxis, yAxis, mon);
+        } else if ( ! SemanticOps.isTableDataSet(ds) ) {
             renderRank1( ds, g, xAxis, yAxis, mon);
         } else {
             renderRank2( ds, g, xAxis, yAxis, mon);
         }
+    }
+
+    private void renderRank0( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        StringBuilder sb= new StringBuilder();
+        if ( ds.rank()==0 ) {
+            String label= (String)ds.property( QDataSet.LABEL );
+            if ( label==null ) {
+                label= (String) ds.property( QDataSet.NAME );
+            }
+            if ( label!=null ) {
+                sb.append(label).append( "=");
+            }
+            sb.append( DataSetUtil.asDatum(ds).toString() );
+        } else {
+            for ( int i=0; i<Math.min(4,ds.length()); i++ ) {
+                if ( i>0 ) sb.append(", ");
+                QDataSet ds1= DataSetOps.unbundle(ds, i);
+                String label= (String)ds1.property( QDataSet.LABEL );
+                if ( label==null ) {
+                    label= (String) ds1.property( QDataSet.NAME );
+                }
+                if ( label!=null ) {
+                    sb.append(label).append( "=");
+                } 
+                sb.append(  DataSetUtil.asDatum(ds1).toString() );
+            }
+        }
+        parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
     }
 
     private void renderRank1( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
@@ -322,7 +360,13 @@ public class DigitalRenderer extends Renderer {
 
     @Override
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
-        updateFirstLast( xAxis, yAxis, getDataSet() );
+        QDataSet ds= getDataSet();
+        if ( ds==null ) return;
+        if ( ds.rank()==0 || ( getDataSet().rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
+            // nothin
+        } else {
+            updateFirstLast( xAxis, yAxis, ds );
+        }
     }
 
 
