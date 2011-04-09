@@ -148,7 +148,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * null dataset, firstValid and lastValid are set to 0.
      */
     private void updateFirstLastValid() {
-        if ( ds==null ) {
+        if ( ds==null || ds.rank()==0 ) {
             firstValidIndex=0;
             lastValidIndex=0;
             return;
