@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.Basis;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.NumberUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
@@ -207,6 +208,21 @@ public class SemanticOps {
         }
     }
 
+    public static boolean isRank1Bundle(QDataSet ds) {
+        if ( ds.rank()!=1 ) return false;
+        if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
+            return true;
+        } else {
+            QDataSet dep= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            Units depu= getUnits(dep);
+            if ( depu instanceof EnumerationUnits ) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    
     /**
      * Test for bundle scheme.  Returns true if the BUNDLE_1 is set.
      * @param ds
