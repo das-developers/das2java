@@ -7,6 +7,10 @@
 
 package org.virbo.math.fft;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
 import org.das2.datum.UnitsUtil;
@@ -75,6 +79,16 @@ public class WaveformToSpectrum {
             for ( int i=st; i<en; i++ ) {
                 double rr= ( ( ds.value(i) - base ) / delta ) % 1.;
                 if ( rr > 0.01 && rr < 0.09 ) {
+                    try {
+                        PrintWriter fw = new PrintWriter("/tmp/foo.dat");
+                        for ( int ii=st; ii<en; ii++ ) {
+                            fw.printf( "%6d %16.12f %16.12qf\n", ii, ds.value(ii), ds.value(ii)-base );
+                        }
+                        fw.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(WaveformToSpectrum.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
                     return false;
                 }
             }
@@ -189,7 +203,7 @@ public class WaveformToSpectrum {
         Units xUnits;
         Units xOffsetUnits;
 
-        QDataSet xvds= (QDataSet) vds.property(QDataSet.DEPEND_0);
+        QDataSet xvds= SemanticOps.xtagsDataSet( vds );
 
         xUnits= SemanticOps.getUnits(xvds);
         xOffsetUnits= xUnits.getOffsetUnits();

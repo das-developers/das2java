@@ -817,7 +817,7 @@ public class DataSetOps {
         }
 
         if ( bundle.rank()==1 ) { //simple legacy bundle was once DEPEND_1.
-            MutablePropertyDataSet result= DataSetOps.slice1(bundleDs,ib);
+            MutablePropertyDataSet result= bundleDs.rank()==2 ? DataSetOps.slice1(bundleDs,ib) : DataSetOps.slice0(bundleDs,ib);
             Units enumunits= (Units) bundle.property(QDataSet.UNITS);
             if ( enumunits==null ) enumunits= Units.dimensionless;
             String label=  String.valueOf(enumunits.createDatum(bundle.value(ib)));
