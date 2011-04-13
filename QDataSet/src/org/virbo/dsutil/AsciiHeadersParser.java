@@ -429,6 +429,9 @@ public class AsciiHeadersParser {
             putProperty( QDataSet.LABEL, i, name );
             putProperty( QDataSet.NAME, i, name );
             putProperty( QDataSet.START_INDEX, i, i );
+            if ( qube.length>0 ) {
+                putProperty( QDataSet.QUBE, i, Boolean.TRUE );
+            }
             qubes.put( name, qube );
             
         }
