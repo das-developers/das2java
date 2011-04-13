@@ -91,6 +91,13 @@ public interface QDataSet {
     public final static String BUNDLE_0="BUNDLE_0";
     
     /**
+     * type Integer.  Only found in a bundle descriptor (BUNDLE_0 or BUNDLE_1), this returns the integer
+     * index of the start of the current dataset.  If this is null, then the index used to access
+     * the value may be used.  (E.g. a bundle of Rank 1 datasets.)
+     */
+    public final static String START_INDEX="START_INDEX";
+
+    /**
      * type String.  This comma-delimited list of keywords that describe the boundary
      * type for each column.  For example, "min,max" or "c95min,mean,c95max"  A bins dimension
      * doesn't add a physical dimension.
