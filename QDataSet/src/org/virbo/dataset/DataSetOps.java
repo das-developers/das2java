@@ -692,6 +692,7 @@ public class DataSetOps {
      * @param bundleDs
      * @param name
      * @see unbundle( QDataSet bundleDs, int ib )
+     * @throws IllegalArgumentException if no named dataset is found.
      * @return
      */
     public static QDataSet unbundle( QDataSet bundleDs, String name ) {
@@ -764,7 +765,8 @@ public class DataSetOps {
      *
      *
      * @param aThis
-     * @param ib index of the dataset to extract
+     * @param ib index of the dataset to extract. If the index is within a dataset,
+     *   then the entire dataset is returned.
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
      * @return
@@ -824,38 +826,33 @@ public class DataSetOps {
             result.putProperty(QDataSet.NAME, label ); //TODO: make safe java-identifier eg: org.virbo.dsops.Ops.safeName(label)
             result.putProperty(QDataSet.LABEL, label );
             return result;
+        } else if ( bundle.rank()==2 ) {
+
+        } else {
+            throw new IllegalArgumentException("rank limit: >2 not supported");
         }
 
-        String[] names= new String[bundle.length()];
-        int[] offsets= new int[bundle.length()];
-        int[] lens= new int[bundle.length()];
-
-        int idx=0;
-        for ( int j=0; j<bundle.length(); j++ ) {
-            names[j]= (String) bundle.property( QDataSet.NAME, j );
-            offsets[j]= idx;
-            int n= 1;
-            for (int k = 0; k < bundle.length(j); k++) {
-                 n *= bundle.value(j, k);
-            }
-            lens[j]= n;
-            idx+= n;
+        Integer s= (Integer)bundle.property(QDataSet.START_INDEX,ib);
+        if ( s==null ) s= ib;
+        int is= s.intValue();
+        int n=1;
+        for (int k = 0; k < bundle.length(is); k++) {
+             n *= bundle.value(is, k);
         }
-
+        int len= n;
         int j= ib;
-        int n= lens[j];
 
         if ( bundle.length(j)==0 ) {
             if ( bundleDs instanceof BundleDataSet ) {
-                QDataSet r= ((BundleDataSet)bundleDs).unbundle(offsets[j]); //TODO: check rank 0
+                QDataSet r= ((BundleDataSet)bundleDs).unbundle(j);
                 return r;
             } else {
                 MutablePropertyDataSet result=null;
                 // DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
                 if ( bundleDs.rank()==1 ) {
-                    result= DataSetOps.makePropertiesMutable( bundleDs.slice(offsets[j]) );
+                    result= DataSetOps.makePropertiesMutable( bundleDs.slice(j) );
                 } else if ( bundleDs.rank()==2 ) {
-                    result= new Slice1DataSet( bundleDs, offsets[j], true );
+                    result= new Slice1DataSet( bundleDs, j, true );
                 }
 
                 String[] names1= DataSetUtil.dimensionProperties();
@@ -870,7 +867,7 @@ public class DataSetOps {
         } else if ( bundle.length(j)==1 ) {
             if ( bundleDs.rank()==1 ) throw new IllegalArgumentException("not implemented for rank 0, slice is rank 1");
             TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
-            result.setTrim( 1, offsets[j], offsets[j]+lens[j], 1 );
+            result.setTrim( 1, is, is+len, 1 );
             Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,j) );
             DataSetUtil.putProperties( props, result );
             String[] testProps= new String[] { QDataSet.DEPEND_0, QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.PLANE_0 };
@@ -879,9 +876,12 @@ public class DataSetOps {
                 Object dep0= result.property(prop);
                 if ( dep0!=null ) {
                     if ( dep0 instanceof String ) {
-                        idx= Arrays.asList(names).indexOf(dep0);
-                        if ( idx==-1 ) throw new IllegalArgumentException("unable to find DEPEND_0 reference to \""+dep0+"\"");
-                        result.putProperty( prop, unbundle(bundleDs,idx) );
+                        try {
+                            QDataSet dep0ds= unbundle( bundleDs, (String)dep0 );
+                            result.putProperty( prop, dep0ds );
+                        } catch ( IllegalArgumentException ex ) {
+                            throw new IllegalArgumentException("unable to find DEPEND_0 reference to \""+dep0+"\"");
+                        }
                     }
                 }
             }
