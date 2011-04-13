@@ -53,6 +53,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                 putProperty( QDataSet.DEPEND_0, dep1 );
             }
             putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_1 ) );
+            putProperty( QDataSet.BUNDLE_1, null );
             putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_1 ) );
             putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
             putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
