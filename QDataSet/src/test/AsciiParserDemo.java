@@ -17,6 +17,8 @@ import org.das2.datum.TimeParser;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.AsciiParser;
 
@@ -70,6 +72,12 @@ public class AsciiParserDemo {
         parser.setKeepFileHeader(true);
         parser.setDelimParser(new InputStreamReader( new FileInputStream( sfile ) ), "\\s+");
         WritableDataSet ds = parser.readStream(new InputStreamReader( new FileInputStream( sfile ) ), new NullProgressMonitor() );
+
+        QDataSet rgeo= DataSetOps.unbundle( ds, "Rgeo" );
+        System.err.println(rgeo);
+
+        QDataSet ii= DataSetOps.unbundle( ds, "I" );
+        System.err.println(ii);
 
     }
 
