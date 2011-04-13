@@ -2045,6 +2045,12 @@ public class Ops {
 
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
+            QDataSet dep0ds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+
+            if ( c==null && dep0ds!=null ) {
+                c= dep0ds.slice(0);
+            }
+
             JoinDataSet dep0=null;
             Units dep0u=null;
             JoinDataSet jds= new JoinDataSet(ds);
@@ -2054,6 +2060,7 @@ public class Ops {
                 if ( dep0u!=null ) {
                     dep0.putProperty( QDataSet.UNITS, dep0u );
                     jds.putProperty( QDataSet.DEPEND_0, dep0 );
+                    jds.putProperty( QDataSet.DEPEND_1, Ops.subtract( dep0ds, c ) );
                 }
             }
 
@@ -2118,6 +2125,9 @@ public class Ops {
             if (dep0!=null ) {
                 dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
                 result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+            } 
+            if (dep1!=null ) {
+                result.putProperty(QDataSet.DEPEND_1, dep1.trim(0,len) );
             }
 
             return result;
