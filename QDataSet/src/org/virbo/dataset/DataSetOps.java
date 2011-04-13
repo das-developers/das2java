@@ -999,6 +999,16 @@ public class DataSetOps {
                 } else {
                     fillDs= Ops.fftPower(fillDs);
                 }
+            } else if ( cmd.equals("|hanning") ) {
+                if ( fillDs.length()>0 ) {
+                    if ( s.hasNextInt() ) {
+                        int len= s.nextInt();
+                        fillDs= Ops.fftFilter( fillDs, len, Ops.FFTFilterType.Hanning );
+                    } else {
+                        throw new IllegalArgumentException("expected argument to hanning filter");
+                    }
+                }
+
             } else if ( cmd.equals("|unbundle" ) ) {
                 String comp= s.next();
                 if ( comp.startsWith("'") && comp.endsWith("'") ) {
