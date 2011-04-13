@@ -37,7 +37,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             // special case where we are pulling out a table, this used to be a runtime exception
             putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index, false ));
             putProperty( QDataSet.DEPEND_1, new Slice0DataSet(dep1, index, false )); //TODO: really?  We need to think about this...
-        } else if ( DataSetUtil.isQube(ds) || ds.property(QDataSet.DEPEND_1)!=null ) { //DEPEND_1 rank 1 implies qube
+        } else if ( DataSetUtil.isQube(ds) || dep1!=null ) { //DEPEND_1 rank 1 implies qube
             if ( addContext ) {
                 if ( dep0!=null ) {
                     DataSetUtil.addContext( this, new Slice0DataSet( dep0, index, false ) );
@@ -52,6 +52,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             } else if ( ds.rank()>1 && dep1!=null ) {
                 putProperty( QDataSet.DEPEND_0, dep1 );
             }
+            putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_1 ) );
             putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_1 ) );
             putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
             putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
