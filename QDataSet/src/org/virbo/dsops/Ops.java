@@ -2034,6 +2034,104 @@ public class Ops {
         return wds;
     }
 
+    public static enum FFTFilterType{ Hanning };
+
+    public static QDataSet fftFilter( QDataSet ds, int len, FFTFilterType filt ) {
+        ProgressMonitor mon=null;
+
+        if ( mon==null ) {
+            mon= new NullProgressMonitor();
+        }
+
+        if ( ds.rank()==1 ) { // wrap to make rank 2
+            QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
+            JoinDataSet dep0=null;
+            Units dep0u=null;
+            JoinDataSet jds= new JoinDataSet(ds);
+            if ( c!=null && c.rank()==0 ) {
+                dep0u= (Units) c.property(QDataSet.UNITS);
+                dep0= new JoinDataSet(c);
+                if ( dep0u!=null ) {
+                    dep0.putProperty( QDataSet.UNITS, dep0u );
+                    jds.putProperty( QDataSet.DEPEND_0, dep0 );
+                }
+            }
+
+            ds= jds;
+        }
+
+        if ( ds.rank()==3 ) { // slice it and do the process to each branch.
+            JoinDataSet result= new JoinDataSet(3);
+            mon.setTaskSize( ds.length()*10  );
+            mon.started();
+            for ( int i=0; i<ds.length(); i++ ) {
+                mon.setTaskProgress(i*10);
+                QDataSet pow1= fftFilter( ds.slice(i), len, filt );
+                result.join(pow1);
+            }
+            mon.finished();
+            return result;
+
+        } else if ( ds.rank()==2 ) {
+            JoinDataSet result= new JoinDataSet(2);
+            result.putProperty(QDataSet.JOIN_0, null);
+
+            int nsam= ds.length()*(ds.length(0)/len); // approx
+            DataSetBuilder dep0b= new DataSetBuilder(1,nsam );
+
+            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+
+            UnitsConverter uc= UnitsConverter.IDENTITY;
+
+            QDataSet filter;
+            if ( filt==FFTFilterType.Hanning ) {
+                filter= FFTUtil.getWindowHanning(len);
+            } else {
+                throw new UnsupportedOperationException("unsupported op: "+filt );
+            }
+
+            mon.setTaskSize(ds.length());
+            mon.started();
+            mon.setProgressMessage("performing fftFilter");
+            for ( int i=0; i<ds.length(); i++ ) {
+                for ( int j=0; j<ds.length(i)/len; j++ ) {
+
+                    QDataSet wave= ds.slice(i).trim(j*len,(j+1)*len );
+
+                    QDataSet vds= Ops.multiply( wave, filter );
+                    result.join(vds);
+
+                    if ( dep0!=null && dep1!=null ) {
+                        dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
+                        dep0b.nextRecord();
+                    } else if ( dep0!=null ) {
+                        dep0b.putValue(-1, dep0.value(i) );
+                        dep0b.nextRecord();
+                    } else {
+                        dep0b= null;
+                    }
+                }
+                mon.setTaskProgress(i);
+            }
+            mon.finished();
+            if (dep0!=null ) {
+                dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+                result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+            }
+
+            return result;
+
+        } else {
+            throw new IllegalArgumentException("rank not supported: "+ ds.rank() );
+        }
+
+    }
+
+    public static QDataSet hanning( QDataSet ds, int len ) {
+        return fftFilter(  ds, len, FFTFilterType.Hanning );
+    }
+
     /**
      * create a power spectrum on the dataset by breaking it up and
      * doing ffts on each segment.
@@ -2041,7 +2139,7 @@ public class Ops {
      * right now only rank 2 data is supported, but there is no reason that
      * rank 1 shouldn't be supported.
      *
-     * Looks for PLANE_0.USER_PROPERTIES.FFT_Translation, which should
+     * Looks for DEPEND_1.USER_PROPERTIES.FFT_Translation, which should
      * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
      * to the DEPEND_0 dimension.
      * 
