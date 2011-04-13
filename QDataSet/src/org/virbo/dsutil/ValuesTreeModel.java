@@ -107,7 +107,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
     public static MutableTreeNode valuesTreeNode( String prefix, MutableTreeNode aroot, QDataSet ds, int sizeLimit ) {
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
-        QDataSet bundle= (QDataSet)ds.property( QDataSet.BUNDLE_1 );
+        QDataSet bundle= (QDataSet)ds.property( QDataSet.BUNDLE_0 );
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         QDataSet wdsDep0= null;
@@ -151,6 +151,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
                     MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
                     aroot.insert( sliceNode, aroot.getChildCount() );
+                    MutableTreeNode childSlice= valuesTreeNode( "  " + i+",", sliceNode, DataSetOps.slice0(ds, i), 20 );
                 }
             }
             if ( ds.length()>=sizeLimit ) {
