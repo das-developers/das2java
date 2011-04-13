@@ -1165,6 +1165,22 @@ public class DataSetUtil {
     }
 
     /**
+     * returns 1 for zero-length qube, the product otherwise.
+     * @param qube
+     * @return
+     */
+    public static int product( int[] qube ) {
+        switch ( qube.length ) {
+            case 0: return 1;
+            case 1: return qube[0];
+            case 2: return qube[0]*qube[1];
+            case 3: return qube[0]*qube[1]*qube[2];
+            case 4: return qube[0]*qube[1]*qube[2]*qube[3];
+            default: throw new IllegalArgumentException("qube is too long");
+        }
+    }
+
+    /**
      * add QUBE property to dataset, maybe verifying that it is a qube.  This is
      * intended to reduce code that builds datasets, not to verify that a dataset
      * is a qube.
