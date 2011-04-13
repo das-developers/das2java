@@ -151,7 +151,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
                     MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
                     aroot.insert( sliceNode, aroot.getChildCount() );
-                    MutableTreeNode childSlice= valuesTreeNode( "  " + i+",", sliceNode, DataSetOps.slice0(ds, i), 20 );
+                    MutableTreeNode childSlice= valuesTreeNode( prefix + i+",", sliceNode, DataSetOps.slice0(ds, i), 20 );
                 }
             }
             if ( ds.length()>=sizeLimit ) {
