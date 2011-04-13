@@ -260,7 +260,7 @@ public class AsciiHeadersParser {
                         if ( icol>-1 ) {
                             dsNames.put( ids, name );
                             dsToPosition.put( name, icol );
-                            ids++;
+                            ids+= DataSetUtil.product(idims);
                         }
 
                         for ( int j=0; j<total;j++ ) {
@@ -303,7 +303,7 @@ public class AsciiHeadersParser {
                     if ( icol>-1 ) {
                        dsNames.put( ids, name );
                        dsToPosition.put( name, icol );
-                       ids++;
+                       ids+= DataSetUtil.product(idims);
                     }
 
                     for ( int j=0; j<total;j++ ) {
@@ -420,11 +420,17 @@ public class AsciiHeadersParser {
          * @param qube the dimensions or null for rank 1 data, e.g. vector= [3]
          */
         protected void addDataSet( String name, int i, int[] qube ) {
+            System.err.println( String.format( "addDataSet %s %d %d", name, i, DataSetUtil.product(qube) ) );
+            int len= DataSetUtil.product(qube);
             datasets.put( name, i );
-            datasets2.put( i, name );
-            qubes.put( name, qube );
+            for ( int j=0; j<len; j++ ) {
+                datasets2.put( i+j, name );
+            }
             putProperty( QDataSet.LABEL, i, name );
             putProperty( QDataSet.NAME, i, name );
+            putProperty( QDataSet.START_INDEX, i, i );
+            qubes.put( name, qube );
+            
         }
 
         public int rank() {
@@ -433,7 +439,7 @@ public class AsciiHeadersParser {
 
         @Override
         public int length() {
-            return datasets.size();
+            return datasets2.size();
         }
 
         @Override
@@ -448,8 +454,10 @@ public class AsciiHeadersParser {
         }
 
         @Override
-        public Object property(String name, int i) {
+        public Object property(String name, int ic) {
             synchronized (this) {
+                String dsname= datasets2.get(ic);
+                int i= datasets.get(dsname);
                 Map<String,Object> props1= props.get(i);
                 if ( props1==null ) {
                     return null;
@@ -460,7 +468,9 @@ public class AsciiHeadersParser {
         }
 
         @Override
-        public synchronized void putProperty( String name, int i, Object v ) {
+        public synchronized void putProperty( String name, int ic, Object v ) {
+            String dsname= datasets2.get(ic);
+            int i= datasets.get(dsname);
             Map<String,Object> props1= props.get( i );
             if ( props1==null ) {
                 props1= new LinkedHashMap<String,Object>();
@@ -516,14 +526,14 @@ public class AsciiHeadersParser {
             while ( i< this.length() ) {
                 if ( positionToDs.containsKey(column) ) {
                     String name= positionToDs.get(column);
-                    if ( name.equals("I") ) {
-                        System.err.println("Hello I");
-                    }
                     int oldIndex= datasets.get(name);
-                    newb.addDataSet( name, i, qubes.get(name) );
+                    int[] qube= qubes.get(name);
+                    int len= DataSetUtil.product( qube );
+                    newb.addDataSet( name, i, qube );
                     Map<String,Object> pp= props.get( oldIndex );
+                    pp.put( QDataSet.START_INDEX, i );
                     newb.props.put( i, pp ); // danger: shallow copy
-                    i++;
+                    i+= len;
                 }
                 column++;
             }
