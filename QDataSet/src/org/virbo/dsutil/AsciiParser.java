@@ -746,23 +746,14 @@ public class AsciiParser {
                 AsciiHeadersParser.BundleDescriptor bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
                 builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
 
-                int i=0;
                 for ( int j=0; j<bundleDescriptor.length(); j++ ) {
                     Units u= (Units) bundleDescriptor.property( QDataSet.UNITS, j );
-                    int rank= bundleDescriptor.length(j);
-                    int len= 1;
-                    for ( int k=0; k<rank; k++ ) {
-                        len*= bundleDescriptor.value(j,k);
-                    }
-                    for ( int k=0; k<len; k++ ) {
-                        if ( u!=null ) {
-                            this.fieldParsers[i]= UNITS_PARSER;
-                            this.units[i]= u;
-                        }
-                        i++;
+                    if ( u!=null ) {
+                        this.fieldParsers[j]= UNITS_PARSER;
+                        this.units[j]= u;
                     }
                 }
-                if ( i!=this.fieldParsers.length ) {
+                if ( bundleDescriptor.length()!=this.fieldParsers.length ) {
                     System.err.println("lengths check didn't work out");
                 }
 
