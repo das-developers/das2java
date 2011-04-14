@@ -420,7 +420,6 @@ public class AsciiHeadersParser {
          * @param qube the dimensions or null for rank 1 data, e.g. vector= [3]
          */
         protected void addDataSet( String name, int i, int[] qube ) {
-            System.err.println( String.format( "addDataSet %s %d %d", name, i, DataSetUtil.product(qube) ) );
             int len= DataSetUtil.product(qube);
             datasets.put( name, i );
             for ( int j=0; j<len; j++ ) {
@@ -617,15 +616,11 @@ public class AsciiHeadersParser {
             Iterator it= jo.keys();
             for ( ; it.hasNext(); ) {
                  String key= (String) it.next();
-                 if ( key.equals("I") ) {
-                     System.out.println("Here is I");
-                 }
                  Object o= jo.get(key);
                  if ( !( o instanceof JSONObject ) ) {
                      System.err.println("expected JSONObject for value: "+key );
                      continue;
                  } else {
-                     System.err.println("KEY: "+key);
                      int ids= bd.indexOf( key ); 
                      if ( ids==-1 ) {
                          logger.log(Level.WARNING, "metadata found for key {0}, but this is not found in the ascii file parser", key);
