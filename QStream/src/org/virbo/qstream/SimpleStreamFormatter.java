@@ -800,13 +800,17 @@ public class SimpleStreamFormatter {
                     if (depi != null) {
                         PacketDescriptor pd;
 
+                        List<QDataSet> retireBundleDep1= new ArrayList();
                         for ( int j=0; j<depi.length(); j++ ) {
                             QDataSet dep1= (QDataSet) depi.property(QDataSet.DEPEND_1, j );
                             if ( dep1!=null ) {
-                                pd = doPacketDescriptor(sd, dep1, false, true, 1, null);
-                                sd.addDescriptor(pd);
-                                depPackets.add(pd);
-                                sd.send(pd, out);
+                                if ( !retireBundleDep1.contains(dep1) ) {
+                                    pd = doPacketDescriptor(sd, dep1, false, true, 1, null);
+                                    sd.addDescriptor(pd);
+                                    depPackets.add(pd);
+                                    sd.send(pd, out);
+                                    retireBundleDep1.add(dep1);
+                                }
                             }
                         }
                         
