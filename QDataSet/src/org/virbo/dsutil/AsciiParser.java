@@ -742,7 +742,8 @@ public class AsciiParser {
 
         if ( doJSON ) {
             try {
-                System.err.println( "== JSON Header == \n"+header );
+                //System.err.println( "== JSON Header == \n"+header );
+                System.err.println("Parsing Rich JSON Header...");
                 AsciiHeadersParser.BundleDescriptor bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
                 builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
 
