@@ -98,7 +98,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
                     System.err.println("DEPEND_0 is incorrect length, its length is "+dep0.length()+ " should be "+this.length() );
                 }
             } else if ( value instanceof String ) {
-                System.err.println("Use DEPENDNAME_0 instead of DEPEND_0");
+                System.err.println("Use DEPENDNAME_1 instead of DEPEND_1");
             }
         }
     }
