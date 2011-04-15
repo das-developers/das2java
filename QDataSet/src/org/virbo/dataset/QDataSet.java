@@ -334,6 +334,21 @@ public interface QDataSet {
      */
     public final static String SOURCE="SOURCE";
 
+    /** Bundle Descriptor properties */
+
+    /**
+     * String, the name of another dataset in the bundle descriptor.  Before this was introduced,
+     * a BundleDescriptor could have DEPEND_0 be a string.
+     */
+    public final static String DEPENDNAME_0="DEPENDNAME_0";
+
+    /**
+     * String, the name of another dataset in the bundle descriptor.  Before this was introduced,
+     * a BundleDescriptor could have DEPEND_1 be a string.  Note this should only be used if
+     * DEPEND_1 is rank 2, otherwise the dataset should be a property of DEPEND_1.  
+     */
+    public final static String DEPENDNAME_1="DEPENDNAME_1";
+
     /**
      * Map<String,Object> representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
