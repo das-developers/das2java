@@ -40,10 +40,26 @@ import org.virbo.dataset.SemanticOps;
  */
 public class AsciiHeadersParser {
 
+    /**
+     * property for dimension of the data defining rank and qube dims. For example,
+     *   "[]" (default}
+     *   "[3]" (three element vector)
+     *   "[20,30]" (qube of 60 elements).
+     */
     public static final String PROP_DIMENSION = "DIMENSION";
-    public static final String PROP_ELEMENTS = "ELEMENTS";
 
-    private static final Logger logger= Logger.getLogger("org.virbo.dsutil.AsciiHeadersParser");
+    /**
+     * NAME identifier to assign to each column of the parameter.  These should follow QDataSet NAME rules.
+     * This is always a 1-D array.
+     */
+    public static final String PROP_ELEMENT_NAMES = "ELEMENT_NAMES";
+
+    /**
+     * Human-readable label for each column of the parameter.
+     */
+    public static final String PROP_ELEMENT_LABELS = "ELEMENT_LABELS";
+
+    private static final Logger logger= Logger.getLogger("virbo.dataset.AsciiHeadersParser");
     
     char commented= '?'; // tri-state: '?' 'T' 'F'
 
@@ -182,6 +198,14 @@ public class AsciiHeadersParser {
 
     }
 
+    private static String[] toStringArray( JSONArray ja ) throws JSONException {
+        String[] result= new String[ ja.length() ];
+        for ( int i=0; i<result.length; i++ ) {
+            result[i]= ja.getString(i);
+        }
+        return result;
+    }
+
     /**
      * calculate the bundle descriptor, possibly folding together columns to create
      * high rank datasets.
@@ -202,6 +226,7 @@ public class AsciiHeadersParser {
         String[] names= JSONObject.getNames(jo);
         for ( int ivar=0; ivar<names.length; ivar++ ) {
             String name= names[ivar];
+            logger.setLevel( Level.ALL );
             logger.log( Level.FINE, "processing name[{0}]={1}", new Object[]{ivar, name});
             try {
                 JSONObject jo1= jo.getJSONObject(name);
@@ -229,28 +254,62 @@ public class AsciiHeadersParser {
                     total*= idims[j];
                 }
 
-                if ( jo1.has(PROP_ELEMENTS) ) {
-                    Object oelements= jo1.get( PROP_ELEMENTS );
+                String[] labels=null;
+                if ( jo1.has( PROP_ELEMENT_LABELS ) ) {
+                    Object olabels= jo1.get( PROP_ELEMENT_LABELS );
+                    if ( olabels instanceof JSONArray ) {
+                        labels= toStringArray((JSONArray)olabels);
+                    } else {
+                        logger.log(Level.INFO, "unable to use ELEMENT_LABELS in {0}, should be array", name);
+                    }
+                }
+                String[] elementNames= null;
+                if ( jo1.has( PROP_ELEMENT_NAMES ) ) {
+                    Object oelements= jo1.get( PROP_ELEMENT_NAMES );
                     if ( oelements instanceof JSONArray ) {
-                        JSONArray elements= (JSONArray)oelements;
-                        String lookFor= elements.getString(0);
+                        elementNames= toStringArray((JSONArray)oelements);
+                    } else {
+                        logger.log(Level.INFO, "unable to use ELEMENT_NAMES in {0}, should be array", name);
+                    }
+                }
+
+                if ( elementNames!=null ) { //TODO: eliminate repeated code.
+                        String lookFor= elementNames[0]; //Note ELEMENT_NAMES must correspond to adjacent columns.
                         int icol= -1;
+                        int count= 0;
                         for ( int j=0; j<columns.length; j++ ) {
                             if ( columns[j].equals(lookFor) ) {
                                 logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
-                                icol= j;
-                                bd.addDataSet( name, ids, idims );
-                                break;
+                                if ( count==0 ) icol= j;
+                                count++;
                             }
                         }
-                        if ( icol==-1 ) {
+                        if ( icol!=-1 ) {
+                            if ( count>1 ) {
+                                logger.log(Level.WARNING, "Multiple columns have label \"{0}\"", lookFor);
+                                if ( jo1.has("START_COLUMN") ) {
+                                    icol=  jo1.getInt("START_COLUMN");
+                                    logger.log( Level.FINE, "using START_COLUMN={1} property for {0}", new Object[]{lookFor, icol } );
+                                } else {
+                                    logger.log( Level.FINE, "using first column ({1}) for {0}", new Object[]{lookFor, icol } );
+                                }
+                                bd.addDataSet( name, ids, idims, elementNames, labels );
+                            } else {
+                                if ( jo1.has("START_COLUMN") ) {
+                                    logger.log( Level.FINE, "ignoring START_COLUMN property for {0}", new Object[]{lookFor } );
+                                }
+                                bd.addDataSet( name, ids, idims, elementNames, labels );
+                            }
+                        } else {
                             if ( jo1.has("START_COLUMN") ) {
                                 icol=  jo1.getInt("START_COLUMN");
                                 logger.log( Level.FINE, "using START_COLUMN={1} property for {0}", new Object[]{lookFor, icol } );
-                                bd.addDataSet( name, ids, idims );
+                                bd.addDataSet( name, ids, idims, elementNames, labels );
                             } else {
                                 if ( jo1.has("VALUES") ) {
-                                    bd.addDataSet( lookFor, getDataSet( jo1, jo1.getJSONArray("VALUES"), idims ) );
+                                    QDataSet vv= getDataSet( jo1, jo1.getJSONArray("VALUES"), idims );
+                                    //TODO: we have to ignore ELEMENT_NAMES and ELEMENT_LABELS for now, there's no place in QDataSet for them.
+                                    bd.addDataSet( name, vv );
                                 } else {
                                     throw new IllegalArgumentException("Couldn't find column starting with: "+lookFor);
                                 }
@@ -262,18 +321,17 @@ public class AsciiHeadersParser {
                             dsToPosition.put( name, icol );
                             ids+= DataSetUtil.product(idims);
                         }
-
-                        for ( int j=0; j<total;j++ ) {
-                            if ( !columns[icol+j].equals(elements.getString(j) ) ) { //TODO: verify this code.
-                                throw new IllegalArgumentException("Expected JSON array to contain "+columns[icol+j]+" in ELEMENTS at index= "+(icol+j) );
+                        
+                        if ( icol>-1 ) {
+                            for ( int j=0; j<total;j++ ) {
+    //                            if ( !columns[icol+j].equals(elementNames[j] ) ) { //TODO: verify this code.
+    //                                throw new IllegalArgumentException("Expected JSON array to contain "+columns[icol+j]+" in ELEMENTS at index= "+(icol+j) );
+    //                            }
+                                snames[icol+j]= name;
                             }
-                            snames[icol+j]= name;
                         }
-                        if ( total!=elements.length() ) throw new IllegalArgumentException("expected "+total+" items in ELEMENTS" );
+                        if ( total!=elementNames.length ) throw new IllegalArgumentException("expected "+total+" items in ELEMENTS" );
 
-                    } else {
-                        throw new IllegalArgumentException("Expected array for ELEMENTS in "+name );
-                    }
                 } else {
                     String lookFor= name;
                     int icol= -1;
@@ -281,7 +339,7 @@ public class AsciiHeadersParser {
                         if ( columns[j].equals(lookFor) ) {
                             logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
                             icol= j;
-                            bd.addDataSet( name, ids, idims );
+                            bd.addDataSet( name, ids, idims, elementNames, labels );
                             break;
                         }
                     }
@@ -292,7 +350,7 @@ public class AsciiHeadersParser {
                             bd.addDataSet( name, ids, idims );
                         } else {
                             if ( jo1.has("VALUES") ) {
-                                bd.addDataSet( lookFor, getDataSet( jo1, jo1.getJSONArray("VALUES"), idims ) );
+                                bd.addDataSet( name, getDataSet( jo1, jo1.getJSONArray("VALUES"), idims ) );
                                 continue;
                             } else {
                                 throw new IllegalArgumentException("Couldn't find column starting with: "+lookFor);
@@ -306,12 +364,14 @@ public class AsciiHeadersParser {
                        ids+= DataSetUtil.product(idims);
                     }
 
-                    for ( int j=0; j<total;j++ ) {
-                        if ( snames[icol+j]!=null ) {
-                            // it might be nice to allow two variables to use a column. (e.g. virtual variables)
-                            throw new IllegalArgumentException("column "+(icol+j)+" is already used by "+snames[icol+j]+", cannot be used by " +name );
+                    if ( icol>-1 ) {
+                        for ( int j=0; j<total;j++ ) {
+                            if ( snames[icol+j]!=null ) {
+                                // it might be nice to allow two variables to use a column. (e.g. virtual variables)
+                                throw new IllegalArgumentException("column "+(icol+j)+" is already used by "+snames[icol+j]+", cannot be used by " +name );
+                            }
+                            snames[icol+j]= name;
                         }
-                        snames[icol+j]= name;
                     }
                 }
 
@@ -409,7 +469,6 @@ public class AsciiHeadersParser {
             }
         }
 
-
         /**
          * add the named dataset with the dimensions.  Note qube
          * doesn't include the first dimension, and this may be null for
@@ -420,6 +479,21 @@ public class AsciiHeadersParser {
          * @param qube the dimensions or null for rank 1 data, e.g. vector= [3]
          */
         protected void addDataSet( String name, int i, int[] qube ) {
+            addDataSet( name, i, qube, null, null );
+        }
+
+        /**
+         * add the named dataset with the dimensions.  Note qube
+         * doesn't include the first dimension, and this may be null for
+         * rank 1 datasets.
+         *
+         * @param name name of the dataset
+         * @param i  index of the dataset.  These must be contiguous.
+         * @param qube the dimensions or null for rank 1 data, e.g. vector= [3]
+         * @param names the names for each column.  See QDataSet NAME property.  This implies Vector.
+         * @param labels the labels for each column.  See QDataSet LABEL property.
+         */
+        protected void addDataSet( String name, int i, int[] qube, String[] names, String[] labels ) {
             int len= DataSetUtil.product(qube);
             datasets.put( name, i );
             for ( int j=0; j<len; j++ ) {
@@ -431,8 +505,15 @@ public class AsciiHeadersParser {
             if ( qube.length>0 ) {
                 putProperty( QDataSet.QUBE, i, Boolean.TRUE );
             }
+            if ( names!=null ) putProperty( PROP_ELEMENT_NAMES, i, names );
+            if ( labels!=null ) putProperty( PROP_ELEMENT_LABELS, i, labels );
+            
             qubes.put( name, qube );
             
+        }
+
+        private void addDataSet(String lookFor, QDataSet dataSet) {
+            inlineDataSets.put( lookFor, dataSet );
         }
 
         public int rank() {
@@ -482,8 +563,9 @@ public class AsciiHeadersParser {
                 if ( inlineDataSets.containsKey((String)v) ) {
                     props1.put( name, inlineDataSets.get((String)v) );
                 } else {
-                    System.err.println("unable to resolve property "+name+"="+v+" of "+datasets2.get(i)+".  No such dataset found." );
-                    props1.put( name, v );
+                    //System.err.println("unable to resolve property "+name+"="+v+" of "+datasets2.get(i)+".  No such dataset found." );
+                    throw new IllegalArgumentException("unable to resolve property "+name+"="+v+" of "+datasets2.get(i)+".  No such dataset found." );
+                    //props1.put( name, v );
                 }
             } else {
                 props1.put( name, v );
@@ -502,10 +584,6 @@ public class AsciiHeadersParser {
             }
             return qube[i1];
             
-        }
-
-        private void addDataSet(String lookFor, QDataSet dataSet) {
-            inlineDataSets.put( lookFor, dataSet );
         }
 
        /**
@@ -547,26 +625,6 @@ public class AsciiHeadersParser {
 
     }
 
-    /**
-     * JSON can be specified in two ways:
-     * 1. listing each dimension property and the values for each column (transpose)
-     * 2. listing for each column, the dimension properties.
-     * @param jo
-     * @return
-     */
-    private static boolean isTranspose( JSONObject jo ) {
-        for ( String s: DataSetUtil.dimensionProperties() ) {
-            if ( jo.has(s) ) {
-                return true;
-            }
-        }
-        for ( String s: new String[] { "DEPEND_0" } ) {
-            if ( jo.has(s) ) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private static Object coerceToType( String propName, Object propValue ) {
         try {
@@ -610,7 +668,7 @@ public class AsciiHeadersParser {
      */
     private static void fillMetadata( BundleDescriptor bd, JSONObject jo ) throws JSONException {
 
-        if ( isTranspose(jo) ) {
+        if ( false ) {  //isTranspose(jo) ) {  //transpose will never be implemented.
             throw new IllegalArgumentException("not implemented");
         } else {
             Iterator it= jo.keys();
