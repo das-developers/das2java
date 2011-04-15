@@ -66,7 +66,7 @@ public class DataSetOps {
      *slice on the first dimension
      */
     public static MutablePropertyDataSet slice0(final QDataSet ds, final int index) {
-        return new Slice0DataSet(ds, index);
+        return new Slice0DataSet(ds, index,true);
     }
 
     /**
@@ -75,7 +75,7 @@ public class DataSetOps {
      * regard to tags.
      */
     public static MutablePropertyDataSet slice1(final QDataSet ds, final int index) {
-        return new Slice1DataSet(ds, index);
+        return new Slice1DataSet(ds, index, true, false);
     }
 
     /**
@@ -84,7 +84,7 @@ public class DataSetOps {
      * regard to tags.
      */
     public static MutablePropertyDataSet slice2(final QDataSet ds, final int index) {
-        return new Slice2DataSet(ds, index);
+        return new Slice2DataSet(ds, index, true);
     }
 
     /**
@@ -93,7 +93,7 @@ public class DataSetOps {
      * regard to tags.
      */
     public static MutablePropertyDataSet slice3(final QDataSet ds, final int index) {
-        return new Slice3DataSet(ds, index);
+        return new Slice3DataSet(ds, index, true );
     }
     
     /**
