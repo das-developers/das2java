@@ -88,6 +88,17 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
                 if ( this.rank()>0 && dep0.length()!=this.length() ) {
                     System.err.println("DEPEND_0 is incorrect length, its length is "+dep0.length()+ " should be "+this.length() );
                 }
+            } else if ( value instanceof String ) {
+                System.err.println("Use DEPENDNAME_0 instead of DEPEND_0");
+            }
+        } else if ( name.equals( QDataSet.DEPEND_1 ) && value!=null ) {
+            if ( value instanceof QDataSet ) { // BUNDLES can have string value here
+                QDataSet dep0= ((QDataSet)value);
+                if ( this.rank()>0 && dep0.length()!=this.length() ) {
+                    System.err.println("DEPEND_0 is incorrect length, its length is "+dep0.length()+ " should be "+this.length() );
+                }
+            } else if ( value instanceof String ) {
+                System.err.println("Use DEPENDNAME_0 instead of DEPEND_0");
             }
         }
     }
