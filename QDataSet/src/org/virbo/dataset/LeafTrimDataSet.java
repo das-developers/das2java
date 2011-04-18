@@ -37,13 +37,26 @@ public class LeafTrimDataSet extends AbstractDataSet {
         QDataSet depN = (QDataSet) ds.property(depNName);
         if (depN != null) {
             depN = new LeafTrimDataSet(depN, start, end);
+            properties.put(depNName, depN);
         }
-        properties.put(depNName, depN);
+        String bundleNName = "BUNDLE_" + (ds.rank() - 1);
+        QDataSet bds = (QDataSet) ds.property(bundleNName);
+        if ( bds != null) {
+            bds = new LeafTrimDataSet(bds, start, end);
+            properties.put( bundleNName, bds );
+        }
         for ( int i=0; i<ds.rank()-1; i++ ) {
             Object o= ds.property("DEPEND_"+i);
             if ( o!=null ) properties.put( "DEPEND_"+i, o );
         }
-
+        for ( int i=0; i<ds.rank()-1; i++ ) {
+            Object o= ds.property("BUNDLE_"+i);
+            if ( o!=null ) properties.put( "BUNDLE_"+i, o );
+        }
+        for ( int i=0; i<ds.rank()-1; i++ ) {
+            Object o= ds.property("BINS_"+i);
+            if ( o!=null ) properties.put( "BINS_"+i, o );
+        }
     }
     
     public int rank() {
