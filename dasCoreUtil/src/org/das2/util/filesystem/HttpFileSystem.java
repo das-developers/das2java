@@ -167,7 +167,7 @@ public class HttpFileSystem extends WebFileSystem {
                 throw new FileNotFoundException("not found: " + remoteURL);
             } else if (hurlc.getResponseCode() != 200) {
                 logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
-                throw new IOException(hurlc.getResponseMessage());
+                throw new IOException( hurlc.getResponseCode()+": "+ hurlc.getResponseMessage() + "\n"+remoteURL );
             }
 
             Date d=null;
