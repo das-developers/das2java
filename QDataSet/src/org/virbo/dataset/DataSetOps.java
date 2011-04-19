@@ -716,7 +716,14 @@ public class DataSetOps {
                     }
                 }
                 throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
+            } else if ( bundle1==null && name.matches("ch_\\d+") ) {
+                int ich= Integer.parseInt(name.substring(3) );
+                return DataSetOps.slice1( bundleDs, ich );
             }
+        }
+
+        if ( bundle1==null ) {
+            throw new IllegalArgumentException("unbundle called but no bundle dataset found in BUNDLE_1 or DEPEND_1");
         }
 
         for ( int j=0; j<bundle1.length(); j++ ) {
