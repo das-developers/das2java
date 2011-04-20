@@ -84,16 +84,23 @@ public class TrimDataSet extends AbstractDataSet {
     }
 
     public Object property(String name) {
-        if (properties.containsKey(name)) {
-            return properties.get(name);
-        } else {
+        Object p= super.property( name );
+        if ( p!=null ) return p;
+        if ( DataSetUtil.isInheritedProperty(name) ) {
             return ds.property(name);
+        } else {
+            return null;
         }
     }
 
     public Object property(String name, int i) {
-        Object p = properties.get(name);
-        return (p != null) ? p : ds.property(name, i + offset);
+        Object p= super.property( name, i );
+        if ( p!=null ) return p;
+        if ( DataSetUtil.isInheritedProperty(name) ) {
+            return (p != null) ? p : ds.property(name, i + offset);
+        } else {
+            return null;
+        }
     }
 
     public int length() {
