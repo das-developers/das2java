@@ -983,6 +983,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         graphics.setColor(getForeground());
         graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
 
+        if ( clip0!=null ) clip0.translate( getX(), getY() );
         graphics.setClip(clip0);
 
         if (plotTitle != null && plotTitle.length() != 0) {
