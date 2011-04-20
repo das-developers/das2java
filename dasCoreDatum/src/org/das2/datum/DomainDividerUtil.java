@@ -95,11 +95,13 @@ public final class DomainDividerUtil {
                 }
             }
             double stepSize = boundaries.get(1).subtract(boundaries.get(0)).doubleValue();
-            double nsteps = boundaries.get(boundaries.getLength()-1).subtract(boundaries.get(0)).divide(stepSize).doubleValue();
+            int nsteps = (int)Math.round( boundaries.get(boundaries.getLength()-1).subtract(boundaries.get(0)).divide(stepSize).doubleValue() );
             //System.err.printf("min: %f, max: %f, stepsize: %.20f, nsteps: %f%n", boundaries.get(0).doubleValue(), boundaries.get(boundaries.getLength()-1).doubleValue(), stepSize, nsteps);
             //System.err.println( boundaries.get(nsteps-1).subtract(boundaries.get(0)).divide(nsteps) );
             //System.err.printf("%f %f %d%n", boundaries.get(0).doubleValue(), boundaries.get(nsteps - 1).doubleValue(), nsteps);
-            return DatumUtil.bestFormatter(boundaries.get(0), boundaries.get(boundaries.getLength() - 1), (int)nsteps);
+            DatumFormatter result= DatumUtil.bestFormatter(boundaries.get(0), boundaries.get(boundaries.getLength() - 1), nsteps );
+            return result;
+
 //            String format;
 //            if (ldiv.getExponent() < 0) {
 //                format = zeros(-1 * ldiv.getExponent());
