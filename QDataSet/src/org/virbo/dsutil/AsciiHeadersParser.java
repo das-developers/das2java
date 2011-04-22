@@ -497,9 +497,6 @@ public class AsciiHeadersParser {
          */
         protected void addDataSet( String name, int i, int[] qube, String[] names, String[] labels ) {
             int len= DataSetUtil.product(qube);
-            if ( names!=null && names.length==4 ) {
-                System.err.println("here503");
-            }
             name= Ops.safeName(name);
             datasets.put( name, i );
             for ( int j=0; j<len; j++ ) {
