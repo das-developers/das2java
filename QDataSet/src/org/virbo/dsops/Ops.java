@@ -3316,6 +3316,10 @@ public class Ops {
             result.replace( 0, 1, "_" );
         }
         for ( int i=1; i<result.length(); i++ ) {
+            if ( result.charAt(i)=='*' ) {
+                result.replace( i, i+1, "star" );
+                i+=3;
+            }
             if ( result.charAt(i)<'0' ) result.replace( i, i+1, "_" );
             if ( result.charAt(i)>'z' ) result.replace( i, i+1, "_" );
             if ( result.charAt(i)!='_' && result.charAt(i)>57 && result.charAt(i)<65 ) {
