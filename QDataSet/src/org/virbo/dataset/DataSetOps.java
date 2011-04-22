@@ -726,16 +726,25 @@ public class DataSetOps {
             throw new IllegalArgumentException("unbundle called but no bundle dataset found in BUNDLE_1 or DEPEND_1");
         }
 
+        boolean highRank= false;
         for ( int j=0; j<bundle1.length(); j++ ) {
             String n1= (String) bundle1.property( QDataSet.NAME, j );
             if ( n1!=null && n1.equals(name) ) {
                 ib= j;
             }
+            if ( bundle1.length(j)>0 ) {
+                n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, j );
+                if ( n1!=null && n1.equals(name) ) {
+                    ib= j;
+                    highRank= true;
+                    break;
+                }
+            }
         }
         if ( ib==-1 ) {
             throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
         } else {
-            return unbundle(bundleDs,ib);
+            return unbundle(bundleDs,ib,highRank);
         }
     }
 
@@ -779,6 +788,27 @@ public class DataSetOps {
      * @return
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib) {
+        return unbundle( bundleDs, ib, true );
+    }
+
+    /**
+     * Extract a bundled dataset from a bundle of datasets.  The input should
+     * be a rank 2 dataset with the property BUNDLE_1 set to a bundle descriptor
+     * dataset.  See BundleDataSet for more semantics.  Note we support the case
+     * where DEPEND_1 has EnumerationUnits, and this is the same as slice1.
+     *
+     *
+     * @param aThis
+     * @param ib index of the dataset to extract. If the index is within a dataset,
+     *   then the entire dataset is returned.
+     * @param highRank if true, then if the dataset at ib is rank 2 or greater, then
+     *   then the entire dataset is returned.  If false, only the slice of the dataset is
+     *   returned.
+     * @throws IndexOutOfBoundsException if the index is invalid.
+     * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
+     * @return
+     */
+    public static QDataSet unbundle(QDataSet bundleDs, int ib, boolean highRank ) {
         
         QDataSet bundle=null;
 
@@ -839,17 +869,23 @@ public class DataSetOps {
             throw new IllegalArgumentException("rank limit: >2 not supported");
         }
 
-        Integer s= (Integer)bundle.property(QDataSet.START_INDEX,ib);
-        if ( s==null ) s= ib;
-        int is= s.intValue();
-        int n=1;
-        for (int k = 0; k < bundle.length(is); k++) {
-             n *= bundle.value(is, k);
-        }
-        int len= n;
-        int j= ib;
+        int len=1;  // total number of elements per record of the dataset
+        int j=ib;   // column requested
+        int is= ib; // start index of the high-rank dataset
 
-        if ( bundle.length(j)==0 ) {
+        if ( highRank ) {
+            Integer s= (Integer)bundle.property(QDataSet.START_INDEX,ib);
+            if ( s==null ) s= ib;
+            is= s.intValue();
+            int n=1;
+            for (int k = 0; k < bundle.length(is); k++) {
+                 n *= bundle.value(is, k);
+            }
+            len= n;
+            j= ib;
+        }
+        
+        if ( bundle.length(j)==0 || !highRank ) {
             if ( bundleDs instanceof BundleDataSet ) {
                 QDataSet r= ((BundleDataSet)bundleDs).unbundle(j);
                 return r;
