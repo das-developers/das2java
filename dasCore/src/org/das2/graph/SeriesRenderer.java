@@ -275,6 +275,10 @@ public class SeriesRenderer extends Renderer {
                 tds = (QDataSet) dataSet;
             }
 
+            if ( vds.rank()!= 1 ) {
+                return;
+            }
+            
             Units xUnits= SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
             if ( unitsWarning ) yUnits= yAxis.getUnits();
@@ -434,7 +438,6 @@ public class SeriesRenderer extends Renderer {
 
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
-
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
 
             QDataSet vds;
@@ -445,6 +448,11 @@ public class SeriesRenderer extends Renderer {
             } else {
                 vds = (QDataSet) dataSet;
             }
+
+            if ( vds.rank()>1 ) {
+                return;
+            }
+
             QDataSet wds= SemanticOps.weightsDataSet( vds );
 
             Units xUnits = SemanticOps.getUnits(xds);
@@ -896,7 +904,13 @@ public class SeriesRenderer extends Renderer {
         int ixmax;
         int ixmin;
 
-        QDataSet wds= SemanticOps.weightsDataSet(dataSet );
+        QDataSet yds= dataSet;
+        if ( yds.rank()==2 ) {
+            yds= DataSetOps.slice1( yds, 0 );
+        }
+
+        QDataSet wds;
+        wds= SemanticOps.weightsDataSet( yds );
 
         DasPlot lparent= parent;
         if ( lparent==null ) return;
@@ -936,7 +950,7 @@ public class SeriesRenderer extends Renderer {
         // find the first valid point, set x0, y0 //
         for (index = ixmin; index < ixmax; index++) {
             x = (double) xds.value(index);
-            y = (double) dataSet.value(index);
+            y = (double) yds.value(index);
 
             final boolean isValid = wds.value(index)>0;
             if (isValid) {
@@ -955,7 +969,7 @@ public class SeriesRenderer extends Renderer {
         // find the last valid point, minding the dataSetSizeLimit
         int pointsPlotted = 0;
         for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-            y = dataSet.value(index);
+            y = yds.value(index);
 
             final boolean isValid = wds.value(index)>0;
 
@@ -1323,6 +1337,10 @@ public class SeriesRenderer extends Renderer {
             ds3.putProperty( QDataSet.UNITS, yaxis.getUnits() );
             ds2= ds3;
         }
+        if ( ds2.rank()==2 ) {
+            ds2= DataSetOps.slice1( ds2, 0 );
+        }
+
         QDataSet reduce = VectorUtil.reduce2D(
                 xds, ds2,
                 firstIndex,
