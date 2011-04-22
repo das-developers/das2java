@@ -285,7 +285,8 @@ public class DataSetUtil {
                 || prop.startsWith("BUNDLE_")
                 || prop.startsWith("BINS_")
                 || prop.startsWith("JOIN_")
-                || prop.startsWith("PLANE_");
+                || prop.startsWith("PLANE_")
+                || prop.equals( QDataSet.START_INDEX ) ;
         // note CONTEXT* is inherited.
         return !indexProp;
     }
