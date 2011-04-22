@@ -15,6 +15,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -66,6 +67,11 @@ public class AsciiParser {
      * a java identifier that can be used to identify the column.
      */
     String[] fieldNames;
+
+    /**
+     * rich headers are put here.
+     */
+    AsciiHeadersParser.BundleDescriptor bundleDescriptor;
 
     /**
      * more abstract parameter type.  E.g. GSM_X, GSM_Y, GSM_Z -> GSM
@@ -321,12 +327,12 @@ public class AsciiParser {
         boolean isRichHeader= isRichHeader(header);
         if ( isRichHeader ) {
             try {
-                QDataSet bds = AsciiHeadersParser.parseMetadata(header, fieldNames );
-                if ( bds.length()==fieldNames.length ) {
-                    for ( int j=0; j<bds.length(); j++ ) {
-                        String n= (String)bds.property(QDataSet.NAME,j);
+                bundleDescriptor = AsciiHeadersParser.parseMetadata(header, fieldNames );
+                if ( bundleDescriptor.length()==fieldNames.length ) {
+                    for ( int j=0; j<bundleDescriptor.length(); j++ ) {
+                        String n= (String)bundleDescriptor.property(QDataSet.NAME,j);
                         if ( n!=null ) fieldNames[j]= n;
-                        n= (String)bds.property(QDataSet.LABEL,j);
+                        n= (String)bundleDescriptor.property(QDataSet.LABEL,j);
                         if ( n!=null ) fieldLabels[j]= n;
                     }
                 } else {
@@ -781,7 +787,7 @@ public class AsciiParser {
             try {
                 //System.err.println( "== JSON Header == \n"+header );
                 System.err.println("Parsing Rich JSON Header...");
-                AsciiHeadersParser.BundleDescriptor bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
+                bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
                 builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
 
                 for ( int j=0; j<bundleDescriptor.length(); j++ ) {
@@ -822,6 +828,24 @@ public class AsciiParser {
             }
         }
 
+    }
+
+    /**
+     * returns the high rank rich fields, from NAME to LABEL.
+     * @return
+     */
+    public Map<String,String> getRichFields() {
+        LinkedHashMap<String,String> result= new LinkedHashMap<String, String>();
+        if ( bundleDescriptor!=null ) {
+            for ( int i=0; i<bundleDescriptor.length(); i++ ) {
+                String name= (String) bundleDescriptor.property( QDataSet.ELEMENT_NAME, i);
+                if ( name!=null && !result.containsKey(name) ) {
+                    String label= (String) bundleDescriptor.property( QDataSet.ELEMENT_LABEL, i);
+                    result.put(name,label);
+                }
+            }
+        }
+        return result;
     }
 
     public static interface RecordParser {
