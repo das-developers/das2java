@@ -118,6 +118,9 @@ public class AsciiParser {
     private static final Logger logger = Logger.getLogger("virbo.dataset.asciiparser");
     private static final int HEADER_LENGTH_LIMIT=1000;
 
+
+    StringBuffer headerBuffer = new StringBuffer();
+
     private AsciiParser(String[] fieldNames) {
         setRegexParser(fieldNames);
     }
@@ -267,8 +270,13 @@ public class AsciiParser {
         line = reader.readLine();
         int iline = 0;
 
+        headerBuffer= new StringBuffer();
+
         while (line != null && isHeader(iline, lastLine, line, 0)) {
             lastLine = line;
+            if ( iline<HEADER_LENGTH_LIMIT ) {
+               headerBuffer.append(line).append("\n");
+            }
             line = reader.readLine();
             iline++;
         }
@@ -298,7 +306,7 @@ public class AsciiParser {
             	}
             }
         }
-        
+
         DelimParser result= p;
         for ( int i=0; i<lines.size(); i++ ) {
             if ( p.fieldCount(lines.get(i))==p.fieldCount() ) {
@@ -307,6 +315,28 @@ public class AsciiParser {
             }
         }
         reader.close();
+
+        String header= headerBuffer.toString();
+        // look for rich headers, and update the column names.
+        boolean isRichHeader= isRichHeader(header);
+        if ( isRichHeader ) {
+            try {
+                QDataSet bds = AsciiHeadersParser.parseMetadata(header, fieldNames );
+                if ( bds.length()==fieldNames.length ) {
+                    for ( int j=0; j<bds.length(); j++ ) {
+                        String n= (String)bds.property(QDataSet.NAME,j);
+                        if ( n!=null ) fieldNames[j]= n;
+                        n= (String)bds.property(QDataSet.LABEL,j);
+                        if ( n!=null ) fieldLabels[j]= n;
+                    }
+                } else {
+                    throw new IllegalArgumentException("rich header buffer not the same length as the dataset");
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         
         return result;
     }
@@ -647,8 +677,8 @@ public class AsciiParser {
 
         long bytesRead = 0;
 
-        StringBuffer headerBuffer = new StringBuffer();
-
+        headerBuffer = new StringBuffer();
+        
         int skipInt = skipLines + (skipColumnHeader ? 1 : 0);
 
         lastLine = line;
@@ -724,6 +754,11 @@ public class AsciiParser {
         return builder.getDataSet();
     }
 
+    public static boolean isRichHeader( String header ) {
+        boolean doJSON= header.contains("{") && header.contains("}");
+        return doJSON;
+    }
+
     /**
      * attempt to parse the metadata in the headers.  If the header contains
      * a pair of braces {}, then we assume it's a special JSON-formatted header
@@ -738,7 +773,7 @@ public class AsciiParser {
      */
     private void parseMeta( String header, DataSetBuilder builder ) {
 
-        boolean doJSON= header.contains("{") && header.contains("}");
+        boolean doJSON= isRichHeader(header);
 
         if ( doJSON ) {
             try {
