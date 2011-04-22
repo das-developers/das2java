@@ -350,6 +350,16 @@ public interface QDataSet {
     public final static String DEPENDNAME_1="DEPENDNAME_1";
 
     /**
+     * String, the name of the rank 2 or more dataset in a bundle descriptor.
+     */
+    public final static String ELEMENT_NAME="ELEMENT_NAME";
+
+    /**
+     * String, the label of the rank 2 or more dataset in a bundle descriptor.
+     */
+    public final static String ELEMENT_LABEL="ELEMENT_LABEL";
+
+    /**
      * Map<String,Object> representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
      * as possible.
