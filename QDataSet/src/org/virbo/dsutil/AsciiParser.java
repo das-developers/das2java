@@ -718,7 +718,9 @@ public class AsciiParser {
                 if ( parsedMeta==false ) { // this will attempt to parse the header to get units for parsing data.
                     String header = headerBuffer.toString();
                     parseMeta( header, builder );
-                    builder.putProperty(PROPERTY_FILE_HEADER, header);
+                    if ( !isRichHeader( header ) ) {
+                        builder.putProperty(PROPERTY_FILE_HEADER, header);
+                    }
                     parsedMeta= true;
                 }
 
