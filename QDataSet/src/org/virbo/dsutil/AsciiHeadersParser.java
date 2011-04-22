@@ -27,6 +27,7 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  * This additional support for parsing ascii data looks at the comment block in
@@ -71,10 +72,11 @@ public class AsciiHeadersParser {
      */
     private String readNextLine( BufferedReader reader ) throws IOException {
          String line = reader.readLine();
+         if ( line==null ) return null;
          if ( commented=='?' && line.length()>0 ) {
              commented= line.charAt(0)=='#' ? 'Y' : 'N';
          }
-         if ( line != null && line.startsWith("#") ) {
+         if ( line.startsWith("#") ) {
              line = line.substring(1);
          } else {
              if ( commented=='Y' ) return null;
@@ -225,11 +227,11 @@ public class AsciiHeadersParser {
 
         String[] names= JSONObject.getNames(jo);
         for ( int ivar=0; ivar<names.length; ivar++ ) {
-            String name= names[ivar];
-            logger.setLevel( Level.ALL );
-            logger.log( Level.FINE, "processing name[{0}]={1}", new Object[]{ivar, name});
+            String jsonName= names[ivar];
+            String name= Ops.safeName(jsonName);
+            logger.log( Level.FINE, "processing name[{0}]={1}", new Object[]{ivar, jsonName});
             try {
-                JSONObject jo1= jo.getJSONObject(name);
+                JSONObject jo1= jo.getJSONObject(jsonName);
                 int[] idims;
                 if ( !jo1.has(PROP_DIMENSION) ) {
                     idims= new int[0];
@@ -245,7 +247,7 @@ public class AsciiHeadersParser {
                     } else if ( dims instanceof Integer ) {
                         idims= new int[ (Integer)dims ];
                     } else {
-                        throw new IllegalArgumentException( "Expected array for DIMENSION in "+ name );
+                        throw new IllegalArgumentException( "Expected array for DIMENSION in "+ jsonName );
                     }
                 }
                 if ( idims.length>1 ) throw new IllegalArgumentException("only rank 2 datasets supported, DIMENSION len="+ idims.length );
@@ -260,7 +262,7 @@ public class AsciiHeadersParser {
                     if ( olabels instanceof JSONArray ) {
                         labels= toStringArray((JSONArray)olabels);
                     } else {
-                        logger.log(Level.INFO, "unable to use ELEMENT_LABELS in {0}, should be array", name);
+                        logger.log(Level.INFO, "unable to use ELEMENT_LABELS in {0}, should be array", jsonName);
                     }
                 }
                 String[] elementNames= null;
@@ -269,7 +271,7 @@ public class AsciiHeadersParser {
                     if ( oelements instanceof JSONArray ) {
                         elementNames= toStringArray((JSONArray)oelements);
                     } else {
-                        logger.log(Level.INFO, "unable to use ELEMENT_NAMES in {0}, should be array", name);
+                        logger.log(Level.INFO, "unable to use ELEMENT_NAMES in {0}, should be array", jsonName);
                     }
                 }
 
@@ -495,15 +497,28 @@ public class AsciiHeadersParser {
          */
         protected void addDataSet( String name, int i, int[] qube, String[] names, String[] labels ) {
             int len= DataSetUtil.product(qube);
+            if ( names!=null && names.length==4 ) {
+                System.err.println("here503");
+            }
+            name= Ops.safeName(name);
             datasets.put( name, i );
             for ( int j=0; j<len; j++ ) {
                 datasets2.put( i+j, name );
             }
             putProperty( QDataSet.LABEL, i, name );
             putProperty( QDataSet.NAME, i, name );
-            putProperty( QDataSet.START_INDEX, i, i );
             if ( qube.length>0 ) {
                 putProperty( QDataSet.QUBE, i, Boolean.TRUE );
+                putProperty( QDataSet.ELEMENT_NAME, i, name );
+                putProperty( QDataSet.START_INDEX, i, i ); // datasets2 does the mapping.
+            }
+            if ( qube.length>0 && names!=null ) {
+                for ( int k=0; k<names.length; k++ ) {   //  look for label |B_GSM|
+                    if ( names[k].startsWith("|") && names[k].endsWith("|") ) { // illegal name
+                        names[k]= names[k].substring(1,names[k].length()-1)+"_mag";
+                    }
+                    names[k]= Ops.safeName(names[k]);
+                }
             }
             if ( names!=null ) putProperty( PROP_ELEMENT_NAMES, i, names );
             if ( labels!=null ) putProperty( PROP_ELEMENT_LABELS, i, labels );
@@ -540,6 +555,28 @@ public class AsciiHeadersParser {
         public Object property(String name, int ic) {
             synchronized (this) {
                 String dsname= datasets2.get(ic);
+                int ids= datasets.get(dsname); // index of the beginning of the rank 2 dataset
+                if ( name.equals( QDataSet.NAME ) ) {
+                    Map<String,Object> props1= props.get(ids);
+                    if ( props1!=null ) {
+                        String[] names= (String[]) props1.get( PROP_ELEMENT_NAMES );
+                        if ( names!=null ) {
+                            return names[ic-ids];
+                        }
+                    }
+                }
+                if ( name.equals( QDataSet.LABEL ) ) {
+                    Map<String,Object> props1= props.get(ids);
+                    if ( props1!=null ) {
+                        String[] labels= (String[]) props1.get( PROP_ELEMENT_LABELS );
+                        if ( labels==null ) {
+                            labels= (String[]) props1.get( PROP_ELEMENT_NAMES );
+                        }
+                        if ( labels!=null ) {
+                            return labels[ic-ids];
+                        }
+                    }
+                }
                 int i= datasets.get(dsname);
                 Map<String,Object> props1= props.get(i);
                 if ( props1==null ) {
@@ -559,7 +596,7 @@ public class AsciiHeadersParser {
                 props1= new LinkedHashMap<String,Object>();
                 props.put( i, props1 );
             }
-            if ( name.startsWith( "DEPEND_" ) && !(name.equals("DEPEND_0") ) ) {
+            if ( name.startsWith( "DEPEND_" ) && !(name.equals("DEPEND_0") ) && v instanceof String ) {
                 if ( inlineDataSets.containsKey((String)v) ) {
                     props1.put( name, inlineDataSets.get((String)v) );
                 } else {
@@ -586,6 +623,19 @@ public class AsciiHeadersParser {
             
         }
 
+        /**
+         * special code because of START_INDEX property.  Must trim at DataSet boundaries.
+         * @param start
+         * @param end
+         * @return
+         */
+        @Override
+        public QDataSet trim(int start, int end) {
+            MutablePropertyDataSet result= (MutablePropertyDataSet) super.trim(start,end);
+            throw new IllegalArgumentException("Not supported");
+        }
+
+
        /**
         * the parsed JSON comes in any old order, so we need to resort our data.
         * @param bd
@@ -606,6 +656,10 @@ public class AsciiHeadersParser {
             while ( i< this.length() ) {
                 if ( positionToDs.containsKey(column) ) {
                     String name= positionToDs.get(column);
+                    Integer ioldIndex= datasets.get(name);
+                    if ( ioldIndex==null ) {
+                        System.err.println("here");
+                    }
                     int oldIndex= datasets.get(name);
                     int[] qube= qubes.get(name);
                     int len= DataSetUtil.product( qube );
@@ -691,6 +745,16 @@ public class AsciiHeadersParser {
                          String prop= (String) props.next();
                          Object sv= propsj.get(prop);
                          if ( prop.equals("DIMENSION") || prop.equals("START_COLUMN") || prop.equals("ELEMENT_NAMES") ) {
+                             if ( prop.equals("ELEMENT_NAMES") && sv instanceof JSONArray ) {
+                                 String[] ss= toStringArray( (JSONArray)sv );
+                                 for ( int i=0; i<ss.length; i++ ) {
+                                     if ( ss[i].startsWith("|") )  {
+                                         ss[i]= Ops.safeName(ss[i]);
+                                     } 
+                                 }
+                                 bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
+                             }
+                             bd.putProperty( "RENDER_TYPE", ids, "series" );
                             continue;
                          } else if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
                             bd.putProperty( prop, ids, Units.us2000 );
