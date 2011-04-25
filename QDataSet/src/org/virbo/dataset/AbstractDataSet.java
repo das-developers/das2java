@@ -92,13 +92,17 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
                 System.err.println("Use DEPENDNAME_0 instead of DEPEND_0");
             }
         } else if ( name.equals( QDataSet.DEPEND_1 ) && value!=null ) {
-            if ( value instanceof QDataSet ) { // BUNDLES can have string value here
-                QDataSet dep1= ((QDataSet)value);
-                if ( this.rank()>0 && this.length()>0 && dep1.length()!=this.length(0) ) {
-                    System.err.println("DEPEND_1 is incorrect length, its length is "+dep1.length()+ " should be "+this.length() );
+            if ( this.rank()<=1 ) {
+                System.err.println("DEPEND_1 was set on dataset of rank 0 or rank 1.  Ignoring...");
+            } else {
+                if ( value instanceof QDataSet ) { // BUNDLES can have string value here
+                    QDataSet dep1= ((QDataSet)value);
+                    if ( this.rank()>0 && this.length()>0 && dep1.length()!=this.length(0) ) {
+                        System.err.println("DEPEND_1 is incorrect length, its length is "+dep1.length()+ " should be "+this.length() );
+                    }
+                } else if ( value instanceof String ) {
+                    System.err.println("Use DEPENDNAME_1 instead of DEPEND_1");
                 }
-            } else if ( value instanceof String ) {
-                System.err.println("Use DEPENDNAME_1 instead of DEPEND_1");
             }
         }
     }
@@ -120,7 +124,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
 
     public int length(int i, int j, int k) {
-        throw new IllegalArgumentException("rank error, expected "+rank());
+        throw new IllegalArgumentException("rank error, expected "+rank()+", NAME="+this.property(QDataSet.NAME) );
     }
 
     public <T> T capability(Class<T> clazz) {
