@@ -912,6 +912,11 @@ public class DataSetOps {
             TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
             result.setTrim( 1, is, is+len, 1 );
             Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,j) );
+            Object o;
+            o= bundle.property(QDataSet.ELEMENT_NAME,j);
+            if ( o!=null ) props.put( QDataSet.NAME, o );
+            o= bundle.property(QDataSet.ELEMENT_LABEL,j);
+            if ( o!=null ) props.put( QDataSet.LABEL, o );
             DataSetUtil.putProperties( props, result );
             String[] testProps= new String[] { QDataSet.DEPEND_0, QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.PLANE_0 };
             for ( int i=0; i<testProps.length; i++ ) {
