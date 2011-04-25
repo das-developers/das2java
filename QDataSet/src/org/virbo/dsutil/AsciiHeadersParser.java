@@ -730,13 +730,14 @@ public class AsciiHeadersParser {
                      System.err.println("expected JSONObject for value: "+key );
                      continue;
                  } else {
-                     int ids= bd.indexOf( key ); 
+                     String name= Ops.safeName(key);
+                     int ids= bd.indexOf( name );
                      if ( ids==-1 ) {
                          logger.log(Level.WARNING, "metadata found for key {0}, but this is not found in the ascii file parser", key);
                          continue;
                      }
                      JSONObject propsj= ((JSONObject)o);
-                     bd.putProperty( QDataSet.NAME, ids, key );
+                     bd.putProperty( QDataSet.NAME, ids, name );
                      Iterator props= propsj.keys();
                      for ( ; props.hasNext(); ) {
                          String prop= (String) props.next();
@@ -757,7 +758,7 @@ public class AsciiHeadersParser {
                             bd.putProperty( prop, ids, Units.us2000 );
                          } else if ( prop.equals("ENUM") && sv instanceof JSONArray ) {
                             JSONArray joa= (JSONArray)sv;
-                            EnumerationUnits uu= EnumerationUnits.create(key);
+                            EnumerationUnits uu= EnumerationUnits.create(name);
                             for ( int i=0; i<joa.length(); i++ ) {
                                 uu.createDatum( joa.getString(i) );
                             }
@@ -768,11 +769,7 @@ public class AsciiHeadersParser {
                             } else {
                                 Object v= coerceToType( prop, sv );
                                 bd.putProperty( prop, ids, v );
-
-                                if ( prop.equals("DEPEND_1") ) {
-                                    bd.putProperty( prop, ids, v );
-                                }
-                            }
+                             }
                          }
                      }
                  }
