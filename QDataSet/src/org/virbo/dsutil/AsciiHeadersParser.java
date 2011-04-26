@@ -143,7 +143,12 @@ public class AsciiHeadersParser {
                 String nextLine = readNextLine( reader );
 
                 // we can add a comma at the end of a line to make it valid.
-                char lastChar = trimLine.charAt(trimLine.length() - 1);
+                char lastChar;
+                if ( trimLine.length()==0 ) {
+                    lastChar= ' ';
+                } else {
+                     lastChar= trimLine.charAt(trimLine.length() - 1);
+                }
                 if (lastChar == '"' || Character.isDigit(lastChar) || lastChar == ']' || lastChar == '}') {
                     char nextChar;
                     if (nextLine != null && nextLine.trim().length() > 0) {
