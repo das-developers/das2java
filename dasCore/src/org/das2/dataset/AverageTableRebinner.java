@@ -574,10 +574,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                     ibinx = i;
                 }
 
-                int ny1= yds.rank()==1 ? yds.length() : yds.length(i);
-
                 if (ibinx >= 0 && ibinx < nx) {
-                    for (int j = 0; j < ny1; j++) {
+                    for (int j = 0; j < tds1.length(i); j++) {
                         try {
                             double z = tds1.value( i, j );
                             double w = wds.value( i, j );
