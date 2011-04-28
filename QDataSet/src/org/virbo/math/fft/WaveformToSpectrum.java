@@ -79,15 +79,15 @@ public class WaveformToSpectrum {
             for ( int i=st; i<en; i++ ) {
                 double rr= ( ( ds.value(i) - base ) / delta ) % 1.;
                 if ( rr > 0.01 && rr < 0.09 ) {
-                    try {
-                        PrintWriter fw = new PrintWriter("/tmp/foo.dat");
-                        for ( int ii=st; ii<en; ii++ ) {
-                            fw.printf( "%6d %16.12f %16.12qf\n", ii, ds.value(ii), ds.value(ii)-base );
-                        }
-                        fw.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(WaveformToSpectrum.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+//                    try {
+//                        PrintWriter fw = new PrintWriter("/tmp/foo.dat");
+//                        for ( int ii=st; ii<en; ii++ ) {
+//                            fw.printf( "%6d %16.12f %16.12qf\n", ii, ds.value(ii), ds.value(ii)-base );
+//                        }
+//                        fw.close();
+//                    } catch (IOException ex) {
+//                        Logger.getLogger(WaveformToSpectrum.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
 
                     return false;
                 }
