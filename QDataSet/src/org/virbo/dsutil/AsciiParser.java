@@ -1050,6 +1050,9 @@ public class AsciiParser {
             int tryCount= 0;
             int ipos = 0;
 
+            if ( fieldCount!=fieldParsers.length ) {
+                return false; //TODO: how do we get into this condition?
+            } 
             String[] ss = new String[fieldCount];
             if ( !splitRecord(line, ss ) ) {
                 return false;
