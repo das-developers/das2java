@@ -58,14 +58,37 @@ public class HttpFileSystem extends WebFileSystem {
 
     public static synchronized HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException {
         try {
-            URL root= rooturi.toURL();
+
+            String auth= rooturi.getAuthority();
+            String[] ss= auth.split("@");
+
+            URL root;
+
+            if ( ss.length>3 ) {
+                throw new IllegalArgumentException("user info section can contain at most two at (@) symbols");
+            } else if ( ss.length==3 ) {//bugfix 3299977.  UMich server uses email:password@umich.  Java doesn't like this.
+                // the user didn't escape the at (@) in the email.  escape it here.
+                String userInfo= ss[0];
+                for ( int i=1;i<2;i++ ) userInfo= userInfo+"%40"+ss[i];
+                auth= ss[2];
+                try {
+                    URI rooturi2= new URI( rooturi.getScheme() + "://" + userInfo+"@"+auth + rooturi.getPath() );
+                    rooturi= rooturi2;
+                } catch ( URISyntaxException ex ) {
+                    throw new IllegalArgumentException("unable to handle: "+rooturi);
+                }
+            }
+
+            root= rooturi.toURL();
 
             // verify URL is valid and accessible
             HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
             urlc.setConnectTimeout(3000);
 
             urlc.setRequestMethod("HEAD");
-            String userInfo;
+
+            String userInfo= null;
+            
             try {
                 userInfo = KeyChain.getDefault().getUserInfo(root);
             } catch (CancelledOperationException ex) {
@@ -346,7 +369,8 @@ public class HttpFileSystem extends WebFileSystem {
                     throw new IOException( "user cancelled at credentials" ); // JAVA6
                 } catch ( IOException ex ) {
                     if ( isOffline() ) {
-                        System.err.println("using local listing because remote is not available");
+                        System.err.println("** using local listing because remote is not available");
+                        System.err.println("or some other error occurred. **");
                         File localFile= new File( localRoot, directory );
                         return localFile.list();
                     } else {

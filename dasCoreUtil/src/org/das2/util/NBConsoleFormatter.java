@@ -27,7 +27,7 @@ public class NBConsoleFormatter extends Formatter {
             StackTraceElement[] st= new Throwable().getStackTrace();
             //String msg= Message.fo
             int len= Math.min( 9, st.length );
-            String msg= MessageFormat.format( rec.getMessage(), rec.getParameters() );
+            String msg= MessageFormat.format( String.valueOf( rec.getMessage() ), rec.getParameters() );
             String result= rec.getLoggerName()+"  ["+Thread.currentThread().getName()+"]\n"+rec.getLevel().getLocalizedName()+": "+msg;
             if ( len>2 ) {
                 result= result

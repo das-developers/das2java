@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2008 The University of Iowa 
+/* Copyright (C) 2003-2008 The University of Iowa
  *
  * This file is part of the Das2 <www.das2.org> utilities library.
  *
@@ -104,6 +104,18 @@ public abstract class FileSystem  {
     }
 
     /**
+     * creates a FileSystem, removing and recreating it if it was in the cache.
+     * @param root
+     * @param mon
+     * @return
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws UnknownHostException
+     */
+    public synchronized static FileSystem recreate( URI root ) throws FileSystemOfflineException, UnknownHostException {
+        return recreate( root, new NullProgressMonitor() );
+    }
+
+    /**
      * Creates a FileSystem by parsing the URI and creating the correct FS type.
      * Presently, file, http, and ftp are supported.  If the URI contains a folder
      * ending in .zip and a FileSystemFactory is registered as handling .zip, then
@@ -117,6 +129,22 @@ public abstract class FileSystem  {
      */
     public static FileSystem create(URI root) throws FileSystemOfflineException, UnknownHostException {
         return create(root, new NullProgressMonitor());
+    }
+
+    /**
+     * creates a FileSystem, removing and recreating it if it was in the cache.
+     * @param root
+     * @param mon
+     * @return
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws UnknownHostException
+     */
+    public synchronized static FileSystem recreate( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+        FileSystem result= instances.get(root);
+        if ( result!=null ) {
+            return instances.remove(root);
+        }
+        return create( root, mon );
     }
 
     /**

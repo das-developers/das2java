@@ -67,23 +67,38 @@ public class KeyChain {
         }
     }
 
+    public String getUserInfo( URL url ) throws CancelledOperationException {
+        String userInfo= url.getUserInfo();
+        if ( userInfo==null ) return null;
+        return getUserInfo( url, userInfo );
+    }
+
     /**
      * get the user credentials, maybe throwing CancelledOperationException if the
-     * user hits cancel.
+     * user hits cancel.  If the password is "pass" or "password" then don't use
+     * it, prompt for it instead.
      * @param url
+     * @param userInfo that is available separately.  (Java doesn't like user@usersHost:password@server)
      * @return
      * @throws CancelledOperationException
      */
-    public String getUserInfo( URL url ) throws CancelledOperationException {
+    public String getUserInfo( URL url, String userInfo  ) throws CancelledOperationException {
 
-        String userInfo= url.getUserInfo();
         if ( userInfo==null ) return null;
 
         String userName=null;
         String[] ss= userInfo.split(":",-2);
         if ( !ss[0].equals("user") ) {
             userName= ss[0];
+            if ( userName.contains("%40") ) {
+                userName= userName.replaceAll( "%40", "@" );
+                userInfo= userName;
+                for ( int i=1; i<ss.length; i++ ) {
+                    userInfo= userInfo + ":"+ss[i];
+                }
+            }
         }
+        
         String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost();
 
         String storedUserInfo= keys.get(hash);
@@ -91,7 +106,7 @@ public class KeyChain {
 
         String proto= url.getProtocol();
         
-        if ( ss.length<2 || ss[1].length()==0 || userInfo.equals("user:pass") ) {
+        if ( ss.length<2 || ss[1].length()==0 || userInfo.endsWith(":pass") || userInfo.endsWith(":password" ) ) {
             if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
                 JPanel panel= new JPanel();
                 panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
@@ -101,11 +116,11 @@ public class KeyChain {
                 panel.add( sep );
                 panel.add( new JLabel("Username:") );
                 JTextField userTf= new JTextField();
-                if ( !ss[0].equals("user") ) userTf.setText(ss[0]);
+                if ( !ss[0].equals("user") ) userTf.setText(userName);
                 panel.add( userTf );
                 panel.add( new JLabel("Password:") );
                 JPasswordField passTf= new JPasswordField();
-                if ( ss.length>1 && !ss[1].equals("pass") ) passTf.setText(ss[1]);
+                if ( ss.length>1 && !( ss[1].equals("pass")||ss[1].equals("password")) ) passTf.setText(ss[1]);
                 panel.add( passTf );
                 //int r= JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION );
                 int r= JOptionPane.showConfirmDialog( null, panel, proto + " Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
