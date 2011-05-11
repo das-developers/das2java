@@ -69,6 +69,30 @@ public class DatumRangeUtil {
             }
         }
     }
+
+    private static Datum MIN_TIME= TimeUtil.createTimeDatum( 1000, 1, 1, 0, 0, 0, 0 ); // I know these are found elsewhere in the code, but I can't find it.
+    private static Datum MAX_TIME= TimeUtil.createTimeDatum( 3000, 1, 1, 0, 0, 0, 0 );
+
+    /**
+     * put limits on the typical use when looking at data:
+     *   * both min and max are finite numbers
+     *   * time range is between year 1000 and year 3000.
+     *   * log ranges span no more than 1e100 cycles.
+     * @param newDatumRange
+     * @return
+     */
+    public static boolean isAcceptable(DatumRange dr, boolean log ) {
+        if ( Double.isInfinite( dr.min().doubleValue( dr.getUnits() ) ) ||
+                Double.isInfinite( dr.max().doubleValue( dr.getUnits() ) ) ) {
+            return false;
+        } else if ( UnitsUtil.isTimeLocation( dr.getUnits() )
+                && ( dr.min().lt( MIN_TIME ) || dr.max().gt( MAX_TIME ) ) ) {
+            return false;
+        } else if ( log && dr.max().divide(dr.min()).doubleValue(Units.dimensionless) > 1e100 ) {
+            return false;
+        }
+        return true;
+    }
     
     public static class DateDescriptor {
         String date;
