@@ -312,6 +312,10 @@ public class TickVDescriptor {
                 tickV[i] = t[i];
             }
 
+            if ( tickV.length<2 ) {
+                System.err.println("Unable to calculate linear ticks, less than 2 found.  Brace for crash.");
+            }
+            
             // now fill in the minor ticks, if there's room
             int idx = 0;
             double[] minorTickV;

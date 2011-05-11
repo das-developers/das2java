@@ -23,6 +23,8 @@ import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
 import org.das2.graph.DasDevicePosition;
 
 /**
@@ -40,6 +42,9 @@ public class ZoomPanMouseModule extends MouseModule {
     DatumRange xAxisRange0;
     DatumRange yAxisRange0;
     long t0, tbirth;
+
+    private Datum MIN_TIME= TimeUtil.createTimeDatum( 1000, 1, 1, 0, 0, 0, 0 ); // I know these are found elsewhere in the code, but I can't find it.
+    private Datum MAX_TIME= TimeUtil.createTimeDatum( 3000, 1, 1, 0, 0, 0, 0 );
 
     /** Creates a new instance of ZoomPanMouseModule */
     public ZoomPanMouseModule(DasCanvasComponent parent, DasAxis horizontalAxis, DasAxis verticalAxis) {
@@ -171,13 +176,17 @@ public class ZoomPanMouseModule extends MouseModule {
         //int clickMag= Math.abs(e.getWheelRotation());
         int clickMag = 1;
         final long t1 = System.nanoTime();
-        long limitNanos = (long) 20e6;
+        long limitNanos = (long) 40e6;
         if ((t1 - t0) / clickMag < limitNanos) {
-            clickMag = (int) Math.floor((t1 - t0) / limitNanos);
+            clickMag = (int) Math.floor( (t1 - t0) / limitNanos );
         }
-
+        
         if (clickMag == 0) return;
         t0 = System.nanoTime();
+
+        // these will be non-null if they should be used.
+        DatumRange xdrnew=null;
+        DatumRange ydrnew=null;
 
         //System.err.println(":ns:  "+(System.nanoTime()-tbirth)+"  "+clickMag);
         if (axisIsAdjustable(xAxis)) {
@@ -190,12 +199,16 @@ public class ZoomPanMouseModule extends MouseModule {
                 }
             }
             dr= maybeRound( xAxis, dr );
-            xAxis.setDatumRange(dr);
+            
+            if ( ! DatumRangeUtil.isAcceptable( dr, xAxis.isLog() ) ) {
+                dr= null;
+            }
+            xdrnew= dr;
         }
+        
         if (axisIsAdjustable(yAxis)) {
             DatumRange dr = yAxis.getDatumRange();
             for (int i = 0; i < clickMag; i++) {
-
                 if (yAxis.isLog()) {
                     dr = DatumRangeUtil.rescaleLog(dr, nmin+yshift, nmax+yshift);
                 } else {
@@ -203,9 +216,20 @@ public class ZoomPanMouseModule extends MouseModule {
                 }
             }
             dr= maybeRound( yAxis, dr );
-            yAxis.setDatumRange(dr);
+            // check bounds are still finite
+            if ( ! DatumRangeUtil.isAcceptable(dr, yAxis.isLog() ) ) {
+                dr= null;
+            }
+            ydrnew= dr;
         }
 
+        if ( axisIsAdjustable(xAxis) && xdrnew==null ) return;
+        if ( axisIsAdjustable(yAxis) && ydrnew==null ) return;
+
+        if ( axisIsAdjustable(xAxis) ) xAxis.setDatumRange(xdrnew);
+        if ( axisIsAdjustable(yAxis) ) yAxis.setDatumRange(ydrnew);
+
+        System.err.println(ydrnew);
         super.mouseWheelMoved(e);
     }
 

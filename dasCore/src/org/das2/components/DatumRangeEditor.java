@@ -148,14 +148,26 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
         }
         return result;
     }
-    
+
+    /**
+     * prevent displaying same message so many times...
+     */
+    private String lastErrorText= null;
+    private long lastErrorTime= 0;
+
     private void showErrorUsage( String text, String why ) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            if ( text!=null && text.equals(lastErrorText) 
+                    && (System.currentTimeMillis()-lastErrorTime)<5000 ) {
+                return;
+            }
             if ( why!=null ) {
                 JOptionPane.showMessageDialog( this, "<html>Unable to accept \""+text+"\"<br>"+why+"<html>" );
             } else {
                 JOptionPane.showMessageDialog( this, "<html>Unable to accept \""+text+"\"</html>" );
             }
+            lastErrorText= text;
+            lastErrorTime= System.currentTimeMillis();
         }
     }
 

@@ -220,7 +220,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 return xTagWidth;
                 //d= SemanticOps.guessXTagWidth( xds, tds1 );
             } else {
-                xTagWidth= d.multiply(0.9);
+                xTagWidth= d; //d.multiply(0.9);
             }
         } else {
             QDataSet xTagWidthDs= (RankZeroDataSet) xds.property( QDataSet.CADENCE ); // note these were once doubles, but this is not supported here.
@@ -283,7 +283,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             Units xunits = SemanticOps.getUnits( xds );
             Units yunits = SemanticOps.getUnits( yds );
 
-            Datum xTagWidth= getXTagWidth( xds, tds1 ).multiply(0.9);
+            Datum xTagWidth= getXTagWidth( xds, tds1 );
 
             for (int i = 0; i < 2; i++) { // left, right
                 int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;
@@ -441,7 +441,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             Units yunits = SemanticOps.getUnits(yds);
             Units xunits = SemanticOps.getUnits(xds);
 
-            Datum xTagWidth= getXTagWidth( xds, tds1).multiply(0.9);
+            Datum xTagWidth= getXTagWidth( xds, tds1);
 
             for (int i = 0; i < 2; i++) {
                 int ix = i == 0 ? 0 : ddX.numberOfBins() - 1;

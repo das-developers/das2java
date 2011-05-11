@@ -147,6 +147,7 @@ public class SeriesRenderer extends Renderer {
         /**
          * render the psyms by stamping an image at the psym location.  The intent is to
          * provide fast rendering by reducing fidelity.
+         * @return the number of points drawn, though possibly off screen.
          * On 20080206, this was measured to run at 320pts/millisecond for FillStyle.FILL
          * On 20080206, this was measured to run at 300pts/millisecond in FillStyle.OUTLINE
          */
@@ -182,6 +183,7 @@ public class SeriesRenderer extends Renderer {
         /**
          * Render the psyms individually.  This is the highest fidelity rendering, and
          * should be used in printing.
+         * @return the number of points drawn, though possibly off screen.
          * On 20080206, this was measured to run at 45pts/millisecond in FillStyle.FILL
          * On 20080206, this was measured to run at 9pts/millisecond in FillStyle.OUTLINE
          */
@@ -222,6 +224,15 @@ public class SeriesRenderer extends Renderer {
 
         }
 
+        /**
+         *
+         * @param graphics
+         * @param xAxis
+         * @param yAxis
+         * @param vds
+         * @param mon
+         * @return the number of points drawn, though possibly off screen.
+         */
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
             if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
@@ -908,6 +919,7 @@ public class SeriesRenderer extends Renderer {
         if ( yds.rank()==2 ) {
             yds= DataSetOps.slice1( yds, 0 );
         }
+        QDataSet wxds= SemanticOps.weightsDataSet( xds );
 
         QDataSet wds;
         wds= SemanticOps.weightsDataSet( yds );
@@ -952,7 +964,7 @@ public class SeriesRenderer extends Renderer {
             x = (double) xds.value(index);
             y = (double) yds.value(index);
 
-            final boolean isValid = wds.value(index)>0;
+            final boolean isValid = wds.value(index)>0 && wxds.value(index)>0 ;
             if (isValid) {
                 firstIndex = index;  // TODO: what if no valid points?
 
@@ -971,7 +983,7 @@ public class SeriesRenderer extends Renderer {
         for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
             y = yds.value(index);
 
-            final boolean isValid = wds.value(index)>0;
+            final boolean isValid = wds.value(index)>0 && wxds.value(index)>0;
 
             if (isValid) {
                 pointsPlotted++;
@@ -1135,14 +1147,14 @@ public class SeriesRenderer extends Renderer {
         graphics.setColor(color);
         log.finest("drawing psymConnector in " + color);
 
-        psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon);
-
+        int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon);
 
         errorElement.render(graphics, xAxis, yAxis, vds, mon);
 
+        int symCount= 0;
         if (psym != DefaultPlotSymbol.NONE) {
 
-            int count= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
+            symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
 
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
             mon.finished();

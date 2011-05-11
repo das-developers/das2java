@@ -654,6 +654,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double max = t2 + delta;
         animateChange(t1, t2, min, max);
         DatumRange oldRange = dataRange.getDatumRange();
+        if ( !DatumRangeUtil.isAcceptable( DatumRange.newDatumRange( min, max, getUnits() ), isLog() ) ) {
+            System.err.println("zoom out limit");
+            return;
+        }
         dataRange.setRange(min, max);
         DatumRange newRange = dataRange.getDatumRange();
         update();
