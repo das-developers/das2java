@@ -132,6 +132,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( newRecCount < len0 ) throw new IllegalArgumentException("new recsize for grow smaller than old");
         int newSize= newRecCount * len1 * len2 * len3;
         Object back= getBack();
+        int oldSize= Array.getLength(back);
+
+        if ( newSize<oldSize ) { // it's possible that the dataset already has a backing that can support this.  Check for this.
+            return;
+        }
+
         Object newBack;
         if ( back instanceof double[] ) {
             newBack= new double[ newSize ];
