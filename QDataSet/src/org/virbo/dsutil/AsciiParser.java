@@ -1147,6 +1147,7 @@ public class AsciiParser {
                     }
                 } else {
                     if ( m.find(index) ) {
+                        index0= index;
                         index= m.start();
                         if ( qend==-1 ) {
                             fields[ifield]= input.substring(index0, index);
@@ -1392,7 +1393,7 @@ public class AsciiParser {
     public WritableDataSet readFile(String filename, ProgressMonitor mon) throws IOException {
         long size = new File(filename).length();
         mon.setTaskSize(size);
-        return readStream(new FileReader(filename), mon);
+        return readStream( new FileReader(filename), null, mon );
     }
 
     public static void main(String[] args) throws Exception {

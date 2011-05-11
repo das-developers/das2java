@@ -94,7 +94,7 @@ public class CoerceUtil {
 
         } else {
             if (ds2.rank() == 0) {
-                ds2 = increaseRank0((RankZeroDataSet) ds2, ds1);
+                ds2 = increaseRank0(ds2, ds1);
             } else if (ds2.rank() == 1) {
                 ds2 = increaseRank1(ds2, ds1);
             } else if (ds2.rank() == 2) {
