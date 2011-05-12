@@ -5,16 +5,20 @@
 package org.das2.graph;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
+import javax.swing.DefaultDesktopManager;
 import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
+import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.DefaultDatumFormatter;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
@@ -38,6 +42,7 @@ public class DigitalRenderer extends Renderer {
     public void setColor(Color color) {
         Color oldColor = this.color;
         this.color = color;
+        refresh();
         propertyChangeSupport.firePropertyChange(PROP_COLOR, oldColor, color);
     }
 
@@ -58,6 +63,49 @@ public class DigitalRenderer extends Renderer {
         refresh();
         propertyChangeSupport.firePropertyChange(PROP_ALIGN, oldAlign, align);
     }
+
+    /**
+     * format, empty string means use either dataset's format, or %.2f
+     */
+    public static final String PROP_FORMAT= "format";
+
+    private String format="";
+
+    public String getFormat() {
+        return format;
+    }
+
+    /**
+     * note the dataset's format will be used if this is "", and "%.2f" if no
+     * format is found there.
+     * @param value
+     */
+    public void setFormat(String value) {
+        String oldValue= this.format;
+        this.format = value;
+        refresh();
+        propertyChangeSupport.firePropertyChange(PROP_FORMAT, oldValue, value );
+    }
+
+
+    /**
+     * font size, 0 indicates the plot font should be used.
+     */
+    public static final String PROP_SIZE= "size";
+
+    double size= 0.0;
+
+    public double getSize() {
+        return size;
+    }
+
+    public void setSize(double size) {
+        double oldValue= this.size;
+        this.size = size;
+        refresh();
+        propertyChangeSupport.firePropertyChange(PROP_FORMAT, oldValue, size );
+    }
+
     Shape selectionArea;
 
     /**
@@ -99,6 +147,8 @@ public class DigitalRenderer extends Renderer {
         int ixmax;
         int ixmin;
 
+        if ( dataSet==null ) return;
+        
         QDataSet wds;
         if ( dataSet.rank()==0 ) {
             wds= SemanticOps.weightsDataSet(dataSet);
@@ -181,6 +231,8 @@ public class DigitalRenderer extends Renderer {
         if ( ds==null ) {
             if ( getLastException()!=null ) {
                 renderException(g, xAxis, yAxis, lastException);
+            } else {
+                parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             }
             return;
         }
@@ -222,7 +274,14 @@ public class DigitalRenderer extends Renderer {
     }
 
     private void renderRank1( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        Font f0= g.getFont();
+        Font f= f0;
+        if ( size>0 ) {
+            f= f0.deriveFont((float)size);
+        }
+        g.setFont(f);
         FontMetrics fm = g.getFontMetrics();
+
         int ha = 0;
         if (align == Align.NE || align == Align.NW) ha = fm.getAscent();
         if (align == Align.CENTER) ha = fm.getAscent() / 2;
@@ -237,6 +296,15 @@ public class DigitalRenderer extends Renderer {
         Units u = SemanticOps.getUnits(ds);
         QDataSet xds= SemanticOps.xtagsDataSet(ds);
         Units xunits= SemanticOps.getUnits(xds);
+
+        String form=this.format;
+        String dsformat= (String) ds.property(QDataSet.FORMAT);
+        if ( form.length()==0 && dsformat!=null ) {
+            form= dsformat;
+        }
+        if ( form.length()==0 ) {
+            form= "%.2f";
+        }
 
         int count = 0;
         
@@ -258,7 +326,12 @@ public class DigitalRenderer extends Renderer {
             int iy;
             if ( wds.value(i)>0 ) {
                 Datum d = u.createDatum( ds.value(i) );
-                s = d.getFormatter().format(d, u);
+                DatumFormatter df= d.getFormatter();
+                if ( df instanceof DefaultDatumFormatter ) {
+                    s = String.format( format, ds.value(i) );
+                } else {
+                    s = d.getFormatter().format(d, u);
+                }
                 iy = (int) yAxis.transform(d) + ha;
             } else {
                 s = "fill";
@@ -279,10 +352,19 @@ public class DigitalRenderer extends Renderer {
 
         }
         selectionArea = shape;
+        g.setFont(f0);
+        
     }
 
     private void renderRank2( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        Font f0= g.getFont();
+        Font f= f0;
+        if ( size>0 ) {
+            f= f0.deriveFont((float)size);
+        }
+        g.setFont(f);
         FontMetrics fm = g.getFontMetrics();
+
         int ha = 0;
         if (align == Align.NE || align == Align.NW) ha = fm.getAscent();
         if (align == Align.CENTER) ha = fm.getAscent() / 2;
@@ -305,9 +387,18 @@ public class DigitalRenderer extends Renderer {
             yds= DataSetOps.unbundle(fds, 1);
             zds= DataSetOps.unbundle(fds, fds.length(0)-1 );
         } else {
-            xds= Ops.div( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length() ) );
-            yds= Ops.mod( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length() ) );
+            xds= Ops.div( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length(0) ) );
+            yds= Ops.mod( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length(0) ) );
             zds= fds;
+        }
+
+        String form=this.format;
+        String dsformat= (String) ds.property(QDataSet.FORMAT);
+        if ( form.length()==0 && dsformat!=null ) {
+            form= dsformat;
+        }
+        if ( form.length()==0 ) {
+            form= "%.2f";
         }
 
         Units xunits= SemanticOps.getUnits(xds);
@@ -334,7 +425,12 @@ public class DigitalRenderer extends Renderer {
             String s;
             if ( wds.value(i)>0 ) {
                 Datum d = u.createDatum( zds.value(i) );
-                s = d.getFormatter().format(d, u);
+                DatumFormatter df= d.getFormatter();
+                if ( df instanceof DefaultDatumFormatter ) {
+                    s = String.format( form, zds.value(i) );
+                } else {
+                    s = d.getFormatter().format(d, u);
+                }
                 if (wa > 0.0) ix = ix - (int) (fm.stringWidth(s) * wa);
             } else {
                 s = "fill";
@@ -351,11 +447,16 @@ public class DigitalRenderer extends Renderer {
             }
         }
         selectionArea = shape;
+        g.setFont(f0);
     }
 
     @Override
     public boolean acceptContext(int x, int y) {
-        return true;
+        if ( selectionArea!=null ) {
+            return selectionArea.contains( x, y );
+        } else {
+            return true;
+        }
     }
 
     @Override
