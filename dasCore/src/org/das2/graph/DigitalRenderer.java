@@ -328,7 +328,7 @@ public class DigitalRenderer extends Renderer {
                 Datum d = u.createDatum( ds.value(i) );
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
-                    s = String.format( format, ds.value(i) );
+                    s = String.format( form, ds.value(i) );
                 } else {
                     s = d.getFormatter().format(d, u);
                 }
