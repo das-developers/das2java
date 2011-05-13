@@ -360,6 +360,15 @@ public class SemanticOps {
                 result.join( ytagsDataSet(ds.slice(i) ) );
             }
             return result;
+        } else if ( ds.length()>0 && ds.property(QDataSet.DEPEND_0,0)!=null ) { // For Juno pktid=91
+            QDataSet yds= xtagsDataSet( ds.slice(0) );
+            JoinDataSet result= new JoinDataSet(yds);
+            for ( int i=1; i<ds.length(); i++ ) {
+                result.join( xtagsDataSet(ds.slice(i) ) );
+            }
+            result.putProperty( QDataSet.UNITS,  yds.slice(0).property( QDataSet.UNITS ) );
+            return result;
+
         } else {
             QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
             if ( result==null ) {
