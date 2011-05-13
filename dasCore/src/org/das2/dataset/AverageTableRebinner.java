@@ -729,9 +729,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         double xSampleWidth;
-        double fudge = 1.5;
+        double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.1;
+            fudge = 1.1 * 0.9;
         }
         if (xTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
@@ -873,9 +873,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         double ySampleWidth;
-        double fudge = 1.5;
+        double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.1;
+            fudge = 1.1 * 0.9;
         }
         if (yTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
