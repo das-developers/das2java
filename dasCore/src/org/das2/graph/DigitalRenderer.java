@@ -21,7 +21,10 @@ import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.BundleDataSet;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -31,6 +34,47 @@ import org.virbo.dsops.Ops;
  * @author jbf
  */
 public class DigitalRenderer extends Renderer {
+
+    /**
+     * autorange on the data, returning a rank 2 bounds for the dataset.
+     *
+     * @param fillDs
+     * @return
+     */
+    public static QDataSet doAutorange( QDataSet ds ) {
+        if ( SemanticOps.isTableDataSet(ds) ) {
+
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+            QDataSet yds= SemanticOps.ytagsDataSet(ds);
+
+            QDataSet xrange= Ops.extent(xds);
+            QDataSet yrange= Ops.extent(yds);
+
+            JoinDataSet bds= new JoinDataSet(2);
+            bds.join(xrange);
+            bds.join(yrange);
+
+            return bds;
+
+        } else if ( ds.rank()==1 ) {
+
+            QDataSet yds= ds;
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+
+            QDataSet xrange= Ops.extent(xds);
+            QDataSet yrange= Ops.extent(yds);
+
+            JoinDataSet bds= new JoinDataSet(2);
+            bds.join(xrange);
+            bds.join(yrange);
+            
+            return bds;
+
+        } else {
+            return null;
+
+        }
+    }
 
     protected Color color = Color.BLACK;
     public static final String PROP_COLOR = "color";
