@@ -298,12 +298,17 @@ public class AverageTableRebinner implements DataSetRebinner {
                     DatumRange dr = DatumRangeUtil.union(
                             xunits.createDatum( xds.value(i0) ),
                             xunits.createDatum( xds.value(i1) ) );
-                    try {
-                        dr.width().gt( xTagWidth );
-                    } catch ( InconvertibleUnitsException ex ) {
-                        dr.width().gt( xTagWidth );
-                    }
-                    if ( dr.width().gt( xTagWidth ) ) {
+//                    try {
+//                        if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) {
+//                            System.err.println( "dr.width().gt( xTagWidth ) -> "+( dr.width().gt( xTagWidth ) ) );
+//                            System.err.println( "  dr.width()=="+dr.width() );
+//                            System.err.println( "  xtagwidth=="+xTagWidth );
+//                        }
+//                        dr.width().gt( xTagWidth );
+//                    } catch ( InconvertibleUnitsException ex ) {
+//                        dr.width().gt( xTagWidth );
+//                    }
+                    if ( dr.width().ge( xTagWidth ) ) {
                         double alpha = DatumRangeUtil.normalize(dr, xx);
                         if ( interpolateType==Interpolate.NearestNeighbor ) {
                             alpha= alpha < 0.5 ? 0.0 : 1.0;
