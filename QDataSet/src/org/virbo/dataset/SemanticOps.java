@@ -214,6 +214,7 @@ public class SemanticOps {
             return true;
         } else {
             QDataSet dep= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            if ( dep==null ) return false;
             Units depu= getUnits(dep);
             if ( depu instanceof EnumerationUnits ) {
                 return true;
