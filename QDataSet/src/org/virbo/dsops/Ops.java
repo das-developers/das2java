@@ -2510,7 +2510,36 @@ public class Ops {
         return qresult;
         
     }
-    
+
+    /**
+     * returns rank 1 QDataSet range relative to this, where 0. is the minimum, and 1. is the maximum.
+     * For example rescaleRange(ds,1,2) is scanNext, rescaleRange(ds,0.5,1.5) is zoomOut.
+     * @param dr a QDataSet with bins and with nonzero width.
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
+     * min-width.
+     * @param max the new max width normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
+     * min-width.
+     * @return new rank 1 QDataSet range.
+     */
+    public static QDataSet rescaleRange( QDataSet dr, double min, double max ) {
+        if ( dr.rank()!=1 ) {
+            throw new IllegalArgumentException("Rank must be 1");
+        }
+        double w= dr.value(1) - dr.value(0);
+        if ( Double.isInfinite(w) || Double.isNaN(w) ) {
+            throw new RuntimeException("width is not finite");
+        }
+        if ( w==0. ) {
+            // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
+            throw new RuntimeException("width is zero!");
+        }
+        DDataSet result= DDataSet.createRank1(2);
+        result.putValue( 0, dr.value(0) + w*min );
+        result.putValue( 1, dr.value(0) + w*max );
+
+        return result;
+    }
+
     /**
      * returns histogram of dataset, the number of points falling in each bin.
      * 
