@@ -7,11 +7,7 @@
  */
 package org.das2.datum;
 
-import org.das2.datum.Datum;
-import org.das2.datum.DatumRange;
-import org.das2.datum.TimeUtil;
 import org.das2.datum.TimeUtil.TimeStruct;
-import org.das2.datum.Units;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -20,7 +16,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.das2.datum.MonthDatumRange;
 
 /**
  * TimeParser designed to quickly parse strings with a specified format.  This parser has been
@@ -157,6 +152,25 @@ public class TimeParser {
         } else {
             throw new IllegalArgumentException("example time must contain T or space.");
         }
+    }
+
+    /**
+     * return true if each successive field is nested within the previous,
+     * e.g.  $Y$m/$d is nested, but $Y$m/$Y$m$d is not because of the second $Y.
+     * @return true if the spec is nested.
+     */
+    public boolean isNested() {
+        int resolution= -9999;
+        for ( int i=1; i<fc.length; i++ ) {
+            if ( handlers[i]>=0 && handlers[i]<8 ) {
+                if ( handlers[i]>resolution ) {
+                    resolution= handlers[i];
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

@@ -350,7 +350,7 @@ public final class DatumUtil {
      * @throws ParseException when the double can't be parsed or the units aren't recognized.
      */
     public static Datum parse(java.lang.String s) throws ParseException {
-        String[] ss= s.trim().split("\\s");
+        String[] ss= s.trim().split("\\s"); //TODO: consider "5 Deg N"
         Units units;
         if ( ss.length==1 ) {
                 units= Units.dimensionless;
