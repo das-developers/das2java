@@ -42,38 +42,38 @@ public class DigitalRenderer extends Renderer {
      * @return
      */
     public static QDataSet doAutorange( QDataSet ds ) {
+        QDataSet xrange, yrange;
+
         if ( SemanticOps.isTableDataSet(ds) ) {
 
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
 
-            QDataSet xrange= Ops.extent(xds);
-            QDataSet yrange= Ops.extent(yds);
-
-            JoinDataSet bds= new JoinDataSet(2);
-            bds.join(xrange);
-            bds.join(yrange);
-
-            return bds;
+            xrange= Ops.extent(xds);
+            yrange= Ops.extent(yds);
 
         } else if ( ds.rank()==1 ) {
 
             QDataSet yds= ds;
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
 
-            QDataSet xrange= Ops.extent(xds);
-            QDataSet yrange= Ops.extent(yds);
-
-            JoinDataSet bds= new JoinDataSet(2);
-            bds.join(xrange);
-            bds.join(yrange);
-            
-            return bds;
+            xrange= Ops.extent(xds);
+            yrange= Ops.extent(yds);
 
         } else {
             return null;
 
         }
+
+        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        yrange= Ops.rescaleRange( yrange, -0.1, 1.1 );
+
+        JoinDataSet bds= new JoinDataSet(2);
+        bds.join(xrange);
+        bds.join(yrange);
+
+        return bds;
+
     }
 
     protected Color color = Color.BLACK;

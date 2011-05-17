@@ -84,10 +84,6 @@ public class ZoomPanMouseModule extends MouseModule {
                 DatumRange drRound= new DatumRange( min, max );
 
                 double d= DatumRangeUtil.normalize( dr, drRound.min() );
-                if ( d<-0.1 || d>0.1 ) {
-                    System.err.printf( "in=%s  out=%s", dr, drRound );
-                    System.err.printf( "in=%s  out=%s", dr, drRound );
-                }
                 dr= drRound;
             } catch ( InconvertibleUnitsException ex ) {
                 // it's okay to do nothing, this is a transient state
@@ -229,7 +225,6 @@ public class ZoomPanMouseModule extends MouseModule {
         if ( axisIsAdjustable(xAxis) ) xAxis.setDatumRange(xdrnew);
         if ( axisIsAdjustable(yAxis) ) yAxis.setDatumRange(ydrnew);
 
-        System.err.println(ydrnew);
         super.mouseWheelMoved(e);
     }
 
