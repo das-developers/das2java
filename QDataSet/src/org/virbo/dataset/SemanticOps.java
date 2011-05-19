@@ -234,6 +234,18 @@ public class SemanticOps {
     }
 
     /**
+     * Test for bins scheme, where BINS_1 is set.  This is
+     * where a two-element index is min, max.
+     * @param ds
+     * @return
+     */
+    public static boolean isBins(QDataSet ds ) {
+        boolean bins= "min,max".equals( ds.property(QDataSet.BINS_1) ) ||
+                 "min,maxInclusive".equals( ds.property(QDataSet.BINS_1) );
+        return ds.rank()==2 && bins;
+    }
+    
+    /**
      * returns true if the dataset indicates that it is monotonically
      * increasing.  See DataSetUtil.isMonotonic.
      * @param ds
