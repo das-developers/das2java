@@ -10,6 +10,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
+import org.das2.datum.EnumerationUnits;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -128,8 +129,17 @@ public class ValuesTreeModel extends DefaultTreeModel {
                     u= (Units)bundle.property( QDataSet.UNITS, i );
                     if ( u==null ) u= Units.dimensionless;
                 }
+                String sval;
+                if ( u instanceof EnumerationUnits ) {
+                    try {
+                        sval= wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill";
+                    } catch ( IllegalArgumentException ex ) {
+                        sval= "" + ds.value(i) + " (error)";
+                    }
+                } else {
+                    sval= wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill";
+                }
                 //TODO: future datum class may allow for toString to return nominal data for invalid data.
-                String sval= wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill";
                 if ( dep0!=null ) {
                     sval += " @ " +( String.valueOf(wdsDep0.value(i) > 0 ? depu.createDatum(dep0.value(i) ) : "fill" ) );
                 }
