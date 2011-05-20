@@ -1078,6 +1078,10 @@ public class DataSetOps {
                 fillDs= Ops.toRadians(fillDs);
             } else if ( cmd.equals("|toDegrees") ) {
                 fillDs= Ops.toDegrees(fillDs);
+            } else if ( cmd.equals("|smooth") ) {
+                String comp= s.next();
+                int icomp= Integer.parseInt(comp);
+                fillDs= Ops.smooth(fillDs, icomp);
             } else {
                 if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
             }
