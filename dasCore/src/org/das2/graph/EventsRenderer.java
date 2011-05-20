@@ -200,9 +200,9 @@ public class EventsRenderer extends Renderer {
         } else if ( vds.rank()==1 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
-                xmins= dep0;
-                xmaxs= dep0;
-                msgs= dep0;
+                xmins= vds;
+                xmaxs= vds;
+                msgs= vds;
             } else if ( dep0.rank() == 2  ) {
                 if ( SemanticOps.isBins(dep0) ) {
                     xmins= DataSetOps.slice1( dep0, 0 );
@@ -293,7 +293,7 @@ public class EventsRenderer extends Renderer {
                     
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
-                        g.fill( new Rectangle( ixmin, row.getDMinimum(), ixmax-ixmin, row.getHeight() ) );
+                        g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
                         int im= ixmin-column.getDMinimum();
                         int em0= im-1;
                         int em1= im+iwidth+1;
