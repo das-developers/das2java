@@ -381,8 +381,8 @@ public class VectorUtil {
             double dy = p1 - y0;
 
             if ( Math.abs(dx) < dxLimit && Math.abs(dy) < dyLimit) {
-                sx0 += p0;
-                sy0 += p1;
+                sx0 += p0*ww;
+                sy0 += p1*ww;
                 nn0 += ww;
                 i++;
                 continue;
@@ -403,8 +403,8 @@ public class VectorUtil {
 
             x0 = dxLimit * ( 0.5 + (int) Math.floor(p0/dxLimit) );
             y0 = dyLimit * ( 0.5 + (int) Math.floor(p1/dyLimit) );
-            sx0 = p0;
-            sy0 = p1;
+            sx0 = p0*ww;
+            sy0 = p1*ww;
             nn0 = ww;
         }
 
