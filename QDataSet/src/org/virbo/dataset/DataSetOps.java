@@ -719,6 +719,8 @@ public class DataSetOps {
             } else if ( bundle1==null && name.matches("ch_\\d+") ) {
                 int ich= Integer.parseInt(name.substring(3) );
                 return DataSetOps.slice1( bundleDs, ich );
+            } else if ( bundle1==null ) {
+                throw new IllegalArgumentException("expected to find BUNDLE_1 or DEPEND_1 with ordinal units." );
             }
         }
 
