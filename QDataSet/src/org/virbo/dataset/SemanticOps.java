@@ -35,6 +35,9 @@ public class SemanticOps {
      */
     public final static Units getUnits(QDataSet ds) {
         Units u = (Units) ds.property(QDataSet.UNITS);
+        if ( u==null && isJoin(ds) ) {
+            u= (Units) ds.slice(0).property(QDataSet.UNITS);
+        }
         return u == null ? Units.dimensionless : u;
     }
 
@@ -257,6 +260,7 @@ public class SemanticOps {
 
     /**
      * returns true if the dataset is rank 2 or greater with the first dimension a join dimension.
+     * Note this does not return true for implicit joins, where JOIN_0 is not set.
      * @param ds
      * @return
      */
