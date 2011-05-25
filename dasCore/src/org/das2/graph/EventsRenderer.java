@@ -212,6 +212,11 @@ public class EventsRenderer extends Renderer {
                 if ( SemanticOps.isBins(dep0) ) {
                     xmins= DataSetOps.slice1( dep0, 0 );
                     xmaxs= DataSetOps.slice1( dep0, 1 );
+                    Units u0= SemanticOps.getUnits(xmins );
+                    Units u1= SemanticOps.getUnits(xmaxs );
+                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                        xmaxs= Ops.add( xmins, xmaxs );
+                    }
                     msgs= vds;
                 } else {
                     parent.postMessage( this, "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
