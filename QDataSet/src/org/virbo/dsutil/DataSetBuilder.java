@@ -103,7 +103,26 @@ public class DataSetBuilder {
             current= DDataSet.createRank3( recCount, dim1, dim2 );
         }
     }
-    
+
+
+    /**
+     * for index0==-1, return the last value entered into the rank 1 dataset.
+     * @param index0
+     * @throws IllegalArgumentException if the index is not -1
+     * @throws IllegalArgumentException if nothing is yet written to the builder.
+     * @return
+     */
+
+    public double getValue( int index0 ) {
+        if ( index0==-1 ) { // returns the last value
+            if ( this.index==0 ) {
+                throw new IllegalArgumentException("nothing written to builder yet");
+            }
+            return current.value(this.index-1);
+        } else {
+            throw new IllegalArgumentException("index must be -1");
+        }
+    }
     /**
      * insert a value into the builder.
      * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
