@@ -190,6 +190,11 @@ public class EventsRenderer extends Renderer {
         if ( vds.rank()==2 ) {
             xmins= DataSetOps.unbundle( vds,0 );
             xmaxs= DataSetOps.unbundle( vds,1 );
+            Units u0= SemanticOps.getUnits(xmins );
+            Units u1= SemanticOps.getUnits(xmaxs );
+            if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                xmaxs= Ops.add( xmins, xmaxs );
+            }
             if ( vds.length(0)>3 ) {
                 colors= DataSetOps.unbundle( vds,2 );
             } else {
