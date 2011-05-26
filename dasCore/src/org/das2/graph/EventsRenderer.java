@@ -8,6 +8,7 @@
 
 package org.das2.graph;
 
+import java.awt.Shape;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
@@ -20,6 +21,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.GeneralPath;
 import org.das2.datum.Units;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
@@ -75,7 +77,23 @@ public class EventsRenderer extends Renderer {
     public EventsRenderer( ) {
         super();
     }
-    
+
+    private Shape selectionArea;
+
+    Shape selectionArea() {
+        return selectionArea;
+    }
+
+    @Override
+    public boolean acceptContext(int x, int y) {
+        if ( selectionArea!=null ) {
+            return selectionArea.contains( x, y );
+        } else {
+            return true;
+        }
+    }
+
+
     public interface ColorSpecifier {
         /**
          * returns a color for the given datum.  null may be returned, indicating the
@@ -119,6 +137,7 @@ public class EventsRenderer extends Renderer {
         return null;
     }
     
+    @Override
     protected void installRenderer() {
         MouseModule mm= getMouseModule();
         parent.getDasMouseInputAdapter().addMouseModule( mm );
@@ -245,6 +264,8 @@ public class EventsRenderer extends Renderer {
 
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
+        GeneralPath sa= new GeneralPath();
+
         QDataSet vds= (QDataSet)getDataSet();
         if (vds == null || vds.length() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
@@ -303,6 +324,7 @@ public class EventsRenderer extends Renderer {
                     
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
+                        sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
                         g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
                         int im= ixmin-column.getDMinimum();
                         int em0= im-1;
@@ -325,6 +347,8 @@ public class EventsRenderer extends Renderer {
             }
         }
         g.dispose();
+
+        selectionArea= sa;
         
     }
     
