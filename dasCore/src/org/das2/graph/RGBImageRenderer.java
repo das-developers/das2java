@@ -8,6 +8,7 @@ package org.das2.graph;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import org.das2.datum.Units;
+import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -27,17 +28,25 @@ public class RGBImageRenderer extends Renderer {
         QDataSet dep0;
         QDataSet dep1;
 
+        if ( ds==null || ds.length() == 0) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
+            return;
+        }
+
+        BufferedImage im= image; // make local copy for thread safety
+        if ( im==null ) return; // transitional state
+
         dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
         dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
 
-        if ( dep0==null ) dep0= Ops.dindgen(image.getWidth());
-        if ( dep1==null ) dep1= Ops.dindgen(image.getHeight());
+        if ( dep0==null ) dep0= Ops.dindgen(im.getWidth());
+        if ( dep1==null ) dep1= Ops.dindgen(im.getHeight());
         
         Units xunits= SemanticOps.getUnits(dep0);
         Units yunits= SemanticOps.getUnits(dep1);
 
-        int h= image.getHeight();
-        int w= image.getWidth();
+        int h= im.getHeight();
+        int w= im.getWidth();
         
         double dx0= dep0.value(1)-dep0.value(0);
         double dy0= dep1.value(1)-dep1.value(0);
@@ -45,14 +54,19 @@ public class RGBImageRenderer extends Renderer {
         int y0= (int)yAxis.transform( dep1.value(0) - dy0/2, yunits);
         int x1= (int)xAxis.transform( dep0.value(w-1) + dx0/2, xunits );
         int y1= (int)yAxis.transform( dep1.value(h-1) + dy0/2, yunits );
-        g.drawImage( image, x0, y0, x1-x0, y1-y0, null );
+        g.drawImage( im, x0, y0, x1-x0, y1-y0, null );
         
     }
 
     @Override
     public void setDataSet(QDataSet ds) {
         super.setDataSet(ds);
-        image= getImage(ds);
+        if ( ds==null ) {
+            image=null;
+        } else {
+            image= getImage(ds);
+        }
+        refresh();
     }
 
     
