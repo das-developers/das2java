@@ -90,6 +90,7 @@ public class LabelDragRenderer implements DragRenderer {
             window= new JWindow( root );
             label= new JPanel() {
                 public void paintComponent( Graphics g ) {
+                    ((Graphics2D)g).setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
                     g.clearRect(0,0, getWidth(), getHeight() );
                     gtr.draw( g, 0, (int)gtr.getAscent() );
                 }
@@ -103,6 +104,7 @@ public class LabelDragRenderer implements DragRenderer {
             glassPane= (JComponent)parent.getCanvas().getGlassPane();
             containedPanel= new JPanel() {
                 public void paintComponent( Graphics g ) {
+                    ((Graphics2D)g).setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
                     g.clearRect(0,0, getWidth(), getHeight() );
                     gtr.draw( g, 0, (int)gtr.getAscent() );
                 }
