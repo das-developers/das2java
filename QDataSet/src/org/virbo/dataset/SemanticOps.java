@@ -414,6 +414,9 @@ public class SemanticOps {
                 QDataSet bounds= SemanticOps.bounds(tds1);
                 Units xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(tds1) );
                 Units yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(tds1) );
+                if (  yunits instanceof EnumerationUnits ) {
+                    return DataSetOps.slice2( tds, 0 ); //TODO: code this nicely.  This is some something comes up with Image datasets.  
+                }
                 if ( bounds.value(0,0)<=x.doubleValue(xunits) && x.doubleValue(xunits)<bounds.value(0,1)
                         && bounds.value(1,0)<=y.doubleValue(yunits) && y.doubleValue(yunits)<bounds.value(1,1) ) {
                     return tds1;
