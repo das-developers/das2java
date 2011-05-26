@@ -23,6 +23,8 @@ public class SelectionUtil {
             return ((SpectrogramRenderer)r).selectionArea();
         } else if ( r instanceof DigitalRenderer ) {
             return ((DigitalRenderer)r).selectionArea();
+        } else if ( r instanceof EventsRenderer ) {
+            return ((EventsRenderer)r).selectionArea();
         } else if ( r instanceof ImageVectorDataSetRenderer ) {
             return ((ImageVectorDataSetRenderer)r).selectionArea();
         } else {
