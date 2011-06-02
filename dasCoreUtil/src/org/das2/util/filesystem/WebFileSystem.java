@@ -202,7 +202,11 @@ public abstract class WebFileSystem extends FileSystem {
                 if (f.exists()) {
                     return null;
                 } else {
-                    throw new FileNotFoundException("expected to find " + f);
+                    if ( monitor.isCancelled() ) {
+                        throw new InterruptedIOException("request was cancelled");
+                    } else {
+                        throw new FileNotFoundException("expected to find " + f);
+                    }
                 }
             } else {
                 logger.fine("this thread will download " + filename + ".");

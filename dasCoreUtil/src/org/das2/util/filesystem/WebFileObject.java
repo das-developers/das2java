@@ -281,10 +281,10 @@ public class WebFileObject extends FileObject {
                 // TODO: do something with part file.
                 throw e;
             } catch (IOException ex ) {
-                if ( ex.getMessage().contains("Forbidden") ) {
+                if ( ex.getMessage()!=null && ex.getMessage().contains("Forbidden") ) {
                     throw ex;
                 }
-                if ( this.wfs instanceof HttpFileSystem ) { //TODO: when would we use this--it needs to be more precise.
+                if ( this.wfs instanceof HttpFileSystem && !(ex instanceof InterruptedIOException )  ) { //TODO: when would we use this--it needs to be more precise.
                     if ( this.wfs.isOffline() ) {
                         ex.printStackTrace();
                         throw new FileSystem.FileSystemOfflineException("not found in local cache: "+getNameExt() );
