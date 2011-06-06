@@ -32,6 +32,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.*;
 import java.util.logging.Logger;
+import org.das2.util.Base64;
+import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
+import org.das2.util.monitor.CancelledOperationException;
 
 /**
  *
@@ -241,6 +244,21 @@ public class WebFileObject extends FileObject {
             URL url = wfs.getURL(this.getNameExt());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
+
+            String userInfo= null;
+
+            try {
+                userInfo = KeyChain.getDefault().getUserInfo( url );
+            } catch (CancelledOperationException ex) {
+                throw new FileSystemOfflineException("user cancelled credentials");
+            }
+            
+            if ( userInfo != null) {
+                String encode = Base64.encodeBytes( userInfo.getBytes());
+                connection.setRequestProperty("Authorization", "Basic " + encode);
+            }
+
+
             try {
                 connection.connect();
                 remoteDate = new Date(connection.getLastModified());
