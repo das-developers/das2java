@@ -23,6 +23,7 @@ import org.das2.system.DasLogger;
 import org.das2.util.ClassMap;
 import java.awt.Color;
 import java.beans.*;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -156,6 +157,11 @@ public class BeansUtil {
         excludePropertyNames.add("class");
         excludePropertyNames.add("listLabel");
         excludePropertyNames.add("listIcon");
+
+        if ( !Modifier.isPublic(c.getModifiers() ) ) {
+            System.err.println("cannot use class: "+c );
+            return new PropertyDescriptor[0];
+        }
 
         try {
             BeanInfo beanInfo = getBeanInfo(c);
