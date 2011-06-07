@@ -72,10 +72,10 @@ public class ZoomPanMouseModule extends MouseModule {
         if ( div!=null ) {
             try {
                 int px= 999;
-                while ( px>2 ) {
+                while ( px>1 ) {
                     div= div.finerDivider(false);
                     DatumRange minDr= div.rangeContaining(dr.min());
-                    px= (int)Math.abs( xAxis.transform(minDr.max()) - xAxis.transform(minDr.min()) );
+                    px= (int)Math.ceil( Math.abs( xAxis.transform(minDr.max()) - xAxis.transform(minDr.min()) ) );
                 }
                 DatumRange minDr= div.rangeContaining(dr.min());
                 DatumRange maxDr= div.rangeContaining(dr.max());
