@@ -1329,6 +1329,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public void removeRenderer(Renderer rend) {
+        logger.log( Level.FINE, "removeRenderer({0})", new Object[] { rend } );
         if (getCanvas() != null) {
             rend.uninstallRenderer();
         }
