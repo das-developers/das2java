@@ -832,6 +832,7 @@ public class AsciiParser {
 
     /**
      * returns the high rank rich fields, from NAME to LABEL.
+     * NAME:<fieldX>  or NAME:<fieldX-fieldY>
      * @return
      */
     public Map<String,String> getRichFields() {
@@ -841,7 +842,20 @@ public class AsciiParser {
                 String name= (String) bundleDescriptor.property( QDataSet.ELEMENT_NAME, i);
                 if ( name!=null && !result.containsKey(name) ) {
                     String label= (String) bundleDescriptor.property( QDataSet.ELEMENT_LABEL, i);
-                    result.put(name,label);
+                    int rank= bundleDescriptor.length( i );
+                    int len=0;
+                    if ( rank>0 ) {
+                        len=1;
+                        for ( int j=0; j<rank; j++  ) {
+                            len= len*(int)bundleDescriptor.value(i,j);
+                        }
+                    }
+                    if ( len==0 ) {
+                        result.put(name+": field"+i,label);
+                    } else {
+                        result.put(name+": field"+i+"-field"+(i+len),label);
+                        i=i+len-1;
+                    }
                 }
             }
         }
