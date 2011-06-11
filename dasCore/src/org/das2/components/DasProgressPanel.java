@@ -219,7 +219,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         taskLabel = new JLabel();
         taskLabel.setOpaque(false);
-        taskLabel.setFont(new Font("Dialog", 1, 18));
+        taskLabel.setFont(new Font("Dialog", 1, 14));
         taskLabel.setHorizontalAlignment(JLabel.CENTER);
         taskLabel.setText(label);
         taskLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
