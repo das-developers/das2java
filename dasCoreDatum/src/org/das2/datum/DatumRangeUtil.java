@@ -976,6 +976,8 @@ public class DatumRangeUtil {
         return  timeString;
     }
     
+    public static boolean useDoy= false;
+
     public static String formatTimeRange( DatumRange self ) {
         
         String[] monthStr= new String[] { "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec" };
@@ -1021,14 +1023,16 @@ public class DatumRangeUtil {
                         + monthStr[ts2.month-1-1] + " " + ts2.year;
             }
         }
-        
+
+        final DatumFormatter daysFormat= useDoy ? TimeDatumFormatter.DAY_OF_YEAR : TimeDatumFormatter.DAYS;
+
         if ( isMidnight1 && isMidnight2 ) { // no need to indicate HH:MM
             if ( TimeUtil.getJulianDay( self.max() ) - TimeUtil.getJulianDay( self.min() ) == 1 ) {
-                return TimeDatumFormatter.DAYS.format( self.min() );
+                return daysFormat.format( self.min() );
             } else {
                 Datum endtime= self.max().subtract( Datum.create( 1, Units.days ) );
-                return TimeDatumFormatter.DAYS.format( self.min() ) + toDelim
-                        + TimeDatumFormatter.DAYS.format( endtime );
+                return daysFormat.format( self.min() ) + toDelim
+                        + daysFormat.format( endtime );
             }
             
         } else {
@@ -1043,13 +1047,13 @@ public class DatumRangeUtil {
             int maxDay= TimeUtil.getJulianDay(self.max());
             if ( TimeUtil.getSecondsSinceMidnight(self.max())==0 ) maxDay--;  //  want to have 24:00, not 00:00
             if ( maxDay==minDay ) {
-                return TimeDatumFormatter.DAYS.format(self.min())
+                return daysFormat.format(self.min())
                 + " " + efficientTime( self.min(), self.max(), self )
                 + " to " +  efficientTime( self.max(), self.min(), self );
             } else {
                 timeOfDayFormatter.format( self.min() );
-                String sminDay=  TimeDatumFormatter.DAYS.format( TimeUtil.prevMidnight( self.min() ) ); //grrr
-                String smaxDay=  TimeDatumFormatter.DAYS.format( self.max() );
+                String sminDay=  daysFormat.format( TimeUtil.prevMidnight( self.min() ) ); //grrr
+                String smaxDay=  daysFormat.format( self.max() );
                 return sminDay + " " + timeOfDayFormatter.format( self.min() )
                         + " to " + smaxDay + " " + timeOfDayFormatter.format( self.max() );
             }
