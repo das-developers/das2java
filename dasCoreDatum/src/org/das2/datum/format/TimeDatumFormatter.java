@@ -57,6 +57,12 @@ public class TimeDatumFormatter extends DatumFormatter {
      * yyyy-MM-dd
      */
     public static final TimeDatumFormatter DAYS;
+
+    /**
+     * yyyy-JJJ
+     */
+    public static final TimeDatumFormatter DAY_OF_YEAR;
+    
     /**
      * yyyy
      */
@@ -97,6 +103,7 @@ public class TimeDatumFormatter extends DatumFormatter {
             YEARS= new TimeDatumFormatter("yyyy");
             MONTHS= new TimeDatumFormatter("yyyy-MM");
             DAYS = new TimeDatumFormatter("yyyy-MM-dd");
+            DAY_OF_YEAR = new TimeDatumFormatter("%Y-%j");
             HOURS = new TimeDatumFormatter("yyyy-MM-dd HH:'00'");
             MINUTES = new TimeDatumFormatter("HH:mm");
             SECONDS = new TimeDatumFormatter("HH:mm:ss");
