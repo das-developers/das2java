@@ -1380,6 +1380,41 @@ public class DataSetUtil {
     }
 
     /**
+     * add method for validating before link is called.
+     * @param xds
+     * @param yds
+     * @param problems insert problem descriptions here, if null then ignore
+     * @return true if the datasets can be linked into a valid dataset, false otherwise
+     */
+    public static boolean validate(QDataSet xds, QDataSet yds, List<String> problems ) {
+        if ( xds.length()!=yds.length() ) {
+            if (problems == null) problems = new ArrayList<String>();
+            problems.add(String.format("DEPEND_%d length is %d, should be %d.", 0, xds.length(), yds.length()));
+            return false;
+        } else {
+            return validate( Ops.link(xds, yds), problems, 0 );
+        }
+    }
+
+    /**
+     * add method for validating before link is called.
+     * @param xds
+     * @param yds
+     * @param zds
+     * @param problems insert problem descriptions here, if null then ignore
+     * @return true if the datasets can be linked into a valid dataset, false otherwise
+     */
+    public static boolean validate(QDataSet xds, QDataSet yds, QDataSet zds, List<String> problems ) {
+        if ( xds.length()!=yds.length() ) {
+            if (problems == null) problems = new ArrayList<String>();
+            problems.add(String.format("DEPEND_%d length is %d, should be %d.", 0, xds.length(), yds.length()));
+            return false;
+        } else {
+            return validate( Ops.link(xds, yds, zds ), problems, 0 );
+        }
+    }
+
+    /**
      * return the total number of values in the dataset.  For qubes this is the product
      * of the dimension lengths, for other datasets we create a dataset of lengths
      * and total all the elements.
@@ -1408,7 +1443,15 @@ public class DataSetUtil {
         }
     }
 
+    /**
+     * internal validate method
+     * @param ds a dataset which may not be valid.
+     * @param problems null or a list of problems that is appended.
+     * @param dimOffset used to check the slices as well for high rank datasets.
+     * @return
+     */
     private static boolean validate(QDataSet ds, List<String> problems, int dimOffset) {
+        if (problems == null) problems = new ArrayList<String>();
         QDataSet dep = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep != null) {
             if (dep.length() != ds.length()) {
