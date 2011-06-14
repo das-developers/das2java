@@ -512,6 +512,7 @@ public class AsciiHeadersParser {
             if ( qube.length>0 ) {
                 putProperty( QDataSet.QUBE, i, Boolean.TRUE );
                 putProperty( QDataSet.ELEMENT_NAME, i, name );
+                putProperty( QDataSet.ELEMENT_LABEL, i, name );
                 putProperty( QDataSet.START_INDEX, i, i ); // datasets2 does the mapping.
             }
             if ( qube.length>0 && names!=null ) {
@@ -557,6 +558,9 @@ public class AsciiHeadersParser {
         public Object property(String name, int ic) {
             synchronized (this) {
                 String dsname= datasets2.get(ic);
+                if ( datasets==null || datasets.get(dsname)==null ) {
+                    throw new IllegalArgumentException("No slice at "+ic );
+                }
                 int ids= datasets.get(dsname); // index of the beginning of the rank 2 dataset
                 if ( name.equals( QDataSet.NAME ) ) {
                     Map<String,Object> props1= props.get(ids);
@@ -755,7 +759,17 @@ public class AsciiHeadersParser {
                                          ss[i]= Ops.safeName(ss[i]);
                                      } 
                                  }
-                                 bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
+                                 if ( propsj.has("DEPEND_1") ) { // in the CRRES file, we have both the channel labels enumerated, and a pitch angle dependence.  
+                                     BundleDescriptor bds= new BundleDescriptor();
+                                     for ( int i=0; i<ss.length; i++ ) {
+                                         bds.addDataSet( Ops.safeName(ss[i]), i, new int[0] );
+                                         bds.putProperty( QDataSet.LABEL, i, ss[i] );
+                                     }
+                                     bd.putProperty( QDataSet.BUNDLE_1, ids, bds );
+                                    //bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
+                                 } else {
+                                    bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
+                                 }
                              }
                              bd.putProperty( "RENDER_TYPE", ids, "series" );
                             continue;
