@@ -913,7 +913,23 @@ public class DataSetOps {
             if ( bundleDs.rank()==1 ) throw new IllegalArgumentException("not implemented for rank 0, slice is rank 1");
             TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
             result.setTrim( 1, is, is+len, 1 );
-            Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,j) );
+            Integer ifirst= (Integer) bundle.property( QDataSet.START_INDEX, j  );
+            int first,last;
+            if ( ifirst!=null ) {
+                first= ifirst.intValue();
+                last= first+len-1;
+            } else {
+                first= j; // I don't think this should happen, but...
+                last= j;
+            }
+            Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,first) );
+            Map<String,Object> props2= DataSetUtil.getProperties( DataSetOps.slice0(bundle,last) );
+            for ( String ss: props2.keySet() ) { // remove the properties that are not constant within the bundle by checking first against last.
+                Object vv= props.get(ss);
+                if ( vv!=null && !vv.equals( props2.get(ss) ) ) {
+                    props.put(ss,null);
+                }
+            }
             Object o;
             o= bundle.property(QDataSet.ELEMENT_NAME,j);
             if ( o!=null ) props.put( QDataSet.NAME, o );
