@@ -763,7 +763,7 @@ public class AsciiHeadersParser {
                                      BundleDescriptor bds= new BundleDescriptor();
                                      for ( int i=0; i<ss.length; i++ ) {
                                          bds.addDataSet( Ops.safeName(ss[i]), i, new int[0] );
-                                         bds.putProperty( QDataSet.LABEL, i, ss[i] );
+                                         bds.putProperty( QDataSet.LABEL, i, ss[i] ); 
                                      }
                                      bd.putProperty( QDataSet.BUNDLE_1, ids, bds );
                                     //bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
