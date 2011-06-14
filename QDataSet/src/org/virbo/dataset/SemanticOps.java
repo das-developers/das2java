@@ -341,6 +341,8 @@ public class SemanticOps {
      * @return
      */
     public static QDataSet xtagsDataSet( QDataSet ds ) {
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) return dep0;
         if ( isBundle(ds) ){
             return DataSetOps.unbundle(ds,0);
         } else if ( isJoin(ds) ) {
@@ -351,12 +353,7 @@ public class SemanticOps {
             }
             return result;
         } else {
-            QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_0);
-            if ( result==null ) {
-                return new IndexGenDataSet(ds.length());
-            } else {
-                return result;
-            }
+            return new IndexGenDataSet(ds.length());
         }
     }
 
@@ -364,10 +361,14 @@ public class SemanticOps {
      * return the ytags for the simple table that is ds.
      *   rank 2 spectrogram: Z[X,Y] -> Y
      *   bundle_1: ds[ :, [x,y,z] ] -> y
+     * consider: These break duck typing goal, and really need a scheme
+     *   to tell it how to get the dataset.
      * @param ds
      * @return
      */
     public static QDataSet ytagsDataSet( QDataSet ds ) {
+        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if ( dep1!=null ) return dep1;
         if ( isBundle(ds) ) {
             return DataSetOps.unbundle( ds, 1 );
         } else if ( isJoin(ds)) {
@@ -516,11 +517,15 @@ public class SemanticOps {
      * returns true if the dataset is the scheme of a legacy TableDataSet
      * with only one table.  Note "Tables" have just one X unit and one Y unit,
      * no bundles.
+     * Consider: rule about "duck typing": rules like !Ops.isBundle break this
+     *  because it requires to be a simpleTable, you cannot be a bundle.  LANL
+     *  rich ASCII allows datasets to be both bundles and simple tables.
      * @param ds
      * @return
      */
     public static boolean isSimpleTableDataSet(QDataSet ds) {
-         return ds.rank()==2 && !Ops.isBundle(ds)  && !Ops.isLegacyBundle(ds);
+        QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        return ds.rank()==2 && ( dep1!=null || !Ops.isBundle(ds) ) && !Ops.isLegacyBundle(ds);
     }
 
     /**
