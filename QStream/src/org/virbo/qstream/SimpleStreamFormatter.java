@@ -812,6 +812,17 @@ public class SimpleStreamFormatter {
                                     retireBundleDep1.add(dep1);
                                 }
                             }
+                            QDataSet b1= (QDataSet) depi.property(QDataSet.BUNDLE_1, j );
+                            if ( b1!=null ) {
+                                if ( !retireBundleDep1.contains(b1) ) {
+                                    pd = doPacketDescriptor(sd, b1, false, true, 1, null);
+                                    sd.addDescriptor(pd);
+                                    depPackets.add(pd);
+                                    sd.send(pd, out);
+                                    retireBundleDep1.add(b1);
+                                }
+                            }
+
                         }
                         
                         boolean valuesInDescriptor = true;
