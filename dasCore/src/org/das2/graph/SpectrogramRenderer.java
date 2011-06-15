@@ -258,6 +258,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
 
                         } else {
+                            if ( ! SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits()) ) {
+                                parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
+                            }
+                            if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
+                                parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
+                            }
                             if ( !SemanticOps.isTableDataSet( zds ) ) {
                                 if ( !SemanticOps.isBundle( zds ) ) {
                                     parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
@@ -268,12 +274,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             }
                             if ( ! SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits()) ) {
                                 parent.postMessage(this, "inconvertible colorbar units", DasPlot.INFO, null, null);
-                            }
-                            if ( ! SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits()) ) {
-                                parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
-                            }
-                            if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
-                                parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
                             }
                         }
                     }
