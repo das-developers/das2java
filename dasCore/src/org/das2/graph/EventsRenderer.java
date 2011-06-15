@@ -115,7 +115,11 @@ public class EventsRenderer extends Renderer {
     public static final TextSpecifier DEFAULT_TEXT_SPECIFIER= new TextSpecifier() {
         public String getText( DatumRange dr, Datum d ) {
             Datum sy= DatumUtil.asOrderOneUnits( dr.width() );
-            return ""+dr+" ("+sy+")!c"+d ;
+            if ( sy.doubleValue( Units.seconds )== 0 ) {
+                return ""+dr.min()+"!c"+d ;
+            } else {
+                return ""+dr+" ("+sy+")!c"+d ;
+            }
         }
     };
     
@@ -177,6 +181,16 @@ public class EventsRenderer extends Renderer {
                     double sxmax= xmaxs.value(i);
                     Units sxunits= SemanticOps.getUnits(xmins);
                     Units zunits= SemanticOps.getUnits(msgs);
+                    Units sxmaxunits= SemanticOps.getUnits( xmaxs );
+                    if ( !sxmaxunits.isConvertableTo(sxunits) ) {
+                        if ( sxmaxunits.isConvertableTo(sxunits.getOffsetUnits() ) ) {
+                            sxmax= sxmin + sxmaxunits.convertDoubleTo( sxunits.getOffsetUnits(), sxmax );
+                        } else {
+                            sxmax= sxmin;
+                        }
+                    } else {
+                        sxmax= sxmaxunits.convertDoubleTo( sxunits, sxmax );
+                    }
 
                     Datum sz= zunits.createDatum( msgs.value(i) );
                     DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
