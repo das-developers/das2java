@@ -346,10 +346,10 @@ public class TimeDatumFormatter extends DatumFormatter {
         int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
-        int seconds = (int)( (long)Math.round(ts.seconds * maxScale) / maxScale );
-        double fracSeconds = ts.seconds - seconds;
-        ts.seconds= seconds;
-        ts.micros= (int)(fracSeconds * 1e6);
+        long scaledSeconds = (long)Math.round(ts.seconds * maxScale);
+        
+        ts.seconds= scaledSeconds / maxScale;
+        ts.micros= (int)( scaledSeconds * 1e6 / maxScale );
         
         TimeUtil.carry(ts);
         
@@ -360,8 +360,17 @@ public class TimeDatumFormatter extends DatumFormatter {
         array[HOUR_FIELD_INDEX] = new Integer(ts.hour);
         array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
         array[SECONDS_FIELD_INDEX] = new Integer((int)ts.seconds);
+        int value = (int)ts.seconds;
+        for ( int i=0; i<scaleSeconds.length; i++ ) {
+            if ( scaleSeconds[i]!=3*(i+1) ) {
+                throw new IllegalArgumentException("scaleSeconds can only contain 3s! milli, micro, nano, etc");
+            }
+        }
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
-            int value = (int)Math.round(fracSeconds * Math.pow(10, scaleSeconds[i - TIMESTAMP_FIELD_COUNT]));
+
+            scaledSeconds = scaledSeconds - maxScale * value;
+            maxScale= maxScale / 1000;
+            value = (int) (scaledSeconds / maxScale);
             array[i] = new Integer(value);
         }
         return array;
