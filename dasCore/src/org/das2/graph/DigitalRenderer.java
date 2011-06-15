@@ -339,6 +339,7 @@ public class DigitalRenderer extends Renderer {
 
         Units u = SemanticOps.getUnits(ds);
         QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        QDataSet yds= SemanticOps.ytagsDataSet(ds);
         Units xunits= SemanticOps.getUnits(xds);
 
         String form=this.format;
@@ -361,7 +362,7 @@ public class DigitalRenderer extends Renderer {
             return;
         }
 
-        QDataSet wds= SemanticOps.weightsDataSet(ds);
+        QDataSet wds= SemanticOps.weightsDataSet(yds);
 
         for (int i = firstIndex; i < lastIndex; i++) {
             int ix = (int) xAxis.transform( xds.value(i), xunits );
@@ -369,10 +370,10 @@ public class DigitalRenderer extends Renderer {
             String s;
             int iy;
             if ( wds.value(i)>0 ) {
-                Datum d = u.createDatum( ds.value(i) );
+                Datum d = u.createDatum( yds.value(i) );
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
-                    s = String.format( form, ds.value(i) );
+                    s = String.format( form, yds.value(i) );
                 } else {
                     s = d.getFormatter().format(d, u);
                 }
