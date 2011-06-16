@@ -361,13 +361,14 @@ public class TimeDatumFormatter extends DatumFormatter {
         array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
         array[SECONDS_FIELD_INDEX] = new Integer((int)ts.seconds);
         int value = (int)ts.seconds;
-        for ( int i=0; i<scaleSeconds.length; i++ ) {
-            if ( scaleSeconds[i]!=3*(i+1) ) {
-                throw new IllegalArgumentException("scaleSeconds can only contain 3s! milli, micro, nano, etc");
+        if ( scaleSeconds!=null ) {
+            for ( int i=0; i<scaleSeconds.length; i++ ) {
+                if ( scaleSeconds[i]!=3*(i+1) ) {
+                    throw new IllegalArgumentException("scaleSeconds can only contain 3s! milli, micro, nano, etc");
+                }
             }
         }
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
-
             scaledSeconds = scaledSeconds - maxScale * value;
             maxScale= maxScale / 1000;
             value = (int) (scaledSeconds / maxScale);
