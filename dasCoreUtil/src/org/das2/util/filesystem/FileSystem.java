@@ -165,10 +165,11 @@ public abstract class FileSystem  {
         }
 
         FileSystemFactory factory;
-        if ( root.getPath()!=null && root.getPath().contains(".zip") && registry.containsKey("zip") ) {
+        if ( root.getPath()!=null && ( root.getPath().contains(".zip") ||   root.getPath().contains(".ZIP") ) && registry.containsKey("zip") ) {
             try {
                 String surl= root.toString();
                 int i= surl.indexOf(".zip");
+                if ( i==-1 ) i= surl.indexOf(".ZIP");
                 String[] ss= FileSystem.splitUrl( surl.substring(0,i+4) );
                 URI parent = new URI(ss[2]); //getparent
                 String zipname = ss[3].substring(ss[2].length());
