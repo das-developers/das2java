@@ -368,7 +368,17 @@ public class SemanticOps {
      */
     public static QDataSet ytagsDataSet( QDataSet ds ) {
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
-        if ( dep1!=null ) return dep1;
+        if ( dep1!=null ) {
+            if ( SemanticOps.getUnits(dep1) instanceof EnumerationUnits ) {
+                if ( dep1.length()==1 ) {
+                    return DataSetOps.slice1(ds,0);// Juno returned a one-element
+                } else {
+                    return DataSetOps.slice1(ds,1);
+                }
+            } else {
+                return dep1;
+            }
+        }
         if ( isBundle(ds) ) {
             return DataSetOps.unbundle( ds, 1 );
         } else if ( isJoin(ds)) {
