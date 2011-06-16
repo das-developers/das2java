@@ -163,11 +163,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 firstValidIndex= -1;
                 lastValidIndex= -1;
                 QDataSet wds= DataSetUtil.weightsDataSet(ds);
-                for ( int i=0; firstValidIndex==-1 && i<ds.length(); i++ ) {
-                    if ( wds.value(i)>0 ) firstValidIndex=i;
-                }
-                for ( int i=ds.length()-1; lastValidIndex==-1 && i>=0; i-- ) {
-                    if ( wds.value(i)>0 ) lastValidIndex=i+1;
+                if ( wds.rank()==1 ) {
+                    for ( int i=0; firstValidIndex==-1 && i<ds.length(); i++ ) {
+                        if ( wds.value(i)>0 ) firstValidIndex=i;
+                    }
+                    for ( int i=ds.length()-1; lastValidIndex==-1 && i>=0; i-- ) {
+                        if ( wds.value(i)>0 ) lastValidIndex=i+1;
+                    }
+                } else {
+                    firstValidIndex= 0;
+                    lastValidIndex= wds.length();
                 }
             }
         }
