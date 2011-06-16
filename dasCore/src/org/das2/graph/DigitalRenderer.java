@@ -11,6 +11,8 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
+import java.util.Formatter;
+import java.util.IllegalFormatConversionException;
 import javax.swing.DefaultDesktopManager;
 import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
@@ -373,7 +375,16 @@ public class DigitalRenderer extends Renderer {
                 Datum d = u.createDatum( yds.value(i) );
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
-                    s = String.format( form, yds.value(i) );
+                    try {
+                        s = String.format( form, yds.value(i) );
+                    } catch ( IllegalFormatConversionException ex ) { // '%2X'
+                        char c= ex.getConversion();
+                        if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
+                            s = String.format( form, (long)yds.value(i) );
+                        } else {
+                            throw ex;
+                        }
+                    }
                 } else {
                     s = d.getFormatter().format(d, u);
                 }
