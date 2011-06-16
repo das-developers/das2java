@@ -137,14 +137,15 @@ public class ValuesTreeModel extends DefaultTreeModel {
                         sval= "" + ds.value(i) + " (error)";
                     }
                 } else {
-                    sval= wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill";
+                    sval= wds.value(i) > 0. ? DataSetUtil.getStringValue( ds, ds.value(i) )  : "fill";
                 }
                 //TODO: future datum class may allow for toString to return nominal data for invalid data.
                 if ( dep0!=null ) {
-                    sval += " @ " +( String.valueOf(wdsDep0.value(i) > 0 ? depu.createDatum(dep0.value(i) ) : "fill" ) );
+                    sval += " @ " +( String.valueOf(wdsDep0.value(i) > 0 ? DataSetUtil.getStringValue( dep0, dep0.value(i) ) : "fill" ) );
                 }
                 if ( bundle!=null ) {
                     sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill" );
+                    //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
                     aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
                 } else {
                     aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
