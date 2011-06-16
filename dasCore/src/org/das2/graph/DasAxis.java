@@ -60,6 +60,7 @@ import javax.swing.border.*;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.text.*;
 import javax.swing.*;
 import java.util.*;
@@ -68,6 +69,7 @@ import java.util.regex.*;
 
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
+import javax.management.ReflectionException;
 import org.das2.DasException;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
@@ -895,7 +897,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else if ( dataset.startsWith("class:") ) {
             try {
                 try {
-                    result = (QFunction) Class.forName(dataset.substring(6)).newInstance();
+                    // class:org.autoplot.tca.AutoplotTCASource:vap+file:/tmp/foo.txt?rank2=field1-field4&depend0=field0
+                    int argPos= dataset.indexOf(':',6);
+                    String className;
+                    String arg= null;
+                    if ( argPos==-1 ) {
+                        className= dataset.substring(6);
+                        result = (QFunction) Class.forName(className).newInstance();
+                    } else {
+                        className= dataset.substring(6,argPos);
+                        arg= dataset.substring(argPos+1);
+                        try {
+                            result = (QFunction) Class.forName(className).getConstructor(String.class).newInstance(arg);
+                        } catch ( Exception ex ) { //TODO: more precise
+                            throw new DasException(ex);
+                        }
+                    }
+                    
                 } catch (InstantiationException ex) {
                     Logger.getLogger(DasAxis.class.getName()).log(Level.SEVERE, null, ex);
                     ex.printStackTrace();
@@ -999,10 +1017,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         JoinDataSet ltcaData= new JoinDataSet(2);
         ArrayDataSet ex= ArrayDataSet.copy( tcaFunction.exampleInput() );
         QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
-        Units tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
+        Units tcaUnits;
         if ( bds==null ) {
             System.err.println("no bundle descriptor, dealing with it.");
             tcaUnits= (Units) ex.property( QDataSet.UNITS, 0 );
+        } else {
+            tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
         }
         UnitsConverter uc= UnitsConverter.getConverter( getUnits(), tcaUnits );
 
