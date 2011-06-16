@@ -10,6 +10,7 @@ package org.virbo.dataset;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.IllegalFormatConversionException;
 import org.das2.datum.Units;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -19,6 +20,8 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.DefaultDatumFormatter;
 import org.das2.datum.format.FormatStringFormatter;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
@@ -1873,6 +1876,40 @@ public class DataSetUtil {
         }
     }
 
+    /**
+     * return the string value of the double, considering QDataSet.FORMAT, the units and the value.
+     * formatting is done assuming someone else will report the units.
+     * @param yds
+     * @param value
+     * @return
+     */
+    public static String getStringValue( QDataSet yds, double value ) {
+        Units u= SemanticOps.getUnits(yds);
+        Datum d = u.createDatum( value );
+        DatumFormatter df= d.getFormatter();
+        String s;
+        if ( df instanceof DefaultDatumFormatter ) {
+            String form= (String)yds.property(QDataSet.FORMAT);
+            if ( form==null ) {
+                s= df.format(d);
+            } else {
+                try {
+                    s = String.format( form, value );
+                } catch ( IllegalFormatConversionException ex ) { // '%2X'
+                    char c= ex.getConversion();
+                    if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
+                        s = String.format( form, (long)value );
+                    } else {
+                        //warning bad format string
+                        s= df.format(d);
+                    }
+                }
+            }
+        } else {
+            s = df.format(d,u);
+        }
+        return s;
+    }
 }
 
 
