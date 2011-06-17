@@ -2085,19 +2085,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
 
         for (int i = 0; i < tcaData.length(0); i++) {
-            baseLine += lineHeight;
-            QDataSet v1= tcaData.slice(index).slice(i);
-            Datum d1= org.virbo.dataset.DataSetUtil.asDatum(v1);
-            Units u= d1.getUnits();
-            String item;
-            if ( u==null ) {
-                item= d1.getFormatter().format( d1 );
-            } else {
-                item= d1.getFormatter().format( d1,u );
+            try {
+                baseLine += lineHeight;
+                QDataSet v1= tcaData.slice(index).slice(i);
+                Datum d1= org.virbo.dataset.DataSetUtil.asDatum(v1);
+                Units u= d1.getUnits();
+                String item;
+                item= org.virbo.dataset.DataSetUtil.getStringValue( v1, v1.value() );
+                width = fm.stringWidth(item);
+                leftEdge = rightEdge - width;
+                g.drawString(item, leftEdge, baseLine);
+            } catch ( RuntimeException ex ) {
+                g.drawString("except!c"+ex.getMessage(),leftEdge, baseLine);
             }
-            width = fm.stringWidth(item);
-            leftEdge = rightEdge - width;
-            g.drawString(item, leftEdge, baseLine);
         }
     }
 
