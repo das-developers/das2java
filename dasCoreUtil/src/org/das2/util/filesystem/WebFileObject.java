@@ -184,7 +184,7 @@ public class WebFileObject extends FileObject {
 
             try {
                 if (!localFile.canRead()) {
-                    if ( !pathname.endsWith(".zip") && wfs.isDirectory(pathname) ) {  // klugde, see https://sourceforge.net/tracker/index.php?func=detail&aid=3049303&group_id=199733&atid=970682
+                    if ( !( pathname.endsWith(".zip") || pathname.endsWith(".ZIP") ) && wfs.isDirectory(pathname) ) {  // klugde, see https://sourceforge.net/tracker/index.php?func=detail&aid=3049303&group_id=199733&atid=970682
                         localFile.mkdirs();
                         this.isFolder = true;
                         if ("".equals(pathname)) {
