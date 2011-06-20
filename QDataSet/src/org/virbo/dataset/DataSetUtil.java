@@ -1879,7 +1879,7 @@ public class DataSetUtil {
     /**
      * return the string value of the double, considering QDataSet.FORMAT, the units and the value.
      * formatting is done assuming someone else will report the units.
-     * @param yds
+     * @param yds`
      * @param value
      * @return
      */
@@ -1891,7 +1891,11 @@ public class DataSetUtil {
         if ( df instanceof DefaultDatumFormatter ) {
             String form= (String)yds.property(QDataSet.FORMAT);
             if ( form==null ) {
-                s= df.format(d);
+                if ( "log".equals( yds.property(QDataSet.SCALE_TYPE) ) ) {
+                    s = String.format( "%9.3e", value ).trim();
+                } else {
+                    s = String.format( "%9.3f", value ).trim();
+                }
             } else {
                 try {
                     s = String.format( form, value );
